@@ -1,5 +1,30 @@
 package syntax
 
+type Pos struct {
+	Line int
+	Col  int
+}
+
+type String struct {
+	Value string
+	Pos   *Pos
+}
+
+type Bool struct {
+	Value bool
+	Pos   *Pos
+}
+
+type Int struct {
+	Value int
+	Pos   *Pos
+}
+
+type Float struct {
+	Value float64
+	Pos   *Pos
+}
+
 // Event interface represents workflow events in 'on' section
 type Event interface {
 	Name() string
@@ -7,18 +32,20 @@ type Event interface {
 
 // https://docs.github.com/en/actions/reference/workflow-syntax-for-github-actions#onevent_nametypes
 type WebhookEvent struct {
-	Hook  string
-	Types []string
+	Hook  *String
+	Types []*String
+	Pos   *Pos
 }
 
 func (e *WebhookEvent) Name() string {
-	return e.Hook
+	return e.Hook.Value
 }
 
 // https://docs.github.com/en/actions/reference/workflow-syntax-for-github-actions#onpushpull_requestbranchestags
 type PushEvent struct {
-	Branches []string
-	Tags     []string
+	Branches []*String
+	Tags     []*String
+	Pos      *Pos
 }
 
 func (e *PushEvent) Name() string {
@@ -27,8 +54,9 @@ func (e *PushEvent) Name() string {
 
 // https://docs.github.com/en/actions/reference/workflow-syntax-for-github-actions#onpushpull_requestbranchestags
 type PullRequestEvent struct {
-	Branches []string
-	Tags     []string
+	Branches []*String
+	Tags     []*String
+	Pos      *Pos
 }
 
 func (e *PullRequestEvent) Name() string {
@@ -37,7 +65,8 @@ func (e *PullRequestEvent) Name() string {
 
 // https://docs.github.com/en/actions/reference/workflow-syntax-for-github-actions#onschedule
 type ScheduledEvent struct {
-	Cron string
+	Cron *String
+	Pos  *Pos
 }
 
 func (e *ScheduledEvent) Name() string {
@@ -45,44 +74,55 @@ func (e *ScheduledEvent) Name() string {
 }
 
 // https://docs.github.com/en/actions/reference/workflow-syntax-for-github-actions#permissions
-type Permission uint8
+type PermKind uint8
 
 const (
-	PermissionNone = iota
-	PermissionRead
-	PermissionWrite
+	PermKindNone = iota
+	PermKindRead
+	PermKindWrite
 )
+
+type Permission struct {
+	Kind PermKind
+	Pos  *Pos
+	Name *String
+}
 
 // https://docs.github.com/en/actions/reference/workflow-syntax-for-github-actions#permissions
 type Permissions struct {
 	// All represents read-all or write-all, which define permissions of all scope at once.
-	All Permission
+	All *Permission
 	// Scopes is mappings from permission name to permission value
-	Scopes map[string]Permission
+	Scopes map[string]*Permission
+	Pos    *Pos
 }
 
 // https://docs.github.com/en/actions/reference/workflow-syntax-for-github-actions#defaultsrun
 type DefaultsRun struct {
-	Shell            string
-	WorkingDirectory string
+	Shell            *String
+	WorkingDirectory *String
+	Pos              *Pos
 }
 
 // https://docs.github.com/en/actions/reference/workflow-syntax-for-github-actions#defaults
 type Defaults struct {
 	Run *DefaultsRun
+	Pos *Pos
 }
 
 // https://docs.github.com/en/actions/reference/workflow-syntax-for-github-actions#concurrency
 type Concurrency struct {
-	Group            string
-	CancelInProgress bool
+	Group            *String
+	CancelInProgress *Bool
+	Pos              *Pos
 }
 
 // https://docs.github.com/en/actions/reference/workflow-syntax-for-github-actions#jobsjob_idenvironment
 type Environment struct {
-	Name string
+	Name *String
 	// URL is the URL mapped to 'environment_url' in the deployments API. Empty value means no value was specified.
-	URL string
+	URL *String
+	Pos *Pos
 }
 
 type ExecKind uint8
@@ -99,11 +139,11 @@ type Exec interface {
 
 // https://docs.github.com/en/actions/reference/workflow-syntax-for-github-actions#jobsjob_idstepsrun
 type ExecRun struct {
-	Script string
-	// Shell represents optional 'shell' field. Empty means nothing specified
-	Shell string
-	// WorkingDirectory represents optional 'working-directory' field. Empty means nothing specified
-	WorkingDirectory string
+	Run *String
+	// Shell represents optional 'shell' field. Nil means nothing specified
+	Shell *String
+	// WorkingDirectory represents optional 'working-directory' field. Nil means nothing specified
+	WorkingDirectory *String
 }
 
 func (r *ExecRun) Kind() ExecKind {
@@ -112,13 +152,13 @@ func (r *ExecRun) Kind() ExecKind {
 
 type ExecAction struct {
 	// https://docs.github.com/en/actions/reference/workflow-syntax-for-github-actions#jobsjob_idstepsuses
-	Uses string
-	// Entrypoint represents optional 'entrypoint' field in 'with' section. Empty field means nothing specified
+	Uses *String
+	// Entrypoint represents optional 'entrypoint' field in 'with' section. Nil field means nothing specified
 	// https://docs.github.com/en/actions/reference/workflow-syntax-for-github-actions#jobsjob_idstepswithentrypoint
-	Entrypoint string
-	// Args represents optional 'args' field in 'with' section. Empty field means nothing specified
+	Entrypoint *String
+	// Args represents optional 'args' field in 'with' section. Nil field means nothing specified
 	// https://docs.github.com/en/actions/reference/workflow-syntax-for-github-actions#jobsjob_idstepswithargs
-	Args string
+	Args *String
 }
 
 func (r *ExecAction) Kind() ExecKind {
@@ -126,117 +166,143 @@ func (r *ExecAction) Kind() ExecKind {
 }
 
 // https://docs.github.com/en/actions/reference/workflow-syntax-for-github-actions#jobsjob_idstrategymatrix
+type MatrixElement struct {
+	Key   *String
+	Value *String
+}
 type Matrix struct {
-	Values map[string]string
+	// Values stores mappings from name to values
+	Values map[string][]*MatrixElement
 	// https://docs.github.com/en/actions/reference/workflow-syntax-for-github-actions#example-including-additional-values-into-combinations
-	Include []map[string]string
+	Include []map[string]*MatrixElement
 	// https://docs.github.com/en/actions/reference/workflow-syntax-for-github-actions#example-excluding-configurations-from-a-matrix
-	Exclude []map[string]string
+	Exclude []map[string]*MatrixElement
+	Pos     *Pos
 }
 
 // https://docs.github.com/en/actions/reference/workflow-syntax-for-github-actions#jobsjob_idstrategy
 type Strategy struct {
 	Matrix *Matrix
 	// https://docs.github.com/en/actions/reference/workflow-syntax-for-github-actions#jobsjob_idstrategyfail-fast
-	FailFast bool
+	FailFast *Bool
 	// https://docs.github.com/en/actions/reference/workflow-syntax-for-github-actions#jobsjob_idstrategymax-parallel
-	MaxParallel int
+	MaxParallel *Int
+	Pos         *Pos
+}
+
+type EnvVar struct {
+	Name  *String
+	Value *String
 }
 
 // https://docs.github.com/en/actions/reference/workflow-syntax-for-github-actions#jobsjob_idsteps
 type Step struct {
 	// https://docs.github.com/en/actions/reference/workflow-syntax-for-github-actions#jobsjob_idstepsid
-	ID string
+	ID *String
 	// https://docs.github.com/en/actions/reference/workflow-syntax-for-github-actions#jobsjob_idstepsif
-	If string
+	If *String
 	// https://docs.github.com/en/actions/reference/workflow-syntax-for-github-actions#jobsjob_idstepsname
-	Name string
+	Name *String
 	Exec Exec
 	// https://docs.github.com/en/actions/reference/workflow-syntax-for-github-actions#jobsjob_idstepsenv
-	Env map[string]string
+	Env map[string]*EnvVar
 	// https://docs.github.com/en/actions/reference/workflow-syntax-for-github-actions#jobsjob_idstepscontinue-on-error
-	ContinuesOnError bool
+	ContinuesOnError *Bool
 	// https://docs.github.com/en/actions/reference/workflow-syntax-for-github-actions#jobsjob_idstepstimeout-minutes
-	TimeoutMinutes float64
+	TimeoutMinutes *Float
+	Pos            *Pos
 }
 
 // https://docs.github.com/en/actions/reference/workflow-syntax-for-github-actions#jobsjob_idcontainercredentials
 type Credentials struct {
-	Username string
-	Password string
+	Username *String
+	Password *String
+	Pos      *Pos
 }
 
 // https://docs.github.com/en/actions/reference/workflow-syntax-for-github-actions#jobsjob_idcontainer
 type Container struct {
 	// https://docs.github.com/en/actions/reference/workflow-syntax-for-github-actions#jobsjob_idcontainerimage
-	Image       string
+	Image       *String
 	Credentials *Credentials
 	// https://docs.github.com/en/actions/reference/workflow-syntax-for-github-actions#jobsjob_idcontainerenv
-	Env map[string]string
+	Env map[string]*EnvVar
 	// https://docs.github.com/en/actions/reference/workflow-syntax-for-github-actions#jobsjob_idcontainerports
-	Ports []string
+	Ports []*String
 	// https://docs.github.com/en/actions/reference/workflow-syntax-for-github-actions#jobsjob_idcontainervolumes
-	Volumes []string
+	Volumes []*String
 	// https://docs.github.com/en/actions/reference/workflow-syntax-for-github-actions#jobsjob_idcontaineroptions
-	Options string
+	Options *String
+	Pos     *Pos
 }
 
 // https://docs.github.com/en/actions/reference/workflow-syntax-for-github-actions#jobsjob_idservices
 type Service struct {
+	Name *String
 	// https://docs.github.com/en/actions/reference/workflow-syntax-for-github-actions#jobsjob_idservicesservice_idimage
-	Image string
+	Image *String
 	// https://docs.github.com/en/actions/reference/workflow-syntax-for-github-actions#jobsjob_idservicesservice_idcredentials
 	Credentials *Credentials
 	// https://docs.github.com/en/actions/reference/workflow-syntax-for-github-actions#jobsjob_idservicesservice_idenv
-	Env map[string]string
+	Env map[string]*EnvVar
 	// https://docs.github.com/en/actions/reference/workflow-syntax-for-github-actions#jobsjob_idservicesservice_idports
-	Ports []string
+	Ports []*String
 	// https://docs.github.com/en/actions/reference/workflow-syntax-for-github-actions#jobsjob_idservicesservice_idvolumes
-	Volumes []string
+	Volumes []*String
 	// https://docs.github.com/en/actions/reference/workflow-syntax-for-github-actions#jobsjob_idservicesservice_idoptions
-	Options string
+	Options *String
+	Pos     *Pos
 }
 
 // https://docs.github.com/en/actions/reference/workflow-syntax-for-github-actions#jobs
+type Output struct {
+	Name  *String
+	Value *String
+}
 type Job struct {
+	// https://docs.github.com/en/actions/reference/workflow-syntax-for-github-actions#jobsjob_id
+	ID *String
 	// https://docs.github.com/en/actions/reference/workflow-syntax-for-github-actions#jobsjob_idname
-	Name string
+	Name *String
 	// https://docs.github.com/en/actions/reference/workflow-syntax-for-github-actions#jobsjob_idneeds
-	Needs []string
+	Needs []*String
 	// https://docs.github.com/en/actions/reference/workflow-syntax-for-github-actions#jobsjob_idruns-on
-	RunsOn      string
+	RunsOn      *String
 	Permissions *Permissions
 	Environment *Environment
 	Concurrency *Concurrency
 	// https://docs.github.com/en/actions/reference/workflow-syntax-for-github-actions#jobsjob_idoutputs
-	Outputs map[string]string
+	Outputs map[string]*Output
 	// https://docs.github.com/en/actions/reference/workflow-syntax-for-github-actions#jobsjob_idenv
-	Env      map[string]string
+	Env      map[string]*EnvVar
 	Defaults *Defaults
 	// https://docs.github.com/en/actions/reference/workflow-syntax-for-github-actions#jobsjob_idif
-	If string
+	If *String
 	// https://docs.github.com/en/actions/reference/workflow-syntax-for-github-actions#jobsjob_idsteps
 	Steps []*Step
 	// https://docs.github.com/en/actions/reference/workflow-syntax-for-github-actions#jobsjob_idtimeout-minutes
-	TimeoutMinutes float64
+	TimeoutMinutes *Float
 	// https://docs.github.com/en/actions/reference/workflow-syntax-for-github-actions#jobsjob_idstrategy
 	Strategy *Strategy
 	// https://docs.github.com/en/actions/reference/workflow-syntax-for-github-actions#jobsjob_idcontinue-on-error
-	ContinueOnError bool
+	ContinueOnError *Bool
 	Container       *Container
 	// https://docs.github.com/en/actions/reference/workflow-syntax-for-github-actions#jobsjob_idservices
 	Services map[string]*Service
+	Pos      *Pos
 }
 
 // https://docs.github.com/en/actions/reference/workflow-syntax-for-github-actions
 type Workflow struct {
-	Name string
+	// https://docs.github.com/en/actions/reference/workflow-syntax-for-github-actions#name
+	Name *String
 	// https://docs.github.com/en/actions/reference/workflow-syntax-for-github-actions#onpushpull_requestbranchestags
 	On          []Event
 	Permissions *Permissions
 	// https://docs.github.com/en/actions/reference/workflow-syntax-for-github-actions#env
-	Env         map[string]string
+	Env         map[string]*EnvVar
 	Defaults    *Defaults
 	Concurrency *Concurrency
-	Jobs        map[string]*Job
+	// Jobs is mappings from job ID to the job object
+	Jobs map[string]*Job
 }

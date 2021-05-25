@@ -1,37 +1,5 @@
 package syntax
 
-// import (
-// 	"fmt"
-//
-// 	"github.com/goccy/go-yaml/ast"
-// 	"github.com/goccy/go-yaml/parser"
-// )
-//
-// type Dumper struct{}
-//
-// func (d *Dumper) Visit(n ast.Node) ast.Visitor {
-// 	t := n.Type()
-// 	p := n.GetToken().Position
-// 	fmt.Printf("%s at (%d, %d):\n%s\n\n", t, p.Line, p.Column, n)
-// 	return d
-// }
-//
-// func ParseFile(file string) error {
-// 	f, err := parser.ParseFile(file, 0)
-// 	if err != nil {
-// 		return err
-// 	}
-//
-// 	fmt.Printf("name: %s\n", f.Name)
-//
-// 	v := &Dumper{}
-// 	for _, d := range f.Docs {
-// 		ast.Walk(v, d)
-// 	}
-//
-// 	return nil
-// }
-
 import (
 	"fmt"
 	"strings"
