@@ -1,25 +1,30 @@
 package syntax
 
+// Pos represents position in the file
 type Pos struct {
 	Line int
 	Col  int
 }
 
+// String represents generic string value in YAML file with position
 type String struct {
 	Value string
 	Pos   *Pos
 }
 
+// Bool represents generic boolean value in YAML file with position
 type Bool struct {
 	Value bool
 	Pos   *Pos
 }
 
+// Int represents generic integer value in YAML file with position
 type Int struct {
 	Value int
 	Pos   *Pos
 }
 
+// Float represents generic float value in YAML file with position
 type Float struct {
 	Value float64
 	Pos   *Pos
@@ -27,50 +32,66 @@ type Float struct {
 
 // Event interface represents workflow events in 'on' section
 type Event interface {
-	Name() string
+	EventName() string
 }
 
+// WebhookEvent represents event type based on webhook events.
+// Some events can't have 'types' field. Only 'push' and 'pull' events can have 'tags', 'tags-ignore',
+// 'paths' and 'paths-ignore' fields. Only 'workflow_run' event can have 'workflows' field.
 // https://docs.github.com/en/actions/reference/workflow-syntax-for-github-actions#onevent_nametypes
 type WebhookEvent struct {
-	Hook  *String
+	Hook           *String
+	Types          []*String
+	Branches       []*String
+	BranchesIgnore []*String
+	Tags           []*String
+	TagsIgnore     []*String
+	Paths          []*String
+	PathsIgnore    []*String
+	Workflows      []*String
+	Pos            *Pos
+}
+
+func (e *WebhookEvent) EventName() string {
+	return e.Hook.Value
+}
+
+// https://docs.github.com/en/actions/reference/events-that-trigger-workflows#scheduled-events
+type ScheduledEvent struct {
+	Cron []*String
+	Pos  *Pos
+}
+
+func (e *ScheduledEvent) EventName() string {
+	return "schedule"
+}
+
+// https://docs.github.com/en/actions/reference/events-that-trigger-workflows#workflow_dispatch
+type DispatchInput struct {
+	Name        *String
+	Description *String
+	Required    *Bool
+	Default     *String
+}
+
+// https://docs.github.com/en/actions/reference/events-that-trigger-workflows#workflow_dispatch
+type WorkflowDispatchEvent struct {
+	Inputs map[string]*DispatchInput
+	Pos    *Pos
+}
+
+func (e *WorkflowDispatchEvent) EventName() string {
+	return "workflow_dispatch"
+}
+
+// https://docs.github.com/en/actions/reference/events-that-trigger-workflows#repository_dispatch
+type RepositoryDispatchEvent struct {
 	Types []*String
 	Pos   *Pos
 }
 
-func (e *WebhookEvent) Name() string {
-	return e.Hook.Value
-}
-
-// https://docs.github.com/en/actions/reference/workflow-syntax-for-github-actions#onpushpull_requestbranchestags
-type PushEvent struct {
-	Branches []*String
-	Tags     []*String
-	Pos      *Pos
-}
-
-func (e *PushEvent) Name() string {
-	return "push"
-}
-
-// https://docs.github.com/en/actions/reference/workflow-syntax-for-github-actions#onpushpull_requestbranchestags
-type PullRequestEvent struct {
-	Branches []*String
-	Tags     []*String
-	Pos      *Pos
-}
-
-func (e *PullRequestEvent) Name() string {
-	return "pull_request"
-}
-
-// https://docs.github.com/en/actions/reference/workflow-syntax-for-github-actions#onschedule
-type ScheduledEvent struct {
-	Cron *String
-	Pos  *Pos
-}
-
-func (e *ScheduledEvent) Name() string {
-	return "schedule"
+func (e *RepositoryDispatchEvent) EventName() string {
+	return "repository_dispatch"
 }
 
 // https://docs.github.com/en/actions/reference/workflow-syntax-for-github-actions#permissions
@@ -254,11 +275,13 @@ type Service struct {
 	Pos     *Pos
 }
 
-// https://docs.github.com/en/actions/reference/workflow-syntax-for-github-actions#jobs
+// https://docs.github.com/en/actions/reference/workflow-syntax-for-github-actions#jobsjob_idoutputs
 type Output struct {
 	Name  *String
 	Value *String
 }
+
+// https://docs.github.com/en/actions/reference/workflow-syntax-for-github-actions#jobs
 type Job struct {
 	// https://docs.github.com/en/actions/reference/workflow-syntax-for-github-actions#jobsjob_id
 	ID *String
