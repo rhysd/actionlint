@@ -168,13 +168,23 @@ type ExecRun struct {
 	WorkingDirectory *String
 }
 
+// https://docs.github.com/en/actions/reference/workflow-syntax-for-github-actions#jobsjob_idstepsuses
 func (r *ExecRun) Kind() ExecKind {
 	return ExecKindRun
 }
 
+// https://docs.github.com/en/actions/reference/workflow-syntax-for-github-actions#jobsjob_idstepswith
+type Input struct {
+	Name  *String
+	Value *String
+}
+
+// https://docs.github.com/en/actions/reference/workflow-syntax-for-github-actions#jobsjob_idstepsuses
 type ExecAction struct {
 	// https://docs.github.com/en/actions/reference/workflow-syntax-for-github-actions#jobsjob_idstepsuses
 	Uses *String
+	// Inputs represents inputs to the action to execute in 'with' section
+	Inputs map[string]*Input
 	// Entrypoint represents optional 'entrypoint' field in 'with' section. Nil field means nothing specified
 	// https://docs.github.com/en/actions/reference/workflow-syntax-for-github-actions#jobsjob_idstepswithentrypoint
 	Entrypoint *String
@@ -237,7 +247,7 @@ type Step struct {
 	// https://docs.github.com/en/actions/reference/workflow-syntax-for-github-actions#jobsjob_idstepsenv
 	Env map[string]*EnvVar
 	// https://docs.github.com/en/actions/reference/workflow-syntax-for-github-actions#jobsjob_idstepscontinue-on-error
-	ContinuesOnError *Bool
+	ContinueOnError *Bool
 	// https://docs.github.com/en/actions/reference/workflow-syntax-for-github-actions#jobsjob_idstepstimeout-minutes
 	TimeoutMinutes *Float
 	Pos            *Pos

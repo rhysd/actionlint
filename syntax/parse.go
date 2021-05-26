@@ -107,8 +107,13 @@ func (p *parser) error(n *yaml.Node, m string) {
 	p.errors = append(p.errors, &ParseError{m, n.Line, n.Column})
 }
 
-func (p *parser) errorAt(p *Pos, m string) {
-	p.errors = append(p.errors, &ParseError{m, p.Line, p.Column})
+func (p *parser) errorAt(pos *Pos, m string) {
+	p.errors = append(p.errors, &ParseError{m, pos.Line, pos.Col})
+}
+
+func (p *parser) errorfAt(pos *Pos, format string, args ...interface{}) {
+	m := fmt.Sprintf(format, args...)
+	p.errorAt(pos, m)
 }
 
 func (p *parser) errorf(n *yaml.Node, format string, args ...interface{}) {
@@ -218,7 +223,7 @@ func (p *parser) parseMapping(what string, n *yaml.Node, allowEmpty bool) []keyV
 	}
 
 	if !allowEmpty && len(m) == 0 {
-		p.errorf(n, "%s should not be empty", what)
+		p.errorf(n, "%s should not be empty. please remove this section if it's unnecessary", what)
 	}
 
 	return m
@@ -649,6 +654,112 @@ func (p *parser) parseContainer(sec string, pos *Pos, n *yaml.Node) *Container {
 	return ret
 }
 
+// https://docs.github.com/en/actions/reference/workflow-syntax-for-github-actions#jobsjob_idsteps
+func (p *parser) parseStep(n *yaml.Node) *Step {
+	ret := &Step{Pos: posAt(n)}
+
+	for _, kv := range p.parseMapping("element of \"steps\" section", n, false) {
+		switch kv.key.Value {
+		case "id":
+			ret.ID = p.parseString(kv.val)
+		case "if":
+			ret.If = p.parseString(kv.val)
+		case "name":
+			ret.Name = p.parseString(kv.val)
+		case "env":
+			ret.Env = p.parseEnv(kv.val)
+		case "continue-on-error":
+			ret.ContinueOnError = p.parseBool(kv.val)
+		case "timeout-minutes":
+			ret.TimeoutMinutes = p.parseFloat(kv.val)
+		case "uses", "with":
+			var exec *ExecAction
+			if ret.Exec == nil {
+				exec = &ExecAction{}
+			} else if e, ok := ret.Exec.(*ExecAction); ok {
+				exec = e
+			} else {
+				p.errorfAt(kv.key.Pos, "this step is for running shell command, but contains %q key which is used for running action", kv.key.Value)
+				continue
+			}
+			if kv.key.Value == "uses" {
+				exec.Uses = p.parseString(kv.val)
+			} else {
+				// kv.key.Value == "with"
+				for _, with := range p.parseSectionMapping("with", kv.val, false) {
+					switch with.key.Value {
+					case "entrypoint":
+						// https://docs.github.com/en/actions/reference/workflow-syntax-for-github-actions#jobsjob_idstepswithentrypoint
+						exec.Entrypoint = p.parseString(with.val)
+					case "args":
+						// https://docs.github.com/en/actions/reference/workflow-syntax-for-github-actions#jobsjob_idstepswithargs
+						exec.Args = p.parseString(with.val)
+					default:
+						exec.Inputs[with.key.Value] = &Input{with.key, p.parseString(with.val)}
+					}
+				}
+			}
+			ret.Exec = exec
+		case "run", "working-directory", "shell":
+			var exec *ExecRun
+			if ret.Exec == nil {
+				exec = &ExecRun{}
+			} else if e, ok := ret.Exec.(*ExecRun); ok {
+				exec = e
+			} else {
+				p.errorfAt(kv.key.Pos, "this step is for running action, but contains %q key which is used for running shell command", kv.key.Value)
+				continue
+			}
+			switch kv.key.Value {
+			case "run":
+				exec.Run = p.parseString(kv.val)
+			case "working-directory":
+				exec.WorkingDirectory = p.parseString(kv.val)
+			case "shell":
+				exec.Shell = p.parseString(kv.val)
+			}
+			ret.Exec = exec
+		default:
+			p.unexpectedKey(kv.key, "step", []string{
+				"id",
+				"if",
+				"name",
+				"env",
+				"continue-on-error",
+				"timeout-minutes",
+				"uses",
+				"with",
+				"run",
+				"working-directory",
+				"shell",
+			})
+		}
+	}
+
+	return ret
+}
+
+// https://docs.github.com/en/actions/reference/workflow-syntax-for-github-actions#jobsjob_idsteps
+func (p *parser) parseSteps(n *yaml.Node) []*Step {
+	if ok := p.checkSequence("steps", n); !ok {
+		return nil
+	}
+
+	if len(n.Content) == 0 {
+		p.error(n, "sequence in \"steps\" section must not be empty")
+	}
+
+	ret := make([]*Step, 0, len(n.Content))
+
+	for _, c := range n.Content {
+		if s := p.parseStep(c); s != nil {
+			ret = append(ret, s)
+		}
+	}
+
+	return ret
+}
+
 // https://docs.github.com/en/actions/reference/workflow-syntax-for-github-actions#jobsjob_id
 func (p *parser) parseJob(id *String, n *yaml.Node) *Job {
 	ret := &Job{ID: id, Pos: id.Pos}
@@ -700,7 +811,7 @@ func (p *parser) parseJob(id *String, n *yaml.Node) *Job {
 		case "if":
 			ret.If = p.parseString(v)
 		case "steps":
-			panic("TODO")
+			ret.Steps = p.parseSteps(v)
 		case "timeout-minutes":
 			ret.TimeoutMinutes = p.parseFloat(v)
 		case "strategy":
@@ -754,6 +865,7 @@ func (p *parser) parseJobs(n *yaml.Node) map[string]*Job {
 	return ret
 }
 
+// https://docs.github.com/en/actions/reference/workflow-syntax-for-github-actions
 func (p *parser) parse(n *yaml.Node) *Workflow {
 	w := &Workflow{}
 
