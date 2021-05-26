@@ -188,17 +188,25 @@ func (r *ExecAction) Kind() ExecKind {
 }
 
 // https://docs.github.com/en/actions/reference/workflow-syntax-for-github-actions#jobsjob_idstrategymatrix
-type MatrixElement struct {
+type MatrixRow struct {
+	Name   *String
+	Values []*String
+}
+
+// https://docs.github.com/en/actions/reference/workflow-syntax-for-github-actions#jobsjob_idstrategymatrix
+type MatrixCombination struct {
 	Key   *String
 	Value *String
 }
+
+// https://docs.github.com/en/actions/reference/workflow-syntax-for-github-actions#jobsjob_idstrategymatrix
 type Matrix struct {
 	// Values stores mappings from name to values
-	Values map[string][]*MatrixElement
+	Rows map[string]*MatrixRow
 	// https://docs.github.com/en/actions/reference/workflow-syntax-for-github-actions#example-including-additional-values-into-combinations
-	Include []map[string]*MatrixElement
+	Include []map[string]*MatrixCombination
 	// https://docs.github.com/en/actions/reference/workflow-syntax-for-github-actions#example-excluding-configurations-from-a-matrix
-	Exclude []map[string]*MatrixElement
+	Exclude []map[string]*MatrixCombination
 	Pos     *Pos
 }
 
@@ -260,26 +268,41 @@ type Container struct {
 
 // https://docs.github.com/en/actions/reference/workflow-syntax-for-github-actions#jobsjob_idservices
 type Service struct {
-	Name *String
-	// https://docs.github.com/en/actions/reference/workflow-syntax-for-github-actions#jobsjob_idservicesservice_idimage
-	Image *String
-	// https://docs.github.com/en/actions/reference/workflow-syntax-for-github-actions#jobsjob_idservicesservice_idcredentials
-	Credentials *Credentials
-	// https://docs.github.com/en/actions/reference/workflow-syntax-for-github-actions#jobsjob_idservicesservice_idenv
-	Env map[string]*EnvVar
-	// https://docs.github.com/en/actions/reference/workflow-syntax-for-github-actions#jobsjob_idservicesservice_idports
-	Ports []*String
-	// https://docs.github.com/en/actions/reference/workflow-syntax-for-github-actions#jobsjob_idservicesservice_idvolumes
-	Volumes []*String
-	// https://docs.github.com/en/actions/reference/workflow-syntax-for-github-actions#jobsjob_idservicesservice_idoptions
-	Options *String
-	Pos     *Pos
+	Name      *String
+	Contaienr *Container
 }
 
 // https://docs.github.com/en/actions/reference/workflow-syntax-for-github-actions#jobsjob_idoutputs
 type Output struct {
 	Name  *String
 	Value *String
+}
+
+// https://docs.github.com/en/actions/reference/workflow-syntax-for-github-actions#jobsjob_idruns-on
+type Runner interface {
+	GetLabel() string
+}
+
+// https://docs.github.com/en/actions/reference/workflow-syntax-for-github-actions#example-4
+type GitHubHostedRunner struct {
+	Label *String
+	Pos   *Pos
+}
+
+func (r GitHubHostedRunner) GetLabel() string {
+	return r.Label.Value
+}
+
+// https://docs.github.com/en/actions/hosting-your-own-runners/using-self-hosted-runners-in-a-workflow#using-self-hosted-runners-in-a-workflow
+type SelfHostedRunner struct {
+	// Labels is list of additional labels for self-hosted runner
+	// For example, `runs-on: [self-hosted, linux, ARM64]` sets "linux" and "ARM64" in this field
+	Labels []*String
+	Pos    *Pos
+}
+
+func (r *SelfHostedRunner) GetLabel() string {
+	return "self-hosted"
 }
 
 // https://docs.github.com/en/actions/reference/workflow-syntax-for-github-actions#jobs
@@ -291,7 +314,7 @@ type Job struct {
 	// https://docs.github.com/en/actions/reference/workflow-syntax-for-github-actions#jobsjob_idneeds
 	Needs []*String
 	// https://docs.github.com/en/actions/reference/workflow-syntax-for-github-actions#jobsjob_idruns-on
-	RunsOn      *String
+	RunsOn      Runner
 	Permissions *Permissions
 	Environment *Environment
 	Concurrency *Concurrency

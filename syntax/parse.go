@@ -2,6 +2,7 @@ package syntax
 
 import (
 	"fmt"
+	"strconv"
 	"strings"
 
 	"gopkg.in/yaml.v3"
@@ -57,7 +58,7 @@ func nodeKindName(k yaml.Kind) string {
 	}
 }
 
-func pos(n *yaml.Node) *Pos {
+func posAt(n *yaml.Node) *Pos {
 	return &Pos{n.Line, n.Column}
 }
 
@@ -106,6 +107,10 @@ func (p *parser) error(n *yaml.Node, m string) {
 	p.errors = append(p.errors, &ParseError{m, n.Line, n.Column})
 }
 
+func (p *parser) errorAt(p *Pos, m string) {
+	p.errors = append(p.errors, &ParseError{m, p.Line, p.Column})
+}
+
 func (p *parser) errorf(n *yaml.Node, format string, args ...interface{}) {
 	m := fmt.Sprintf(format, args...)
 	p.error(n, m)
@@ -139,7 +144,7 @@ func (p *parser) parseString(n *yaml.Node) *String {
 		p.errorf(n, "expected scalar node for string value but found %s node with %q tag", nodeKindName(n.Kind), n.Tag)
 		return nil
 	}
-	return &String{n.Value, pos(n)}
+	return &String{n.Value, posAt(n)}
 }
 
 func (p *parser) parseStringSequence(sec string, n *yaml.Node) []*String {
@@ -161,7 +166,33 @@ func (p *parser) parseBool(n *yaml.Node) *Bool {
 		p.errorf(n, "expected bool value but found %s node with %q tag", nodeKindName(n.Kind), n.Tag)
 		return nil
 	}
-	return &Bool{n.Value == "true", pos(n)}
+	return &Bool{n.Value == "true", posAt(n)}
+}
+
+func (p *parser) parseInt(n *yaml.Node) *Int {
+	if n.Kind != yaml.ScalarNode {
+		p.errorf(n, "expected scalar node for integer value but found %s node with %q tag", nodeKindName(n.Kind), n.Tag)
+		return nil
+	}
+	i, err := strconv.Atoi(n.Value)
+	if err != nil {
+		p.errorf(n, "invalid integer value: %q: %s", n.Value, err.Error())
+		return nil
+	}
+	return &Int{i, posAt(n)}
+}
+
+func (p *parser) parseFloat(n *yaml.Node) *Float {
+	if n.Kind != yaml.ScalarNode {
+		p.errorf(n, "expected scalar node for float value but found %s node with %q tag", nodeKindName(n.Kind), n.Tag)
+		return nil
+	}
+	f, err := strconv.ParseFloat(n.Value, 64)
+	if err != nil {
+		p.errorf(n, "invalid float value: %q: %s", n.Value, err.Error())
+		return nil
+	}
+	return &Float{f, posAt(n)}
 }
 
 func (p *parser) parseMapping(what string, n *yaml.Node, allowEmpty bool) []keyVal {
@@ -197,7 +228,7 @@ func (p *parser) parseSectionMapping(sec string, n *yaml.Node, allowEmpty bool) 
 	return p.parseMapping(fmt.Sprintf("%q section", sec), n, allowEmpty)
 }
 
-func (p *parser) parseScheduleEvent(n *yaml.Node) *ScheduledEvent {
+func (p *parser) parseScheduleEvent(pos *Pos, n *yaml.Node) *ScheduledEvent {
 	if ok := p.checkSequence("schedule", n); !ok {
 		return nil
 	}
@@ -215,12 +246,12 @@ func (p *parser) parseScheduleEvent(n *yaml.Node) *ScheduledEvent {
 		}
 	}
 
-	return &ScheduledEvent{cron, pos(n)}
+	return &ScheduledEvent{cron, pos}
 }
 
 // https://docs.github.com/en/actions/reference/events-that-trigger-workflows#workflow_dispatch
-func (p *parser) parseWorkflowDispatchEvent(n *yaml.Node) *WorkflowDispatchEvent {
-	ret := &WorkflowDispatchEvent{Pos: pos(n)}
+func (p *parser) parseWorkflowDispatchEvent(pos *Pos, n *yaml.Node) *WorkflowDispatchEvent {
+	ret := &WorkflowDispatchEvent{Pos: pos}
 
 	for _, kv := range p.parseSectionMapping("workflow_dispatch", n, true) {
 		if kv.key.Value == "inputs" {
@@ -261,8 +292,8 @@ func (p *parser) parseWorkflowDispatchEvent(n *yaml.Node) *WorkflowDispatchEvent
 }
 
 // https://docs.github.com/en/actions/reference/events-that-trigger-workflows#repository_dispatch
-func (p *parser) parseRepositoryDispatchEvent(n *yaml.Node) *RepositoryDispatchEvent {
-	ret := &RepositoryDispatchEvent{Pos: pos(n)}
+func (p *parser) parseRepositoryDispatchEvent(pos *Pos, n *yaml.Node) *RepositoryDispatchEvent {
+	ret := &RepositoryDispatchEvent{Pos: pos}
 
 	for _, kv := range p.parseSectionMapping("repository_dispatch", n, false) {
 		if kv.key.Value == "types" {
@@ -276,7 +307,7 @@ func (p *parser) parseRepositoryDispatchEvent(n *yaml.Node) *RepositoryDispatchE
 }
 
 func (p *parser) parseWebhookEvent(name *String, n *yaml.Node) *WebhookEvent {
-	ret := &WebhookEvent{Hook: name, Pos: pos(n)}
+	ret := &WebhookEvent{Hook: name, Pos: name.Pos}
 
 	for _, kv := range p.parseSectionMapping(name.Value, n, true) {
 		switch kv.key.Value {
@@ -322,13 +353,13 @@ func (p *parser) parseEvents(n *yaml.Node) []Event {
 		for _, kv := range kvs {
 			switch kv.key.Value {
 			case "schedule":
-				if e := p.parseScheduleEvent(kv.val); e != nil {
+				if e := p.parseScheduleEvent(kv.key.Pos, kv.val); e != nil {
 					ret = append(ret, e)
 				}
 			case "workflow_dispatch":
-				ret = append(ret, p.parseWorkflowDispatchEvent(kv.val))
+				ret = append(ret, p.parseWorkflowDispatchEvent(kv.key.Pos, kv.val))
 			case "repository_dispatch":
-				ret = append(ret, p.parseRepositoryDispatchEvent(kv.val))
+				ret = append(ret, p.parseRepositoryDispatchEvent(kv.key.Pos, kv.val))
 			default:
 				ret = append(ret, p.parseWebhookEvent(kv.key, kv.val))
 			}
@@ -344,7 +375,7 @@ func (p *parser) parseEvents(n *yaml.Node) []Event {
 				case "schedule", "workflow_dispatch", "repository_dispatch":
 					p.errorf(c, "%q event should not be listed in sequence. Use mapping for \"on\" section and configure the event as value of the mapping", s.Value)
 				default:
-					ret = append(ret, &WebhookEvent{Hook: s, Pos: pos(c)})
+					ret = append(ret, &WebhookEvent{Hook: s, Pos: posAt(c)})
 				}
 			}
 		}
@@ -357,8 +388,8 @@ func (p *parser) parseEvents(n *yaml.Node) []Event {
 }
 
 // https://docs.github.com/en/actions/reference/workflow-syntax-for-github-actions#permissions
-func (p *parser) parsePermissions(n *yaml.Node) *Permissions {
-	ret := &Permissions{Pos: pos(n)}
+func (p *parser) parsePermissions(pos *Pos, n *yaml.Node) *Permissions {
+	ret := &Permissions{Pos: pos}
 
 	if n.Kind == yaml.ScalarNode {
 		var kind PermKind
@@ -370,7 +401,7 @@ func (p *parser) parsePermissions(n *yaml.Node) *Permissions {
 		default:
 			p.errorf(n, "permission must be one of \"read-all\", \"write-all\" but got %q", n.Value)
 		}
-		ret.All = &Permission{nil, kind, pos(n)}
+		ret.All = &Permission{nil, kind, posAt(n)}
 	} else {
 		m := p.parseSectionMapping("permissions", n, false)
 		scopes := make(map[string]*Permission, len(m))
@@ -418,15 +449,15 @@ func (p *parser) parseEnv(n *yaml.Node) map[string]*EnvVar {
 }
 
 // https://docs.github.com/en/actions/reference/workflow-syntax-for-github-actions#defaults
-func (p *parser) parseDefaults(n *yaml.Node) *Defaults {
-	ret := &Defaults{Pos: pos(n)}
+func (p *parser) parseDefaults(pos *Pos, n *yaml.Node) *Defaults {
+	ret := &Defaults{Pos: pos}
 
 	for _, kv := range p.parseSectionMapping("defaults", n, false) {
 		if kv.key.Value != "run" {
 			p.unexpectedKey(kv.key, "defaults", []string{"run"})
 			continue
 		}
-		ret.Run = &DefaultsRun{Pos: pos(kv.val)}
+		ret.Run = &DefaultsRun{Pos: kv.key.Pos}
 
 		for _, attr := range p.parseSectionMapping("run", kv.val, false) {
 			switch attr.key.Value {
@@ -443,8 +474,9 @@ func (p *parser) parseDefaults(n *yaml.Node) *Defaults {
 	return ret
 }
 
-func (p *parser) parseConcurrency(n *yaml.Node) *Concurrency {
-	ret := &Concurrency{Pos: pos(n)}
+// https://docs.github.com/en/actions/reference/workflow-syntax-for-github-actions#jobsjob_idconcurrency
+func (p *parser) parseConcurrency(pos *Pos, n *yaml.Node) *Concurrency {
+	ret := &Concurrency{Pos: pos}
 
 	if n.Kind == yaml.ScalarNode {
 		ret.Group = p.parseString(n)
@@ -464,6 +496,264 @@ func (p *parser) parseConcurrency(n *yaml.Node) *Concurrency {
 	return ret
 }
 
+// https://docs.github.com/en/actions/reference/workflow-syntax-for-github-actions#jobsjob_idenvironment
+func (p *parser) parseEnvironment(pos *Pos, n *yaml.Node) *Environment {
+	ret := &Environment{Pos: pos}
+
+	if n.Kind == yaml.ScalarNode {
+		ret.Name = p.parseString(n)
+	} else {
+		for _, kv := range p.parseSectionMapping("environment", n, false) {
+			switch kv.key.Value {
+			case "name":
+				ret.Name = p.parseString(kv.val)
+			case "url":
+				ret.URL = p.parseString(kv.val)
+			default:
+				p.unexpectedKey(kv.key, "environment", []string{"name", "url"})
+			}
+		}
+	}
+
+	return ret
+}
+
+// https://docs.github.com/en/actions/reference/workflow-syntax-for-github-actions#jobsjob_idoutputs
+func (p *parser) parseOutputs(n *yaml.Node) map[string]*Output {
+	outputs := p.parseSectionMapping("outputs", n, false)
+	ret := make(map[string]*Output, len(outputs))
+	for _, output := range outputs {
+		ret[output.key.Value] = &Output{
+			Name:  output.key,
+			Value: p.parseString(output.val),
+		}
+	}
+	return ret
+}
+
+// https://docs.github.com/en/actions/reference/workflow-syntax-for-github-actions#example-including-additional-values-into-combinations
+// https://docs.github.com/en/actions/reference/workflow-syntax-for-github-actions#example-excluding-configurations-from-a-matrix
+func (p *parser) parseMatrixCombinations(sec string, n *yaml.Node) []map[string]*MatrixCombination {
+	if ok := p.checkSequence(sec, n); !ok {
+		return nil
+	}
+
+	ret := make([]map[string]*MatrixCombination, 0, len(n.Content))
+	for _, c := range n.Content {
+		kvs := p.parseMapping(fmt.Sprintf("element in %q section", sec), c, false)
+		elem := make(map[string]*MatrixCombination, len(kvs))
+		for _, kv := range kvs {
+			s := p.parseString(kv.val)
+			if s != nil {
+				elem[kv.key.Value] = &MatrixCombination{kv.key, s}
+			}
+		}
+		ret = append(ret, elem)
+	}
+	return ret
+}
+
+func (p *parser) parseMatrixRows(key *String, n *yaml.Node) *MatrixRow {
+	return &MatrixRow{
+		Name:   key,
+		Values: p.parseStringSequence("matrix", n),
+	}
+}
+
+// https://docs.github.com/en/actions/reference/workflow-syntax-for-github-actions#jobsjob_idstrategymatrix
+func (p *parser) parseMatrix(pos *Pos, n *yaml.Node) *Matrix {
+	ret := &Matrix{Pos: pos}
+
+	for _, kv := range p.parseSectionMapping("matrix", n, false) {
+		switch kv.key.Value {
+		case "include":
+			ret.Include = p.parseMatrixCombinations("include", kv.val)
+		case "exclude":
+			ret.Include = p.parseMatrixCombinations("exclude", kv.val)
+		default:
+			ret.Rows[kv.key.Value] = &MatrixRow{
+				Name:   kv.key,
+				Values: p.parseStringSequence("matrix", kv.val),
+			}
+		}
+	}
+
+	return ret
+}
+
+// https://docs.github.com/en/actions/reference/workflow-syntax-for-github-actions#jobsjob_idstrategy
+func (p *parser) parseStrategy(pos *Pos, n *yaml.Node) *Strategy {
+	ret := &Strategy{Pos: pos}
+
+	for _, kv := range p.parseSectionMapping("strategy", n, false) {
+		switch kv.key.Value {
+		case "matrix":
+			ret.Matrix = p.parseMatrix(kv.key.Pos, kv.val)
+		case "fail-fast":
+			ret.FailFast = p.parseBool(kv.val)
+		case "max-parallel":
+			ret.MaxParallel = p.parseInt(kv.val)
+		default:
+			p.unexpectedKey(kv.key, "strategy", []string{"matrix", "fail-fast", "max-parallel"})
+		}
+	}
+
+	return ret
+}
+
+// https://docs.github.com/en/actions/reference/workflow-syntax-for-github-actions#jobsjob_idcontainer
+func (p *parser) parseContainer(sec string, pos *Pos, n *yaml.Node) *Container {
+	ret := &Container{Pos: pos}
+
+	for _, kv := range p.parseSectionMapping(sec, n, false) {
+		switch kv.key.Value {
+		case "image":
+			ret.Image = p.parseString(kv.val)
+		case "credentials":
+			cred := &Credentials{Pos: kv.key.Pos}
+			for _, c := range p.parseSectionMapping("credentials", kv.val, false) {
+				switch c.key.Value {
+				case "username":
+					cred.Username = p.parseString(c.val)
+				case "password":
+					cred.Password = p.parseString(c.val)
+				default:
+					p.unexpectedKey(c.key, "credentials", []string{"username", "password"})
+				}
+			}
+			if cred.Username == nil || cred.Password == nil {
+				p.errorAt(kv.key.Pos, "both \"username\" and \"password\" must be specified in \"credentials\" section")
+				continue
+			}
+			ret.Credentials = cred
+		case "env":
+			ret.Env = p.parseEnv(kv.val)
+		case "ports":
+			ret.Ports = p.parseStringSequence("ports", kv.val)
+		case "volumes":
+			ret.Ports = p.parseStringSequence("volumes", kv.val)
+		case "options":
+			ret.Options = p.parseString(kv.val)
+		default:
+			p.unexpectedKey(kv.key, sec, []string{
+				"image",
+				"credentials",
+				"env",
+				"ports",
+				"volumes",
+				"options",
+			})
+		}
+	}
+
+	return ret
+}
+
+// https://docs.github.com/en/actions/reference/workflow-syntax-for-github-actions#jobsjob_id
+func (p *parser) parseJob(id *String, n *yaml.Node) *Job {
+	ret := &Job{ID: id, Pos: id.Pos}
+
+	for _, kv := range p.parseMapping(fmt.Sprintf("%q job", id.Value), n, false) {
+		k, v := kv.key, kv.val
+		switch k.Value {
+		case "name":
+			ret.Name = p.parseString(v)
+		case "needs":
+			if v.Kind == yaml.ScalarNode {
+				// needs: job1
+				ret.Needs = []*String{p.parseString(v)}
+			} else {
+				// needs: [job1, job2]
+				ret.Needs = p.parseStringSequence("needs", v)
+			}
+		case "runs-on":
+			if v.Kind == yaml.ScalarNode {
+				label := p.parseString(v)
+				if label.Value == "self-hosted" {
+					ret.RunsOn = &SelfHostedRunner{Pos: k.Pos}
+				} else {
+					ret.RunsOn = &GitHubHostedRunner{label, k.Pos}
+				}
+			} else {
+				s := p.parseStringSequence("runs-on", v)
+				if len(s) == 0 || s[0].Value != "self-hosted" {
+					p.error(v, "sequence at \"runs-on\" section cannot be empty and must start with \"self-hosted\" string element")
+					continue
+				}
+				ret.RunsOn = &SelfHostedRunner{
+					Labels: s[1:], // Omit first "self-hosted" element
+					Pos:    k.Pos,
+				}
+			}
+		case "permissions":
+			ret.Permissions = p.parsePermissions(k.Pos, v)
+		case "environment":
+			ret.Environment = p.parseEnvironment(k.Pos, v)
+		case "concurrency":
+			ret.Concurrency = p.parseConcurrency(k.Pos, v)
+		case "outputs":
+			ret.Outputs = p.parseOutputs(v)
+		case "env":
+			ret.Env = p.parseEnv(v)
+		case "defaults":
+			ret.Defaults = p.parseDefaults(k.Pos, v)
+		case "if":
+			ret.If = p.parseString(v)
+		case "steps":
+			panic("TODO")
+		case "timeout-minutes":
+			ret.TimeoutMinutes = p.parseFloat(v)
+		case "strategy":
+			ret.Strategy = p.parseStrategy(k.Pos, v)
+		case "continue-on-error":
+			ret.ContinueOnError = p.parseBool(v)
+		case "container":
+			ret.Container = p.parseContainer("container", k.Pos, v)
+		case "services":
+			services := p.parseSectionMapping("services", v, false)
+			ret.Services = make(map[string]*Service, len(services))
+			for _, s := range services {
+				ret.Services[s.key.Value] = &Service{
+					Name:      s.key,
+					Contaienr: p.parseContainer("services", s.key.Pos, s.val),
+				}
+			}
+		default:
+			p.unexpectedKey(kv.key, "job", []string{
+				"name",
+				"needs",
+				"runs-on",
+				"permissions",
+				"environment",
+				"concurrency",
+				"outputs",
+				"env",
+				"defaults",
+				"if",
+				"steps",
+				"timeout-minutes",
+				"strategy",
+				"continue-on-error",
+				"container",
+				"services",
+			})
+		}
+	}
+
+	return ret
+}
+
+// https://docs.github.com/en/actions/reference/workflow-syntax-for-github-actions#jobs
+func (p *parser) parseJobs(n *yaml.Node) map[string]*Job {
+	jobs := p.parseSectionMapping("jobs", n, false)
+	ret := make(map[string]*Job, len(jobs))
+	for _, kv := range jobs {
+		id, job := kv.key, kv.val
+		ret[id.Value] = p.parseJob(id, job)
+	}
+	return ret
+}
+
 func (p *parser) parse(n *yaml.Node) *Workflow {
 	w := &Workflow{}
 
@@ -475,15 +765,15 @@ func (p *parser) parse(n *yaml.Node) *Workflow {
 		case "on":
 			w.On = p.parseEvents(v)
 		case "permissions":
-			w.Permissions = p.parsePermissions(v)
+			w.Permissions = p.parsePermissions(k.Pos, v)
 		case "env":
 			w.Env = p.parseEnv(v)
 		case "defaults":
-			w.Defaults = p.parseDefaults(v)
+			w.Defaults = p.parseDefaults(k.Pos, v)
 		case "concurrency":
-			w.Concurrency = p.parseConcurrency(v)
+			w.Concurrency = p.parseConcurrency(k.Pos, v)
 		case "jobs":
-			panic("TODO")
+			w.Jobs = p.parseJobs(v)
 		default:
 			p.unexpectedKey(k, "workflow", []string{"name", "on", "permissions", "env", "defaults", "concurrency", "jobs"})
 		}
