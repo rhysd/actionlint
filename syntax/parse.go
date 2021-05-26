@@ -209,7 +209,7 @@ func (p *parser) parseMapping(what string, n *yaml.Node, allowEmpty bool) []keyV
 	l := len(n.Content) / 2
 	keys := make(map[string]struct{}, l)
 	m := make([]keyVal, 0, l)
-	for i := 0; i < l; i++ {
+	for i := 0; i < l; i += 2 {
 		k := p.parseString(n.Content[i])
 		if k == nil {
 			continue
@@ -869,7 +869,7 @@ func (p *parser) parseJobs(n *yaml.Node) map[string]*Job {
 func (p *parser) parse(n *yaml.Node) *Workflow {
 	w := &Workflow{}
 
-	for _, kv := range p.parseMapping("workflow", n, false) {
+	for _, kv := range p.parseMapping("workflow", n.Content[0], false) {
 		k, v := kv.key, kv.val
 		switch k.Value {
 		case "name":
