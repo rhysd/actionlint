@@ -22,7 +22,7 @@ func kindString(k yaml.Kind) string {
 	case yaml.AliasNode:
 		return "Arias"
 	default:
-		panic("unreachable")
+		return "Unknown"
 	}
 }
 
@@ -878,6 +878,10 @@ func (p *parser) parseJobs(n *yaml.Node) map[string]*Job {
 // https://docs.github.com/en/actions/reference/workflow-syntax-for-github-actions
 func (p *parser) parse(n *yaml.Node) *Workflow {
 	w := &Workflow{}
+
+	if len(n.Content) == 0 {
+		return w
+	}
 
 	for _, kv := range p.parseMapping("workflow", n.Content[0], false) {
 		k, v := kv.key, kv.val
