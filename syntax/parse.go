@@ -201,15 +201,22 @@ func (p *parser) parseFloat(n *yaml.Node) *Float {
 }
 
 func (p *parser) parseMapping(what string, n *yaml.Node, allowEmpty bool) []keyVal {
-	if !isNull(n) && n.Kind != yaml.MappingNode {
+	isNull := isNull(n)
+
+	if !isNull && n.Kind != yaml.MappingNode {
 		p.errorf(n, "%s is %s node but mapping node is expected", what, nodeKindName(n.Kind))
+		return nil
+	}
+
+	if !allowEmpty && isNull {
+		p.errorf(n, "%s should not be empty. please remove this section if it's unnecessary", what)
 		return nil
 	}
 
 	l := len(n.Content) / 2
 	keys := make(map[string]struct{}, l)
 	m := make([]keyVal, 0, l)
-	for i := 0; i < l; i += 2 {
+	for i := 0; i < len(n.Content); i += 2 {
 		k := p.parseString(n.Content[i])
 		if k == nil {
 			continue
@@ -261,6 +268,7 @@ func (p *parser) parseWorkflowDispatchEvent(pos *Pos, n *yaml.Node) *WorkflowDis
 	for _, kv := range p.parseSectionMapping("workflow_dispatch", n, true) {
 		if kv.key.Value == "inputs" {
 			inputs := p.parseSectionMapping("inputs", kv.val, true)
+			ret.Inputs = make(map[string]*DispatchInput, len(inputs))
 			for _, input := range inputs {
 				name, spec := input.key, input.val
 
@@ -567,7 +575,7 @@ func (p *parser) parseMatrixRows(key *String, n *yaml.Node) *MatrixRow {
 
 // https://docs.github.com/en/actions/reference/workflow-syntax-for-github-actions#jobsjob_idstrategymatrix
 func (p *parser) parseMatrix(pos *Pos, n *yaml.Node) *Matrix {
-	ret := &Matrix{Pos: pos}
+	ret := &Matrix{Pos: pos, Rows: make(map[string]*MatrixRow)}
 
 	for _, kv := range p.parseSectionMapping("matrix", n, false) {
 		switch kv.key.Value {
@@ -686,16 +694,18 @@ func (p *parser) parseStep(n *yaml.Node) *Step {
 				exec.Uses = p.parseString(kv.val)
 			} else {
 				// kv.key.Value == "with"
-				for _, with := range p.parseSectionMapping("with", kv.val, false) {
-					switch with.key.Value {
+				with := p.parseSectionMapping("with", kv.val, false)
+				exec.Inputs = make(map[string]*Input, len(with))
+				for _, input := range with {
+					switch input.key.Value {
 					case "entrypoint":
 						// https://docs.github.com/en/actions/reference/workflow-syntax-for-github-actions#jobsjob_idstepswithentrypoint
-						exec.Entrypoint = p.parseString(with.val)
+						exec.Entrypoint = p.parseString(input.val)
 					case "args":
 						// https://docs.github.com/en/actions/reference/workflow-syntax-for-github-actions#jobsjob_idstepswithargs
-						exec.Args = p.parseString(with.val)
+						exec.Args = p.parseString(input.val)
 					default:
-						exec.Inputs[with.key.Value] = &Input{with.key, p.parseString(with.val)}
+						exec.Inputs[input.key.Value] = &Input{input.key, p.parseString(input.val)}
 					}
 				}
 			}
