@@ -98,20 +98,21 @@ func (e *RepositoryDispatchEvent) EventName() string {
 type PermKind uint8
 
 const (
-	PermKindNone = iota
+	PermKindNone PermKind = iota
 	PermKindRead
 	PermKindWrite
 )
 
 type Permission struct {
+	// Name is name of permission. This value is nil when it represents all scopes (read-all or write-all)
+	Name *String
 	Kind PermKind
 	Pos  *Pos
-	Name *String
 }
 
 // https://docs.github.com/en/actions/reference/workflow-syntax-for-github-actions#permissions
 type Permissions struct {
-	// All represents read-all or write-all, which define permissions of all scope at once.
+	// All represents read-all or write-all, which define permissions of all scopes at once.
 	All *Permission
 	// Scopes is mappings from permission name to permission value
 	Scopes map[string]*Permission
@@ -149,7 +150,7 @@ type Environment struct {
 type ExecKind uint8
 
 const (
-	ExecKindAction = iota
+	ExecKindAction ExecKind = iota
 	ExecKindRun
 )
 

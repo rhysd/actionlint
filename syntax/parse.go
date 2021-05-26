@@ -353,6 +353,52 @@ func (p *parser) parseEvents(n *yaml.Node) []Event {
 	}
 }
 
+// https://docs.github.com/en/actions/reference/workflow-syntax-for-github-actions#permissions
+func (p *parser) parsePermissions(n *yaml.Node) *Permissions {
+	ret := &Permissions{Pos: pos(n)}
+
+	if n.Kind == yaml.ScalarNode {
+		var kind PermKind
+		switch n.Value {
+		case "read-all":
+			kind = PermKindRead
+		case "write-all":
+			kind = PermKindWrite
+		default:
+			panic("TODO")
+		}
+		ret.All = &Permission{nil, kind, pos(n)}
+	} else {
+		m := p.parseSectionMapping("permissions", n, false)
+		scopes := make(map[string]*Permission, len(m))
+
+		for _, kv := range m {
+			perm := p.parseString(kv.val).Value
+			kind := PermKindNone
+			switch perm {
+			case "read":
+				kind = PermKindRead
+			case "write":
+				kind = PermKindWrite
+			case "none":
+				kind = PermKindNone
+			default:
+				p.errorf(kv.val, "permission must be one of \"none\", \"read\", \"write\" but got %q", perm)
+				continue
+			}
+			scopes[kv.key.Value] = &Permission{
+				Name: kv.key,
+				Kind: kind,
+				Pos:  kv.key.Pos,
+			}
+		}
+
+		ret.Scopes = scopes
+	}
+
+	return ret
+}
+
 func (p *parser) parse(n *yaml.Node) *Workflow {
 	w := &Workflow{}
 
@@ -363,6 +409,8 @@ func (p *parser) parse(n *yaml.Node) *Workflow {
 			w.Name = p.parseString(v)
 		case "on":
 			w.On = p.parseEvents(v)
+		case "permissions":
+			w.Permissions = p.parsePermissions(v)
 		case "env":
 			panic("TODO")
 		case "defaults":
@@ -372,7 +420,7 @@ func (p *parser) parse(n *yaml.Node) *Workflow {
 		case "jobs":
 			panic("TODO")
 		default:
-			p.unexpectedKey(k, "workflow", []string{"name", "on", "env", "defaults", "concurrency", "jobs"})
+			p.unexpectedKey(k, "workflow", []string{"name", "on", "permissions", "env", "defaults", "concurrency", "jobs"})
 		}
 	}
 
