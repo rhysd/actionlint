@@ -112,9 +112,12 @@ func (p *parser) errorf(n *yaml.Node, format string, args ...interface{}) {
 }
 
 func (p *parser) unexpectedKey(s *String, sec string, expected []string) {
+	l := len(expected)
 	var m string
-	if len(expected) > 0 {
-		m = fmt.Sprintf("unexpected key %q for %q section. expected keys are %v", s.Value, sec, expected)
+	if l == 1 {
+		m = fmt.Sprintf("expected %q key for %q section but got %q", expected[0], sec, s.Value)
+	} else if l > 1 {
+		m = fmt.Sprintf("unexpected key %q for %q section. expected one of %v", s.Value, sec, expected)
 	} else {
 		m = fmt.Sprintf("unexpected key %q for %q section", s.Value, sec)
 	}
@@ -365,7 +368,7 @@ func (p *parser) parsePermissions(n *yaml.Node) *Permissions {
 		case "write-all":
 			kind = PermKindWrite
 		default:
-			panic("TODO")
+			p.errorf(n, "permission must be one of \"read-all\", \"write-all\" but got %q", n.Value)
 		}
 		ret.All = &Permission{nil, kind, pos(n)}
 	} else {
@@ -399,6 +402,68 @@ func (p *parser) parsePermissions(n *yaml.Node) *Permissions {
 	return ret
 }
 
+// https://docs.github.com/en/actions/reference/workflow-syntax-for-github-actions#env
+func (p *parser) parseEnv(n *yaml.Node) map[string]*EnvVar {
+	m := p.parseMapping("env", n, false)
+	ret := make(map[string]*EnvVar, len(m))
+
+	for _, kv := range m {
+		ret[kv.key.Value] = &EnvVar{
+			Name:  kv.key,
+			Value: p.parseString(kv.val),
+		}
+	}
+
+	return ret
+}
+
+// https://docs.github.com/en/actions/reference/workflow-syntax-for-github-actions#defaults
+func (p *parser) parseDefaults(n *yaml.Node) *Defaults {
+	ret := &Defaults{Pos: pos(n)}
+
+	for _, kv := range p.parseSectionMapping("defaults", n, false) {
+		if kv.key.Value != "run" {
+			p.unexpectedKey(kv.key, "defaults", []string{"run"})
+			continue
+		}
+		ret.Run = &DefaultsRun{Pos: pos(kv.val)}
+
+		for _, attr := range p.parseSectionMapping("run", kv.val, false) {
+			switch attr.key.Value {
+			case "shell":
+				ret.Run.Shell = p.parseString(attr.val)
+			case "working-directory":
+				ret.Run.WorkingDirectory = p.parseString(attr.val)
+			default:
+				p.unexpectedKey(attr.key, "run", []string{"shell", "working-directory"})
+			}
+		}
+	}
+
+	return ret
+}
+
+func (p *parser) parseConcurrency(n *yaml.Node) *Concurrency {
+	ret := &Concurrency{Pos: pos(n)}
+
+	if n.Kind == yaml.ScalarNode {
+		ret.Group = p.parseString(n)
+	} else {
+		for _, kv := range p.parseSectionMapping("concurrency", n, false) {
+			switch kv.key.Value {
+			case "group":
+				ret.Group = p.parseString(kv.val)
+			case "cancel-in-progress":
+				ret.CancelInProgress = p.parseBool(kv.val)
+			default:
+				p.unexpectedKey(kv.key, "concurrency", []string{"group", "cancel-in-progress"})
+			}
+		}
+	}
+
+	return ret
+}
+
 func (p *parser) parse(n *yaml.Node) *Workflow {
 	w := &Workflow{}
 
@@ -412,11 +477,11 @@ func (p *parser) parse(n *yaml.Node) *Workflow {
 		case "permissions":
 			w.Permissions = p.parsePermissions(v)
 		case "env":
-			panic("TODO")
+			w.Env = p.parseEnv(v)
 		case "defaults":
-			panic("TODO")
+			w.Defaults = p.parseDefaults(v)
 		case "concurrency":
-			panic("TODO")
+			w.Concurrency = p.parseConcurrency(v)
 		case "jobs":
 			panic("TODO")
 		default:
