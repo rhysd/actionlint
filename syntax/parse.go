@@ -2,9 +2,11 @@ package syntax
 
 import (
 	"fmt"
+	"os"
 	"strconv"
 	"strings"
 
+	"github.com/kr/pretty"
 	"gopkg.in/yaml.v3"
 )
 
@@ -23,13 +25,6 @@ func kindString(k yaml.Kind) string {
 		return "Arias"
 	default:
 		return "Unknown"
-	}
-}
-
-func dump(n *yaml.Node, level int) {
-	fmt.Printf("%s%s (%s, %d,%d): %q\n", strings.Repeat("  ", level), kindString(n.Kind), n.Tag, n.Line, n.Column, n.Value)
-	for _, c := range n.Content {
-		dump(c, level+1)
 	}
 }
 
@@ -54,7 +49,17 @@ func nodeKindName(k yaml.Kind) string {
 	case yaml.AliasNode:
 		return "arias"
 	default:
+		if os.Getenv("ACTIONLINT_DEBUG") != "" {
+			return "unknown"
+		}
 		panic("unreachable")
+	}
+}
+
+func dumpYAML(n *yaml.Node, level int) {
+	fmt.Printf("%s%s (%s, %d,%d): %q\n", strings.Repeat("  ", level), kindString(n.Kind), n.Tag, n.Line, n.Column, n.Value)
+	for _, c := range n.Content {
+		dumpYAML(c, level+1)
 	}
 }
 
@@ -74,24 +79,6 @@ type ParseError struct {
 
 func (e *ParseError) Error() string {
 	return fmt.Sprintf("%d:%d: %s", e.Line, e.Column, e.Message)
-}
-
-func Parse(b []byte) (*Workflow, []*ParseError) {
-	var n yaml.Node
-
-	if err := yaml.Unmarshal(b, &n); err != nil {
-		msg := fmt.Sprintf("Could not parse as YAML: %s", err.Error())
-		return nil, []*ParseError{{msg, 0, 0}}
-	}
-
-	fmt.Println("DEBUG START")
-	dump(&n, 0)
-	fmt.Println("DEBUG END")
-
-	p := &parser{}
-	w := p.parse(&n)
-
-	return w, p.errors
 }
 
 type keyVal struct {
@@ -905,9 +892,40 @@ func (p *parser) parse(n *yaml.Node) *Workflow {
 		case "jobs":
 			w.Jobs = p.parseJobs(v)
 		default:
-			p.unexpectedKey(k, "workflow", []string{"name", "on", "permissions", "env", "defaults", "concurrency", "jobs"})
+			p.unexpectedKey(k, "workflow", []string{
+				"name",
+				"on",
+				"permissions",
+				"env",
+				"defaults",
+				"concurrency",
+				"jobs",
+			})
 		}
 	}
 
 	return w
+}
+
+func Parse(b []byte) (*Workflow, []*ParseError) {
+	var n yaml.Node
+
+	if err := yaml.Unmarshal(b, &n); err != nil {
+		msg := fmt.Sprintf("could not parse as YAML: %s", err.Error())
+		return nil, []*ParseError{{msg, 0, 0}}
+	}
+
+	p := &parser{}
+	w := p.parse(&n)
+
+	if os.Getenv("ACTIONLINT_DEBUG") != "" {
+		fmt.Println("========== YAML TREE START ==========")
+		dumpYAML(&n, 0)
+		fmt.Println("=========== YAML TREE END ===========")
+		fmt.Println("========== WORKFLOW TREE START ==========")
+		pretty.Println(w)
+		fmt.Println("=========== WORKFLOW TREE END ===========")
+	}
+
+	return w, p.errors
 }
