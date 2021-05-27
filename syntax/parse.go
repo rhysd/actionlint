@@ -10,32 +10,6 @@ import (
 	"gopkg.in/yaml.v3"
 )
 
-// START: TEMP
-func kindString(k yaml.Kind) string {
-	switch k {
-	case yaml.DocumentNode:
-		return "Document"
-	case yaml.SequenceNode:
-		return "Sequence"
-	case yaml.MappingNode:
-		return "Mapping"
-	case yaml.ScalarNode:
-		return "Scalar"
-	case yaml.AliasNode:
-		return "Arias"
-	default:
-		return "Unknown"
-	}
-}
-
-// END: TEMP
-
-func assert(b bool) {
-	if !b {
-		panic("assertion failed")
-	}
-}
-
 func nodeKindName(k yaml.Kind) string {
 	switch k {
 	case yaml.DocumentNode:
@@ -57,7 +31,7 @@ func nodeKindName(k yaml.Kind) string {
 }
 
 func dumpYAML(n *yaml.Node, level int) {
-	fmt.Printf("%s%s (%s, %d,%d): %q\n", strings.Repeat("  ", level), kindString(n.Kind), n.Tag, n.Line, n.Column, n.Value)
+	fmt.Printf("%s%s (%s, %d,%d): %q\n", strings.Repeat("  ", level), nodeKindName(n.Kind), n.Tag, n.Line, n.Column, n.Value)
 	for _, c := range n.Content {
 		dumpYAML(c, level+1)
 	}
