@@ -438,7 +438,7 @@ func (p *parser) parsePermissions(pos *Pos, n *yaml.Node) *Permissions {
 }
 
 // https://docs.github.com/en/actions/reference/workflow-syntax-for-github-actions#env
-func (p *parser) parseEnv(n *yaml.Node) map[string]*EnvVar {
+func (p *parser) parseEnv(n *yaml.Node) Env {
 	m := p.parseMapping("env", n, false)
 	ret := make(map[string]*EnvVar, len(m))
 

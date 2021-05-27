@@ -235,6 +235,8 @@ type EnvVar struct {
 	Value *String
 }
 
+type Env map[string]*EnvVar
+
 // https://docs.github.com/en/actions/reference/workflow-syntax-for-github-actions#jobsjob_idsteps
 type Step struct {
 	// https://docs.github.com/en/actions/reference/workflow-syntax-for-github-actions#jobsjob_idstepsid
@@ -245,7 +247,7 @@ type Step struct {
 	Name *String
 	Exec Exec
 	// https://docs.github.com/en/actions/reference/workflow-syntax-for-github-actions#jobsjob_idstepsenv
-	Env map[string]*EnvVar
+	Env Env
 	// https://docs.github.com/en/actions/reference/workflow-syntax-for-github-actions#jobsjob_idstepscontinue-on-error
 	ContinueOnError *Bool
 	// https://docs.github.com/en/actions/reference/workflow-syntax-for-github-actions#jobsjob_idstepstimeout-minutes
@@ -266,7 +268,7 @@ type Container struct {
 	Image       *String
 	Credentials *Credentials
 	// https://docs.github.com/en/actions/reference/workflow-syntax-for-github-actions#jobsjob_idcontainerenv
-	Env map[string]*EnvVar
+	Env Env
 	// https://docs.github.com/en/actions/reference/workflow-syntax-for-github-actions#jobsjob_idcontainerports
 	Ports []*String
 	// https://docs.github.com/en/actions/reference/workflow-syntax-for-github-actions#jobsjob_idcontainervolumes
@@ -331,7 +333,7 @@ type Job struct {
 	// https://docs.github.com/en/actions/reference/workflow-syntax-for-github-actions#jobsjob_idoutputs
 	Outputs map[string]*Output
 	// https://docs.github.com/en/actions/reference/workflow-syntax-for-github-actions#jobsjob_idenv
-	Env      map[string]*EnvVar
+	Env      Env
 	Defaults *Defaults
 	// https://docs.github.com/en/actions/reference/workflow-syntax-for-github-actions#jobsjob_idif
 	If *String
@@ -357,7 +359,7 @@ type Workflow struct {
 	On          []Event
 	Permissions *Permissions
 	// https://docs.github.com/en/actions/reference/workflow-syntax-for-github-actions#env
-	Env         map[string]*EnvVar
+	Env         Env
 	Defaults    *Defaults
 	Concurrency *Concurrency
 	// Jobs is mappings from job ID to the job object
