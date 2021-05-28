@@ -61,15 +61,15 @@ type keyVal struct {
 }
 
 type parser struct {
-	errors []*ParseError
+	errors []*Error
 }
 
 func (p *parser) error(n *yaml.Node, m string) {
-	p.errors = append(p.errors, &ParseError{m, n.Line, n.Column})
+	p.errors = append(p.errors, &Error{m, "", n.Line, n.Column})
 }
 
 func (p *parser) errorAt(pos *Pos, m string) {
-	p.errors = append(p.errors, &ParseError{m, pos.Line, pos.Col})
+	p.errors = append(p.errors, &Error{m, "", pos.Line, pos.Col})
 }
 
 func (p *parser) errorfAt(pos *Pos, format string, args ...interface{}) {
@@ -96,7 +96,7 @@ func (p *parser) unexpectedKey(s *String, sec string, expected []string) {
 	} else {
 		m = fmt.Sprintf("unexpected key %q for %q section", s.Value, sec)
 	}
-	p.errors = append(p.errors, &ParseError{m, s.Pos.Line, s.Pos.Col})
+	p.errors = append(p.errors, &Error{m, "", s.Pos.Line, s.Pos.Col})
 }
 
 func (p *parser) checkSequence(sec string, n *yaml.Node) bool {
@@ -881,12 +881,12 @@ func (p *parser) parse(n *yaml.Node) *Workflow {
 	return w
 }
 
-func Parse(b []byte) (*Workflow, []*ParseError) {
+func Parse(b []byte) (*Workflow, []*Error) {
 	var n yaml.Node
 
 	if err := yaml.Unmarshal(b, &n); err != nil {
 		msg := fmt.Sprintf("could not parse as YAML: %s", err.Error())
-		return nil, []*ParseError{{msg, 0, 0}}
+		return nil, []*Error{{msg, "", 0, 0}}
 	}
 
 	p := &parser{}

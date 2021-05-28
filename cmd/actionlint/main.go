@@ -8,7 +8,7 @@ import (
 	"github.com/rhysd/actionlint"
 )
 
-func lint(args []string) ([]*actionlint.LintError, error) {
+func lint(args []string) ([]*actionlint.Error, error) {
 	l := actionlint.NewLinter(os.Stdout)
 	if len(args) > 0 {
 		return l.LintFiles(args)
