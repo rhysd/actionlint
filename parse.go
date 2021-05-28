@@ -9,6 +9,13 @@ import (
 	"gopkg.in/yaml.v3"
 )
 
+// func dumpYAML(n *yaml.Node, level int) {
+// 	fmt.Printf("%s%s (%s, %d,%d): %q\n", strings.Repeat(". ", level), nodeKindName(n.Kind), n.Tag, n.Line, n.Column, n.Value)
+// 	for _, c := range n.Content {
+// 		dumpYAML(c, level+1)
+// 	}
+// }
+
 func nodeKindName(k yaml.Kind) string {
 	switch k {
 	case yaml.DocumentNode:
@@ -35,16 +42,6 @@ func posAt(n *yaml.Node) *Pos {
 
 func isNull(n *yaml.Node) bool {
 	return n.Kind == yaml.ScalarNode && n.Tag == "!!null"
-}
-
-type ParseError struct {
-	Message string
-	Line    int
-	Column  int
-}
-
-func (e *ParseError) Error() string {
-	return fmt.Sprintf("%d:%d: %s", e.Line, e.Column, e.Message)
 }
 
 type keyVal struct {
@@ -93,7 +90,15 @@ func (p *parser) unexpectedKey(s *String, sec string, expected []string) {
 
 func (p *parser) checkSequence(sec string, n *yaml.Node) bool {
 	if n.Kind != yaml.SequenceNode {
-		p.errorf(n, "%q section must be sequence node but got %s node", sec, nodeKindName(n.Kind))
+		p.errorf(n, "%q section must be sequence node but got %s node with %q tag", sec, nodeKindName(n.Kind), n.Tag)
+		return false
+	}
+	return true
+}
+
+func (p *parser) checkNotEmpty(sec string, len int, n *yaml.Node) bool {
+	if len == 0 {
+		p.errorf(n, "%q section should not be empty", sec)
 		return false
 	}
 	return true
@@ -109,11 +114,17 @@ func (p *parser) parseString(n *yaml.Node) *String {
 	return &String{n.Value, posAt(n)}
 }
 
-func (p *parser) parseStringSequence(sec string, n *yaml.Node) []*String {
+func (p *parser) parseStringSequence(sec string, n *yaml.Node, allowEmpty bool) []*String {
 	if ok := p.checkSequence(sec, n); !ok {
 		return nil
 	}
-	ss := make([]*String, 0, len(n.Content))
+
+	l := len(n.Content)
+	if !allowEmpty && l == 0 {
+		p.errorf(n, "%q section should not be empty. please remove this section if unnecessary", sec)
+	}
+
+	ss := make([]*String, 0, l)
 	for _, c := range n.Content {
 		s := p.parseString(c)
 		if s != nil {
@@ -132,7 +143,7 @@ func (p *parser) parseBool(n *yaml.Node) *Bool {
 }
 
 func (p *parser) parseInt(n *yaml.Node) *Int {
-	if n.Kind != yaml.ScalarNode {
+	if n.Kind != yaml.ScalarNode || n.Tag != "!!int" {
 		p.errorf(n, "expected scalar node for integer value but found %s node with %q tag", nodeKindName(n.Kind), n.Tag)
 		return nil
 	}
@@ -145,7 +156,7 @@ func (p *parser) parseInt(n *yaml.Node) *Int {
 }
 
 func (p *parser) parseFloat(n *yaml.Node) *Float {
-	if n.Kind != yaml.ScalarNode {
+	if n.Kind != yaml.ScalarNode || (n.Tag != "!!float" && n.Tag != "!!int") {
 		p.errorf(n, "expected scalar node for float value but found %s node with %q tag", nodeKindName(n.Kind), n.Tag)
 		return nil
 	}
@@ -267,7 +278,7 @@ func (p *parser) parseRepositoryDispatchEvent(pos *Pos, n *yaml.Node) *Repositor
 
 	for _, kv := range p.parseSectionMapping("repository_dispatch", n, false) {
 		if kv.key.Value == "types" {
-			ret.Types = p.parseStringSequence("types", kv.val)
+			ret.Types = p.parseStringSequence("types", kv.val, false)
 		} else {
 			p.unexpectedKey(kv.key, "repository_dispatch", []string{"types"})
 		}
@@ -282,21 +293,21 @@ func (p *parser) parseWebhookEvent(name *String, n *yaml.Node) *WebhookEvent {
 	for _, kv := range p.parseSectionMapping(name.Value, n, true) {
 		switch kv.key.Value {
 		case "types":
-			ret.Types = p.parseStringSequence(kv.key.Value, kv.val)
+			ret.Types = p.parseStringSequence(kv.key.Value, kv.val, false)
 		case "branches":
-			ret.Branches = p.parseStringSequence(kv.key.Value, kv.val)
+			ret.Branches = p.parseStringSequence(kv.key.Value, kv.val, false)
 		case "branches-ignore":
-			ret.BranchesIgnore = p.parseStringSequence(kv.key.Value, kv.val)
+			ret.BranchesIgnore = p.parseStringSequence(kv.key.Value, kv.val, false)
 		case "tags":
-			ret.Tags = p.parseStringSequence(kv.key.Value, kv.val)
+			ret.Tags = p.parseStringSequence(kv.key.Value, kv.val, false)
 		case "tags-ignore":
-			ret.TagsIgnore = p.parseStringSequence(kv.key.Value, kv.val)
+			ret.TagsIgnore = p.parseStringSequence(kv.key.Value, kv.val, false)
 		case "paths":
-			ret.Paths = p.parseStringSequence(kv.key.Value, kv.val)
+			ret.Paths = p.parseStringSequence(kv.key.Value, kv.val, false)
 		case "paths-ignore":
-			ret.PathsIgnore = p.parseStringSequence(kv.key.Value, kv.val)
+			ret.PathsIgnore = p.parseStringSequence(kv.key.Value, kv.val, false)
 		case "workflows":
-			ret.Workflows = p.parseStringSequence(kv.key.Value, kv.val)
+			ret.Workflows = p.parseStringSequence(kv.key.Value, kv.val, false)
 		default:
 			p.unexpectedKey(kv.key, name.Value, []string{
 				"types",
@@ -523,13 +534,6 @@ func (p *parser) parseMatrixCombinations(sec string, n *yaml.Node) []map[string]
 	return ret
 }
 
-func (p *parser) parseMatrixRows(key *String, n *yaml.Node) *MatrixRow {
-	return &MatrixRow{
-		Name:   key,
-		Values: p.parseStringSequence("matrix", n),
-	}
-}
-
 // https://docs.github.com/en/actions/reference/workflow-syntax-for-github-actions#jobsjob_idstrategymatrix
 func (p *parser) parseMatrix(pos *Pos, n *yaml.Node) *Matrix {
 	ret := &Matrix{Pos: pos, Rows: make(map[string]*MatrixRow)}
@@ -543,7 +547,7 @@ func (p *parser) parseMatrix(pos *Pos, n *yaml.Node) *Matrix {
 		default:
 			ret.Rows[kv.key.Value] = &MatrixRow{
 				Name:   kv.key,
-				Values: p.parseStringSequence("matrix", kv.val),
+				Values: p.parseStringSequence("matrix", kv.val, false),
 			}
 		}
 	}
@@ -599,9 +603,9 @@ func (p *parser) parseContainer(sec string, pos *Pos, n *yaml.Node) *Container {
 		case "env":
 			ret.Env = p.parseEnv(kv.val)
 		case "ports":
-			ret.Ports = p.parseStringSequence("ports", kv.val)
+			ret.Ports = p.parseStringSequence("ports", kv.val, true)
 		case "volumes":
-			ret.Ports = p.parseStringSequence("volumes", kv.val)
+			ret.Ports = p.parseStringSequence("volumes", kv.val, true)
 		case "options":
 			ret.Options = p.parseString(kv.val)
 		default:
@@ -742,7 +746,7 @@ func (p *parser) parseJob(id *String, n *yaml.Node) *Job {
 				ret.Needs = []*String{p.parseString(v)}
 			} else {
 				// needs: [job1, job2]
-				ret.Needs = p.parseStringSequence("needs", v)
+				ret.Needs = p.parseStringSequence("needs", v, false)
 			}
 		case "runs-on":
 			if v.Kind == yaml.ScalarNode {
@@ -753,8 +757,11 @@ func (p *parser) parseJob(id *String, n *yaml.Node) *Job {
 					ret.RunsOn = &GitHubHostedRunner{label, k.Pos}
 				}
 			} else {
-				s := p.parseStringSequence("runs-on", v)
-				if len(s) == 0 || s[0].Value != "self-hosted" {
+				s := p.parseStringSequence("runs-on", v, false)
+				if len(s) == 0 {
+					continue
+				}
+				if s[0].Value != "self-hosted" {
 					p.error(v, "sequence at \"runs-on\" section cannot be empty and must start with \"self-hosted\" string element")
 					continue
 				}
