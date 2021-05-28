@@ -2,10 +2,8 @@ package actionlint
 
 // Pass is an interface to traverse a workflow syntax tree
 type Pass interface {
-	// VisitStepPre is callback when visiting Step node before visiting its children
-	VisitStepPre(node *Step)
-	// VisitStepPost is callback when visiting Step node after visiting its children
-	VisitStepPost(node *Step)
+	// VisitStep is callback when visiting Step node
+	VisitStep(node *Step)
 	// VisitJobPre is callback when visiting Job node before visiting its children
 	VisitJobPre(node *Job)
 	// VisitJobPost is callback when visiting Job node after visiting its children
@@ -15,28 +13,6 @@ type Pass interface {
 	// VisitWorkflowPost is callback when visiting Workflow node after visiting its children
 	VisitWorkflowPost(node *Workflow)
 }
-
-// PassBase is a struct to be a base of pass structs. Embed this struct to define default visitor
-// methods automatically
-type PassBase struct{}
-
-// VisitStepPre is callback when visiting Step node before visiting its children
-func (b PassBase) VisitStepPre(node *Step) {}
-
-// VisitStepPost is callback when visiting Step node after visiting its children
-func (b PassBase) VisitStepPost(node *Step) {}
-
-// VisitJobPre is callback when visiting Job node before visiting its children
-func (b PassBase) VisitJobPre(node *Job) {}
-
-// VisitJobPost is callback when visiting Job node after visiting its children
-func (b PassBase) VisitJobPost(node *Job) {}
-
-// VisitWorkflowPre is callback when visiting Workflow node before visiting its children
-func (b PassBase) VisitWorkflowPre(node *Workflow) {}
-
-// VisitWorkflowPost is callback when visiting Workflow node after visiting its children
-func (b PassBase) VisitWorkflowPost(node *Workflow) {}
 
 // Visitor visits syntax tree from root in depth-first order
 type Visitor struct {
@@ -84,10 +60,6 @@ func (v *Visitor) visitJob(n *Job) {
 
 func (v *Visitor) visitStep(n *Step) {
 	for _, p := range v.passes {
-		p.VisitStepPre(n)
-	}
-
-	for _, p := range v.passes {
-		p.VisitStepPost(n)
+		p.VisitStep(n)
 	}
 }

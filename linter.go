@@ -162,11 +162,7 @@ func (l *Linter) LintFile(path string) ([]*Error, error) {
 func (l *Linter) Lint(path string, content []byte) ([]*Error, error) {
 	l.Log("Linting", path)
 
-	w, errs := Parse(content)
-	for _, e := range errs {
-		// Praser doesn't know where the content came from. Populate filename in the error
-		e.Filepath = path
-	}
+	w, all := Parse(content)
 
 	if l.logLevel >= LogLevelDebug {
 		fmt.Fprintln(l.logOut, "========== WORKFLOW TREE START ==========")
@@ -174,12 +170,33 @@ func (l *Linter) Lint(path string, content []byte) ([]*Error, error) {
 		fmt.Fprintln(l.logOut, "=========== WORKFLOW TREE END ===========")
 	}
 
-	// TODO: Check workflow syntax tree
-
-	for _, e := range errs {
-		fmt.Fprintln(l.out, e)
+	rules := []Rule{
+		NewRuleMatrix(),
 	}
-	l.Log("Found", len(errs), "errors in", path)
 
-	return errs, nil
+	v := NewVisitor()
+	for _, rule := range rules {
+		v.AddPass(rule)
+	}
+
+	v.Visit(w)
+
+	for _, rule := range rules {
+		all = append(all, rule.Errs()...)
+	}
+
+	for _, err := range all {
+		err.Filepath = path // Populate filename in the error
+		fmt.Fprintln(l.out, err)
+	}
+
+	l.Log("Found", len(all), "errors in", path)
+
+	return all, nil
+}
+
+func (l *Linter) printErrs(errs []*Error) {
+	for _, err := range errs {
+		fmt.Fprintln(l.out, err)
+	}
 }
