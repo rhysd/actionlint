@@ -104,6 +104,14 @@ func (p *parser) checkNotEmpty(sec string, len int, n *yaml.Node) bool {
 	return true
 }
 
+func (p *parser) checkNotEmptyString(what string, s *String, n *yaml.Node) bool {
+	if s == nil || s.Value == "" {
+		p.errorf(n, "%q should not be empty", what)
+		return false
+	}
+	return true
+}
+
 func (p *parser) parseString(n *yaml.Node) *String {
 	// Do not check n.Tag is !!str because we don't need to check the node is string strictly.
 	// In almost all cases, other nodes (like 42) are handled as string with its string representation.
@@ -348,7 +356,9 @@ func (p *parser) parseEvents(n *yaml.Node) []Event {
 
 		return ret
 	case yaml.SequenceNode:
-		ret := make([]Event, 0, len(n.Content))
+		l := len(n.Content)
+		p.checkNotEmpty("on", l, n)
+		ret := make([]Event, 0, l)
 
 		for _, c := range n.Content {
 			if s := p.parseString(c); s != nil {
@@ -452,6 +462,10 @@ func (p *parser) parseDefaults(pos *Pos, n *yaml.Node) *Defaults {
 		}
 	}
 
+	if ret.Run == nil {
+		p.error(n, "\"defaults\" section should have \"run\" section")
+	}
+
 	return ret
 }
 
@@ -473,6 +487,8 @@ func (p *parser) parseConcurrency(pos *Pos, n *yaml.Node) *Concurrency {
 			}
 		}
 	}
+
+	p.checkNotEmptyString("group in \"concurrency\" section", ret.Group, n)
 
 	return ret
 }
@@ -496,6 +512,8 @@ func (p *parser) parseEnvironment(pos *Pos, n *yaml.Node) *Environment {
 		}
 	}
 
+	p.checkNotEmptyString("name in \"environment\" section", ret.Name, n)
+
 	return ret
 }
 
@@ -509,6 +527,7 @@ func (p *parser) parseOutputs(n *yaml.Node) map[string]*Output {
 			Value: p.parseString(output.val),
 		}
 	}
+	p.checkNotEmpty("outputs", len(ret), n)
 	return ret
 }
 
@@ -519,7 +538,9 @@ func (p *parser) parseMatrixCombinations(sec string, n *yaml.Node) []map[string]
 		return nil
 	}
 
-	ret := make([]map[string]*MatrixCombination, 0, len(n.Content))
+	l := len(n.Content)
+	p.checkNotEmpty(sec, l, n)
+	ret := make([]map[string]*MatrixCombination, 0, l)
 	for _, c := range n.Content {
 		kvs := p.parseMapping(fmt.Sprintf("element in %q section", sec), c, false)
 		elem := make(map[string]*MatrixCombination, len(kvs))
@@ -707,6 +728,10 @@ func (p *parser) parseStep(n *yaml.Node) *Step {
 		}
 	}
 
+	if ret.Exec == nil {
+		p.error(n, "step must run script with \"run\" section or run action with \"uses\" section")
+	}
+
 	return ret
 }
 
@@ -715,10 +740,7 @@ func (p *parser) parseSteps(n *yaml.Node) []*Step {
 	if ok := p.checkSequence("steps", n); !ok {
 		return nil
 	}
-
-	if len(n.Content) == 0 {
-		p.error(n, "sequence in \"steps\" section must not be empty")
-	}
+	p.checkNotEmpty("steps", len(n.Content), n)
 
 	ret := make([]*Step, 0, len(n.Content))
 
@@ -825,6 +847,10 @@ func (p *parser) parseJob(id *String, n *yaml.Node) *Job {
 		}
 	}
 
+	if ret.Steps == nil {
+		p.error(n, "\"steps\" section is missing in job")
+	}
+
 	return ret
 }
 
@@ -844,6 +870,7 @@ func (p *parser) parse(n *yaml.Node) *Workflow {
 	w := &Workflow{}
 
 	if len(n.Content) == 0 {
+		p.error(n, "\"jobs\" section is missing in workflow")
 		return w
 	}
 
@@ -875,6 +902,10 @@ func (p *parser) parse(n *yaml.Node) *Workflow {
 				"jobs",
 			})
 		}
+	}
+
+	if w.Jobs == nil {
+		p.error(n, "\"jobs\" section is missing in workflow")
 	}
 
 	return w
