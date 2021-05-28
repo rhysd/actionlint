@@ -3,6 +3,7 @@ package main
 import (
 	"flag"
 	"fmt"
+	"io/ioutil"
 	"os"
 
 	"github.com/rhysd/actionlint"
@@ -10,16 +11,24 @@ import (
 
 func lint(args []string) ([]*actionlint.Error, error) {
 	l := actionlint.NewLinter(os.Stdout)
-	if len(args) > 0 {
-		return l.LintFiles(args)
+	if len(args) == 0 {
+		// Find nearest workflows directory
+		d, err := os.Getwd()
+		if err != nil {
+			return nil, fmt.Errorf("Could not get current working directory: %w", err)
+		}
+		return l.LintRepoDir(d)
 	}
 
-	// Find nearest workflows directory
-	d, err := os.Getwd()
-	if err != nil {
-		return nil, fmt.Errorf("Could not get current working directory: %w", err)
+	if len(args) == 1 && args[0] == "-" {
+		b, err := ioutil.ReadAll(os.Stdin)
+		if err != nil {
+			return nil, fmt.Errorf("Could not read stdin: %w", err)
+		}
+		return l.Lint("<stdin>", b)
 	}
-	return l.LintRepoDir(d)
+
+	return l.LintFiles(args)
 }
 
 func main() {

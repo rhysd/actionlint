@@ -47,10 +47,14 @@ func (l *Linter) LintFile(filepath string) ([]*Error, error) {
 		return nil, fmt.Errorf("Could not read %q: %w", filepath, err)
 	}
 
-	_, errs := Parse(b)
+	return l.Lint(filepath, b) // TODO: Use canonical path
+}
+
+func (l *Linter) Lint(filename string, content []byte) ([]*Error, error) {
+	_, errs := Parse(content)
 	for _, e := range errs {
 		// Populate filename in the error
-		e.Filename = filepath // TODO: Use canonical path
+		e.Filename = filename
 	}
 
 	// TODO: Check workflow syntax tree
