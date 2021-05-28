@@ -104,20 +104,15 @@ func (p *parser) checkNotEmpty(sec string, len int, n *yaml.Node) bool {
 	return true
 }
 
-func (p *parser) checkNotEmptyString(what string, s *String, n *yaml.Node) bool {
-	if s == nil || s.Value == "" {
-		p.errorf(n, "%q should not be empty", what)
-		return false
-	}
-	return true
-}
-
-func (p *parser) parseString(n *yaml.Node) *String {
+func (p *parser) parseString(n *yaml.Node, allowEmpty bool) *String {
 	// Do not check n.Tag is !!str because we don't need to check the node is string strictly.
 	// In almost all cases, other nodes (like 42) are handled as string with its string representation.
 	if n.Kind != yaml.ScalarNode {
 		p.errorf(n, "expected scalar node for string value but found %s node with %q tag", nodeKindName(n.Kind), n.Tag)
 		return nil
+	}
+	if !allowEmpty && n.Value == "" {
+		p.error(n, "string should not be empty")
 	}
 	return &String{n.Value, posAt(n)}
 }
@@ -134,7 +129,7 @@ func (p *parser) parseStringSequence(sec string, n *yaml.Node, allowEmpty bool) 
 
 	ss := make([]*String, 0, l)
 	for _, c := range n.Content {
-		s := p.parseString(c)
+		s := p.parseString(c, true)
 		if s != nil {
 			ss = append(ss, s)
 		}
@@ -193,7 +188,7 @@ func (p *parser) parseMapping(what string, n *yaml.Node, allowEmpty bool) []keyV
 	keys := make(map[string]struct{}, l)
 	m := make([]keyVal, 0, l)
 	for i := 0; i < len(n.Content); i += 2 {
-		k := p.parseString(n.Content[i])
+		k := p.parseString(n.Content[i], false)
 		if k == nil {
 			continue
 		}
@@ -228,7 +223,7 @@ func (p *parser) parseScheduleEvent(pos *Pos, n *yaml.Node) *ScheduledEvent {
 			p.error(c, "element of \"schedule\" section must be mapping and must contain one key \"cron\"")
 			continue
 		}
-		s := p.parseString(c)
+		s := p.parseString(c, false)
 		if s != nil {
 			cron = append(cron, s)
 		}
@@ -255,11 +250,11 @@ func (p *parser) parseWorkflowDispatchEvent(pos *Pos, n *yaml.Node) *WorkflowDis
 				for _, attr := range p.parseMapping("input settings of workflow_dispatch event", spec, true) {
 					switch attr.key.Value {
 					case "description":
-						desc = p.parseString(attr.val)
+						desc = p.parseString(attr.val, true)
 					case "required":
 						req = p.parseBool(attr.val)
 					case "default":
-						def = p.parseString(attr.val)
+						def = p.parseString(attr.val, true)
 					default:
 						p.unexpectedKey(attr.key, "inputs", []string{"description", "required", "default"})
 					}
@@ -361,10 +356,10 @@ func (p *parser) parseEvents(n *yaml.Node) []Event {
 		ret := make([]Event, 0, l)
 
 		for _, c := range n.Content {
-			if s := p.parseString(c); s != nil {
+			if s := p.parseString(c, false); s != nil {
 				switch s.Value {
 				case "schedule", "workflow_dispatch", "repository_dispatch":
-					p.errorf(c, "%q event should not be listed in sequence. Use mapping for \"on\" section and configure the event as value of the mapping", s.Value)
+					p.errorf(c, "%q event should not be listed in sequence. Use mapping for \"on\" section and configure the event as values of the mapping", s.Value)
 				default:
 					ret = append(ret, &WebhookEvent{Hook: s, Pos: posAt(c)})
 				}
@@ -398,7 +393,7 @@ func (p *parser) parsePermissions(pos *Pos, n *yaml.Node) *Permissions {
 		scopes := make(map[string]*Permission, len(m))
 
 		for _, kv := range m {
-			perm := p.parseString(kv.val).Value
+			perm := p.parseString(kv.val, false).Value
 			kind := PermKindNone
 			switch perm {
 			case "read":
@@ -432,7 +427,7 @@ func (p *parser) parseEnv(n *yaml.Node) Env {
 	for _, kv := range m {
 		ret[kv.key.Value] = &EnvVar{
 			Name:  kv.key,
-			Value: p.parseString(kv.val),
+			Value: p.parseString(kv.val, true),
 		}
 	}
 
@@ -453,9 +448,9 @@ func (p *parser) parseDefaults(pos *Pos, n *yaml.Node) *Defaults {
 		for _, attr := range p.parseSectionMapping("run", kv.val, false) {
 			switch attr.key.Value {
 			case "shell":
-				ret.Run.Shell = p.parseString(attr.val)
+				ret.Run.Shell = p.parseString(attr.val, false)
 			case "working-directory":
-				ret.Run.WorkingDirectory = p.parseString(attr.val)
+				ret.Run.WorkingDirectory = p.parseString(attr.val, false)
 			default:
 				p.unexpectedKey(attr.key, "run", []string{"shell", "working-directory"})
 			}
@@ -474,21 +469,24 @@ func (p *parser) parseConcurrency(pos *Pos, n *yaml.Node) *Concurrency {
 	ret := &Concurrency{Pos: pos}
 
 	if n.Kind == yaml.ScalarNode {
-		ret.Group = p.parseString(n)
+		ret.Group = p.parseString(n, false)
 	} else {
+		groupFound := false
 		for _, kv := range p.parseSectionMapping("concurrency", n, false) {
 			switch kv.key.Value {
 			case "group":
-				ret.Group = p.parseString(kv.val)
+				ret.Group = p.parseString(kv.val, false)
+				groupFound = true
 			case "cancel-in-progress":
 				ret.CancelInProgress = p.parseBool(kv.val)
 			default:
 				p.unexpectedKey(kv.key, "concurrency", []string{"group", "cancel-in-progress"})
 			}
 		}
+		if !groupFound {
+			p.error(n, "group name is missing in \"concurrency\" section")
+		}
 	}
-
-	p.checkNotEmptyString("group in \"concurrency\" section", ret.Group, n)
 
 	return ret
 }
@@ -498,21 +496,24 @@ func (p *parser) parseEnvironment(pos *Pos, n *yaml.Node) *Environment {
 	ret := &Environment{Pos: pos}
 
 	if n.Kind == yaml.ScalarNode {
-		ret.Name = p.parseString(n)
+		ret.Name = p.parseString(n, false)
 	} else {
+		nameFound := false
 		for _, kv := range p.parseSectionMapping("environment", n, false) {
 			switch kv.key.Value {
 			case "name":
-				ret.Name = p.parseString(kv.val)
+				ret.Name = p.parseString(kv.val, false)
+				nameFound = true
 			case "url":
-				ret.URL = p.parseString(kv.val)
+				ret.URL = p.parseString(kv.val, false)
 			default:
 				p.unexpectedKey(kv.key, "environment", []string{"name", "url"})
 			}
 		}
+		if !nameFound {
+			p.error(n, "name is missing in \"environment\" section")
+		}
 	}
-
-	p.checkNotEmptyString("name in \"environment\" section", ret.Name, n)
 
 	return ret
 }
@@ -524,7 +525,7 @@ func (p *parser) parseOutputs(n *yaml.Node) map[string]*Output {
 	for _, output := range outputs {
 		ret[output.key.Value] = &Output{
 			Name:  output.key,
-			Value: p.parseString(output.val),
+			Value: p.parseString(output.val, true),
 		}
 	}
 	p.checkNotEmpty("outputs", len(ret), n)
@@ -545,7 +546,7 @@ func (p *parser) parseMatrixCombinations(sec string, n *yaml.Node) []map[string]
 		kvs := p.parseMapping(fmt.Sprintf("element in %q section", sec), c, false)
 		elem := make(map[string]*MatrixCombination, len(kvs))
 		for _, kv := range kvs {
-			s := p.parseString(kv.val)
+			s := p.parseString(kv.val, true)
 			if s != nil {
 				elem[kv.key.Value] = &MatrixCombination{kv.key, s}
 			}
@@ -572,6 +573,8 @@ func (p *parser) parseMatrix(pos *Pos, n *yaml.Node) *Matrix {
 			}
 		}
 	}
+
+	p.checkNotEmpty("matrix", len(ret.Rows), n)
 
 	return ret
 }
@@ -603,15 +606,15 @@ func (p *parser) parseContainer(sec string, pos *Pos, n *yaml.Node) *Container {
 	for _, kv := range p.parseSectionMapping(sec, n, false) {
 		switch kv.key.Value {
 		case "image":
-			ret.Image = p.parseString(kv.val)
+			ret.Image = p.parseString(kv.val, false)
 		case "credentials":
 			cred := &Credentials{Pos: kv.key.Pos}
 			for _, c := range p.parseSectionMapping("credentials", kv.val, false) {
 				switch c.key.Value {
 				case "username":
-					cred.Username = p.parseString(c.val)
+					cred.Username = p.parseString(c.val, false)
 				case "password":
-					cred.Password = p.parseString(c.val)
+					cred.Password = p.parseString(c.val, false)
 				default:
 					p.unexpectedKey(c.key, "credentials", []string{"username", "password"})
 				}
@@ -628,7 +631,7 @@ func (p *parser) parseContainer(sec string, pos *Pos, n *yaml.Node) *Container {
 		case "volumes":
 			ret.Ports = p.parseStringSequence("volumes", kv.val, true)
 		case "options":
-			ret.Options = p.parseString(kv.val)
+			ret.Options = p.parseString(kv.val, true)
 		default:
 			p.unexpectedKey(kv.key, sec, []string{
 				"image",
@@ -651,11 +654,11 @@ func (p *parser) parseStep(n *yaml.Node) *Step {
 	for _, kv := range p.parseMapping("element of \"steps\" section", n, false) {
 		switch kv.key.Value {
 		case "id":
-			ret.ID = p.parseString(kv.val)
+			ret.ID = p.parseString(kv.val, false)
 		case "if":
-			ret.If = p.parseString(kv.val)
+			ret.If = p.parseString(kv.val, false)
 		case "name":
-			ret.Name = p.parseString(kv.val)
+			ret.Name = p.parseString(kv.val, true)
 		case "env":
 			ret.Env = p.parseEnv(kv.val)
 		case "continue-on-error":
@@ -673,7 +676,7 @@ func (p *parser) parseStep(n *yaml.Node) *Step {
 				continue
 			}
 			if kv.key.Value == "uses" {
-				exec.Uses = p.parseString(kv.val)
+				exec.Uses = p.parseString(kv.val, false)
 			} else {
 				// kv.key.Value == "with"
 				with := p.parseSectionMapping("with", kv.val, false)
@@ -682,12 +685,12 @@ func (p *parser) parseStep(n *yaml.Node) *Step {
 					switch input.key.Value {
 					case "entrypoint":
 						// https://docs.github.com/en/actions/reference/workflow-syntax-for-github-actions#jobsjob_idstepswithentrypoint
-						exec.Entrypoint = p.parseString(input.val)
+						exec.Entrypoint = p.parseString(input.val, false)
 					case "args":
 						// https://docs.github.com/en/actions/reference/workflow-syntax-for-github-actions#jobsjob_idstepswithargs
-						exec.Args = p.parseString(input.val)
+						exec.Args = p.parseString(input.val, true)
 					default:
-						exec.Inputs[input.key.Value] = &Input{input.key, p.parseString(input.val)}
+						exec.Inputs[input.key.Value] = &Input{input.key, p.parseString(input.val, true)}
 					}
 				}
 			}
@@ -704,11 +707,11 @@ func (p *parser) parseStep(n *yaml.Node) *Step {
 			}
 			switch kv.key.Value {
 			case "run":
-				exec.Run = p.parseString(kv.val)
+				exec.Run = p.parseString(kv.val, false)
 			case "working-directory":
-				exec.WorkingDirectory = p.parseString(kv.val)
+				exec.WorkingDirectory = p.parseString(kv.val, false)
 			case "shell":
-				exec.Shell = p.parseString(kv.val)
+				exec.Shell = p.parseString(kv.val, false)
 			}
 			ret.Exec = exec
 		default:
@@ -761,18 +764,18 @@ func (p *parser) parseJob(id *String, n *yaml.Node) *Job {
 		k, v := kv.key, kv.val
 		switch k.Value {
 		case "name":
-			ret.Name = p.parseString(v)
+			ret.Name = p.parseString(v, true)
 		case "needs":
 			if v.Kind == yaml.ScalarNode {
 				// needs: job1
-				ret.Needs = []*String{p.parseString(v)}
+				ret.Needs = []*String{p.parseString(v, false)}
 			} else {
 				// needs: [job1, job2]
 				ret.Needs = p.parseStringSequence("needs", v, false)
 			}
 		case "runs-on":
 			if v.Kind == yaml.ScalarNode {
-				label := p.parseString(v)
+				label := p.parseString(v, false)
 				if label.Value == "self-hosted" {
 					ret.RunsOn = &SelfHostedRunner{Pos: k.Pos}
 				} else {
@@ -805,7 +808,7 @@ func (p *parser) parseJob(id *String, n *yaml.Node) *Job {
 		case "defaults":
 			ret.Defaults = p.parseDefaults(k.Pos, v)
 		case "if":
-			ret.If = p.parseString(v)
+			ret.If = p.parseString(v, false)
 		case "steps":
 			ret.Steps = p.parseSteps(v)
 		case "timeout-minutes":
@@ -878,7 +881,7 @@ func (p *parser) parse(n *yaml.Node) *Workflow {
 		k, v := kv.key, kv.val
 		switch k.Value {
 		case "name":
-			w.Name = p.parseString(v)
+			w.Name = p.parseString(v, true)
 		case "on":
 			w.On = p.parseEvents(v)
 		case "permissions":
