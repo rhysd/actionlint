@@ -78,6 +78,7 @@ func (l *Linter) LintRepoDir(dir string) ([]*Error, error) {
 func (l *Linter) LintFiles(filepaths []string) ([]*Error, error) {
 	all := []*Error{}
 
+	// TODO: Use multiple threads (per file)
 	for _, p := range filepaths {
 		errs, err := l.LintFile(p)
 		if err != nil {
@@ -89,20 +90,27 @@ func (l *Linter) LintFiles(filepaths []string) ([]*Error, error) {
 	return all, nil
 }
 
-func (l *Linter) LintFile(filepath string) ([]*Error, error) {
-	b, err := ioutil.ReadFile(filepath)
+func (l *Linter) LintFile(path string) ([]*Error, error) {
+	b, err := ioutil.ReadFile(path)
 	if err != nil {
-		return nil, fmt.Errorf("Could not read %q: %w", filepath, err)
+		return nil, fmt.Errorf("Could not read %q: %w", path, err)
 	}
 
-	return l.Lint(filepath, b) // TODO: Use canonical path
+	// Use relative path if possible
+	if wd, err := os.Getwd(); err == nil {
+		if r, err := filepath.Rel(wd, path); err == nil {
+			path = r
+		}
+	}
+
+	return l.Lint(path, b)
 }
 
-func (l *Linter) Lint(filename string, content []byte) ([]*Error, error) {
+func (l *Linter) Lint(path string, content []byte) ([]*Error, error) {
 	_, errs := Parse(content)
 	for _, e := range errs {
-		// Populate filename in the error
-		e.Filename = filename
+		// Praser doesn't know where the content came from. Populate filename in the error
+		e.Filepath = path
 	}
 
 	// TODO: Check workflow syntax tree
