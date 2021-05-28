@@ -88,20 +88,20 @@ func (p *parser) unexpectedKey(s *String, sec string, expected []string) {
 	p.errors = append(p.errors, &Error{m, "", s.Pos.Line, s.Pos.Col})
 }
 
-func (p *parser) checkSequence(sec string, n *yaml.Node) bool {
-	if n.Kind != yaml.SequenceNode {
-		p.errorf(n, "%q section must be sequence node but got %s node with %q tag", sec, nodeKindName(n.Kind), n.Tag)
-		return false
-	}
-	return true
-}
-
 func (p *parser) checkNotEmpty(sec string, len int, n *yaml.Node) bool {
 	if len == 0 {
 		p.errorf(n, "%q section should not be empty", sec)
 		return false
 	}
 	return true
+}
+
+func (p *parser) checkSequence(sec string, n *yaml.Node, allowEmpty bool) bool {
+	if n.Kind != yaml.SequenceNode {
+		p.errorf(n, "%q section must be sequence node but got %s node with %q tag", sec, nodeKindName(n.Kind), n.Tag)
+		return false
+	}
+	return allowEmpty || p.checkNotEmpty(sec, len(n.Content), n)
 }
 
 func (p *parser) parseString(n *yaml.Node, allowEmpty bool) *String {
@@ -118,16 +118,11 @@ func (p *parser) parseString(n *yaml.Node, allowEmpty bool) *String {
 }
 
 func (p *parser) parseStringSequence(sec string, n *yaml.Node, allowEmpty bool, allowElemEmpty bool) []*String {
-	if ok := p.checkSequence(sec, n); !ok {
+	if ok := p.checkSequence(sec, n, allowEmpty); !ok {
 		return nil
 	}
 
-	l := len(n.Content)
-	if !allowEmpty && l == 0 {
-		p.errorf(n, "%q section should not be empty. please remove this section if unnecessary", sec)
-	}
-
-	ss := make([]*String, 0, l)
+	ss := make([]*String, 0, len(n.Content))
 	for _, c := range n.Content {
 		s := p.parseString(c, allowElemEmpty)
 		if s != nil {
@@ -212,7 +207,7 @@ func (p *parser) parseSectionMapping(sec string, n *yaml.Node, allowEmpty bool) 
 }
 
 func (p *parser) parseScheduleEvent(pos *Pos, n *yaml.Node) *ScheduledEvent {
-	if ok := p.checkSequence("schedule", n); !ok {
+	if ok := p.checkSequence("schedule", n, false); !ok {
 		return nil
 	}
 
@@ -535,13 +530,11 @@ func (p *parser) parseOutputs(n *yaml.Node) map[string]*Output {
 // https://docs.github.com/en/actions/reference/workflow-syntax-for-github-actions#example-including-additional-values-into-combinations
 // https://docs.github.com/en/actions/reference/workflow-syntax-for-github-actions#example-excluding-configurations-from-a-matrix
 func (p *parser) parseMatrixCombinations(sec string, n *yaml.Node) []map[string]*MatrixCombination {
-	if ok := p.checkSequence(sec, n); !ok {
+	if ok := p.checkSequence(sec, n, false); !ok {
 		return nil
 	}
 
-	l := len(n.Content)
-	p.checkNotEmpty(sec, l, n)
-	ret := make([]map[string]*MatrixCombination, 0, l)
+	ret := make([]map[string]*MatrixCombination, 0, len(n.Content))
 	for _, c := range n.Content {
 		kvs := p.parseMapping(fmt.Sprintf("element in %q section", sec), c, false)
 		elem := make(map[string]*MatrixCombination, len(kvs))
@@ -740,10 +733,9 @@ func (p *parser) parseStep(n *yaml.Node) *Step {
 
 // https://docs.github.com/en/actions/reference/workflow-syntax-for-github-actions#jobsjob_idsteps
 func (p *parser) parseSteps(n *yaml.Node) []*Step {
-	if ok := p.checkSequence("steps", n); !ok {
+	if ok := p.checkSequence("steps", n, false); !ok {
 		return nil
 	}
-	p.checkNotEmpty("steps", len(n.Content), n)
 
 	ret := make([]*Step, 0, len(n.Content))
 
