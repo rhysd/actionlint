@@ -117,7 +117,7 @@ func (p *parser) parseString(n *yaml.Node, allowEmpty bool) *String {
 	return &String{n.Value, posAt(n)}
 }
 
-func (p *parser) parseStringSequence(sec string, n *yaml.Node, allowEmpty bool) []*String {
+func (p *parser) parseStringSequence(sec string, n *yaml.Node, allowEmpty bool, allowElemEmpty bool) []*String {
 	if ok := p.checkSequence(sec, n); !ok {
 		return nil
 	}
@@ -129,7 +129,7 @@ func (p *parser) parseStringSequence(sec string, n *yaml.Node, allowEmpty bool) 
 
 	ss := make([]*String, 0, l)
 	for _, c := range n.Content {
-		s := p.parseString(c, true)
+		s := p.parseString(c, allowElemEmpty)
 		if s != nil {
 			ss = append(ss, s)
 		}
@@ -281,7 +281,7 @@ func (p *parser) parseRepositoryDispatchEvent(pos *Pos, n *yaml.Node) *Repositor
 
 	for _, kv := range p.parseSectionMapping("repository_dispatch", n, false) {
 		if kv.key.Value == "types" {
-			ret.Types = p.parseStringSequence("types", kv.val, false)
+			ret.Types = p.parseStringSequence("types", kv.val, false, false)
 		} else {
 			p.unexpectedKey(kv.key, "repository_dispatch", []string{"types"})
 		}
@@ -296,21 +296,21 @@ func (p *parser) parseWebhookEvent(name *String, n *yaml.Node) *WebhookEvent {
 	for _, kv := range p.parseSectionMapping(name.Value, n, true) {
 		switch kv.key.Value {
 		case "types":
-			ret.Types = p.parseStringSequence(kv.key.Value, kv.val, false)
+			ret.Types = p.parseStringSequence(kv.key.Value, kv.val, false, false)
 		case "branches":
-			ret.Branches = p.parseStringSequence(kv.key.Value, kv.val, false)
+			ret.Branches = p.parseStringSequence(kv.key.Value, kv.val, false, false)
 		case "branches-ignore":
-			ret.BranchesIgnore = p.parseStringSequence(kv.key.Value, kv.val, false)
+			ret.BranchesIgnore = p.parseStringSequence(kv.key.Value, kv.val, false, false)
 		case "tags":
-			ret.Tags = p.parseStringSequence(kv.key.Value, kv.val, false)
+			ret.Tags = p.parseStringSequence(kv.key.Value, kv.val, false, false)
 		case "tags-ignore":
-			ret.TagsIgnore = p.parseStringSequence(kv.key.Value, kv.val, false)
+			ret.TagsIgnore = p.parseStringSequence(kv.key.Value, kv.val, false, false)
 		case "paths":
-			ret.Paths = p.parseStringSequence(kv.key.Value, kv.val, false)
+			ret.Paths = p.parseStringSequence(kv.key.Value, kv.val, false, false)
 		case "paths-ignore":
-			ret.PathsIgnore = p.parseStringSequence(kv.key.Value, kv.val, false)
+			ret.PathsIgnore = p.parseStringSequence(kv.key.Value, kv.val, false, false)
 		case "workflows":
-			ret.Workflows = p.parseStringSequence(kv.key.Value, kv.val, false)
+			ret.Workflows = p.parseStringSequence(kv.key.Value, kv.val, false, false)
 		default:
 			p.unexpectedKey(kv.key, name.Value, []string{
 				"types",
@@ -569,7 +569,7 @@ func (p *parser) parseMatrix(pos *Pos, n *yaml.Node) *Matrix {
 		default:
 			ret.Rows[kv.key.Value] = &MatrixRow{
 				Name:   kv.key,
-				Values: p.parseStringSequence("matrix", kv.val, false),
+				Values: p.parseStringSequence("matrix", kv.val, false, true),
 			}
 		}
 	}
@@ -627,9 +627,9 @@ func (p *parser) parseContainer(sec string, pos *Pos, n *yaml.Node) *Container {
 		case "env":
 			ret.Env = p.parseEnv(kv.val)
 		case "ports":
-			ret.Ports = p.parseStringSequence("ports", kv.val, true)
+			ret.Ports = p.parseStringSequence("ports", kv.val, true, false)
 		case "volumes":
-			ret.Ports = p.parseStringSequence("volumes", kv.val, true)
+			ret.Ports = p.parseStringSequence("volumes", kv.val, true, false)
 		case "options":
 			ret.Options = p.parseString(kv.val, true)
 		default:
@@ -771,7 +771,7 @@ func (p *parser) parseJob(id *String, n *yaml.Node) *Job {
 				ret.Needs = []*String{p.parseString(v, false)}
 			} else {
 				// needs: [job1, job2]
-				ret.Needs = p.parseStringSequence("needs", v, false)
+				ret.Needs = p.parseStringSequence("needs", v, false, false)
 			}
 		case "runs-on":
 			if v.Kind == yaml.ScalarNode {
@@ -782,7 +782,7 @@ func (p *parser) parseJob(id *String, n *yaml.Node) *Job {
 					ret.RunsOn = &GitHubHostedRunner{label, k.Pos}
 				}
 			} else {
-				s := p.parseStringSequence("runs-on", v, false)
+				s := p.parseStringSequence("runs-on", v, false, false)
 				if len(s) == 0 {
 					continue
 				}
