@@ -9,6 +9,32 @@ import (
 	"github.com/rhysd/actionlint"
 )
 
+const version = "0.0.0"
+const usageHeader = `Usage: actionlint [FLAGS] [FILES...] [-]
+
+  actionlint is a linter for GitHub Actions workflow files.
+
+  To check all YAML files in current repository, just run actionlint without
+  arguments. It automatically finds the nearest '.github/workflows' directory:
+
+    $ actionlint
+
+  To check specific files, pass the file paths as arguments:
+
+    $ actionlint file1.yaml file2.yaml
+
+  To check content which is not saved in file yet (e.g. output from some
+  command), pass - argument. It reads stdin and checks it as workflow file:
+
+    $ actionlint -
+
+Flags:`
+
+func usage() {
+	fmt.Fprintln(os.Stderr, usageHeader)
+	flag.PrintDefaults()
+}
+
 func lint(args []string, opts *actionlint.LinterOptions) ([]*actionlint.Error, error) {
 	l := actionlint.NewLinter(os.Stdout, opts)
 	if len(args) == 0 {
@@ -32,16 +58,17 @@ func lint(args []string, opts *actionlint.LinterOptions) ([]*actionlint.Error, e
 }
 
 func main() {
-	var version bool
+	var ver bool
 	var opts actionlint.LinterOptions
 
-	flag.BoolVar(&version, "version", false, "Show version")
+	flag.BoolVar(&ver, "version", false, "Show version")
 	flag.BoolVar(&opts.Verbose, "verbose", false, "Enable verbose output")
 	flag.BoolVar(&opts.Debug, "debug", false, "Enable debug output (for development)")
+	flag.Usage = usage
 	flag.Parse()
 
-	if version {
-		fmt.Println("0.0.0")
+	if ver {
+		fmt.Println(version)
 		return
 	}
 
