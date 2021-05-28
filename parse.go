@@ -6,7 +6,6 @@ import (
 	"strconv"
 	"strings"
 
-	"github.com/kr/pretty"
 	"gopkg.in/yaml.v3"
 )
 
@@ -27,13 +26,6 @@ func nodeKindName(k yaml.Kind) string {
 			return "unknown"
 		}
 		panic("unreachable")
-	}
-}
-
-func dumpYAML(n *yaml.Node, level int) {
-	fmt.Printf("%s%s (%s, %d,%d): %q\n", strings.Repeat("  ", level), nodeKindName(n.Kind), n.Tag, n.Line, n.Column, n.Value)
-	for _, c := range n.Content {
-		dumpYAML(c, level+1)
 	}
 }
 
@@ -891,15 +883,6 @@ func Parse(b []byte) (*Workflow, []*Error) {
 
 	p := &parser{}
 	w := p.parse(&n)
-
-	if os.Getenv("ACTIONLINT_DEBUG") != "" {
-		fmt.Println("========== YAML TREE START ==========")
-		dumpYAML(&n, 0)
-		fmt.Println("=========== YAML TREE END ===========")
-		fmt.Println("========== WORKFLOW TREE START ==========")
-		pretty.Println(w)
-		fmt.Println("=========== WORKFLOW TREE END ===========")
-	}
 
 	return w, p.errors
 }

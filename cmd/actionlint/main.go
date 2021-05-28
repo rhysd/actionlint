@@ -9,8 +9,8 @@ import (
 	"github.com/rhysd/actionlint"
 )
 
-func lint(args []string) ([]*actionlint.Error, error) {
-	l := actionlint.NewLinter(os.Stdout)
+func lint(args []string, opts *actionlint.LinterOptions) ([]*actionlint.Error, error) {
+	l := actionlint.NewLinter(os.Stdout, opts)
 	if len(args) == 0 {
 		// Find nearest workflows directory
 		d, err := os.Getwd()
@@ -33,8 +33,11 @@ func lint(args []string) ([]*actionlint.Error, error) {
 
 func main() {
 	var version bool
+	var opts actionlint.LinterOptions
 
 	flag.BoolVar(&version, "version", false, "Show version")
+	flag.BoolVar(&opts.Verbose, "verbose", false, "Enable verbose output")
+	flag.BoolVar(&opts.Debug, "debug", false, "Enable debug output (for development)")
 	flag.Parse()
 
 	if version {
@@ -42,7 +45,7 @@ func main() {
 		return
 	}
 
-	errs, err := lint(flag.Args())
+	errs, err := lint(flag.Args(), &opts)
 	if err != nil {
 		fmt.Fprintln(os.Stderr, err.Error())
 		os.Exit(1)
