@@ -37,13 +37,15 @@ const (
 )
 
 type LinterOptions struct {
-	Verbose bool
-	Debug   bool
+	Verbose   bool
+	Debug     bool
+	LogWriter io.Writer
 	// More options will come here
 }
 
 type Linter struct {
 	out      io.Writer
+	logOut   io.Writer
 	logLevel LogLevel
 }
 
@@ -54,20 +56,25 @@ func NewLinter(out io.Writer, opts *LinterOptions) *Linter {
 	} else if opts.Debug {
 		l = LogLevelDebug
 	}
-	return &Linter{out, l}
+
+	var lout io.Writer = os.Stderr
+	if opts.LogWriter != nil {
+		lout = opts.LogWriter
+	}
+
+	return &Linter{out, lout, l}
 }
 
 func (l *Linter) Log(args ...interface{}) {
 	if l.logLevel >= LogLevelVerbose {
-		fmt.Fprintln(l.out, args...)
+		fmt.Fprintln(l.logOut, args...)
 	}
 }
 
 func (l *Linter) DebugLog(args ...interface{}) {
 	if l.logLevel >= LogLevelDebug {
-		fmt.Fprintln(l.out, args...)
+		fmt.Fprintln(l.logOut, args...)
 	}
-
 }
 
 // LintRepoDir lints YAML workflow files and outputs the errors to given writer. It finds the nearest
@@ -162,9 +169,9 @@ func (l *Linter) Lint(path string, content []byte) ([]*Error, error) {
 	}
 
 	if l.logLevel >= LogLevelDebug {
-		fmt.Println(l.out, "========== WORKFLOW TREE START ==========")
-		pretty.Println(w)
-		fmt.Println(l.out, "=========== WORKFLOW TREE END ===========")
+		fmt.Fprintln(l.logOut, "========== WORKFLOW TREE START ==========")
+		pretty.Fprintf(l.logOut, "%# v\n", w)
+		fmt.Fprintln(l.logOut, "=========== WORKFLOW TREE END ===========")
 	}
 
 	// TODO: Check workflow syntax tree
