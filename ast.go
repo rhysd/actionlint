@@ -1,4 +1,4 @@
-package syntax
+package actionlint
 
 // Pos represents position in the file
 type Pos struct {

@@ -1,4 +1,4 @@
-package syntax
+package actionlint
 
 // Pass is an interface to traverse a workflow syntax tree
 type Pass interface {

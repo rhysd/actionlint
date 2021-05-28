@@ -1,11 +1,9 @@
-package linter
+package actionlint
 
 import (
 	"fmt"
 	"io"
 	"io/ioutil"
-
-	"github.com/rhysd/actionlint/syntax"
 )
 
 type LintError struct {
@@ -60,7 +58,7 @@ func (l *Linter) LintFile(filepath string) ([]*LintError, error) {
 		return nil, fmt.Errorf("Could not read %q: %w", filepath, err)
 	}
 
-	_, errs := syntax.Parse(b)
+	_, errs := Parse(b)
 
 	all := make([]*LintError, 0, len(errs))
 	for _, e := range errs {

@@ -5,11 +5,11 @@ import (
 	"fmt"
 	"os"
 
-	"github.com/rhysd/actionlint/linter"
+	"github.com/rhysd/actionlint"
 )
 
-func lint(args []string) ([]*linter.LintError, error) {
-	l := linter.NewLinter(os.Stdout)
+func lint(args []string) ([]*actionlint.LintError, error) {
+	l := actionlint.NewLinter(os.Stdout)
 	if len(args) > 0 {
 		return l.LintFiles(args)
 	}
