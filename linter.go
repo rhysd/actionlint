@@ -1,7 +1,6 @@
 package actionlint
 
 import (
-	"errors"
 	"fmt"
 	"io"
 	"io/fs"
@@ -15,7 +14,7 @@ func findNearestWorkflowsDir(from string) (string, error) {
 	d := from
 	for {
 		p := filepath.Join(d, ".github", "workflows")
-		if s, err := os.Stat(p); !errors.Is(err, os.ErrNotExist) && s.IsDir() {
+		if s, err := os.Stat(p); err == nil && s.IsDir() {
 			return p, nil
 		}
 
