@@ -3,6 +3,7 @@ package actionlint
 // RuleBase is a struct to be a base of rule structs. Embed this struct to define default methods
 // automatically
 type RuleBase struct {
+	name string
 	errs []*Error
 }
 
@@ -22,12 +23,12 @@ func (r *RuleBase) VisitWorkflowPre(node *Workflow) {}
 func (r *RuleBase) VisitWorkflowPost(node *Workflow) {}
 
 func (r *RuleBase) error(pos *Pos, msg string) {
-	err := errorAt(pos, msg)
+	err := errorAt(pos, r.name, msg)
 	r.errs = append(r.errs, err)
 }
 
 func (r *RuleBase) errorf(pos *Pos, format string, args ...interface{}) {
-	err := errorfAt(pos, format, args...)
+	err := errorfAt(pos, r.name, format, args...)
 	r.errs = append(r.errs, err)
 }
 
@@ -36,8 +37,13 @@ func (r *RuleBase) Errs() []*Error {
 	return r.errs
 }
 
+func (r *RuleBase) Name() string {
+	return r.name
+}
+
 // Rule is an interface which all rule structs must meet
 type Rule interface {
 	Pass
 	Errs() []*Error
+	Name() string
 }

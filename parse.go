@@ -54,11 +54,11 @@ type parser struct {
 }
 
 func (p *parser) error(n *yaml.Node, m string) {
-	p.errors = append(p.errors, &Error{m, "", n.Line, n.Column})
+	p.errors = append(p.errors, &Error{m, "", n.Line, n.Column, "syntax-check"})
 }
 
 func (p *parser) errorAt(pos *Pos, m string) {
-	p.errors = append(p.errors, &Error{m, "", pos.Line, pos.Col})
+	p.errors = append(p.errors, &Error{m, "", pos.Line, pos.Col, "syntax-check"})
 }
 
 func (p *parser) errorfAt(pos *Pos, format string, args ...interface{}) {
@@ -85,7 +85,7 @@ func (p *parser) unexpectedKey(s *String, sec string, expected []string) {
 	} else {
 		m = fmt.Sprintf("unexpected key %q for %q section", s.Value, sec)
 	}
-	p.errors = append(p.errors, &Error{m, "", s.Pos.Line, s.Pos.Col})
+	p.errorAt(s.Pos, m)
 }
 
 func (p *parser) checkNotEmpty(sec string, len int, n *yaml.Node) bool {
@@ -915,7 +915,7 @@ func Parse(b []byte) (*Workflow, []*Error) {
 
 	if err := yaml.Unmarshal(b, &n); err != nil {
 		msg := fmt.Sprintf("could not parse as YAML: %s", err.Error())
-		return nil, []*Error{{msg, "", 0, 0}}
+		return nil, []*Error{{msg, "", 0, 0, "yaml-syntax"}}
 	}
 
 	p := &parser{}

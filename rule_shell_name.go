@@ -22,7 +22,10 @@ type RuleShellName struct {
 
 // NewRuleShellName creates new RuleShellName instance.
 func NewRuleShellName() *RuleShellName {
-	return &RuleShellName{platform: platformKindAny}
+	return &RuleShellName{
+		RuleBase: RuleBase{name: "shell-name"},
+		platform: platformKindAny,
+	}
 }
 
 func (rule *RuleShellName) VisitStep(n *Step) {

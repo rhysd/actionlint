@@ -12,7 +12,9 @@ type RuleCredentials struct {
 
 // NewRuleCredentials creates new RuleCredentials instance
 func NewRuleCredentials() *RuleCredentials {
-	return &RuleCredentials{}
+	return &RuleCredentials{
+		RuleBase: RuleBase{name: "credentials"},
+	}
 }
 
 func (rule *RuleCredentials) VisitJobPre(n *Job) {

@@ -8,24 +8,27 @@ type Error struct {
 	Filepath string
 	Line     int
 	Column   int
+	Kind     string
 }
 
 func (e *Error) Error() string {
-	return fmt.Sprintf("%s:%d:%d: %s", e.Filepath, e.Line, e.Column, e.Message)
+	return fmt.Sprintf("%s:%d:%d: %s [%s]", e.Filepath, e.Line, e.Column, e.Message, e.Kind)
 }
 
-func errorAt(pos *Pos, msg string) *Error {
+func errorAt(pos *Pos, kind string, msg string) *Error {
 	return &Error{
 		Message: msg,
 		Line:    pos.Line,
 		Column:  pos.Col,
+		Kind:    kind,
 	}
 }
 
-func errorfAt(pos *Pos, format string, args ...interface{}) *Error {
+func errorfAt(pos *Pos, kind string, format string, args ...interface{}) *Error {
 	return &Error{
 		Message: fmt.Sprintf(format, args...),
 		Line:    pos.Line,
 		Column:  pos.Col,
+		Kind:    kind,
 	}
 }

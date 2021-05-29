@@ -12,7 +12,9 @@ type RuleMatrix struct {
 
 // NewRuleMatrix creates new RuleMatrix instance.
 func NewRuleMatrix() *RuleMatrix {
-	return &RuleMatrix{}
+	return &RuleMatrix{
+		RuleBase: RuleBase{name: "matrix"},
+	}
 }
 
 func (rule *RuleMatrix) VisitJobPre(n *Job) {
@@ -49,7 +51,7 @@ func (rule *RuleMatrix) checkMatrixValuesContain(sec string, name string, heysta
 	}
 	rule.errorf(
 		needle.Pos,
-		"%q in \"exclude\" section but it does not exist in matrix %q configuration. available values are %s",
+		"%q in \"exclude\" section does not exist in matrix %q configuration. available values are %s",
 		needle.Value,
 		name,
 		strings.Join(qs, ", "),
