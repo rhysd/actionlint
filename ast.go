@@ -281,7 +281,7 @@ type Container struct {
 // https://docs.github.com/en/actions/reference/workflow-syntax-for-github-actions#jobsjob_idservices
 type Service struct {
 	Name      *String
-	Contaienr *Container
+	Container *Container
 }
 
 // https://docs.github.com/en/actions/reference/workflow-syntax-for-github-actions#jobsjob_idoutputs

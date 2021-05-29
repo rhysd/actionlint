@@ -172,6 +172,7 @@ func (l *Linter) Lint(path string, content []byte) ([]*Error, error) {
 
 	rules := []Rule{
 		NewRuleMatrix(),
+		NewRuleCredentials(),
 	}
 
 	v := NewVisitor()
