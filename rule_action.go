@@ -137,14 +137,15 @@ func (rule *RuleAction) checkActionInSameRepo(path string, action *ExecAction) {
 	}
 
 	dir := filepath.Join(rule.repoPath, filepath.FromSlash(path))
-	b := readActionSpecFile(dir)
+	b := rule.readActionSpecFile(dir, action.Uses.Pos)
 	if len(b) == 0 {
-		return // Give up
+		return
 	}
 
 	var spec ActionSpec
 	if err := yaml.Unmarshal(b, &spec); err != nil {
-		return // Give up
+		rule.errorf(action.Uses.Pos, "action.yaml in %q is invalid: %s", dir, err.Error())
+		return
 	}
 
 	rule.checkAction(dir, &spec, action)
@@ -179,7 +180,7 @@ func (rule *RuleAction) checkAction(action string, spec *ActionSpec, exec *ExecA
 	}
 }
 
-func readActionSpecFile(dir string) []byte {
+func (rule *RuleAction) readActionSpecFile(dir string, pos *Pos) []byte {
 	for _, p := range []string{
 		filepath.Join(dir, "action.yaml"),
 		filepath.Join(dir, "action.yml"),
@@ -188,6 +189,7 @@ func readActionSpecFile(dir string) []byte {
 			return b
 		}
 	}
+	rule.errorf(pos, "Neither action.yaml nor action.yml is found in %q", dir)
 	return nil
 }
 
