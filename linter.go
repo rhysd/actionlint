@@ -176,6 +176,7 @@ func (l *Linter) Lint(path string, content []byte) ([]*Error, error) {
 		NewRuleShellName(),
 		NewRuleEvents(),
 		NewRuleJobNeeds(),
+		NewRuleAction(path),
 	}
 
 	v := NewVisitor()
