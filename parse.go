@@ -324,8 +324,29 @@ func (p *parser) parseWebhookEvent(name *String, n *yaml.Node) *WebhookEvent {
 	return ret
 }
 
-func (p *parser) parseEvents(n *yaml.Node) []Event {
+func (p *parser) parseEvents(pos *Pos, n *yaml.Node) []Event {
 	switch n.Kind {
+	case yaml.ScalarNode:
+		switch n.Value {
+		case "workflow_dispatch":
+			return []Event{
+				&WorkflowDispatchEvent{Pos: posAt(n)},
+			}
+		case "repository_dispatch":
+			return []Event{
+				&RepositoryDispatchEvent{Pos: posAt(n)},
+			}
+		case "schedule":
+			p.errorAt(pos, "schedule event must be configured with mapping")
+			return []Event{}
+		default:
+			return []Event{
+				&WebhookEvent{
+					Hook: p.parseString(n, false),
+					Pos:  posAt(n),
+				},
+			}
+		}
 	case yaml.MappingNode:
 		kvs := p.parseSectionMapping("on", n, false)
 		ret := make([]Event, 0, len(kvs))
@@ -880,7 +901,7 @@ func (p *parser) parse(n *yaml.Node) *Workflow {
 		case "name":
 			w.Name = p.parseString(v, true)
 		case "on":
-			w.On = p.parseEvents(v)
+			w.On = p.parseEvents(k.Pos, v)
 		case "permissions":
 			w.Permissions = p.parsePermissions(k.Pos, v)
 		case "env":
