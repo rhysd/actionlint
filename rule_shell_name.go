@@ -35,6 +35,9 @@ func (rule *RuleShellName) VisitStep(n *Step) {
 }
 
 func (rule *RuleShellName) VisitJobPre(n *Job) {
+	if n.RunsOn == nil {
+		return
+	}
 	rule.platform = getPlatformFromRunner(n.RunsOn)
 	if n.Defaults != nil && n.Defaults.Run != nil {
 		rule.checkShellName(n.Defaults.Run.Shell)
