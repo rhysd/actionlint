@@ -9,12 +9,12 @@ import (
 	"gopkg.in/yaml.v3"
 )
 
-// func dumpYAML(n *yaml.Node, level int) {
-// 	fmt.Printf("%s%s (%s, %d,%d): %q\n", strings.Repeat(". ", level), nodeKindName(n.Kind), n.Tag, n.Line, n.Column, n.Value)
-// 	for _, c := range n.Content {
-// 		dumpYAML(c, level+1)
-// 	}
-// }
+func dumpYAML(n *yaml.Node, level int) {
+	fmt.Printf("%s%s (%s, %d,%d): %q\n", strings.Repeat(". ", level), nodeKindName(n.Kind), n.Tag, n.Line, n.Column, n.Value)
+	for _, c := range n.Content {
+		dumpYAML(c, level+1)
+	}
+}
 
 func nodeKindName(k yaml.Kind) string {
 	switch k {
@@ -218,7 +218,7 @@ func (p *parser) parseScheduleEvent(pos *Pos, n *yaml.Node) *ScheduledEvent {
 			p.error(c, "element of \"schedule\" section must be mapping and must contain one key \"cron\"")
 			continue
 		}
-		s := p.parseString(c, false)
+		s := p.parseString(m[0].val, false)
 		if s != nil {
 			cron = append(cron, s)
 		}
@@ -917,6 +917,9 @@ func Parse(b []byte) (*Workflow, []*Error) {
 		msg := fmt.Sprintf("could not parse as YAML: %s", err.Error())
 		return nil, []*Error{{msg, "", 0, 0, "yaml-syntax"}}
 	}
+
+	// Uncomment for checking YAML tree
+	// dumpYAML(&n, 0)
 
 	p := &parser{}
 	w := p.parse(&n)
