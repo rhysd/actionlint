@@ -746,7 +746,16 @@ func (p *parser) parseStep(n *yaml.Node) *Step {
 		}
 	}
 
-	if ret.Exec == nil {
+	switch e := ret.Exec.(type) {
+	case *ExecAction:
+		if e.Uses == nil {
+			p.error(n, "\"uses\" is required to run action in step")
+		}
+	case *ExecRun:
+		if e.Run == nil {
+			p.error(n, "\"run\" is required to run script in step")
+		}
+	default:
 		p.error(n, "step must run script with \"run\" section or run action with \"uses\" section")
 	}
 
