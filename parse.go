@@ -817,7 +817,7 @@ func (p *parser) parseJob(id *String, n *yaml.Node) *Job {
 			for _, s := range services {
 				ret.Services[s.key.Value] = &Service{
 					Name:      s.key,
-					Contaienr: p.parseContainer("services", s.key.Pos, s.val),
+					Container: p.parseContainer("services", s.key.Pos, s.val),
 				}
 			}
 		default:
@@ -844,6 +844,10 @@ func (p *parser) parseJob(id *String, n *yaml.Node) *Job {
 
 	if ret.Steps == nil {
 		p.error(n, "\"steps\" section is missing in job")
+	}
+
+	if ret.RunsOn == nil {
+		p.error(n, "\"runs-on\" section is missing in job")
 	}
 
 	return ret
