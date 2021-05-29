@@ -59,6 +59,12 @@ func (rule *RuleShellName) checkShellName(name *String) {
 		return
 	}
 
+	// Ignore custom shell
+	// https://docs.github.com/en/actions/reference/workflow-syntax-for-github-actions#custom-shell
+	if strings.Contains(name.Value, "{0}") {
+		return
+	}
+
 	available := getAvailableShellNames(rule.platform)
 
 	for _, s := range available {
