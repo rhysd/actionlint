@@ -51,8 +51,9 @@ func (rule *RuleMatrix) checkMatrixValuesContain(sec string, name string, heysta
 	}
 	rule.errorf(
 		needle.Pos,
-		"%q in \"exclude\" section does not exist in matrix %q configuration. available values are %s",
+		"%q in %q section does not exist in matrix %q configuration. available values are %s",
 		needle.Value,
+		sec,
 		name,
 		strings.Join(qs, ", "),
 	)
