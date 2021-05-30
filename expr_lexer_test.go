@@ -1,6 +1,7 @@
 package actionlint
 
 import (
+	"strings"
 	"testing"
 
 	"github.com/google/go-cmp/cmp"
@@ -68,6 +69,11 @@ func TestLexOneToken(t *testing.T) {
 			kind:  TokenKindString,
 		},
 		{
+			what:  "string with braces",
+			input: "'braces {in} string {{is}} ok!'",
+			kind:  TokenKindString,
+		},
+		{
 			what:  "int",
 			input: "42",
 			kind:  TokenKindInt,
@@ -123,8 +129,18 @@ func TestLexOneToken(t *testing.T) {
 			kind:  TokenKindFloat,
 		},
 		{
+			what:  "float exp part with upper E",
+			input: "1.0E3",
+			kind:  TokenKindFloat,
+		},
+		{
 			what:  "float negative exp part",
 			input: "1.0e-99",
+			kind:  TokenKindFloat,
+		},
+		{
+			what:  "float negative exp part with upper E",
+			input: "1.0E-99",
 			kind:  TokenKindFloat,
 		},
 		{
@@ -390,6 +406,24 @@ func TestLexExpression(t *testing.T) {
 				")",
 			},
 		},
+		{
+			what:  "operator twice",
+			input: "!!success()",
+			tokens: []TokenKind{
+				TokenKindNot,
+				TokenKindNot,
+				TokenKindIdent,
+				TokenKindLeftParen,
+				TokenKindRightParen,
+			},
+			values: []string{
+				"!",
+				"!",
+				"success",
+				"(",
+				")",
+			},
+		},
 	}
 
 	for _, tc := range testCases {
@@ -428,6 +462,123 @@ func TestLexExpression(t *testing.T) {
 
 			if offset != len(tc.input)+len("}}") {
 				t.Fatal("wanted offset", len(tc.input)+len("}}"), "but got", offset, "tokens:", tokens)
+			}
+		})
+	}
+}
+
+func TestLexExprError(t *testing.T) {
+	testCases := []struct {
+		what  string
+		input string
+		want  string
+	}{
+		{
+			what:  "unknown char",
+			input: "?",
+			want:  "unexpected character '?' while lexing expression",
+		},
+		{
+			what:  "unexpected EOF",
+			input: "42",
+			want:  "unexpected EOF while lexing expression",
+		},
+		{
+			what:  "empty string",
+			input: "",
+			want:  "unexpected EOF while lexing expression",
+		},
+		{
+			what:  "invalid char after -",
+			input: "-a",
+			want:  "unexpected character 'a' while lexing number after -",
+		},
+		{
+			what:  "invalid char after 0",
+			input: "0d",
+			want:  "unexpected character 'd' while lexing number after 0",
+		},
+		{
+			what:  "invalid char in fraction part of float",
+			input: "1.e1",
+			want:  "unexpected character 'e' while lexing fraction part of float number",
+		},
+		{
+			what:  "invalid char in exponent part of float",
+			input: "1.0e_",
+			want:  "unexpected character '_' while lexing exponent part of float number",
+		},
+		{
+			what:  "invalid char in hex int",
+			input: "0xg",
+			want:  "unexpected character 'g' while lexing hex integer",
+		},
+		{
+			what:  "invalid char in hex int",
+			input: "'in {string} it {{is}} ok'}_",
+			want:  "unexpected character '_' while lexing end marker",
+		},
+		{
+			what:  "invalid char after =",
+			input: "=3",
+			want:  "unexpected character '3' while lexing == operator",
+		},
+		{
+			what:  "invalid char after &",
+			input: "&3",
+			want:  "unexpected character '3' while lexing && operator",
+		},
+		{
+			what:  "invalid char after |",
+			input: "|3",
+			want:  "unexpected character '3' while lexing || operator",
+		},
+		{
+			what:  "unexpected EOF while lexing int",
+			input: "0x",
+			want:  "unexpected EOF while lexing hex integer",
+		},
+		{
+			what:  "unexpected EOF while lexing fraction of float",
+			input: "0.",
+			want:  "unexpected EOF while lexing fraction part of float number",
+		},
+		{
+			what:  "unexpected EOF while lexing exponent of float",
+			input: "0.1e",
+			want:  "unexpected EOF while lexing exponent part of float number",
+		},
+		{
+			what:  "unexpected EOF while lexing end marker",
+			input: "}",
+			want:  "unexpected EOF while lexing end marker }}",
+		},
+		{
+			what:  "unexpected EOF while lexing == operator",
+			input: "=",
+			want:  "unexpected EOF while lexing == operator",
+		},
+		{
+			what:  "unexpected EOF while lexing && operator",
+			input: "&",
+			want:  "unexpected EOF while lexing && operator",
+		},
+		{
+			what:  "unexpected EOF while lexing || operator",
+			input: "|",
+			want:  "unexpected EOF while lexing || operator",
+		},
+	}
+
+	for _, tc := range testCases {
+		t.Run(tc.what, func(t *testing.T) {
+			l := NewExprLexer()
+			_, _, err := l.Lex(tc.input)
+			if err == nil {
+				t.Fatal("error did not occur")
+			}
+			if !strings.Contains(err.Error(), tc.want) {
+				t.Fatalf("Error message %q does not contain %q", err.Error(), tc.want)
 			}
 		})
 	}
