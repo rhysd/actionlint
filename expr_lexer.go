@@ -189,9 +189,17 @@ func (lex *ExprLexer) unexpected(r rune, where string, expected []rune) *ExprErr
 	for _, e := range expected {
 		qs = append(qs, strconv.QuoteRune(e))
 	}
+
+	var what string
+	if r == scanner.EOF {
+		what = "EOF"
+	} else {
+		what = "character " + strconv.QuoteRune(r)
+	}
+
 	msg := fmt.Sprintf(
-		"got unexpected character %s while lexing %s, expecting %s",
-		strconv.QuoteRune(r),
+		"got unexpected %s while lexing %s, expecting %s",
+		what,
 		where,
 		strings.Join(qs, ", "),
 	)
