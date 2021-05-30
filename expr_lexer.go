@@ -7,33 +7,58 @@ import (
 	"text/scanner"
 )
 
+// TokenKind is kind of token.
 type TokenKind int
 
 const (
+	// TokenKindUnknown is a default value of token as unknown token value.
 	TokenKindUnknown TokenKind = iota
+	// TokenKindEnd is a token for end of token sequence. Sequence without this
+	// token means invalid.
 	TokenKindEnd
+	// TokenKindIdent is a token for identifier.
 	TokenKindIdent
+	// TokenKindString is a token for string literals.
 	TokenKindString
+	// TokenKindInt is a token for integers including hex integers.
 	TokenKindInt
+	// TokenKindFloat is a token for float numbers.
 	TokenKindFloat
+	// TokenKindLeftParen is a token for '('.
 	TokenKindLeftParen
+	// TokenKindRightParen is a token for ')'.
 	TokenKindRightParen
+	// TokenKindLeftBracket is a token for '['.
 	TokenKindLeftBracket
+	// TokenKindRightBracket is a token for ']'.
 	TokenKindRightBracket
+	// TokenKindDot is a token for '.'.
 	TokenKindDot
+	// TokenKindNot is a token for '!'.
 	TokenKindNot
+	// TokenKindLess is a token for '<'.
 	TokenKindLess
+	// TokenKindLessEq is a token for '<='.
 	TokenKindLessEq
+	// TokenKindGreater is a token for '>'.
 	TokenKindGreater
+	// TokenKindGreaterEq is a token for '>='.
 	TokenKindGreaterEq
+	// TokenKindEq is a token for '=='.
 	TokenKindEq
+	// TokenKindNotEq is a token for '!='.
 	TokenKindNotEq
+	// TokenKindAnd is a token for '&&'.
 	TokenKindAnd
+	// TokenKindOr is a token for '||'.
 	TokenKindOr
+	// TokenKindStar is a token for '*'.
 	TokenKindStar
+	// TokenKindComma is a token for ','.
 	TokenKindComma
 )
 
+// GetTokenKindName returns name of token kind.
 func GetTokenKindName(t TokenKind) string {
 	switch t {
 	case TokenKindUnknown:
@@ -85,11 +110,18 @@ func GetTokenKindName(t TokenKind) string {
 	}
 }
 
+// Token is a token lexed from expression syntax. For more details, see
+// https://docs.github.com/en/actions/reference/context-and-expression-syntax-for-github-actions
 type Token struct {
-	Kind   TokenKind
-	Value  string
+	// Kind is kind of the token.
+	Kind TokenKind
+	// Value is string representation of the token.
+	Value string
+	// Offset is byte offset of expression string.
 	Offset int
-	Line   int
+	// Line is line number of position of the token. Note that this value is 0-based.
+	Line int
+	// Column is column number of position of the token. Note that this value is 0-based.
 	Column int
 }
 
@@ -97,11 +129,17 @@ func (t *Token) String() string {
 	return fmt.Sprintf("%s:%d:%d:%d", GetTokenKindName(t.Kind), t.Line, t.Column, t.Offset)
 }
 
+// ExprError is an error type caused by lexing/parsing expression syntax. For more details, see
+// https://docs.github.com/en/actions/reference/context-and-expression-syntax-for-github-actions
 type ExprError struct {
+	// Message is an error message
 	Message string
-	Offset  int
-	Line    int
-	Column  int
+	// Offset is byte offset position which caused the error
+	Offset int
+	// Offset is line number position which caused the error. Note that this value is 0-based.
+	Line int
+	// Column is column number position which caused the error. Note that this value is 0-based.
+	Column int
 }
 
 func (e *ExprError) Error() string {
@@ -149,6 +187,8 @@ func appendAlphas(rs []rune) []rune {
 	return rs
 }
 
+// ExprLexer is a struct to lex expression syntax. To know the syntax, see
+// https://docs.github.com/en/actions/reference/context-and-expression-syntax-for-github-actions
 type ExprLexer struct {
 	src     string
 	scan    scanner.Scanner
@@ -156,6 +196,7 @@ type ExprLexer struct {
 	start   int
 }
 
+// NewExprLexer makes new ExprLexer instance.
 func NewExprLexer() *ExprLexer {
 	return &ExprLexer{}
 }
@@ -490,6 +531,9 @@ func (lex *ExprLexer) init(src string) {
 	}
 }
 
+// Lex lexes the given string as expression syntax. The parameter must contain '}}' which represents
+// end of expression. Otherwise this function will report an error that it encountered unexpected
+// EOF.
 func (lex *ExprLexer) Lex(src string) ([]*Token, int, *ExprError) {
 	lex.init(src)
 	ts := []*Token{}
