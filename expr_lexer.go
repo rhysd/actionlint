@@ -98,6 +98,10 @@ type ExprError struct {
 	Column  int
 }
 
+func (e *ExprError) Error() string {
+	return fmt.Sprintf("%d:%d:%d: %s", e.Line, e.Column, e.Offset, e.Message)
+}
+
 func isWhitespace(r rune) bool {
 	return r == ' ' || r == '\n' || r == '\r' || r == '\t'
 }
@@ -207,7 +211,9 @@ func (lex *ExprLexer) unexpectedEOF() *ExprError {
 func (lex *ExprLexer) lexIdent() (*Token, *ExprError) {
 	for {
 		lex.scan.Next()
-		if r := lex.scan.Peek(); !isAlnum(r) {
+		// a-Z, 0-9, - or _
+		// https://docs.github.com/en/actions/reference/context-and-expression-syntax-for-github-actions#contexts
+		if r := lex.scan.Peek(); !isAlnum(r) && r != '_' && r != '-' {
 			return lex.token(TokenKindIdent), lex.scanErr
 		}
 	}
@@ -368,6 +374,7 @@ func (lex *ExprLexer) lexBang() (*Token, *ExprError) {
 	lex.scan.Next() // eat '!'
 	k := TokenKindNot
 	if lex.scan.Peek() == '=' {
+		lex.scan.Next() // eat '='
 		k = TokenKindNotEq
 	}
 	return lex.token(k), lex.scanErr
@@ -397,7 +404,9 @@ func (lex *ExprLexer) lexToken() (*Token, *ExprError) {
 		return nil, lex.unexpectedEOF()
 	}
 
-	if isAlpha(r) {
+	// Ident starts with a-Z or _
+	// https://docs.github.com/en/actions/reference/context-and-expression-syntax-for-github-actions#contexts
+	if isAlpha(r) || r == '_' {
 		return lex.lexIdent()
 	}
 
@@ -412,16 +421,6 @@ func (lex *ExprLexer) lexToken() (*Token, *ExprError) {
 		return lex.lexString()
 	case '}':
 		return lex.lexEnd()
-	case '(':
-		return lex.token(TokenKindLeftParen), lex.scanErr
-	case ')':
-		return lex.token(TokenKindRightParen), lex.scanErr
-	case '[':
-		return lex.token(TokenKindLeftBracket), lex.scanErr
-	case ']':
-		return lex.token(TokenKindRightBracket), lex.scanErr
-	case '.':
-		return lex.token(TokenKindDot), lex.scanErr
 	case '!':
 		return lex.lexBang()
 	case '<':
@@ -434,13 +433,28 @@ func (lex *ExprLexer) lexToken() (*Token, *ExprError) {
 		return lex.lexAnd()
 	case '|':
 		return lex.lexOr()
-	default:
-		e := []rune{}
-		e = appendPuncts(e)
-		e = appendDigits(e)
-		e = appendAlphas(e)
-		return nil, lex.unexpected(r, "expression", e)
 	}
+
+	// Single character tokens
+	lex.scan.Next()
+	switch r {
+	case '(':
+		return lex.token(TokenKindLeftParen), lex.scanErr
+	case ')':
+		return lex.token(TokenKindRightParen), lex.scanErr
+	case '[':
+		return lex.token(TokenKindLeftBracket), lex.scanErr
+	case ']':
+		return lex.token(TokenKindRightBracket), lex.scanErr
+	case '.':
+		return lex.token(TokenKindDot), lex.scanErr
+	}
+
+	e := []rune{'_'} // Ident can start with _
+	e = appendPuncts(e)
+	e = appendDigits(e)
+	e = appendAlphas(e)
+	return nil, lex.unexpected(r, "expression", e)
 }
 
 func (lex *ExprLexer) init(src string) {
@@ -466,9 +480,9 @@ func (lex *ExprLexer) Lex(src string) ([]*Token, int, *ExprError) {
 		if err != nil {
 			return nil, 0, err
 		}
+		ts = append(ts, t)
 		if t.Kind == TokenKindEnd {
 			return ts, lex.scan.Pos().Offset, nil
 		}
-		ts = append(ts, t)
 	}
 }
