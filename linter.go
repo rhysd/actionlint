@@ -3,7 +3,6 @@ package actionlint
 import (
 	"fmt"
 	"io"
-	"io/fs"
 	"io/ioutil"
 	"os"
 	"path/filepath"
@@ -95,7 +94,7 @@ func (l *Linter) LintRepoDir(dir string) ([]*Error, error) {
 	l.Log("Detected workflows directory:", wd)
 
 	files := []string{}
-	if err := filepath.Walk(wd, func(path string, info fs.FileInfo, err error) error {
+	if err := filepath.Walk(wd, func(path string, info os.FileInfo, err error) error {
 		if err != nil {
 			return err
 		}
