@@ -40,7 +40,7 @@ type Token struct {
 	Column int
 }
 
-type LexError struct {
+type ExprError struct {
 	Message string
 	Offset  int
 	Line    int
@@ -91,7 +91,7 @@ func appendAlphas(rs []rune) []rune {
 type ExprLexer struct {
 	src     string
 	scan    scanner.Scanner
-	scanErr *LexError
+	scanErr *ExprError
 	start   int
 }
 
@@ -122,13 +122,18 @@ func (lex *ExprLexer) skipWhite() {
 	}
 }
 
-func (lex *ExprLexer) unexpected(r rune, expected []rune) *LexError {
+func (lex *ExprLexer) unexpected(r rune, where string, expected []rune) *ExprError {
 	qs := make([]string, 0, len(expected))
 	for _, e := range expected {
 		qs = append(qs, strconv.QuoteRune(e))
 	}
-	msg := fmt.Sprintf("got unexpected character %s at offset %d, expecting %s", strconv.QuoteRune(r), lex.scan.Offset, strings.Join(qs, ", "))
-	return &LexError{
+	msg := fmt.Sprintf(
+		"got unexpected character %s while lexing %s, expecting %s",
+		strconv.QuoteRune(r),
+		where,
+		strings.Join(qs, ", "),
+	)
+	return &ExprError{
 		Message: msg,
 		Offset:  lex.scan.Offset,
 		Line:    lex.scan.Line,
@@ -136,16 +141,16 @@ func (lex *ExprLexer) unexpected(r rune, expected []rune) *LexError {
 	}
 }
 
-func (lex *ExprLexer) unexpectedEOF() *LexError {
-	return &LexError{
-		Message: "Unexpected EOF while lexing expression",
+func (lex *ExprLexer) unexpectedEOF() *ExprError {
+	return &ExprError{
+		Message: "unexpected EOF while lexing expression",
 		Offset:  lex.scan.Offset,
 		Line:    lex.scan.Line,
 		Column:  lex.scan.Column,
 	}
 }
 
-func (lex *ExprLexer) lexIdent() (*Token, *LexError) {
+func (lex *ExprLexer) lexIdent() (*Token, *ExprError) {
 	for {
 		lex.scan.Next()
 		if r := lex.scan.Peek(); !isAlnum(r) {
@@ -154,13 +159,13 @@ func (lex *ExprLexer) lexIdent() (*Token, *LexError) {
 	}
 }
 
-func (lex *ExprLexer) lexNum() (*Token, *LexError) {
+func (lex *ExprLexer) lexNum() (*Token, *ExprError) {
 	r := lex.scan.Next() // precond: r is digit or '-'
 
 	if r == '-' {
 		r = lex.scan.Next()
 		if !isNum(r) {
-			return nil, lex.unexpected(r, appendDigits([]rune{}))
+			return nil, lex.unexpected(r, "number after -", appendDigits([]rune{}))
 		}
 	}
 
@@ -174,7 +179,7 @@ func (lex *ExprLexer) lexNum() (*Token, *LexError) {
 			e := []rune{}
 			e = appendPuncts(e)
 			e = append(e, 'e', 'E')
-			return nil, lex.unexpected(r, e)
+			return nil, lex.unexpected(r, "number after 0", e)
 		}
 	} else {
 		// r is 1..9
@@ -193,7 +198,7 @@ func (lex *ExprLexer) lexNum() (*Token, *LexError) {
 		lex.scan.Next() // eat '.'
 		r = lex.scan.Next()
 		if !isNum(r) {
-			return nil, lex.unexpected(r, appendDigits([]rune{}))
+			return nil, lex.unexpected(r, "fraction part of float number", appendDigits([]rune{}))
 		}
 
 		for {
@@ -214,7 +219,7 @@ func (lex *ExprLexer) lexNum() (*Token, *LexError) {
 			r = lex.scan.Next()
 		}
 		if !isNum(r) {
-			return nil, lex.unexpected(r, appendDigits([]rune{}))
+			return nil, lex.unexpected(r, "exponent part of float number", appendDigits([]rune{}))
 		}
 
 		for {
@@ -231,7 +236,7 @@ func (lex *ExprLexer) lexNum() (*Token, *LexError) {
 	return lex.token(k), lex.scanErr
 }
 
-func (lex *ExprLexer) lexHexInt() (*Token, *LexError) {
+func (lex *ExprLexer) lexHexInt() (*Token, *ExprError) {
 	r := lex.scan.Next()
 	if !isHexNum(r) {
 		e := appendDigits([]rune{})
@@ -241,7 +246,7 @@ func (lex *ExprLexer) lexHexInt() (*Token, *LexError) {
 		for r := 'A'; r <= 'F'; r++ {
 			e = append(e, r)
 		}
-		return nil, lex.unexpected(r, e)
+		return nil, lex.unexpected(r, "hex integer", e)
 	}
 
 	for {
@@ -255,7 +260,7 @@ func (lex *ExprLexer) lexHexInt() (*Token, *LexError) {
 	return lex.token(TokenKindInt), lex.scanErr
 }
 
-func (lex *ExprLexer) lexString() (*Token, *LexError) {
+func (lex *ExprLexer) lexString() (*Token, *ExprError) {
 	lex.scan.Next() // eat '
 	for {
 		if lex.scan.Next() == '\'' {
@@ -268,16 +273,16 @@ func (lex *ExprLexer) lexString() (*Token, *LexError) {
 	}
 }
 
-func (lex *ExprLexer) lexEnd() (*Token, *LexError) {
+func (lex *ExprLexer) lexEnd() (*Token, *ExprError) {
 	lex.scan.Next() // eat '}'
 	if r := lex.scan.Next(); r != '}' {
-		return nil, lex.unexpected(r, []rune{'}'})
+		return nil, lex.unexpected(r, "end marker }}", []rune{'}'})
 	}
 	// }} is an end marker of interpolation
 	return lex.token(TokenKindEnd), lex.scanErr
 }
 
-func (lex *ExprLexer) lexLess() (*Token, *LexError) {
+func (lex *ExprLexer) lexLess() (*Token, *ExprError) {
 	lex.scan.Next() // eat '<'
 	k := TokenKindLess
 	if lex.scan.Peek() == '=' {
@@ -287,7 +292,7 @@ func (lex *ExprLexer) lexLess() (*Token, *LexError) {
 	return lex.token(k), lex.scanErr
 }
 
-func (lex *ExprLexer) lexGreater() (*Token, *LexError) {
+func (lex *ExprLexer) lexGreater() (*Token, *ExprError) {
 	lex.scan.Next() // eat '>'
 	k := TokenKindGreater
 	if lex.scan.Peek() == '=' {
@@ -297,15 +302,15 @@ func (lex *ExprLexer) lexGreater() (*Token, *LexError) {
 	return lex.token(k), lex.scanErr
 }
 
-func (lex *ExprLexer) lexEq() (*Token, *LexError) {
+func (lex *ExprLexer) lexEq() (*Token, *ExprError) {
 	lex.scan.Next() // eat '='
 	if r := lex.scan.Next(); r != '=' {
-		return nil, lex.unexpected(r, []rune{'='})
+		return nil, lex.unexpected(r, "== operator", []rune{'='})
 	}
 	return lex.token(TokenKindEq), lex.scanErr
 }
 
-func (lex *ExprLexer) lexBang() (*Token, *LexError) {
+func (lex *ExprLexer) lexBang() (*Token, *ExprError) {
 	lex.scan.Next() // eat '!'
 	k := TokenKindNot
 	if lex.scan.Peek() == '=' {
@@ -314,23 +319,23 @@ func (lex *ExprLexer) lexBang() (*Token, *LexError) {
 	return lex.token(k), lex.scanErr
 }
 
-func (lex *ExprLexer) lexAnd() (*Token, *LexError) {
+func (lex *ExprLexer) lexAnd() (*Token, *ExprError) {
 	lex.scan.Next() // eat '&'
 	if r := lex.scan.Next(); r != '&' {
-		return nil, lex.unexpected(r, []rune{'&'})
+		return nil, lex.unexpected(r, "&& operator", []rune{'&'})
 	}
 	return lex.token(TokenKindAnd), lex.scanErr
 }
 
-func (lex *ExprLexer) lexOr() (*Token, *LexError) {
+func (lex *ExprLexer) lexOr() (*Token, *ExprError) {
 	lex.scan.Next() // eat '|'
 	if r := lex.scan.Next(); r != '|' {
-		return nil, lex.unexpected(r, []rune{'|'})
+		return nil, lex.unexpected(r, "|| operator", []rune{'|'})
 	}
 	return lex.token(TokenKindOr), lex.scanErr
 }
 
-func (lex *ExprLexer) lexToken() (*Token, *LexError) {
+func (lex *ExprLexer) lexToken() (*Token, *ExprError) {
 	lex.skipWhite()
 
 	r := lex.scan.Peek()
@@ -380,7 +385,7 @@ func (lex *ExprLexer) lexToken() (*Token, *LexError) {
 		e = appendPuncts(e)
 		e = appendDigits(e)
 		e = appendAlphas(e)
-		return nil, lex.unexpected(r, e)
+		return nil, lex.unexpected(r, "expression", e)
 	}
 }
 
@@ -390,7 +395,7 @@ func (lex *ExprLexer) init(src string) {
 	lex.scanErr = nil
 	lex.scan.Init(strings.NewReader(src))
 	lex.scan.Error = func(s *scanner.Scanner, m string) {
-		lex.scanErr = &LexError{
+		lex.scanErr = &ExprError{
 			Message: fmt.Sprintf("error while lexing expression: %s", m),
 			Offset:  s.Offset,
 			Line:    s.Line,
@@ -399,7 +404,7 @@ func (lex *ExprLexer) init(src string) {
 	}
 }
 
-func (lex *ExprLexer) Lex(src string) ([]*Token, int, *LexError) {
+func (lex *ExprLexer) Lex(src string) ([]*Token, int, *ExprError) {
 	lex.init(src)
 	ts := []*Token{}
 	for {
