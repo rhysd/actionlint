@@ -30,6 +30,8 @@ const (
 	TokenKindNotEq
 	TokenKindAnd
 	TokenKindOr
+	TokenKindStar
+	TokenKindComma
 )
 
 func GetTokenKindName(t TokenKind) string {
@@ -74,6 +76,10 @@ func GetTokenKindName(t TokenKind) string {
 		return "And"
 	case TokenKindOr:
 		return "Or"
+	case TokenKindStar:
+		return "Star"
+	case TokenKindComma:
+		return "Comma"
 	default:
 		return "Unknown"
 	}
@@ -123,7 +129,7 @@ func isAlnum(r rune) bool {
 }
 
 func appendPuncts(rs []rune) []rune {
-	return append(rs, '\'', '}', '(', ')', '[', ']', '.', '!', '<', '>', '=', '&', '|')
+	return append(rs, '\'', '}', '(', ')', '[', ']', '.', '!', '<', '>', '=', '&', '|', '*', ',')
 }
 
 func appendDigits(rs []rune) []rune {
@@ -174,7 +180,7 @@ func (lex *ExprLexer) skipWhite() {
 			return
 		}
 		lex.scan.Next()
-		lex.start = lex.scan.Offset
+		lex.start = lex.scan.Pos().Offset
 	}
 }
 
@@ -448,6 +454,10 @@ func (lex *ExprLexer) lexToken() (*Token, *ExprError) {
 		return lex.token(TokenKindRightBracket), lex.scanErr
 	case '.':
 		return lex.token(TokenKindDot), lex.scanErr
+	case '*':
+		return lex.token(TokenKindStar), lex.scanErr
+	case ',':
+		return lex.token(TokenKindComma), lex.scanErr
 	}
 
 	e := []rune{'_'} // Ident can start with _
