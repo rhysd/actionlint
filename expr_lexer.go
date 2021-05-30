@@ -32,12 +32,63 @@ const (
 	TokenKindOr
 )
 
+func GetTokenKindName(t TokenKind) string {
+	switch t {
+	case TokenKindUnknown:
+		return "Unknown"
+	case TokenKindEnd:
+		return "End"
+	case TokenKindIdent:
+		return "Ident"
+	case TokenKindString:
+		return "String"
+	case TokenKindInt:
+		return "Int"
+	case TokenKindFloat:
+		return "Float"
+	case TokenKindLeftParen:
+		return "LeftParen"
+	case TokenKindRightParen:
+		return "RightParen"
+	case TokenKindLeftBracket:
+		return "LeftBracket"
+	case TokenKindRightBracket:
+		return "RightBracket"
+	case TokenKindDot:
+		return "Dot"
+	case TokenKindNot:
+		return "Not"
+	case TokenKindLess:
+		return "Less"
+	case TokenKindLessEq:
+		return "LessEq"
+	case TokenKindGreater:
+		return "Greater"
+	case TokenKindGreaterEq:
+		return "GreaterEq"
+	case TokenKindEq:
+		return "Eq"
+	case TokenKindNotEq:
+		return "NotEq"
+	case TokenKindAnd:
+		return "And"
+	case TokenKindOr:
+		return "Or"
+	default:
+		return "Unknown"
+	}
+}
+
 type Token struct {
 	Kind   TokenKind
 	Value  string
 	Offset int
 	Line   int
 	Column int
+}
+
+func (t *Token) String() string {
+	return fmt.Sprintf("%s:%d:%d:%d", GetTokenKindName(t.Kind), t.Line, t.Column, t.Offset)
 }
 
 type ExprError struct {
@@ -100,15 +151,16 @@ func NewExprLexer() *ExprLexer {
 }
 
 func (lex *ExprLexer) token(kind TokenKind) *Token {
-	s, e := lex.start, lex.scan.Offset
+	p := lex.scan.Pos()
+	s, e := lex.start, p.Offset
 	t := &Token{
 		Kind:   kind,
 		Value:  lex.src[s:e],
 		Offset: lex.scan.Offset,
-		Line:   lex.scan.Line,
-		Column: lex.scan.Column,
+		Line:   p.Line,
+		Column: p.Column,
 	}
-	lex.start = lex.scan.Offset
+	lex.start = p.Offset
 	return t
 }
 
@@ -133,20 +185,22 @@ func (lex *ExprLexer) unexpected(r rune, where string, expected []rune) *ExprErr
 		where,
 		strings.Join(qs, ", "),
 	)
+	p := lex.scan.Pos()
 	return &ExprError{
 		Message: msg,
-		Offset:  lex.scan.Offset,
-		Line:    lex.scan.Line,
-		Column:  lex.scan.Column,
+		Offset:  p.Offset,
+		Line:    p.Line,
+		Column:  p.Column,
 	}
 }
 
 func (lex *ExprLexer) unexpectedEOF() *ExprError {
+	p := lex.scan.Pos()
 	return &ExprError{
 		Message: "unexpected EOF while lexing expression",
-		Offset:  lex.scan.Offset,
-		Line:    lex.scan.Line,
-		Column:  lex.scan.Column,
+		Offset:  p.Offset,
+		Line:    p.Line,
+		Column:  p.Column,
 	}
 }
 
@@ -413,7 +467,7 @@ func (lex *ExprLexer) Lex(src string) ([]*Token, int, *ExprError) {
 			return nil, 0, err
 		}
 		if t.Kind == TokenKindEnd {
-			return ts, lex.scan.Offset, nil
+			return ts, lex.scan.Pos().Offset, nil
 		}
 		ts = append(ts, t)
 	}
