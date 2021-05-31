@@ -416,6 +416,10 @@ func (p *ExprParser) parseCompareBinOp() (ExprNode, *ExprError) {
 		k = CompareOpNodeKindGreater
 	case TokenKindGreaterEq:
 		k = CompareOpNodeKindGreaterEq
+	case TokenKindEq:
+		k = CompareOpNodeKindEq
+	case TokenKindNotEq:
+		k = CompareOpNodeKindNotEq
 	default:
 		return l, nil
 	}
@@ -463,7 +467,7 @@ func (p *ExprParser) Parse(t []*Token) (ExprNode, *ExprError) {
 	}
 	p.input = t
 
-	e, err := p.parseLogicalBinOp()
+	root, err := p.parseLogicalBinOp()
 	if err != nil {
 		return nil, err
 	}
@@ -480,5 +484,5 @@ func (p *ExprParser) Parse(t []*Token) (ExprNode, *ExprError) {
 		return nil, p.errorf("parser did not reach end of input after parsing expression. remaining tokens are %s", strings.Join(qs, ", "))
 	}
 
-	return e, nil
+	return root, nil
 }
