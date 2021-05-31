@@ -74,6 +74,11 @@ func TestLexOneToken(t *testing.T) {
 			kind:  TokenKindString,
 		},
 		{
+			what:  "string with non-ascii chars",
+			input: "'こんにちは＼(^o^)／世界😊'",
+			kind:  TokenKindString,
+		},
+		{
 			what:  "int",
 			input: "42",
 			kind:  TokenKindInt,
@@ -466,6 +471,20 @@ func TestLexExpression(t *testing.T) {
 				"d",
 				")",
 				")",
+			},
+		},
+		{
+			what:  "equal expression",
+			input: "0 == 1",
+			tokens: []TokenKind{
+				TokenKindInt,
+				TokenKindEq,
+				TokenKindInt,
+			},
+			values: []string{
+				"0",
+				"==",
+				"1",
 			},
 		},
 	}
