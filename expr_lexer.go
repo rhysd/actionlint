@@ -159,7 +159,7 @@ func isNum(r rune) bool {
 }
 
 func isHexNum(r rune) bool {
-	return isNum(r) || 'a' < r && r < 'f' || 'A' < r && r < 'F'
+	return isNum(r) || 'a' <= r && r <= 'f' || 'A' <= r && r <= 'F'
 }
 
 func isAlnum(r rune) bool {

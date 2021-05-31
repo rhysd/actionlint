@@ -99,6 +99,16 @@ func TestLexOneToken(t *testing.T) {
 			kind:  TokenKindInt,
 		},
 		{
+			what:  "hex int part2",
+			input: "0xf",
+			kind:  TokenKindInt,
+		},
+		{
+			what:  "hex int part3",
+			input: "0xa",
+			kind:  TokenKindInt,
+		},
+		{
 			what:  "negative hex int",
 			input: "-0x1e",
 			kind:  TokenKindInt,
