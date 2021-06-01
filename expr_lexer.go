@@ -117,11 +117,11 @@ type Token struct {
 	Kind TokenKind
 	// Value is string representation of the token.
 	Value string
-	// Offset is byte offset of token string.
+	// Offset is byte offset of token string starting.
 	Offset int
-	// Line is line number of position of the token. Note that this value is 0-based.
+	// Line is line number of start position of the token. Note that this value is 1-based.
 	Line int
-	// Column is column number of position of the token. Note that this value is 0-based.
+	// Column is column number of start position of the token. Note that this value is 1-based.
 	Column int
 }
 
@@ -176,7 +176,7 @@ type ExprLexer struct {
 	src     string
 	scan    scanner.Scanner
 	scanErr *ExprError
-	start   int
+	start   scanner.Position
 }
 
 // NewExprLexer makes new ExprLexer instance.
@@ -186,15 +186,15 @@ func NewExprLexer() *ExprLexer {
 
 func (lex *ExprLexer) token(kind TokenKind) *Token {
 	p := lex.scan.Pos()
-	s, e := lex.start, p.Offset
+	s := lex.start
 	t := &Token{
 		Kind:   kind,
-		Value:  lex.src[s:e],
-		Offset: p.Offset,
-		Line:   p.Line,
-		Column: p.Column,
+		Value:  lex.src[s.Offset:p.Offset],
+		Offset: s.Offset,
+		Line:   s.Line,
+		Column: s.Column,
 	}
-	lex.start = p.Offset
+	lex.start = p
 	return t
 }
 
@@ -204,7 +204,7 @@ func (lex *ExprLexer) skipWhite() {
 			return
 		}
 		lex.scan.Next()
-		lex.start = lex.scan.Pos().Offset
+		lex.start = lex.scan.Pos()
 	}
 }
 
@@ -501,7 +501,7 @@ func (lex *ExprLexer) lexToken() (*Token, *ExprError) {
 
 func (lex *ExprLexer) init(src string) {
 	lex.src = src
-	lex.start = 0
+	lex.start = scanner.Position{}
 	lex.scanErr = nil
 	lex.scan.Init(strings.NewReader(src))
 	lex.scan.Error = func(s *scanner.Scanner, m string) {
