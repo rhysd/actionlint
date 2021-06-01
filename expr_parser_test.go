@@ -130,6 +130,54 @@ func TestParseExpressionSyntaxOK(t *testing.T) {
 			expected: &VariableNode{Name: "github"},
 		},
 		{
+			what:  "func call",
+			input: "success()",
+			expected: &FuncCallNode{
+				Callee: "success",
+				Args:   []ExprNode{},
+			},
+		},
+		{
+			what:  "func call with 1 argument",
+			input: "fromJSON(object)",
+			expected: &FuncCallNode{
+				Callee: "fromJSON",
+				Args: []ExprNode{
+					&VariableNode{Name: "object"},
+				},
+			},
+		},
+		{
+			what:  "func call with multiple arguments",
+			input: "contains('hello, world', 'o, w')",
+			expected: &FuncCallNode{
+				Callee: "contains",
+				Args: []ExprNode{
+					&StringNode{Value: "hello, world"},
+					&StringNode{Value: "o, w"},
+				},
+			},
+		},
+		{
+			what:  "index access",
+			input: "obj['key']",
+			expected: &IndexAccessNode{
+				Operand: &VariableNode{Name: "obj"},
+				Index:   &StringNode{Value: "key"},
+			},
+		},
+		{
+			what:  "index access with variable",
+			input: "obj[a.b]",
+			expected: &IndexAccessNode{
+				Operand: &VariableNode{Name: "obj"},
+				Index: &ObjectDerefNode{
+					Receiver: &VariableNode{Name: "a"},
+					Property: "b",
+				},
+			},
+		},
+		{
 			what:  "< operator",
 			input: "0 < 1",
 			expected: &CompareOpNode{
@@ -247,6 +295,230 @@ func TestParseExpressionSyntaxOK(t *testing.T) {
 				Receiver: &ArrayDerefNode{
 					Receiver: &ArrayDerefNode{
 						Receiver: &VariableNode{Name: "a"},
+					},
+				},
+			},
+		},
+		// compound expressions
+		{
+			what:  "logical expressions",
+			input: "0 == 0.1 && a < b || x >= !y && true != false",
+			expected: &LogicalOpNode{
+				Kind: LogicalOpNodeKindOr,
+				Left: &LogicalOpNode{
+					Kind: LogicalOpNodeKindAnd,
+					Left: &CompareOpNode{
+						Kind:  CompareOpNodeKindEq,
+						Left:  &IntNode{Value: 0},
+						Right: &FloatNode{Value: 0.1},
+					},
+					Right: &CompareOpNode{
+						Kind:  CompareOpNodeKindLess,
+						Left:  &VariableNode{Name: "a"},
+						Right: &VariableNode{Name: "b"},
+					},
+				},
+				Right: &LogicalOpNode{
+					Kind: LogicalOpNodeKindAnd,
+					Left: &CompareOpNode{
+						Kind: CompareOpNodeKindGreaterEq,
+						Left: &VariableNode{Name: "x"},
+						Right: &NotOpNode{
+							Operand: &VariableNode{Name: "y"},
+						},
+					},
+					Right: &CompareOpNode{
+						Kind:  CompareOpNodeKindNotEq,
+						Left:  &BoolNode{Value: true},
+						Right: &BoolNode{Value: false},
+					},
+				},
+			},
+		},
+		{
+			what:  "logical expressions with nested expressions",
+			input: "(0 == 0.1) && (a < b || x >= !y) && (true != false)",
+			expected: &LogicalOpNode{
+				Kind: LogicalOpNodeKindAnd,
+				Left: &CompareOpNode{
+					Kind:  CompareOpNodeKindEq,
+					Left:  &IntNode{Value: 0},
+					Right: &FloatNode{Value: 0.1},
+				},
+				Right: &LogicalOpNode{
+					Kind: LogicalOpNodeKindAnd,
+					Left: &LogicalOpNode{
+						Kind: LogicalOpNodeKindOr,
+						Left: &CompareOpNode{
+							Kind:  CompareOpNodeKindLess,
+							Left:  &VariableNode{Name: "a"},
+							Right: &VariableNode{Name: "b"},
+						},
+						Right: &CompareOpNode{
+							Kind: CompareOpNodeKindGreaterEq,
+							Left: &VariableNode{Name: "x"},
+							Right: &NotOpNode{
+								Operand: &VariableNode{Name: "y"},
+							},
+						},
+					},
+					Right: &CompareOpNode{
+						Kind:  CompareOpNodeKindNotEq,
+						Left:  &BoolNode{Value: true},
+						Right: &BoolNode{Value: false},
+					},
+				},
+			},
+		},
+		{
+			what:  "logical expressions with more nested expressions",
+			input: "((0 == 0.1) && (a < b || x >= !y)) && (true != false)",
+			expected: &LogicalOpNode{
+				Kind: LogicalOpNodeKindAnd,
+				Left: &LogicalOpNode{
+					Kind: LogicalOpNodeKindAnd,
+					Left: &CompareOpNode{
+						Kind:  CompareOpNodeKindEq,
+						Left:  &IntNode{Value: 0},
+						Right: &FloatNode{Value: 0.1},
+					},
+					Right: &LogicalOpNode{
+						Kind: LogicalOpNodeKindOr,
+						Left: &CompareOpNode{
+							Kind:  CompareOpNodeKindLess,
+							Left:  &VariableNode{Name: "a"},
+							Right: &VariableNode{Name: "b"},
+						},
+						Right: &CompareOpNode{
+							Kind: CompareOpNodeKindGreaterEq,
+							Left: &VariableNode{Name: "x"},
+							Right: &NotOpNode{
+								Operand: &VariableNode{Name: "y"},
+							},
+						},
+					},
+				},
+				Right: &CompareOpNode{
+					Kind:  CompareOpNodeKindNotEq,
+					Left:  &BoolNode{Value: true},
+					Right: &BoolNode{Value: false},
+				},
+			},
+		},
+		{
+			what:  "nested function calls",
+			input: "!contains(some.value, 'foo') && endsWith(join(x.*.y, ', '), 'bar')",
+			expected: &LogicalOpNode{
+				Kind: LogicalOpNodeKindAnd,
+				Left: &NotOpNode{
+					Operand: &FuncCallNode{
+						Callee: "contains",
+						Args: []ExprNode{
+							&ObjectDerefNode{
+								Receiver: &VariableNode{Name: "some"},
+								Property: "value",
+							},
+							&StringNode{Value: "foo"},
+						},
+					},
+				},
+				Right: &FuncCallNode{
+					Callee: "endsWith",
+					Args: []ExprNode{
+						&FuncCallNode{
+							Callee: "join",
+							Args: []ExprNode{
+								&ObjectDerefNode{
+									Receiver: &ArrayDerefNode{
+										Receiver: &VariableNode{Name: "x"},
+									},
+									Property: "y",
+								},
+								&StringNode{Value: ", "},
+							},
+						},
+						&StringNode{Value: "bar"},
+					},
+				},
+			},
+		},
+		{
+			what:  "nested function calls with nested expressions",
+			input: "!((contains((some.value), ('foo'))) && (endsWith((join((x.*.y), (', '))), ('bar'))))",
+			expected: &NotOpNode{
+				Operand: &LogicalOpNode{
+					Kind: LogicalOpNodeKindAnd,
+					Left: &FuncCallNode{
+						Callee: "contains",
+						Args: []ExprNode{
+							&ObjectDerefNode{
+								Receiver: &VariableNode{Name: "some"},
+								Property: "value",
+							},
+							&StringNode{Value: "foo"},
+						},
+					},
+					Right: &FuncCallNode{
+						Callee: "endsWith",
+						Args: []ExprNode{
+							&FuncCallNode{
+								Callee: "join",
+								Args: []ExprNode{
+									&ObjectDerefNode{
+										Receiver: &ArrayDerefNode{
+											Receiver: &VariableNode{Name: "x"},
+										},
+										Property: "y",
+									},
+									&StringNode{Value: ", "},
+								},
+							},
+							&StringNode{Value: "bar"},
+						},
+					},
+				},
+			},
+		},
+		{
+			what:  "nested dereferences",
+			input: "contains(github.event['issue'].labels.*.name, 'bug')",
+			expected: &FuncCallNode{
+				Callee: "contains",
+				Args: []ExprNode{
+					&ObjectDerefNode{
+						Property: "name",
+						Receiver: &ArrayDerefNode{
+							Receiver: &ObjectDerefNode{
+								Property: "labels",
+								Receiver: &IndexAccessNode{
+									Index: &StringNode{Value: "issue"},
+									Operand: &ObjectDerefNode{
+										Property: "event",
+										Receiver: &VariableNode{Name: "github"},
+									},
+								},
+							},
+						},
+					},
+					&StringNode{Value: "bug"},
+				},
+			},
+		},
+		{
+			what:  "nested dereferences with nested expressions",
+			input: "(((((github.event)['issue']).labels).*).name)",
+			expected: &ObjectDerefNode{
+				Property: "name",
+				Receiver: &ArrayDerefNode{
+					Receiver: &ObjectDerefNode{
+						Property: "labels",
+						Receiver: &IndexAccessNode{
+							Index: &StringNode{Value: "issue"},
+							Operand: &ObjectDerefNode{
+								Property: "event",
+								Receiver: &VariableNode{Name: "github"},
+							},
+						},
 					},
 				},
 			},
