@@ -1,6 +1,8 @@
 package actionlint
 
 import (
+	"fmt"
+	"strings"
 	"testing"
 
 	"github.com/google/go-cmp/cmp"
@@ -557,6 +559,194 @@ func TestParseExpressionSyntaxOK(t *testing.T) {
 
 			if !cmp.Equal(tc.expected, n, opts...) {
 				t.Fatalf("wanted:\n%#v\n\nbut got:\n%#v\n\ndiff:\n%s\n", tc.expected, n, cmp.Diff(tc.expected, n, opts...))
+			}
+		})
+	}
+}
+
+func TestParseExpressionSyntaxError(t *testing.T) {
+	testCases := []struct {
+		what     string
+		input    string
+		expected string
+	}{
+		{
+			what:     "remaining inputs",
+			input:    "42 foo bar",
+			expected: "parser did not reach end of input after parsing expression",
+		},
+		{
+			what:     "missing operand in || operator",
+			input:    "true ||",
+			expected: "unexpected end of input",
+		},
+		{
+			what:     "missing operand in && operator",
+			input:    "true &&",
+			expected: "unexpected end of input",
+		},
+		{
+			what:     "missing operand in < operator",
+			input:    "0 <",
+			expected: "unexpected end of input",
+		},
+		{
+			what:     "missing operand in <= operator",
+			input:    "0 <=",
+			expected: "unexpected end of input",
+		},
+		{
+			what:     "missing operand in > operator",
+			input:    "0 >",
+			expected: "unexpected end of input",
+		},
+		{
+			what:     "missing operand in >= operator",
+			input:    "0 >=",
+			expected: "unexpected end of input",
+		},
+		{
+			what:     "missing operand in == operator",
+			input:    "0 ==",
+			expected: "unexpected end of input",
+		},
+		{
+			what:     "missing operand in != operator",
+			input:    "0 !=",
+			expected: "unexpected end of input",
+		},
+		{
+			what:     "missing operand after ! operator",
+			input:    "!",
+			expected: "unexpected end of input",
+		},
+		{
+			what:     "missing operand after . operator",
+			input:    "foo.",
+			expected: "unexpected end of input",
+		},
+		{
+			what:     "ident must come after .",
+			input:    "foo.42",
+			expected: "unexpected token \"INTEGER\" while parsing object property dereference",
+		},
+		{
+			what:     "broken index access part1",
+			input:    "foo[0",
+			expected: "unexpected end of input",
+		},
+		{
+			what:     "broken index access part2",
+			input:    "foo[",
+			expected: "unexpected end of input",
+		},
+		{
+			what:     "unexpected closing at index access",
+			input:    "foo[0)",
+			expected: "unexpected token \")\" while parsing closing bracket ']' for index access",
+		},
+		{
+			what:     "starting with invalid token",
+			input:    "[",
+			expected: "unexpected token \"[\" while parsing variable access, function call, null, bool, int, float or string",
+		},
+		{
+			what:     "missing closing ) for nested expression",
+			input:    "(a",
+			expected: "unexpected end of input",
+		},
+		{
+			what:     "invalid token at closing nested expression",
+			input:    "(a]",
+			expected: "unexpected token \"]\" while parsing closing ')'",
+		},
+		{
+			what:     "unexpected end of input while function call part1",
+			input:    "foo(",
+			expected: "unexpected end of input",
+		},
+		{
+			what:     "unexpected end of input while function call part2",
+			input:    "foo(0",
+			expected: "unexpected end of input",
+		},
+		{
+			what:     "unexpected end of input while function call part3",
+			input:    "foo(0,",
+			expected: "unexpected end of input",
+		},
+		{
+			what:     "unexpected end of input while function call part4",
+			input:    "foo(0, a",
+			expected: "unexpected end of input",
+		},
+		{
+			what:     "unexpected closing at function call",
+			input:    "foo(0]",
+			expected: "unexpected token \"]\" while parsing arguments of function call",
+		},
+		{
+			what:     "error while parsing nested expression",
+			input:    "([",
+			expected: "unexpected token \"[\"",
+		},
+	}
+
+	for _, tc := range testCases {
+		t.Run(tc.what, func(t *testing.T) {
+			l := NewExprLexer()
+			tok, _, err := l.Lex(tc.input + "}}")
+			if err != nil {
+				t.Fatal(err)
+			}
+			p := NewExprParser()
+			_, err = p.Parse(tok)
+			if err == nil {
+				t.Fatal("Parse error did not occur:", tc.input)
+			}
+
+			if !strings.Contains(err.Error(), tc.expected) {
+				t.Fatalf("error message %q does not contain expected string %q", err.Error(), tc.expected)
+			}
+		})
+	}
+}
+
+func TestParseExpressionNumberLiteralsError(t *testing.T) {
+	testCases := []struct {
+		what string
+		tok  *Token
+	}{
+		{
+			what: "integer literal",
+			tok: &Token{
+				Kind:  TokenKindInt,
+				Value: "abc",
+			},
+		},
+		{
+			what: "float literal",
+			tok: &Token{
+				Kind:  TokenKindFloat,
+				Value: "abc",
+			},
+		},
+	}
+
+	for _, tc := range testCases {
+		t.Run(tc.what, func(t *testing.T) {
+			ts := []*Token{
+				tc.tok,
+				&Token{Kind: TokenKindEnd},
+			}
+			p := NewExprParser()
+			_, err := p.Parse(ts)
+			if err == nil {
+				t.Fatal("Parse error did not occur:", tc.tok.Value)
+			}
+			want := fmt.Sprintf("parsing invalid %s", tc.what)
+			if !strings.Contains(err.Error(), want) {
+				t.Fatalf("error message %q does not contain %q", err.Error(), want)
 			}
 		})
 	}
