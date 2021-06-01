@@ -737,7 +737,7 @@ func TestParseExpressionNumberLiteralsError(t *testing.T) {
 		t.Run(tc.what, func(t *testing.T) {
 			ts := []*Token{
 				tc.tok,
-				&Token{Kind: TokenKindEnd},
+				{Kind: TokenKindEnd},
 			}
 			p := NewExprParser()
 			_, err := p.Parse(ts)
@@ -747,6 +747,121 @@ func TestParseExpressionNumberLiteralsError(t *testing.T) {
 			want := fmt.Sprintf("parsing invalid %s", tc.what)
 			if !strings.Contains(err.Error(), want) {
 				t.Fatalf("error message %q does not contain %q", err.Error(), want)
+			}
+		})
+	}
+}
+
+func TestParseExpressionTokenPosition(t *testing.T) {
+	testCases := []struct {
+		what   string
+		input  string
+		offset int
+	}{
+		{
+			what:  "null",
+			input: "null",
+		},
+		{
+			what:  "bool literal",
+			input: "true",
+		},
+		{
+			what:  "variable",
+			input: "foo",
+		},
+		{
+			what:  "function call",
+			input: "foo(1, 2, 3)",
+		},
+		{
+			what:   "nested expression",
+			input:  "(42)",
+			offset: 1,
+		},
+		{
+			what:  "int",
+			input: "-10",
+		},
+		{
+			what:  "float",
+			input: "-1.0e3",
+		},
+		{
+			what:  "object property dereference",
+			input: "github.issue.label.name",
+		},
+		{
+			what:  "array element dereference",
+			input: "labels.*",
+		},
+		{
+			what:  "index access",
+			input: "arr[idx]",
+		},
+		{
+			what:  "! op",
+			input: "!true",
+		},
+		{
+			what:  "< op",
+			input: "0 < 1",
+		},
+		{
+			what:  "<= op",
+			input: "0 <= 1",
+		},
+		{
+			what:  "> op",
+			input: "0 > 1",
+		},
+		{
+			what:  "== op",
+			input: "0 == 1",
+		},
+		{
+			what:  "!= op",
+			input: "0 != 1",
+		},
+		{
+			what:  "&& op",
+			input: "true && false",
+		},
+		{
+			what:  "|| op",
+			input: "true || false",
+		},
+	}
+
+	for _, tc := range testCases {
+		t.Run(tc.what, func(t *testing.T) {
+			l := NewExprLexer()
+			// Add 3 spaces so start position of token must be offset 2
+			tok, _, err := l.Lex("  " + tc.input + "}}")
+			if err != nil {
+				t.Fatal("Lex error:", err)
+			}
+
+			p := NewExprParser()
+			e, err := p.Parse(tok)
+			if err != nil {
+				t.Fatal("Parse error:", err)
+			}
+
+			offset := tc.offset + len("  ")
+
+			got := e.Token()
+			// Offset is 0-based
+			if got.Offset != offset {
+				t.Error("Offset of token of parsed node was not 2:", got)
+			}
+			// Line is 1-based
+			if got.Line != 1 {
+				t.Error("Line of token of parsed node was not 0:", got)
+			}
+			// Column is 1-based
+			if got.Column != offset+1 {
+				t.Error("Column of token of parsed node was not 2:", got)
 			}
 		})
 	}
