@@ -235,7 +235,7 @@ func (p *ExprParser) parseIdent() (ExprNode, *ExprError) {
 		} else {
 		LoopArgs:
 			for {
-				arg, err := p.parseLogicalBinOp()
+				arg, err := p.parseLogicalOr()
 				if err != nil {
 					return nil, err
 				}
@@ -273,7 +273,7 @@ func (p *ExprParser) parseIdent() (ExprNode, *ExprError) {
 func (p *ExprParser) parseNestedExpr() (ExprNode, *ExprError) {
 	p.next() // eat '('
 
-	nested, err := p.parseLogicalBinOp()
+	nested, err := p.parseLogicalOr()
 	if err != nil {
 		return nil, err
 	}
@@ -370,7 +370,7 @@ func (p *ExprParser) parsePostfixUnaryOp() (ExprNode, *ExprError) {
 			}
 		case TokenKindLeftBracket:
 			p.next() // eat '['
-			idx, err := p.parseLogicalBinOp()
+			idx, err := p.parseLogicalOr()
 			if err != nil {
 				return nil, err
 			}
@@ -433,29 +433,36 @@ func (p *ExprParser) parseCompareBinOp() (ExprNode, *ExprError) {
 	return &CompareOpNode{k, l, r}, nil
 }
 
-func (p *ExprParser) parseLogicalBinOp() (ExprNode, *ExprError) {
+func (p *ExprParser) parseLogicalAnd() (ExprNode, *ExprError) {
 	l, err := p.parseCompareBinOp()
 	if err != nil {
 		return nil, err
 	}
-
-	k := LogicalOpNodeKindInvalid
-	switch p.peek().Kind {
-	case TokenKindAnd:
-		k = LogicalOpNodeKindAnd
-	case TokenKindOr:
-		k = LogicalOpNodeKindOr
-	default:
+	if p.peek().Kind != TokenKindAnd {
 		return l, nil
 	}
-	p.next() // eat '&&' or '||'
-
-	r, err := p.parseLogicalBinOp()
+	p.next() // eat &&
+	r, err := p.parseLogicalAnd()
 	if err != nil {
 		return nil, err
 	}
+	return &LogicalOpNode{LogicalOpNodeKindAnd, l, r}, nil
+}
 
-	return &LogicalOpNode{k, l, r}, nil
+func (p *ExprParser) parseLogicalOr() (ExprNode, *ExprError) {
+	l, err := p.parseLogicalAnd()
+	if err != nil {
+		return nil, err
+	}
+	if p.peek().Kind != TokenKindOr {
+		return l, nil
+	}
+	p.next() // eat ||
+	r, err := p.parseLogicalOr()
+	if err != nil {
+		return nil, err
+	}
+	return &LogicalOpNode{LogicalOpNodeKindOr, l, r}, nil
 }
 
 // Parse parses token sequence into syntax tree.
@@ -467,7 +474,7 @@ func (p *ExprParser) Parse(t []*Token) (ExprNode, *ExprError) {
 	}
 	p.input = t
 
-	root, err := p.parseLogicalBinOp()
+	root, err := p.parseLogicalOr()
 	if err != nil {
 		return nil, err
 	}
