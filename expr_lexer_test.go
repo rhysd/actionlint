@@ -682,3 +682,30 @@ func TestLexExprError(t *testing.T) {
 		})
 	}
 }
+
+func TestLexTokenPos(t *testing.T) {
+	input := "foo( true && 0.1234, github.issue )"
+	want := []int{0, 3, 5, 10, 13, 19, 21, 27, 28, 34, 35}
+
+	l := NewExprLexer()
+	ts, _, err := l.Lex(input + "}}")
+	if err != nil {
+		t.Fatal("error while lexing:", err)
+	}
+
+	if len(ts) != len(want) {
+		t.Fatalf("length of inputs mismatch. want=%d, have=%d", len(want), len(ts))
+	}
+
+	for i := 0; i < len(ts); i++ {
+		if ts[i].Offset != want[i] {
+			t.Errorf("%dth token offsets mismatch. want=%d, have=%d", i+1, want[i], ts[i].Offset)
+		}
+		if ts[i].Line != 1 {
+			t.Errorf("%dth token line should be 1 but got %d", i+1, ts[i].Line)
+		}
+		if ts[i].Column != want[i]+1 {
+			t.Errorf("%dth token column should be %d but got %d", i+1, want[i]+1, ts[i].Column)
+		}
+	}
+}

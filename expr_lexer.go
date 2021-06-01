@@ -501,7 +501,11 @@ func (lex *ExprLexer) lexToken() (*Token, *ExprError) {
 
 func (lex *ExprLexer) init(src string) {
 	lex.src = src
-	lex.start = scanner.Position{}
+	lex.start = scanner.Position{
+		Offset: 0,
+		Line:   1,
+		Column: 1,
+	}
 	lex.scanErr = nil
 	lex.scan.Init(strings.NewReader(src))
 	lex.scan.Error = func(s *scanner.Scanner, m string) {
