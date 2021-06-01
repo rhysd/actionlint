@@ -263,14 +263,14 @@ func TestLexOneToken(t *testing.T) {
 				t.Fatal("error while lexing:", err)
 			}
 			if len(tokens) != 2 {
-				t.Fatal("wanted token", GetTokenKindName(tc.kind), "followed by End token but got", tokens)
+				t.Fatal("wanted token", DescribeTokenKind(tc.kind), "followed by End token but got", tokens)
 			}
 			if tokens[1].Kind != TokenKindEnd {
 				t.Fatal("wanted End token at end but got", tokens[1])
 			}
 			tok := tokens[0]
 			if tok.Kind != tc.kind {
-				t.Fatal("wanted token", GetTokenKindName(tc.kind), "but got", tok)
+				t.Fatal("wanted token", DescribeTokenKind(tc.kind), "but got", tok)
 			}
 			if tok.Value != tc.input {
 				t.Fatalf("wanted token value %#v but got %#v", tc.input, tok.Value)
@@ -485,6 +485,42 @@ func TestLexExpression(t *testing.T) {
 				"0",
 				"==",
 				"1",
+			},
+		},
+		{
+			what: "skip white spaces",
+			input: " 	a .b .c	x ( 'foo bar' ,	42	) [ true ]	",
+			tokens: []TokenKind{
+				TokenKindIdent,
+				TokenKindDot,
+				TokenKindIdent,
+				TokenKindDot,
+				TokenKindIdent,
+				TokenKindIdent,
+				TokenKindLeftParen,
+				TokenKindString,
+				TokenKindComma,
+				TokenKindInt,
+				TokenKindRightParen,
+				TokenKindLeftBracket,
+				TokenKindIdent,
+				TokenKindRightBracket,
+			},
+			values: []string{
+				"a",
+				".",
+				"b",
+				".",
+				"c",
+				"x",
+				"(",
+				"'foo bar'",
+				",",
+				"42",
+				")",
+				"[",
+				"true",
+				"]",
 			},
 		},
 	}

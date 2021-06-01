@@ -58,55 +58,55 @@ const (
 	TokenKindComma
 )
 
-// GetTokenKindName returns name of token kind.
-func GetTokenKindName(t TokenKind) string {
+// DescribeTokenKind returns name of token kind.
+func DescribeTokenKind(t TokenKind) string {
 	switch t {
 	case TokenKindUnknown:
-		return "Unknown"
+		return "UNKNOWN"
 	case TokenKindEnd:
-		return "End"
+		return "END"
 	case TokenKindIdent:
-		return "Ident"
+		return "IDENT"
 	case TokenKindString:
-		return "String"
+		return "STRING"
 	case TokenKindInt:
-		return "Int"
+		return "INTEGER"
 	case TokenKindFloat:
-		return "Float"
+		return "FLOAT"
 	case TokenKindLeftParen:
-		return "LeftParen"
+		return "("
 	case TokenKindRightParen:
-		return "RightParen"
+		return ")"
 	case TokenKindLeftBracket:
-		return "LeftBracket"
+		return "["
 	case TokenKindRightBracket:
-		return "RightBracket"
+		return "]"
 	case TokenKindDot:
-		return "Dot"
+		return "."
 	case TokenKindNot:
-		return "Not"
+		return "!"
 	case TokenKindLess:
-		return "Less"
+		return "<"
 	case TokenKindLessEq:
-		return "LessEq"
+		return "<="
 	case TokenKindGreater:
-		return "Greater"
+		return ">"
 	case TokenKindGreaterEq:
-		return "GreaterEq"
+		return ">="
 	case TokenKindEq:
-		return "Eq"
+		return "=="
 	case TokenKindNotEq:
-		return "NotEq"
+		return "!="
 	case TokenKindAnd:
-		return "And"
+		return "&&"
 	case TokenKindOr:
-		return "Or"
+		return "||"
 	case TokenKindStar:
-		return "Star"
+		return "*"
 	case TokenKindComma:
-		return "Comma"
+		return ","
 	default:
-		return "Unknown"
+		panic("unreachable")
 	}
 }
 
@@ -117,7 +117,7 @@ type Token struct {
 	Kind TokenKind
 	// Value is string representation of the token.
 	Value string
-	// Offset is byte offset of expression string.
+	// Offset is byte offset of token string.
 	Offset int
 	// Line is line number of position of the token. Note that this value is 0-based.
 	Line int
@@ -126,7 +126,7 @@ type Token struct {
 }
 
 func (t *Token) String() string {
-	return fmt.Sprintf("%s:%d:%d:%d", GetTokenKindName(t.Kind), t.Line, t.Column, t.Offset)
+	return fmt.Sprintf("%s:%d:%d:%d", DescribeTokenKind(t.Kind), t.Line, t.Column, t.Offset)
 }
 
 func isWhitespace(r rune) bool {
@@ -190,7 +190,7 @@ func (lex *ExprLexer) token(kind TokenKind) *Token {
 	t := &Token{
 		Kind:   kind,
 		Value:  lex.src[s:e],
-		Offset: lex.scan.Offset,
+		Offset: p.Offset,
 		Line:   p.Line,
 		Column: p.Column,
 	}

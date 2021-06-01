@@ -193,15 +193,15 @@ func (p *ExprParser) errorf(format string, args ...interface{}) *ExprError {
 func (p *ExprParser) unexpected(where string, expected []TokenKind) *ExprError {
 	qs := make([]string, 0, len(expected))
 	for _, e := range expected {
-		qs = append(qs, strconv.Quote(GetTokenKindName(e)))
+		qs = append(qs, strconv.Quote(DescribeTokenKind(e)))
 	}
 	var what string
 	if p.input[0].Kind == TokenKindEnd {
 		what = "end of input"
 	} else {
-		what = fmt.Sprintf("token %q", GetTokenKindName(p.input[0].Kind))
+		what = fmt.Sprintf("token %q", DescribeTokenKind(p.input[0].Kind))
 	}
-	msg := fmt.Sprintf("unexpected token %s while parsing %s. expecting %s", what, where, strings.Join(qs, ", "))
+	msg := fmt.Sprintf("unexpected %s while parsing %s. expecting %s", what, where, strings.Join(qs, ", "))
 	return p.error(msg)
 }
 
@@ -333,7 +333,7 @@ func (p *ExprParser) parsePrimaryExpr() (ExprNode, *ExprError) {
 		return p.parseString(), nil
 	default:
 		return nil, p.unexpected(
-			"variable, function call, null, bool, int, float or string",
+			"variable access, function call, null, bool, int, float or string",
 			[]TokenKind{
 				TokenKindIdent,
 				TokenKindLeftParen,
@@ -345,7 +345,7 @@ func (p *ExprParser) parsePrimaryExpr() (ExprNode, *ExprError) {
 	}
 }
 
-func (p *ExprParser) parsePostfixUnaryOp() (ExprNode, *ExprError) {
+func (p *ExprParser) parsePostfixOp() (ExprNode, *ExprError) {
 	ret, err := p.parsePrimaryExpr()
 	if err != nil {
 		return nil, err
@@ -385,14 +385,14 @@ func (p *ExprParser) parsePostfixUnaryOp() (ExprNode, *ExprError) {
 	}
 }
 
-func (p *ExprParser) parsePrefixUnaryOp() (ExprNode, *ExprError) {
+func (p *ExprParser) parsePrefixOp() (ExprNode, *ExprError) {
 	t := p.peek()
 	if t.Kind != TokenKindNot {
-		return p.parsePostfixUnaryOp()
+		return p.parsePostfixOp()
 	}
 	p.next() // eat '!' token
 
-	o, err := p.parsePostfixUnaryOp()
+	o, err := p.parsePostfixOp()
 	if err != nil {
 		return nil, err
 	}
@@ -401,7 +401,7 @@ func (p *ExprParser) parsePrefixUnaryOp() (ExprNode, *ExprError) {
 }
 
 func (p *ExprParser) parseCompareBinOp() (ExprNode, *ExprError) {
-	l, err := p.parsePrefixUnaryOp()
+	l, err := p.parsePrefixOp()
 	if err != nil {
 		return nil, err
 	}
@@ -486,7 +486,7 @@ func (p *ExprParser) Parse(t []*Token) (ExprNode, *ExprError) {
 			if t.Kind == TokenKindEnd {
 				break
 			}
-			qs = append(qs, strconv.Quote(GetTokenKindName(t.Kind)))
+			qs = append(qs, strconv.Quote(DescribeTokenKind(t.Kind)))
 		}
 		return nil, p.errorf("parser did not reach end of input after parsing expression. remaining tokens are %s", strings.Join(qs, ", "))
 	}
