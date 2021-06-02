@@ -6,6 +6,8 @@ import (
 	"strings"
 )
 
+// Types
+
 type ExprTypeKind int
 
 const (
@@ -19,8 +21,6 @@ const (
 	ExprTypeKindObject
 	ExprTypeKindArrayDeref
 )
-
-// Types
 
 type ExprType interface {
 	Kind() ExprTypeKind
@@ -227,18 +227,36 @@ func (sig *FuncSignature) String() string {
 
 // BuiltinFuncSignatures is a set of all builtin function signatures.
 // https://docs.github.com/en/actions/reference/context-and-expression-syntax-for-github-actions#functions
-var BuiltinFuncSignatures = map[string]*FuncSignature{
-	"success": {
+var BuiltinFuncSignatures = map[string][]*FuncSignature{
+	"contains": {
+		{
+			Name: "contains",
+			Ret:  BoolType{},
+			Params: []ExprType{
+				StringType{},
+				StringType{},
+			},
+		},
+		{
+			Name: "contains",
+			Ret:  BoolType{},
+			Params: []ExprType{
+				&ArrayType{Elem: AnyType{}},
+				AnyType{},
+			},
+		},
+	},
+	"success": {{
 		Name:   "success",
 		Ret:    BoolType{},
 		Params: []ExprType{},
-	},
+	}},
 }
 
 // Semantics checker
 
 type ExprSemanticsChecker struct {
-	funcs map[string]*FuncSignature
+	funcs map[string][]*FuncSignature
 	errs  []*ExprError
 }
 
@@ -246,7 +264,7 @@ func NewExprSemanticsChecker() *ExprSemanticsChecker {
 	return &ExprSemanticsChecker{funcs: BuiltinFuncSignatures}
 }
 
-func (sema *ExprSemanticsChecker) error(e ExprNode, msg string) *ExprError {
+func errorAtExpr(e ExprNode, msg string) *ExprError {
 	t := e.Token()
 	return &ExprError{
 		Message: msg,
@@ -256,8 +274,16 @@ func (sema *ExprSemanticsChecker) error(e ExprNode, msg string) *ExprError {
 	}
 }
 
-func (sema *ExprSemanticsChecker) errorf(e ExprNode, format string, args ...interface{}) *ExprError {
-	return sema.error(e, fmt.Sprintf(format, args...))
+func errorfAtExpr(e ExprNode, format string, args ...interface{}) *ExprError {
+	return errorAtExpr(e, fmt.Sprintf(format, args...))
+}
+
+func (sema *ExprSemanticsChecker) error(e ExprNode, msg string) {
+	sema.errs = append(sema.errs, errorAtExpr(e, msg))
+}
+
+func (sema *ExprSemanticsChecker) errorf(e ExprNode, format string, args ...interface{}) {
+	sema.errs = append(sema.errs, errorfAtExpr(e, format, args...))
 }
 
 func (sema *ExprSemanticsChecker) checkVariable(n *VariableNode) ExprType {
@@ -345,33 +371,16 @@ func (sema *ExprSemanticsChecker) checkIndexAccess(n *IndexAccessNode) ExprType 
 	}
 }
 
-func (sema *ExprSemanticsChecker) checkFuncCall(n *FuncCallNode) ExprType {
-	sig, ok := sema.funcs[n.Callee]
-	if !ok {
-		qs := make([]string, 0, len(sema.funcs))
-		for n := range sema.funcs {
-			qs = append(qs, strconv.Quote(n))
-		}
-		sema.errorf(n, "undefined function %q. available functions are %s", n.Callee, strings.Join(qs, ", "))
-		return AnyType{}
-	}
-
-	lp, la := len(sig.Params), len(n.Args)
+func (sema *ExprSemanticsChecker) checkFuncSignature(n ExprNode, sig *FuncSignature, args []ExprType) *ExprError {
+	lp, la := len(sig.Params), len(args)
 	if sig.VariableLengthParams && (lp > la) || lp != la {
-		sema.errorf(n, "number of arguments is wrong. function %q takes %d parameters but %d arguments are provided", sig.String(), lp, la)
-		return sig.Ret
-	}
-
-	tys := make([]ExprType, 0, len(n.Args))
-	for _, a := range n.Args {
-		tys = append(tys, sema.check(a))
+		return errorfAtExpr(n, "number of arguments is wrong. function %q takes %d parameters but %d arguments are provided", sig.String(), lp, la)
 	}
 
 	for i := 0; i < len(sig.Params); i++ {
-		p := sig.Params[i]
-		a := tys[i]
+		p, a := sig.Params[i], args[i]
 		if !p.Assignable(a) {
-			sema.errorf(
+			return errorfAtExpr(
 				n,
 				"%dth argument of function call is not assignable. %q cannot be assigned to %q. called function type is %q",
 				i+1,
@@ -383,11 +392,11 @@ func (sema *ExprSemanticsChecker) checkFuncCall(n *FuncCallNode) ExprType {
 	}
 
 	if sig.VariableLengthParams {
-		rest := tys[lp:]
+		rest := args[lp:]
 		p := sig.Params[lp-1]
 		for i, a := range rest {
 			if !p.Assignable(a) {
-				sema.errorf(
+				return errorfAtExpr(
 					n,
 					"%dth argument of function call is not assignable. %q cannot be assigned to %q. called function type is %q",
 					lp+i+1,
@@ -399,7 +408,40 @@ func (sema *ExprSemanticsChecker) checkFuncCall(n *FuncCallNode) ExprType {
 		}
 	}
 
-	return sig.Ret
+	return nil
+}
+
+func (sema *ExprSemanticsChecker) checkFuncCall(n *FuncCallNode) ExprType {
+	sigs, ok := sema.funcs[n.Callee]
+	if !ok {
+		qs := make([]string, 0, len(sema.funcs))
+		for n := range sema.funcs {
+			qs = append(qs, strconv.Quote(n))
+		}
+		sema.errorf(n, "undefined function %q. available functions are %s", n.Callee, strings.Join(qs, ", "))
+		return AnyType{}
+	}
+
+	tys := make([]ExprType, 0, len(n.Args))
+	for _, a := range n.Args {
+		tys = append(tys, sema.check(a))
+	}
+
+	// Check all overloads
+	errs := []*ExprError{}
+	for _, sig := range sigs {
+		err := sema.checkFuncSignature(n, sig, tys)
+		if err == nil {
+			// When one of overload pass type check, overload was resolved correctly
+			return sig.Ret
+		}
+		errs = append(errs, err)
+	}
+
+	// All candidates failed
+	sema.errs = append(sema.errs, errs...)
+
+	return AnyType{}
 }
 
 func (sema *ExprSemanticsChecker) checkNotOp(n *NotOpNode) ExprType {
