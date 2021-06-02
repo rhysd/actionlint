@@ -12,6 +12,7 @@ func TestExprSemanticsCheckOK(t *testing.T) {
 		what     string
 		input    string
 		expected ExprType
+		funcs    map[string][]*FuncSignature
 	}{
 		{
 			what:     "null",
@@ -45,11 +46,76 @@ func TestExprSemanticsCheckOK(t *testing.T) {
 		},
 		{
 			what:     "object property dereference",
+			input:    "test().bar.piyo",
+			expected: BoolType{},
+			funcs: map[string][]*FuncSignature{
+				"test": {
+					{
+						Name: "test",
+						Ret: &ObjectType{
+							Props: map[string]ExprType{
+								"bar": &ObjectType{
+									Props: map[string]ExprType{
+										"piyo": BoolType{},
+									},
+								},
+							},
+						},
+					},
+				},
+			},
+		},
+		{
+			what:     "object property dereference for any type",
 			input:    "github.issue.labels",
 			expected: AnyType{},
 		},
 		{
 			what:     "array element dereference",
+			input:    "test().bar.*",
+			expected: &ArrayDerefType{Elem: BoolType{}},
+			funcs: map[string][]*FuncSignature{
+				"test": {
+					{
+						Name: "test",
+						Ret: &ObjectType{
+							Props: map[string]ExprType{
+								"bar": &ArrayType{Elem: BoolType{}},
+							},
+						},
+					},
+				},
+			},
+		},
+		{
+			what:     "filter object property by array element dereference",
+			input:    "test().foo.*.bar.piyo",
+			expected: &ArrayDerefType{Elem: StringType{}},
+			funcs: map[string][]*FuncSignature{
+				"test": {
+					{
+						Name: "test",
+						Ret: &ObjectType{
+							Props: map[string]ExprType{
+								"foo": &ArrayType{
+									Elem: &ObjectType{
+										Props: map[string]ExprType{
+											"bar": &ObjectType{
+												Props: map[string]ExprType{
+													"piyo": StringType{},
+												},
+											},
+										},
+									},
+								},
+							},
+						},
+					},
+				},
+			},
+		},
+		{
+			what:     "array element dereference with any type",
 			input:    "github.issue.labels.*.name",
 			expected: &ArrayDerefType{Elem: AnyType{}},
 		},
@@ -80,16 +146,73 @@ func TestExprSemanticsCheckOK(t *testing.T) {
 		},
 		{
 			what:     "object property index access",
+			input:    "test()['bar']['piyo']",
+			expected: BoolType{},
+			funcs: map[string][]*FuncSignature{
+				"test": {
+					{
+						Name: "test",
+						Ret: &ObjectType{
+							Props: map[string]ExprType{
+								"bar": &ObjectType{
+									Props: map[string]ExprType{
+										"piyo": BoolType{},
+									},
+								},
+							},
+						},
+					},
+				},
+			},
+		},
+		{
+			what:     "object property index access with any type",
 			input:    "github['issue']",
 			expected: AnyType{},
 		},
 		{
-			what:     "array element index access",
+			what:     "array element dereference",
+			input:    "test()[0]",
+			expected: BoolType{},
+			funcs: map[string][]*FuncSignature{
+				"test": {
+					{
+						Name: "test",
+						Ret:  &ArrayType{Elem: BoolType{}},
+					},
+				},
+			},
+		},
+		{
+			what:     "array element index access with any type fallback",
 			input:    "github.issue.labels[0]",
 			expected: AnyType{},
 		},
 		{
 			what:     "index access to dereferenced array",
+			input:    "test().foo.*.bar[0]",
+			expected: StringType{},
+			funcs: map[string][]*FuncSignature{
+				"test": {
+					{
+						Name: "test",
+						Ret: &ObjectType{
+							Props: map[string]ExprType{
+								"foo": &ArrayType{
+									Elem: &ObjectType{
+										Props: map[string]ExprType{
+											"bar": StringType{},
+										},
+									},
+								},
+							},
+						},
+					},
+				},
+			},
+		},
+		{
+			what:     "index access to dereferenced array with any type fallback",
 			input:    "github.issue.labels.*.name[0]",
 			expected: AnyType{},
 		},
@@ -138,6 +261,11 @@ func TestExprSemanticsCheckOK(t *testing.T) {
 			input:    "true || false",
 			expected: BoolType{},
 		},
+		{
+			what:     "== operator with loose equality check",
+			input:    "true == 1.1",
+			expected: BoolType{},
+		},
 	}
 
 	opts := []cmp.Option{
@@ -166,6 +294,9 @@ func TestExprSemanticsCheckOK(t *testing.T) {
 			}
 
 			c := NewExprSemanticsChecker()
+			if tc.funcs != nil {
+				c.funcs = tc.funcs
+			}
 			ty, errs := c.Check(e)
 			if len(errs) > 0 {
 				t.Fatal("semantics check failed:", errs)
