@@ -6,6 +6,25 @@ import (
 	"strings"
 )
 
+func ordinal(i int) string {
+	suffix := "th"
+	switch i % 10 {
+	case 1:
+		if i%100 != 11 {
+			suffix = "st"
+		}
+	case 2:
+		if i%100 != 12 {
+			suffix = "nd"
+		}
+	case 3:
+		if i%100 != 13 {
+			suffix = "rd"
+		}
+	}
+	return fmt.Sprintf("%d%s", i, suffix)
+}
+
 // Types
 
 type ExprTypeKind int
@@ -562,7 +581,7 @@ func (sema *ExprSemanticsChecker) checkIndexAccess(n *IndexAccessNode) ExprType 
 		case AnyType, NumberType:
 			return ty.Elem
 		default:
-			sema.errorf(n, "index access of array must be type of number but got %q", idx.String())
+			sema.errorf(n.Index, "index access of array must be type of number but got %q", idx.String())
 			return AnyType{}
 		}
 	case *ArrayDerefType:
@@ -570,7 +589,7 @@ func (sema *ExprSemanticsChecker) checkIndexAccess(n *IndexAccessNode) ExprType 
 		case AnyType, NumberType:
 			return ty.Elem
 		default:
-			sema.errorf(n, "index access of array must be type of number but got %q", idx.String())
+			sema.errorf(n.Index, "index access of array must be type of number but got %q", idx.String())
 			return AnyType{}
 		}
 	case *ObjectType:
@@ -589,7 +608,7 @@ func (sema *ExprSemanticsChecker) checkIndexAccess(n *IndexAccessNode) ExprType 
 			}
 			return AnyType{}
 		default:
-			sema.errorf(n, "property access of object must be type of string but got %q", idx.String())
+			sema.errorf(n.Index, "property access of object must be type of string but got %q", idx.String())
 			return AnyType{}
 		}
 	default:
@@ -598,19 +617,30 @@ func (sema *ExprSemanticsChecker) checkIndexAccess(n *IndexAccessNode) ExprType 
 	}
 }
 
-func checkFuncSignature(n ExprNode, sig *FuncSignature, args []ExprType) *ExprError {
+func checkFuncSignature(n *FuncCallNode, sig *FuncSignature, args []ExprType) *ExprError {
 	lp, la := len(sig.Params), len(args)
 	if sig.VariableLengthParams && (lp > la) || !sig.VariableLengthParams && lp != la {
-		return errorfAtExpr(n, "number of arguments is wrong. function %q takes %d parameters but %d arguments are provided", sig.String(), lp, la)
+		atLeast := ""
+		if sig.VariableLengthParams {
+			atLeast = "at least "
+		}
+		return errorfAtExpr(
+			n,
+			"number of arguments is wrong. function %q takes %s%d parameters but %d arguments are provided",
+			sig.String(),
+			atLeast,
+			lp,
+			la,
+		)
 	}
 
 	for i := 0; i < len(sig.Params); i++ {
 		p, a := sig.Params[i], args[i]
 		if !p.Assignable(a) {
 			return errorfAtExpr(
-				n,
-				"%dth argument of function call is not assignable. %q cannot be assigned to %q. called function type is %q",
-				i+1,
+				n.Args[i],
+				"%s argument of function call is not assignable. %q cannot be assigned to %q. called function type is %q",
+				ordinal(i+1),
 				a.String(),
 				p.String(),
 				sig.String(),
@@ -626,9 +656,9 @@ func checkFuncSignature(n ExprNode, sig *FuncSignature, args []ExprType) *ExprEr
 		for i, a := range rest {
 			if !p.Assignable(a) {
 				return errorfAtExpr(
-					n,
-					"%dth argument of function call is not assignable. %q cannot be assigned to %q. called function type is %q",
-					lp+i+1,
+					n.Args[lp+i],
+					"%s argument of function call is not assignable. %q cannot be assigned to %q. called function type is %q",
+					ordinal(lp+i+1),
 					a.String(),
 					p.String(),
 					sig.String(),
@@ -711,7 +741,7 @@ func (sema *ExprSemanticsChecker) checkFuncCall(n *FuncCallNode) ExprType {
 func (sema *ExprSemanticsChecker) checkNotOp(n *NotOpNode) ExprType {
 	ty := sema.check(n.Operand)
 	if !(BoolType{}).Assignable(ty) {
-		sema.errorf(n, "type of operand of ! operator %q is not assianble to type bool", ty.String())
+		sema.errorf(n, "type of operand of ! operator %q is not assignable to type \"bool\"", ty.String())
 	}
 	return BoolType{}
 }
@@ -729,10 +759,10 @@ func (sema *ExprSemanticsChecker) checkLogicalOp(n *LogicalOpNode) ExprType {
 	lty := sema.check(n.Left)
 	rty := sema.check(n.Right)
 	if !(BoolType{}).Assignable(lty) {
-		sema.errorf(n, "type of left operand of %s operator %q is not assianble to type bool", n.Kind.String(), lty.String())
+		sema.errorf(n, "type of left operand of %s operator %q is not assignable to type \"bool\"", n.Kind.String(), lty.String())
 	}
 	if !(BoolType{}).Assignable(rty) {
-		sema.errorf(n, "type of right operand of %s operator %q is not assianble to type bool", n.Kind.String(), rty.String())
+		sema.errorf(n, "type of right operand of %s operator %q is not assignable to type \"bool\"", n.Kind.String(), rty.String())
 	}
 	return BoolType{}
 }
