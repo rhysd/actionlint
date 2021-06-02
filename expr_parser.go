@@ -140,6 +140,17 @@ const (
 	LogicalOpNodeKindOr
 )
 
+func (k LogicalOpNodeKind) String() string {
+	switch k {
+	case LogicalOpNodeKindAnd:
+		return "&&"
+	case LogicalOpNodeKindOr:
+		return "||"
+	default:
+		return "INVALID LOGICAL OPERATOR"
+	}
+}
+
 type LogicalOpNode struct {
 	Kind  LogicalOpNodeKind
 	Left  ExprNode

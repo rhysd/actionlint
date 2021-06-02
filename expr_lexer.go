@@ -258,6 +258,8 @@ func (lex *ExprLexer) lexIdent() (*Token, *ExprError) {
 }
 
 func (lex *ExprLexer) lexNum() (*Token, *ExprError) {
+	// Note: Should we lex NaN?
+
 	r := lex.scan.Next() // precond: r is digit or '-'
 
 	if r == '-' {
