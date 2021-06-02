@@ -523,6 +523,40 @@ func checkFuncSignature(n ExprNode, sig *FuncSignature, args []ExprType) *ExprEr
 	return nil
 }
 
+func (sema *ExprSemanticsChecker) checkBuiltinFunctionCall(n *FuncCallNode, sig *FuncSignature) {
+	switch n.Callee {
+	case "format":
+		lit, ok := n.Args[0].(*StringNode)
+		if !ok {
+			return
+		}
+
+		// Count number of placeholders in format string
+		c := -1
+		for {
+			p := fmt.Sprintf("{%d}", c+1)
+			if !strings.Contains(lit.Value, p) {
+				break
+			}
+			c++
+		}
+		if c < 0 {
+			return
+		}
+
+		// -1 means removing first format string argument
+		if len(n.Args)-1 < c {
+			sema.errorf(
+				n,
+				"format string %q contains %d placeholders but %d arguments are given to format",
+				lit.Value,
+				c,
+				len(n.Args)-1,
+			)
+		}
+	}
+}
+
 func (sema *ExprSemanticsChecker) checkFuncCall(n *FuncCallNode) ExprType {
 	sigs, ok := sema.funcs[n.Callee]
 	if !ok {
@@ -545,6 +579,7 @@ func (sema *ExprSemanticsChecker) checkFuncCall(n *FuncCallNode) ExprType {
 		err := checkFuncSignature(n, sig, tys)
 		if err == nil {
 			// When one of overload pass type check, overload was resolved correctly
+			sema.checkBuiltinFunctionCall(n, sig)
 			return sig.Ret
 		}
 		errs = append(errs, err)
