@@ -296,14 +296,14 @@ var BuiltinFuncSignatures = map[string][]*FuncSignature{
 		},
 	},
 	"toJson": {{
-		Name: "fromJson",
+		Name: "toJson",
 		Ret:  StringType{},
 		Params: []ExprType{
 			AnyType{},
 		},
 	}},
 	"fromJson": {{
-		Name: "toJson",
+		Name: "fromJson",
 		Ret:  AnyType{},
 		Params: []ExprType{
 			StringType{},
@@ -461,9 +461,15 @@ func (sema *ExprSemanticsChecker) checkIndexAccess(n *IndexAccessNode) ExprType 
 		}
 	case *ObjectType:
 		switch idx.(type) {
-		case AnyType, StringType:
-			// Index of object is dynamic value so we cannot determine which property is dereferenced.
-			// Fallback to any type here.
+		case AnyType:
+			return AnyType{}
+		case StringType:
+			// Index access with string literal like foo['bar']
+			if lit, ok := n.Index.(*StringNode); ok {
+				if prop, ok := ty.Props[lit.Value]; ok {
+					return prop
+				}
+			}
 			return AnyType{}
 		default:
 			sema.errorf(n, "property access of object must be type of string but got %q", idx.String())
