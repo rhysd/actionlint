@@ -42,7 +42,7 @@ func TestExprSemanticsCheckOK(t *testing.T) {
 		{
 			what:     "variable",
 			input:    "github",
-			expected: NewObjectType(),
+			expected: BuiltinGlobalVariableTypes["github"].Type,
 		},
 		{
 			what:     "object property dereference",

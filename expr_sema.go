@@ -339,15 +339,119 @@ var BuiltinFuncSignatures = map[string][]*FuncSignature{
 	}},
 }
 
+type GlobalVariable struct {
+	Name string
+	Type ExprType
+}
+
+// GlobalVariableTypes defines types of all global variables. All context variables are documented
+// at https://docs.github.com/en/actions/reference/context-and-expression-syntax-for-github-actions#contexts
+var BuiltinGlobalVariableTypes = map[string]*GlobalVariable{
+	// https://docs.github.com/en/actions/reference/context-and-expression-syntax-for-github-actions#github-context
+	"github": {
+		Name: "github",
+		Type: &ObjectType{
+			Props: map[string]ExprType{
+				"action":           StringType{},
+				"action_path":      StringType{},
+				"actor":            StringType{},
+				"base_ref":         StringType{},
+				"event":            NewObjectType(),
+				"event_name":       StringType{},
+				"event_path":       StringType{},
+				"head_ref":         StringType{},
+				"job":              StringType{},
+				"ref":              StringType{},
+				"repository":       StringType{},
+				"repository_owner": StringType{},
+				"run_id":           StringType{},
+				"run_number":       StringType{},
+				"sha":              StringType{},
+				"token":            StringType{},
+				"workflow":         StringType{},
+				"workspace":        StringType{},
+			},
+		},
+	},
+	// https://docs.github.com/en/actions/reference/context-and-expression-syntax-for-github-actions#env-context
+	"env": {
+		Name: "env",
+		Type: NewObjectType(),
+	},
+	// https://docs.github.com/en/actions/reference/context-and-expression-syntax-for-github-actions#job-context
+	"job": {
+		Name: "job",
+		Type: &ObjectType{
+			Props: map[string]ExprType{
+				"container": &ObjectType{
+					Props: map[string]ExprType{
+						"id":      StringType{},
+						"network": StringType{},
+					},
+				},
+				"services": NewObjectType(),
+				"status":   StringType{},
+			},
+		},
+	},
+	// https://docs.github.com/en/actions/reference/context-and-expression-syntax-for-github-actions#steps-context
+	"steps": {
+		Name: "steps",
+		Type: NewObjectType(),
+	},
+	// https://docs.github.com/en/actions/reference/context-and-expression-syntax-for-github-actions#runner-context
+	"runner": {
+		Name: "runner",
+		Type: &ObjectType{
+			Props: map[string]ExprType{
+				"os":         StringType{},
+				"temp":       StringType{},
+				"tool_cache": StringType{},
+			},
+		},
+	},
+	// https://docs.github.com/en/actions/reference/context-and-expression-syntax-for-github-actions#contexts
+	"secrets": {
+		Name: "secrets",
+		Type: NewObjectType(),
+	},
+	// https://docs.github.com/en/actions/reference/context-and-expression-syntax-for-github-actions#contexts
+	"strategy": {
+		Name: "strategy",
+		Type: &ObjectType{
+			Props: map[string]ExprType{
+				"fail-fast":    BoolType{},
+				"job-index":    NumberType{},
+				"job-total":    NumberType{},
+				"max-parallel": NumberType{},
+			},
+		},
+	},
+	// https://docs.github.com/en/actions/reference/context-and-expression-syntax-for-github-actions#contexts
+	"matrix": {
+		Name: "matrix",
+		Type: NewObjectType(),
+	},
+	// https://docs.github.com/en/actions/reference/context-and-expression-syntax-for-github-actions#needs-context
+	"needs": {
+		Name: "needs",
+		Type: NewObjectType(),
+	},
+}
+
 // Semantics checker
 
 type ExprSemanticsChecker struct {
 	funcs map[string][]*FuncSignature
+	vars  map[string]*GlobalVariable
 	errs  []*ExprError
 }
 
 func NewExprSemanticsChecker() *ExprSemanticsChecker {
-	return &ExprSemanticsChecker{funcs: BuiltinFuncSignatures}
+	return &ExprSemanticsChecker{
+		funcs: BuiltinFuncSignatures,
+		vars:  BuiltinGlobalVariableTypes,
+	}
 }
 
 func errorAtExpr(e ExprNode, msg string) *ExprError {
@@ -373,19 +477,17 @@ func (sema *ExprSemanticsChecker) errorf(e ExprNode, format string, args ...inte
 }
 
 func (sema *ExprSemanticsChecker) checkVariable(n *VariableNode) ExprType {
-	// All contexts: https://docs.github.com/en/actions/reference/context-and-expression-syntax-for-github-actions#contexts
-	// TODO: More strict types for member of each context objects
-	switch n.Name {
-	case "github", "env", "job", "steps", "runner", "secrets", "strategy", "matrix", "needs":
-		return NewObjectType()
-	default:
-		qs := []string{"github", "env", "job", "steps", "runner", "secrets", "strategy", "matrix", "needs"}
-		for i, s := range qs {
-			qs[i] = strconv.Quote(s)
+	global, ok := sema.vars[n.Name]
+	if !ok {
+		qs := make([]string, 0, len(sema.vars))
+		for n := range sema.vars {
+			qs = append(qs, strconv.Quote(n))
 		}
 		sema.errorf(n, "undefined variable %q. available variables are %s", n.Name, strings.Join(qs, ", "))
 		return AnyType{}
 	}
+
+	return global.Type
 }
 
 func (sema *ExprSemanticsChecker) checkObjectDeref(n *ObjectDerefNode) ExprType {
