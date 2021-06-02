@@ -314,12 +314,15 @@ func (sema *ExprSemanticsChecker) checkObjectDeref(n *ObjectDerefNode) ExprType 
 	case *ArrayDerefType:
 		switch et := ty.Elem.(type) {
 		case AnyType:
-			return AnyType{}
+			// When element type is any, map the any type to any. Reuse `ty`
+			return ty
 		case *ObjectType:
+			// Map element type of delererenced array
+			var elem ExprType = AnyType{}
 			if t, ok := et.Props[n.Property]; ok {
-				return t
+				elem = t
 			}
-			return AnyType{} // TODO: Check object properties more strictly
+			return &ArrayDerefType{Elem: elem}
 		default:
 			sema.errorf(n, "array element object dereference must be type of object but got %q", ty.Elem.String())
 			return AnyType{}
@@ -371,7 +374,7 @@ func (sema *ExprSemanticsChecker) checkIndexAccess(n *IndexAccessNode) ExprType 
 	}
 }
 
-func (sema *ExprSemanticsChecker) checkFuncSignature(n ExprNode, sig *FuncSignature, args []ExprType) *ExprError {
+func checkFuncSignature(n ExprNode, sig *FuncSignature, args []ExprType) *ExprError {
 	lp, la := len(sig.Params), len(args)
 	if sig.VariableLengthParams && (lp > la) || lp != la {
 		return errorfAtExpr(n, "number of arguments is wrong. function %q takes %d parameters but %d arguments are provided", sig.String(), lp, la)
@@ -430,7 +433,7 @@ func (sema *ExprSemanticsChecker) checkFuncCall(n *FuncCallNode) ExprType {
 	// Check all overloads
 	errs := []*ExprError{}
 	for _, sig := range sigs {
-		err := sema.checkFuncSignature(n, sig, tys)
+		err := checkFuncSignature(n, sig, tys)
 		if err == nil {
 			// When one of overload pass type check, overload was resolved correctly
 			return sig.Ret
