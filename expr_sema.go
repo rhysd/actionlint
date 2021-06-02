@@ -340,6 +340,8 @@ var BuiltinFuncSignatures = map[string][]*FuncSignature{
 	}},
 }
 
+// Global variables
+
 type GlobalVariable struct {
 	Name string
 	Type ExprType
