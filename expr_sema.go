@@ -27,25 +27,35 @@ func ordinal(i int) string {
 
 // Types
 
+// ExprType is interface for types of values in expression.
 type ExprType interface {
+	// String returns string representation of the type.
 	String() string
+	// Assignable returns if other type can be assignable to the type.
 	Assignable(other ExprType) bool
 }
 
+// AnyType represents type which can be any type. It also indicates that a value of the type cannot
+// be type-checked since it's type cannot be known statically.
 type AnyType struct{}
 
 func (ty AnyType) String() string {
 	return "any"
 }
+
+// Assignable returns if other type can be assignable to the type.
 func (ty AnyType) Assignable(_ ExprType) bool {
 	return true
 }
 
+// NullType is type for null value.
 type NullType struct{}
 
 func (ty NullType) String() string {
 	return "null"
 }
+
+// Assignable returns if other type can be assignable to the type.
 func (ty NullType) Assignable(other ExprType) bool {
 	switch other.(type) {
 	case NullType, AnyType:
@@ -55,11 +65,14 @@ func (ty NullType) Assignable(other ExprType) bool {
 	}
 }
 
+// NumberType is type for number values such as integer or float.
 type NumberType struct{}
 
 func (ty NumberType) String() string {
 	return "number"
 }
+
+// Assignable returns if other type can be assignable to the type.
 func (ty NumberType) Assignable(other ExprType) bool {
 	// TODO: Is string of numbers corced into number?
 	switch other.(type) {
@@ -70,11 +83,14 @@ func (ty NumberType) Assignable(other ExprType) bool {
 	}
 }
 
+// BoolType is type for boolean values.
 type BoolType struct{}
 
 func (ty BoolType) String() string {
 	return "bool"
 }
+
+// Assignable returns if other type can be assignable to the type.
 func (ty BoolType) Assignable(other ExprType) bool {
 	// TODO: Is numbers corced into bool?
 	switch other.(type) {
@@ -85,11 +101,14 @@ func (ty BoolType) Assignable(other ExprType) bool {
 	}
 }
 
+// StringType is type for string values.
 type StringType struct{}
 
 func (ty StringType) String() string {
 	return "string"
 }
+
+// Assignable returns if other type can be assignable to the type.
 func (ty StringType) Assignable(other ExprType) bool {
 	// TODO: Is numbers corced into string?
 	switch other.(type) {
@@ -100,11 +119,18 @@ func (ty StringType) Assignable(other ExprType) bool {
 	}
 }
 
+// ObjectType is type for objects, which can hold key-values.
 type ObjectType struct {
-	Props       map[string]ExprType
+	// Props is map from properties name to their type.
+	Props map[string]ExprType
+	// StrictProps is flag to check if the properties should be checked strictly. When this flag
+	// is set to true, it means that other than properties defined in Props field are not permitted
+	// and will cause type error. When this flag is set to false, accessing to unknown properties
+	// does not cause type error and will be deducted to any type.
 	StrictProps bool
 }
 
+// NewObjectType creates new ObjectType instance.
 func NewObjectType() *ObjectType {
 	return &ObjectType{map[string]ExprType{}, false}
 }
@@ -120,6 +146,8 @@ func (ty *ObjectType) String() string {
 	}
 	return fmt.Sprintf("{%s}", strings.Join(ps, "; "))
 }
+
+// Assignable returns if other type can be assignable to the type.
 func (ty *ObjectType) Assignable(other ExprType) bool {
 	switch other := other.(type) {
 	case AnyType:
@@ -136,13 +164,17 @@ func (ty *ObjectType) Assignable(other ExprType) bool {
 	}
 }
 
+// ArrayType is type for arrays.
 type ArrayType struct {
+	// Elem is type of element of the array.
 	Elem ExprType
 }
 
 func (ty *ArrayType) String() string {
 	return fmt.Sprintf("array<%s>", ty.Elem.String())
 }
+
+// Assignable returns if other type can be assignable to the type.
 func (ty *ArrayType) Assignable(other ExprType) bool {
 	// Note: ArrayType and ArrayDerefType are compatible
 	switch other := other.(type) {
@@ -162,12 +194,15 @@ func (ty *ArrayType) Assignable(other ExprType) bool {
 // For example, when type of 'a' is '{foo: {bar: int}[]}', 'a.*' is type of 'array_deref<{bar: int}>
 // ' and 'a.*.b' is type of 'array_deref<int>'.
 type ArrayDerefType struct {
+	// Elem is type of element of dereferenced (and filtered) array.
 	Elem ExprType
 }
 
 func (ty *ArrayDerefType) String() string {
 	return fmt.Sprintf("array<%s>", ty.Elem.String())
 }
+
+// Assignable returns if other type can be assignable to the type.
 func (ty *ArrayDerefType) Assignable(other ExprType) bool {
 	// Note: ArrayType and ArrayDerefType are compatible
 	switch other := other.(type) {
@@ -184,9 +219,14 @@ func (ty *ArrayDerefType) Assignable(other ExprType) bool {
 
 // Functions
 
+// FuncSignature is a signature of function, which holds return and arguments types.
 type FuncSignature struct {
-	Name   string
-	Ret    ExprType
+	// Name is a name of the function.
+	Name string
+	// Ret is a return type of the function.
+	Ret ExprType
+	// Params is a list of parameter types of the function. The final element of this list might
+	// be repeated as variable length arguments.
 	Params []ExprType
 	// VariableLengthParams is a flag to handle variable length parameters. When this flag is set to
 	// true, it means that the last type of params might be specified multiple times (including zero
@@ -322,14 +362,17 @@ var BuiltinFuncSignatures = map[string][]*FuncSignature{
 
 // Global variables
 
-type GlobalVariable struct {
+// GlobalVariableType is type of global variable.
+type GlobalVariableType struct {
+	// Name is a name of the global variable.
 	Name string
+	// Type is a type of the global variable.
 	Type ExprType
 }
 
-// GlobalVariableTypes defines types of all global variables. All context variables are documented
-// at https://docs.github.com/en/actions/reference/context-and-expression-syntax-for-github-actions#contexts
-var BuiltinGlobalVariableTypes = map[string]*GlobalVariable{
+// BuiltinGlobalVariableTypes defines types of all global variables. All context variables are
+// documented at https://docs.github.com/en/actions/reference/context-and-expression-syntax-for-github-actions#contexts
+var BuiltinGlobalVariableTypes = map[string]*GlobalVariableType{
 	// https://docs.github.com/en/actions/reference/context-and-expression-syntax-for-github-actions#github-context
 	"github": {
 		Name: "github",
@@ -427,12 +470,17 @@ var BuiltinGlobalVariableTypes = map[string]*GlobalVariable{
 
 // Semantics checker
 
+// ExprSemanticsChecker is a semantics checker for expression syntax. It checks types of values
+// in given expression syntax tree. It additionally checks other semantics like arguments of
+// format() built-in function. To know the details of the syntax, see
+// https://docs.github.com/en/actions/reference/context-and-expression-syntax-for-github-actions#contexts
 type ExprSemanticsChecker struct {
 	funcs map[string][]*FuncSignature
-	vars  map[string]*GlobalVariable
+	vars  map[string]*GlobalVariableType
 	errs  []*ExprError
 }
 
+// NewExprSemanticsChecker creates new ExprSemanticsChecker instance.
 func NewExprSemanticsChecker() *ExprSemanticsChecker {
 	return &ExprSemanticsChecker{
 		funcs: BuiltinFuncSignatures,
