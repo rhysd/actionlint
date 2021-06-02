@@ -246,8 +246,94 @@ var BuiltinFuncSignatures = map[string][]*FuncSignature{
 			},
 		},
 	},
+	"startsWith": {
+		{
+			Name: "startsWith",
+			Ret:  BoolType{},
+			Params: []ExprType{
+				StringType{},
+				StringType{},
+			},
+		},
+	},
+	"endsWith": {
+		{
+			Name: "endsWith",
+			Ret:  BoolType{},
+			Params: []ExprType{
+				StringType{},
+				StringType{},
+			},
+		},
+	},
+	"format": {
+		{
+			Name: "format",
+			Ret:  StringType{},
+			Params: []ExprType{
+				StringType{},
+				AnyType{}, // variable length
+			},
+			VariableLengthParams: true,
+		},
+	},
+	"join": {
+		{
+			Name: "join",
+			Ret:  StringType{},
+			Params: []ExprType{
+				&ArrayType{Elem: StringType{}},
+				StringType{},
+			},
+		},
+		{
+			Name: "join",
+			Ret:  StringType{},
+			Params: []ExprType{
+				StringType{},
+				StringType{},
+			},
+		},
+	},
+	"toJson": {{
+		Name: "fromJson",
+		Ret:  StringType{},
+		Params: []ExprType{
+			AnyType{},
+		},
+	}},
+	"fromJson": {{
+		Name: "toJson",
+		Ret:  AnyType{},
+		Params: []ExprType{
+			StringType{},
+		},
+	}},
+	"hashFiles": {{
+		Name: "hashFiles",
+		Ret:  StringType{},
+		Params: []ExprType{
+			StringType{},
+		},
+		VariableLengthParams: true,
+	}},
 	"success": {{
 		Name:   "success",
+		Ret:    BoolType{},
+		Params: []ExprType{},
+	}},
+	"always": {{
+		Name:   "always",
+		Ret:    BoolType{},
+		Params: []ExprType{},
+	}},
+	"cancelled": {{
+		Name:   "cancelled",
+		Ret:    BoolType{},
+		Params: []ExprType{},
+	}},
+	"failure": {{
+		Name:   "failure",
 		Ret:    BoolType{},
 		Params: []ExprType{},
 	}},
