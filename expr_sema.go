@@ -27,31 +27,13 @@ func ordinal(i int) string {
 
 // Types
 
-type ExprTypeKind int
-
-const (
-	ExprTypeKindUnknown ExprTypeKind = iota
-	ExprTypeKindAny
-	ExprTypeKindNull
-	ExprTypeKindNumber
-	ExprTypeKindBool
-	ExprTypeKindString
-	ExprTypeKindArray
-	ExprTypeKindObject
-	ExprTypeKindArrayDeref
-)
-
 type ExprType interface {
-	Kind() ExprTypeKind
 	String() string
 	Assignable(other ExprType) bool
 }
 
 type AnyType struct{}
 
-func (ty AnyType) Kind() ExprTypeKind {
-	return ExprTypeKindAny
-}
 func (ty AnyType) String() string {
 	return "any"
 }
@@ -61,9 +43,6 @@ func (ty AnyType) Assignable(_ ExprType) bool {
 
 type NullType struct{}
 
-func (ty NullType) Kind() ExprTypeKind {
-	return ExprTypeKindNull
-}
 func (ty NullType) String() string {
 	return "null"
 }
@@ -78,9 +57,6 @@ func (ty NullType) Assignable(other ExprType) bool {
 
 type NumberType struct{}
 
-func (ty NumberType) Kind() ExprTypeKind {
-	return ExprTypeKindNumber
-}
 func (ty NumberType) String() string {
 	return "number"
 }
@@ -96,9 +72,6 @@ func (ty NumberType) Assignable(other ExprType) bool {
 
 type BoolType struct{}
 
-func (ty BoolType) Kind() ExprTypeKind {
-	return ExprTypeKindBool
-}
 func (ty BoolType) String() string {
 	return "bool"
 }
@@ -114,9 +87,6 @@ func (ty BoolType) Assignable(other ExprType) bool {
 
 type StringType struct{}
 
-func (ty StringType) Kind() ExprTypeKind {
-	return ExprTypeKindString
-}
 func (ty StringType) String() string {
 	return "string"
 }
@@ -139,9 +109,6 @@ func NewObjectType() *ObjectType {
 	return &ObjectType{map[string]ExprType{}, false}
 }
 
-func (ty *ObjectType) Kind() ExprTypeKind {
-	return ExprTypeKindObject
-}
 func (ty *ObjectType) String() string {
 	len := len(ty.Props)
 	if len == 0 {
@@ -173,9 +140,6 @@ type ArrayType struct {
 	Elem ExprType
 }
 
-func (ty *ArrayType) Kind() ExprTypeKind {
-	return ExprTypeKindArray
-}
 func (ty *ArrayType) String() string {
 	return fmt.Sprintf("array<%s>", ty.Elem.String())
 }
@@ -201,9 +165,6 @@ type ArrayDerefType struct {
 	Elem ExprType
 }
 
-func (ty *ArrayDerefType) Kind() ExprTypeKind {
-	return ExprTypeKindArrayDeref
-}
 func (ty *ArrayDerefType) String() string {
 	return fmt.Sprintf("array<%s>", ty.Elem.String())
 }
