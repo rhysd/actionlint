@@ -493,10 +493,6 @@ func errorfAtExpr(e ExprNode, format string, args ...interface{}) *ExprError {
 	return errorAtExpr(e, fmt.Sprintf(format, args...))
 }
 
-func (sema *ExprSemanticsChecker) error(e ExprNode, msg string) {
-	sema.errs = append(sema.errs, errorAtExpr(e, msg))
-}
-
 func (sema *ExprSemanticsChecker) errorf(e ExprNode, format string, args ...interface{}) {
 	sema.errs = append(sema.errs, errorfAtExpr(e, format, args...))
 }
@@ -679,20 +675,17 @@ func (sema *ExprSemanticsChecker) checkBuiltinFunctionCall(n *FuncCallNode, sig 
 		}
 
 		// Count number of placeholders in format string
-		c := -1
-		for {
-			p := fmt.Sprintf("{%d}", c+1)
+		c := 0
+		for i := 0; ; i++ {
+			p := fmt.Sprintf("{%d}", i)
 			if !strings.Contains(lit.Value, p) {
 				break
 			}
 			c++
 		}
-		if c < 0 {
-			return
-		}
 
 		// -1 means removing first format string argument
-		if len(n.Args)-1 < c {
+		if len(n.Args)-1 != c {
 			sema.errorf(
 				n,
 				"format string %q contains %d placeholders but %d arguments are given to format",
