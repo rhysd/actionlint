@@ -339,6 +339,8 @@ func (sema *ExprSemanticsChecker) checkArrayDeref(n *ArrayDerefNode) ExprType {
 		return &ArrayDerefType{Elem: AnyType{}}
 	case *ArrayType:
 		return &ArrayDerefType{Elem: ty.Elem}
+	case *ArrayDerefType:
+		return &ArrayDerefType{Elem: ty.Elem}
 	default:
 		sema.errorf(n, "receiver of array element dereference must be type of array but got %q", ty.String())
 		return AnyType{}
@@ -351,6 +353,14 @@ func (sema *ExprSemanticsChecker) checkIndexAccess(n *IndexAccessNode) ExprType 
 	case AnyType:
 		return AnyType{}
 	case *ArrayType:
+		switch idx.(type) {
+		case AnyType, NumberType:
+			return ty.Elem
+		default:
+			sema.errorf(n, "index access of array must be type of number but got %q", idx.String())
+			return AnyType{}
+		}
+	case *ArrayDerefType:
 		switch idx.(type) {
 		case AnyType, NumberType:
 			return ty.Elem
