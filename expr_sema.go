@@ -207,6 +207,10 @@ type FuncSignature struct {
 	Name   string
 	Ret    ExprType
 	Params []ExprType
+	// VariableLengthParams is a flag to handle variable length parameters. When this flag is set to
+	// true, it means that the last type of params might be specified multiple times (including zero
+	// times). Setting true implies length of Params is more than 0.
+	VariableLengthParams bool
 }
 
 func (sig *FuncSignature) String() string {
@@ -214,9 +218,15 @@ func (sig *FuncSignature) String() string {
 	for _, p := range sig.Params {
 		ts = append(ts, p.String())
 	}
-	return fmt.Sprintf("%s %s(%s)", sig.Ret.String(), sig.Name, strings.Join(ts, ", "))
+	elip := ""
+	if sig.VariableLengthParams {
+		elip = "..."
+	}
+	return fmt.Sprintf("%s %s(%s%s)", sig.Ret.String(), sig.Name, strings.Join(ts, ", "), elip)
 }
 
+// BuiltinFuncSignatures is a set of all builtin function signatures.
+// https://docs.github.com/en/actions/reference/context-and-expression-syntax-for-github-actions#functions
 var BuiltinFuncSignatures = map[string]*FuncSignature{
 	"success": {
 		Name:   "success",
@@ -346,8 +356,9 @@ func (sema *ExprSemanticsChecker) checkFuncCall(n *FuncCallNode) ExprType {
 		return AnyType{}
 	}
 
-	if len(sig.Params) != len(n.Args) {
-		sema.errorf(n, "number of arguments is wrong. function %q takes %d parameters but %d arguments are provided", sig.String(), len(sig.Params), len(n.Args))
+	lp, la := len(sig.Params), len(n.Args)
+	if sig.VariableLengthParams && (lp > la) || lp != la {
+		sema.errorf(n, "number of arguments is wrong. function %q takes %d parameters but %d arguments are provided", sig.String(), lp, la)
 		return sig.Ret
 	}
 
@@ -356,7 +367,7 @@ func (sema *ExprSemanticsChecker) checkFuncCall(n *FuncCallNode) ExprType {
 		tys = append(tys, sema.check(a))
 	}
 
-	for i := 0; i < len(tys); i++ {
+	for i := 0; i < len(sig.Params); i++ {
 		p := sig.Params[i]
 		a := tys[i]
 		if !p.Assignable(a) {
@@ -368,6 +379,23 @@ func (sema *ExprSemanticsChecker) checkFuncCall(n *FuncCallNode) ExprType {
 				p.String(),
 				sig.String(),
 			)
+		}
+	}
+
+	if sig.VariableLengthParams {
+		rest := tys[lp:]
+		p := sig.Params[lp-1]
+		for i, a := range rest {
+			if !p.Assignable(a) {
+				sema.errorf(
+					n,
+					"%dth argument of function call is not assignable. %q cannot be assigned to %q. called function type is %q",
+					lp+i+1,
+					a.String(),
+					p.String(),
+					sig.String(),
+				)
+			}
 		}
 	}
 
