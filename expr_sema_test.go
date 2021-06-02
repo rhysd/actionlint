@@ -67,7 +67,7 @@ func TestExprSemanticsCheckOK(t *testing.T) {
 		},
 		{
 			what:     "object property dereference for any type",
-			input:    "github.issue.labels",
+			input:    "github.event.labels",
 			expected: AnyType{},
 		},
 		{
@@ -116,12 +116,12 @@ func TestExprSemanticsCheckOK(t *testing.T) {
 		},
 		{
 			what:     "array element dereference with any type",
-			input:    "github.issue.labels.*.name",
+			input:    "github.event.labels.*.name",
 			expected: &ArrayDerefType{Elem: AnyType{}},
 		},
 		{
 			what:     "nested array element dereference",
-			input:    "github.issues.*.labels.*.name",
+			input:    "github.event.issues.*.labels.*.name",
 			expected: &ArrayDerefType{Elem: AnyType{}},
 		},
 		{
@@ -131,7 +131,7 @@ func TestExprSemanticsCheckOK(t *testing.T) {
 		},
 		{
 			what:     "function call overload",
-			input:    "contains(github.issue.labels, 'foo')",
+			input:    "contains(github.event.labels, 'foo')",
 			expected: BoolType{},
 		},
 		{
@@ -167,7 +167,7 @@ func TestExprSemanticsCheckOK(t *testing.T) {
 		},
 		{
 			what:     "object property index access with any type",
-			input:    "github['issue']",
+			input:    "env['FOOO']",
 			expected: AnyType{},
 		},
 		{
@@ -185,7 +185,7 @@ func TestExprSemanticsCheckOK(t *testing.T) {
 		},
 		{
 			what:     "array element index access with any type fallback",
-			input:    "github.issue.labels[0]",
+			input:    "github.event.labels[0]",
 			expected: AnyType{},
 		},
 		{
@@ -213,7 +213,7 @@ func TestExprSemanticsCheckOK(t *testing.T) {
 		},
 		{
 			what:     "index access to dereferenced array with any type fallback",
-			input:    "github.issue.labels.*.name[0]",
+			input:    "github.event.labels.*.name[0]",
 			expected: AnyType{},
 		},
 		{
@@ -309,7 +309,7 @@ func TestExprSemanticsCheckOK(t *testing.T) {
 	}
 }
 
-func TestBuiltinFunctionSignatures(t *testing.T) {
+func TestExprBuiltinFunctionSignatures(t *testing.T) {
 	for name, sigs := range BuiltinFuncSignatures {
 		if len(sigs) == 0 {
 			t.Errorf("overload candidates of %q should not be empty", name)
@@ -321,6 +321,17 @@ func TestBuiltinFunctionSignatures(t *testing.T) {
 			if sig.VariableLengthParams && len(sig.Params) == 0 {
 				t.Errorf("number of arguments of %dth overload of %q must not be empty because VariableLengthParams is set to true", i+1, name)
 			}
+		}
+	}
+}
+
+func TestExprBuiltinGlobalVariableTypes(t *testing.T) {
+	for name, g := range BuiltinGlobalVariableTypes {
+		if name != g.Name {
+			t.Errorf("name of global variable is different from its key: name=%q vs key=%q", g.Name, name)
+		}
+		if obj, ok := g.Type.(*ObjectType); ok && obj.StrictProps && len(obj.Props) == 0 {
+			t.Errorf("no prop is defined in %s object though StrictProps is set to true", name)
 		}
 	}
 }

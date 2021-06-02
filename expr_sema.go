@@ -112,11 +112,12 @@ func (ty StringType) Assignable(other ExprType) bool {
 }
 
 type ObjectType struct {
-	Props map[string]ExprType
+	Props       map[string]ExprType
+	StrictProps bool
 }
 
 func NewObjectType() *ObjectType {
-	return &ObjectType{map[string]ExprType{}}
+	return &ObjectType{map[string]ExprType{}, false}
 }
 
 func (ty *ObjectType) Kind() ExprTypeKind {
@@ -371,6 +372,7 @@ var BuiltinGlobalVariableTypes = map[string]*GlobalVariable{
 				"workflow":         StringType{},
 				"workspace":        StringType{},
 			},
+			StrictProps: true,
 		},
 	},
 	// https://docs.github.com/en/actions/reference/context-and-expression-syntax-for-github-actions#env-context
@@ -392,6 +394,7 @@ var BuiltinGlobalVariableTypes = map[string]*GlobalVariable{
 				"services": NewObjectType(),
 				"status":   StringType{},
 			},
+			StrictProps: true,
 		},
 	},
 	// https://docs.github.com/en/actions/reference/context-and-expression-syntax-for-github-actions#steps-context
@@ -408,6 +411,7 @@ var BuiltinGlobalVariableTypes = map[string]*GlobalVariable{
 				"temp":       StringType{},
 				"tool_cache": StringType{},
 			},
+			StrictProps: true,
 		},
 	},
 	// https://docs.github.com/en/actions/reference/context-and-expression-syntax-for-github-actions#contexts
@@ -498,6 +502,9 @@ func (sema *ExprSemanticsChecker) checkObjectDeref(n *ObjectDerefNode) ExprType 
 		if t, ok := ty.Props[n.Property]; ok {
 			return t
 		}
+		if ty.StrictProps {
+			sema.errorf(n, "property %q is not defined in object type %s", n.Property, ty.String())
+		}
 		return AnyType{} // TODO: Check object properties more strictly
 	case *ArrayDerefType:
 		switch et := ty.Elem.(type) {
@@ -509,6 +516,9 @@ func (sema *ExprSemanticsChecker) checkObjectDeref(n *ObjectDerefNode) ExprType 
 			var elem ExprType = AnyType{}
 			if t, ok := et.Props[n.Property]; ok {
 				elem = t
+			}
+			if et.StrictProps {
+				sema.errorf(n, "property %q is not defined in object type %s", n.Property, et.String())
 			}
 			return &ArrayDerefType{Elem: elem}
 		default:
@@ -570,6 +580,9 @@ func (sema *ExprSemanticsChecker) checkIndexAccess(n *IndexAccessNode) ExprType 
 			if lit, ok := n.Index.(*StringNode); ok {
 				if prop, ok := ty.Props[lit.Value]; ok {
 					return prop
+				}
+				if ty.StrictProps {
+					sema.errorf(n, "property %q is not defined in object type %s", lit.Value, ty.String())
 				}
 			}
 			return AnyType{}
