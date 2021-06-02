@@ -222,7 +222,7 @@ func (sig *FuncSignature) String() string {
 	if sig.VariableLengthParams {
 		elip = "..."
 	}
-	return fmt.Sprintf("%s %s(%s%s)", sig.Ret.String(), sig.Name, strings.Join(ts, ", "), elip)
+	return fmt.Sprintf("%s(%s%s) -> %s", sig.Name, strings.Join(ts, ", "), elip, sig.Ret.String())
 }
 
 // BuiltinFuncSignatures is a set of all builtin function signatures.
@@ -410,11 +410,16 @@ func (sema *ExprSemanticsChecker) checkObjectDeref(n *ObjectDerefNode) ExprType 
 			}
 			return &ArrayDerefType{Elem: elem}
 		default:
-			sema.errorf(n, "array element object dereference must be type of object but got %q", ty.Elem.String())
+			sema.errorf(
+				n,
+				"object proprety filter %q of array element dereference must be type of object but got %q",
+				n.Property,
+				ty.Elem.String(),
+			)
 			return AnyType{}
 		}
 	default:
-		sema.errorf(n, "receiver of object dereference must be type of object but got %q", ty.String())
+		sema.errorf(n, "receiver of object dereference %q must be type of object but got %q", n.Property, ty.String())
 		return AnyType{}
 	}
 }
@@ -472,7 +477,7 @@ func (sema *ExprSemanticsChecker) checkIndexAccess(n *IndexAccessNode) ExprType 
 
 func checkFuncSignature(n ExprNode, sig *FuncSignature, args []ExprType) *ExprError {
 	lp, la := len(sig.Params), len(args)
-	if sig.VariableLengthParams && (lp > la) || lp != la {
+	if sig.VariableLengthParams && (lp > la) || !sig.VariableLengthParams && lp != la {
 		return errorfAtExpr(n, "number of arguments is wrong. function %q takes %d parameters but %d arguments are provided", sig.String(), lp, la)
 	}
 
@@ -490,6 +495,8 @@ func checkFuncSignature(n ExprNode, sig *FuncSignature, args []ExprType) *ExprEr
 		}
 	}
 
+	// Note: Unlike many languages, this check does not allow 0 argument for the variable length
+	// parameter since it is useful for checking hashFiles() and format().
 	if sig.VariableLengthParams {
 		rest := args[lp:]
 		p := sig.Params[lp-1]
