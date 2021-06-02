@@ -13,5 +13,6 @@ jobs:
       - uses: actions/setup-go@v2
       - run: go build ./cmd/actionlint
       - run: go test -v -race -coverprofile coverage.txt
+      - run: ./actionlint
       # Do not take coverage while this repository is private
       # - uses: codecov/codecov-action@v1
