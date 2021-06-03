@@ -1,6 +1,9 @@
 package actionlint
 
-import "strings"
+import (
+	"strconv"
+	"strings"
+)
 
 // RuleExpression is a rule checker to check expression syntax in string values of workflow syntax.
 // It checks syntax and semantics of the expressions including type checks and functions/contexts
@@ -8,12 +11,14 @@ import "strings"
 // https://docs.github.com/en/actions/reference/context-and-expression-syntax-for-github-actions
 type RuleExpression struct {
 	RuleBase
+	matrixTy *ObjectType
 }
 
 // NewRuleExpression creates new RuleExpression instance.
 func NewRuleExpression() *RuleExpression {
 	return &RuleExpression{
 		RuleBase: RuleBase{name: "expression"},
+		matrixTy: nil,
 	}
 }
 
@@ -54,6 +59,10 @@ func (rule *RuleExpression) VisitWorkflowPre(n *Workflow) {
 
 // VisitJobPre is callback when visiting Job node before visiting its children.
 func (rule *RuleExpression) VisitJobPre(n *Job) {
+	if n.Strategy != nil && n.Strategy.Matrix != nil {
+		rule.matrixTy = guessTypeOfMatrix(n.Strategy.Matrix)
+	}
+
 	rule.checkString(n.Name)
 	rule.checkStrings(n.Needs)
 
@@ -103,6 +112,11 @@ func (rule *RuleExpression) VisitJobPre(n *Job) {
 	for _, s := range n.Services {
 		rule.checkContainer(s.Container)
 	}
+}
+
+// VisitJobPost is callback when visiting Job node after visiting its children
+func (rule *RuleExpression) VisitJobPost(n *Job) {
+	rule.matrixTy = nil
 }
 
 // VisitStep is callback when visiting Step node.
@@ -248,10 +262,73 @@ func (rule *RuleExpression) checkSemantics(src string, line, col int) (ExprType,
 
 	// TODO: The first return value should be used to check correct value is specified
 	c := NewExprSemanticsChecker()
+	if rule.matrixTy != nil {
+		c.UpdateMatrix(rule.matrixTy)
+	}
 	ty, errs := c.Check(expr)
 	for _, err := range errs {
 		rule.exprError(err, line, col)
 	}
 
 	return ty, offset
+}
+
+func guessTypeOfMatrix(m *Matrix) *ObjectType {
+	o := NewObjectType()
+	o.StrictProps = true
+
+	for n, r := range m.Rows {
+		o.Props[n] = guessTypeOfMatrixRow(r)
+	}
+
+	for _, inc := range m.Include {
+		for n, kv := range inc {
+			ity := guessTypeFromValue(kv.Value.Value)
+			mty, ok := o.Props[n]
+			if !ok {
+				// When the combination does not exist in 'matrix' section
+				o.Props[n] = ity
+				continue
+			}
+			if !mty.Equals(ity) {
+				// When types are mismatch between 'matrix' and 'include' for example:
+				//   matrix:
+				//     foo: [1, 2, 3]
+				//   include:
+				//     - foo: true
+				//       bar: null
+				o.Props[n] = AnyType{}
+			}
+		}
+	}
+
+	return o
+}
+
+func guessTypeOfMatrixRow(r *MatrixRow) ExprType {
+	var ty ExprType
+	for _, s := range r.Values {
+		t := guessTypeFromValue(s.Value)
+		if ty == nil {
+			ty = t
+		} else if !t.Equals(ty) {
+			// Multiple types are set to values like [42, 'foo']. Fallback to any. This would occur
+			// when using null as invalid value.
+			return AnyType{}
+		}
+	}
+	return AnyType{} // No element
+}
+
+func guessTypeFromValue(s string) ExprType {
+	if s == "true" || s == "false" {
+		return BoolType{}
+	}
+	if _, err := strconv.ParseFloat(s, 64); err != nil {
+		return NumberType{}
+	}
+	if s == "null" {
+		return NullType{}
+	}
+	return StringType{}
 }

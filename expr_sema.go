@@ -34,6 +34,8 @@ type ExprType interface {
 	String() string
 	// Assignable returns if other type can be assignable to the type.
 	Assignable(other ExprType) bool
+	// Equals returns if the type is equal to the other type.
+	Equals(other ExprType) bool
 }
 
 // AnyType represents type which can be any type. It also indicates that a value of the type cannot
@@ -46,6 +48,11 @@ func (ty AnyType) String() string {
 
 // Assignable returns if other type can be assignable to the type.
 func (ty AnyType) Assignable(_ ExprType) bool {
+	return true
+}
+
+// Equals returns if the type is equal to the other type.
+func (ty AnyType) Equals(other ExprType) bool {
 	return true
 }
 
@@ -66,11 +73,23 @@ func (ty NullType) Assignable(other ExprType) bool {
 	}
 }
 
+// Equals returns if the type is equal to the other type.
+func (ty NullType) Equals(other ExprType) bool {
+	_, ok := other.(NullType)
+	return ok
+}
+
 // NumberType is type for number values such as integer or float.
 type NumberType struct{}
 
 func (ty NumberType) String() string {
 	return "number"
+}
+
+// Equals returns if the type is equal to the other type.
+func (ty NumberType) Equals(other ExprType) bool {
+	_, ok := other.(NumberType)
+	return ok
 }
 
 // Assignable returns if other type can be assignable to the type.
@@ -102,6 +121,12 @@ func (ty BoolType) Assignable(other ExprType) bool {
 	}
 }
 
+// Equals returns if the type is equal to the other type.
+func (ty BoolType) Equals(other ExprType) bool {
+	_, ok := other.(BoolType)
+	return ok
+}
+
 // StringType is type for string values.
 type StringType struct{}
 
@@ -118,6 +143,12 @@ func (ty StringType) Assignable(other ExprType) bool {
 	default:
 		return false
 	}
+}
+
+// Equals returns if the type is equal to the other type.
+func (ty StringType) Equals(other ExprType) bool {
+	_, ok := other.(StringType)
+	return ok
 }
 
 // ObjectType is type for objects, which can hold key-values.
@@ -165,6 +196,11 @@ func (ty *ObjectType) Assignable(other ExprType) bool {
 	}
 }
 
+// Equals returns if the type is equal to the other type.
+func (ty *ObjectType) Equals(other ExprType) bool {
+	panic("unimplemented")
+}
+
 // ArrayType is type for arrays.
 type ArrayType struct {
 	// Elem is type of element of the array.
@@ -173,6 +209,11 @@ type ArrayType struct {
 
 func (ty *ArrayType) String() string {
 	return fmt.Sprintf("array<%s>", ty.Elem.String())
+}
+
+// Equals returns if the type is equal to the other type.
+func (ty *ArrayType) Equals(other ExprType) bool {
+	panic("unimplemented")
 }
 
 // Assignable returns if other type can be assignable to the type.
@@ -216,6 +257,11 @@ func (ty *ArrayDerefType) Assignable(other ExprType) bool {
 	default:
 		return false
 	}
+}
+
+// Equals returns if the type is equal to the other type.
+func (ty *ArrayDerefType) Equals(other ExprType) bool {
+	panic("unimplemented")
 }
 
 // Functions
@@ -505,6 +551,18 @@ func errorfAtExpr(e ExprNode, format string, args ...interface{}) *ExprError {
 
 func (sema *ExprSemanticsChecker) errorf(e ExprNode, format string, args ...interface{}) {
 	sema.errs = append(sema.errs, errorfAtExpr(e, format, args...))
+}
+
+// UpdateMatrix updates matrix object to given object type. Since matrix values change according to
+// 'matrix' section of job configuration, the type needs to be updated.
+func (sema *ExprSemanticsChecker) UpdateMatrix(ty *ObjectType) {
+	// Make shallow copy of current variables map not to pollute global variable
+	copied := make(map[string]*GlobalVariableType, len(sema.vars))
+	for k, v := range sema.vars {
+		copied[k] = v
+	}
+	copied["matrix"].Type = ty // Update matrix object
+	sema.vars = copied
 }
 
 func (sema *ExprSemanticsChecker) checkVariable(n *VariableNode) ExprType {
