@@ -29,23 +29,38 @@ func findNearestWorkflowsDir(from string) (string, error) {
 	}
 }
 
+// LogLevel is log level of logger used in Linter instance.
 type LogLevel int
 
 const (
-	LogLevelNone    LogLevel = 0
-	LogLevelVerbose          = 1
-	LogLevelDebug            = 2
+	// LogLevelNone does not output any log output.
+	LogLevelNone LogLevel = 0
+	// LogLevelVerbose shows verbose log output. This is equivalent to specifying -verbose option
+	// to actionlint command.
+	LogLevelVerbose = 1
+	// LogLevelDebug shows all log output including debug information.
+	LogLevelDebug = 2
 )
 
+// LinterOptions is set of options for Linter instance. This struct should be created by user and
+// given to NewLinter factory function.
 type LinterOptions struct {
-	Verbose   bool
-	Debug     bool
+	// Verbose is flag if verbose log output is enabled.
+	Verbose bool
+	// Debug is flag if debug log output is enabled.
+	Debug bool
+	// LogWriter is io.Writer object to use to print log outputs. Note that error outputs detected
+	// by the linter are not included in the log outputs.
 	LogWriter io.Writer
-	NoColor   bool
-	Oneline   bool
+	// NoColor is flag if colorful output is enabled.
+	NoColor bool
+	// Oneline is flag if one line output is enabled. When enabling it, one error is output per one
+	// line. It is useful when reading outputs from programs.
+	Oneline bool
 	// More options will come here
 }
 
+// Linter is struct to lint workflow files.
 type Linter struct {
 	out      io.Writer
 	logOut   io.Writer
@@ -54,6 +69,10 @@ type Linter struct {
 	oneline  bool
 }
 
+// NewLinter creates a new Linter instance.
+// The out parameter is used to output errors from Linter instance. Set io.Discard if you don't
+// want the outputs.
+// The opts parameter is LinterOptions instance which configures behavior of linting.
 func NewLinter(out io.Writer, opts *LinterOptions) *Linter {
 	l := LogLevelNone
 	if opts.Verbose {
@@ -75,13 +94,13 @@ func NewLinter(out io.Writer, opts *LinterOptions) *Linter {
 	return &Linter{out, lout, l, opts.NoColor, opts.Oneline}
 }
 
-func (l *Linter) Log(args ...interface{}) {
+func (l *Linter) log(args ...interface{}) {
 	if l.logLevel >= LogLevelVerbose {
 		fmt.Fprintln(l.logOut, args...)
 	}
 }
 
-func (l *Linter) DebugLog(args ...interface{}) {
+func (l *Linter) debug(args ...interface{}) {
 	if l.logLevel >= LogLevelDebug {
 		fmt.Fprintln(l.logOut, args...)
 	}
@@ -91,7 +110,7 @@ func (l *Linter) DebugLog(args ...interface{}) {
 // `.github/workflow` directory based on `dir` and applies lint rules to all YAML worflow files
 // under the directory.
 func (l *Linter) LintRepoDir(dir string) ([]*Error, error) {
-	l.Log("Linting all workflow files in repository:", dir)
+	l.log("Linting all workflow files in repository:", dir)
 
 	d, err := filepath.Abs(dir)
 	if err != nil {
@@ -102,7 +121,7 @@ func (l *Linter) LintRepoDir(dir string) ([]*Error, error) {
 	if err != nil {
 		return nil, err
 	}
-	l.Log("Detected workflows directory:", wd)
+	l.log("Detected workflows directory:", wd)
 
 	files := []string{}
 	if err := filepath.Walk(wd, func(path string, info os.FileInfo, err error) error {
@@ -123,7 +142,7 @@ func (l *Linter) LintRepoDir(dir string) ([]*Error, error) {
 	if len(files) == 0 {
 		return nil, fmt.Errorf("No YAML file was found in %q", wd)
 	}
-	l.Log("Collected", len(files), "YAML files")
+	l.log("Collected", len(files), "YAML files")
 
 	return l.LintFiles(files)
 }
@@ -133,7 +152,7 @@ func (l *Linter) LintRepoDir(dir string) ([]*Error, error) {
 func (l *Linter) LintFiles(filepaths []string) ([]*Error, error) {
 	n := len(filepaths)
 	if n > 1 {
-		l.Log("Linting", n, "files")
+		l.log("Linting", n, "files")
 	}
 
 	all := []*Error{}
@@ -147,12 +166,13 @@ func (l *Linter) LintFiles(filepaths []string) ([]*Error, error) {
 		all = append(all, errs...)
 	}
 	if n > 1 {
-		l.Log("Found", len(all), "errors in", n, "files")
+		l.log("Found", len(all), "errors in", n, "files")
 	}
 
 	return all, nil
 }
 
+// LintFile lints one YAML workflow file and outputs the errors to given writer.
 func (l *Linter) LintFile(path string) ([]*Error, error) {
 	b, err := ioutil.ReadFile(path)
 	if err != nil {
@@ -169,8 +189,11 @@ func (l *Linter) LintFile(path string) ([]*Error, error) {
 	return l.Lint(path, b)
 }
 
+// Lint lints YAML workflow file content given as byte sequence. The path parameter is used as file
+// path the content came from. Setting "<stdin>" to path parameter indicates the output came from
+// STDIN.
 func (l *Linter) Lint(path string, content []byte) ([]*Error, error) {
-	l.Log("Linting", path)
+	l.log("Linting", path)
 
 	w, all := Parse(content)
 
@@ -210,13 +233,7 @@ func (l *Linter) Lint(path string, content []byte) ([]*Error, error) {
 		err.PrettyPrint(l.out, src)
 	}
 
-	l.Log("Found", len(all), "errors in", path)
+	l.log("Found", len(all), "errors in", path)
 
 	return all, nil
-}
-
-func (l *Linter) printErrs(errs []*Error) {
-	for _, err := range errs {
-		fmt.Fprintln(l.out, err)
-	}
 }
