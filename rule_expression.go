@@ -59,10 +59,6 @@ func (rule *RuleExpression) VisitWorkflowPre(n *Workflow) {
 
 // VisitJobPre is callback when visiting Job node before visiting its children.
 func (rule *RuleExpression) VisitJobPre(n *Job) {
-	if n.Strategy != nil && n.Strategy.Matrix != nil {
-		rule.matrixTy = guessTypeOfMatrix(n.Strategy.Matrix)
-	}
-
 	rule.checkString(n.Name)
 	rule.checkStrings(n.Needs)
 
@@ -111,6 +107,12 @@ func (rule *RuleExpression) VisitJobPre(n *Job) {
 
 	for _, s := range n.Services {
 		rule.checkContainer(s.Container)
+	}
+
+	// Set matrix type at end of VisitJobPre() because matrix values are only available in
+	// expresions of steps.
+	if n.Strategy != nil && n.Strategy.Matrix != nil {
+		rule.matrixTy = guessTypeOfMatrix(n.Strategy.Matrix)
 	}
 }
 
@@ -317,7 +319,12 @@ func guessTypeOfMatrixRow(r *MatrixRow) ExprType {
 			return AnyType{}
 		}
 	}
-	return AnyType{} // No element
+
+	if ty == nil {
+		return AnyType{} // No element
+	}
+
+	return ty
 }
 
 func guessTypeFromValue(s string) ExprType {

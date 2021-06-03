@@ -561,7 +561,10 @@ func (sema *ExprSemanticsChecker) UpdateMatrix(ty *ObjectType) {
 	for k, v := range sema.vars {
 		copied[k] = v
 	}
-	copied["matrix"].Type = ty // Update matrix object
+	copied["matrix"] = &GlobalVariableType{
+		Name: "matrix",
+		Type: ty,
+	}
 	sema.vars = copied
 }
 
