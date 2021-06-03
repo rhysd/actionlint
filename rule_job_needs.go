@@ -41,6 +41,7 @@ func NewRuleJobNeeds() *RuleJobNeeds {
 	}
 }
 
+// VisitJobPre is callback when visiting Job node before visiting its children.
 func (rule *RuleJobNeeds) VisitJobPre(n *Job) {
 	needs := make([]string, 0, len(n.Needs))
 	for _, j := range n.Needs {
@@ -55,6 +56,7 @@ func (rule *RuleJobNeeds) VisitJobPre(n *Job) {
 	}
 }
 
+// VisitWorkflowPost is callback when visiting Workflow node after visiting its children.
 func (rule *RuleJobNeeds) VisitWorkflowPost(n *Workflow) {
 	// Resolve nodes
 	valid := true

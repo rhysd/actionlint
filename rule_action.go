@@ -45,6 +45,7 @@ func NewRuleAction(file string) *RuleAction {
 	}
 }
 
+// VisitStep is callback when visiting Step node.
 func (rule *RuleAction) VisitStep(n *Step) {
 	e, ok := n.Exec.(*ExecAction)
 	if !ok || e.Uses == nil {

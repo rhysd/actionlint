@@ -7,19 +7,19 @@ type RuleBase struct {
 	errs []*Error
 }
 
-// VisitStep is callback when visiting Step node
+// VisitStep is callback when visiting Step node.
 func (r *RuleBase) VisitStep(node *Step) {}
 
-// VisitJobPre is callback when visiting Job node before visiting its children
+// VisitJobPre is callback when visiting Job node before visiting its children.
 func (r *RuleBase) VisitJobPre(node *Job) {}
 
-// VisitJobPost is callback when visiting Job node after visiting its children
+// VisitJobPost is callback when visiting Job node after visiting its children.
 func (r *RuleBase) VisitJobPost(node *Job) {}
 
-// VisitWorkflowPre is callback when visiting Workflow node before visiting its children
+// VisitWorkflowPre is callback when visiting Workflow node before visiting its children.
 func (r *RuleBase) VisitWorkflowPre(node *Workflow) {}
 
-// VisitWorkflowPost is callback when visiting Workflow node after visiting its children
+// VisitWorkflowPost is callback when visiting Workflow node after visiting its children.
 func (r *RuleBase) VisitWorkflowPost(node *Workflow) {}
 
 func (r *RuleBase) error(pos *Pos, msg string) {
@@ -37,6 +37,7 @@ func (r *RuleBase) Errs() []*Error {
 	return r.errs
 }
 
+// Name is name of the rule.
 func (r *RuleBase) Name() string {
 	return r.name
 }

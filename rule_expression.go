@@ -2,16 +2,22 @@ package actionlint
 
 import "strings"
 
+// RuleExpression is a rule checker to check expression syntax in string values of workflow syntax.
+// It checks syntax and semantics of the expressions including type checks and functions/contexts
+// definitions. For more details see
+// https://docs.github.com/en/actions/reference/context-and-expression-syntax-for-github-actions
 type RuleExpression struct {
 	RuleBase
 }
 
+// NewRuleExpression creates new RuleExpression instance.
 func NewRuleExpression() *RuleExpression {
 	return &RuleExpression{
 		RuleBase: RuleBase{name: "expression"},
 	}
 }
 
+// VisitWorkflowPre is callback when visiting Workflow node before visiting its children.
 func (rule *RuleExpression) VisitWorkflowPre(n *Workflow) {
 	rule.checkString(n.Name)
 
@@ -46,6 +52,7 @@ func (rule *RuleExpression) VisitWorkflowPre(n *Workflow) {
 	rule.checkConcurrency(n.Concurrency)
 }
 
+// VisitJobPre is callback when visiting Job node before visiting its children.
 func (rule *RuleExpression) VisitJobPre(n *Job) {
 	rule.checkString(n.Name)
 	rule.checkStrings(n.Needs)
@@ -98,6 +105,7 @@ func (rule *RuleExpression) VisitJobPre(n *Job) {
 	}
 }
 
+// VisitStep is callback when visiting Step node.
 func (rule *RuleExpression) VisitStep(n *Step) {
 	rule.checkBoolString("if", n.If)
 	rule.checkString(n.Name)

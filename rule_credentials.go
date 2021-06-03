@@ -17,6 +17,7 @@ func NewRuleCredentials() *RuleCredentials {
 	}
 }
 
+// VisitJobPre is callback when visiting Job node before visiting its children.
 func (rule *RuleCredentials) VisitJobPre(n *Job) {
 	if n.Container != nil {
 		rule.checkContainer("\"container\" section", n.Container)

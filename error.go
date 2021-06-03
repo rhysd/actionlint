@@ -49,6 +49,9 @@ func errorfAt(pos *Pos, kind string, format string, args ...interface{}) *Error 
 	}
 }
 
+// PrettyPrint prints the error with user-friendly way. It prints file name, source position, error
+// message with colorful output and source snippet with indicator. When nil is set to source, no
+// source snippet is not printed. To disable colorful output, set true to fatih/color.NoColor.
 func (e *Error) PrettyPrint(w io.Writer, source []byte) {
 	yellow.Fprint(w, e.Filepath)
 	gray.Fprint(w, ":")

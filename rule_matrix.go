@@ -18,6 +18,7 @@ func NewRuleMatrix() *RuleMatrix {
 	}
 }
 
+// VisitJobPre is callback when visiting Job node before visiting its children.
 func (rule *RuleMatrix) VisitJobPre(n *Job) {
 	if n.Strategy == nil || n.Strategy.Matrix == nil {
 		return

@@ -21,6 +21,7 @@ func NewRuleEvents() *RuleEvents {
 	}
 }
 
+// VisitWorkflowPre is callback when visiting Workflow node before visiting its children.
 func (rule *RuleEvents) VisitWorkflowPre(n *Workflow) {
 	for _, e := range n.On {
 		rule.checkEvent(e)

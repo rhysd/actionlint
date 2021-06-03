@@ -941,6 +941,9 @@ func (p *parser) parse(n *yaml.Node) *Workflow {
 	return w
 }
 
+// Parse parses given source as byte sequence into workflow syntax tree. It returns all errors
+// detected while parsing the input. It means that detecting one error does not stop parsing. Even
+// if one or more errors are detected, parser will try to continue parsing and finding more errors.
 func Parse(b []byte) (*Workflow, []*Error) {
 	var n yaml.Node
 

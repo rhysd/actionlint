@@ -28,12 +28,14 @@ func NewRuleShellName() *RuleShellName {
 	}
 }
 
+// VisitStep is callback when visiting Step node.
 func (rule *RuleShellName) VisitStep(n *Step) {
 	if run, ok := n.Exec.(*ExecRun); ok {
 		rule.checkShellName(run.Shell)
 	}
 }
 
+// VisitJobPre is callback when visiting Job node before visiting its children.
 func (rule *RuleShellName) VisitJobPre(n *Job) {
 	if n.RunsOn == nil {
 		return
@@ -44,10 +46,12 @@ func (rule *RuleShellName) VisitJobPre(n *Job) {
 	}
 }
 
+// VisitJobPost is callback when visiting Job node after visiting its children.
 func (rule *RuleShellName) VisitJobPost(n *Job) {
 	rule.platform = platformKindAny // Clear
 }
 
+// VisitWorkflowPre is callback when visiting Workflow node before visiting its children.
 func (rule *RuleShellName) VisitWorkflowPre(n *Workflow) {
 	if n.Defaults != nil && n.Defaults.Run != nil {
 		rule.checkShellName(n.Defaults.Run.Shell)
