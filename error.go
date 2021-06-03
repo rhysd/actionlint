@@ -8,6 +8,7 @@ import (
 	"strings"
 
 	"github.com/fatih/color"
+	"github.com/mattn/go-runewidth"
 )
 
 var (
@@ -88,19 +89,21 @@ func (e *Error) getLine(source []byte) string {
 func (e *Error) getIndicator(line string) string {
 	start := e.Column - 1 // Column is 1-based
 
-	// Count non-space characters after '^'
-	count := 0
+	// Count width of non-space characters after '^' for underline
+	uw := 0
 	r := strings.NewReader(line[start:])
 	for {
 		c, s, err := r.ReadRune()
 		if err != nil || s == 0 || c == ' ' || c == '\t' || c == '\n' || c == '\r' {
 			break
 		}
-		count++
+		uw += runewidth.RuneWidth(c)
 	}
-	if count > 0 {
-		count-- // Decrement for place for '^'
+	if uw > 0 {
+		uw-- // Decrement for place for '^'
 	}
 
-	return fmt.Sprintf("%s^%s", strings.Repeat(" ", start), strings.Repeat("~", count))
+	// Count width of spaces before '^'
+	sw := runewidth.StringWidth(line[:start])
+	return fmt.Sprintf("%s^%s", strings.Repeat(" ", sw), strings.Repeat("~", uw))
 }
