@@ -61,9 +61,10 @@ func main() {
 	var ver bool
 	var opts actionlint.LinterOptions
 
-	flag.BoolVar(&ver, "version", false, "Show version")
+	flag.BoolVar(&opts.NoColor, "no-color", false, "Disable colorful output")
 	flag.BoolVar(&opts.Verbose, "verbose", false, "Enable verbose output")
 	flag.BoolVar(&opts.Debug, "debug", false, "Enable debug output (for development)")
+	flag.BoolVar(&ver, "version", false, "Show version")
 	flag.Usage = usage
 	flag.Parse()
 

@@ -8,7 +8,9 @@ import (
 	"path/filepath"
 	"strings"
 
+	"github.com/fatih/color"
 	"github.com/kr/pretty"
+	"github.com/mattn/go-colorable"
 )
 
 func findNearestWorkflowsDir(from string) (string, error) {
@@ -39,6 +41,7 @@ type LinterOptions struct {
 	Verbose   bool
 	Debug     bool
 	LogWriter io.Writer
+	NoColor   bool
 	// More options will come here
 }
 
@@ -55,10 +58,15 @@ func NewLinter(out io.Writer, opts *LinterOptions) *Linter {
 	} else if opts.Debug {
 		l = LogLevelDebug
 	}
+	if opts.NoColor {
+		color.NoColor = true
+	}
 
 	var lout io.Writer = os.Stderr
 	if opts.LogWriter != nil {
 		lout = opts.LogWriter
+	} else if !opts.NoColor {
+		lout = colorable.NewColorable(os.Stderr)
 	}
 
 	return &Linter{out, lout, l}
@@ -192,7 +200,7 @@ func (l *Linter) Lint(path string, content []byte) ([]*Error, error) {
 
 	for _, err := range all {
 		err.Filepath = path // Populate filename in the error
-		fmt.Fprintln(l.out, err)
+		err.PrettyPrint(l.out, true)
 	}
 
 	l.Log("Found", len(all), "errors in", path)
