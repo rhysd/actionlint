@@ -73,7 +73,7 @@ func (rule *RuleExpression) VisitJobPre(n *Job) {
 	}
 
 	rule.checkDefaults(n.Defaults)
-	rule.checkString(n.If)
+	rule.checkBoolString("if", n.If)
 
 	if n.Strategy != nil && n.Strategy.Matrix != nil {
 		for _, r := range n.Strategy.Matrix.Rows {
@@ -99,7 +99,7 @@ func (rule *RuleExpression) VisitJobPre(n *Job) {
 }
 
 func (rule *RuleExpression) VisitStep(n *Step) {
-	rule.checkString(n.If)
+	rule.checkBoolString("if", n.If)
 	rule.checkString(n.Name)
 
 	switch e := n.Exec.(type) {
@@ -159,13 +159,42 @@ func (rule *RuleExpression) checkStrings(ss []*String) {
 	}
 }
 
-func (rule *RuleExpression) checkString(str *String) {
+func (rule *RuleExpression) checkBoolString(sec string, str *String) {
 	if str == nil {
 		return
+	}
+	tys := rule.checkString(str)
+	if len(tys) == 0 {
+		if str.Value != "true" && str.Value != "false" {
+			rule.errorf(str.Pos, "expected bool string \"true\" or \"false\" but got %q", str.Value)
+		}
+		return
+	}
+
+	if len(tys) > 1 {
+		return // The string contains two or more placeholders. Give up
+	}
+	s := strings.TrimSpace(str.Value)
+	if !strings.HasPrefix(s, "${{") || !strings.HasSuffix(s, "}}") {
+		return // When return value is not entire string of the section, give up
+	}
+
+	switch ty := tys[0].(type) {
+	case BoolType:
+		// OK
+	default:
+		rule.errorf(str.Pos, "value at %q section should be type \"bool\" but got type %q", sec, ty.String())
+	}
+}
+
+func (rule *RuleExpression) checkString(str *String) []ExprType {
+	if str == nil {
+		return nil
 	}
 
 	line, col := str.Pos.Line, str.Pos.Col
 	offset := 0
+	tys := []ExprType{}
 	s := str.Value
 	for {
 		idx := strings.Index(s, "${{")
@@ -177,10 +206,13 @@ func (rule *RuleExpression) checkString(str *String) {
 		s = s[start:]
 		offset += start
 
-		offsetAfter := rule.checkSemantics(s, line, col+offset)
+		ty, offsetAfter := rule.checkSemantics(s, line, col+offset)
 		s = s[offsetAfter:]
 		offset += offsetAfter
+		tys = append(tys, ty)
 	}
+
+	return tys
 }
 
 func (rule *RuleExpression) exprError(err *ExprError, lineBase, colBase int) {
@@ -191,27 +223,27 @@ func (rule *RuleExpression) exprError(err *ExprError, lineBase, colBase int) {
 	rule.error(&pos, err.Message)
 }
 
-func (rule *RuleExpression) checkSemantics(src string, line, col int) int {
+func (rule *RuleExpression) checkSemantics(src string, line, col int) (ExprType, int) {
 	l := NewExprLexer()
 	tok, offset, err := l.Lex(src)
 	if err != nil {
 		rule.exprError(err, line, col)
-		return offset
+		return nil, offset
 	}
 
 	p := NewExprParser()
 	expr, err := p.Parse(tok)
 	if err != nil {
 		rule.exprError(err, line, col)
-		return offset
+		return nil, offset
 	}
 
 	// TODO: The first return value should be used to check correct value is specified
 	c := NewExprSemanticsChecker()
-	_, errs := c.Check(expr)
+	ty, errs := c.Check(expr)
 	for _, err := range errs {
 		rule.exprError(err, line, col)
 	}
 
-	return offset
+	return ty, offset
 }
