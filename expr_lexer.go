@@ -58,8 +58,7 @@ const (
 	TokenKindComma
 )
 
-// DescribeTokenKind returns name of token kind.
-func DescribeTokenKind(t TokenKind) string {
+func (t TokenKind) String() string {
 	switch t {
 	case TokenKindUnknown:
 		return "UNKNOWN"
@@ -126,7 +125,7 @@ type Token struct {
 }
 
 func (t *Token) String() string {
-	return fmt.Sprintf("%s:%d:%d:%d", DescribeTokenKind(t.Kind), t.Line, t.Column, t.Offset)
+	return fmt.Sprintf("%s:%d:%d:%d", t.Kind.String(), t.Line, t.Column, t.Offset)
 }
 
 func isWhitespace(r rune) bool {
