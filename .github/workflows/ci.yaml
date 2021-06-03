@@ -16,3 +16,13 @@ jobs:
       - run: ./actionlint
       # Do not take coverage while this repository is private
       # - uses: codecov/codecov-action@v1
+  lint:
+    name: Lint
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v2
+      - uses: actions/setup-go@v2
+      - run: go get honnef.co/go/tools/cmd/staticcheck@latest
+      - name: Add staticcheck to PATH
+        run: echo "$(go env GOPATH)/bin" >> $GITHUB_PATH
+      - run: staticcheck ./...

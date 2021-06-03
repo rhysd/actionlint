@@ -9,12 +9,12 @@ import (
 	"gopkg.in/yaml.v3"
 )
 
-func dumpYAML(n *yaml.Node, level int) {
-	fmt.Printf("%s%s (%s, %d,%d): %q\n", strings.Repeat(". ", level), nodeKindName(n.Kind), n.Tag, n.Line, n.Column, n.Value)
-	for _, c := range n.Content {
-		dumpYAML(c, level+1)
-	}
-}
+// func dumpYAML(n *yaml.Node, level int) {
+// 	fmt.Printf("%s%s (%s, %d,%d): %q\n", strings.Repeat(". ", level), nodeKindName(n.Kind), n.Tag, n.Line, n.Column, n.Value)
+// 	for _, c := range n.Content {
+// 		dumpYAML(c, level+1)
+// 	}
+// }
 
 func nodeKindName(k yaml.Kind) string {
 	switch k {
