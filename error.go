@@ -1,8 +1,11 @@
 package actionlint
 
 import (
+	"bufio"
+	"bytes"
 	"fmt"
 	"io"
+	"strings"
 
 	"github.com/fatih/color"
 )
@@ -45,13 +48,59 @@ func errorfAt(pos *Pos, kind string, format string, args ...interface{}) *Error 
 	}
 }
 
-func (e *Error) PrettyPrint(w io.Writer, location bool) {
-	green.Fprint(w, e.Filepath)
-	fmt.Fprint(w, ":")
-	yellow.Fprint(w, e.Line)
-	fmt.Fprint(w, ":")
-	yellow.Fprint(w, e.Column)
-	fmt.Fprint(w, ": ")
+func (e *Error) PrettyPrint(w io.Writer, source []byte) {
+	yellow.Fprint(w, e.Filepath)
+	gray.Fprint(w, ":")
+	fmt.Fprint(w, e.Line)
+	gray.Fprint(w, ":")
+	fmt.Fprint(w, e.Column)
+	gray.Fprint(w, ": ")
 	bold.Fprint(w, e.Message)
 	gray.Fprintf(w, " [%s]\n", e.Kind)
+
+	if source == nil {
+		return
+	}
+	line := e.getLine(source)
+	if line == "" {
+		return
+	}
+
+	fmt.Fprintln(w, line)
+	green.Fprintln(w, e.getIndicator(line))
+}
+
+func (e *Error) getLine(source []byte) string {
+	s := bufio.NewScanner(bytes.NewReader(source))
+	l := 0
+	for s.Scan() {
+		l++
+		if l == e.Line {
+			return s.Text()
+		}
+	}
+	return ""
+}
+
+func (e *Error) getIndicator(line string) string {
+	start := e.Column - 1 // Column is 1-based
+
+	// Count non-space characters after '^'
+	count := 0
+	r := strings.NewReader(line[start:])
+	for {
+		c, s, err := r.ReadRune()
+		if err != nil || s == 0 {
+			break
+		}
+		if c == ' ' || c == '\t' || c == '\n' || c == '\r' {
+			break
+		}
+		count++
+	}
+	if count > 0 {
+		count-- // Decrement for place for '^'
+	}
+
+	return fmt.Sprintf("%s^%s", strings.Repeat(" ", start), strings.Repeat("~", count))
 }
