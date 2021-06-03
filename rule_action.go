@@ -51,6 +51,11 @@ func (rule *RuleAction) VisitStep(n *Step) {
 
 	spec := e.Uses.Value
 
+	if strings.Contains(spec, "${{") && strings.Contains(spec, "}}") {
+		// Cannot parse specification made with interpolation. Give up
+		return
+	}
+
 	if strings.HasPrefix(spec, "./") {
 		// Relative to repository root
 		rule.checkActionInSameRepo(spec, e)
