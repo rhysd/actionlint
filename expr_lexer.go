@@ -529,7 +529,7 @@ func (lex *ExprLexer) Lex(src string) ([]*Token, int, *ExprError) {
 	for {
 		t, err := lex.lexToken()
 		if err != nil {
-			return nil, 0, err
+			return nil, lex.scan.Pos().Offset, err
 		}
 		ts = append(ts, t)
 		if t.Kind == TokenKindEnd {

@@ -9,9 +9,9 @@ type ExprError struct {
 	Message string
 	// Offset is byte offset position which caused the error
 	Offset int
-	// Offset is line number position which caused the error. Note that this value is 0-based.
+	// Offset is line number position which caused the error. Note that this value is 1-based.
 	Line int
-	// Column is column number position which caused the error. Note that this value is 0-based.
+	// Column is column number position which caused the error. Note that this value is 1-based.
 	Column int
 }
 
