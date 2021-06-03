@@ -41,7 +41,7 @@ func lint(args []string, opts *actionlint.LinterOptions) ([]*actionlint.Error, e
 		// Find nearest workflows directory
 		d, err := os.Getwd()
 		if err != nil {
-			return nil, fmt.Errorf("Could not get current working directory: %w", err)
+			return nil, fmt.Errorf("could not get current working directory: %w", err)
 		}
 		return l.LintRepoDir(d)
 	}
@@ -49,7 +49,7 @@ func lint(args []string, opts *actionlint.LinterOptions) ([]*actionlint.Error, e
 	if len(args) == 1 && args[0] == "-" {
 		b, err := ioutil.ReadAll(os.Stdin)
 		if err != nil {
-			return nil, fmt.Errorf("Could not read stdin: %w", err)
+			return nil, fmt.Errorf("could not read stdin: %w", err)
 		}
 		return l.Lint("<stdin>", b)
 	}

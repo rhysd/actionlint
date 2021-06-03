@@ -23,7 +23,7 @@ func findNearestWorkflowsDir(from string) (string, error) {
 
 		n := filepath.Dir(d)
 		if n == d {
-			return "", fmt.Errorf("No .github/workflows directory was found in any parent directories of %q", from)
+			return "", fmt.Errorf(".github/workflows directory was not found in any parent directories of %q", from)
 		}
 		d = n
 	}
@@ -114,7 +114,7 @@ func (l *Linter) LintRepoDir(dir string) ([]*Error, error) {
 
 	d, err := filepath.Abs(dir)
 	if err != nil {
-		return nil, fmt.Errorf("Could not get absolute path of %q: %w", dir, err)
+		return nil, fmt.Errorf("could not get absolute path of %q: %w", dir, err)
 	}
 
 	wd, err := findNearestWorkflowsDir(d)
@@ -136,11 +136,11 @@ func (l *Linter) LintRepoDir(dir string) ([]*Error, error) {
 		}
 		return nil
 	}); err != nil {
-		return nil, fmt.Errorf("Could not read files in %q: %w", wd, err)
+		return nil, fmt.Errorf("could not read files in %q: %w", wd, err)
 	}
 
 	if len(files) == 0 {
-		return nil, fmt.Errorf("No YAML file was found in %q", wd)
+		return nil, fmt.Errorf("no YAML file was found in %q", wd)
 	}
 	l.log("Collected", len(files), "YAML files")
 
@@ -176,7 +176,7 @@ func (l *Linter) LintFiles(filepaths []string) ([]*Error, error) {
 func (l *Linter) LintFile(path string) ([]*Error, error) {
 	b, err := ioutil.ReadFile(path)
 	if err != nil {
-		return nil, fmt.Errorf("Could not read %q: %w", path, err)
+		return nil, fmt.Errorf("could not read %q: %w", path, err)
 	}
 
 	// Use relative path if possible
@@ -221,7 +221,9 @@ func (l *Linter) Lint(path string, content []byte) ([]*Error, error) {
 	v.Visit(w)
 
 	for _, rule := range rules {
-		all = append(all, rule.Errs()...)
+		errs := rule.Errs()
+		l.debug(rule.Name(), "found", len(errs), "errors")
+		all = append(all, errs...)
 	}
 
 	for _, err := range all {
