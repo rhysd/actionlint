@@ -20,13 +20,19 @@ var (
 
 // Error represents an error detected by actionlint rules
 type Error struct {
-	Message  string
+	// Message is an error message.
+	Message string
+	// Filepath is a file path where the error occurred.
 	Filepath string
-	Line     int
-	Column   int
-	Kind     string
+	// Line is a line number where the error occurred. This value is 1-based.
+	Line int
+	// Column is a column number where the error occurred. This value is 1-based.
+	Column int
+	// Kind is a string to represent kind of the error. Usually rule name which found the error.
+	Kind string
 }
 
+// Error returns summary of the error as string.
 func (e *Error) Error() string {
 	return fmt.Sprintf("%s:%d:%d: %s [%s]", e.Filepath, e.Line, e.Column, e.Message, e.Kind)
 }
