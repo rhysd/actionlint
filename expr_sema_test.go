@@ -14,6 +14,7 @@ func TestExprSemanticsCheckOK(t *testing.T) {
 		input    string
 		expected ExprType
 		funcs    map[string][]*FuncSignature
+		matrix   *ObjectType
 	}{
 		{
 			what:     "null",
@@ -277,6 +278,33 @@ func TestExprSemanticsCheckOK(t *testing.T) {
 			input:    "format(github.action, 1, 2, 3)",
 			expected: StringType{},
 		},
+		{
+			what:     "matrix value without matrix information",
+			input:    "matrix.foooo",
+			expected: AnyType{},
+		},
+		{
+			what:     "matrix value with typed matrix values",
+			input:    "matrix.foooo",
+			expected: StringType{},
+			matrix: &ObjectType{
+				Props: map[string]ExprType{
+					"foooo": StringType{},
+				},
+				StrictProps: true,
+			},
+		},
+		{
+			what:     "matrix value with untyped matrix values",
+			input:    "matrix.foooo",
+			expected: AnyType{},
+			matrix: &ObjectType{
+				Props: map[string]ExprType{
+					"foooo": AnyType{},
+				},
+				StrictProps: true,
+			},
+		},
 	}
 
 	opts := []cmp.Option{
@@ -307,6 +335,9 @@ func TestExprSemanticsCheckOK(t *testing.T) {
 			c := NewExprSemanticsChecker()
 			if tc.funcs != nil {
 				c.funcs = tc.funcs
+			}
+			if tc.matrix != nil {
+				c.UpdateMatrix(tc.matrix)
 			}
 			ty, errs := c.Check(e)
 			if len(errs) > 0 {
@@ -353,6 +384,7 @@ func TestExprSemanticsCheckError(t *testing.T) {
 		input    string
 		expected []string
 		funcs    map[string][]*FuncSignature
+		matrix   *ObjectType
 	}{
 		{
 			what:  "undefined variable",
@@ -583,6 +615,32 @@ func TestExprSemanticsCheckError(t *testing.T) {
 				"type of right operand of || operator \"number\" is not assignable to type \"bool\"",
 			},
 		},
+		{
+			what:  "undefined matrix value",
+			input: "matrix.bar",
+			expected: []string{
+				"property \"bar\" is not defined in object type {foo: any}",
+			},
+			matrix: &ObjectType{
+				Props: map[string]ExprType{
+					"foo": AnyType{},
+				},
+				StrictProps: true,
+			},
+		},
+		{
+			what:  "type mismatch in matrix value",
+			input: "startsWith('hello', matrix.foo)",
+			expected: []string{
+				"2nd argument of function call is not assignable. \"null\" cannot be assigned to \"string\"",
+			},
+			matrix: &ObjectType{
+				Props: map[string]ExprType{
+					"foo": NullType{},
+				},
+				StrictProps: true,
+			},
+		},
 	}
 
 	for _, tc := range testCases {
@@ -602,6 +660,9 @@ func TestExprSemanticsCheckError(t *testing.T) {
 			c := NewExprSemanticsChecker()
 			if tc.funcs != nil {
 				c.funcs = tc.funcs // Set functions for testing
+			}
+			if tc.matrix != nil {
+				c.UpdateMatrix(tc.matrix)
 			}
 			_, errs := c.Check(e)
 			if len(errs) != len(tc.expected) {
