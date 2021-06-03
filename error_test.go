@@ -3,7 +3,13 @@ package actionlint
 import (
 	"bytes"
 	"testing"
+
+	"github.com/fatih/color"
 )
+
+func init() {
+	color.NoColor = true
+}
 
 func TestErrorErrorAt(t *testing.T) {
 	m := "message"
