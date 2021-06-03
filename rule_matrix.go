@@ -1,6 +1,7 @@
 package actionlint
 
 import (
+	"sort"
 	"strconv"
 	"strings"
 )
@@ -49,6 +50,7 @@ func (rule *RuleMatrix) checkMatrixValuesContain(sec string, name string, heysta
 	for _, s := range heystack {
 		qs = append(qs, strconv.Quote(s.Value))
 	}
+	sort.Strings(qs)
 	rule.errorf(
 		needle.Pos,
 		"%q in %q section does not exist in matrix %q configuration. available values are %s",

@@ -5,6 +5,7 @@ import (
 	"net/url"
 	"os"
 	"path/filepath"
+	"sort"
 	"strconv"
 	"strings"
 
@@ -32,6 +33,7 @@ func (s *ActionSpec) describeInputs() string {
 	for k := range s.Inputs {
 		qs = append(qs, strconv.Quote(k))
 	}
+	sort.Strings(qs)
 	return strings.Join(qs, ", ")
 }
 

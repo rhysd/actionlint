@@ -2,6 +2,7 @@ package actionlint
 
 import (
 	"fmt"
+	"sort"
 	"strconv"
 	"strings"
 )
@@ -513,6 +514,7 @@ func (sema *ExprSemanticsChecker) checkVariable(n *VariableNode) ExprType {
 		for n := range sema.vars {
 			qs = append(qs, strconv.Quote(n))
 		}
+		sort.Strings(qs)
 		sema.errorf(n, "undefined variable %q. available variables are %s", n.Name, strings.Join(qs, ", "))
 		return AnyType{}
 	}
@@ -713,6 +715,7 @@ func (sema *ExprSemanticsChecker) checkFuncCall(n *FuncCallNode) ExprType {
 		for n := range sema.funcs {
 			qs = append(qs, strconv.Quote(n))
 		}
+		sort.Strings(qs)
 		sema.errorf(n, "undefined function %q. available functions are %s", n.Callee, strings.Join(qs, ", "))
 		return AnyType{}
 	}
