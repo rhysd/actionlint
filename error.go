@@ -59,31 +59,31 @@ func (e *Error) PrettyPrint(w io.Writer, source []byte) {
 	bold.Fprint(w, e.Message)
 	gray.Fprintf(w, " [%s]\n", e.Kind)
 
-	if source == nil {
+	if len(source) == 0 {
 		return
 	}
-	line := e.getLine(source)
-	if line == "" {
+	line, ok := e.getLine(source)
+	if !ok || len(line) < e.Column-1 {
 		return
 	}
 
-	lnum := fmt.Sprintf("%d|", e.Line)
+	lnum := fmt.Sprintf("%d| ", e.Line)
 	gray.Fprint(w, lnum)
 	fmt.Fprintln(w, line)
-	gray.Fprintf(w, "%s|", strings.Repeat(" ", len(lnum)-1))
+	gray.Fprintf(w, "%s| ", strings.Repeat(" ", len(lnum)-2))
 	green.Fprintln(w, e.getIndicator(line))
 }
 
-func (e *Error) getLine(source []byte) string {
+func (e *Error) getLine(source []byte) (string, bool) {
 	s := bufio.NewScanner(bytes.NewReader(source))
 	l := 0
 	for s.Scan() {
 		l++
 		if l == e.Line {
-			return s.Text()
+			return s.Text(), true
 		}
 	}
-	return ""
+	return "", false
 }
 
 func (e *Error) getIndicator(line string) string {
