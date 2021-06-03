@@ -42,6 +42,7 @@ type LinterOptions struct {
 	Debug     bool
 	LogWriter io.Writer
 	NoColor   bool
+	Oneline   bool
 	// More options will come here
 }
 
@@ -50,6 +51,7 @@ type Linter struct {
 	logOut   io.Writer
 	logLevel LogLevel
 	noColor  bool
+	oneline  bool
 }
 
 func NewLinter(out io.Writer, opts *LinterOptions) *Linter {
@@ -70,7 +72,7 @@ func NewLinter(out io.Writer, opts *LinterOptions) *Linter {
 		lout = colorable.NewColorable(os.Stderr)
 	}
 
-	return &Linter{out, lout, l, opts.NoColor}
+	return &Linter{out, lout, l, opts.NoColor, opts.Oneline}
 }
 
 func (l *Linter) Log(args ...interface{}) {
@@ -201,7 +203,11 @@ func (l *Linter) Lint(path string, content []byte) ([]*Error, error) {
 
 	for _, err := range all {
 		err.Filepath = path // Populate filename in the error
-		err.PrettyPrint(l.out, content)
+		src := content
+		if l.oneline {
+			src = nil
+		}
+		err.PrettyPrint(l.out, src)
 	}
 
 	l.Log("Found", len(all), "errors in", path)

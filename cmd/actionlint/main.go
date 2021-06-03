@@ -61,6 +61,7 @@ func main() {
 	var ver bool
 	var opts actionlint.LinterOptions
 
+	flag.BoolVar(&opts.Oneline, "oneline", false, "Use one line per one error. Useful for reading error messages from programs")
 	flag.BoolVar(&opts.NoColor, "no-color", false, "Disable colorful output")
 	flag.BoolVar(&opts.Verbose, "verbose", false, "Enable verbose output")
 	flag.BoolVar(&opts.Debug, "debug", false, "Enable debug output (for development)")

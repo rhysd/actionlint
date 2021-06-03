@@ -90,10 +90,7 @@ func (e *Error) getIndicator(line string) string {
 	r := strings.NewReader(line[start:])
 	for {
 		c, s, err := r.ReadRune()
-		if err != nil || s == 0 {
-			break
-		}
-		if c == ' ' || c == '\t' || c == '\n' || c == '\r' {
+		if err != nil || s == 0 || c == ' ' || c == '\t' || c == '\n' || c == '\r' {
 			break
 		}
 		count++
