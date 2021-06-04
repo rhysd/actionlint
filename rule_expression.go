@@ -12,6 +12,7 @@ import (
 type RuleExpression struct {
 	RuleBase
 	matrixTy *ObjectType
+	stepsTy  *ObjectType
 }
 
 // NewRuleExpression creates new RuleExpression instance.
@@ -19,6 +20,7 @@ func NewRuleExpression() *RuleExpression {
 	return &RuleExpression{
 		RuleBase: RuleBase{name: "expression"},
 		matrixTy: nil,
+		stepsTy:  nil,
 	}
 }
 
@@ -114,11 +116,14 @@ func (rule *RuleExpression) VisitJobPre(n *Job) {
 	if n.Strategy != nil && n.Strategy.Matrix != nil {
 		rule.matrixTy = guessTypeOfMatrix(n.Strategy.Matrix)
 	}
+	rule.stepsTy = NewObjectType()
+	rule.stepsTy.StrictProps = true
 }
 
 // VisitJobPost is callback when visiting Job node after visiting its children
 func (rule *RuleExpression) VisitJobPost(n *Job) {
 	rule.matrixTy = nil
+	rule.stepsTy = nil
 }
 
 // VisitStep is callback when visiting Step node.
@@ -142,6 +147,17 @@ func (rule *RuleExpression) VisitStep(n *Step) {
 
 	for _, e := range n.Env {
 		rule.checkString(e.Value)
+	}
+
+	if n.ID != nil {
+		rule.stepsTy.Props[n.ID.Value] = &ObjectType{
+			Props: map[string]ExprType{
+				"outputs":    NewObjectType(),
+				"conclusion": StringType{},
+				"outcome":    StringType{},
+			},
+			StrictProps: true,
+		}
 	}
 }
 
@@ -262,10 +278,12 @@ func (rule *RuleExpression) checkSemantics(src string, line, col int) (ExprType,
 		return nil, offset
 	}
 
-	// TODO: The first return value should be used to check correct value is specified
 	c := NewExprSemanticsChecker()
 	if rule.matrixTy != nil {
 		c.UpdateMatrix(rule.matrixTy)
+	}
+	if rule.stepsTy != nil {
+		c.UpdateSteps(rule.stepsTy)
 	}
 	ty, errs := c.Check(expr)
 	for _, err := range errs {
