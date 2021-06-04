@@ -431,110 +431,75 @@ var BuiltinFuncSignatures = map[string][]*FuncSignature{
 
 // Global variables
 
-// GlobalVariableType is type of global variable.
-type GlobalVariableType struct {
-	// Name is a name of the global variable.
-	Name string
-	// Type is a type of the global variable.
-	Type ExprType
-}
-
 // BuiltinGlobalVariableTypes defines types of all global variables. All context variables are
 // documented at https://docs.github.com/en/actions/reference/context-and-expression-syntax-for-github-actions#contexts
-var BuiltinGlobalVariableTypes = map[string]*GlobalVariableType{
+var BuiltinGlobalVariableTypes = map[string]ExprType{
 	// https://docs.github.com/en/actions/reference/context-and-expression-syntax-for-github-actions#github-context
-	"github": {
-		Name: "github",
-		Type: &ObjectType{
-			Props: map[string]ExprType{
-				"action":           StringType{},
-				"action_path":      StringType{},
-				"actor":            StringType{},
-				"base_ref":         StringType{},
-				"event":            NewObjectType(),
-				"event_name":       StringType{},
-				"event_path":       StringType{},
-				"head_ref":         StringType{},
-				"job":              StringType{},
-				"ref":              StringType{},
-				"repository":       StringType{},
-				"repository_owner": StringType{},
-				"run_id":           StringType{},
-				"run_number":       StringType{},
-				"sha":              StringType{},
-				"token":            StringType{},
-				"workflow":         StringType{},
-				"workspace":        StringType{},
-			},
-			StrictProps: true,
+	"github": &ObjectType{
+		Props: map[string]ExprType{
+			"action":           StringType{},
+			"action_path":      StringType{},
+			"actor":            StringType{},
+			"base_ref":         StringType{},
+			"event":            NewObjectType(), // Note: Stricter type check for this payload would be possible
+			"event_name":       StringType{},
+			"event_path":       StringType{},
+			"head_ref":         StringType{},
+			"job":              StringType{},
+			"ref":              StringType{},
+			"repository":       StringType{},
+			"repository_owner": StringType{},
+			"run_id":           StringType{},
+			"run_number":       StringType{},
+			"sha":              StringType{},
+			"token":            StringType{},
+			"workflow":         StringType{},
+			"workspace":        StringType{},
 		},
+		StrictProps: true,
 	},
 	// https://docs.github.com/en/actions/reference/context-and-expression-syntax-for-github-actions#env-context
-	"env": {
-		Name: "env",
-		Type: NewObjectType(),
-	},
+	"env": NewObjectType(),
 	// https://docs.github.com/en/actions/reference/context-and-expression-syntax-for-github-actions#job-context
-	"job": {
-		Name: "job",
-		Type: &ObjectType{
-			Props: map[string]ExprType{
-				"container": &ObjectType{
-					Props: map[string]ExprType{
-						"id":      StringType{},
-						"network": StringType{},
-					},
+	"job": &ObjectType{
+		Props: map[string]ExprType{
+			"container": &ObjectType{
+				Props: map[string]ExprType{
+					"id":      StringType{},
+					"network": StringType{},
 				},
-				"services": NewObjectType(),
-				"status":   StringType{},
 			},
-			StrictProps: true,
+			"services": NewObjectType(),
+			"status":   StringType{},
 		},
+		StrictProps: true,
 	},
 	// https://docs.github.com/en/actions/reference/context-and-expression-syntax-for-github-actions#steps-context
-	"steps": {
-		Name: "steps",
-		Type: NewStrictObjectType(), // props
-	},
+	"steps": NewStrictObjectType(),
 	// https://docs.github.com/en/actions/reference/context-and-expression-syntax-for-github-actions#runner-context
-	"runner": {
-		Name: "runner",
-		Type: &ObjectType{
-			Props: map[string]ExprType{
-				"os":         StringType{},
-				"temp":       StringType{},
-				"tool_cache": StringType{},
-			},
-			StrictProps: true,
+	"runner": &ObjectType{
+		Props: map[string]ExprType{
+			"os":         StringType{},
+			"temp":       StringType{},
+			"tool_cache": StringType{},
+		},
+		StrictProps: true,
+	},
+	// https://docs.github.com/en/actions/reference/context-and-expression-syntax-for-github-actions#contexts
+	"secrets": NewObjectType(),
+	// https://docs.github.com/en/actions/reference/context-and-expression-syntax-for-github-actions#contexts
+	"strategy": &ObjectType{
+		Props: map[string]ExprType{
+			"fail-fast":    BoolType{},
+			"job-index":    NumberType{},
+			"job-total":    NumberType{},
+			"max-parallel": NumberType{},
 		},
 	},
 	// https://docs.github.com/en/actions/reference/context-and-expression-syntax-for-github-actions#contexts
-	"secrets": {
-		Name: "secrets",
-		Type: NewObjectType(),
-	},
-	// https://docs.github.com/en/actions/reference/context-and-expression-syntax-for-github-actions#contexts
-	"strategy": {
-		Name: "strategy",
-		Type: &ObjectType{
-			Props: map[string]ExprType{
-				"fail-fast":    BoolType{},
-				"job-index":    NumberType{},
-				"job-total":    NumberType{},
-				"max-parallel": NumberType{},
-			},
-		},
-	},
-	// https://docs.github.com/en/actions/reference/context-and-expression-syntax-for-github-actions#contexts
-	"matrix": {
-		Name: "matrix",
-		Type: NewStrictObjectType(),
-	},
+	"matrix": NewStrictObjectType(),
 	// https://docs.github.com/en/actions/reference/context-and-expression-syntax-for-github-actions#needs-context
-	"needs": {
-		Name: "needs",
-		Type: NewStrictObjectType(),
-	},
+	"needs": NewStrictObjectType(),
 }
 
 // Semantics checker
@@ -545,7 +510,7 @@ var BuiltinGlobalVariableTypes = map[string]*GlobalVariableType{
 // https://docs.github.com/en/actions/reference/context-and-expression-syntax-for-github-actions#contexts
 type ExprSemanticsChecker struct {
 	funcs      map[string][]*FuncSignature
-	vars       map[string]*GlobalVariableType
+	vars       map[string]ExprType
 	errs       []*ExprError
 	varsCopied bool
 }
@@ -577,13 +542,13 @@ func (sema *ExprSemanticsChecker) errorf(e ExprNode, format string, args ...inte
 	sema.errs = append(sema.errs, errorfAtExpr(e, format, args...))
 }
 
-func (sema *ExprSemanticsChecker) ensureCopyVars() {
+func (sema *ExprSemanticsChecker) ensureVarsCopied() {
 	if sema.varsCopied {
 		return
 	}
 
 	// Make shallow copy of current variables map not to pollute global variable
-	copied := make(map[string]*GlobalVariableType, len(sema.vars))
+	copied := make(map[string]ExprType, len(sema.vars))
 	for k, v := range sema.vars {
 		copied[k] = v
 	}
@@ -591,32 +556,27 @@ func (sema *ExprSemanticsChecker) ensureCopyVars() {
 	sema.varsCopied = true
 }
 
-func (sema *ExprSemanticsChecker) updateContextType(name string, ty *ObjectType) {
-	sema.ensureCopyVars()
-	sema.vars[name] = &GlobalVariableType{
-		Name: name,
-		Type: ty,
-	}
-}
-
 // UpdateMatrix updates matrix object to given object type. Since matrix values change according to
 // 'matrix' section of job configuration, the type needs to be updated.
 func (sema *ExprSemanticsChecker) UpdateMatrix(ty *ObjectType) {
-	sema.updateContextType("matrix", ty)
+	sema.ensureVarsCopied()
+	sema.vars["matrix"] = ty
 }
 
 // UpdateSteps updates 'steps' context object to given object type.
 func (sema *ExprSemanticsChecker) UpdateSteps(ty *ObjectType) {
-	sema.updateContextType("steps", ty)
+	sema.ensureVarsCopied()
+	sema.vars["steps"] = ty
 }
 
 // UpdateNeeds updates 'needs' context object to given object type.
 func (sema *ExprSemanticsChecker) UpdateNeeds(ty *ObjectType) {
-	sema.updateContextType("needs", ty)
+	sema.ensureVarsCopied()
+	sema.vars["needs"] = ty
 }
 
 func (sema *ExprSemanticsChecker) checkVariable(n *VariableNode) ExprType {
-	global, ok := sema.vars[n.Name]
+	v, ok := sema.vars[n.Name]
 	if !ok {
 		qs := make([]string, 0, len(sema.vars))
 		for n := range sema.vars {
@@ -627,7 +587,7 @@ func (sema *ExprSemanticsChecker) checkVariable(n *VariableNode) ExprType {
 		return AnyType{}
 	}
 
-	return global.Type
+	return v
 }
 
 func (sema *ExprSemanticsChecker) checkObjectDeref(n *ObjectDerefNode) ExprType {

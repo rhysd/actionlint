@@ -46,7 +46,7 @@ func TestExprSemanticsCheckOK(t *testing.T) {
 		{
 			what:     "variable",
 			input:    "github",
-			expected: BuiltinGlobalVariableTypes["github"].Type,
+			expected: BuiltinGlobalVariableTypes["github"],
 		},
 		{
 			what:     "object property dereference",
@@ -442,14 +442,6 @@ func TestExprBuiltinFunctionSignatures(t *testing.T) {
 			if sig.VariableLengthParams && len(sig.Params) == 0 {
 				t.Errorf("number of arguments of %dth overload of %q must not be empty because VariableLengthParams is set to true", i+1, name)
 			}
-		}
-	}
-}
-
-func TestExprBuiltinGlobalVariableTypes(t *testing.T) {
-	for name, g := range BuiltinGlobalVariableTypes {
-		if name != g.Name {
-			t.Errorf("name of global variable is different from its key: name=%q vs key=%q", g.Name, name)
 		}
 	}
 }
@@ -911,8 +903,8 @@ func TestExprSemanticsCheckerUpdateMatrix(t *testing.T) {
 	}
 	prev = c.vars["matrix"]
 	c.UpdateMatrix(ty)
-	if c.vars["matrix"] == prev {
-		t.Fatalf("Global variables map was not copied when calling UpdateMatrix again")
+	if c.vars["matrix"] != prev {
+		t.Fatalf("Global variables map was copied when calling UpdateMatrix again")
 	}
 }
 
@@ -926,8 +918,8 @@ func TestExprSemanticsCheckerUpdateSteps(t *testing.T) {
 	}
 	prev = c.vars["steps"]
 	c.UpdateSteps(ty)
-	if c.vars["steps"] == prev {
-		t.Fatalf("Global variables map was not copied when calling UpdateSteps again")
+	if c.vars["steps"] != prev {
+		t.Fatalf("Global variables map was copied when calling UpdateSteps again")
 	}
 }
 
