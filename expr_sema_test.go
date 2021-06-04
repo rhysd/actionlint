@@ -15,6 +15,7 @@ func TestExprSemanticsCheckOK(t *testing.T) {
 		expected ExprType
 		funcs    map[string][]*FuncSignature
 		matrix   *ObjectType
+		steps    *ObjectType
 	}{
 		{
 			what:     "null",
@@ -305,6 +306,47 @@ func TestExprSemanticsCheckOK(t *testing.T) {
 				StrictProps: true,
 			},
 		},
+		{
+			what:     "step output value with typed steps outputs",
+			input:    "steps.foo.outputs",
+			expected: NewObjectType(),
+			steps: &ObjectType{
+				Props: map[string]ExprType{
+					"foo": &ObjectType{
+						Props: map[string]ExprType{
+							"outputs":    NewObjectType(),
+							"conclusion": StringType{},
+							"outcome":    StringType{},
+						},
+						StrictProps: true,
+					},
+				},
+				StrictProps: true,
+			},
+		},
+		{
+			what:     "step conclusion with typed steps outputs",
+			input:    "steps.foo.conclusion",
+			expected: StringType{},
+			steps: &ObjectType{
+				Props: map[string]ExprType{
+					"foo": &ObjectType{
+						Props: map[string]ExprType{
+							"outputs":    NewObjectType(),
+							"conclusion": StringType{},
+							"outcome":    StringType{},
+						},
+						StrictProps: true,
+					},
+				},
+				StrictProps: true,
+			},
+		},
+		{
+			what:     "step output value without typed steps outputs",
+			input:    "steps.foo.outputs",
+			expected: AnyType{},
+		},
 	}
 
 	opts := []cmp.Option{
@@ -338,6 +380,9 @@ func TestExprSemanticsCheckOK(t *testing.T) {
 			}
 			if tc.matrix != nil {
 				c.UpdateMatrix(tc.matrix)
+			}
+			if tc.steps != nil {
+				c.UpdateSteps(tc.steps)
 			}
 			ty, errs := c.Check(e)
 			if len(errs) > 0 {
@@ -385,6 +430,7 @@ func TestExprSemanticsCheckError(t *testing.T) {
 		expected []string
 		funcs    map[string][]*FuncSignature
 		matrix   *ObjectType
+		steps    *ObjectType
 	}{
 		{
 			what:  "undefined variable",
@@ -641,6 +687,46 @@ func TestExprSemanticsCheckError(t *testing.T) {
 				StrictProps: true,
 			},
 		},
+		{
+			what:  "undefined step id",
+			input: "steps.foo",
+			expected: []string{
+				"property \"foo\" is not defined in object type {bar: ", // order of prop types in object type changes randomly so we cannot check it easily
+			},
+			steps: &ObjectType{
+				Props: map[string]ExprType{
+					"bar": &ObjectType{
+						Props: map[string]ExprType{
+							"outputs":    NewObjectType(),
+							"conclusion": StringType{},
+							"outcome":    StringType{},
+						},
+						StrictProps: true,
+					},
+				},
+				StrictProps: true,
+			},
+		},
+		{
+			what:  "invalid property in step object",
+			input: "steps.bar.foo",
+			expected: []string{
+				"property \"foo\" is not defined in object type {", // order of prop types in object type changes randomly so we cannot check it easily
+			},
+			steps: &ObjectType{
+				Props: map[string]ExprType{
+					"bar": &ObjectType{
+						Props: map[string]ExprType{
+							"outputs":    NewObjectType(),
+							"conclusion": StringType{},
+							"outcome":    StringType{},
+						},
+						StrictProps: true,
+					},
+				},
+				StrictProps: true,
+			},
+		},
 	}
 
 	for _, tc := range testCases {
@@ -663,6 +749,9 @@ func TestExprSemanticsCheckError(t *testing.T) {
 			}
 			if tc.matrix != nil {
 				c.UpdateMatrix(tc.matrix)
+			}
+			if tc.steps != nil {
+				c.UpdateSteps(tc.steps)
 			}
 			_, errs := c.Check(e)
 			if len(errs) != len(tc.expected) {

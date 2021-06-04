@@ -522,16 +522,18 @@ var BuiltinGlobalVariableTypes = map[string]*GlobalVariableType{
 // format() built-in function. To know the details of the syntax, see
 // https://docs.github.com/en/actions/reference/context-and-expression-syntax-for-github-actions#contexts
 type ExprSemanticsChecker struct {
-	funcs map[string][]*FuncSignature
-	vars  map[string]*GlobalVariableType
-	errs  []*ExprError
+	funcs      map[string][]*FuncSignature
+	vars       map[string]*GlobalVariableType
+	errs       []*ExprError
+	varsCopied bool
 }
 
 // NewExprSemanticsChecker creates new ExprSemanticsChecker instance.
 func NewExprSemanticsChecker() *ExprSemanticsChecker {
 	return &ExprSemanticsChecker{
-		funcs: BuiltinFuncSignatures,
-		vars:  BuiltinGlobalVariableTypes,
+		funcs:      BuiltinFuncSignatures,
+		vars:       BuiltinGlobalVariableTypes,
+		varsCopied: false,
 	}
 }
 
@@ -553,19 +555,36 @@ func (sema *ExprSemanticsChecker) errorf(e ExprNode, format string, args ...inte
 	sema.errs = append(sema.errs, errorfAtExpr(e, format, args...))
 }
 
-// UpdateMatrix updates matrix object to given object type. Since matrix values change according to
-// 'matrix' section of job configuration, the type needs to be updated.
-func (sema *ExprSemanticsChecker) UpdateMatrix(ty *ObjectType) {
+func (sema *ExprSemanticsChecker) ensureCopyVars() {
+	if sema.varsCopied {
+		return
+	}
+
 	// Make shallow copy of current variables map not to pollute global variable
 	copied := make(map[string]*GlobalVariableType, len(sema.vars))
 	for k, v := range sema.vars {
 		copied[k] = v
 	}
-	copied["matrix"] = &GlobalVariableType{
+	sema.vars = copied
+	sema.varsCopied = true
+}
+
+// UpdateMatrix updates matrix object to given object type. Since matrix values change according to
+// 'matrix' section of job configuration, the type needs to be updated.
+func (sema *ExprSemanticsChecker) UpdateMatrix(ty *ObjectType) {
+	sema.ensureCopyVars()
+	sema.vars["matrix"] = &GlobalVariableType{
 		Name: "matrix",
 		Type: ty,
 	}
-	sema.vars = copied
+}
+
+func (sema *ExprSemanticsChecker) UpdateSteps(ty *ObjectType) {
+	sema.ensureCopyVars()
+	sema.vars["steps"] = &GlobalVariableType{
+		Name: "steps",
+		Type: ty,
+	}
 }
 
 func (sema *ExprSemanticsChecker) checkVariable(n *VariableNode) ExprType {
@@ -594,7 +613,7 @@ func (sema *ExprSemanticsChecker) checkObjectDeref(n *ObjectDerefNode) ExprType 
 		if ty.StrictProps {
 			sema.errorf(n, "property %q is not defined in object type %s", n.Property, ty.String())
 		}
-		return AnyType{} // TODO: Check object properties more strictly
+		return AnyType{}
 	case *ArrayDerefType:
 		switch et := ty.Elem.(type) {
 		case AnyType:
