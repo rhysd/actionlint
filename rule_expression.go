@@ -116,8 +116,7 @@ func (rule *RuleExpression) VisitJobPre(n *Job) {
 	if n.Strategy != nil && n.Strategy.Matrix != nil {
 		rule.matrixTy = guessTypeOfMatrix(n.Strategy.Matrix)
 	}
-	rule.stepsTy = NewObjectType()
-	rule.stepsTy.StrictProps = true
+	rule.stepsTy = NewStrictObjectType()
 }
 
 // VisitJobPost is callback when visiting Job node after visiting its children

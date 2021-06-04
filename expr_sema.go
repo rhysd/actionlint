@@ -162,14 +162,20 @@ type ObjectType struct {
 	StrictProps bool
 }
 
-// NewObjectType creates new ObjectType instance.
+// NewObjectType creates new ObjectType instance which allows unknown props. When accessing to
+// unknown props, their values will fall back to any.
 func NewObjectType() *ObjectType {
 	return &ObjectType{map[string]ExprType{}, false}
 }
 
+// NewStrictObjectType creates new ObjectType instance which does not allow unknown props.
+func NewStrictObjectType() *ObjectType {
+	return &ObjectType{map[string]ExprType{}, true}
+}
+
 func (ty *ObjectType) String() string {
 	len := len(ty.Props)
-	if len == 0 {
+	if len == 0 && !ty.StrictProps {
 		return "object"
 	}
 	ps := make([]string, 0, len)
@@ -472,7 +478,7 @@ var BuiltinGlobalVariableTypes = map[string]*GlobalVariableType{
 	// https://docs.github.com/en/actions/reference/context-and-expression-syntax-for-github-actions#steps-context
 	"steps": {
 		Name: "steps",
-		Type: NewObjectType(),
+		Type: NewStrictObjectType(), // props
 	},
 	// https://docs.github.com/en/actions/reference/context-and-expression-syntax-for-github-actions#runner-context
 	"runner": {
@@ -506,7 +512,7 @@ var BuiltinGlobalVariableTypes = map[string]*GlobalVariableType{
 	// https://docs.github.com/en/actions/reference/context-and-expression-syntax-for-github-actions#contexts
 	"matrix": {
 		Name: "matrix",
-		Type: NewObjectType(),
+		Type: NewStrictObjectType(),
 	},
 	// https://docs.github.com/en/actions/reference/context-and-expression-syntax-for-github-actions#needs-context
 	"needs": {

@@ -280,28 +280,12 @@ func TestExprSemanticsCheckOK(t *testing.T) {
 			expected: StringType{},
 		},
 		{
-			what:     "matrix value without matrix information",
-			input:    "matrix.foooo",
-			expected: AnyType{},
-		},
-		{
 			what:     "matrix value with typed matrix values",
 			input:    "matrix.foooo",
 			expected: StringType{},
 			matrix: &ObjectType{
 				Props: map[string]ExprType{
 					"foooo": StringType{},
-				},
-				StrictProps: true,
-			},
-		},
-		{
-			what:     "matrix value with untyped matrix values",
-			input:    "matrix.foooo",
-			expected: AnyType{},
-			matrix: &ObjectType{
-				Props: map[string]ExprType{
-					"foooo": AnyType{},
 				},
 				StrictProps: true,
 			},
@@ -341,11 +325,6 @@ func TestExprSemanticsCheckOK(t *testing.T) {
 				},
 				StrictProps: true,
 			},
-		},
-		{
-			what:     "step output value without typed steps outputs",
-			input:    "steps.foo.outputs",
-			expected: AnyType{},
 		},
 	}
 
@@ -416,9 +395,6 @@ func TestExprBuiltinGlobalVariableTypes(t *testing.T) {
 	for name, g := range BuiltinGlobalVariableTypes {
 		if name != g.Name {
 			t.Errorf("name of global variable is different from its key: name=%q vs key=%q", g.Name, name)
-		}
-		if obj, ok := g.Type.(*ObjectType); ok && obj.StrictProps && len(obj.Props) == 0 {
-			t.Errorf("no prop is defined in %s object though StrictProps is set to true", name)
 		}
 	}
 }
@@ -688,6 +664,13 @@ func TestExprSemanticsCheckError(t *testing.T) {
 			},
 		},
 		{
+			what:  "matrix value with untyped matrix values",
+			input: "matrix.foooo",
+			expected: []string{
+				"property \"foooo\" is not defined in object type {}",
+			},
+		},
+		{
 			what:  "undefined step id",
 			input: "steps.foo",
 			expected: []string{
@@ -725,6 +708,13 @@ func TestExprSemanticsCheckError(t *testing.T) {
 					},
 				},
 				StrictProps: true,
+			},
+		},
+		{
+			what:  "step output value without typed steps outputs",
+			input: "steps.foo.outputs",
+			expected: []string{
+				"property \"foo\" is not defined in object type {}",
 			},
 		},
 	}
