@@ -75,8 +75,12 @@ func (ty NullType) Assignable(other ExprType) bool {
 
 // Equals returns if the type is equal to the other type.
 func (ty NullType) Equals(other ExprType) bool {
-	_, ok := other.(NullType)
-	return ok
+	switch other.(type) {
+	case NullType, AnyType:
+		return true
+	default:
+		return false
+	}
 }
 
 // NumberType is type for number values such as integer or float.
@@ -88,8 +92,12 @@ func (ty NumberType) String() string {
 
 // Equals returns if the type is equal to the other type.
 func (ty NumberType) Equals(other ExprType) bool {
-	_, ok := other.(NumberType)
-	return ok
+	switch other.(type) {
+	case NumberType, AnyType:
+		return true
+	default:
+		return false
+	}
 }
 
 // Assignable returns if other type can be assignable to the type.
@@ -123,8 +131,12 @@ func (ty BoolType) Assignable(other ExprType) bool {
 
 // Equals returns if the type is equal to the other type.
 func (ty BoolType) Equals(other ExprType) bool {
-	_, ok := other.(BoolType)
-	return ok
+	switch other.(type) {
+	case BoolType, AnyType:
+		return true
+	default:
+		return false
+	}
 }
 
 // StringType is type for string values.
@@ -147,8 +159,12 @@ func (ty StringType) Assignable(other ExprType) bool {
 
 // Equals returns if the type is equal to the other type.
 func (ty StringType) Equals(other ExprType) bool {
-	_, ok := other.(StringType)
-	return ok
+	switch other.(type) {
+	case StringType, AnyType:
+		return true
+	default:
+		return false
+	}
 }
 
 // ObjectType is type for objects, which can hold key-values.

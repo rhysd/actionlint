@@ -759,3 +759,66 @@ func TestExprSemanticsCheckError(t *testing.T) {
 		})
 	}
 }
+
+func TestExprSemanticsCheckerUpdateMatrix(t *testing.T) {
+	c := NewExprSemanticsChecker()
+	ty := NewObjectType()
+	prev := c.vars["matrix"]
+	c.UpdateMatrix(ty)
+	if c.vars["matrix"] == prev {
+		t.Fatalf("Global variables map was not copied")
+	}
+	prev = c.vars["matrix"]
+	c.UpdateMatrix(ty)
+	if c.vars["matrix"] == prev {
+		t.Fatalf("Global variables map was not copied when calling UpdateMatrix again")
+	}
+}
+
+func TestExprSemanticsCheckerUpdateSteps(t *testing.T) {
+	c := NewExprSemanticsChecker()
+	ty := NewObjectType()
+	prev := c.vars["steps"]
+	c.UpdateSteps(ty)
+	if c.vars["steps"] == prev {
+		t.Fatalf("Global variables map was not copied")
+	}
+	prev = c.vars["steps"]
+	c.UpdateSteps(ty)
+	if c.vars["steps"] == prev {
+		t.Fatalf("Global variables map was not copied when calling UpdateSteps again")
+	}
+}
+
+func TestExprTypesEqual(t *testing.T) {
+	testCases := []struct {
+		ty    ExprType
+		other ExprType
+	}{
+		{NullType{}, StringType{}},
+		{NumberType{}, StringType{}},
+		{BoolType{}, StringType{}},
+		{StringType{}, BoolType{}},
+	}
+
+	for _, tc := range testCases {
+		var l, r ExprType
+
+		l, r = tc.ty, tc.ty
+		if !l.Equals(r) {
+			t.Errorf("%s should equal to %s", l.String(), r.String())
+		}
+		l, r = tc.ty, tc.other
+		if l.Equals(r) {
+			t.Errorf("%s should not equal to %s", l.String(), r.String())
+		}
+		l, r = tc.ty, AnyType{}
+		if !l.Equals(r) {
+			t.Errorf("%s should equal to %s", l.String(), r.String())
+		}
+		l, r = AnyType{}, tc.ty
+		if !l.Equals(r) {
+			t.Errorf("%s should equal to %s", l.String(), r.String())
+		}
+	}
+}
