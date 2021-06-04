@@ -16,6 +16,7 @@ func TestExprSemanticsCheckOK(t *testing.T) {
 		funcs    map[string][]*FuncSignature
 		matrix   *ObjectType
 		steps    *ObjectType
+		needs    *ObjectType
 	}{
 		{
 			what:     "null",
@@ -326,6 +327,57 @@ func TestExprSemanticsCheckOK(t *testing.T) {
 				StrictProps: true,
 			},
 		},
+		{
+			what:     "needs context object",
+			input:    "needs",
+			expected: NewStrictObjectType(),
+		},
+		{
+			what:     "output string in needs context object",
+			input:    "needs.foo.outputs.out1",
+			expected: StringType{},
+			needs: &ObjectType{
+				Props: map[string]ExprType{
+					"foo": &ObjectType{
+						Props: map[string]ExprType{
+							"outputs": &ObjectType{
+								Props: map[string]ExprType{
+									"out1": StringType{},
+									"out2": StringType{},
+								},
+								StrictProps: true,
+							},
+							"result": StringType{},
+						},
+						StrictProps: true,
+					},
+				},
+				StrictProps: true,
+			},
+		},
+		{
+			what:     "result in needs context object",
+			input:    "needs.foo.result",
+			expected: StringType{},
+			needs: &ObjectType{
+				Props: map[string]ExprType{
+					"foo": &ObjectType{
+						Props: map[string]ExprType{
+							"outputs": &ObjectType{
+								Props: map[string]ExprType{
+									"out1": StringType{},
+									"out2": StringType{},
+								},
+								StrictProps: true,
+							},
+							"result": StringType{},
+						},
+						StrictProps: true,
+					},
+				},
+				StrictProps: true,
+			},
+		},
 	}
 
 	opts := []cmp.Option{
@@ -362,6 +414,9 @@ func TestExprSemanticsCheckOK(t *testing.T) {
 			}
 			if tc.steps != nil {
 				c.UpdateSteps(tc.steps)
+			}
+			if tc.needs != nil {
+				c.UpdateNeeds(tc.needs)
 			}
 			ty, errs := c.Check(e)
 			if len(errs) > 0 {
@@ -407,6 +462,7 @@ func TestExprSemanticsCheckError(t *testing.T) {
 		funcs    map[string][]*FuncSignature
 		matrix   *ObjectType
 		steps    *ObjectType
+		needs    *ObjectType
 	}{
 		{
 			what:  "undefined variable",
@@ -717,6 +773,88 @@ func TestExprSemanticsCheckError(t *testing.T) {
 				"property \"foo\" is not defined in object type {}",
 			},
 		},
+		{
+			what:  "undefined job id in needs context",
+			input: "needs.bar",
+			expected: []string{
+				"property \"bar\" is not defined in object type ",
+			},
+			needs: &ObjectType{
+				Props: map[string]ExprType{
+					"foo": &ObjectType{
+						Props: map[string]ExprType{
+							"outputs": &ObjectType{
+								Props: map[string]ExprType{
+									"out1": StringType{},
+									"out2": StringType{},
+								},
+								StrictProps: true,
+							},
+							"result": StringType{},
+						},
+						StrictProps: true,
+					},
+				},
+				StrictProps: true,
+			},
+		},
+		{
+			what:  "undefined output in needs context",
+			input: "needs.foo.outputs.out3",
+			expected: []string{
+				"property \"out3\" is not defined in object type ",
+			},
+			needs: &ObjectType{
+				Props: map[string]ExprType{
+					"foo": &ObjectType{
+						Props: map[string]ExprType{
+							"outputs": &ObjectType{
+								Props: map[string]ExprType{
+									"out1": StringType{},
+									"out2": StringType{},
+								},
+								StrictProps: true,
+							},
+							"result": StringType{},
+						},
+						StrictProps: true,
+					},
+				},
+				StrictProps: true,
+			},
+		},
+		{
+			what:  "undefined prop in needs context",
+			input: "needs.foo.bar",
+			expected: []string{
+				"property \"bar\" is not defined in object type ",
+			},
+			needs: &ObjectType{
+				Props: map[string]ExprType{
+					"foo": &ObjectType{
+						Props: map[string]ExprType{
+							"outputs": &ObjectType{
+								Props: map[string]ExprType{
+									"out1": StringType{},
+									"out2": StringType{},
+								},
+								StrictProps: true,
+							},
+							"result": StringType{},
+						},
+						StrictProps: true,
+					},
+				},
+				StrictProps: true,
+			},
+		},
+		{
+			what:  "undefined prop in untyped needs context",
+			input: "needs.foo",
+			expected: []string{
+				"property \"foo\" is not defined in object type ",
+			},
+		},
 	}
 
 	for _, tc := range testCases {
@@ -742,6 +880,9 @@ func TestExprSemanticsCheckError(t *testing.T) {
 			}
 			if tc.steps != nil {
 				c.UpdateSteps(tc.steps)
+			}
+			if tc.needs != nil {
+				c.UpdateNeeds(tc.needs)
 			}
 			_, errs := c.Check(e)
 			if len(errs) != len(tc.expected) {
