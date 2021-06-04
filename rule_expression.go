@@ -13,6 +13,8 @@ type RuleExpression struct {
 	RuleBase
 	matrixTy *ObjectType
 	stepsTy  *ObjectType
+	needsTy  *ObjectType
+	workflow *Workflow
 }
 
 // NewRuleExpression creates new RuleExpression instance.
@@ -21,6 +23,8 @@ func NewRuleExpression() *RuleExpression {
 		RuleBase: RuleBase{name: "expression"},
 		matrixTy: nil,
 		stepsTy:  nil,
+		needsTy:  nil,
+		workflow: nil,
 	}
 }
 
@@ -57,6 +61,13 @@ func (rule *RuleExpression) VisitWorkflowPre(n *Workflow) {
 
 	rule.checkDefaults(n.Defaults)
 	rule.checkConcurrency(n.Concurrency)
+
+	rule.workflow = n
+}
+
+// VisitWorkflowPost is callback when visiting Workflow node after visiting its children
+func (rule *RuleExpression) VisitWorkflowPost(n *Workflow) {
+	rule.workflow = nil
 }
 
 // VisitJobPre is callback when visiting Job node before visiting its children.
@@ -72,6 +83,7 @@ func (rule *RuleExpression) VisitJobPre(n *Job) {
 	if n.Strategy != nil && n.Strategy.Matrix != nil {
 		rule.matrixTy = guessTypeOfMatrix(n.Strategy.Matrix)
 	}
+	rule.needsTy = rule.calcNeedsType(n)
 
 	rule.checkString(n.Name)
 	rule.checkStrings(n.Needs)
@@ -130,6 +142,7 @@ func (rule *RuleExpression) VisitJobPre(n *Job) {
 func (rule *RuleExpression) VisitJobPost(n *Job) {
 	rule.matrixTy = nil
 	rule.stepsTy = nil
+	rule.needsTy = nil
 }
 
 // VisitStep is callback when visiting Step node.
@@ -291,12 +304,53 @@ func (rule *RuleExpression) checkSemantics(src string, line, col int) (ExprType,
 	if rule.stepsTy != nil {
 		c.UpdateSteps(rule.stepsTy)
 	}
+	if rule.needsTy != nil {
+		c.UpdateNeeds(rule.needsTy)
+	}
 	ty, errs := c.Check(expr)
 	for _, err := range errs {
 		rule.exprError(err, line, col)
 	}
 
 	return ty, offset
+}
+
+func (rule *RuleExpression) calcNeedsType(job *Job) *ObjectType {
+	// https://docs.github.com/en/actions/reference/context-and-expression-syntax-for-github-actions#needs-context
+	o := NewStrictObjectType()
+	rule.populateDependantNeedsTypes(o, job, job)
+	return o
+}
+
+func (rule *RuleExpression) populateDependantNeedsTypes(out *ObjectType, job *Job, root *Job) {
+	for _, id := range job.Needs {
+		if id.Value == root.ID.Value {
+			continue // When cyclic dependency exists. This does not happen normally.
+		}
+		if _, ok := out.Props[id.Value]; ok {
+			continue // Already added
+		}
+
+		j, ok := rule.workflow.Jobs[id.Value]
+		if !ok {
+			continue
+		}
+
+		outputs := NewStrictObjectType()
+		for name := range j.Outputs {
+			outputs.Props[name] = StringType{}
+		}
+
+		out.Props[id.Value] = &ObjectType{
+			Props: map[string]ExprType{
+				"outputs": outputs,
+				"result":  StringType{},
+			},
+			StrictProps: true,
+		}
+
+		rule.populateDependantNeedsTypes(out, j, root) // Add necessary needs props recursively
+	}
 }
 
 func guessTypeOfMatrix(m *Matrix) *ObjectType {

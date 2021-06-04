@@ -533,7 +533,7 @@ var BuiltinGlobalVariableTypes = map[string]*GlobalVariableType{
 	// https://docs.github.com/en/actions/reference/context-and-expression-syntax-for-github-actions#needs-context
 	"needs": {
 		Name: "needs",
-		Type: NewObjectType(),
+		Type: NewStrictObjectType(),
 	},
 }
 
@@ -591,22 +591,28 @@ func (sema *ExprSemanticsChecker) ensureCopyVars() {
 	sema.varsCopied = true
 }
 
-// UpdateMatrix updates matrix object to given object type. Since matrix values change according to
-// 'matrix' section of job configuration, the type needs to be updated.
-func (sema *ExprSemanticsChecker) UpdateMatrix(ty *ObjectType) {
+func (sema *ExprSemanticsChecker) updateContextType(name string, ty *ObjectType) {
 	sema.ensureCopyVars()
-	sema.vars["matrix"] = &GlobalVariableType{
-		Name: "matrix",
+	sema.vars[name] = &GlobalVariableType{
+		Name: name,
 		Type: ty,
 	}
 }
 
+// UpdateMatrix updates matrix object to given object type. Since matrix values change according to
+// 'matrix' section of job configuration, the type needs to be updated.
+func (sema *ExprSemanticsChecker) UpdateMatrix(ty *ObjectType) {
+	sema.updateContextType("matrix", ty)
+}
+
+// UpdateSteps updates 'steps' context object to given object type.
 func (sema *ExprSemanticsChecker) UpdateSteps(ty *ObjectType) {
-	sema.ensureCopyVars()
-	sema.vars["steps"] = &GlobalVariableType{
-		Name: "steps",
-		Type: ty,
-	}
+	sema.updateContextType("steps", ty)
+}
+
+// UpdateNeeds updates 'needs' context object to given object type.
+func (sema *ExprSemanticsChecker) UpdateNeeds(ty *ObjectType) {
+	sema.updateContextType("needs", ty)
 }
 
 func (sema *ExprSemanticsChecker) checkVariable(n *VariableNode) ExprType {
