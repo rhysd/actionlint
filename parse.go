@@ -723,6 +723,7 @@ func (p *parser) parseStep(n *yaml.Node) *Step {
 			switch kv.key.Value {
 			case "run":
 				exec.Run = p.parseString(kv.val, false)
+				exec.RunPos = kv.key.Pos
 			case "working-directory":
 				exec.WorkingDirectory = p.parseString(kv.val, false)
 			case "shell":

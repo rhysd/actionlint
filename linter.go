@@ -57,16 +57,21 @@ type LinterOptions struct {
 	// Oneline is flag if one line output is enabled. When enabling it, one error is output per one
 	// line. It is useful when reading outputs from programs.
 	Oneline bool
+	// Shellcheck is executable for running shellcheck external command. It can be command name like
+	// "shellcheck" or file path like "/path/to/shellcheck", "path/to/shellcheck". When this value
+	// is empty, shellcheck won't run to check scripts in workflow file.
+	Shellcheck string
 	// More options will come here
 }
 
 // Linter is struct to lint workflow files.
 type Linter struct {
-	out      io.Writer
-	logOut   io.Writer
-	logLevel LogLevel
-	noColor  bool
-	oneline  bool
+	out        io.Writer
+	logOut     io.Writer
+	logLevel   LogLevel
+	noColor    bool
+	oneline    bool
+	shellcheck string
 }
 
 // NewLinter creates a new Linter instance.
@@ -91,11 +96,12 @@ func NewLinter(out io.Writer, opts *LinterOptions) *Linter {
 		lout = colorable.NewColorable(os.Stderr)
 	}
 
-	return &Linter{out, lout, l, opts.NoColor, opts.Oneline}
+	return &Linter{out, lout, l, opts.NoColor, opts.Oneline, opts.Shellcheck}
 }
 
 func (l *Linter) log(args ...interface{}) {
 	if l.logLevel >= LogLevelVerbose {
+		fmt.Fprint(l.logOut, "verbose: ")
 		fmt.Fprintln(l.logOut, args...)
 	}
 }
@@ -212,6 +218,16 @@ func (l *Linter) Lint(path string, content []byte) ([]*Error, error) {
 		NewRuleAction(path),
 		NewRuleEnvVar(),
 		NewRuleExpression(),
+	}
+	if l.shellcheck != "" {
+		r, err := NewRuleShellcheck(l.shellcheck)
+		if err == nil {
+			rules = append(rules, r)
+		} else {
+			l.log("Rule \"shellcheck\" was disabled:", err)
+		}
+	} else {
+		l.log("Rule \"shellcheck\" was disabled since shellcheck command name was empty")
 	}
 
 	v := NewVisitor()

@@ -236,6 +236,8 @@ type ExecRun struct {
 	Shell *String
 	// WorkingDirectory represents optional 'working-directory' field. Nil means nothing specified.
 	WorkingDirectory *String
+	// RunPos is position of 'run' section
+	RunPos *Pos
 }
 
 // Kind returns kind of the step execution.

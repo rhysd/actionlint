@@ -225,7 +225,11 @@ func (rule *RuleExpression) checkBoolString(sec string, str *String) {
 	tys := rule.checkString(str)
 	if len(tys) == 0 {
 		if str.Value != "true" && str.Value != "false" {
-			rule.errorf(str.Pos, "expected bool string \"true\" or \"false\" but got %q", str.Value)
+			rule.errorf(
+				str.Pos,
+				"expected bool string \"true\" or \"false\" but got %q. did you forget enclosing the expression in ${{...}}?",
+				str.Value,
+			)
 		}
 		return
 	}
