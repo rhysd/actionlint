@@ -210,6 +210,7 @@ func (l *Linter) Lint(path string, content []byte) ([]*Error, error) {
 		NewRuleEvents(),
 		NewRuleJobNeeds(),
 		NewRuleAction(path),
+		NewRuleEnvVar(),
 		NewRuleExpression(),
 	}
 
