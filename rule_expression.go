@@ -111,7 +111,7 @@ func (rule *RuleExpression) VisitJobPre(n *Job) {
 	}
 
 	rule.checkDefaults(n.Defaults)
-	rule.checkBoolString("if", n.If)
+	rule.checkIfCondition(n.If)
 
 	if n.Strategy != nil && n.Strategy.Matrix != nil {
 		for _, r := range n.Strategy.Matrix.Rows {
@@ -147,7 +147,7 @@ func (rule *RuleExpression) VisitJobPost(n *Job) {
 
 // VisitStep is callback when visiting Step node.
 func (rule *RuleExpression) VisitStep(n *Step) {
-	rule.checkBoolString("if", n.If)
+	rule.checkIfCondition(n.If)
 	rule.checkString(n.Name)
 
 	switch e := n.Exec.(type) {
@@ -218,35 +218,46 @@ func (rule *RuleExpression) checkStrings(ss []*String) {
 	}
 }
 
-func (rule *RuleExpression) checkBoolString(sec string, str *String) {
+func (rule *RuleExpression) checkIfCondition(str *String) {
 	if str == nil {
 		return
 	}
-	tys := rule.checkString(str)
-	if len(tys) == 0 {
-		if str.Value != "true" && str.Value != "false" {
-			rule.errorf(
-				str.Pos,
-				"expected bool string \"true\" or \"false\" but got %q. did you forget enclosing the expression in ${{...}}?",
-				str.Value,
-			)
+
+	// Note:
+	// https://docs.github.com/en/actions/reference/workflow-syntax-for-github-actions#jobsjob_idif
+	//
+	// > When you use expressions in an if conditional, you may omit the expression syntax (${{ }})
+	// > because GitHub automatically evaluates the if conditional as an expression, unless the
+	// > expression contains any operators. If the expression contains any operators, the expression
+	// > must be contained within ${{ }} to explicitly mark it for evaluation.
+	//
+	// This document is wrong. Actually I confirmed that any strings without surrounding in ${{ }}
+	// are evaluated.
+	//
+	// - run: echo 'run'
+	//   if: true
+	// - run: echo 'not run'
+	//   if: fase
+	// - run: echo 'run'
+	//   if: contains('abc', 'ab')
+	// - run: echo 'not run'
+	//   if: contains('abc', 'xy')
+
+	var condTy ExprType
+	if strings.Contains(str.Value, "${{") && strings.Contains(str.Value, "}}") {
+		if tys := rule.checkString(str); len(tys) == 1 {
+			s := strings.TrimSpace(str.Value)
+			if strings.HasPrefix(s, "${{") && strings.HasSuffix(s, "}}") {
+				condTy = tys[0]
+			}
 		}
-		return
+	} else {
+		src := str.Value + "}}" // }} is necessary since lexer lexes it as end of tokens
+		condTy, _ = rule.checkSemantics(src, str.Pos.Line, str.Pos.Col)
 	}
 
-	if len(tys) > 1 {
-		return // The string contains two or more placeholders. Give up
-	}
-	s := strings.TrimSpace(str.Value)
-	if !strings.HasPrefix(s, "${{") || !strings.HasSuffix(s, "}}") {
-		return // When return value is not entire string of the section, give up
-	}
-
-	switch ty := tys[0].(type) {
-	case BoolType:
-		// OK
-	default:
-		rule.errorf(str.Pos, "value at %q section should be type \"bool\" but got type %q", sec, ty.String())
+	if _, ok := condTy.(BoolType); !ok && condTy != nil {
+		rule.errorf(str.Pos, "\"if\" condition should be type \"bool\" but got type %q", condTy.String())
 	}
 }
 
