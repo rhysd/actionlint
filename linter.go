@@ -221,7 +221,7 @@ func (l *Linter) Lint(path string, content []byte) ([]*Error, error) {
 	w, all := Parse(content)
 
 	if l.logLevel >= LogLevelVerbose {
-		elapsed := time.Now().Sub(start)
+		elapsed := time.Since(start)
 		l.log("Found", len(all), "parse errors in", elapsed.Milliseconds(), "ms for", path)
 	}
 
@@ -289,7 +289,7 @@ func (l *Linter) Lint(path string, content []byte) ([]*Error, error) {
 	}
 
 	if l.logLevel >= LogLevelVerbose {
-		elapsed := time.Now().Sub(start)
+		elapsed := time.Since(start)
 		l.log("Found", len(all), "errors in", elapsed.Milliseconds(), "ms for", path)
 	}
 
