@@ -281,6 +281,10 @@ func (rule *RuleExpression) checkString(str *String) []ExprType {
 		offset += start
 
 		ty, offsetAfter := rule.checkSemantics(s, line, col+offset)
+		if ty == nil || offsetAfter == 0 {
+			return nil
+		}
+
 		s = s[offsetAfter:]
 		offset += offsetAfter
 		tys = append(tys, ty)
