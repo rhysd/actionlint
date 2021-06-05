@@ -221,6 +221,26 @@ func TestExprSemanticsCheckOK(t *testing.T) {
 			},
 		},
 		{
+			what:     "coerce array dereference into array at function parameter",
+			input:    "contains(test().*.x, 10)",
+			expected: BoolType{},
+			funcs: map[string][]*FuncSignature{
+				"test": {
+					{
+						Name: "test",
+						Ret: &ArrayType{
+							Elem: &ObjectType{
+								Props: map[string]ExprType{
+									"x": NumberType{},
+								},
+							},
+						},
+					},
+				},
+				"contains": BuiltinFuncSignatures["contains"],
+			},
+		},
+		{
 			what:     "index access to dereferenced array with any type fallback",
 			input:    "github.event.labels.*.name[0]",
 			expected: AnyType{},
