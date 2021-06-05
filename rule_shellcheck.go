@@ -23,7 +23,6 @@ type RuleShellcheck struct {
 	cmd           string
 	workflowShell string
 	jobShell      string
-	dbgOut        io.Writer
 }
 
 // NewRuleShellcheck craetes new RuleShellcheck instance. Parameter executable can be command name
@@ -35,11 +34,10 @@ func NewRuleShellcheck(executable string, debug io.Writer) (*RuleShellcheck, err
 		return nil, err
 	}
 	r := &RuleShellcheck{
-		RuleBase:      RuleBase{name: "shellcheck"},
+		RuleBase:      RuleBase{name: "shellcheck", dbg: debug},
 		cmd:           p,
 		workflowShell: "",
 		jobShell:      "",
-		dbgOut:        debug,
 	}
 	return r, nil
 }
@@ -100,13 +98,6 @@ func (rule *RuleShellcheck) VisitWorkflowPost(n *Workflow) {
 	rule.workflowShell = ""
 }
 
-func (rule *RuleShellcheck) debug(args ...interface{}) {
-	if rule.dbgOut == nil {
-		return
-	}
-	fmt.Fprintln(rule.dbgOut, args...)
-}
-
 func (rule *RuleShellcheck) getShellName(exec *ExecRun) string {
 	if exec.Shell != nil {
 		return exec.Shell.Value
@@ -120,7 +111,7 @@ func (rule *RuleShellcheck) getShellName(exec *ExecRun) string {
 func (rule *RuleShellcheck) runShellcheck(src string, sh string, pos *Pos) {
 	cmd := exec.Command(rule.cmd, "-f", "json", "-x", "--shell", sh, "-e", "SC2154", "-")
 	cmd.Stderr = nil
-	rule.debug("running shellcheck", cmd, pos)
+	rule.debug("%s: Running shellcheck: %s", pos, cmd)
 
 	// Use same options to run shell process described at document
 	// https://docs.github.com/en/actions/reference/workflow-syntax-for-github-actions#using-a-specific-shell
@@ -132,18 +123,18 @@ func (rule *RuleShellcheck) runShellcheck(src string, sh string, pos *Pos) {
 
 	stdin, err := cmd.StdinPipe()
 	if err != nil {
-		rule.debug("Could not make stdin pipe:", err)
+		rule.debug("%s: Could not make stdin pipe: %v", pos, err)
 		return
 	}
 	if _, err := io.WriteString(stdin, script); err != nil {
-		rule.debug("Could not write stdin:", err)
+		rule.debug("%s: Could not write stdin: %v", pos, err)
 		return
 	}
 	stdin.Close()
 
 	b, err := cmd.Output()
 	if err != nil {
-		rule.debug("Command", rule.cmd, "failed:", err)
+		rule.debug("Command %s failed: %v", rule.cmd, err)
 	}
 	if len(b) == 0 {
 		return
@@ -151,7 +142,7 @@ func (rule *RuleShellcheck) runShellcheck(src string, sh string, pos *Pos) {
 
 	errs := []shellcheckError{}
 	if err := json.Unmarshal(b, &errs); err != nil {
-		rule.debug("Could not unmarshal JSON input from shellcheck:", string(b), err)
+		rule.debug("Could not unmarshal JSON input from shellcheck: %q: %v", b, err)
 		return
 	}
 

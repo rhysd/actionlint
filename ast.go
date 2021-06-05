@@ -1,11 +1,17 @@
 package actionlint
 
+import "fmt"
+
 // Pos represents position in the file.
 type Pos struct {
 	// Line is a line number of the position. This value is 1-based.
 	Line int
 	// Col is a column number of the position. This value is 1-based.
 	Col int
+}
+
+func (p *Pos) String() string {
+	return fmt.Sprintf("line:%d,col:%d", p.Line, p.Col)
 }
 
 // String represents generic string value in YAML file with position.

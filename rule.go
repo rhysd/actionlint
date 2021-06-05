@@ -1,10 +1,16 @@
 package actionlint
 
+import (
+	"fmt"
+	"io"
+)
+
 // RuleBase is a struct to be a base of rule structs. Embed this struct to define default methods
 // automatically
 type RuleBase struct {
 	name string
 	errs []*Error
+	dbg  io.Writer
 }
 
 // VisitStep is callback when visiting Step node.
@@ -30,6 +36,14 @@ func (r *RuleBase) error(pos *Pos, msg string) {
 func (r *RuleBase) errorf(pos *Pos, format string, args ...interface{}) {
 	err := errorfAt(pos, r.name, format, args...)
 	r.errs = append(r.errs, err)
+}
+
+func (r *RuleBase) debug(format string, args ...interface{}) {
+	if r.dbg == nil {
+		return
+	}
+	format = fmt.Sprintf("[%s] %s\n", r.name, format)
+	fmt.Fprintf(r.dbg, format, args...)
 }
 
 // Errs returns errors found by the rule.
