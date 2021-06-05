@@ -23,12 +23,13 @@ type RuleShellcheck struct {
 	cmd           string
 	workflowShell string
 	jobShell      string
+	dbgOut        io.Writer
 }
 
 // NewRuleShellcheck craetes new RuleShellcheck instance. Parameter executable can be command name
 // or relative/absolute file path. When the given executable is not found in system, it returns an
 // error as 2nd return value.
-func NewRuleShellcheck(executable string) (*RuleShellcheck, error) {
+func NewRuleShellcheck(executable string, debug io.Writer) (*RuleShellcheck, error) {
 	p, err := exec.LookPath(executable)
 	if err != nil {
 		return nil, err
@@ -38,6 +39,7 @@ func NewRuleShellcheck(executable string) (*RuleShellcheck, error) {
 		cmd:           p,
 		workflowShell: "",
 		jobShell:      "",
+		dbgOut:        debug,
 	}
 	return r, nil
 }
@@ -98,6 +100,13 @@ func (rule *RuleShellcheck) VisitWorkflowPost(n *Workflow) {
 	rule.workflowShell = ""
 }
 
+func (rule *RuleShellcheck) debug(args ...interface{}) {
+	if rule.dbgOut == nil {
+		return
+	}
+	fmt.Fprintln(rule.dbgOut, args...)
+}
+
 func (rule *RuleShellcheck) getShellName(exec *ExecRun) string {
 	if exec.Shell != nil {
 		return exec.Shell.Value
@@ -111,6 +120,7 @@ func (rule *RuleShellcheck) getShellName(exec *ExecRun) string {
 func (rule *RuleShellcheck) runShellcheck(src string, sh string, pos *Pos) {
 	cmd := exec.Command(rule.cmd, "-f", "json", "-x", "--shell", sh, "-e", "SC2154", "-")
 	cmd.Stderr = nil
+	rule.debug("running shellcheck", cmd, pos)
 
 	// Use same options to run shell process described at document
 	// https://docs.github.com/en/actions/reference/workflow-syntax-for-github-actions#using-a-specific-shell
@@ -122,20 +132,26 @@ func (rule *RuleShellcheck) runShellcheck(src string, sh string, pos *Pos) {
 
 	stdin, err := cmd.StdinPipe()
 	if err != nil {
+		rule.debug("Could not make stdin pipe:", err)
 		return
 	}
 	if _, err := io.WriteString(stdin, script); err != nil {
+		rule.debug("Could not write stdin:", err)
 		return
 	}
 	stdin.Close()
 
-	b, _ := cmd.Output()
+	b, err := cmd.Output()
+	if err != nil {
+		rule.debug("Command", rule.cmd, "failed:", err)
+	}
 	if len(b) == 0 {
 		return
 	}
 
 	errs := []shellcheckError{}
 	if err := json.Unmarshal(b, &errs); err != nil {
+		rule.debug("Could not unmarshal JSON input from shellcheck:", string(b), err)
 		return
 	}
 

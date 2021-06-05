@@ -231,7 +231,11 @@ func (l *Linter) Lint(path string, content []byte) ([]*Error, error) {
 		NewRuleExpression(),
 	}
 	if l.shellcheck != "" {
-		r, err := NewRuleShellcheck(l.shellcheck)
+		dbg := l.logOut
+		if l.logLevel < LogLevelDebug {
+			dbg = nil
+		}
+		r, err := NewRuleShellcheck(l.shellcheck, dbg)
 		if err == nil {
 			rules = append(rules, r)
 		} else {
