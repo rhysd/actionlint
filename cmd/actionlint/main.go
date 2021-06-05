@@ -5,6 +5,7 @@ import (
 	"fmt"
 	"io/ioutil"
 	"os"
+	"regexp"
 
 	"github.com/rhysd/actionlint"
 )
@@ -60,7 +61,9 @@ func lint(args []string, opts *actionlint.LinterOptions) ([]*actionlint.Error, e
 func main() {
 	var ver bool
 	var opts actionlint.LinterOptions
+	var ignorePat string
 
+	flag.StringVar(&ignorePat, "ignore", "", "Regular expression matching to error messages which you want to ignore")
 	flag.StringVar(&opts.Shellcheck, "shellcheck", "shellcheck", "Command name or file path of \"shellcheck\" external command")
 	flag.BoolVar(&opts.Oneline, "oneline", false, "Use one line per one error. Useful for reading error messages from programs")
 	flag.BoolVar(&opts.NoColor, "no-color", false, "Disable colorful output")
@@ -73,6 +76,15 @@ func main() {
 	if ver {
 		fmt.Println(version)
 		return
+	}
+
+	if ignorePat != "" {
+		r, err := regexp.Compile(ignorePat)
+		if err != nil {
+			fmt.Fprintf(os.Stderr, "invalid regular expression %q: %s", ignorePat, err.Error())
+			os.Exit(1)
+		}
+		opts.IgnorePattern = r
 	}
 
 	errs, err := lint(flag.Args(), &opts)

@@ -6,6 +6,7 @@ import (
 	"io/ioutil"
 	"os"
 	"path/filepath"
+	"regexp"
 	"strings"
 
 	"github.com/fatih/color"
@@ -60,7 +61,8 @@ type LinterOptions struct {
 	// Shellcheck is executable for running shellcheck external command. It can be command name like
 	// "shellcheck" or file path like "/path/to/shellcheck", "path/to/shellcheck". When this value
 	// is empty, shellcheck won't run to check scripts in workflow file.
-	Shellcheck string
+	Shellcheck    string
+	IgnorePattern *regexp.Regexp
 	// More options will come here
 }
 
@@ -72,6 +74,7 @@ type Linter struct {
 	noColor    bool
 	oneline    bool
 	shellcheck string
+	ignoreRe   *regexp.Regexp
 }
 
 // NewLinter creates a new Linter instance.
@@ -96,7 +99,15 @@ func NewLinter(out io.Writer, opts *LinterOptions) *Linter {
 		lout = colorable.NewColorable(os.Stderr)
 	}
 
-	return &Linter{out, lout, l, opts.NoColor, opts.Oneline, opts.Shellcheck}
+	return &Linter{
+		out,
+		lout,
+		l,
+		opts.NoColor,
+		opts.Oneline,
+		opts.Shellcheck,
+		opts.IgnorePattern,
+	}
 }
 
 func (l *Linter) log(args ...interface{}) {
@@ -241,6 +252,16 @@ func (l *Linter) Lint(path string, content []byte) ([]*Error, error) {
 		errs := rule.Errs()
 		l.debug(rule.Name(), "found", len(errs), "errors")
 		all = append(all, errs...)
+	}
+
+	if l.ignoreRe != nil {
+		filtered := make([]*Error, 0, len(all))
+		for _, err := range all {
+			if !l.ignoreRe.MatchString(err.Message) {
+				filtered = append(filtered, err)
+			}
+		}
+		all = filtered
 	}
 
 	for _, err := range all {
