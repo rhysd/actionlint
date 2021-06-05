@@ -148,9 +148,10 @@ func (ty StringType) String() string {
 
 // Assignable returns if other type can be assignable to the type.
 func (ty StringType) Assignable(other ExprType) bool {
-	// TODO: Is numbers corced into string?
+	// Bool and null types also can be coerced into string. But in almost all case, those coercing
+	// would be mistakes.
 	switch other.(type) {
-	case StringType, AnyType:
+	case StringType, NumberType, AnyType:
 		return true
 	default:
 		return false

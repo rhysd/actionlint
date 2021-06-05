@@ -378,6 +378,11 @@ func TestExprSemanticsCheckOK(t *testing.T) {
 				StrictProps: true,
 			},
 		},
+		{
+			what:     "number is coerced into string",
+			input:    "startsWith('42foo', 42)",
+			expected: BoolType{},
+		},
 	}
 
 	opts := []cmp.Option{
@@ -609,31 +614,31 @@ func TestExprSemanticsCheckError(t *testing.T) {
 		},
 		{
 			what:  "wrong type at parameter",
-			input: "startsWith('foo', 10)",
+			input: "startsWith('foo', null)",
 			expected: []string{
-				"2nd argument of function call is not assignable. \"number\" cannot be assigned to \"string\"",
+				"2nd argument of function call is not assignable. \"null\" cannot be assigned to \"string\"",
 			},
 		},
 		{
 			what:  "wrong type at parameter of overloaded function",
-			input: "contains('foo', 10)",
+			input: "contains('foo', null)",
 			expected: []string{
-				"2nd argument of function call is not assignable. \"number\" cannot be assigned to \"string\"",
+				"2nd argument of function call is not assignable. \"null\" cannot be assigned to \"string\"",
 				"1st argument of function call is not assignable. \"string\" cannot be assigned to \"array<any>\"",
 			},
 		},
 		{
 			what:  "wrong type at rest parameter",
-			input: "hashFiles(10)",
+			input: "hashFiles(null)",
 			expected: []string{
-				"1st argument of function call is not assignable. \"number\" cannot be assigned to \"string\"",
+				"1st argument of function call is not assignable. \"null\" cannot be assigned to \"string\"",
 			},
 		},
 		{
 			what:  "wrong type at rest parameter part2",
-			input: "hashFiles('foo', 10)",
+			input: "hashFiles('foo', null)",
 			expected: []string{
-				"2nd argument of function call is not assignable. \"number\" cannot be assigned to \"string\"",
+				"2nd argument of function call is not assignable. \"null\" cannot be assigned to \"string\"",
 			},
 		},
 		{
