@@ -360,12 +360,15 @@ func (lex *ExprLexer) lexHexInt() (*Token, *ExprError) {
 func (lex *ExprLexer) lexString() (*Token, *ExprError) {
 	lex.scan.Next() // eat '
 	for {
-		if lex.scan.Next() == '\'' {
+		switch r := lex.scan.Next(); r {
+		case '\'':
 			if lex.scan.Peek() == '\'' {
 				lex.scan.Next() // eat second ' in ''
 			} else {
 				return lex.token(TokenKindString), lex.scanErr
 			}
+		case scanner.EOF:
+			return nil, lex.unexpected(r, "end of string literal", []rune{'\''})
 		}
 	}
 }

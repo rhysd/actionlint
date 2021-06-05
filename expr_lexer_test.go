@@ -588,6 +588,11 @@ func TestLexExprError(t *testing.T) {
 			want:  "unexpected EOF while lexing expression",
 		},
 		{
+			what:  "broken string literal",
+			input: "'foo bar",
+			want:  "unexpected EOF while lexing end of string literal",
+		},
+		{
 			what:  "invalid char after -",
 			input: "-a",
 			want:  "unexpected character 'a' while lexing number after -",
