@@ -8,6 +8,7 @@ import (
 	"path/filepath"
 	"regexp"
 	"strings"
+	"time"
 
 	"github.com/fatih/color"
 	"github.com/kr/pretty"
@@ -210,9 +211,19 @@ func (l *Linter) LintFile(path string) ([]*Error, error) {
 // path the content came from. Setting "<stdin>" to path parameter indicates the output came from
 // STDIN.
 func (l *Linter) Lint(path string, content []byte) ([]*Error, error) {
+	var start time.Time
+	if l.logLevel >= LogLevelVerbose {
+		start = time.Now()
+	}
+
 	l.log("Linting", path)
 
 	w, all := Parse(content)
+
+	if l.logLevel >= LogLevelVerbose {
+		elapsed := time.Now().Sub(start)
+		l.log("Found", len(all), "parse errors in", elapsed.Milliseconds(), "ms for", path)
+	}
 
 	if l.logLevel >= LogLevelDebug {
 		fmt.Fprintln(l.logOut, "========== WORKFLOW TREE START ==========")
@@ -277,7 +288,10 @@ func (l *Linter) Lint(path string, content []byte) ([]*Error, error) {
 		err.PrettyPrint(l.out, src)
 	}
 
-	l.log("Found", len(all), "errors in", path)
+	if l.logLevel >= LogLevelVerbose {
+		elapsed := time.Now().Sub(start)
+		l.log("Found", len(all), "errors in", elapsed.Milliseconds(), "ms for", path)
+	}
 
 	return all, nil
 }
