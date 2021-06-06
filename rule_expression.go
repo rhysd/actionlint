@@ -102,10 +102,6 @@ func (rule *RuleExpression) VisitJobPre(n *Job) {
 
 	rule.checkConcurrency(n.Concurrency)
 
-	for _, output := range n.Outputs {
-		rule.checkString(output.Value)
-	}
-
 	for _, e := range n.Env {
 		rule.checkString(e.Value)
 	}
@@ -140,6 +136,11 @@ func (rule *RuleExpression) VisitJobPre(n *Job) {
 
 // VisitJobPost is callback when visiting Job node after visiting its children
 func (rule *RuleExpression) VisitJobPost(n *Job) {
+	// outputs section is evaluated after all steps are run
+	for _, output := range n.Outputs {
+		rule.checkString(output.Value)
+	}
+
 	rule.matrixTy = nil
 	rule.stepsTy = nil
 	rule.needsTy = nil
