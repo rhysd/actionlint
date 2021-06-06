@@ -403,6 +403,11 @@ func TestExprSemanticsCheckOK(t *testing.T) {
 			input:    "startsWith('42foo', 42)",
 			expected: BoolType{},
 		},
+		{
+			what:     "string is coerced into bool",
+			input:    "!'hello' || ''",
+			expected: BoolType{},
+		},
 	}
 
 	opts := []cmp.Option{

@@ -122,7 +122,7 @@ func (ty BoolType) String() string {
 func (ty BoolType) Assignable(other ExprType) bool {
 	// TODO: Is numbers corced into bool?
 	switch other.(type) {
-	case BoolType, AnyType:
+	case BoolType, StringType, AnyType:
 		return true
 	default:
 		return false

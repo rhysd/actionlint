@@ -256,7 +256,7 @@ func (rule *RuleExpression) checkIfCondition(str *String) {
 		condTy, _ = rule.checkSemantics(src, str.Pos.Line, str.Pos.Col)
 	}
 
-	if _, ok := condTy.(BoolType); !ok && condTy != nil {
+	if condTy != nil && !(BoolType{}).Assignable(condTy) {
 		rule.errorf(str.Pos, "\"if\" condition should be type \"bool\" but got type %q", condTy.String())
 	}
 }
