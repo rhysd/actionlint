@@ -429,11 +429,11 @@ func guessTypeFromValue(s string) ExprType {
 	if s == "true" || s == "false" {
 		return BoolType{}
 	}
-	if _, err := strconv.ParseFloat(s, 64); err == nil {
-		return NumberType{}
-	}
 	if s == "null" {
 		return NullType{}
+	}
+	if _, err := strconv.ParseFloat(s, 64); err == nil {
+		return NumberType{}
 	}
 	return StringType{}
 }

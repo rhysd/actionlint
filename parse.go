@@ -132,6 +132,15 @@ func (p *parser) parseStringSequence(sec string, n *yaml.Node, allowEmpty bool, 
 	return ss
 }
 
+func (p *parser) parseStringOrStringSequence(sec string, n *yaml.Node, allowEmpty bool, allowElemEmpty bool) []*String {
+	switch n.Kind {
+	case yaml.ScalarNode:
+		return []*String{p.parseString(n, allowElemEmpty)}
+	default:
+		return p.parseStringSequence(sec, n, allowEmpty, allowElemEmpty)
+	}
+}
+
 func (p *parser) parseBool(n *yaml.Node) *Bool {
 	if n.Kind != yaml.ScalarNode || n.Tag != "!!bool" {
 		p.errorf(n, "expected bool value but found %s node with %q tag", nodeKindName(n.Kind), n.Tag)
@@ -292,21 +301,21 @@ func (p *parser) parseWebhookEvent(name *String, n *yaml.Node) *WebhookEvent {
 	for _, kv := range p.parseSectionMapping(name.Value, n, true) {
 		switch kv.key.Value {
 		case "types":
-			ret.Types = p.parseStringSequence(kv.key.Value, kv.val, false, false)
+			ret.Types = p.parseStringOrStringSequence(kv.key.Value, kv.val, false, false)
 		case "branches":
-			ret.Branches = p.parseStringSequence(kv.key.Value, kv.val, false, false)
+			ret.Branches = p.parseStringOrStringSequence(kv.key.Value, kv.val, false, false)
 		case "branches-ignore":
-			ret.BranchesIgnore = p.parseStringSequence(kv.key.Value, kv.val, false, false)
+			ret.BranchesIgnore = p.parseStringOrStringSequence(kv.key.Value, kv.val, false, false)
 		case "tags":
-			ret.Tags = p.parseStringSequence(kv.key.Value, kv.val, false, false)
+			ret.Tags = p.parseStringOrStringSequence(kv.key.Value, kv.val, false, false)
 		case "tags-ignore":
-			ret.TagsIgnore = p.parseStringSequence(kv.key.Value, kv.val, false, false)
+			ret.TagsIgnore = p.parseStringOrStringSequence(kv.key.Value, kv.val, false, false)
 		case "paths":
-			ret.Paths = p.parseStringSequence(kv.key.Value, kv.val, false, false)
+			ret.Paths = p.parseStringOrStringSequence(kv.key.Value, kv.val, false, false)
 		case "paths-ignore":
-			ret.PathsIgnore = p.parseStringSequence(kv.key.Value, kv.val, false, false)
+			ret.PathsIgnore = p.parseStringOrStringSequence(kv.key.Value, kv.val, false, false)
 		case "workflows":
-			ret.Workflows = p.parseStringSequence(kv.key.Value, kv.val, false, false)
+			ret.Workflows = p.parseStringOrStringSequence(kv.key.Value, kv.val, false, false)
 		default:
 			p.unexpectedKey(kv.key, name.Value, []string{
 				"types",
