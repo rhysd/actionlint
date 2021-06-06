@@ -68,7 +68,7 @@ func (e *Error) PrettyPrint(w io.Writer, source []byte) {
 	bold.Fprint(w, e.Message)
 	gray.Fprintf(w, " [%s]\n", e.Kind)
 
-	if len(source) == 0 {
+	if len(source) == 0 || e.Line <= 0 || e.Column <= 0 {
 		return
 	}
 	line, ok := e.getLine(source)
