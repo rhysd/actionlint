@@ -231,6 +231,11 @@ func (l *Linter) Lint(path string, content []byte) ([]*Error, error) {
 		fmt.Fprintln(l.logOut, "=========== WORKFLOW TREE END ===========")
 	}
 
+	dbgOut := l.logOut
+	if l.logLevel < LogLevelDebug {
+		dbgOut = nil
+	}
+
 	rules := []Rule{
 		NewRuleMatrix(),
 		NewRuleCredentials(),
@@ -242,11 +247,7 @@ func (l *Linter) Lint(path string, content []byte) ([]*Error, error) {
 		NewRuleExpression(),
 	}
 	if l.shellcheck != "" {
-		dbg := l.logOut
-		if l.logLevel < LogLevelDebug {
-			dbg = nil
-		}
-		r, err := NewRuleShellcheck(l.shellcheck, dbg)
+		r, err := NewRuleShellcheck(l.shellcheck, dbgOut)
 		if err == nil {
 			rules = append(rules, r)
 		} else {
@@ -259,6 +260,9 @@ func (l *Linter) Lint(path string, content []byte) ([]*Error, error) {
 	v := NewVisitor()
 	for _, rule := range rules {
 		v.AddPass(rule)
+	}
+	if dbgOut != nil {
+		v.EnableDebug(dbgOut)
 	}
 
 	v.Visit(w)
