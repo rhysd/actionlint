@@ -109,7 +109,11 @@ func (rule *RuleShellcheck) getShellName(exec *ExecRun) string {
 }
 
 func (rule *RuleShellcheck) runShellcheck(src string, sh string, pos *Pos) {
-	cmd := exec.Command(rule.cmd, "-f", "json", "-x", "--shell", sh, "-e", "SC2154", "-")
+	// Reasons to exclude the rules:
+	//
+	// SC2016: Expressions don't expand in single quotes
+	//   ${{ }} syntax can be expanded in single quotes. But shellcheck does not known that.
+	cmd := exec.Command(rule.cmd, "-f", "json", "-x", "--shell", sh, "-e", "SC2016", "-")
 	cmd.Stderr = nil
 	rule.debug("%s: Running shellcheck: %s", pos, cmd)
 
