@@ -36,6 +36,9 @@ type ExprType interface {
 	Assignable(other ExprType) bool
 	// Equals returns if the type is equal to the other type.
 	Equals(other ExprType) bool
+	// Fuse merges other type into this type. When other type conflicts with this type, fused
+	// result is any type as fallback.
+	Fuse(other ExprType) ExprType
 }
 
 // AnyType represents type which can be any type. It also indicates that a value of the type cannot
@@ -54,6 +57,12 @@ func (ty AnyType) Assignable(_ ExprType) bool {
 // Equals returns if the type is equal to the other type.
 func (ty AnyType) Equals(other ExprType) bool {
 	return true
+}
+
+// Fuse merges other type into this type. When other type conflicts with this type, fused result is
+// any type as fallback.
+func (ty AnyType) Fuse(other ExprType) ExprType {
+	return ty
 }
 
 // NullType is type for null value.
@@ -81,6 +90,15 @@ func (ty NullType) Equals(other ExprType) bool {
 	default:
 		return false
 	}
+}
+
+// Fuse merges other type into this type. When other type conflicts with this type, fused result is
+// any type as fallback.
+func (ty NullType) Fuse(other ExprType) ExprType {
+	if _, ok := other.(NullType); ok {
+		return ty
+	}
+	return AnyType{}
 }
 
 // NumberType is type for number values such as integer or float.
@@ -111,6 +129,15 @@ func (ty NumberType) Assignable(other ExprType) bool {
 	}
 }
 
+// Fuse merges other type into this type. When other type conflicts with this type, fused result is
+// any type as fallback.
+func (ty NumberType) Fuse(other ExprType) ExprType {
+	if _, ok := other.(NumberType); ok {
+		return ty
+	}
+	return AnyType{}
+}
+
 // BoolType is type for boolean values.
 type BoolType struct{}
 
@@ -122,7 +149,7 @@ func (ty BoolType) String() string {
 func (ty BoolType) Assignable(other ExprType) bool {
 	// TODO: Is numbers corced into bool?
 	switch other.(type) {
-	case BoolType, StringType, AnyType:
+	case BoolType, StringType, NullType, AnyType:
 		return true
 	default:
 		return false
@@ -137,6 +164,15 @@ func (ty BoolType) Equals(other ExprType) bool {
 	default:
 		return false
 	}
+}
+
+// Fuse merges other type into this type. When other type conflicts with this type, fused result is
+// any type as fallback.
+func (ty BoolType) Fuse(other ExprType) ExprType {
+	if _, ok := other.(BoolType); ok {
+		return ty
+	}
+	return AnyType{}
 }
 
 // StringType is type for string values.
@@ -165,6 +201,17 @@ func (ty StringType) Equals(other ExprType) bool {
 		return true
 	default:
 		return false
+	}
+}
+
+// Fuse merges other type into this type. When other type conflicts with this type, fused result is
+// any type as fallback.
+func (ty StringType) Fuse(other ExprType) ExprType {
+	switch other.(type) {
+	case StringType, NumberType:
+		return ty // Consider assignability
+	default:
+		return AnyType{}
 	}
 }
 
@@ -221,7 +268,45 @@ func (ty *ObjectType) Assignable(other ExprType) bool {
 
 // Equals returns if the type is equal to the other type.
 func (ty *ObjectType) Equals(other ExprType) bool {
-	panic("unimplemented")
+	switch other := other.(type) {
+	case AnyType:
+		return true
+	case *ObjectType:
+		if !ty.StrictProps || !other.StrictProps {
+			return true
+		}
+		for n, t := range ty.Props {
+			o, ok := other.Props[n]
+			if !ok || !t.Equals(o) {
+				return false
+			}
+		}
+		return true
+	default:
+		return false
+	}
+}
+
+// Fuse merges two object types into one. When other object has unknown props, they are merged into
+// current object. When both have same property, when they are assignable, it remains as-is.
+// Otherwise, the property falls back to any type.
+// Note that this method modifies itself destructively for efficiency.
+func (ty *ObjectType) Fuse(other ExprType) ExprType {
+	switch other := other.(type) {
+	case *ObjectType:
+		for n, ot := range other.Props {
+			if t, ok := ty.Props[n]; ok {
+				if !t.Assignable(ot) {
+					ty.Props[n] = AnyType{}
+				}
+			} else {
+				ty.Props[n] = ot
+			}
+		}
+		return ty
+	default:
+		return AnyType{}
+	}
 }
 
 // ArrayType is type for arrays.
@@ -236,7 +321,16 @@ func (ty *ArrayType) String() string {
 
 // Equals returns if the type is equal to the other type.
 func (ty *ArrayType) Equals(other ExprType) bool {
-	panic("unimplemented")
+	switch other := other.(type) {
+	case AnyType:
+		return true
+	case *ArrayType:
+		return ty.Elem.Equals(other.Elem)
+	case *ArrayDerefType:
+		return ty.Elem.Equals(other.Elem)
+	default:
+		return false
+	}
 }
 
 // Assignable returns if other type can be assignable to the type.
@@ -251,6 +345,23 @@ func (ty *ArrayType) Assignable(other ExprType) bool {
 		return ty.Elem.Assignable(other.Elem)
 	default:
 		return false
+	}
+}
+
+// Fuse merges two object types into one. When other object has unknown props, they are merged into
+// current object. When both have same property, when they are assignable, it remains as-is.
+// Otherwise, the property falls back to any type.
+// Note that this method modifies itself destructively for efficiency.
+func (ty *ArrayType) Fuse(other ExprType) ExprType {
+	switch other := other.(type) {
+	case *ArrayType:
+		ty.Elem = ty.Elem.Fuse(other.Elem)
+		return ty
+	case *ArrayDerefType:
+		ty.Elem = ty.Elem.Fuse(other.Elem)
+		return ty
+	default:
+		return AnyType{}
 	}
 }
 
@@ -284,7 +395,33 @@ func (ty *ArrayDerefType) Assignable(other ExprType) bool {
 
 // Equals returns if the type is equal to the other type.
 func (ty *ArrayDerefType) Equals(other ExprType) bool {
-	panic("unimplemented")
+	switch other := other.(type) {
+	case AnyType:
+		return true
+	case *ArrayType:
+		return ty.Elem.Equals(other.Elem)
+	case *ArrayDerefType:
+		return ty.Elem.Equals(other.Elem)
+	default:
+		return false
+	}
+}
+
+// Fuse merges two object types into one. When other object has unknown props, they are merged into
+// current object. When both have same property, when they are assignable, it remains as-is.
+// Otherwise, the property falls back to any type.
+// Note that this method modifies itself destructively for efficiency.
+func (ty *ArrayDerefType) Fuse(other ExprType) ExprType {
+	switch other := other.(type) {
+	case *ArrayType:
+		ty.Elem = ty.Elem.Fuse(other.Elem)
+		return ty
+	case *ArrayDerefType:
+		ty.Elem = ty.Elem.Fuse(other.Elem)
+		return ty
+	default:
+		return AnyType{}
+	}
 }
 
 // Functions

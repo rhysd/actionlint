@@ -1,6 +1,12 @@
 package actionlint
 
-import "fmt"
+import (
+	"fmt"
+	"strconv"
+	"strings"
+
+	"gopkg.in/yaml.v3"
+)
 
 // Pos represents position in the file.
 type Pos struct {
@@ -280,6 +286,145 @@ func (r *ExecAction) Kind() ExecKind {
 	return ExecKindAction
 }
 
+// RawYAMLValueKind is kind of raw YAML values
+type RawYAMLValueKind int
+
+const (
+	// RawYAMLValueKindObject is kind for an object value of raw YAML value.
+	RawYAMLValueKindObject = RawYAMLValueKind(yaml.MappingNode)
+	// RawYAMLValueKindArray is kind for an array value of raw YAML value.
+	RawYAMLValueKindArray = RawYAMLValueKind(yaml.SequenceNode)
+	// RawYAMLValueKindString is kind for a string value of raw YAML value.
+	RawYAMLValueKindString = RawYAMLValueKind(yaml.ScalarNode)
+)
+
+// RawYAMLValue is a value at matrix variation. Any value can be put at matrix variations
+// including mappings and arrays.
+type RawYAMLValue interface {
+	// Kind returns kind of raw YAML value.
+	Kind() RawYAMLValueKind
+	// Equals returns if the other value is equal to the value.
+	Equals(other RawYAMLValue) bool
+	// Pos returns the start position of the value in the source file
+	Pos() *Pos
+	// String returns string representation of the value
+	String() string
+}
+
+// RawYAMLObject is raw mapping value.
+type RawYAMLObject struct {
+	Props map[string]RawYAMLValue
+	pos   *Pos
+}
+
+// Kind returns kind of raw YAML value.
+func (o *RawYAMLObject) Kind() RawYAMLValueKind {
+	return RawYAMLValueKindObject
+}
+
+// Equals returns if the other value is equal to the value.
+func (o *RawYAMLObject) Equals(other RawYAMLValue) bool {
+	switch other := other.(type) {
+	case *RawYAMLObject:
+		for n, p1 := range o.Props {
+			if p2, ok := other.Props[n]; !ok || !p1.Equals(p2) {
+				return false
+			}
+		}
+		return true
+	default:
+		return false
+	}
+}
+
+// Pos returns the start position of the value in the source file
+func (o *RawYAMLObject) Pos() *Pos {
+	return o.pos
+}
+
+func (o *RawYAMLObject) String() string {
+	qs := make([]string, 0, len(o.Props))
+	for n, p := range o.Props {
+		qs = append(qs, fmt.Sprintf("%q: %s", n, p.String()))
+	}
+	return fmt.Sprintf("{%s}", strings.Join(qs, ", "))
+}
+
+// RawYAMLArray is raw sequence value.
+type RawYAMLArray struct {
+	Value []RawYAMLValue
+	pos   *Pos
+}
+
+// Kind returns kind of raw YAML value.
+func (a *RawYAMLArray) Kind() RawYAMLValueKind {
+	return RawYAMLValueKindArray
+}
+
+// Equals returns if the other value is equal to the value.
+func (a *RawYAMLArray) Equals(other RawYAMLValue) bool {
+	switch other := other.(type) {
+	case *RawYAMLArray:
+		if len(a.Value) != len(other.Value) {
+			return false
+		}
+		for i, e1 := range a.Value {
+			if !e1.Equals(other.Value[i]) {
+				return false
+			}
+		}
+		return true
+	default:
+		return false
+	}
+}
+
+// Pos returns the start position of the value in the source file
+func (a *RawYAMLArray) Pos() *Pos {
+	return a.pos
+}
+
+func (a *RawYAMLArray) String() string {
+	qs := make([]string, 0, len(a.Value))
+	for _, v := range a.Value {
+		qs = append(qs, v.String())
+	}
+	return fmt.Sprintf("[%s]", strings.Join(qs, ", "))
+}
+
+// RawYAMLString is raw scalar value.
+type RawYAMLString struct {
+	// Note: Might be useful to add kind to check the string value is int/float/bool/null.
+
+	// Value is string representation of the scalar node.
+	Value string
+	pos   *Pos
+}
+
+// Kind returns kind of raw YAML value.
+func (s *RawYAMLString) Kind() RawYAMLValueKind {
+	return RawYAMLValueKindString
+}
+
+// Equals returns if the other value is equal to the value.
+func (s *RawYAMLString) Equals(other RawYAMLValue) bool {
+	switch other := other.(type) {
+	case *RawYAMLString:
+		return s.Value == other.Value
+	default:
+		return false
+	}
+}
+
+// Pos returns the start position of the value in the source file
+func (s *RawYAMLString) Pos() *Pos {
+	return s.pos
+}
+
+func (s *RawYAMLString) String() string {
+	return strconv.Quote(s.Value)
+}
+
 // MatrixRow is one row of matrix. One matrix row can take multiple values. Those variations are
 // stored as row of values in this struct.
 // https://docs.github.com/en/actions/reference/workflow-syntax-for-github-actions#jobsjob_idstrategymatrix
@@ -287,7 +432,7 @@ type MatrixRow struct {
 	// Name is a name of matrix value.
 	Name *String
 	// Values is variations of values which the matrix value can take.
-	Values []*String
+	Values []RawYAMLValue
 }
 
 // MatrixCombination represents which value should be taken in the row of the matrix.
@@ -296,7 +441,7 @@ type MatrixCombination struct {
 	// Key is a name of the matrix value.
 	Key *String
 	// Value is the value selected from values in row.
-	Value *String
+	Value RawYAMLValue
 }
 
 // Matrix is matrix variations configuration of a job.

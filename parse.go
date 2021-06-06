@@ -27,7 +27,7 @@ func nodeKindName(k yaml.Kind) string {
 	case yaml.ScalarNode:
 		return "scalar"
 	case yaml.AliasNode:
-		return "arias"
+		return "alias"
 	default:
 		if os.Getenv("ACTIONLINT_DEBUG") != "" {
 			return "unknown"
@@ -570,14 +570,40 @@ func (p *parser) parseMatrixCombinations(sec string, n *yaml.Node) []map[string]
 		kvs := p.parseMapping(fmt.Sprintf("element in %q section", sec), c, false)
 		elem := make(map[string]*MatrixCombination, len(kvs))
 		for _, kv := range kvs {
-			s := p.parseString(kv.val, true)
-			if s != nil {
-				elem[kv.key.Value] = &MatrixCombination{kv.key, s}
+			if v := p.parseRawYAMLValue(kv.val); v != nil {
+				elem[kv.key.Value] = &MatrixCombination{kv.key, v}
 			}
 		}
 		ret = append(ret, elem)
 	}
 	return ret
+}
+
+func (p *parser) parseRawYAMLValue(n *yaml.Node) RawYAMLValue {
+	switch n.Kind {
+	case yaml.ScalarNode:
+		return &RawYAMLString{n.Value, posAt(n)}
+	case yaml.SequenceNode:
+		vs := make([]RawYAMLValue, 0, len(n.Content))
+		for _, c := range n.Content {
+			if v := p.parseRawYAMLValue(c); v != nil {
+				vs = append(vs, v)
+			}
+		}
+		return &RawYAMLArray{vs, posAt(n)}
+	case yaml.MappingNode:
+		parsed := p.parseMapping("matrix row value", n, true)
+		m := make(map[string]RawYAMLValue, len(parsed))
+		for _, kv := range parsed {
+			if v := p.parseRawYAMLValue(kv.val); v != nil {
+				m[kv.key.Value] = v
+			}
+		}
+		return &RawYAMLObject{m, posAt(n)}
+	default:
+		p.errorf(n, "unexpected %s node on parsing value in matrix row", nodeKindName(n.Kind))
+		return nil
+	}
 }
 
 // https://docs.github.com/en/actions/reference/workflow-syntax-for-github-actions#jobsjob_idstrategymatrix
@@ -591,9 +617,20 @@ func (p *parser) parseMatrix(pos *Pos, n *yaml.Node) *Matrix {
 		case "exclude":
 			ret.Exclude = p.parseMatrixCombinations("exclude", kv.val)
 		default:
+			if ok := p.checkSequence("matrix values", kv.val, false); !ok {
+				continue
+			}
+
+			values := make([]RawYAMLValue, 0, len(kv.val.Content))
+			for _, c := range kv.val.Content {
+				if v := p.parseRawYAMLValue(c); v != nil {
+					values = append(values, v)
+				}
+			}
+
 			ret.Rows[kv.key.Value] = &MatrixRow{
 				Name:   kv.key,
-				Values: p.parseStringSequence("matrix", kv.val, false, true),
+				Values: values,
 			}
 		}
 	}

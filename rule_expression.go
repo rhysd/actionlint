@@ -111,16 +111,18 @@ func (rule *RuleExpression) VisitJobPre(n *Job) {
 
 	if n.Strategy != nil && n.Strategy.Matrix != nil {
 		for _, r := range n.Strategy.Matrix.Rows {
-			rule.checkStrings(r.Values)
+			for _, v := range r.Values {
+				rule.checkRawYAMLValue(v)
+			}
 		}
 		for _, cs := range n.Strategy.Matrix.Include {
 			for _, c := range cs {
-				rule.checkString(c.Value)
+				rule.checkRawYAMLValue(c.Value)
 			}
 		}
 		for _, cs := range n.Strategy.Matrix.Exclude {
 			for _, c := range cs {
-				rule.checkString(c.Value)
+				rule.checkRawYAMLValue(c.Value)
 			}
 		}
 	}
@@ -238,7 +240,7 @@ func (rule *RuleExpression) checkIfCondition(str *String) {
 	// - run: echo 'run'
 	//   if: true
 	// - run: echo 'not run'
-	//   if: fase
+	//   if: false
 	// - run: echo 'run'
 	//   if: contains('abc', 'ab')
 	// - run: echo 'not run'
@@ -266,11 +268,13 @@ func (rule *RuleExpression) checkString(str *String) []ExprType {
 	if str == nil {
 		return nil
 	}
+	return rule.checkExprsIn(str.Value, str.Pos)
+}
 
-	line, col := str.Pos.Line, str.Pos.Col
+func (rule *RuleExpression) checkExprsIn(s string, pos *Pos) []ExprType {
+	line, col := pos.Line, pos.Col
 	offset := 0
 	tys := []ExprType{}
-	s := str.Value
 	for {
 		idx := strings.Index(s, "${{")
 		if idx == -1 {
@@ -292,6 +296,23 @@ func (rule *RuleExpression) checkString(str *String) []ExprType {
 	}
 
 	return tys
+}
+
+func (rule *RuleExpression) checkRawYAMLValue(v RawYAMLValue) {
+	switch v := v.(type) {
+	case *RawYAMLObject:
+		for _, p := range v.Props {
+			rule.checkRawYAMLValue(p)
+		}
+	case *RawYAMLArray:
+		for _, v := range v.Value {
+			rule.checkRawYAMLValue(v)
+		}
+	case *RawYAMLString:
+		rule.checkExprsIn(v.Value, v.Pos())
+	default:
+		panic("unreachable")
+	}
 }
 
 func (rule *RuleExpression) exprError(err *ExprError, lineBase, colBase int) {
@@ -383,38 +404,28 @@ func guessTypeOfMatrix(m *Matrix) *ObjectType {
 
 	for _, inc := range m.Include {
 		for n, kv := range inc {
-			ity := guessTypeFromValue(kv.Value.Value)
-			mty, ok := o.Props[n]
-			if !ok {
-				// When the combination does not exist in 'matrix' section
-				o.Props[n] = ity
-				continue
+			ty := guessTypeOfRawYAMLValue(kv.Value)
+			if t, ok := o.Props[n]; ok {
+				// When the combination exists in 'matrix' section, fuse type into existing one
+				ty = t.Fuse(ty)
 			}
-			if !mty.Equals(ity) {
-				// When types are mismatch between 'matrix' and 'include' for example:
-				//   matrix:
-				//     foo: [1, 2, 3]
-				//   include:
-				//     - foo: true
-				//       bar: null
-				o.Props[n] = AnyType{}
-			}
+			o.Props[n] = ty
 		}
 	}
+
+	// Note: m.Exclude is not considered when guessing type of matrix
 
 	return o
 }
 
 func guessTypeOfMatrixRow(r *MatrixRow) ExprType {
 	var ty ExprType
-	for _, s := range r.Values {
-		t := guessTypeFromValue(s.Value)
+	for _, v := range r.Values {
+		t := guessTypeOfRawYAMLValue(v)
 		if ty == nil {
 			ty = t
-		} else if !t.Equals(ty) {
-			// Multiple types are set to values like [42, 'foo']. Fallback to any. This would occur
-			// when using null as invalid value.
-			return AnyType{}
+		} else {
+			ty = ty.Fuse(t)
 		}
 	}
 
@@ -425,7 +436,31 @@ func guessTypeOfMatrixRow(r *MatrixRow) ExprType {
 	return ty
 }
 
-func guessTypeFromValue(s string) ExprType {
+func guessTypeOfRawYAMLValue(v RawYAMLValue) ExprType {
+	switch v := v.(type) {
+	case *RawYAMLObject:
+		m := make(map[string]ExprType, len(v.Props))
+		for k, p := range v.Props {
+			m[k] = guessTypeOfRawYAMLValue(p)
+		}
+		return &ObjectType{Props: m, StrictProps: false}
+	case *RawYAMLArray:
+		if len(v.Value) == 0 {
+			return &ArrayType{AnyType{}}
+		}
+		elem := guessTypeOfRawYAMLValue(v.Value[0])
+		for _, v := range v.Value[1:] {
+			elem = elem.Fuse(guessTypeOfRawYAMLValue(v))
+		}
+		return &ArrayType{elem}
+	case *RawYAMLString:
+		return guessTypeFromString(v.Value)
+	default:
+		panic("unreachable")
+	}
+}
+
+func guessTypeFromString(s string) ExprType {
 	if s == "true" || s == "false" {
 		return BoolType{}
 	}

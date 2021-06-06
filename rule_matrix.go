@@ -27,13 +27,7 @@ func (rule *RuleMatrix) VisitJobPre(n *Job) {
 	m := n.Strategy.Matrix
 
 	for _, row := range m.Rows {
-		seen := make(map[string]struct{}, len(row.Values))
-		for _, v := range row.Values {
-			if _, ok := seen[v.Value]; ok {
-				rule.errorf(v.Pos, "duplicate value %q in matrix %q", v.Value, row.Name.Value)
-			}
-			seen[v.Value] = struct{}{}
-		}
+		rule.checkDuplicateInRow(row)
 	}
 
 	// Note:
@@ -49,28 +43,53 @@ func (rule *RuleMatrix) VisitJobPre(n *Job) {
 	rule.checkExclude(m)
 }
 
-func (rule *RuleMatrix) checkMatrixValuesContain(sec string, name string, heystack []*String, needle *String) {
-	for _, s := range heystack {
-		if s.Value == needle.Value {
+func (rule *RuleMatrix) checkDuplicateInRow(row *MatrixRow) {
+	seen := make([]RawYAMLValue, 0, len(row.Values))
+	for _, v := range row.Values {
+		ok := true
+		for _, p := range seen {
+			if p.Equals(v) {
+				rule.errorf(
+					v.Pos(),
+					"duplicate value %s is found in matrix %q. the same value is at %s",
+					v.String(),
+					row.Name.Value,
+					p.Pos().String(),
+				)
+				ok = false
+				break
+			}
+		}
+		if ok {
+			seen = append(seen, v)
+		}
+	}
+}
+
+func (rule *RuleMatrix) checkMatrixValuesContain(sec string, name string, heystack []RawYAMLValue, needle RawYAMLValue) {
+	for _, v := range heystack {
+		if v.Equals(needle) {
 			return // found
 		}
 	}
 
 	qs := make([]string, 0, len(heystack))
-	for _, s := range heystack {
-		qs = append(qs, strconv.Quote(s.Value))
+	for _, v := range heystack {
+		qs = append(qs, v.String())
 	}
 	sort.Strings(qs)
 	rule.errorf(
-		needle.Pos,
-		"%q in %q section does not exist in matrix %q configuration. available values are %s",
-		needle.Value,
+		needle.Pos(),
+		"%s in %q section does not exist in matrix %q configuration. available values are %s",
+		needle.String(),
 		sec,
 		name,
 		strings.Join(qs, ", "),
 	)
 }
 
+// TODO: This method has bug: it does not consider values in include section. Values can be added to
+// combinations of matrix with include section. So it should be considered
 func (rule *RuleMatrix) checkExclude(m *Matrix) {
 	if len(m.Exclude) == 0 {
 		return
