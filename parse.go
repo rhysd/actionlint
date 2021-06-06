@@ -598,8 +598,6 @@ func (p *parser) parseMatrix(pos *Pos, n *yaml.Node) *Matrix {
 		}
 	}
 
-	p.checkNotEmpty("matrix", len(ret.Rows), n)
-
 	return ret
 }
 
