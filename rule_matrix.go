@@ -36,7 +36,16 @@ func (rule *RuleMatrix) VisitJobPre(n *Job) {
 		}
 	}
 
-	rule.checkInclude(m)
+	// Note:
+	// Any new value can be set in the section as new combination. It can add new value to existing
+	// column also.
+	//
+	// matrix:
+	//   os: [ubuntu-latest, macos-latest]
+	//   include:
+	//     - os: windows-latest
+	//       sh: pwsh
+
 	rule.checkExclude(m)
 }
 
@@ -60,28 +69,6 @@ func (rule *RuleMatrix) checkMatrixValuesContain(sec string, name string, heysta
 		name,
 		strings.Join(qs, ", "),
 	)
-}
-
-func (rule *RuleMatrix) checkInclude(m *Matrix) {
-	if len(m.Include) == 0 {
-		return
-	}
-
-	rows := m.Rows
-	if len(rows) == 0 {
-		// Note: 'include' section without any matrix is still useful
-		return
-	}
-
-	for _, cfg := range m.Include {
-		for name, kv := range cfg {
-			r, ok := rows[name]
-			if !ok {
-				continue
-			}
-			rule.checkMatrixValuesContain("include", name, r.Values, kv.Value)
-		}
-	}
 }
 
 func (rule *RuleMatrix) checkExclude(m *Matrix) {
