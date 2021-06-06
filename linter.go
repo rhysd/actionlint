@@ -112,16 +112,19 @@ func NewLinter(out io.Writer, opts *LinterOptions) *Linter {
 }
 
 func (l *Linter) log(args ...interface{}) {
-	if l.logLevel >= LogLevelVerbose {
-		fmt.Fprint(l.logOut, "verbose: ")
-		fmt.Fprintln(l.logOut, args...)
+	if l.logLevel < LogLevelVerbose {
+		return
 	}
+	fmt.Fprint(l.logOut, "verbose: ")
+	fmt.Fprintln(l.logOut, args...)
 }
 
-func (l *Linter) debug(args ...interface{}) {
-	if l.logLevel >= LogLevelDebug {
-		fmt.Fprintln(l.logOut, args...)
+func (l *Linter) debug(format string, args ...interface{}) {
+	if l.logLevel < LogLevelDebug {
+		return
 	}
+	format = fmt.Sprintf("[Linter] %s\n", format)
+	fmt.Fprintf(l.logOut, format, args...)
 }
 
 // LintRepoDir lints YAML workflow files and outputs the errors to given writer. It finds the nearest
@@ -269,7 +272,7 @@ func (l *Linter) Lint(path string, content []byte) ([]*Error, error) {
 
 	for _, rule := range rules {
 		errs := rule.Errs()
-		l.debug(rule.Name(), "found", len(errs), "errors")
+		l.debug("%s found %d errors", rule.Name(), len(errs))
 		all = append(all, errs...)
 	}
 
@@ -294,7 +297,7 @@ func (l *Linter) Lint(path string, content []byte) ([]*Error, error) {
 
 	if l.logLevel >= LogLevelVerbose {
 		elapsed := time.Since(start)
-		l.log("Found", len(all), "errors in", elapsed.Milliseconds(), "ms for", path)
+		l.log("Found total", len(all), "errors in", elapsed.Milliseconds(), "ms for", path)
 	}
 
 	return all, nil
