@@ -690,6 +690,11 @@ func TestParseExpressionSyntaxError(t *testing.T) {
 			input:    "([",
 			expected: "unexpected token \"[\"",
 		},
+		{
+			what:     "empty expression",
+			input:    "",
+			expected: "unexpected end of input while parsing",
+		},
 	}
 
 	for _, tc := range testCases {

@@ -523,6 +523,12 @@ func TestLexExpression(t *testing.T) {
 				"]",
 			},
 		},
+		{
+			what:   "empty expression",
+			input:  "",
+			tokens: []TokenKind{},
+			values: []string{},
+		},
 	}
 
 	for _, tc := range testCases {
@@ -593,9 +599,19 @@ func TestLexExprError(t *testing.T) {
 			want:  "unexpected EOF while lexing end of string literal",
 		},
 		{
+			what:  "broken string literal with escape",
+			input: "'foo bar''",
+			want:  "unexpected EOF while lexing end of string literal",
+		},
+		{
 			what:  "invalid char after -",
 			input: "-a",
 			want:  "unexpected character 'a' while lexing number after -",
+		},
+		{
+			what:  "EOF after -",
+			input: "-",
+			want:  "unexpected EOF while lexing number after -",
 		},
 		{
 			what:  "invalid char after 0",
@@ -613,12 +629,22 @@ func TestLexExprError(t *testing.T) {
 			want:  "unexpected character '_' while lexing exponent part of float number",
 		},
 		{
+			what:  "no number after - in exponent part",
+			input: "1.0e-",
+			want:  "unexpected EOF while lexing exponent part of float number",
+		},
+		{
 			what:  "invalid char in hex int",
 			input: "0xg",
 			want:  "unexpected character 'g' while lexing hex integer",
 		},
 		{
-			what:  "invalid char in hex int",
+			what:  "unexpected EOF after 0x",
+			input: "0x",
+			want:  "unexpected EOF while lexing hex integer",
+		},
+		{
+			what:  "invalid char at end of input",
 			input: "'in {string} it {{is}} ok'}_",
 			want:  "unexpected character '_' while lexing end marker",
 		},
@@ -671,6 +697,11 @@ func TestLexExprError(t *testing.T) {
 			what:  "unexpected EOF while lexing || operator",
 			input: "|",
 			want:  "unexpected EOF while lexing || operator",
+		},
+		{
+			what:  "empty string",
+			input: "",
+			want:  "unexpected EOF while lexing expression",
 		},
 	}
 
