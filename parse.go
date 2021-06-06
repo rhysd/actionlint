@@ -580,7 +580,7 @@ func (p *parser) parseMatrix(pos *Pos, n *yaml.Node) *Matrix {
 		case "include":
 			ret.Include = p.parseMatrixCombinations("include", kv.val)
 		case "exclude":
-			ret.Include = p.parseMatrixCombinations("exclude", kv.val)
+			ret.Exclude = p.parseMatrixCombinations("exclude", kv.val)
 		default:
 			ret.Rows[kv.key.Value] = &MatrixRow{
 				Name:   kv.key,
