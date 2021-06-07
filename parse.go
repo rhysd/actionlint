@@ -662,44 +662,49 @@ func (p *parser) parseStrategy(pos *Pos, n *yaml.Node) *Strategy {
 func (p *parser) parseContainer(sec string, pos *Pos, n *yaml.Node) *Container {
 	ret := &Container{Pos: pos}
 
-	for _, kv := range p.parseSectionMapping(sec, n, false) {
-		switch kv.key.Value {
-		case "image":
-			ret.Image = p.parseString(kv.val, false)
-		case "credentials":
-			cred := &Credentials{Pos: kv.key.Pos}
-			for _, c := range p.parseSectionMapping("credentials", kv.val, false) {
-				switch c.key.Value {
-				case "username":
-					cred.Username = p.parseString(c.val, false)
-				case "password":
-					cred.Password = p.parseString(c.val, false)
-				default:
-					p.unexpectedKey(c.key, "credentials", []string{"username", "password"})
+	if n.Kind == yaml.ScalarNode {
+		// When you only specify a container image, you can omit the image keyword.
+		ret.Image = p.parseString(n, false)
+	} else {
+		for _, kv := range p.parseSectionMapping(sec, n, false) {
+			switch kv.key.Value {
+			case "image":
+				ret.Image = p.parseString(kv.val, false)
+			case "credentials":
+				cred := &Credentials{Pos: kv.key.Pos}
+				for _, c := range p.parseSectionMapping("credentials", kv.val, false) {
+					switch c.key.Value {
+					case "username":
+						cred.Username = p.parseString(c.val, false)
+					case "password":
+						cred.Password = p.parseString(c.val, false)
+					default:
+						p.unexpectedKey(c.key, "credentials", []string{"username", "password"})
+					}
 				}
+				if cred.Username == nil || cred.Password == nil {
+					p.errorAt(kv.key.Pos, "both \"username\" and \"password\" must be specified in \"credentials\" section")
+					continue
+				}
+				ret.Credentials = cred
+			case "env":
+				ret.Env = p.parseEnv(kv.val)
+			case "ports":
+				ret.Ports = p.parseStringSequence("ports", kv.val, true, false)
+			case "volumes":
+				ret.Ports = p.parseStringSequence("volumes", kv.val, true, false)
+			case "options":
+				ret.Options = p.parseString(kv.val, true)
+			default:
+				p.unexpectedKey(kv.key, sec, []string{
+					"image",
+					"credentials",
+					"env",
+					"ports",
+					"volumes",
+					"options",
+				})
 			}
-			if cred.Username == nil || cred.Password == nil {
-				p.errorAt(kv.key.Pos, "both \"username\" and \"password\" must be specified in \"credentials\" section")
-				continue
-			}
-			ret.Credentials = cred
-		case "env":
-			ret.Env = p.parseEnv(kv.val)
-		case "ports":
-			ret.Ports = p.parseStringSequence("ports", kv.val, true, false)
-		case "volumes":
-			ret.Ports = p.parseStringSequence("volumes", kv.val, true, false)
-		case "options":
-			ret.Options = p.parseString(kv.val, true)
-		default:
-			p.unexpectedKey(kv.key, sec, []string{
-				"image",
-				"credentials",
-				"env",
-				"ports",
-				"volumes",
-				"options",
-			})
 		}
 	}
 
