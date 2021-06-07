@@ -275,10 +275,7 @@ func (ty *ObjectType) Fuse(other ExprType) ExprType {
 	case *ObjectType:
 		for n, ot := range other.Props {
 			if t, ok := ty.Props[n]; ok {
-				if !t.Assignable(ot) {
-					// Existing prop is not compatible with new prop. Fallback to any type.
-					ty.Props[n] = AnyType{}
-				}
+				ty.Props[n] = t.Fuse(ot)
 			} else {
 				ty.Props[n] = ot // New prop
 			}

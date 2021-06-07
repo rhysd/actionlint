@@ -5,7 +5,6 @@ import (
 	"testing"
 
 	"github.com/google/go-cmp/cmp"
-	"github.com/google/go-cmp/cmp/cmpopts"
 )
 
 func TestExprSemanticsCheckOK(t *testing.T) {
@@ -410,17 +409,6 @@ func TestExprSemanticsCheckOK(t *testing.T) {
 		},
 	}
 
-	opts := []cmp.Option{
-		cmpopts.IgnoreUnexported(AnyType{}),
-		cmpopts.IgnoreUnexported(NullType{}),
-		cmpopts.IgnoreUnexported(NumberType{}),
-		cmpopts.IgnoreUnexported(BoolType{}),
-		cmpopts.IgnoreUnexported(StringType{}),
-		cmpopts.IgnoreUnexported(ObjectType{}),
-		cmpopts.IgnoreUnexported(ArrayType{}),
-		cmpopts.IgnoreUnexported(ArrayDerefType{}),
-	}
-
 	for _, tc := range testCases {
 		t.Run(tc.what, func(t *testing.T) {
 			l := NewExprLexer()
@@ -453,8 +441,8 @@ func TestExprSemanticsCheckOK(t *testing.T) {
 				t.Fatal("semantics check failed:", errs)
 			}
 
-			if !cmp.Equal(tc.expected, ty, opts...) {
-				t.Fatalf("wanted: %s\nbut got:%s\ndiff:\n%s", tc.expected.String(), ty.String(), cmp.Diff(tc.expected, ty, opts...))
+			if !cmp.Equal(tc.expected, ty) {
+				t.Fatalf("wanted: %s\nbut got:%s\ndiff:\n%s", tc.expected.String(), ty.String(), cmp.Diff(tc.expected, ty))
 			}
 		})
 	}

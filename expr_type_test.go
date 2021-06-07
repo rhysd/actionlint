@@ -1,6 +1,10 @@
 package actionlint
 
-import "testing"
+import (
+	"testing"
+
+	"github.com/google/go-cmp/cmp"
+)
 
 func TestExprTypeEquals(t *testing.T) {
 	testCases := []struct {
@@ -200,6 +204,374 @@ func TestExprTypeEquals(t *testing.T) {
 			l, r = AnyType{}, tc.ty
 			if !l.Equals(r) {
 				t.Errorf("%s should equal to %s", l.String(), r.String())
+			}
+		})
+	}
+}
+
+func TestExprTypeStringize(t *testing.T) {
+	testCases := []struct {
+		what string
+		ty   ExprType
+		want string
+	}{
+		{
+			what: "any",
+			ty:   AnyType{},
+			want: "any",
+		},
+		{
+			what: "null",
+			ty:   NullType{},
+			want: "null",
+		},
+		{
+			what: "number",
+			ty:   NumberType{},
+			want: "number",
+		},
+		{
+			what: "bool",
+			ty:   BoolType{},
+			want: "bool",
+		},
+		{
+			what: "string",
+			ty:   StringType{},
+			want: "string",
+		},
+		{
+			what: "empty object",
+			ty:   NewObjectType(),
+			want: "object",
+		},
+		{
+			what: "empty strict props object",
+			ty:   NewStrictObjectType(),
+			want: "{}",
+		},
+		{
+			what: "object",
+			ty: &ObjectType{
+				Props: map[string]ExprType{
+					"foo": StringType{},
+				},
+			},
+			want: "{foo: string}",
+		},
+		{
+			what: "strict props object",
+			ty: &ObjectType{
+				Props: map[string]ExprType{
+					"foo": StringType{},
+				},
+				StrictProps: true,
+			},
+			want: "{foo: string}",
+		},
+		{
+			what: "array",
+			ty:   &ArrayType{Elem: AnyType{}},
+			want: "array<any>",
+		},
+		{
+			what: "array deref",
+			ty:   &ArrayDerefType{Elem: AnyType{}},
+			want: "array<any>",
+		},
+		{
+			what: "object",
+			ty: &ObjectType{
+				Props: map[string]ExprType{
+					"foo": &ArrayType{
+						Elem: &ObjectType{
+							Props: map[string]ExprType{
+								"bar": &ArrayType{
+									Elem: StringType{},
+								},
+							},
+						},
+					},
+				},
+			},
+			want: "{foo: array<{bar: array<string>}>}",
+		},
+	}
+
+	for _, tc := range testCases {
+		t.Run(tc.what, func(t *testing.T) {
+			have := tc.ty.String()
+			if have != tc.want {
+				t.Fatalf("wanted %q but got %q", tc.want, have)
+			}
+		})
+	}
+}
+
+func TestExprTypeFuseSimple(t *testing.T) {
+	testCases := []ExprType{
+		AnyType{},
+		NullType{},
+		NumberType{},
+		BoolType{},
+		StringType{},
+		NewObjectType(),
+		NewStrictObjectType(),
+		&ArrayType{Elem: StringType{}},
+		&ArrayDerefType{Elem: StringType{}},
+	}
+
+	for _, ty := range testCases {
+		t.Run("any/"+ty.String(), func(t *testing.T) {
+			have := ty.Fuse(AnyType{})
+			if _, ok := have.(AnyType); !ok {
+				t.Errorf("any type into %s was %s while expecting any", ty.String(), have.String())
+			}
+
+			have = (AnyType{}).Fuse(ty)
+			if _, ok := have.(AnyType); !ok {
+				t.Errorf("%s into any type was %s while expecting any", ty.String(), have.String())
+			}
+		})
+	}
+
+	for _, ty := range testCases {
+		t.Run("incompatible/"+ty.String(), func(t *testing.T) {
+			var in ExprType
+			in = NullType{}
+			if ty == (NullType{}) {
+				in = StringType{} // null is compatible with null so use string instead
+			}
+
+			have := ty.Fuse(in)
+			if _, ok := have.(AnyType); !ok {
+				t.Errorf("incompatible %s type into %s was %s while expecting any", in.String(), ty.String(), have.String())
+			}
+		})
+	}
+
+	for _, ty := range testCases {
+		t.Run("self/"+ty.String(), func(t *testing.T) {
+			have := ty.Fuse(ty)
+			if !cmp.Equal(ty, have) {
+				s := ty.String()
+				t.Errorf("%s into %s was %s while expecting %s", s, s, have.String(), s)
+			}
+		})
+	}
+}
+
+func TestExprTypeFuseComplicated(t *testing.T) {
+	testCases := []struct {
+		what string
+		ty   ExprType
+		into ExprType
+		want ExprType
+	}{
+		{
+			what: "number is compatible with string",
+			ty:   NumberType{},
+			into: StringType{},
+			want: StringType{},
+		},
+		{
+			what: "object props",
+			ty: &ObjectType{
+				Props: map[string]ExprType{
+					"foo": NumberType{},
+				},
+			},
+			into: &ObjectType{
+				Props: map[string]ExprType{
+					"bar": StringType{},
+				},
+			},
+			want: &ObjectType{
+				Props: map[string]ExprType{
+					"foo": NumberType{},
+					"bar": StringType{},
+				},
+			},
+		},
+		{
+			what: "object into strict object",
+			ty: &ObjectType{
+				Props: map[string]ExprType{
+					"foo": NumberType{},
+				},
+			},
+			into: &ObjectType{
+				Props: map[string]ExprType{
+					"bar": StringType{},
+				},
+				StrictProps: true,
+			},
+			want: &ObjectType{
+				Props: map[string]ExprType{
+					"foo": NumberType{},
+					"bar": StringType{},
+				},
+				StrictProps: false,
+			},
+		},
+		{
+			what: "compatible prop",
+			ty: &ObjectType{
+				Props: map[string]ExprType{
+					"foo": NumberType{},
+				},
+			},
+			into: &ObjectType{
+				Props: map[string]ExprType{
+					"foo": StringType{},
+				},
+			},
+			want: &ObjectType{
+				Props: map[string]ExprType{
+					"foo": StringType{},
+				},
+			},
+		},
+		{
+			what: "any prop into prop",
+			ty: &ObjectType{
+				Props: map[string]ExprType{
+					"foo": AnyType{},
+				},
+			},
+			into: &ObjectType{
+				Props: map[string]ExprType{
+					"foo": StringType{},
+				},
+			},
+			want: &ObjectType{
+				Props: map[string]ExprType{
+					"foo": AnyType{},
+				},
+			},
+		},
+		{
+			what: "prop into any prop",
+			ty: &ObjectType{
+				Props: map[string]ExprType{
+					"foo": StringType{},
+				},
+			},
+			into: &ObjectType{
+				Props: map[string]ExprType{
+					"foo": AnyType{},
+				},
+			},
+			want: &ObjectType{
+				Props: map[string]ExprType{
+					"foo": AnyType{},
+				},
+			},
+		},
+		{
+			what: "incompatible prop",
+			ty: &ObjectType{
+				Props: map[string]ExprType{
+					"foo": NullType{},
+				},
+			},
+			into: &ObjectType{
+				Props: map[string]ExprType{
+					"foo": StringType{},
+				},
+			},
+			want: &ObjectType{
+				Props: map[string]ExprType{
+					"foo": AnyType{},
+				},
+			},
+		},
+		{
+			what: "compatible array element",
+			ty: &ArrayType{
+				Elem: NumberType{},
+			},
+			into: &ArrayType{
+				Elem: StringType{},
+			},
+			want: &ArrayType{
+				Elem: StringType{},
+			},
+		},
+		{
+			what: "incompatible array element",
+			ty: &ArrayType{
+				Elem: NullType{},
+			},
+			into: &ArrayType{
+				Elem: StringType{},
+			},
+			want: &ArrayType{
+				Elem: AnyType{},
+			},
+		},
+		{
+			what: "any array element into element",
+			ty: &ArrayType{
+				Elem: AnyType{},
+			},
+			into: &ArrayType{
+				Elem: StringType{},
+			},
+			want: &ArrayType{
+				Elem: AnyType{},
+			},
+		},
+		{
+			what: "array element into any element",
+			ty: &ArrayType{
+				Elem: StringType{},
+			},
+			into: &ArrayType{
+				Elem: AnyType{},
+			},
+			want: &ArrayType{
+				Elem: AnyType{},
+			},
+		},
+		{
+			what: "array into array deref",
+			ty: &ArrayType{
+				Elem: StringType{},
+			},
+			into: &ArrayDerefType{
+				Elem: StringType{},
+			},
+			want: &ArrayDerefType{
+				Elem: StringType{},
+			},
+		},
+		{
+			what: "array deref into array",
+			ty: &ArrayDerefType{
+				Elem: StringType{},
+			},
+			into: &ArrayType{
+				Elem: StringType{},
+			},
+			want: &ArrayType{
+				Elem: StringType{},
+			},
+		},
+	}
+
+	for _, tc := range testCases {
+		t.Run(tc.what, func(t *testing.T) {
+			ty := tc.into.Fuse(tc.ty)
+			if !cmp.Equal(ty, tc.want) {
+				t.Fatalf(
+					"%s into %s was %s while expecting %s\ndiff:\n%s",
+					tc.ty.String(),
+					tc.into.String(),
+					ty.String(),
+					tc.want.String(),
+					cmp.Diff(tc.want, ty),
+				)
 			}
 		})
 	}
