@@ -66,58 +66,77 @@ func (rule *RuleMatrix) checkDuplicateInRow(row *MatrixRow) {
 	}
 }
 
-func (rule *RuleMatrix) checkMatrixValuesContain(sec string, name string, heystack []RawYAMLValue, needle RawYAMLValue) {
+func findYAMLValueInArray(heystack []RawYAMLValue, needle RawYAMLValue) bool {
 	for _, v := range heystack {
 		if v.Equals(needle) {
-			return // found
+			return true
 		}
 	}
-
-	qs := make([]string, 0, len(heystack))
-	for _, v := range heystack {
-		qs = append(qs, v.String())
-	}
-	sort.Strings(qs)
-	rule.errorf(
-		needle.Pos(),
-		"%s in %q section does not exist in matrix %q configuration. available values are %s",
-		needle.String(),
-		sec,
-		name,
-		strings.Join(qs, ", "),
-	)
+	return false
 }
 
-// TODO: This method has bug: it does not consider values in include section. Values can be added to
-// combinations of matrix with include section. So it should be considered
 func (rule *RuleMatrix) checkExclude(m *Matrix) {
 	if len(m.Exclude) == 0 {
 		return
 	}
 
 	rows := m.Rows
-	if len(rows) == 0 {
+	if len(rows) == 0 && len(m.Include) == 0 {
 		rule.error(m.Pos, "\"exclude\" section exists but no matrix variation exists")
 		return
 	}
 
-	for _, cfg := range m.Exclude {
-		for k, v := range cfg {
-			r, ok := rows[k]
+	vals := make(map[string][]RawYAMLValue, len(rows))
+	for name, row := range rows {
+		vals[name] = row.Values
+	}
+	for _, cs := range m.Include {
+		for n, c := range cs {
+			vs, ok := vals[n]
 			if !ok {
-				qs := make([]string, 0, len(rows))
-				for k := range rows {
+				vals[n] = []RawYAMLValue{c.Value}
+				continue
+			}
+			if !findYAMLValueInArray(vs, c.Value) {
+				vals[n] = append(vs, c.Value)
+			}
+		}
+	}
+
+	for _, cs := range m.Exclude {
+		for k, c := range cs {
+			vs, ok := vals[k]
+			if !ok {
+				qs := make([]string, 0, len(vals))
+				for k := range vals {
 					qs = append(qs, strconv.Quote(k))
 				}
+				sort.Strings(qs)
 				rule.errorf(
-					v.Key.Pos,
+					c.Key.Pos,
 					"%q in \"exclude\" section does not exist in matrix. available matrix configurations are %s",
 					k,
 					strings.Join(qs, ", "),
 				)
 				continue
 			}
-			rule.checkMatrixValuesContain("exclude", k, r.Values, v.Value)
+
+			if findYAMLValueInArray(vs, c.Value) {
+				continue
+			}
+
+			qs := make([]string, 0, len(vs))
+			for _, v := range vs {
+				qs = append(qs, v.String())
+			}
+			sort.Strings(qs)
+			rule.errorf(
+				c.Value.Pos(),
+				"value %s in \"exclude\" does not exist in matrix %q combinations. possible values are %s",
+				c.Value.String(),
+				k,
+				strings.Join(qs, ", "),
+			)
 		}
 	}
 }
