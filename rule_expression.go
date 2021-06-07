@@ -305,7 +305,7 @@ func (rule *RuleExpression) checkRawYAMLValue(v RawYAMLValue) {
 			rule.checkRawYAMLValue(p)
 		}
 	case *RawYAMLArray:
-		for _, v := range v.Value {
+		for _, v := range v.Elems {
 			rule.checkRawYAMLValue(v)
 		}
 	case *RawYAMLString:
@@ -445,11 +445,11 @@ func guessTypeOfRawYAMLValue(v RawYAMLValue) ExprType {
 		}
 		return &ObjectType{Props: m, StrictProps: false}
 	case *RawYAMLArray:
-		if len(v.Value) == 0 {
+		if len(v.Elems) == 0 {
 			return &ArrayType{AnyType{}}
 		}
-		elem := guessTypeOfRawYAMLValue(v.Value[0])
-		for _, v := range v.Value[1:] {
+		elem := guessTypeOfRawYAMLValue(v.Elems[0])
+		for _, v := range v.Elems[1:] {
 			elem = elem.Fuse(guessTypeOfRawYAMLValue(v))
 		}
 		return &ArrayType{elem}

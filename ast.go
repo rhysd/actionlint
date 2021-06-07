@@ -311,8 +311,9 @@ type RawYAMLValue interface {
 	String() string
 }
 
-// RawYAMLObject is raw mapping value.
+// RawYAMLObject is raw YAML mapping value.
 type RawYAMLObject struct {
+	// Props is map from property names to their values.
 	Props map[string]RawYAMLValue
 	pos   *Pos
 }
@@ -350,9 +351,10 @@ func (o *RawYAMLObject) String() string {
 	return fmt.Sprintf("{%s}", strings.Join(qs, ", "))
 }
 
-// RawYAMLArray is raw sequence value.
+// RawYAMLArray is raw YAML sequence value.
 type RawYAMLArray struct {
-	Value []RawYAMLValue
+	// Elems is list of elements of the array value.
+	Elems []RawYAMLValue
 	pos   *Pos
 }
 
@@ -365,11 +367,11 @@ func (a *RawYAMLArray) Kind() RawYAMLValueKind {
 func (a *RawYAMLArray) Equals(other RawYAMLValue) bool {
 	switch other := other.(type) {
 	case *RawYAMLArray:
-		if len(a.Value) != len(other.Value) {
+		if len(a.Elems) != len(other.Elems) {
 			return false
 		}
-		for i, e1 := range a.Value {
-			if !e1.Equals(other.Value[i]) {
+		for i, e1 := range a.Elems {
+			if !e1.Equals(other.Elems[i]) {
 				return false
 			}
 		}
@@ -385,14 +387,14 @@ func (a *RawYAMLArray) Pos() *Pos {
 }
 
 func (a *RawYAMLArray) String() string {
-	qs := make([]string, 0, len(a.Value))
-	for _, v := range a.Value {
+	qs := make([]string, 0, len(a.Elems))
+	for _, v := range a.Elems {
 		qs = append(qs, v.String())
 	}
 	return fmt.Sprintf("[%s]", strings.Join(qs, ", "))
 }
 
-// RawYAMLString is raw scalar value.
+// RawYAMLString is raw YAML scalar value.
 type RawYAMLString struct {
 	// Note: Might be useful to add kind to check the string value is int/float/bool/null.
 
