@@ -353,6 +353,15 @@ func (rule *RuleExpression) checkSemantics(src string, line, col int) (ExprType,
 		rule.exprError(err, line, col)
 	}
 
+	switch ty.(type) {
+	case *ObjectType:
+		pos := &Pos{Line: line, Col: col}
+		rule.errorf(pos, "expression in ${{ }} must not be object but got %q value", ty.String())
+	case *ArrayType, *ArrayDerefType:
+		pos := &Pos{Line: line, Col: col}
+		rule.errorf(pos, "expression in ${{ }} must not be array but got %q value", ty.String())
+	}
+
 	return ty, offset
 }
 
