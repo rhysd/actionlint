@@ -123,8 +123,10 @@ func (rule *RuleAction) checkDockerAction(uri string, exec *ExecAction) {
 	tag := ""
 	if idx := strings.IndexRune(uri[len("docker://"):], ':'); idx != -1 {
 		idx += len("docker://")
-		uri = uri[:idx]
-		tag = uri[idx+1:]
+		if idx < len(uri) {
+			tag = uri[idx+1:]
+			uri = uri[:idx]
+		}
 	}
 
 	if _, err := url.Parse(uri); err != nil {
