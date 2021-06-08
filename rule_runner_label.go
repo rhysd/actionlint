@@ -26,12 +26,14 @@ var allGitHubHostedRunnerLabels = []string{
 // https://docs.github.com/en/actions/hosting-your-own-runners/using-self-hosted-runners-in-a-workflow .
 type RuleRunnerLabel struct {
 	RuleBase
+	knownLabels []string
 }
 
 // NewRuleRunnerLabel creates new RuleRunnerLabel instance.
-func NewRuleRunnerLabel() *RuleRunnerLabel {
+func NewRuleRunnerLabel(labels []string) *RuleRunnerLabel {
 	return &RuleRunnerLabel{
-		RuleBase: RuleBase{name: "runner-label"},
+		RuleBase:    RuleBase{name: "runner-label"},
+		knownLabels: labels,
 	}
 }
 
@@ -76,12 +78,22 @@ func (rule *RuleRunnerLabel) verifyGitHubHotedRunnerLabel(label *String) {
 			return // ok
 		}
 	}
+	for _, k := range rule.knownLabels {
+		if strings.EqualFold(l, k) {
+			return // ok
+		}
+	}
 
 	qs := make([]string, 0, len(allGitHubHostedRunnerLabels))
 	for _, p := range allGitHubHostedRunnerLabels {
 		qs = append(qs, strconv.Quote(p))
 	}
-	rule.errorf(label.Pos, "label %q is unknown. available labels are %s", label.Value, strings.Join(qs, ", "))
+	rule.errorf(
+		label.Pos,
+		"label %q is unknown. available labels are %s. if the label is for self-hosted runner, set list of labels in actionlint.yaml config file",
+		label.Value,
+		strings.Join(qs, ", "),
+	)
 }
 
 func (rule *RuleRunnerLabel) tryToGetLabelsInMatrix(l string, m *Matrix) []*String {

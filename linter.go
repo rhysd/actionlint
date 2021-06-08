@@ -15,22 +15,6 @@ import (
 	"github.com/mattn/go-colorable"
 )
 
-func findNearestWorkflowsDir(from string) (string, error) {
-	d := from
-	for {
-		p := filepath.Join(d, ".github", "workflows")
-		if s, err := os.Stat(p); err == nil && s.IsDir() {
-			return p, nil
-		}
-
-		n := filepath.Dir(d)
-		if n == d {
-			return "", fmt.Errorf(".github/workflows directory was not found in any parent directories of %q", from)
-		}
-		d = n
-	}
-}
-
 // LogLevel is log level of logger used in Linter instance.
 type LogLevel int
 
@@ -69,6 +53,7 @@ type LinterOptions struct {
 
 // Linter is struct to lint workflow files.
 type Linter struct {
+	projects   *Projects
 	out        io.Writer
 	logOut     io.Writer
 	logLevel   LogLevel
@@ -101,6 +86,7 @@ func NewLinter(out io.Writer, opts *LinterOptions) *Linter {
 	}
 
 	return &Linter{
+		NewProjects(),
 		out,
 		lout,
 		l,
@@ -127,22 +113,19 @@ func (l *Linter) debug(format string, args ...interface{}) {
 	fmt.Fprintf(l.logOut, format, args...)
 }
 
-// LintRepoDir lints YAML workflow files and outputs the errors to given writer. It finds the nearest
+// LintRepository lints YAML workflow files and outputs the errors to given writer. It finds the nearest
 // `.github/workflow` directory based on `dir` and applies lint rules to all YAML worflow files
 // under the directory.
-func (l *Linter) LintRepoDir(dir string) ([]*Error, error) {
+func (l *Linter) LintRepository(dir string) ([]*Error, error) {
 	l.log("Linting all workflow files in repository:", dir)
 
-	d, err := filepath.Abs(dir)
-	if err != nil {
-		return nil, fmt.Errorf("could not get absolute path of %q: %w", dir, err)
+	proj := l.projects.At(dir)
+	if proj == nil {
+		return nil, fmt.Errorf("no project was found in any parent directories of %q. check workflows directory is put correctly in your Git repository", dir)
 	}
 
-	wd, err := findNearestWorkflowsDir(d)
-	if err != nil {
-		return nil, err
-	}
-	l.log("Detected workflows directory:", wd)
+	l.log("Detected project:", proj.RootDir())
+	wd := proj.WorkflowsDir()
 
 	files := []string{}
 	if err := filepath.Walk(wd, func(path string, info os.FileInfo, err error) error {
@@ -200,6 +183,8 @@ func (l *Linter) LintFile(path string) ([]*Error, error) {
 		return nil, fmt.Errorf("could not read %q: %w", path, err)
 	}
 
+	proj := l.projects.At(path)
+
 	// Use relative path if possible
 	if wd, err := os.Getwd(); err == nil {
 		if r, err := filepath.Rel(wd, path); err == nil {
@@ -207,19 +192,46 @@ func (l *Linter) LintFile(path string) ([]*Error, error) {
 		}
 	}
 
-	return l.Lint(path, b)
+	return l.Lint(path, b, proj)
 }
 
 // Lint lints YAML workflow file content given as byte sequence. The path parameter is used as file
 // path the content came from. Setting "<stdin>" to path parameter indicates the output came from
 // STDIN.
-func (l *Linter) Lint(path string, content []byte) ([]*Error, error) {
+// Note that only given Project instance is used for configuration. No config is automatically loaded
+// based on path parameter.
+func (l *Linter) Lint(path string, content []byte, project *Project) ([]*Error, error) {
 	var start time.Time
 	if l.logLevel >= LogLevelVerbose {
 		start = time.Now()
 	}
 
 	l.log("Linting", path)
+	if project != nil {
+		l.log("Using project at", project.RootDir())
+	}
+
+	var cfg *Config
+	// TODO:
+	// if hasDefaultConfig {
+	//   cfg = getDefaultConfig()
+	// } else if project != nil {
+	//   cfg = project.Config()
+	// }
+	if project != nil {
+		c, err := project.Config()
+		if err != nil {
+			return nil, err
+		}
+		cfg = c
+	}
+	if l.logLevel >= LogLevelDebug {
+		if cfg != nil {
+			pretty.Fprintf(l.logOut, "[Linter] Config: %# v\n", cfg)
+		} else {
+			l.debug("No config was found")
+		}
+	}
 
 	w, all := Parse(content)
 
@@ -239,11 +251,16 @@ func (l *Linter) Lint(path string, content []byte) ([]*Error, error) {
 		dbgOut = nil
 	}
 
+	var labels []string
+	if cfg != nil {
+		labels = cfg.SelfHostedRunner.Labels
+	}
+
 	rules := []Rule{
 		NewRuleMatrix(),
 		NewRuleCredentials(),
 		NewRuleShellName(),
-		NewRuleRunnerLabel(),
+		NewRuleRunnerLabel(labels),
 		NewRuleEvents(),
 		NewRuleJobNeeds(),
 		NewRuleAction(path),

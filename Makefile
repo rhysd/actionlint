@@ -1,4 +1,4 @@
-SRCS := $(filter-out %_test.go, $(wildcard *.go))
+SRCS := $(filter-out %_test.go, $(wildcard *.go cmd/actionlint/*.go))
 TESTS := $(filter %_test.go, $(wildcard *.go))
 GOTEST := $(shell command -v gotest 2>/dev/null)
 

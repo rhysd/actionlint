@@ -44,7 +44,7 @@ func lint(args []string, opts *actionlint.LinterOptions) ([]*actionlint.Error, e
 		if err != nil {
 			return nil, fmt.Errorf("could not get current working directory: %w", err)
 		}
-		return l.LintRepoDir(d)
+		return l.LintRepository(d)
 	}
 
 	if len(args) == 1 && args[0] == "-" {
@@ -52,7 +52,7 @@ func lint(args []string, opts *actionlint.LinterOptions) ([]*actionlint.Error, e
 		if err != nil {
 			return nil, fmt.Errorf("could not read stdin: %w", err)
 		}
-		return l.Lint("<stdin>", b)
+		return l.Lint("<stdin>", b, nil)
 	}
 
 	return l.LintFiles(args)
