@@ -243,6 +243,7 @@ func (l *Linter) Lint(path string, content []byte) ([]*Error, error) {
 		NewRuleMatrix(),
 		NewRuleCredentials(),
 		NewRuleShellName(),
+		NewRuleRunnerLabel(),
 		NewRuleEvents(),
 		NewRuleJobNeeds(),
 		NewRuleAction(path),
