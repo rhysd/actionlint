@@ -486,7 +486,13 @@ type EnvVar struct {
 }
 
 // Env represents set of environment variables.
-type Env map[string]*EnvVar
+type Env struct {
+	// Vars is mapping from env var name to env var value.
+	Vars map[string]*EnvVar
+	// Expression is an expression string which contains ${{ ... }}. When this value is not empty,
+	// Vars should be nil.
+	Expression *String
+}
 
 // Step is step configuration. Step runs one action or one shell script.
 // https://docs.github.com/en/actions/reference/workflow-syntax-for-github-actions#jobsjob_idsteps
@@ -499,7 +505,7 @@ type Step struct {
 	Name *String
 	Exec Exec
 	// https://docs.github.com/en/actions/reference/workflow-syntax-for-github-actions#jobsjob_idstepsenv
-	Env Env
+	Env *Env
 	// https://docs.github.com/en/actions/reference/workflow-syntax-for-github-actions#jobsjob_idstepscontinue-on-error
 	ContinueOnError *Bool
 	// https://docs.github.com/en/actions/reference/workflow-syntax-for-github-actions#jobsjob_idstepstimeout-minutes
@@ -529,7 +535,7 @@ type Container struct {
 	Credentials *Credentials
 	// Env is environment variables setup in the container.
 	// https://docs.github.com/en/actions/reference/workflow-syntax-for-github-actions#jobsjob_idcontainerenv
-	Env Env
+	Env *Env
 	// Ports is list of port number mappings of the container.
 	// https://docs.github.com/en/actions/reference/workflow-syntax-for-github-actions#jobsjob_idcontainerports
 	Ports []*String
@@ -624,7 +630,7 @@ type Job struct {
 	Outputs map[string]*Output
 	// Env is environment variables setup while running the job.
 	// https://docs.github.com/en/actions/reference/workflow-syntax-for-github-actions#jobsjob_idenv
-	Env Env
+	Env *Env
 	// Defaults is default configurations of how to run scripts.
 	Defaults *Defaults
 	// If is a condition whether this job should be run.
@@ -664,7 +670,7 @@ type Workflow struct {
 	Permissions *Permissions
 	// Env is a default set of environment variables while running this workflow.
 	// https://docs.github.com/en/actions/reference/workflow-syntax-for-github-actions#env
-	Env Env
+	Env *Env
 	// Defaults is default configuration of how to run scripts.
 	Defaults *Defaults
 	// Concurrency is concurrency configuration of entire workflow. Each jobs also can their own

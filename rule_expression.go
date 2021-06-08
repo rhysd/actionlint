@@ -55,9 +55,7 @@ func (rule *RuleExpression) VisitWorkflowPre(n *Workflow) {
 		}
 	}
 
-	for _, e := range n.Env {
-		rule.checkString(e.Value)
-	}
+	rule.checkEnv(n.Env)
 
 	rule.checkDefaults(n.Defaults)
 	rule.checkConcurrency(n.Concurrency)
@@ -102,9 +100,7 @@ func (rule *RuleExpression) VisitJobPre(n *Job) {
 
 	rule.checkConcurrency(n.Concurrency)
 
-	for _, e := range n.Env {
-		rule.checkString(e.Value)
-	}
+	rule.checkEnv(n.Env)
 
 	rule.checkDefaults(n.Defaults)
 	rule.checkIfCondition(n.If)
@@ -167,9 +163,7 @@ func (rule *RuleExpression) VisitStep(n *Step) {
 		rule.checkString(e.Args)
 	}
 
-	for _, e := range n.Env {
-		rule.checkString(e.Value)
-	}
+	rule.checkEnv(n.Env)
 
 	if n.ID != nil {
 		rule.stepsTy.Props[n.ID.Value] = &ObjectType{
@@ -183,6 +177,31 @@ func (rule *RuleExpression) VisitStep(n *Step) {
 	}
 }
 
+func (rule *RuleExpression) checkEnv(env *Env) {
+	if env == nil {
+		return
+	}
+
+	if env.Vars != nil {
+		for _, e := range env.Vars {
+			rule.checkString(e.Value)
+		}
+		return
+	}
+
+	// When form of "env: ${{...}}"
+	tys := rule.checkString(env.Expression)
+	if len(tys) != 1 {
+		// This case should be unreachable since only one ${{ }} is included is checked by parser
+		rule.errorf(env.Expression.Pos, "one ${{ }} expression should be included in \"env\" value but got %d expressions", len(tys))
+		return
+	}
+
+	if _, ok := tys[0].(*ObjectType); !ok {
+		rule.errorf(env.Expression.Pos, "type of expression at \"env\" must be object to represent key-value pairs of environment variables but found type %s", tys[0].String())
+	}
+}
+
 func (rule *RuleExpression) checkContainer(c *Container) {
 	if c == nil {
 		return
@@ -192,9 +211,7 @@ func (rule *RuleExpression) checkContainer(c *Container) {
 		rule.checkString(c.Credentials.Username)
 		rule.checkString(c.Credentials.Password)
 	}
-	for _, e := range c.Env {
-		rule.checkString(e.Value)
-	}
+	rule.checkEnv(c.Env)
 	rule.checkStrings(c.Ports)
 	rule.checkStrings(c.Volumes)
 	rule.checkString(c.Options)
@@ -351,15 +368,6 @@ func (rule *RuleExpression) checkSemantics(src string, line, col int) (ExprType,
 	ty, errs := c.Check(expr)
 	for _, err := range errs {
 		rule.exprError(err, line, col)
-	}
-
-	switch ty.(type) {
-	case *ObjectType:
-		pos := &Pos{Line: line, Col: col}
-		rule.errorf(pos, "expression in ${{ }} must not be object but got %q value", ty.String())
-	case *ArrayType, *ArrayDerefType:
-		pos := &Pos{Line: line, Col: col}
-		rule.errorf(pos, "expression in ${{ }} must not be array but got %q value", ty.String())
 	}
 
 	return ty, offset
