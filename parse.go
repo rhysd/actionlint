@@ -401,8 +401,10 @@ func (p *parser) parseEvents(pos *Pos, n *yaml.Node) []Event {
 		for _, c := range n.Content {
 			if s := p.parseString(c, false); s != nil {
 				switch s.Value {
-				case "schedule", "workflow_dispatch", "repository_dispatch":
+				case "schedule", "repository_dispatch":
 					p.errorf(c, "%q event should not be listed in sequence. Use mapping for \"on\" section and configure the event as values of the mapping", s.Value)
+				case "workflow_dispatch":
+					ret = append(ret, &WorkflowDispatchEvent{Pos: posAt(c)})
 				default:
 					ret = append(ret, &WebhookEvent{Hook: s, Pos: posAt(c)})
 				}
