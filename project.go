@@ -28,6 +28,14 @@ func parseConfig(b []byte, path string) (*Config, error) {
 	return &c, nil
 }
 
+func readConfigFile(path string) (*Config, error) {
+	b, err := ioutil.ReadFile(path)
+	if err != nil {
+		return nil, fmt.Errorf("coult not read config file %q: %w", path, err)
+	}
+	return parseConfig(b, path)
+}
+
 // Project represents one GitHub project. One Git repository corresponds to one project.
 type Project struct {
 	root   string

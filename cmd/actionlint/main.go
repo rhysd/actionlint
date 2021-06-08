@@ -37,7 +37,11 @@ func usage() {
 }
 
 func lint(args []string, opts *actionlint.LinterOptions) ([]*actionlint.Error, error) {
-	l := actionlint.NewLinter(os.Stdout, opts)
+	l, err := actionlint.NewLinter(os.Stdout, opts)
+	if err != nil {
+		return nil, err
+	}
+
 	if len(args) == 0 {
 		// Find nearest workflows directory
 		d, err := os.Getwd()
@@ -66,6 +70,7 @@ func main() {
 	flag.StringVar(&ignorePat, "ignore", "", "Regular expression matching to error messages which you want to ignore")
 	flag.StringVar(&opts.Shellcheck, "shellcheck", "shellcheck", "Command name or file path of \"shellcheck\" external command")
 	flag.BoolVar(&opts.Oneline, "oneline", false, "Use one line per one error. Useful for reading error messages from programs")
+	flag.StringVar(&opts.ConfigFilePath, "config-file", "", "File path to config file")
 	flag.BoolVar(&opts.NoColor, "no-color", false, "Disable colorful output")
 	flag.BoolVar(&opts.Verbose, "verbose", false, "Enable verbose output")
 	flag.BoolVar(&opts.Debug, "debug", false, "Enable debug output (for development)")

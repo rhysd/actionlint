@@ -46,28 +46,34 @@ type LinterOptions struct {
 	// Shellcheck is executable for running shellcheck external command. It can be command name like
 	// "shellcheck" or file path like "/path/to/shellcheck", "path/to/shellcheck". When this value
 	// is empty, shellcheck won't run to check scripts in workflow file.
-	Shellcheck    string
+	Shellcheck string
+	// IgnorePattern is regular expression to filter errors. The pattern is applied to error messages.
+	// When an error is matched, the error is ignored.
 	IgnorePattern *regexp.Regexp
+	// ConfigFilePath is a path to config file. Empty string means no config file path is given. In
+	// the case, actionlint will try to read config from .github/actionlint.yaml.
+	ConfigFilePath string
 	// More options will come here
 }
 
 // Linter is struct to lint workflow files.
 type Linter struct {
-	projects   *Projects
-	out        io.Writer
-	logOut     io.Writer
-	logLevel   LogLevel
-	noColor    bool
-	oneline    bool
-	shellcheck string
-	ignoreRe   *regexp.Regexp
+	projects      *Projects
+	out           io.Writer
+	logOut        io.Writer
+	logLevel      LogLevel
+	noColor       bool
+	oneline       bool
+	shellcheck    string
+	ignoreRe      *regexp.Regexp
+	defaultConfig *Config
 }
 
 // NewLinter creates a new Linter instance.
 // The out parameter is used to output errors from Linter instance. Set io.Discard if you don't
 // want the outputs.
 // The opts parameter is LinterOptions instance which configures behavior of linting.
-func NewLinter(out io.Writer, opts *LinterOptions) *Linter {
+func NewLinter(out io.Writer, opts *LinterOptions) (*Linter, error) {
 	l := LogLevelNone
 	if opts.Verbose {
 		l = LogLevelVerbose
@@ -85,6 +91,15 @@ func NewLinter(out io.Writer, opts *LinterOptions) *Linter {
 		lout = colorable.NewColorable(os.Stderr)
 	}
 
+	var cfg *Config
+	if opts.ConfigFilePath != "" {
+		c, err := readConfigFile(opts.ConfigFilePath)
+		if err != nil {
+			return nil, err
+		}
+		cfg = c
+	}
+
 	return &Linter{
 		NewProjects(),
 		out,
@@ -94,7 +109,8 @@ func NewLinter(out io.Writer, opts *LinterOptions) *Linter {
 		opts.Oneline,
 		opts.Shellcheck,
 		opts.IgnorePattern,
-	}
+		cfg,
+	}, nil
 }
 
 func (l *Linter) log(args ...interface{}) {
@@ -212,13 +228,9 @@ func (l *Linter) Lint(path string, content []byte, project *Project) ([]*Error, 
 	}
 
 	var cfg *Config
-	// TODO:
-	// if hasDefaultConfig {
-	//   cfg = getDefaultConfig()
-	// } else if project != nil {
-	//   cfg = project.Config()
-	// }
-	if project != nil {
+	if l.defaultConfig != nil {
+		cfg = l.defaultConfig
+	} else if project != nil {
 		c, err := project.Config()
 		if err != nil {
 			return nil, err
