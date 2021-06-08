@@ -108,12 +108,28 @@ func (rule *RuleShellcheck) getShellName(exec *ExecRun) string {
 	return rule.workflowShell
 }
 
+// Replace ${{ ... }} with spaces
+func sanitizeExpressionsInScript(src string) string {
+	for {
+		s := strings.Index(src, "${{")
+		if s == -1 {
+			return src
+		}
+		e := strings.Index(src, "}}")
+		if e == -1 || e < s {
+			return src
+		}
+		e += 2 // offset for len("}}")
+		// Note: If ${{ ... }} includes newline, line and column reported by shellcheck will be
+		// shifted.
+		src = src[:s] + strings.Repeat(" ", e-s) + src[e:]
+	}
+}
+
 func (rule *RuleShellcheck) runShellcheck(src string, sh string, pos *Pos) {
-	// Reasons to exclude the rules:
-	//
-	// SC2016: Expressions don't expand in single quotes
-	//   ${{ }} syntax can be expanded in single quotes. But shellcheck does not known that.
-	cmd := exec.Command(rule.cmd, "-f", "json", "-x", "--shell", sh, "-e", "SC2016", "-")
+	src = sanitizeExpressionsInScript(src)
+
+	cmd := exec.Command(rule.cmd, "-f", "json", "-x", "--shell", sh, "-")
 	cmd.Stderr = nil
 	rule.debug("%s: Running shellcheck: %s", pos, cmd)
 
