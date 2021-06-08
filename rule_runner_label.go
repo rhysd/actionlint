@@ -67,9 +67,11 @@ func (rule *RuleRunnerLabel) checkGitHubHostedRunner(r *GitHubHostedRunner, m *M
 	rule.verifyGitHubHotedRunnerLabel(r.Label)
 }
 
-func (rule *RuleRunnerLabel) verifyGitHubHotedRunnerLabel(l *String) {
+func (rule *RuleRunnerLabel) verifyGitHubHotedRunnerLabel(label *String) {
+	l := strings.TrimSpace(label.Value)
 	for _, p := range allGitHubHostedRunnerLabels {
-		if l.Value == p {
+		// use EqualFold for ignoring case e.g. both macos-latest and macOS-latest should be accepted
+		if strings.EqualFold(l, p) {
 			return // ok
 		}
 	}
@@ -78,7 +80,7 @@ func (rule *RuleRunnerLabel) verifyGitHubHotedRunnerLabel(l *String) {
 	for _, p := range allGitHubHostedRunnerLabels {
 		qs = append(qs, strconv.Quote(p))
 	}
-	rule.errorf(l.Pos, "label %q is unknown. available labels are %s", l.Value, strings.Join(qs, ", "))
+	rule.errorf(label.Pos, "label %q is unknown. available labels are %s", label.Value, strings.Join(qs, ", "))
 }
 
 func (rule *RuleRunnerLabel) tryToGetLabelsInMatrix(l string, m *Matrix) []*String {
