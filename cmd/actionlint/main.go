@@ -1,6 +1,7 @@
 package main
 
 import (
+	"errors"
 	"flag"
 	"fmt"
 	"io/ioutil"
@@ -36,6 +37,14 @@ func usage() {
 	flag.PrintDefaults()
 }
 
+func getwd() (string, error) {
+	d, err := os.Getwd()
+	if err != nil {
+		return "", fmt.Errorf("could not get current working directory: %w", err)
+	}
+	return d, nil
+}
+
 func lint(args []string, opts *actionlint.LinterOptions) ([]*actionlint.Error, error) {
 	l, err := actionlint.NewLinter(os.Stdout, opts)
 	if err != nil {
@@ -44,9 +53,9 @@ func lint(args []string, opts *actionlint.LinterOptions) ([]*actionlint.Error, e
 
 	if len(args) == 0 {
 		// Find nearest workflows directory
-		d, err := os.Getwd()
+		d, err := getwd()
 		if err != nil {
-			return nil, fmt.Errorf("could not get current working directory: %w", err)
+			return nil, err
 		}
 		return l.LintRepository(d)
 	}
@@ -62,15 +71,29 @@ func lint(args []string, opts *actionlint.LinterOptions) ([]*actionlint.Error, e
 	return l.LintFiles(args)
 }
 
+func generateDefaultConfig() error {
+	wd, err := getwd()
+	if err != nil {
+		return err
+	}
+	proj := actionlint.FindProject(wd)
+	if proj == nil {
+		return errors.New("project is not found. check current project is initialized as Git repository and \".github/workflows\" directory exists")
+	}
+	return proj.WriteDefaultConfig()
+}
+
 func main() {
 	var ver bool
 	var opts actionlint.LinterOptions
 	var ignorePat string
+	var generateConfig bool
 
 	flag.StringVar(&ignorePat, "ignore", "", "Regular expression matching to error messages which you want to ignore")
 	flag.StringVar(&opts.Shellcheck, "shellcheck", "shellcheck", "Command name or file path of \"shellcheck\" external command")
 	flag.BoolVar(&opts.Oneline, "oneline", false, "Use one line per one error. Useful for reading error messages from programs")
 	flag.StringVar(&opts.ConfigFilePath, "config-file", "", "File path to config file")
+	flag.BoolVar(&generateConfig, "generate-config", false, "Generate default config file at .github/actionlint.yaml in current project")
 	flag.BoolVar(&opts.NoColor, "no-color", false, "Disable colorful output")
 	flag.BoolVar(&opts.Verbose, "verbose", false, "Enable verbose output")
 	flag.BoolVar(&opts.Debug, "debug", false, "Enable debug output (for development)")
@@ -80,6 +103,14 @@ func main() {
 
 	if ver {
 		fmt.Println(version)
+		return
+	}
+
+	if generateConfig {
+		if err := generateDefaultConfig(); err != nil {
+			fmt.Fprintln(os.Stderr)
+			os.Exit(1)
+		}
 		return
 	}
 

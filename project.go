@@ -6,35 +6,7 @@ import (
 	"os"
 	"path/filepath"
 	"strings"
-
-	"gopkg.in/yaml.v3"
 )
-
-// Config is configuration of actionlint. This struct instance is parsed from "actionlint.yaml"
-// file usually put in ".github" directory.
-type Config struct {
-	// SelfHostedRunner is configuration for self-hosted runner.
-	SelfHostedRunner struct {
-		// Labels is label names for self-hosted runner.
-		Labels []string `yaml:"labels"`
-	} `yaml:"self-hosted-runner"`
-}
-
-func parseConfig(b []byte, path string) (*Config, error) {
-	var c Config
-	if err := yaml.Unmarshal(b, &c); err != nil {
-		return nil, fmt.Errorf("could not parse config file %q: %w", path, err)
-	}
-	return &c, nil
-}
-
-func readConfigFile(path string) (*Config, error) {
-	b, err := ioutil.ReadFile(path)
-	if err != nil {
-		return nil, fmt.Errorf("coult not read config file %q: %w", path, err)
-	}
-	return parseConfig(b, path)
-}
 
 // Project represents one GitHub project. One Git repository corresponds to one project.
 type Project struct {
@@ -49,7 +21,9 @@ func absPath(path string) string {
 	return path
 }
 
-func findProject(path string) *Project {
+// FindProject creates new Project instance by finding a project which the given path belongs to.
+// A project must be a Git repository and have ".github/workflows" directory.
+func FindProject(path string) *Project {
 	d := absPath(path)
 	for {
 		w := filepath.Join(d, ".github", "workflows")
@@ -110,6 +84,15 @@ func (p *Project) Config() (*Config, error) {
 	return nil, nil // not found
 }
 
+// WriteDefaultConfig writes default config file at ".github/actionlint.yaml" in the repository.
+func (p *Project) WriteDefaultConfig() error {
+	path := filepath.Join(p.RootDir(), ".github", "actionlint.yaml")
+	if _, err := os.Stat(path); err == nil {
+		return fmt.Errorf("config file already exists at %q", path)
+	}
+	return writeDefaultConfigFile(path)
+}
+
 // Projects represents set of projects. It caches Project instances which was created previously
 // and reuses them.
 type Projects struct {
@@ -129,7 +112,7 @@ func (ps *Projects) At(path string) *Project {
 		}
 	}
 
-	p := findProject(path)
+	p := FindProject(path)
 	if p != nil {
 		ps.known = append(ps.known, p)
 	}
