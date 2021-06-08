@@ -15,6 +15,7 @@ var allGitHubHostedRunnerLabels = []string{
 	"ubuntu-16.04",
 	"macos-latest",
 	"macos-11",
+	"macos-11.0",
 	"macos-10.15",
 }
 
