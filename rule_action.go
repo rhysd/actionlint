@@ -3,7 +3,6 @@ package actionlint
 import (
 	"io/ioutil"
 	"net/url"
-	"os"
 	"path/filepath"
 	"sort"
 	"strconv"
@@ -38,10 +37,10 @@ func (s *ActionSpec) describeInputs() string {
 }
 
 // NewRuleAction creates new RuleAction instance.
-func NewRuleAction(file string) *RuleAction {
+func NewRuleAction(repoDir string) *RuleAction {
 	return &RuleAction{
 		RuleBase: RuleBase{name: "action"},
-		repoPath: findRepositoryRoot(file),
+		repoPath: repoDir,
 	}
 }
 
@@ -201,29 +200,4 @@ func (rule *RuleAction) readActionSpecFile(dir string, pos *Pos) []byte {
 	}
 	rule.errorf(pos, "Neither action.yaml nor action.yml is found in %q", dir)
 	return nil
-}
-
-func findRepositoryRoot(file string) string {
-	if file == "<stdin>" {
-		return ""
-	}
-
-	if p, err := filepath.Abs(file); err == nil {
-		file = p
-	}
-
-	d := filepath.Dir(file)
-	for {
-		// Note: .git might be a file
-		if _, err := os.Stat(filepath.Join(d, ".git")); err == nil {
-			return d
-		}
-
-		p := filepath.Dir(d)
-		if p == d {
-			return "" // Not found
-		}
-
-		d = p
-	}
 }

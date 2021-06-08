@@ -268,6 +268,11 @@ func (l *Linter) Lint(path string, content []byte, project *Project) ([]*Error, 
 		labels = cfg.SelfHostedRunner.Labels
 	}
 
+	var root string
+	if project != nil {
+		root = project.RootDir()
+	}
+
 	rules := []Rule{
 		NewRuleMatrix(),
 		NewRuleCredentials(),
@@ -275,7 +280,7 @@ func (l *Linter) Lint(path string, content []byte, project *Project) ([]*Error, 
 		NewRuleRunnerLabel(labels),
 		NewRuleEvents(),
 		NewRuleJobNeeds(),
-		NewRuleAction(path),
+		NewRuleAction(root),
 		NewRuleEnvVar(),
 		NewRuleExpression(),
 	}
