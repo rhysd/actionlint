@@ -736,7 +736,7 @@ func (p *parser) parseStep(n *yaml.Node) *Step {
 			} else if e, ok := ret.Exec.(*ExecAction); ok {
 				exec = e
 			} else {
-				p.errorfAt(kv.key.Pos, "this step is for running shell command, but contains %q key which is used for running action", kv.key.Value)
+				p.errorfAt(kv.key.Pos, "this step is for running shell command since it contains at least one of \"run\", \"working-directory\", \"shell\" keys, but also contains %q key which is used for running action", kv.key.Value)
 				continue
 			}
 			if kv.key.Value == "uses" {
@@ -766,7 +766,7 @@ func (p *parser) parseStep(n *yaml.Node) *Step {
 			} else if e, ok := ret.Exec.(*ExecRun); ok {
 				exec = e
 			} else {
-				p.errorfAt(kv.key.Pos, "this step is for running action, but contains %q key which is used for running shell command", kv.key.Value)
+				p.errorfAt(kv.key.Pos, "this step is for running action since it contains at least one of \"uses\", \"with\" keys, but also contains %q key which is used for running shell command", kv.key.Value)
 				continue
 			}
 			switch kv.key.Value {
