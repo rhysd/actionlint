@@ -144,10 +144,14 @@ func (rule *RuleRunnerLabel) tryToGetLabelsInMatrix(l string, m *Matrix) []*Stri
 		}
 	}
 
-	for _, inc := range m.Include {
-		if c, ok := inc[prop]; ok {
-			if s, ok := c.Value.(*RawYAMLString); ok {
-				labels = append(labels, &String{s.Value, s.Pos()})
+	if m.Include != nil {
+		for _, combi := range m.Include.Combinations {
+			if combi.Assigns != nil {
+				if assign, ok := combi.Assigns[prop]; ok {
+					if s, ok := assign.Value.(*RawYAMLString); ok {
+						labels = append(labels, &String{s.Value, s.Pos()})
+					}
+				}
 			}
 		}
 	}

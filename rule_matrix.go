@@ -76,12 +76,12 @@ func findYAMLValueInArray(heystack []RawYAMLValue, needle RawYAMLValue) bool {
 }
 
 func (rule *RuleMatrix) checkExclude(m *Matrix) {
-	if len(m.Exclude) == 0 {
+	if m.Exclude == nil || len(m.Exclude.Combinations) == 0 || (m.Include != nil && m.Include.ContainsExpression()) {
 		return
 	}
 
 	rows := m.Rows
-	if len(rows) == 0 && len(m.Include) == 0 {
+	if len(rows) == 0 && (m.Include == nil || len(m.Include.Combinations) == 0) {
 		rule.error(m.Pos, "\"exclude\" section exists but no matrix variation exists")
 		return
 	}
@@ -90,21 +90,23 @@ func (rule *RuleMatrix) checkExclude(m *Matrix) {
 	for name, row := range rows {
 		vals[name] = row.Values
 	}
-	for _, cs := range m.Include {
-		for n, c := range cs {
-			vs, ok := vals[n]
-			if !ok {
-				vals[n] = []RawYAMLValue{c.Value}
-				continue
-			}
-			if !findYAMLValueInArray(vs, c.Value) {
-				vals[n] = append(vs, c.Value)
+	if m.Include != nil {
+		for _, combi := range m.Include.Combinations {
+			for n, a := range combi.Assigns {
+				vs, ok := vals[n]
+				if !ok {
+					vals[n] = []RawYAMLValue{a.Value}
+					continue
+				}
+				if !findYAMLValueInArray(vs, a.Value) {
+					vals[n] = append(vs, a.Value)
+				}
 			}
 		}
 	}
 
-	for _, cs := range m.Exclude {
-		for k, c := range cs {
+	for _, combi := range m.Exclude.Combinations {
+		for k, a := range combi.Assigns {
 			vs, ok := vals[k]
 			if !ok {
 				qs := make([]string, 0, len(vals))
@@ -113,7 +115,7 @@ func (rule *RuleMatrix) checkExclude(m *Matrix) {
 				}
 				sort.Strings(qs)
 				rule.errorf(
-					c.Key.Pos,
+					a.Key.Pos,
 					"%q in \"exclude\" section does not exist in matrix. available matrix configurations are %s",
 					k,
 					strings.Join(qs, ", "),
@@ -121,7 +123,7 @@ func (rule *RuleMatrix) checkExclude(m *Matrix) {
 				continue
 			}
 
-			if findYAMLValueInArray(vs, c.Value) {
+			if findYAMLValueInArray(vs, a.Value) {
 				continue
 			}
 
@@ -131,9 +133,9 @@ func (rule *RuleMatrix) checkExclude(m *Matrix) {
 			}
 			sort.Strings(qs)
 			rule.errorf(
-				c.Value.Pos(),
+				a.Value.Pos(),
 				"value %s in \"exclude\" does not exist in matrix %q combinations. possible values are %s",
-				c.Value.String(),
+				a.Value.String(),
 				k,
 				strings.Join(qs, ", "),
 			)

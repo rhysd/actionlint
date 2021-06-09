@@ -1,6 +1,7 @@
 package actionlint
 
 import (
+	"fmt"
 	"strconv"
 	"strings"
 )
@@ -79,7 +80,7 @@ func (rule *RuleExpression) VisitJobPre(n *Job) {
 	//           os: [ubuntu-latest, macos-latest, windows-latest]
 	//       runs-on: ${{ matrix.os }}
 	if n.Strategy != nil && n.Strategy.Matrix != nil {
-		rule.matrixTy = guessTypeOfMatrix(n.Strategy.Matrix)
+		rule.matrixTy = rule.guessTypeOfMatrix(n.Strategy.Matrix)
 	}
 	rule.needsTy = rule.calcNeedsType(n)
 
@@ -111,16 +112,8 @@ func (rule *RuleExpression) VisitJobPre(n *Job) {
 				rule.checkRawYAMLValue(v)
 			}
 		}
-		for _, cs := range n.Strategy.Matrix.Include {
-			for _, c := range cs {
-				rule.checkRawYAMLValue(c.Value)
-			}
-		}
-		for _, cs := range n.Strategy.Matrix.Exclude {
-			for _, c := range cs {
-				rule.checkRawYAMLValue(c.Value)
-			}
-		}
+		rule.checkMatrixCombinations(n.Strategy.Matrix.Include, "include")
+		rule.checkMatrixCombinations(n.Strategy.Matrix.Exclude, "exclude")
 	}
 
 	rule.checkContainer(n.Container)
@@ -177,6 +170,83 @@ func (rule *RuleExpression) VisitStep(n *Step) {
 	}
 }
 
+func (rule *RuleExpression) checkOneExpression(s *String, what string) ExprType {
+	if s == nil {
+		return nil
+	}
+	tys := rule.checkString(s)
+	if len(tys) != 1 {
+		// This case should be unreachable since only one ${{ }} is included is checked by parser
+		rule.errorf(s.Pos, "one ${{ }} expression should be included in %q value but got %d expressions", what, len(tys))
+		return nil
+	}
+	return tys[0]
+}
+
+func (rule *RuleExpression) checkObjectTy(ty ExprType, pos *Pos, what string) ExprType {
+	if ty == nil {
+		return nil
+	}
+	switch ty.(type) {
+	case *ObjectType, AnyType:
+		return ty
+	default:
+		rule.errorf(pos, "type of expression at %q must be object but found type %s", what, ty.String())
+		return nil
+	}
+}
+
+func (rule *RuleExpression) checkArrayTy(ty ExprType, pos *Pos, what string) ExprType {
+	if ty == nil {
+		return nil
+	}
+	switch ty.(type) {
+	case *ArrayType, *ArrayDerefType, AnyType:
+		return ty
+	default:
+		rule.errorf(pos, "type of expression at %q must be array but found type %s", what, ty.String())
+		return nil
+	}
+}
+
+func (rule *RuleExpression) checkObjectExpression(s *String, what string) ExprType {
+	return rule.checkObjectTy(rule.checkOneExpression(s, what), s.Pos, what)
+}
+
+func (rule *RuleExpression) checkArrayExpression(s *String, what string) ExprType {
+	return rule.checkArrayTy(rule.checkOneExpression(s, what), s.Pos, what)
+}
+
+func (rule *RuleExpression) checkMatrixCombinations(cs *MatrixCombinations, what string) {
+	if cs == nil {
+		return
+	}
+
+	if cs.Expression != nil {
+		ty := rule.checkArrayExpression(cs.Expression, what)
+		var elem ExprType
+		switch ty := ty.(type) {
+		case *ArrayType:
+			elem = ty.Elem
+		case *ArrayDerefType:
+			elem = ty.Elem
+		}
+		rule.checkObjectTy(elem, cs.Expression.Pos, what)
+		return
+	}
+
+	what = fmt.Sprintf("matrix combination at element of %s section", what)
+	for _, combi := range cs.Combinations {
+		if combi.Expression != nil {
+			rule.checkObjectExpression(combi.Expression, what)
+			continue
+		}
+		for _, a := range combi.Assigns {
+			rule.checkRawYAMLValue(a.Value)
+		}
+	}
+}
+
 func (rule *RuleExpression) checkEnv(env *Env) {
 	if env == nil {
 		return
@@ -190,16 +260,7 @@ func (rule *RuleExpression) checkEnv(env *Env) {
 	}
 
 	// When form of "env: ${{...}}"
-	tys := rule.checkString(env.Expression)
-	if len(tys) != 1 {
-		// This case should be unreachable since only one ${{ }} is included is checked by parser
-		rule.errorf(env.Expression.Pos, "one ${{ }} expression should be included in \"env\" value but got %d expressions", len(tys))
-		return
-	}
-
-	if _, ok := tys[0].(*ObjectType); !ok {
-		rule.errorf(env.Expression.Pos, "type of expression at \"env\" must be object to represent key-value pairs of environment variables but found type %s", tys[0].String())
-	}
+	rule.checkObjectExpression(env.Expression, "env")
 }
 
 func (rule *RuleExpression) checkContainer(c *Container) {
@@ -411,17 +472,51 @@ func (rule *RuleExpression) populateDependantNeedsTypes(out *ObjectType, job *Jo
 	}
 }
 
-func guessTypeOfMatrix(m *Matrix) *ObjectType {
-	o := NewObjectType()
-	o.StrictProps = true
+func (rule *RuleExpression) guessTypeOfMatrix(m *Matrix) *ObjectType {
+	o := NewStrictObjectType()
 
 	for n, r := range m.Rows {
 		o.Props[n] = guessTypeOfMatrixRow(r)
 	}
 
-	for _, inc := range m.Include {
-		for n, kv := range inc {
-			ty := guessTypeOfRawYAMLValue(kv.Value)
+	// Note: Type check in 'include' section duplicates with checkMatrixCombinations() method
+
+	if m.Include == nil {
+		return o
+	}
+
+	if m.Include.Expression != nil {
+		ty := rule.checkOneExpression(m.Include.Expression, "include")
+		var elem ExprType
+		switch ty := ty.(type) {
+		case *ArrayType:
+			elem = ty.Elem
+		case *ArrayDerefType:
+			elem = ty.Elem
+		}
+		if elem == nil {
+			return NewObjectType()
+		}
+		ret, ok := o.Fuse(elem).(*ObjectType)
+		if !ok {
+			return NewObjectType()
+		}
+		return ret
+	}
+
+	for _, combi := range m.Include.Combinations {
+		if combi.Expression != nil {
+			ty := rule.checkOneExpression(m.Include.Expression, "matrix combination at element of include section")
+			if fused, ok := o.Fuse(ty).(*ObjectType); ok {
+				o = fused
+			} else {
+				o.StrictProps = false
+			}
+			continue
+		}
+
+		for n, assign := range combi.Assigns {
+			ty := guessTypeOfRawYAMLValue(assign.Value)
 			if t, ok := o.Props[n]; ok {
 				// When the combination exists in 'matrix' section, fuse type into existing one
 				ty = t.Fuse(ty)

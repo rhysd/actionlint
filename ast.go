@@ -437,13 +437,43 @@ type MatrixRow struct {
 	Values []RawYAMLValue
 }
 
-// MatrixCombination represents which value should be taken in the row of the matrix.
+// MatrixAssign represents which value should be taken in the row of the matrix.
 // https://docs.github.com/en/actions/reference/workflow-syntax-for-github-actions#jobsjob_idstrategymatrix
-type MatrixCombination struct {
+type MatrixAssign struct {
 	// Key is a name of the matrix value.
 	Key *String
 	// Value is the value selected from values in row.
 	Value RawYAMLValue
+}
+
+// MatrixCombination is combination of matrix value assignments to define one of matrix variations.
+// https://docs.github.com/en/actions/reference/workflow-syntax-for-github-actions#jobsjob_idstrategymatrix
+type MatrixCombination struct {
+	Assigns map[string]*MatrixAssign
+	// Expression is a string when expression syntax ${{ }} is used for this section.
+	Expression *String
+}
+
+// MatrixCombinations is list of combinations of matrix assignments used for 'include' and 'exclude'
+// sections.
+// https://docs.github.com/en/actions/reference/workflow-syntax-for-github-actions#jobsjob_idstrategymatrix
+type MatrixCombinations struct {
+	Combinations []*MatrixCombination
+	// Expression is a string when expression syntax ${{ }} is used for this section.
+	Expression *String
+}
+
+// ContainsExpression returns if the combinations section includes at least one expression node.
+func (cs *MatrixCombinations) ContainsExpression() bool {
+	if cs.Expression != nil {
+		return true
+	}
+	for _, c := range cs.Combinations {
+		if c.Expression != nil {
+			return true
+		}
+	}
+	return false
 }
 
 // Matrix is matrix variations configuration of a job.
@@ -453,11 +483,11 @@ type Matrix struct {
 	Rows map[string]*MatrixRow
 	// Include is list of combinations of matrix values and additional values on running matrix combinations.
 	// https://docs.github.com/en/actions/reference/workflow-syntax-for-github-actions#example-including-additional-values-into-combinations
-	Include []map[string]*MatrixCombination
+	Include *MatrixCombinations
 	// Exclude is list of combinations of matrix values which should not be run. Combinations in
 	// this list will be removed from combinations of matrix to run.
 	// https://docs.github.com/en/actions/reference/workflow-syntax-for-github-actions#example-excluding-configurations-from-a-matrix
-	Exclude []map[string]*MatrixCombination
+	Exclude *MatrixCombinations
 	// Pos is a position in source.
 	Pos *Pos
 }

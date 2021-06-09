@@ -108,17 +108,17 @@ func (p *parser) missingExpression(n *yaml.Node, expecting string) {
 	p.errorf(n, "expecting a string with ${{...}} expression or %s, but found plain text node", expecting)
 }
 
-func (p *parser) checkExpression(n *yaml.Node, expecting string) bool {
+func (p *parser) parseExpression(n *yaml.Node, expecting string) *String {
 	s := strings.TrimSpace(n.Value)
 	if !strings.HasPrefix(s, "${{") || !strings.HasSuffix(s, "}}") {
 		p.missingExpression(n, expecting)
-		return false
+		return nil
 	}
 	if strings.Count(n.Value, "${{") != 1 || strings.Count(n.Value, "}}") != 1 {
 		p.missingExpression(n, expecting)
-		return false
+		return nil
 	}
-	return true
+	return &String{n.Value, posAt(n)}
 }
 
 func (p *parser) parseString(n *yaml.Node, allowEmpty bool) *String {
@@ -467,11 +467,8 @@ func (p *parser) parsePermissions(pos *Pos, n *yaml.Node) *Permissions {
 // https://docs.github.com/en/actions/reference/workflow-syntax-for-github-actions#env
 func (p *parser) parseEnv(n *yaml.Node) *Env {
 	if n.Kind == yaml.ScalarNode {
-		if !p.checkExpression(n, "mapping value for \"env\" section") {
-			return nil
-		}
 		return &Env{
-			Expression: &String{n.Value, posAt(n)},
+			Expression: p.parseExpression(n, "mapping value for \"env\" section"),
 		}
 	}
 
@@ -586,27 +583,6 @@ func (p *parser) parseOutputs(n *yaml.Node) map[string]*Output {
 	return ret
 }
 
-// https://docs.github.com/en/actions/reference/workflow-syntax-for-github-actions#example-including-additional-values-into-combinations
-// https://docs.github.com/en/actions/reference/workflow-syntax-for-github-actions#example-excluding-configurations-from-a-matrix
-func (p *parser) parseMatrixCombinations(sec string, n *yaml.Node) []map[string]*MatrixCombination {
-	if ok := p.checkSequence(sec, n, false); !ok {
-		return nil
-	}
-
-	ret := make([]map[string]*MatrixCombination, 0, len(n.Content))
-	for _, c := range n.Content {
-		kvs := p.parseMapping(fmt.Sprintf("element in %q section", sec), c, false)
-		elem := make(map[string]*MatrixCombination, len(kvs))
-		for _, kv := range kvs {
-			if v := p.parseRawYAMLValue(kv.val); v != nil {
-				elem[kv.key.Value] = &MatrixCombination{kv.key, v}
-			}
-		}
-		ret = append(ret, elem)
-	}
-	return ret
-}
-
 func (p *parser) parseRawYAMLValue(n *yaml.Node) RawYAMLValue {
 	switch n.Kind {
 	case yaml.ScalarNode:
@@ -632,6 +608,40 @@ func (p *parser) parseRawYAMLValue(n *yaml.Node) RawYAMLValue {
 		p.errorf(n, "unexpected %s node on parsing value in matrix row", nodeKindName(n.Kind))
 		return nil
 	}
+}
+
+// https://docs.github.com/en/actions/reference/workflow-syntax-for-github-actions#example-including-additional-values-into-combinations
+// https://docs.github.com/en/actions/reference/workflow-syntax-for-github-actions#example-excluding-configurations-from-a-matrix
+func (p *parser) parseMatrixCombinations(sec string, n *yaml.Node) *MatrixCombinations {
+	if n.Kind == yaml.ScalarNode {
+		return &MatrixCombinations{
+			Expression: p.parseExpression(n, "array of matrix combination"),
+		}
+	}
+
+	if ok := p.checkSequence(sec, n, false); !ok {
+		return nil
+	}
+
+	ret := make([]*MatrixCombination, 0, len(n.Content))
+	for _, c := range n.Content {
+		if c.Kind == yaml.ScalarNode {
+			if e := p.parseExpression(c, "mapping of matrix combination"); e != nil {
+				ret = append(ret, &MatrixCombination{Expression: e})
+			}
+			continue
+		}
+
+		kvs := p.parseMapping(fmt.Sprintf("element in %q section", sec), c, false)
+		assigns := make(map[string]*MatrixAssign, len(kvs))
+		for _, kv := range kvs {
+			if v := p.parseRawYAMLValue(kv.val); v != nil {
+				assigns[kv.key.Value] = &MatrixAssign{kv.key, v}
+			}
+		}
+		ret = append(ret, &MatrixCombination{Assigns: assigns})
+	}
+	return &MatrixCombinations{Combinations: ret}
 }
 
 // https://docs.github.com/en/actions/reference/workflow-syntax-for-github-actions#jobsjob_idstrategymatrix
