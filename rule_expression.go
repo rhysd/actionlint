@@ -177,30 +177,28 @@ func (rule *RuleExpression) VisitStep(n *Step) {
 	}
 }
 
-func (rule *RuleExpression) checkEnv(env Env) {
-	switch env := env.(type) {
-	case EnvVars:
-		for _, e := range env {
+func (rule *RuleExpression) checkEnv(env *Env) {
+	if env == nil {
+		return
+	}
+
+	if env.Vars != nil {
+		for _, e := range env.Vars {
 			rule.checkString(e.Value)
 		}
-	case *String:
-		// When form of "env: ${{...}}"
-		if env == nil {
-			return
-		}
-		tys := rule.checkString(env)
-		if len(tys) != 1 {
-			// This case should be unreachable since only one ${{ }} is included is checked by parser
-			rule.errorf(env.Pos, "one ${{ }} expression should be included in \"env\" value but got %d expressions", len(tys))
-			return
-		}
+		return
+	}
 
-		switch tys[0].(type) {
-		case *ObjectType, AnyType:
-			// OK
-		default:
-			rule.errorf(env.Pos, "type of expression at \"env\" must be object to represent key-value pairs of environment variables but found type %s", tys[0].String())
-		}
+	// When form of "env: ${{...}}"
+	tys := rule.checkString(env.Expression)
+	if len(tys) != 1 {
+		// This case should be unreachable since only one ${{ }} is included is checked by parser
+		rule.errorf(env.Expression.Pos, "one ${{ }} expression should be included in \"env\" value but got %d expressions", len(tys))
+		return
+	}
+
+	if _, ok := tys[0].(*ObjectType); !ok {
+		rule.errorf(env.Expression.Pos, "type of expression at \"env\" must be object to represent key-value pairs of environment variables but found type %s", tys[0].String())
 	}
 }
 

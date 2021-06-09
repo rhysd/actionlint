@@ -35,12 +35,11 @@ func (rule *RuleEnvVar) VisitWorkflowPre(n *Workflow) {
 	rule.checkEnv(n.Env)
 }
 
-func (rule *RuleEnvVar) checkEnv(env Env) {
-	vars, ok := env.(EnvVars)
-	if !ok {
+func (rule *RuleEnvVar) checkEnv(env *Env) {
+	if env == nil {
 		return
 	}
-	for _, v := range vars {
+	for _, v := range env.Vars {
 		if strings.ContainsAny(v.Name.Value, "&=- 	") {
 			rule.errorf(
 				v.Name.Pos,
