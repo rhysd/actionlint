@@ -108,17 +108,17 @@ func (p *parser) missingExpression(n *yaml.Node, expecting string) {
 	p.errorf(n, "expecting a string with ${{...}} expression or %s, but found plain text node", expecting)
 }
 
-func (p *parser) checkExpression(n *yaml.Node, expecting string) bool {
+func (p *parser) parseExpression(n *yaml.Node, expecting string) *String {
 	s := strings.TrimSpace(n.Value)
 	if !strings.HasPrefix(s, "${{") || !strings.HasSuffix(s, "}}") {
 		p.missingExpression(n, expecting)
-		return false
+		return nil
 	}
 	if strings.Count(n.Value, "${{") != 1 || strings.Count(n.Value, "}}") != 1 {
 		p.missingExpression(n, expecting)
-		return false
+		return nil
 	}
-	return true
+	return &String{n.Value, posAt(n)}
 }
 
 func (p *parser) parseString(n *yaml.Node, allowEmpty bool) *String {
@@ -465,14 +465,9 @@ func (p *parser) parsePermissions(pos *Pos, n *yaml.Node) *Permissions {
 }
 
 // https://docs.github.com/en/actions/reference/workflow-syntax-for-github-actions#env
-func (p *parser) parseEnv(n *yaml.Node) *Env {
+func (p *parser) parseEnv(n *yaml.Node) Env {
 	if n.Kind == yaml.ScalarNode {
-		if !p.checkExpression(n, "mapping value for \"env\" section") {
-			return nil
-		}
-		return &Env{
-			Expression: &String{n.Value, posAt(n)},
-		}
+		return p.parseExpression(n, "mapping value for \"env\" section")
 	}
 
 	m := p.parseMapping("env", n, false)
@@ -485,7 +480,7 @@ func (p *parser) parseEnv(n *yaml.Node) *Env {
 		}
 	}
 
-	return &Env{Vars: vars}
+	return EnvVars(vars)
 }
 
 // https://docs.github.com/en/actions/reference/workflow-syntax-for-github-actions#defaults
