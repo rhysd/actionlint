@@ -1,7 +1,6 @@
 package actionlint
 
 import (
-	"fmt"
 	"io/ioutil"
 	"os"
 	"path/filepath"
@@ -21,9 +20,9 @@ func absPath(path string) string {
 	return path
 }
 
-// FindProject creates new Project instance by finding a project which the given path belongs to.
+// findProject creates new Project instance by finding a project which the given path belongs to.
 // A project must be a Git repository and have ".github/workflows" directory.
-func FindProject(path string) *Project {
+func findProject(path string) *Project {
 	d := absPath(path)
 	for {
 		w := filepath.Join(d, ".github", "workflows")
@@ -84,15 +83,6 @@ func (p *Project) Config() (*Config, error) {
 	return nil, nil // not found
 }
 
-// WriteDefaultConfig writes default config file at ".github/actionlint.yaml" in the repository.
-func (p *Project) WriteDefaultConfig() error {
-	path := filepath.Join(p.RootDir(), ".github", "actionlint.yaml")
-	if _, err := os.Stat(path); err == nil {
-		return fmt.Errorf("config file already exists at %q", path)
-	}
-	return writeDefaultConfigFile(path)
-}
-
 // Projects represents set of projects. It caches Project instances which was created previously
 // and reuses them.
 type Projects struct {
@@ -112,7 +102,7 @@ func (ps *Projects) At(path string) *Project {
 		}
 	}
 
-	p := FindProject(path)
+	p := findProject(path)
 	if p != nil {
 		ps.known = append(ps.known, p)
 	}

@@ -1,6 +1,7 @@
 package actionlint
 
 import (
+	"errors"
 	"fmt"
 	"io"
 	"io/ioutil"
@@ -50,9 +51,9 @@ type LinterOptions struct {
 	// IgnorePattern is regular expression to filter errors. The pattern is applied to error messages.
 	// When an error is matched, the error is ignored.
 	IgnorePattern *regexp.Regexp
-	// ConfigFilePath is a path to config file. Empty string means no config file path is given. In
+	// ConfigFile is a path to config file. Empty string means no config file path is given. In
 	// the case, actionlint will try to read config from .github/actionlint.yaml.
-	ConfigFilePath string
+	ConfigFile string
 	// More options will come here
 }
 
@@ -92,8 +93,8 @@ func NewLinter(out io.Writer, opts *LinterOptions) (*Linter, error) {
 	}
 
 	var cfg *Config
-	if opts.ConfigFilePath != "" {
-		c, err := readConfigFile(opts.ConfigFilePath)
+	if opts.ConfigFile != "" {
+		c, err := readConfigFile(opts.ConfigFile)
 		if err != nil {
 			return nil, err
 		}
@@ -127,6 +128,29 @@ func (l *Linter) debug(format string, args ...interface{}) {
 	}
 	format = fmt.Sprintf("[Linter] %s\n", format)
 	fmt.Fprintf(l.logOut, format, args...)
+}
+
+// GenerateDefaultConfig generates default config file at ".github/actionlint.yaml" in project
+// which the given directory path belongs to.
+func (l *Linter) GenerateDefaultConfig(dir string) error {
+	l.log("Generating default actionlint.yaml in repository:", dir)
+
+	p := l.projects.At(dir)
+	if p == nil {
+		return errors.New("project is not found. check current project is initialized as Git repository and \".github/workflows\" directory exists")
+	}
+
+	path := filepath.Join(p.RootDir(), ".github", "actionlint.yaml")
+	if _, err := os.Stat(path); err == nil {
+		return fmt.Errorf("config file already exists at %q", path)
+	}
+
+	if err := writeDefaultConfigFile(path); err != nil {
+		return err
+	}
+
+	fmt.Fprintf(l.out, "Config file was generated at %q\n", path)
+	return nil
 }
 
 // LintRepository lints YAML workflow files and outputs the errors to given writer. It finds the nearest
