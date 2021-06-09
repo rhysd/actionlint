@@ -47,7 +47,7 @@ func (rule *RuleEvents) checkEvent(event Event) {
 
 // https://docs.github.com/en/actions/reference/workflow-syntax-for-github-actions#onschedule
 func (rule *RuleEvents) checkCron(spec *String) {
-	p := cron.NewParser(cron.Month | cron.Hour | cron.Minute | cron.Second | cron.DowOptional)
+	p := cron.NewParser(cron.Minute | cron.Hour | cron.Dom | cron.Month | cron.Dow)
 	sched, err := p.Parse(spec.Value)
 	if err != nil {
 		rule.errorf(spec.Pos, "invalid CRON format %q in schedule event: %s", spec.Value, err.Error())
@@ -58,7 +58,7 @@ func (rule *RuleEvents) checkCron(spec *String) {
 	next := sched.Next(start)
 	diff := next.Sub(start).Seconds()
 
-	if diff < 60.0 {
+	if diff <= 120.0 {
 		rule.errorf(spec.Pos, "scheduled job runs too frequently. it runs once per %g seconds", diff)
 	}
 }
