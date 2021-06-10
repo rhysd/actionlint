@@ -490,6 +490,8 @@ type Matrix struct {
 	// this list will be removed from combinations of matrix to run.
 	// https://docs.github.com/en/actions/reference/workflow-syntax-for-github-actions#example-excluding-configurations-from-a-matrix
 	Exclude *MatrixCombinations
+	// Expression is a string when expression syntax ${{ }} is used for this section.
+	Expression *String
 	// Pos is a position in source.
 	Pos *Pos
 }

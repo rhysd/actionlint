@@ -654,6 +654,13 @@ func (p *parser) parseMatrixCombinations(sec string, n *yaml.Node) *MatrixCombin
 
 // https://docs.github.com/en/actions/reference/workflow-syntax-for-github-actions#jobsjob_idstrategymatrix
 func (p *parser) parseMatrix(pos *Pos, n *yaml.Node) *Matrix {
+	if n.Kind == yaml.ScalarNode {
+		return &Matrix{
+			Expression: p.parseExpression(n, "matrix"),
+			Pos:        posAt(n),
+		}
+	}
+
 	ret := &Matrix{Pos: pos, Rows: make(map[string]*MatrixRow)}
 
 	for _, kv := range p.parseSectionMapping("matrix", n, false) {

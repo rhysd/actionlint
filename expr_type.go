@@ -403,3 +403,18 @@ func (ty *ArrayDerefType) Fuse(other ExprType) ExprType {
 		return AnyType{}
 	}
 }
+
+// ElemTypeOf returns element type of given type when it is array type.
+// When it is any type, it returns any type. Otherwise ti returns nil.
+func ElemTypeOf(ty ExprType) (ExprType, bool) {
+	switch ty := ty.(type) {
+	case AnyType:
+		return AnyType{}, true
+	case *ArrayType:
+		return ty.Elem, true
+	case *ArrayDerefType:
+		return ty.Elem, true
+	default:
+		return nil, false
+	}
+}
