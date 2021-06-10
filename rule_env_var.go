@@ -40,11 +40,11 @@ func (rule *RuleEnvVar) checkEnv(env *Env) {
 		return
 	}
 	for _, v := range env.Vars {
-		if strings.ContainsAny(v.Name.Value, "&=- 	") {
+		if strings.ContainsAny(v.Name.Value, "&= 	") {
 			rule.errorf(
 				v.Name.Pos,
-				"environment variable name %q is invalid. '&', '=', '-' and spaces should not be contained",
-				strings.ToUpper(v.Name.Value), // We treat mapping keys with lowercase to avoid issues around case insensitive names
+				"environment variable name %q is invalid. '&', '=' and spaces should not be contained",
+				v.Name.Value,
 			)
 		}
 	}
