@@ -44,6 +44,9 @@ func (rule *RuleMatrix) VisitJobPre(n *Job) {
 }
 
 func (rule *RuleMatrix) checkDuplicateInRow(row *MatrixRow) {
+	if row.Values == nil {
+		return // Give up when ${{ }} is specified
+	}
 	seen := make([]RawYAMLValue, 0, len(row.Values))
 	for _, v := range row.Values {
 		ok := true

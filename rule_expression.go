@@ -476,7 +476,7 @@ func (rule *RuleExpression) guessTypeOfMatrix(m *Matrix) *ObjectType {
 	o := NewStrictObjectType()
 
 	for n, r := range m.Rows {
-		o.Props[n] = guessTypeOfMatrixRow(r)
+		o.Props[n] = rule.guessTypeOfMatrixRow(r)
 	}
 
 	// Note: Type check in 'include' section duplicates with checkMatrixCombinations() method
@@ -530,7 +530,22 @@ func (rule *RuleExpression) guessTypeOfMatrix(m *Matrix) *ObjectType {
 	return o
 }
 
-func guessTypeOfMatrixRow(r *MatrixRow) ExprType {
+func (rule *RuleExpression) guessTypeOfMatrixRow(r *MatrixRow) ExprType {
+	if r.Expression != nil {
+		ty := rule.checkArrayExpression(r.Expression, "matrix row")
+		if ty == nil {
+			return AnyType{}
+		}
+		switch ty := ty.(type) {
+		case *ArrayType:
+			return ty.Elem
+		case *ArrayDerefType:
+			return ty.Elem
+		default:
+			return AnyType{}
+		}
+	}
+
 	var ty ExprType
 	for _, v := range r.Values {
 		t := guessTypeOfRawYAMLValue(v)

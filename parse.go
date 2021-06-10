@@ -663,6 +663,13 @@ func (p *parser) parseMatrix(pos *Pos, n *yaml.Node) *Matrix {
 		case "exclude":
 			ret.Exclude = p.parseMatrixCombinations("exclude", kv.val)
 		default:
+			if kv.val.Kind == yaml.ScalarNode {
+				ret.Rows[kv.key.Value] = &MatrixRow{
+					Expression: p.parseExpression(kv.val, "array value for matrix variations"),
+				}
+				continue
+			}
+
 			if ok := p.checkSequence("matrix values", kv.val, false); !ok {
 				continue
 			}

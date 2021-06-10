@@ -435,6 +435,8 @@ type MatrixRow struct {
 	Name *String
 	// Values is variations of values which the matrix value can take.
 	Values []RawYAMLValue
+	// Expression is a string when expression syntax ${{ }} is used for this section.
+	Expression *String
 }
 
 // MatrixAssign represents which value should be taken in the row of the matrix.
