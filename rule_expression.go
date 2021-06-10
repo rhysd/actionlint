@@ -125,7 +125,27 @@ func (rule *RuleExpression) VisitJobPre(n *Job) {
 		rule.checkContainer(s.Container)
 	}
 
+	// Initialize step outputs. Note that step outptus can be accessed before defining it. In the
+	// case, each properties of step object are initialized with null.
+	//
+	// # This prints null
+	// - run: echo ${{ toJson(steps.some_step.outputs) }}
+	// - run: echo hi
+	//   id: some_step
+	//
 	rule.stepsTy = NewStrictObjectType()
+	for _, step := range n.Steps {
+		if step.ID != nil {
+			rule.stepsTy.Props[step.ID.Value] = &ObjectType{
+				Props: map[string]ExprType{
+					"outputs":    NullType{},
+					"conclusion": NullType{},
+					"outcome":    NullType{},
+				},
+				StrictProps: true,
+			}
+		}
+	}
 }
 
 // VisitJobPost is callback when visiting Job node after visiting its children
@@ -162,6 +182,7 @@ func (rule *RuleExpression) VisitStep(n *Step) {
 	rule.checkEnv(n.Env)
 
 	if n.ID != nil {
+		// After this step, steps.<step_id> object stores the result of the step
 		rule.stepsTy.Props[n.ID.Value] = &ObjectType{
 			Props: map[string]ExprType{
 				"outputs":    NewObjectType(),
