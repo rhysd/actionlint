@@ -139,6 +139,20 @@ var BuiltinFuncSignatures = map[string][]*FuncSignature{
 			StringType{},
 		},
 	}},
+	"toJson": {{
+		Name: "toJson",
+		Ret:  StringType{},
+		Params: []ExprType{
+			AnyType{},
+		},
+	}},
+	"fromJson": {{
+		Name: "fromJson",
+		Ret:  AnyType{},
+		Params: []ExprType{
+			StringType{},
+		},
+	}},
 	"hashFiles": {{
 		Name: "hashFiles",
 		Ret:  StringType{},
