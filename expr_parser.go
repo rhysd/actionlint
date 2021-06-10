@@ -337,7 +337,8 @@ func (p *ExprParser) parseIdent() (ExprNode, *ExprError) {
 		case "false":
 			return &BoolNode{false, ident}, nil
 		default:
-			return &VariableNode{ident.Value, ident}, nil
+			// Variable name access is case insensitive. github.event and GITHUB.event are the same.
+			return &VariableNode{strings.ToLower(ident.Value), ident}, nil
 		}
 	}
 }
@@ -433,7 +434,8 @@ func (p *ExprParser) parsePostfixOp() (ExprNode, *ExprError) {
 				ret = &ArrayDerefNode{ret}
 			case TokenKindIdent:
 				t := p.next() // eat 'b' of 'a.b'
-				ret = &ObjectDerefNode{ret, t.Value}
+				// Property name is case insensitive. github.event and github.EVENT are the same
+				ret = &ObjectDerefNode{ret, strings.ToLower(t.Value)}
 			default:
 				return nil, p.unexpected(
 					"object property dereference like 'a.b' or array element dereference like 'a.*'",

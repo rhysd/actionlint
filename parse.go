@@ -206,19 +206,27 @@ func (p *parser) parseMapping(what string, n *yaml.Node, allowEmpty bool) []keyV
 	}
 
 	l := len(n.Content) / 2
-	keys := make(map[string]struct{}, l)
+	keys := make(map[string]*Pos, l)
 	m := make([]keyVal, 0, l)
 	for i := 0; i < len(n.Content); i += 2 {
 		k := p.parseString(n.Content[i], false)
 		if k == nil {
 			continue
 		}
-		if _, ok := keys[k.Value]; ok {
-			p.errorf(n, "key %q is duplicate in %s", k.Value, what)
+
+		// Keys of mappings are case insensitive. For example, following matrix is invalid.
+		// matrix:
+		//   foo: [1, 2, 3]
+		//   FOO: [1, 2, 3]
+		// To detect case insensitive duplicate keys, we use lowercase keys always
+		k.Value = strings.ToLower(k.Value)
+
+		if pos, ok := keys[k.Value]; ok {
+			p.errorfAt(k.Pos, "key %q is duplicate in %s. previously defined at %s. note that key names are case insensitive", k.Value, what, pos.String())
 			continue
 		}
 		m = append(m, keyVal{k, n.Content[i+1]})
-		keys[k.Value] = struct{}{}
+		keys[k.Value] = k.Pos
 	}
 
 	if !allowEmpty && len(m) == 0 {

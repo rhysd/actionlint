@@ -44,7 +44,7 @@ func (rule *RuleEnvVar) checkEnv(env *Env) {
 			rule.errorf(
 				v.Name.Pos,
 				"environment variable name %q is invalid. '&', '=', '-' and spaces should not be contained",
-				v.Name.Value,
+				strings.ToUpper(v.Name.Value), // We treat mapping keys with lowercase to avoid issues around case insensitive names
 			)
 		}
 	}

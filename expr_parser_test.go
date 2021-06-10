@@ -132,6 +132,11 @@ func TestParseExpressionSyntaxOK(t *testing.T) {
 			expected: &VariableNode{Name: "github"},
 		},
 		{
+			what:     "variable with uppercase name",
+			input:    "GITHUB",
+			expected: &VariableNode{Name: "github"},
+		},
+		{
 			what:  "func call",
 			input: "success()",
 			expected: &FuncCallNode{
@@ -267,6 +272,14 @@ func TestParseExpressionSyntaxOK(t *testing.T) {
 			expected: &ObjectDerefNode{
 				Receiver: &VariableNode{Name: "a"},
 				Property: "b",
+			},
+		},
+		{
+			what:  "object property dereference with uppercase name",
+			input: "github.EVENT",
+			expected: &ObjectDerefNode{
+				Receiver: &VariableNode{Name: "github"},
+				Property: "event",
 			},
 		},
 		{
