@@ -124,6 +124,21 @@ var BuiltinFuncSignatures = map[string][]*FuncSignature{
 				StringType{},
 			},
 		},
+		// When the second parameter is omitted, values are concatenated with ','.
+		{
+			Name: "join",
+			Ret:  StringType{},
+			Params: []ExprType{
+				&ArrayType{Elem: StringType{}},
+			},
+		},
+		{
+			Name: "join",
+			Ret:  StringType{},
+			Params: []ExprType{
+				StringType{},
+			},
+		},
 	},
 	"toJSON": {{
 		Name: "toJSON",
