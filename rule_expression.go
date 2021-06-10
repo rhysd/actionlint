@@ -71,6 +71,10 @@ func (rule *RuleExpression) VisitWorkflowPost(n *Workflow) {
 
 // VisitJobPre is callback when visiting Job node before visiting its children.
 func (rule *RuleExpression) VisitJobPre(n *Job) {
+	// Type of needs must be resolved before resolving type of matrix because `needs` context can
+	// be used in matrix configuration.
+	rule.needsTy = rule.calcNeedsType(n)
+
 	// Set matrix type at start of VisitJobPre() because matrix values are available in
 	// jobs.<job_id> section. For example:
 	//   jobs:
@@ -82,7 +86,6 @@ func (rule *RuleExpression) VisitJobPre(n *Job) {
 	if n.Strategy != nil && n.Strategy.Matrix != nil {
 		rule.matrixTy = rule.guessTypeOfMatrix(n.Strategy.Matrix)
 	}
-	rule.needsTy = rule.calcNeedsType(n)
 
 	rule.checkString(n.Name)
 	rule.checkStrings(n.Needs)
