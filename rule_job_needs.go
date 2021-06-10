@@ -45,7 +45,9 @@ func NewRuleJobNeeds() *RuleJobNeeds {
 func (rule *RuleJobNeeds) VisitJobPre(n *Job) {
 	needs := make([]string, 0, len(n.Needs))
 	for _, j := range n.Needs {
-		needs = append(needs, j.Value)
+		// Job ID is key of mapping. Key mapping is stored in lowercase since it is case
+		// insensitive. So values in 'needs' array must be compared in lowercase.
+		needs = append(needs, strings.ToLower(j.Value))
 	}
 
 	rule.nodes[n.ID.Value] = &jobNode{
@@ -65,7 +67,7 @@ func (rule *RuleJobNeeds) VisitWorkflowPost(n *Workflow) {
 		for _, dep := range node.needs {
 			n, ok := rule.nodes[dep]
 			if !ok {
-				rule.errorf(n.pos, "job %q needs job %q which does not exist in this workflow", id, dep)
+				rule.errorf(node.pos, "job %q needs job %q which does not exist in this workflow", id, dep)
 				valid = false
 				continue
 			}
