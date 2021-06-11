@@ -54,11 +54,11 @@ func (rule *RuleEvents) checkCron(spec *String) {
 		return
 	}
 
-	start := time.Unix(0, 0)
+	start := sched.Next(time.Unix(0, 0))
 	next := sched.Next(start)
 	diff := next.Sub(start).Seconds()
 
-	if diff <= 120.0 {
+	if diff <= 60.0 {
 		rule.errorf(spec.Pos, "scheduled job runs too frequently. it runs once per %g seconds", diff)
 	}
 }
