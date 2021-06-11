@@ -162,7 +162,9 @@ func (rule *RuleExpression) VisitStep(n *Step) {
 	rule.checkEnv(n.Env)
 
 	if n.ID != nil {
-		rule.stepsTy.Props[n.ID.Value] = &ObjectType{
+		// Step ID is case insensitive
+		id := strings.ToLower(n.ID.Value)
+		rule.stepsTy.Props[id] = &ObjectType{
 			Props: map[string]ExprType{
 				"outputs":    NewObjectType(),
 				"conclusion": StringType{},
