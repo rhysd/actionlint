@@ -152,6 +152,9 @@ func (p *parser) parseStringSequence(sec string, n *yaml.Node, allowEmpty bool, 
 func (p *parser) parseStringOrStringSequence(sec string, n *yaml.Node, allowEmpty bool, allowElemEmpty bool) []*String {
 	switch n.Kind {
 	case yaml.ScalarNode:
+		if allowEmpty && n.Tag == "!!null" {
+			return []*String{} // In the case of 'foo:'
+		}
 		return []*String{p.parseString(n, allowElemEmpty)}
 	default:
 		return p.parseStringSequence(sec, n, allowEmpty, allowElemEmpty)
@@ -361,18 +364,26 @@ func (p *parser) parseRepositoryDispatchEvent(pos *Pos, n *yaml.Node) *Repositor
 func (p *parser) parseWebhookEvent(name *String, n *yaml.Node) *WebhookEvent {
 	ret := &WebhookEvent{Hook: name, Pos: name.Pos}
 
+	// Note: 'tags', 'tags-ignore', 'branches', 'branches-ignore' can be empty. Since there are
+	// some cases where setting empty values to them is necessary.
+	//
+	// > If only define only tags filter (tags/tags-ignore) or only branches filter
+	// > (branches/branches-ignore) for on.push, the workflow won’t run for events affecting the
+	// > undefined Git ref.
+	//
+	// https://github.community/t/using-on-push-tags-ignore-and-paths-ignore-together/16931
 	for _, kv := range p.parseSectionMapping(name.Value, n, true) {
 		switch kv.key.Value {
 		case "types":
 			ret.Types = p.parseStringOrStringSequence(kv.key.Value, kv.val, false, false)
 		case "branches":
-			ret.Branches = p.parseStringOrStringSequence(kv.key.Value, kv.val, false, false)
+			ret.Branches = p.parseStringOrStringSequence(kv.key.Value, kv.val, true, false)
 		case "branches-ignore":
-			ret.BranchesIgnore = p.parseStringOrStringSequence(kv.key.Value, kv.val, false, false)
+			ret.BranchesIgnore = p.parseStringOrStringSequence(kv.key.Value, kv.val, true, false)
 		case "tags":
-			ret.Tags = p.parseStringOrStringSequence(kv.key.Value, kv.val, false, false)
+			ret.Tags = p.parseStringOrStringSequence(kv.key.Value, kv.val, true, false)
 		case "tags-ignore":
-			ret.TagsIgnore = p.parseStringOrStringSequence(kv.key.Value, kv.val, false, false)
+			ret.TagsIgnore = p.parseStringOrStringSequence(kv.key.Value, kv.val, true, false)
 		case "paths":
 			ret.Paths = p.parseStringOrStringSequence(kv.key.Value, kv.val, false, false)
 		case "paths-ignore":
