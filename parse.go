@@ -823,6 +823,7 @@ func (p *parser) parseContainer(sec string, pos *Pos, n *yaml.Node) *Container {
 // https://docs.github.com/en/actions/reference/workflow-syntax-for-github-actions#jobsjob_idsteps
 func (p *parser) parseStep(n *yaml.Node) *Step {
 	ret := &Step{Pos: posAt(n)}
+	var workDir *String
 
 	for _, kv := range p.parseMapping("element of \"steps\" section", n, false) {
 		switch kv.key.Value {
@@ -845,7 +846,7 @@ func (p *parser) parseStep(n *yaml.Node) *Step {
 			} else if e, ok := ret.Exec.(*ExecAction); ok {
 				exec = e
 			} else {
-				p.errorfAt(kv.key.Pos, "this step is for running shell command since it contains at least one of \"run\", \"working-directory\", \"shell\" keys, but also contains %q key which is used for running action", kv.key.Value)
+				p.errorfAt(kv.key.Pos, "this step is for running shell command since it contains at least one of \"run\", \"shell\" keys, but also contains %q key which is used for running action", kv.key.Value)
 				continue
 			}
 			if kv.key.Value == "uses" {
@@ -867,8 +868,9 @@ func (p *parser) parseStep(n *yaml.Node) *Step {
 					}
 				}
 			}
+			exec.WorkingDirectory = workDir
 			ret.Exec = exec
-		case "run", "working-directory", "shell":
+		case "run", "shell":
 			var exec *ExecRun
 			if ret.Exec == nil {
 				exec = &ExecRun{}
@@ -882,12 +884,16 @@ func (p *parser) parseStep(n *yaml.Node) *Step {
 			case "run":
 				exec.Run = p.parseString(kv.val, false)
 				exec.RunPos = kv.key.Pos
-			case "working-directory":
-				exec.WorkingDirectory = p.parseString(kv.val, false)
 			case "shell":
 				exec.Shell = p.parseString(kv.val, false)
 			}
+			exec.WorkingDirectory = workDir
 			ret.Exec = exec
+		case "working-directory":
+			workDir = p.parseString(kv.val, false)
+			if ret.Exec != nil {
+				ret.Exec.SetWorkingDir(workDir)
+			}
 		default:
 			p.unexpectedKey(kv.key, "step", []string{
 				"id",

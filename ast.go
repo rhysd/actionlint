@@ -243,6 +243,8 @@ const (
 type Exec interface {
 	// Kind returns kind of the step execution.
 	Kind() ExecKind
+	// SetWorkingDir sets working-directory section.
+	SetWorkingDir(d *String)
 }
 
 // ExecRun is configuration how to run shell script at the step.
@@ -261,6 +263,11 @@ type ExecRun struct {
 // Kind returns kind of the step execution.
 func (r *ExecRun) Kind() ExecKind {
 	return ExecKindRun
+}
+
+// SetWorkingDir sets working-directory section.
+func (e *ExecRun) SetWorkingDir(dir *String) {
+	e.WorkingDirectory = dir
 }
 
 // Input is an input field for running an action.
@@ -285,11 +292,18 @@ type ExecAction struct {
 	// Args represents optional 'args' field in 'with' section. Nil field means nothing specified
 	// https://docs.github.com/en/actions/reference/workflow-syntax-for-github-actions#jobsjob_idstepswithargs
 	Args *String
+	// WorkingDirectory is a default working directory path to run action
+	WorkingDirectory *String
 }
 
 // Kind returns kind of the step execution.
 func (r *ExecAction) Kind() ExecKind {
 	return ExecKindAction
+}
+
+// SetWorkingDir sets working-directory section.
+func (e *ExecAction) SetWorkingDir(dir *String) {
+	e.WorkingDirectory = dir
 }
 
 // RawYAMLValueKind is kind of raw YAML values
