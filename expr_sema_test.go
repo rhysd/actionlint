@@ -408,6 +408,21 @@ func TestExprSemanticsCheckOK(t *testing.T) {
 			input:    "!'hello' || ''",
 			expected: BoolType{},
 		},
+		{
+			what:     "coerce number into bool",
+			input:    "!42",
+			expected: BoolType{},
+		},
+		{
+			what:     "coerce null into bool",
+			input:    "!null",
+			expected: BoolType{},
+		},
+		{
+			what:     "coerce string into bool",
+			input:    "!'hello'",
+			expected: BoolType{},
+		},
 	}
 
 	for _, tc := range testCases {
@@ -683,37 +698,37 @@ func TestExprSemanticsCheckError(t *testing.T) {
 		},
 		{
 			what:  "operand of ! operator is not bool",
-			input: "!42",
+			input: "!env",
 			expected: []string{
-				"type of operand of ! operator \"number\" is not assignable to type \"bool\"",
+				"type of operand of ! operator \"object\" is not assignable to type \"bool\"",
 			},
 		},
 		{
 			what:  "left operand of && operator is not bool",
-			input: "42 && true",
+			input: "env && true",
 			expected: []string{
-				"type of left operand of && operator \"number\" is not assignable to type \"bool\"",
+				"type of left operand of && operator \"object\" is not assignable to type \"bool\"",
 			},
 		},
 		{
 			what:  "right operand of && operator is not bool",
-			input: "true && 42",
+			input: "true && env",
 			expected: []string{
-				"type of right operand of && operator \"number\" is not assignable to type \"bool\"",
+				"type of right operand of && operator \"object\" is not assignable to type \"bool\"",
 			},
 		},
 		{
 			what:  "left operand of || operator is not bool",
-			input: "42 || true",
+			input: "env || true",
 			expected: []string{
-				"type of left operand of || operator \"number\" is not assignable to type \"bool\"",
+				"type of left operand of || operator \"object\" is not assignable to type \"bool\"",
 			},
 		},
 		{
 			what:  "right operand of || operator is not bool",
-			input: "true || 42",
+			input: "true || env",
 			expected: []string{
-				"type of right operand of || operator \"number\" is not assignable to type \"bool\"",
+				"type of right operand of || operator \"object\" is not assignable to type \"bool\"",
 			},
 		},
 		{
