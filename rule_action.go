@@ -75,38 +75,30 @@ func (rule *RuleAction) VisitStep(n *Step) {
 // Parse {owner}/{repo}@{ref} or {owner}/{repo}/{path}@{ref}
 func (rule *RuleAction) checkRepoAction(spec string, exec *ExecAction) {
 	s := spec
-	idx := strings.IndexRune(s, '/')
+	idx := strings.IndexRune(s, '@')
+	if idx == -1 {
+		rule.invalidActionFormat(exec.Uses.Pos, spec)
+		return
+	}
+	ref := s[idx+1:]
+	s = s[:idx] // remove {ref}
+
+	idx = strings.IndexRune(s, '/')
 	if idx == -1 {
 		rule.invalidActionFormat(exec.Uses.Pos, spec)
 		return
 	}
 
-	// Consume owner name
 	owner := s[:idx]
-	s = s[idx+1:]
+	s = s[idx+1:] // eat {owner}
 
-	repo := ""
-
+	repo := s
 	if idx := strings.IndexRune(s, '/'); idx >= 0 {
 		repo = s[:idx]
-		s = s[idx+1:]
-		idx = strings.IndexRune(s, '@')
-		if idx == -1 {
-			rule.invalidActionFormat(exec.Uses.Pos, spec)
-			return
-		}
-		// path = s[:idx]
-		s = s[idx+1:]
-	} else if idx := strings.IndexRune(s, '@'); idx >= 0 {
-		repo = s[:idx]
-		s = s[idx+1:]
-	} else {
-		rule.invalidActionFormat(exec.Uses.Pos, spec)
-		return
+		// path = s[idx+1:]
 	}
-	tag := s
 
-	if owner == "" || repo == "" || tag == "" {
+	if owner == "" || repo == "" || ref == "" {
 		rule.invalidActionFormat(exec.Uses.Pos, spec)
 	}
 
@@ -114,7 +106,7 @@ func (rule *RuleAction) checkRepoAction(spec string, exec *ExecAction) {
 }
 
 func (rule *RuleAction) invalidActionFormat(pos *Pos, spec string) {
-	rule.errorf(pos, "specifying action %q in invalid format. available formats are \"{owner}/{repo}@{ref}\" or \"{owner}/{repo}/{path}@{ref}\"", spec)
+	rule.errorf(pos, "specifying action %q in invalid format. available formats are \"{owner}/{repo}@{ref}\" or \"{owner}/{repo}/{path}@{ref}\". each pat should not be empty", spec)
 }
 
 // https://docs.github.com/en/actions/reference/workflow-syntax-for-github-actions#example-using-the-github-packages-container-registry
