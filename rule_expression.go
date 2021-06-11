@@ -237,15 +237,27 @@ func (rule *RuleExpression) checkNumberTy(ty ExprType, pos *Pos, what string) Ex
 }
 
 func (rule *RuleExpression) checkObjectExpression(s *String, what string) ExprType {
-	return rule.checkObjectTy(rule.checkOneExpression(s, what), s.Pos, what)
+	ty := rule.checkOneExpression(s, what)
+	if ty == nil {
+		return nil
+	}
+	return rule.checkObjectTy(ty, s.Pos, what)
 }
 
 func (rule *RuleExpression) checkArrayExpression(s *String, what string) ExprType {
-	return rule.checkArrayTy(rule.checkOneExpression(s, what), s.Pos, what)
+	ty := rule.checkOneExpression(s, what)
+	if ty == nil {
+		return nil
+	}
+	return rule.checkArrayTy(ty, s.Pos, what)
 }
 
 func (rule *RuleExpression) checkNumberExpression(s *String, what string) ExprType {
-	return rule.checkNumberTy(rule.checkOneExpression(s, what), s.Pos, what)
+	ty := rule.checkOneExpression(s, what)
+	if ty == nil {
+		return nil
+	}
+	return rule.checkNumberTy(ty, s.Pos, what)
 }
 
 func (rule *RuleExpression) checkMatrixCombinations(cs *MatrixCombinations, what string) {
