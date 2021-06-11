@@ -126,9 +126,8 @@ func (ty BoolType) String() string {
 
 // Assignable returns if other type can be assignable to the type.
 func (ty BoolType) Assignable(other ExprType) bool {
-	// TODO: Is numbers corced into bool?
 	switch other.(type) {
-	case BoolType, StringType, NullType, AnyType:
+	case BoolType, StringType, NullType, NumberType, AnyType:
 		return true
 	default:
 		return false
