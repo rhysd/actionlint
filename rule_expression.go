@@ -413,6 +413,8 @@ func (rule *RuleExpression) checkFloat(f *Float) {
 }
 
 func (rule *RuleExpression) checkExprsIn(s string, pos *Pos) []ExprType {
+	// TODO: Line number is not correct when the string contains newlines.
+
 	line, col := pos.Line, pos.Col
 	offset := 0
 	tys := []ExprType{}

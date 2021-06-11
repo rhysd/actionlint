@@ -350,7 +350,7 @@ func (p *parser) parseRepositoryDispatchEvent(pos *Pos, n *yaml.Node) *Repositor
 	ret := &RepositoryDispatchEvent{Pos: pos}
 
 	// Note: Omitting 'types' is ok. In the case, all types trigger the workflow
-	for _, kv := range p.parseSectionMapping("repository_dispatch", n, false) {
+	for _, kv := range p.parseSectionMapping("repository_dispatch", n, true) {
 		if kv.key.Value == "types" {
 			ret.Types = p.parseStringOrStringSequence("types", kv.val, false, false)
 		} else {
