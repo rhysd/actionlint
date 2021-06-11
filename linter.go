@@ -306,6 +306,7 @@ func (l *Linter) Lint(path string, content []byte, project *Project) ([]*Error, 
 		NewRuleJobNeeds(),
 		NewRuleAction(root),
 		NewRuleEnvVar(),
+		NewRuleStepID(),
 		NewRuleExpression(),
 	}
 	if l.shellcheck != "" {
