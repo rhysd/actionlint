@@ -41,17 +41,36 @@ func NewRuleJobNeeds() *RuleJobNeeds {
 	}
 }
 
+func contains(heystack []string, needle string) bool {
+	for _, s := range heystack {
+		if s == needle {
+			return true
+		}
+	}
+	return false
+}
+
 // VisitJobPre is callback when visiting Job node before visiting its children.
 func (rule *RuleJobNeeds) VisitJobPre(n *Job) {
 	needs := make([]string, 0, len(n.Needs))
 	for _, j := range n.Needs {
+		id := strings.ToLower(j.Value)
+		if contains(needs, id) {
+			rule.errorf(j.Pos, "job ID %q duplicates in \"needs\" section. note that job ID is case insensitive", j.Value)
+			continue
+		}
 		// Job ID is key of mapping. Key mapping is stored in lowercase since it is case
 		// insensitive. So values in 'needs' array must be compared in lowercase.
-		needs = append(needs, strings.ToLower(j.Value))
+		needs = append(needs, id)
 	}
 
-	rule.nodes[n.ID.Value] = &jobNode{
-		id:     n.ID.Value,
+	id := strings.ToLower(n.ID.Value)
+	if prev, ok := rule.nodes[id]; ok {
+		rule.errorf(n.Pos, "job ID %q duplicates. previously defined at %s. note that job ID is case insensitive", n.ID.Value, prev.pos.String())
+	}
+
+	rule.nodes[id] = &jobNode{
+		id:     id,
 		needs:  needs,
 		status: nodeStatusNew,
 		pos:    n.ID.Pos,
