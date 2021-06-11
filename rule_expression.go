@@ -508,14 +508,15 @@ func (rule *RuleExpression) calcNeedsType(job *Job) *ObjectType {
 
 func (rule *RuleExpression) populateDependantNeedsTypes(out *ObjectType, job *Job, root *Job) {
 	for _, id := range job.Needs {
-		if id.Value == root.ID.Value {
+		i := strings.ToLower(id.Value) // ID is case insensitive
+		if i == root.ID.Value {
 			continue // When cyclic dependency exists. This does not happen normally.
 		}
-		if _, ok := out.Props[id.Value]; ok {
+		if _, ok := out.Props[i]; ok {
 			continue // Already added
 		}
 
-		j, ok := rule.workflow.Jobs[id.Value]
+		j, ok := rule.workflow.Jobs[i]
 		if !ok {
 			continue
 		}
@@ -525,7 +526,7 @@ func (rule *RuleExpression) populateDependantNeedsTypes(out *ObjectType, job *Jo
 			outputs.Props[name] = StringType{}
 		}
 
-		out.Props[id.Value] = &ObjectType{
+		out.Props[i] = &ObjectType{
 			Props: map[string]ExprType{
 				"outputs": outputs,
 				"result":  StringType{},
