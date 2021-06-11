@@ -607,41 +607,12 @@ type Output struct {
 	Value *String
 }
 
-// Runner is interface for runner configuration.
+// Runner is struct for runner configuration.
 // https://docs.github.com/en/actions/reference/workflow-syntax-for-github-actions#jobsjob_idruns-on
-type Runner interface {
-	// GetLabel returns label of the runner.
-	GetLabel() string
-}
-
-// GitHubHostedRunner is configuration for runners which are available on GitHub by default.
-// https://docs.github.com/en/actions/reference/workflow-syntax-for-github-actions#example-4
-type GitHubHostedRunner struct {
-	// Label is label name of the runner like 'ubuntu-latest'.
-	Label *String
-	// Pos is a position in source.
-	Pos *Pos
-}
-
-// GetLabel returns label of the runner.
-func (r GitHubHostedRunner) GetLabel() string {
-	return r.Label.Value
-}
-
-// SelfHostedRunner is configuration of self-hosted runner. Self-hosted runner is a runner which is
-// prepared by user and adapted to GitHub Actions.
-// https://docs.github.com/en/actions/hosting-your-own-runners/using-self-hosted-runners-in-a-workflow#using-self-hosted-runners-in-a-workflow
-type SelfHostedRunner struct {
-	// Labels is list of additional labels for self-hosted runner
-	// For example, `runs-on: [self-hosted, linux, ARM64]` sets "linux" and "ARM64" in this field
+type Runner struct {
+	// Labels is list label names to select a runner to run a job. There are preset labels and user
+	// defined labels. Runner matching to the labels is selected.
 	Labels []*String
-	// Pos is a position in source.
-	Pos *Pos
-}
-
-// GetLabel returns label of the runner.
-func (r *SelfHostedRunner) GetLabel() string {
-	return "self-hosted"
 }
 
 // Job is configuration of how to run a job.
@@ -658,7 +629,7 @@ type Job struct {
 	Needs []*String
 	// RunsOn is runner configuration which run the job.
 	// https://docs.github.com/en/actions/reference/workflow-syntax-for-github-actions#jobsjob_idruns-on
-	RunsOn Runner
+	RunsOn *Runner
 	// Permissions is permission configuration for running the job.
 	Permissions *Permissions
 	// Environment is environment specification where the job runs.

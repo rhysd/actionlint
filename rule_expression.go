@@ -91,11 +91,8 @@ func (rule *RuleExpression) VisitJobPre(n *Job) {
 	rule.checkString(n.Name)
 	rule.checkStrings(n.Needs)
 
-	switch runner := n.RunsOn.(type) {
-	case *GitHubHostedRunner:
-		rule.checkString(runner.Label)
-	case *SelfHostedRunner:
-		rule.checkStrings(runner.Labels)
+	for _, l := range n.RunsOn.Labels {
+		rule.checkString(l)
 	}
 
 	if n.Environment != nil {

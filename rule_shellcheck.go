@@ -67,18 +67,22 @@ func (rule *RuleShellcheck) VisitJobPre(n *Job) {
 		rule.jobShell = n.Defaults.Run.Shell.Value
 		return
 	}
-	switch r := n.RunsOn.(type) {
-	case *GitHubHostedRunner:
+
+	if n.RunsOn == nil {
+		return
+	}
+
+	for _, label := range n.RunsOn.Labels {
+		l := strings.ToLower(label.Value)
+		// Default shell on Windows is PowerShell.
 		// https://docs.github.com/en/actions/reference/workflow-syntax-for-github-actions#using-a-specific-shell
-		// TODO: When bash is not found, GitHub-hosted runner fallbacks to sh. What OSes require this behavior?
-		if r.Label != nil && !strings.HasPrefix(r.Label.Value, "windows-") {
-			rule.jobShell = "bash"
-		}
-	case *SelfHostedRunner:
-		if len(r.Labels) > 0 && r.Labels[0].Value != "windows" {
-			rule.jobShell = "bash"
+		if l == "windows" || strings.HasPrefix(l, "windows-") {
+			return
 		}
 	}
+
+	// TODO: When bash is not found, GitHub-hosted runner fallbacks to sh. What OSes require this behavior?
+	rule.jobShell = "bash"
 }
 
 // VisitJobPost is callback when visiting Job node after visiting its children.

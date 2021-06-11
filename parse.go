@@ -126,7 +126,7 @@ func (p *parser) parseString(n *yaml.Node, allowEmpty bool) *String {
 	// In almost all cases, other nodes (like 42) are handled as string with its string representation.
 	if n.Kind != yaml.ScalarNode {
 		p.errorf(n, "expected scalar node for string value but found %s node with %q tag", nodeKindName(n.Kind), n.Tag)
-		return nil
+		return &String{"", posAt(n)}
 	}
 	if !allowEmpty && n.Value == "" {
 		p.error(n, "string should not be empty")
@@ -945,27 +945,8 @@ func (p *parser) parseJob(id *String, n *yaml.Node) *Job {
 				ret.Needs = p.parseStringSequence("needs", v, false, false)
 			}
 		case "runs-on":
-			if v.Kind == yaml.ScalarNode {
-				label := p.parseString(v, false)
-				if label.Value == "self-hosted" {
-					ret.RunsOn = &SelfHostedRunner{Pos: k.Pos}
-				} else {
-					ret.RunsOn = &GitHubHostedRunner{label, k.Pos}
-				}
-			} else {
-				s := p.parseStringSequence("runs-on", v, false, false)
-				if len(s) == 0 {
-					continue
-				}
-				if s[0].Value != "self-hosted" {
-					p.error(v, "sequence at \"runs-on\" section cannot be empty and must start with \"self-hosted\" string element")
-					continue
-				}
-				ret.RunsOn = &SelfHostedRunner{
-					Labels: s[1:], // Omit first "self-hosted" element
-					Pos:    k.Pos,
-				}
-			}
+			labels := p.parseStringOrStringSequence("runs-on", v, false, false)
+			ret.RunsOn = &Runner{labels}
 		case "permissions":
 			ret.Permissions = p.parsePermissions(k.Pos, v)
 		case "environment":

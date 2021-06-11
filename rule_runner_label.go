@@ -19,6 +19,17 @@ var allGitHubHostedRunnerLabels = []string{
 	"macos-10.15",
 }
 
+// https://docs.github.com/en/actions/hosting-your-own-runners/using-self-hosted-runners-in-a-workflow#using-default-labels-to-route-jobs
+var allSelfHostedRunnerPresetLabels = []string{
+	"self-hosted",
+	"linux",
+	"macos",
+	"windows",
+	"x64",
+	"arm",
+	"arm64",
+}
+
 // RuleRunnerLabel is a rule to check runner label like "ubuntu-latest". There are two types of
 // runners, GitHub-hosted runner and Self-hosted runner. GitHub-hosted runner is described at
 // https://docs.github.com/en/actions/using-github-hosted-runners/about-github-hosted-runners .
@@ -48,45 +59,55 @@ func (rule *RuleRunnerLabel) VisitJobPre(n *Job) {
 		m = n.Strategy.Matrix
 	}
 
-	switch r := n.RunsOn.(type) {
-	case *GitHubHostedRunner:
-		rule.checkGitHubHostedRunner(r, m)
-	case *SelfHostedRunner:
-		// Nothing to check. Since any custom labels can be specified, there is no way to verify
-		// labels.
+	// TODO: Check labels conflict
+	// runs-on: [linux, windows]
+
+	for _, label := range n.RunsOn.Labels {
+		rule.checkLabel(label, m)
 	}
 }
 
 // https://docs.github.com/en/actions/using-github-hosted-runners/about-github-hosted-runners
-func (rule *RuleRunnerLabel) checkGitHubHostedRunner(r *GitHubHostedRunner, m *Matrix) {
-	l := r.Label.Value
+func (rule *RuleRunnerLabel) checkLabel(label *String, m *Matrix) {
+	l := label.Value
 	if strings.Contains(l, "${{") && strings.Contains(l, "}}") {
 		for _, l := range rule.tryToGetLabelsInMatrix(l, m) {
-			rule.verifyGitHubHotedRunnerLabel(l)
+			rule.verifyRunnerLabel(l)
 		}
 		return
 	}
 
-	rule.verifyGitHubHotedRunnerLabel(r.Label)
+	rule.verifyRunnerLabel(label)
 }
 
-func (rule *RuleRunnerLabel) verifyGitHubHotedRunnerLabel(label *String) {
+func (rule *RuleRunnerLabel) verifyRunnerLabel(label *String) string {
 	l := strings.TrimSpace(label.Value)
 	for _, p := range allGitHubHostedRunnerLabels {
 		// use EqualFold for ignoring case e.g. both macos-latest and macOS-latest should be accepted
 		if strings.EqualFold(l, p) {
-			return // ok
+			return p // ok
+		}
+	}
+	for _, p := range allSelfHostedRunnerPresetLabels {
+		if strings.EqualFold(l, p) {
+			return p // ok
 		}
 	}
 	for _, k := range rule.knownLabels {
 		if strings.EqualFold(l, k) {
-			return // ok
+			return k // ok
 		}
 	}
 
-	qs := make([]string, 0, len(allGitHubHostedRunnerLabels))
-	for _, p := range allGitHubHostedRunnerLabels {
-		qs = append(qs, strconv.Quote(p))
+	qs := make([]string, 0, len(allGitHubHostedRunnerLabels)+len(allSelfHostedRunnerPresetLabels)+len(rule.knownLabels))
+	for _, ls := range [][]string{
+		allGitHubHostedRunnerLabels,
+		allSelfHostedRunnerPresetLabels,
+		rule.knownLabels,
+	} {
+		for _, l := range ls {
+			qs = append(qs, strconv.Quote(l))
+		}
 	}
 	rule.errorf(
 		label.Pos,
@@ -94,6 +115,8 @@ func (rule *RuleRunnerLabel) verifyGitHubHotedRunnerLabel(label *String) {
 		label.Value,
 		strings.Join(qs, ", "),
 	)
+
+	return ""
 }
 
 func (rule *RuleRunnerLabel) tryToGetLabelsInMatrix(l string, m *Matrix) []*String {

@@ -40,7 +40,7 @@ func (rule *RuleShellName) VisitJobPre(n *Job) {
 	if n.RunsOn == nil {
 		return
 	}
-	rule.platform = getPlatformFromRunner(n.RunsOn)
+	rule.platform = rule.getPlatformFromRunner(n.RunsOn)
 	if n.Defaults != nil && n.Defaults.Run != nil {
 		rule.checkShellName(n.Defaults.Run.Shell)
 	}
@@ -139,33 +139,33 @@ func getAvailableShellNames(kind platformKind) []string {
 	}
 }
 
-func getPlatformFromRunner(runner Runner) platformKind {
-	switch r := runner.(type) {
-	case *GitHubHostedRunner:
-		if r.Label == nil {
-			return platformKindAny
-		}
-		if strings.HasPrefix(r.Label.Value, "windows-") {
-			return platformKindWindows
-		} else if strings.HasPrefix(r.Label.Value, "macos-") || strings.HasPrefix(r.Label.Value, "ubuntu-") {
-			return platformKindMacOrLinux
-		} else {
-			return platformKindAny
-		}
-	case *SelfHostedRunner:
-		if len(r.Labels) == 0 {
-			return platformKindAny
-		}
-		// https://docs.github.com/en/actions/hosting-your-own-runners/using-self-hosted-runners-in-a-workflow#using-default-labels-to-route-jobs
-		switch r.Labels[0].Value {
-		case "windows":
-			return platformKindWindows
-		case "linux", "macOS", "macos":
-			return platformKindMacOrLinux
-		default:
-			return platformKindAny
-		}
-	default:
-		panic("unreachable")
+func (rule *RuleShellName) getPlatformFromRunner(runner *Runner) platformKind {
+	if runner == nil {
+		return platformKindAny
 	}
+
+	// Note: Labels for self-hosted runners:
+	// https://docs.github.com/en/actions/hosting-your-own-runners/using-labels-with-self-hosted-runners
+
+	ret := platformKindAny
+	for _, label := range runner.Labels {
+		k := platformKindAny
+		l := strings.ToLower(label.Value)
+		if strings.HasPrefix(l, "windows-") || l == "windows" {
+			k = platformKindWindows
+		} else if strings.HasPrefix(l, "macos-") || strings.HasPrefix(l, "ubuntu-") || l == "macos" || l == "linux" {
+			k = platformKindMacOrLinux
+		}
+
+		if k == platformKindAny {
+			continue
+		}
+		if ret != platformKindAny && ret != k {
+			// Conflicts are reported by runner-label rule so simply ignore here
+			return platformKindAny
+		}
+		ret = k
+	}
+
+	return ret
 }
