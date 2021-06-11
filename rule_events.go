@@ -71,7 +71,7 @@ func (rule *RuleEvents) checkWebhookEvent(event *WebhookEvent) {
 	case "check_run":
 		types = []string{"created", "rerequested", "completed"}
 	case "check_suite":
-		types = []string{"created", "requested", "rerequested"}
+		types = []string{"completed", "requested", "rerequested"}
 	case "create":
 	case "delete":
 	case "deployment":
