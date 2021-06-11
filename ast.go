@@ -42,6 +42,8 @@ type Bool struct {
 type Int struct {
 	// Value is a raw value of the integer string.
 	Value int
+	// Expression is a string when expression syntax ${{ }} is used for this section.
+	Expression *String
 	// Pos is a position in source.
 	Pos *Pos
 }
@@ -50,6 +52,8 @@ type Int struct {
 type Float struct {
 	// Value is a raw value of the float string.
 	Value float64
+	// Expression is a string when expression syntax ${{ }} is used for this section.
+	Expression *String
 	// Pos is a position in source.
 	Pos *Pos
 }

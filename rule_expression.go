@@ -121,9 +121,11 @@ func (rule *RuleExpression) VisitJobPre(n *Job) {
 			rule.checkMatrixCombinations(n.Strategy.Matrix.Exclude, "exclude")
 		}
 		rule.checkBool(n.Strategy.FailFast)
+		rule.checkInt(n.Strategy.MaxParallel)
 	}
 
 	rule.checkBool(n.ContinueOnError)
+	rule.checkFloat(n.TimeoutMinutes)
 	rule.checkContainer(n.Container)
 
 	for _, s := range n.Services {
@@ -166,6 +168,7 @@ func (rule *RuleExpression) VisitStep(n *Step) {
 
 	rule.checkEnv(n.Env)
 	rule.checkBool(n.ContinueOnError)
+	rule.checkFloat(n.TimeoutMinutes)
 
 	if n.ID != nil {
 		// Step ID is case insensitive
@@ -220,12 +223,29 @@ func (rule *RuleExpression) checkArrayTy(ty ExprType, pos *Pos, what string) Exp
 	}
 }
 
+func (rule *RuleExpression) checkNumberTy(ty ExprType, pos *Pos, what string) ExprType {
+	if ty == nil {
+		return nil
+	}
+	switch ty.(type) {
+	case NumberType, AnyType:
+		return ty
+	default:
+		rule.errorf(pos, "type of expression at %q must be array but found type %s", what, ty.String())
+		return nil
+	}
+}
+
 func (rule *RuleExpression) checkObjectExpression(s *String, what string) ExprType {
 	return rule.checkObjectTy(rule.checkOneExpression(s, what), s.Pos, what)
 }
 
 func (rule *RuleExpression) checkArrayExpression(s *String, what string) ExprType {
 	return rule.checkArrayTy(rule.checkOneExpression(s, what), s.Pos, what)
+}
+
+func (rule *RuleExpression) checkNumberExpression(s *String, what string) ExprType {
+	return rule.checkNumberTy(rule.checkOneExpression(s, what), s.Pos, what)
 }
 
 func (rule *RuleExpression) checkMatrixCombinations(cs *MatrixCombinations, what string) {
@@ -367,6 +387,20 @@ func (rule *RuleExpression) checkBool(b *Bool) {
 	default:
 		rule.errorf(b.Expression.Pos, "type of expression must be bool but found type %s", ty.String())
 	}
+}
+
+func (rule *RuleExpression) checkInt(i *Int) {
+	if i == nil {
+		return
+	}
+	rule.checkNumberExpression(i.Expression, "integer value")
+}
+
+func (rule *RuleExpression) checkFloat(f *Float) {
+	if f == nil {
+		return
+	}
+	rule.checkNumberExpression(f.Expression, "float number value")
 }
 
 func (rule *RuleExpression) checkExprsIn(s string, pos *Pos) []ExprType {

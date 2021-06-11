@@ -159,11 +159,12 @@ func (p *parser) parseStringOrStringSequence(sec string, n *yaml.Node, allowEmpt
 }
 
 func (p *parser) parseBool(n *yaml.Node) *Bool {
-	if n.Kind != yaml.ScalarNode {
+	if n.Kind != yaml.ScalarNode || (n.Tag != "!!bool" && n.Tag != "!!str") {
 		p.errorf(n, "expected bool value but found %s node with %q tag", nodeKindName(n.Kind), n.Tag)
 		return nil
 	}
-	if n.Tag != "!!str" {
+
+	if n.Tag == "!!str" {
 		e := p.parseExpression(n, "boolean literal \"true\" or \"false\"")
 		return &Bool{
 			Expression: e,
@@ -178,29 +179,55 @@ func (p *parser) parseBool(n *yaml.Node) *Bool {
 }
 
 func (p *parser) parseInt(n *yaml.Node) *Int {
-	if n.Kind != yaml.ScalarNode || n.Tag != "!!int" {
+	if n.Kind != yaml.ScalarNode || (n.Tag != "!!int" && n.Tag != "!!str") {
 		p.errorf(n, "expected scalar node for integer value but found %s node with %q tag", nodeKindName(n.Kind), n.Tag)
 		return nil
 	}
+
+	if n.Tag == "!!str" {
+		e := p.parseExpression(n, "integer literal")
+		return &Int{
+			Expression: e,
+			Pos:        posAt(n),
+		}
+	}
+
 	i, err := strconv.Atoi(n.Value)
 	if err != nil {
 		p.errorf(n, "invalid integer value: %q: %s", n.Value, err.Error())
 		return nil
 	}
-	return &Int{i, posAt(n)}
+
+	return &Int{
+		Value: i,
+		Pos:   posAt(n),
+	}
 }
 
 func (p *parser) parseFloat(n *yaml.Node) *Float {
-	if n.Kind != yaml.ScalarNode || (n.Tag != "!!float" && n.Tag != "!!int") {
+	if n.Kind != yaml.ScalarNode || (n.Tag != "!!float" && n.Tag != "!!int" && n.Tag != "!!str") {
 		p.errorf(n, "expected scalar node for float value but found %s node with %q tag", nodeKindName(n.Kind), n.Tag)
 		return nil
 	}
+
+	if n.Tag == "!!str" {
+		e := p.parseExpression(n, "float number literal")
+		return &Float{
+			Expression: e,
+			Pos:        posAt(n),
+		}
+	}
+
 	f, err := strconv.ParseFloat(n.Value, 64)
 	if err != nil {
 		p.errorf(n, "invalid float value: %q: %s", n.Value, err.Error())
 		return nil
 	}
-	return &Float{f, posAt(n)}
+
+	return &Float{
+		Value: f,
+		Pos:   posAt(n),
+	}
 }
 
 func (p *parser) parseMapping(what string, n *yaml.Node, allowEmpty bool) []keyVal {
