@@ -3,6 +3,7 @@ package actionlint
 import (
 	"strings"
 	"testing"
+	"unicode"
 
 	"github.com/google/go-cmp/cmp"
 )
@@ -453,8 +454,20 @@ func TestExprBuiltinFunctionSignatures(t *testing.T) {
 		if len(sigs) == 0 {
 			t.Errorf("overload candidates of %q should not be empty", name)
 		}
+		{
+			ok := true
+			for _, r := range name {
+				if !unicode.IsLower(r) {
+					ok = false
+					break
+				}
+			}
+			if !ok {
+				t.Errorf("name of function must be in lower case to check in case insensitive: %q", name)
+			}
+		}
 		for i, sig := range sigs {
-			if name != sig.Name {
+			if name != strings.ToLower(sig.Name) {
 				t.Errorf("name of %dth overload is different from its key: name=%q vs key=%q", i+1, sig.Name, name)
 			}
 			if sig.VariableLengthParams && len(sig.Params) == 0 {

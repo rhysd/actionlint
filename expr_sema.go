@@ -55,7 +55,8 @@ func (sig *FuncSignature) String() string {
 	return fmt.Sprintf("%s(%s%s) -> %s", sig.Name, strings.Join(ts, ", "), elip, sig.Ret.String())
 }
 
-// BuiltinFuncSignatures is a set of all builtin function signatures.
+// BuiltinFuncSignatures is a set of all builtin function signatures. All function names are in
+// lower case because function names are compared in case insensitive.
 // https://docs.github.com/en/actions/reference/context-and-expression-syntax-for-github-actions#functions
 var BuiltinFuncSignatures = map[string][]*FuncSignature{
 	"contains": {
@@ -76,7 +77,7 @@ var BuiltinFuncSignatures = map[string][]*FuncSignature{
 			},
 		},
 	},
-	"startsWith": {
+	"startswith": {
 		{
 			Name: "startsWith",
 			Ret:  BoolType{},
@@ -86,7 +87,7 @@ var BuiltinFuncSignatures = map[string][]*FuncSignature{
 			},
 		},
 	},
-	"endsWith": {
+	"endswith": {
 		{
 			Name: "endsWith",
 			Ret:  BoolType{},
@@ -140,35 +141,21 @@ var BuiltinFuncSignatures = map[string][]*FuncSignature{
 			},
 		},
 	},
-	"toJSON": {{
+	"tojson": {{
 		Name: "toJSON",
 		Ret:  StringType{},
 		Params: []ExprType{
 			AnyType{},
 		},
 	}},
-	"fromJSON": {{
+	"fromjson": {{
 		Name: "fromJSON",
 		Ret:  AnyType{},
 		Params: []ExprType{
 			StringType{},
 		},
 	}},
-	"toJson": {{
-		Name: "toJson",
-		Ret:  StringType{},
-		Params: []ExprType{
-			AnyType{},
-		},
-	}},
-	"fromJson": {{
-		Name: "fromJson",
-		Ret:  AnyType{},
-		Params: []ExprType{
-			StringType{},
-		},
-	}},
-	"hashFiles": {{
+	"hashfiles": {{
 		Name: "hashFiles",
 		Ret:  StringType{},
 		Params: []ExprType{
@@ -558,7 +545,9 @@ func (sema *ExprSemanticsChecker) checkBuiltinFunctionCall(n *FuncCallNode, sig 
 }
 
 func (sema *ExprSemanticsChecker) checkFuncCall(n *FuncCallNode) ExprType {
-	sigs, ok := sema.funcs[n.Callee]
+	// Check function name in case insensitive. For example, toJson and toJSON are the same function.
+	callee := strings.ToLower(n.Callee)
+	sigs, ok := sema.funcs[callee]
 	if !ok {
 		qs := make([]string, 0, len(sema.funcs))
 		for n := range sema.funcs {
