@@ -159,11 +159,22 @@ func (p *parser) parseStringOrStringSequence(sec string, n *yaml.Node, allowEmpt
 }
 
 func (p *parser) parseBool(n *yaml.Node) *Bool {
-	if n.Kind != yaml.ScalarNode || n.Tag != "!!bool" {
+	if n.Kind != yaml.ScalarNode {
 		p.errorf(n, "expected bool value but found %s node with %q tag", nodeKindName(n.Kind), n.Tag)
 		return nil
 	}
-	return &Bool{n.Value == "true", posAt(n)}
+	if n.Tag != "!!str" {
+		e := p.parseExpression(n, "boolean literal \"true\" or \"false\"")
+		return &Bool{
+			Expression: e,
+			Pos:        posAt(n),
+		}
+	}
+
+	return &Bool{
+		Value: n.Value == "true",
+		Pos:   posAt(n),
+	}
 }
 
 func (p *parser) parseInt(n *yaml.Node) *Int {

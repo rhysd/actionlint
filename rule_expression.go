@@ -50,6 +50,7 @@ func (rule *RuleExpression) VisitWorkflowPre(n *Workflow) {
 			for _, i := range e.Inputs {
 				rule.checkString(i.Description)
 				rule.checkString(i.Default)
+				rule.checkBool(i.Required)
 			}
 		case *RepositoryDispatchEvent:
 			rule.checkStrings(e.Types)
@@ -109,16 +110,20 @@ func (rule *RuleExpression) VisitJobPre(n *Job) {
 	rule.checkDefaults(n.Defaults)
 	rule.checkIfCondition(n.If)
 
-	if n.Strategy != nil && n.Strategy.Matrix != nil {
-		for _, r := range n.Strategy.Matrix.Rows {
-			for _, v := range r.Values {
-				rule.checkRawYAMLValue(v)
+	if n.Strategy != nil {
+		if n.Strategy.Matrix != nil {
+			for _, r := range n.Strategy.Matrix.Rows {
+				for _, v := range r.Values {
+					rule.checkRawYAMLValue(v)
+				}
 			}
+			rule.checkMatrixCombinations(n.Strategy.Matrix.Include, "include")
+			rule.checkMatrixCombinations(n.Strategy.Matrix.Exclude, "exclude")
 		}
-		rule.checkMatrixCombinations(n.Strategy.Matrix.Include, "include")
-		rule.checkMatrixCombinations(n.Strategy.Matrix.Exclude, "exclude")
+		rule.checkBool(n.Strategy.FailFast)
 	}
 
+	rule.checkBool(n.ContinueOnError)
 	rule.checkContainer(n.Container)
 
 	for _, s := range n.Services {
@@ -160,6 +165,7 @@ func (rule *RuleExpression) VisitStep(n *Step) {
 	}
 
 	rule.checkEnv(n.Env)
+	rule.checkBool(n.ContinueOnError)
 
 	if n.ID != nil {
 		// Step ID is case insensitive
@@ -283,6 +289,7 @@ func (rule *RuleExpression) checkConcurrency(c *Concurrency) {
 		return
 	}
 	rule.checkString(c.Group)
+	rule.checkBool(c.CancelInProgress)
 }
 
 func (rule *RuleExpression) checkDefaults(d *Defaults) {
@@ -347,6 +354,19 @@ func (rule *RuleExpression) checkString(str *String) []ExprType {
 		return nil
 	}
 	return rule.checkExprsIn(str.Value, str.Pos)
+}
+
+func (rule *RuleExpression) checkBool(b *Bool) {
+	if b == nil || b.Expression == nil {
+		return
+	}
+	ty := rule.checkOneExpression(b.Expression, "bool value")
+	switch ty.(type) {
+	case BoolType, AnyType:
+		// ok
+	default:
+		rule.errorf(b.Expression.Pos, "type of expression must be bool but found type %s", ty.String())
+	}
 }
 
 func (rule *RuleExpression) checkExprsIn(s string, pos *Pos) []ExprType {

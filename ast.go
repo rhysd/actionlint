@@ -32,6 +32,8 @@ type String struct {
 type Bool struct {
 	// Value is a raw value of the bool string.
 	Value bool
+	// Expression is a string when expression syntax ${{ }} is used for this section.
+	Expression *String
 	// Pos is a position in source.
 	Pos *Pos
 }
