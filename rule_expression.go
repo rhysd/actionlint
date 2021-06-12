@@ -91,8 +91,10 @@ func (rule *RuleExpression) VisitJobPre(n *Job) {
 	rule.checkString(n.Name)
 	rule.checkStrings(n.Needs)
 
-	for _, l := range n.RunsOn.Labels {
-		rule.checkString(l)
+	if n.RunsOn != nil {
+		for _, l := range n.RunsOn.Labels {
+			rule.checkString(l)
+		}
 	}
 
 	if n.Environment != nil {

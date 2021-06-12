@@ -1020,11 +1020,11 @@ func (p *parser) parseJob(id *String, n *yaml.Node) *Job {
 	}
 
 	if ret.Steps == nil {
-		p.error(n, "\"steps\" section is missing in job")
+		p.errorf(n, "\"steps\" section is missing in job %q", id.Value)
 	}
 
 	if ret.RunsOn == nil {
-		p.error(n, "\"runs-on\" section is missing in job")
+		p.errorf(n, "\"runs-on\" section is missing in job %q", id.Value)
 	}
 
 	return ret
