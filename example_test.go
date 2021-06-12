@@ -37,7 +37,7 @@ func TestExamples(t *testing.T) {
 	for _, infile := range infiles {
 		base := strings.TrimSuffix(infile, filepath.Ext(infile))
 		outfile := base + ".out"
-		t.Run(base, func(t *testing.T) {
+		t.Run(filepath.Base(base), func(t *testing.T) {
 			b, err := ioutil.ReadFile(infile)
 			if err != nil {
 				panic(err)
@@ -52,11 +52,6 @@ func TestExamples(t *testing.T) {
 			config := Config{}
 			linter.defaultConfig = &config
 
-			errs, err := linter.Lint("test.yaml", b, nil)
-			if err != nil {
-				t.Fatal(err)
-			}
-
 			expected := []string{}
 			{
 				f, err := os.Open(outfile)
@@ -70,6 +65,11 @@ func TestExamples(t *testing.T) {
 				if err := s.Err(); err != nil {
 					panic(err)
 				}
+			}
+
+			errs, err := linter.Lint("test.yaml", b, nil)
+			if err != nil {
+				t.Fatal(err)
 			}
 
 			if len(errs) != len(expected) {

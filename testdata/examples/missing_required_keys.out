@@ -1,0 +1,1 @@
+test.yaml:4:5: "runs-on" section is missing in job "test" [syntax-check]

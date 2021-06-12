@@ -97,8 +97,75 @@ This section describes all checks done by actionlint with example input and outp
 Note: actionlint focuses on catching mistakes in workflow files. If you want some code style checks, please consider to
 use a general YAML checker like [yamllint][].
 
-TODO
+### Unexpected keys
 
+Example input:
+
+```yaml
+on: push
+jobs:
+  test:
+    runs-on: ubuntu-latest
+    step:
+```
+
+Output:
+
+```
+test.yaml:5:5: unexpected key "step" for "job" section. expected one of "name", "needs", "runs-on", "permissions", "environment", "concurrency", "outputs", "env", "defaults", "if", "steps", "timeout-minutes", "strategy", "continue-on-error", "container", "services" [syntax-check]
+5|     step:
+ |     ^~~~~
+```
+
+[Workflow syntax][syntax-doc] defines what keys can be defined in which mapping object. When other keys are defined, they
+are simply ignored and don't affect workflow behavior. It means typo in keys is not detected by GitHub.
+
+actionlint can detect unexpected keys while parsing workflow syntax and report them as error.
+
+### Missing required keys
+
+Example input:
+
+```yaml
+on: push
+jobs:
+  test:
+    steps:
+      - run: echo 'hello'
+```
+
+Output:
+
+```
+test.yaml:4:5: "runs-on" section is missing in job "test" [syntax-check]
+4|     steps:
+ |     ^~~~~~
+```
+
+Some mappings must include specific keys. For example, job mapping must include `runs-on:` and `steps:`.
+
+actionlint checks these required keys and reports an error when they are missing.
+
+### Unexpected empty mappings
+
+Example input:
+
+```yaml
+on: push
+jobs:
+```
+
+Output:
+
+```
+test.yaml:2:6: "jobs" section should not be empty. please remove this section if it's unnecessary [syntax-check]
+2| jobs:
+ |      ^
+```
+
+Some mappings and sequences should not be empty. For example, `steps:` must include at least one step.
+
+actionlint checks such mappings and sequences are not empty and reports the empty mappings and sequences as error.
 
 ## Configuration file
 
@@ -169,3 +236,4 @@ actionlint is distributed under [the MIT license](./LICENSE.txt).
 [act]: https://github.com/nektos/act
 [Go]: https://golang.org/
 [apidoc]: https://pkg.go.dev/github.com/rhysd/actionlint
+[syntax-doc]: https://docs.github.com/en/actions/reference/workflow-syntax-for-github-actions
