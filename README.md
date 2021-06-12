@@ -75,13 +75,13 @@ go get github.com/rhysd/actionlint/cmd/actionlint
 
 ## Usage
 
-With no argument, actionlint finds all workflow files in the current repository and check them.
+With no argument, actionlint finds all workflow files in the current repository and checks them.
 
 ```
 actionlint
 ```
 
-When path to YAML workflow files are given, action lint checks them.
+When path to YAML workflow files are given, actionlint checks them.
 
 ```
 actionlint path/to/workflow1.yaml path/to/workflow2.yaml
