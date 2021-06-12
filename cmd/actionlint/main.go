@@ -29,6 +29,18 @@ const usageHeader = `Usage: actionlint [FLAGS] [FILES...] [-]
 
     $ actionlint -
 
+Configuration:
+
+  Configuration file can be put at:
+
+    .github/actionlint.yaml
+    .github/actionlint.yml
+
+  Please generate default configuration file and check comments in the file for
+  more details.
+
+    $ actionlint -init-config
+
 Flags:`
 
 func usage() {

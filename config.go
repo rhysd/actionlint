@@ -36,7 +36,7 @@ func readConfigFile(path string) (*Config, error) {
 func writeDefaultConfigFile(path string) error {
 	b := []byte(`self-hosted-runner:
   # Labels of self-hosted runner in array of string
-  labels:
+  labels: []
 `)
 	if err := ioutil.WriteFile(path, b, 0644); err != nil {
 		return fmt.Errorf("could not write default configuration file at %q: %w", path, err)
