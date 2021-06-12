@@ -111,7 +111,7 @@ func (rule *RuleRunnerLabel) verifyRunnerLabel(label *String) string {
 	}
 	rule.errorf(
 		label.Pos,
-		"label %q is unknown. available labels are %s. if the label is for self-hosted runner, set list of labels in actionlint.yaml config file",
+		"label %q is unknown. available labels are %s. if it is a custom label for self-hosted runner, set list of labels in actionlint.yaml config file",
 		label.Value,
 		strings.Join(qs, ", "),
 	)

@@ -19,7 +19,6 @@ See ['Checks' section](#checks) for full list of checks done by actionlint.
 on:
   push:
     branch: main
-
 jobs:
   test:
     strategy:
@@ -27,27 +26,29 @@ jobs:
         os: [macos-latest, linux-latest]
     runs-on: ${{ matrix.os }}
     steps:
+      - uses: actions/checkout@v2
       - uses: actions/cache@v2
         with:
           path: ~/.npm
           key: ${{ matrix.platform }}-node-${{ hashFiles('**/package-lock.json') }}
         if: github.repository.permissions.admin == true
+      - run: npm install && npm test
 ```
 
 **Output from actionlint:**
 
 ```
-ci.yaml:3:5: unexpected key "branch" for "push" section. expected one of "types", "branches", "branches-ignore", "tags", "tags-ignore", "paths", "paths-ignore", "workflows" [syntax-check]
+example.yaml:3:5: unexpected key "branch" for "push" section. expected one of "types", "branches", "branches-ignore", "tags", "tags-ignore", "paths", "paths-ignore", "workflows" [syntax-check]
 3|     branch: main
  |     ^~~~~~~
-ci.yaml:9:28: label "linux-latest" is unknown. available labels are "windows-latest", "windows-2019", "windows-2016", "ubuntu-latest", "ubuntu-20.04", ... [runner-label]
+example.yaml:9:28: label "linux-latest" is unknown. available labels are "windows-latest", "windows-2019", "windows-2016", "ubuntu-latest", ... [runner-label]
 9|         os: [macos-latest, linux-latest]
  |                            ^~~~~~~~~~~~~
-ci.yaml:16:13: receiver of object dereference "permissions" must be type of object but got "string" [expression]
-16|         if: github.repository.permissions.admin == true
+example.yaml:17:13: receiver of object dereference "permissions" must be type of object but got "string" [expression]
+17|         if: github.repository.permissions.admin == true
   |             ^~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
-ci.yaml:15:20: property "platform" is not defined in object type {os: string} [expression]
-15|           key: ${{ matrix.platform }}-node-${{ hashFiles('**/package-lock.json') }}
+example.yaml:16:20: property "platform" is not defined in object type {os: string} [expression]
+16|           key: ${{ matrix.platform }}-node-${{ hashFiles('**/package-lock.json') }}
   |                    ^~~~~~~~~~~~~~~
 ```
 
@@ -132,7 +133,7 @@ bother users to configure behavior of it. Running actionlint without configurati
 actionlint can be used from Go programs. See [the documentation][apidoc] to know the list of all APIs. Followings are
 unexhaustive list of interesting APIs.
 
-- `Linter` manages linter lifecycle and apply checks to given files. If you want to run actionlint checks in your
+- `Linter` manages linter lifecycle and applies checks to given files. If you want to run actionlint checks in your
   program, please use this struct.
 - `Project` and `Projects` detect a project (Git repository) in a given directory path and find configuration in it.
 - `Workflow`, `Job`, `Step`, ... are nodes of workflow syntax tree. `Workflow` is a root node.
