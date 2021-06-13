@@ -1,0 +1,17 @@
+on: push
+jobs:
+  prepare:
+    needs: [build]
+    runs-on: ubuntu-latest
+    steps:
+      - run: echo 'prepare'
+  install:
+    needs: [prepare]
+    runs-on: ubuntu-latest
+    steps:
+      - run: echo 'install'
+  build:
+    needs: [install]
+    runs-on: ubuntu-latest
+    steps:
+      - run: echo 'build'

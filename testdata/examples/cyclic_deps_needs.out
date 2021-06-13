@@ -1,0 +1,1 @@
+/test\.yaml:\d+:\d+: cyclic dependencies in "needs" configurations of jobs are detected\. detected cycle is ".+" -> ".+", ".+" -> ".+", ".+" -> ".+" \[job-needs\]/

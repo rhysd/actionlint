@@ -620,8 +620,8 @@ test.yaml:14:9: shellcheck reported issue in this script: SC2086:info:1:6: Doubl
 [shellcheck][] is a famous linter for ShellScript. actionlint runs shellcheck for scripts at `run:` step in workflow.
 
 actionlint detects which shell is used to run the scripts following [the documentation][shell-doc]. On Linux or macOS,
-the default shell is `bash` and on Windows it is `pwsh`. Shell can be specified by `shell:` configuration at workflow level
-or job level. Each step can specify `shell:` to run its script.
+the default shell is `bash` and on Windows it is `pwsh`. Shell can be configured by `shell:` configuration at workflow level
+or job level. Each step can configure shell to run scripts by `shell:`.
 
 actionlint remembers the default shell and checks what OS the job runs on. Only when the shell is `bash` or `sh`, actionlint
 applies shellcheck to scripts.
@@ -630,16 +630,69 @@ By default, actionlint checks if `shellcheck` command exists in your system and 
 option on running `actionlint` command specifies the executable path of shellcheck. Setting empty string by `shellcheck=`
 disables shellcheck integration explicitly.
 
-### 
+### Job dependencies
 
 Example input:
 
 ```yaml
+on: push
+jobs:
+  prepare:
+    needs: [build]
+    runs-on: ubuntu-latest
+    steps:
+      - run: echo 'prepare'
+  install:
+    needs: [prepare]
+    runs-on: ubuntu-latest
+    steps:
+      - run: echo 'install'
+  build:
+    needs: [install]
+    runs-on: ubuntu-latest
+    steps:
+      - run: echo 'build'
 ```
 
 Output:
 
 ```
+test.yaml:8:3: cyclic dependencies in "needs" configurations of jobs are detected. detected cycle is "install" -> "prepare", "prepare" -> "build", "build" -> "install" [job-needs]
+8|   install:
+ |   ^~~~~~~~
+```
+
+Job dependencies can be defined at [`needs:`][needs-doc]. If cyclic dependencies exist, jobs never start to run. actionlint
+detects cyclic dependencies in `needs:` sections of jobs and reports it as error.
+
+actionlint also detects undefined jobs and duplicate jobs in `needs:` section.
+
+Example input:
+
+```yaml
+on: push
+jobs:
+  foo:
+    needs: [bar, BAR]
+    runs-on: ubuntu-latest
+    steps:
+      - run: echo 'hi'
+  bar:
+    needs: [unknown]
+    runs-on: ubuntu-latest
+    steps:
+      - run: echo 'hi'
+```
+
+Output:
+
+```
+test.yaml:4:18: job ID "BAR" duplicates in "needs" section. note that job ID is case insensitive [job-needs]
+4|     needs: [bar, BAR]
+ |                  ^~~~
+test.yaml:8:3: job "bar" needs job "unknown" which does not exist in this workflow [job-needs]
+8|   bar:
+ |   ^~~~
 ```
 
 ### 
