@@ -630,6 +630,9 @@ By default, actionlint checks if `shellcheck` command exists in your system and 
 option on running `actionlint` command specifies the executable path of shellcheck. Setting empty string by `shellcheck=`
 disables shellcheck integration explicitly.
 
+Since both `${{ }}` expression syntax and ShellScript's variable access `$FOO` use `$`, remaining `${{ }}` confuses shellcheck.
+To avoid it, actionlint replaces `${{ }}` with spaces, for example `echo '${{ matrix.os }}'` is replaced with `echo '                '`.
+
 ### Job dependencies
 
 Example input:
@@ -693,6 +696,104 @@ test.yaml:4:18: job ID "BAR" duplicates in "needs" section. note that job ID is 
 test.yaml:8:3: job "bar" needs job "unknown" which does not exist in this workflow [job-needs]
 8|   bar:
  |   ^~~~
+```
+
+### Matrix values
+
+Example input:
+
+```yaml
+on: push
+jobs:
+  test:
+    strategy:
+      matrix:
+        node: [10, 12, 14, 14]
+        os: [ubuntu-latest, macos-latest]
+        exclude:
+          - node: 13
+            os: ubuntu-latest
+          - node: 10
+            platform: ubuntu-latest
+    runs-on: ${{ matrix.os }}
+    steps:
+      - run: echo ...
+```
+
+Output:
+
+```
+test.yaml:6:28: duplicate value "14" is found in matrix "node". the same value is at line:6,col:24 [matrix]
+6|         node: [10, 12, 14, 14]
+ |                            ^~~
+test.yaml:9:19: value "13" in "exclude" does not exist in matrix "node" combinations. possible values are "10", "12", "14", "14" [matrix]
+9|           - node: 13
+ |                   ^~
+test.yaml:12:13: "platform" in "exclude" section does not exist in matrix. available matrix configurations are "node", "os" [matrix]
+12|             platform: ubuntu-latest
+  |             ^~~~~~~~~
+```
+
+[`matrix:`][matrix-doc] defines combinations of multiple values. Nested `include:` and `exclude:` can add/remove specific
+combination of matrix values. actionlint checks
+
+- values in `exclude:` appear in `matrix:` or `include:`
+- duplicate in variations of matrix values
+
+### Webhook events validation
+
+Example input:
+
+```yaml
+on:
+  push:
+    # Unexpected filter. 'branches' is correct
+    branch: foo
+  issues:
+    # Unexpected type. 'opened' is correct
+    types: created
+  pullreq:
+
+jobs:
+  test:
+    runs-on: ubuntu-latest
+    steps:
+      - run: echo ...
+```
+
+Output:
+
+```
+test.yaml:4:5: unexpected key "branch" for "push" section. expected one of "types", "branches", "branches-ignore", "tags", "tags-ignore", ... [syntax-check]
+4|     branch: foo
+ |     ^~~~~~~
+test.yaml:7:12: invalid activity type "created" for "issues" Webhook event. available types are "opened", "edited", "deleted", "transferred", ... [events]
+7|     types: created
+ |            ^~~~~~~
+test.yaml:8:3: unknown Webhook event "pullreq". see https://docs.github.com/en/actions/reference/events-that-trigger-workflows#webhook-events for list of all Webhook event names [events]
+8|   pullreq:
+ |   ^~~~~~~~
+```
+
+At `on:`, Webhook events can be specified to trigger the workflow. [Webhook event documentation][webhook-doc] defines
+which Webhook events are available and what types can be specified at `types:` for each event.
+
+actionlint validates the Webhook configurations:
+
+- unknown Webhook event name
+- unknown type for Webhook event
+- invalid filter names
+
+### 
+
+Example input:
+
+```yaml
+```
+
+Output:
+
+```
 ```
 
 ### 
@@ -785,3 +886,5 @@ actionlint is distributed under [the MIT license](./LICENSE.txt).
 [needs-doc]: https://docs.github.com/en/actions/reference/workflow-syntax-for-github-actions#jobsjob_idneeds
 [needs-context-doc]: https://docs.github.com/en/actions/reference/context-and-expression-syntax-for-github-actions#needs-context
 [shell-doc]: https://docs.github.com/en/actions/reference/workflow-syntax-for-github-actions#using-a-specific-shell
+[matrix-doc]: https://docs.github.com/en/actions/reference/workflow-syntax-for-github-actions#jobsjob_idstrategymatrix
+[webhook-doc]: https://docs.github.com/en/actions/reference/events-that-trigger-workflows#webhook-events

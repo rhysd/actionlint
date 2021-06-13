@@ -1,0 +1,14 @@
+on:
+  push:
+    # Unexpected filter. 'branches' is correct
+    branch: foo
+  issues:
+    # Unexpected type. 'opened' is correct
+    types: created
+  pullreq:
+
+jobs:
+  test:
+    runs-on: ubuntu-latest
+    steps:
+      - run: echo ...
