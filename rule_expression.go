@@ -657,7 +657,7 @@ func guessTypeOfRawYAMLValue(v RawYAMLValue) ExprType {
 		for k, p := range v.Props {
 			m[k] = guessTypeOfRawYAMLValue(p)
 		}
-		return &ObjectType{Props: m, StrictProps: false}
+		return &ObjectType{Props: m, StrictProps: true}
 	case *RawYAMLArray:
 		if len(v.Elems) == 0 {
 			return &ArrayType{AnyType{}}
