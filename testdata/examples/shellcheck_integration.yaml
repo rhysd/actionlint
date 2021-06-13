@@ -1,0 +1,15 @@
+on: push
+jobs:
+  test:
+    runs-on: ubuntu-latest
+    steps:
+      - run: echo $FOO
+  test-win:
+    runs-on: windows-latest
+    steps:
+      # Shell on Windows is PowerShell by default.
+      # shellcheck is not run in this case.
+      - run: echo $FOO
+      # This script is run with bash due to 'shell:' configuration
+      - run: echo $FOO
+        shell: bash

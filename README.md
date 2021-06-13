@@ -292,6 +292,42 @@ access to unknown properties. In the case, accessing to unknown property is type
 
 When the type check cannot be done statically, the type is deducted to `any` (e.g. return type from `toJSON()`).
 
+And `${{ }}` can be used for expanding values.
+
+Example input:
+
+```yaml
+on: push
+jobs:
+  test:
+    strategy:
+      matrix:
+        env_string:
+          - 'FOO=BAR'
+          - 'FOO=PIYO'
+        env_object:
+          - FOO: BAR
+          - FOO: PIYO
+    runs-on: ubuntu-latest
+    steps:
+      # Expanding object at 'env:' section
+      - run: echo "$FOO"
+        env: ${{ matrix.env_object }}
+      # String value cannot be expanded as object
+      - run: echo "$FOO"
+        env: ${{ matrix.env_string }}
+```
+
+Output:
+
+```
+test.yaml:19:14: type of expression at "env" must be object but found type string [expression]
+19|         env: ${{ matrix.env_string }}
+  |              ^~~
+```
+
+In above example, environment variables mapping is expanded at `env:` section. actionlint checks type of the expanded value.
+
 ### Contexts and built-in functions
 
 Example input:
@@ -461,7 +497,140 @@ test.yaml:34:24: property "os" is not defined in object type {} [expression]
   |                        ^~~~~~~~~
 ```
 
+Types of `matrix` context is contextually checked by the semantics checker. Type of matrix values in `matrix:` section
+is deduced from element values of its array. When the matrix value is an array of objects, objects' properties are checked
+strictly like `package.name` in above example.
+
+When type of the array elements is not persistent, type of the matrix value falls back to `any`.
+
+```yaml
+strategy:
+  matrix:
+    foo:
+      - 'string value'
+      - 42
+      - {aaa: true, bbb: null}
+    bar:
+      - [42]
+      - [true]
+      - [{aaa: true, bbb: null}]
+      - []
+steps:
+  # matrix.foo is any type value
+  - run: echo ${{ matrix.foo }}
+  # matrix.bar is array<any> type value
+  - run: echo ${{ matrix.bar[0] }}
+```
+
 ### Contextual type for `needs` object
+
+Example input:
+
+```yaml
+on: push
+jobs:
+  install:
+    outputs:
+      installed: '...'
+    runs-on: ubuntu-latest
+    steps:
+      - run: echo 'install something'
+  prepare:
+    outputs:
+      prepared: '...'
+    runs-on: ubuntu-latest
+    steps:
+      - run: echo 'parepare something'
+      # ERROR: Outputs in other job is not accessble
+      - run: echo '${{ needs.prepare.outputs.prepared }}'
+  build:
+    needs: [install, prepare]
+    outputs:
+      built: '...'
+    runs-on: ubuntu-latest
+    steps:
+      # OK: Accessing to job results
+      - run: echo 'build something with ${{ needs.install.outputs.installed }} and ${{ needs.prepare.outputs.prepared }}'
+      # ERROR: Accessing to undefined output cases an error
+      - run: echo '${{ needs.install.outputs.foo }}'
+      # ERROR: Accessing to undefined job ID
+      - run: echo '${{ needs.some_job }}'
+  other:
+    runs-on: ubuntu-latest
+    steps:
+      # ERROR: Cannot access to outptus across jobs
+      - run: echo '${{ needs.build.outputs.built }}'
+```
+
+Output:
+
+```
+test.yaml:16:24: property "prepare" is not defined in object type {} [expression]
+16|       - run: echo '${{ needs.prepare.outputs.prepared }}'
+  |                        ^~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+test.yaml:26:24: property "foo" is not defined in object type {installed: string} [expression]
+26|       - run: echo '${{ needs.install.outputs.foo }}'
+  |                        ^~~~~~~~~~~~~~~~~~~~~~~~~
+test.yaml:28:24: property "some_job" is not defined in object type {install: {outputs: {installed: string}; result: string}; prepare: {outputs: {prepared: string}; result: string}} [expression]
+28|       - run: echo '${{ needs.some_job }}'
+  |                        ^~~~~~~~~~~~~~
+test.yaml:33:24: property "build" is not defined in object type {} [expression]
+33|       - run: echo '${{ needs.build.outputs.built }}'
+  |                        ^~~~~~~~~~~~~~~~~~~~~~~~~
+```
+
+Job dependencies can be defined at [`needs:`][needs-doc]. A job runs after all jobs defined in `needs:` are done.
+Outputs from the jobs can be accessed only from jobs following them via [`needs` context][needs-context-doc].
+
+actionlint defines type of `needs` variable contextually looking at each job's `outputs:` section and `needs:` section.
+
+### [shellcheck][] integration
+
+Example input:
+
+```yaml
+on: push
+jobs:
+  test:
+    runs-on: ubuntu-latest
+    steps:
+      - run: echo $FOO
+  test-win:
+    runs-on: windows-latest
+    steps:
+      # Shell on Windows is PowerShell by default.
+      # shellcheck is not run in this case.
+      - run: echo $FOO
+      # This script is run with bash due to 'shell:' configuration
+      - run: echo $FOO
+        shell: bash
+```
+
+Output:
+
+```
+test.yaml:6:9: shellcheck reported issue in this script: SC2086:info:1:6: Double quote to prevent globbing and word splitting [shellcheck]
+6|       - run: echo $FOO
+ |         ^~~~
+test.yaml:14:9: shellcheck reported issue in this script: SC2086:info:1:6: Double quote to prevent globbing and word splitting [shellcheck]
+14|       - run: echo $FOO
+  |         ^~~~
+```
+
+[shellcheck][] is a famous linter for ShellScript. actionlint runs shellcheck for scripts at `run:` step in workflow.
+
+actionlint detects which shell is used to run the scripts following [the documentation][shell-doc]. On Linux or macOS,
+the default shell is `bash` and on Windows it is `pwsh`. Shell can be specified by `shell:` configuration at workflow level
+or job level. Each step can specify `shell:` to run its script.
+
+actionlint remembers the default shell and checks what OS the job runs on. Only when the shell is `bash` or `sh`, actionlint
+applies shellcheck to scripts.
+
+By default, actionlint checks if `shellcheck` command exists in your system and uses it when it is found. The `-shellcheck`
+option on running `actionlint` command specifies the executable path of shellcheck. Setting empty string by `shellcheck=`
+disables shellcheck integration explicitly.
+
+### 
 
 Example input:
 
@@ -560,3 +729,6 @@ actionlint is distributed under [the MIT license](./LICENSE.txt).
 [contexts-doc]: https://docs.github.com/en/actions/reference/context-and-expression-syntax-for-github-actions#contexts
 [funcs-doc]: https://docs.github.com/en/actions/reference/context-and-expression-syntax-for-github-actions#functions
 [steps-doc]: https://docs.github.com/en/actions/reference/context-and-expression-syntax-for-github-actions#steps-context
+[needs-doc]: https://docs.github.com/en/actions/reference/workflow-syntax-for-github-actions#jobsjob_idneeds
+[needs-context-doc]: https://docs.github.com/en/actions/reference/context-and-expression-syntax-for-github-actions#needs-context
+[shell-doc]: https://docs.github.com/en/actions/reference/workflow-syntax-for-github-actions#using-a-specific-shell

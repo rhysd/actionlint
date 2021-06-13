@@ -1,0 +1,20 @@
+on: push
+jobs:
+  test:
+    strategy:
+      matrix:
+        foo:
+          - 'string value'
+          - 42
+          - {aaa: true, bbb: null}
+        bar:
+          - [42]
+          - [true]
+          - [{aaa: true, bbb: null}]
+          - []
+    runs-on: ubuntu-latest
+    steps:
+      # matrix.foo is any type value
+      - run: echo ${{ matrix.foo }}
+      # matrix.bar is array<any> type value
+      - run: echo ${{ matrix.bar[0] }}

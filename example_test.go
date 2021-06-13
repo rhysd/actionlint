@@ -4,6 +4,7 @@ import (
 	"bufio"
 	"io/ioutil"
 	"os"
+	"os/exec"
 	"path/filepath"
 	"regexp"
 	"sort"
@@ -57,13 +58,23 @@ func TestExamples(t *testing.T) {
 	for _, infile := range infiles {
 		base := strings.TrimSuffix(infile, filepath.Ext(infile))
 		outfile := base + ".out"
-		t.Run(filepath.Base(base), func(t *testing.T) {
+		testName := filepath.Base(base)
+		t.Run(testName, func(t *testing.T) {
 			b, err := ioutil.ReadFile(infile)
 			if err != nil {
 				panic(err)
 			}
 
 			opts := LinterOptions{}
+
+			if strings.Contains(testName, "shellcheck") {
+				p, err := exec.LookPath("shellcheck")
+				if err != nil {
+					t.Skip("skipped because \"shellcheck\" command does not exist in system")
+				}
+				opts.Shellcheck = p
+			}
+
 			linter, err := NewLinter(ioutil.Discard, &opts)
 			if err != nil {
 				t.Fatal(err)

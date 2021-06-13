@@ -230,7 +230,7 @@ func (rule *RuleExpression) checkNumberTy(ty ExprType, pos *Pos, what string) Ex
 	case NumberType, AnyType:
 		return ty
 	default:
-		rule.errorf(pos, "type of expression at %q must be array but found type %s", what, ty.String())
+		rule.errorf(pos, "type of expression at %q must be number but found type %s", what, ty.String())
 		return nil
 	}
 }
