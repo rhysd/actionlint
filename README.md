@@ -122,7 +122,7 @@ are simply ignored and don't affect workflow behavior. It means typo in keys is 
 
 actionlint can detect unexpected keys while parsing workflow syntax and report them as error.
 
-### Missing required keys
+### Missing required keys or key duplicates
 
 Example input:
 
@@ -132,11 +132,18 @@ jobs:
   test:
     steps:
       - run: echo 'hello'
+  TEST:
+    runs-on: ubuntu-latest
+    steps:
+      - run: echo 'bye'
 ```
 
 Output:
 
 ```
+test.yaml:6:3: key "test" is duplicate in "jobs" section. previously defined at line:3,col:3. note that key names are case insensitive [syntax-check]
+6|   TEST:
+ |   ^~~~~
 test.yaml:4:5: "runs-on" section is missing in job "test" [syntax-check]
 4|     steps:
  |     ^~~~~~
@@ -144,7 +151,10 @@ test.yaml:4:5: "runs-on" section is missing in job "test" [syntax-check]
 
 Some mappings must include specific keys. For example, job mapping must include `runs-on:` and `steps:`.
 
-actionlint checks these required keys and reports an error when they are missing.
+And duplicate in keys is not allowed. In workflow syntax, comparing keys is **case insensitive**. For example, job ID
+`test` in lower case and job ID `TEST` in upper case are not able to exist in the same workflow.
+
+actionlint checks these missing required keys and duplicate of keys while parsing, and reports an error.
 
 ### Unexpected empty mappings
 
@@ -165,7 +175,80 @@ test.yaml:2:6: "jobs" section should not be empty. please remove this section if
 
 Some mappings and sequences should not be empty. For example, `steps:` must include at least one step.
 
-actionlint checks such mappings and sequences are not empty and reports the empty mappings and sequences as error.
+actionlint checks such mappings and sequences are not empty while parsing, and reports the empty mappings and sequences as error.
+
+### Unexpected mapping values
+
+Example input:
+
+```yaml
+on: push
+jobs:
+  test:
+    runs-on: ubuntu-latest
+    permissions:
+      issues: foo
+    continue-on-error: foo
+    steps:
+      - run: echo 'hello'
+```
+
+Output:
+
+```
+test.yaml:6:15: permission must be one of "none", "read", "write" but got "foo" [syntax-check]
+6|       issues: foo
+ |               ^~~
+test.yaml:7:24: expecting a string with ${{...}} expression or boolean literal "true" or "false", but found plain text node [syntax-check]
+7|     continue-on-error: foo
+ |                        ^~~
+```
+
+Some mapping's values are stricted to some constant strings. For example, values of `permissions:` mappings should be
+one of `none`, `read`, `write`. And several mapping values expect boolean value like `true` or `false`.
+
+actionlint checks such constant strings are used properly while parsing, and reports an error when unexpected string
+value is specified.
+
+### Syntax check for expression `${{ }}`
+
+Example input:
+
+```yaml
+on: push
+jobs:
+  test:
+    runs-on: ubuntu-latest
+    steps:
+      # " is not available for string literal delimiter
+      - run: echo '${{ "hello" }}'
+      # + operator does not exist
+      - run: echo '${{ 1 + 1 }}'
+      # Missing ')' paren
+      - run: echo "${{ toJson(hashFiles('**/lock', '**/cache/') }}"
+      # unexpected end of input
+      - run: echo '${{ github.event. }}'
+```
+
+Output:
+
+```
+test.yaml:7:25: got unexpected character '"' while lexing expression, expecting '_', '\'', '}', '(', ')', '[', ']', '.', '!', '<', '>', '=', '&', ... [expression]
+7|       - run: echo '${{ "hello" }}'
+ |                         ^~~~~~
+test.yaml:9:27: got unexpected character '+' while lexing expression, expecting '_', '\'', '}', '(', ')', '[', ']', '.', '!', '<', '>', '=', '&', ... [expression]
+9|       - run: echo '${{ 1 + 1 }}'
+ |                           ^
+test.yaml:11:65: unexpected end of input while parsing arguments of function call. expecting ",", ")" [expression]
+11|       - run: echo "${{ toJson(hashFiles('**/lock', '**/cache/') }}"
+  |                                                                 ^~~
+test.yaml:13:38: unexpected end of input while parsing object property dereference like 'a.b' or array element dereference like 'a.*'. expecting "IDENT", "*" [expression]
+13|       - run: echo '${{ github.event. }}'
+  |                                      ^~~
+```
+
+actionlint lexes and parses expression in `${{ }}` following [the expression syntax document][expr-doc]. It can detect
+many syntax errors like invalid characters, missing parens, unexpected end of input, ...
 
 ## Configuration file
 
@@ -237,3 +320,4 @@ actionlint is distributed under [the MIT license](./LICENSE.txt).
 [Go]: https://golang.org/
 [apidoc]: https://pkg.go.dev/github.com/rhysd/actionlint
 [syntax-doc]: https://docs.github.com/en/actions/reference/workflow-syntax-for-github-actions
+[expr-doc]: https://docs.github.com/en/actions/reference/context-and-expression-syntax-for-github-actions

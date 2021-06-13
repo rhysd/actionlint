@@ -1,0 +1,2 @@
+test.yaml:6:15: permission must be one of "none", "read", "write" but got "foo" [syntax-check]
+test.yaml:7:24: expecting a string with ${{...}} expression or boolean literal "true" or "false", but found plain text node [syntax-check]

@@ -3,3 +3,7 @@ jobs:
   test:
     steps:
       - run: echo 'hello'
+  TEST:
+    runs-on: ubuntu-latest
+    steps:
+      - run: echo 'bye'

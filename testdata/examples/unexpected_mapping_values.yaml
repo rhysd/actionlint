@@ -1,0 +1,9 @@
+on: push
+jobs:
+  test:
+    runs-on: ubuntu-latest
+    permissions:
+      issues: foo
+    continue-on-error: foo
+    steps:
+      - run: echo 'hello'

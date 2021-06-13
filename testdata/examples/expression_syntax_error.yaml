@@ -1,0 +1,13 @@
+on: push
+jobs:
+  test:
+    runs-on: ubuntu-latest
+    steps:
+      # " is not available for string literal delimiter
+      - run: echo '${{ "hello" }}'
+      # + operator does not exist
+      - run: echo '${{ 1 + 1 }}'
+      # Missing ')' paren
+      - run: echo "${{ toJson(hashFiles('**/lock', '**/cache/') }}"
+      # unexpected end of input
+      - run: echo '${{ github.event. }}'
