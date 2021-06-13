@@ -234,6 +234,7 @@ var BuiltinGlobalVariableTypes = map[string]ExprType{
 					"id":      StringType{},
 					"network": StringType{},
 				},
+				StrictProps: true,
 			},
 			"services": NewObjectType(),
 			"status":   StringType{},
