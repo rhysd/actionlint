@@ -1,0 +1,11 @@
+on: push
+jobs:
+  test:
+    runs-on: ubuntu-latest
+    steps:
+      # Basic type error like index access to object
+      - run: echo '${{ env[0] }}'
+      # Properties in objects are strongly typed. So missing property can be caught
+      - run: echo '${{ job.container.os }}'
+      # github.repository is string. So accessing .owner is invalid
+      - run: echo '${{ github.repository.owner }}'

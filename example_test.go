@@ -5,6 +5,7 @@ import (
 	"io/ioutil"
 	"os"
 	"path/filepath"
+	"regexp"
 	"strings"
 	"testing"
 )
@@ -78,8 +79,15 @@ func TestExamples(t *testing.T) {
 
 			for i := 0; i < len(errs); i++ {
 				want, have := expected[i], errs[i].Error()
-				if want != have {
-					t.Errorf("error message mismatch at %dth error\n  want: %q\n  have: %q", i+1, want, have)
+				if strings.HasPrefix(want, "/") && strings.HasSuffix(want, "/") {
+					want := regexp.MustCompile(want[1 : len(want)-1])
+					if !want.MatchString(have) {
+						t.Errorf("error message mismatch at %dth error does not match to regular expression\n  want: /%s/\n  have: %q", i+1, want, have)
+					}
+				} else {
+					if want != have {
+						t.Errorf("error message mismatch at %dth error does not match exactly\n  want: %q\n  have: %q", i+1, want, have)
+					}
 				}
 			}
 		})

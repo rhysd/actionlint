@@ -250,6 +250,160 @@ test.yaml:13:38: unexpected end of input while parsing object property dereferen
 actionlint lexes and parses expression in `${{ }}` following [the expression syntax document][expr-doc]. It can detect
 many syntax errors like invalid characters, missing parens, unexpected end of input, ...
 
+### Type checks for expression syntax in `${{ }}`
+
+Example input:
+
+```yaml
+on: push
+jobs:
+  test:
+    runs-on: ubuntu-latest
+    steps:
+      # Basic type error like index access to object
+      - run: echo '${{ env[0] }}'
+      # Properties in objects are strongly typed. So missing property can be caught
+      - run: echo '${{ job.container.os }}'
+      # github.repository is string. So accessing .owner is invalid
+      - run: echo '${{ github.repository.owner }}'
+```
+
+Output:
+
+```
+test.yaml:7:28: property access of object must be type of string but got "number" [expression]
+7|       - run: echo '${{ env[0] }}'
+ |                            ^~
+test.yaml:9:24: property "os" is not defined in object type {id: string; network: string} [expression]
+9|       - run: echo '${{ job.container.os }}'
+ |                        ^~~~~~~~~~~~~~~~
+test.yaml:11:24: receiver of object dereference "owner" must be type of object but got "string" [expression]
+11|       - run: echo '${{ github.repository.owner }}'
+  |                        ^~~~~~~~~~~~~~~~~~~~~~~
+```
+
+Type checks for expression syntax in `${{ }}` are done by semantics checker. Note that actual type checks by GitHub Actions
+runtime is loose. For example any object value can be assigned into string value as string `"Object"`. But such loose
+conversions are bugs in almost all cases. actionlint checks types more strictly.
+
+There are two types of object types internally. One is an object which is strict for properties, which causes a type error
+when trying to access to unknown properties. And another is an object which is not strict for properties, which allows to
+access to unknown properties. In the case, accessing to unknown property is typed as `any`.
+
+When the type check cannot be done statically, the type is deducted to `any` (e.g. return type from `toJSON()`).
+
+### Contexts and built-in functions
+
+Example input:
+
+```yaml
+on: push
+jobs:
+  test:
+    runs-on: ubuntu-latest
+    steps:
+      # Access to undefined context
+      - run: echo '${{ unknown_context }}'
+      # Access to undefined property of context
+      - run: echo '${{ github.events }}'
+      # Calling undefined function (start's'With is correct)
+      - run: echo "${{ startWith('hello, world', 'lo,') }}"
+      # Wrong number of arguments
+      - run: echo "${{ startsWith('hello, world') }}"
+      # Wrong type of parameter
+      - run: echo "${{ startsWith('hello, world', github.event) }}"
+      # Function overloads can be handled properly. contains() has string version and array version
+      - run: echo "${{ contains('hello, world', 'lo,') }}"
+      - run: echo "${{ contains(github.event.labels.*.name, 'enhancement') }}"
+      # format() has special check for formating string
+      - run: echo "${{ format('{0}{1}', 1, 2, 3) }}"
+```
+
+Output:
+
+```
+test.yaml:7:24: undefined variable "unknown_context". available variables are "env", "github", "job", "matrix", "needs", "runner", "secrets", "steps", "strategy" [expression]
+7|       - run: echo '${{ unknown_context }}'
+ |                        ^~~~~~~~~~~~~~~
+test.yaml:9:24: property "events" is not defined in object type {workspace: string; env: string; event_name: string; event_path: string; ...} [expression]
+9|       - run: echo '${{ github.events }}'
+ |                        ^~~~~~~~~~~~~
+test.yaml:11:24: undefined function "startWith". available functions are "always", "cancelled", "contains", "endswith", "failure", "format", "fromjson", "hashfiles", "join", "startswith", "success", "tojson" [expression]
+11|       - run: echo "${{ startWith('hello, world', 'lo,') }}"
+  |                        ^~~~~~~~~~~~~~~~~
+test.yaml:13:24: number of arguments is wrong. function "startsWith(string, string) -> bool" takes 2 parameters but 1 arguments are provided [expression]
+13|       - run: echo "${{ startsWith('hello, world') }}"
+  |                        ^~~~~~~~~~~~~~~~~~
+test.yaml:15:51: 2nd argument of function call is not assignable. "object" cannot be assigned to "string". called function type is "startsWith(string, string) -> bool" [expression]
+15|       - run: echo "${{ startsWith('hello, world', github.event) }}"
+  |                                                   ^~~~~~~~~~~~~
+test.yaml:20:24: format string "{0}{1}" contains 2 placeholders but 3 arguments are given to format [expression]
+20|       - run: echo "${{ format('{0}{1}', 1, 2, 3) }}"
+  |                        ^~~~~~~~~~~~~~~~
+```
+
+[Contexts][contexts-doc] and [built-in functions][funcs-doc] are strongly typed. Typos in property access of contexts and
+function names can be checked. And invalid function calls like wrong number of arguments or type mismatch at parameter also
+can be checked thanks to type checker.
+
+The semantics checker can properly handle that
+
+- some functions are overloaded (e.g. `contains(str, substr)` and `contains(array, item)`)
+- some parameters are optional (e.g. `join(strings, sep)` and `join(strings)`)
+- some parameters are repeatable (e.g. `hashFiles(file1, file2, ...)`)
+
+In addition, `format()` function has special check for placeholders in the first parameter which represents formatting string.
+
+Note that context names and function names are case insensitive. For example, `toJSON` and `toJson` are the same function.
+
+### Contextual type for `steps.<step_id>` objects
+
+Example input:
+
+```yaml
+```
+
+Output:
+
+```
+```
+
+### Contextual type for `matrix` object
+
+Example input:
+
+```yaml
+```
+
+Output:
+
+```
+```
+
+### Contextual type for `needs` object
+
+Example input:
+
+```yaml
+```
+
+Output:
+
+```
+```
+
+### 
+
+Example input:
+
+```yaml
+```
+
+Output:
+
+```
+```
+
 ## Configuration file
 
 Configuration file `actionlint.yaml` or `actionlint.yml` can be put in `.github` directory.
@@ -321,3 +475,5 @@ actionlint is distributed under [the MIT license](./LICENSE.txt).
 [apidoc]: https://pkg.go.dev/github.com/rhysd/actionlint
 [syntax-doc]: https://docs.github.com/en/actions/reference/workflow-syntax-for-github-actions
 [expr-doc]: https://docs.github.com/en/actions/reference/context-and-expression-syntax-for-github-actions
+[contexts-doc]: https://docs.github.com/en/actions/reference/context-and-expression-syntax-for-github-actions#contexts
+[funcs-doc]: https://docs.github.com/en/actions/reference/context-and-expression-syntax-for-github-actions#functions
