@@ -6,11 +6,30 @@ import (
 	"os"
 	"path/filepath"
 	"regexp"
+	"sort"
 	"strings"
 	"testing"
 )
 
+type byErrorPosition []*Error
+
+func (by byErrorPosition) Len() int {
+	return len(by)
+}
+
+func (by byErrorPosition) Less(i, j int) bool {
+	if by[i].Line == by[j].Line {
+		return by[i].Column < by[j].Column
+	}
+	return by[i].Line < by[j].Line
+}
+
+func (by byErrorPosition) Swap(i, j int) {
+	by[i], by[j] = by[j], by[i]
+}
+
 func TestExamples(t *testing.T) {
+
 	wd, err := os.Getwd()
 	if err != nil {
 		panic(err)
@@ -76,6 +95,8 @@ func TestExamples(t *testing.T) {
 			if len(errs) != len(expected) {
 				t.Fatalf("%d errors are expected but actually got %d errors: %# v", len(expected), len(errs), errs)
 			}
+
+			sort.Sort(byErrorPosition(errs))
 
 			for i := 0; i < len(errs); i++ {
 				want, have := expected[i], errs[i].Error()
