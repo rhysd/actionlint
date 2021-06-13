@@ -819,6 +819,75 @@ To trigger a workflow in specific interval, [scheduled event][schedule-event-doc
 actionlint checks the CRON syntax and frequency of running the job. When a job is run more frequently than once per 1 minute,
 actionlint reports it as error.
 
+### Runner labels
+
+Example input:
+
+```yaml
+on: push
+jobs:
+  test:
+    strategy:
+      matrix:
+        runner:
+          # OK
+          - macos-latest
+          # ERROR: Unknown runner
+          - linux-latest
+          # OK: Preset labels for self-hosted runner
+          - [self-hosted, linux, x64]
+          # OK: Single preset label for self-hosted runner
+          - arm64
+          # ERROR: Unknown label "gpu". Custom label must be defined in actionlint.yaml config file
+          - gpu
+    runs-on: ${{ matrix.runner }}
+    steps:
+      - run: echo ...
+
+  test2:
+    # ERROR: Too old macOS worker
+    runs-on: macos-10.13
+    steps:
+      - run: echo ...
+```
+
+Output:
+
+```
+test.yaml:10:13: label "linux-latest" is unknown. available labels are "windows-latest", "windows-2019", "windows-2016", "ubuntu-latest", ... [runner-label]
+10|           - linux-latest
+  |             ^~~~~~~~~~~~
+test.yaml:16:13: label "gpu" is unknown. available labels are "windows-latest", "windows-2019", "windows-2016", "ubuntu-latest", ... [runner-label]
+16|           - gpu
+  |             ^~~
+test.yaml:23:14: label "macos-10.13" is unknown. available labels are "windows-latest", "windows-2019", "windows-2016", "ubuntu-latest", ... [runner-label]
+23|     runs-on: macos-10.13
+  |              ^~~~~~~~~~~
+```
+
+GitHub Actions provides two kinds of job runners, [GitHub-hosted runner][gh-hosted-runner] and [self-hosted runner][self-hosted-runner].
+Each runner has one or more labels. GitHub Actions runtime finds a proper runner based on label(s) specified at `runs-on:`
+to run the job. So specifying proper labels at `runs-on:` is important.
+
+actionlint checks proper label is used at `runs-on:` configuration. Even if an expression is used in the section like
+`runs-on: ${{ matrix.foo }}`, actionlint parses the expression and resolves the possible values, then validates the values.
+
+When you define some custom labels for your self-hosted runner, actionlint does not know the labels. Please set the label
+names in [`actionlint.yaml` configuration file](#config-file) to let actionlint know them.
+
+
+### 
+
+Example input:
+
+```yaml
+```
+
+Output:
+
+```
+```
+
 ### 
 
 Example input:
@@ -914,3 +983,5 @@ actionlint is distributed under [the MIT license](./LICENSE.txt).
 [webhook-doc]: https://docs.github.com/en/actions/reference/events-that-trigger-workflows#webhook-events
 [schedule-event-doc]: https://docs.github.com/en/actions/reference/events-that-trigger-workflows#scheduled-events
 [cron-syntax]: https://pubs.opengroup.org/onlinepubs/9699919799/utilities/crontab.html#tag_20_25_07
+[gh-hosted-runner]: https://docs.github.com/en/actions/using-github-hosted-runners/about-github-hosted-runners
+[self-hosted-runner]: https://docs.github.com/en/actions/hosting-your-own-runners/about-self-hosted-runners

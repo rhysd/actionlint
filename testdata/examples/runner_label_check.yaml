@@ -1,0 +1,25 @@
+on: push
+jobs:
+  test:
+    strategy:
+      matrix:
+        runner:
+          # OK
+          - macos-latest
+          # ERROR: Unknown runner
+          - linux-latest
+          # OK: Preset labels for self-hosted runner
+          - [self-hosted, linux, x64]
+          # OK: Single preset label for self-hosted runner
+          - arm64
+          # ERROR: Unknown label "gpu". Custom label must be defined in actionlint.yaml config file
+          - gpu
+    runs-on: ${{ matrix.runner }}
+    steps:
+      - run: echo ...
+
+  test2:
+    # ERROR: Too old macOS worker
+    runs-on: macos-10.13
+    steps:
+      - run: echo ...
