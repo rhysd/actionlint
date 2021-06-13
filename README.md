@@ -784,6 +784,41 @@ actionlint validates the Webhook configurations:
 - unknown type for Webhook event
 - invalid filter names
 
+### CRON syntax check at `schedule:`
+
+Example input:
+
+```yaml
+on:
+  schedule:
+    # Cron syntax is not correct
+    - cron: '0 */3 * *'
+    # Interval of scheduled job is too small (job runs too frequently)
+    - cron: '* */3 * * *'
+
+jobs:
+  test:
+    runs-on: ubuntu-latest
+    steps:
+      - run: echo ...
+```
+
+Output:
+
+```
+test.yaml:4:13: invalid CRON format "0 */3 * *" in schedule event: Expected exactly 5 fields, found 4: 0 */3 * * [events]
+4|     - cron: '0 */3 * *'
+ |             ^~
+test.yaml:6:13: scheduled job runs too frequently. it runs once per 60 seconds [events]
+6|     - cron: '* */3 * * *'
+ |             ^~
+```
+
+To trigger a workflow in specific interval, [scheduled event][schedule-event-doc] can be defined in [POSIX CRON syntax][cron-syntax].
+
+actionlint checks the CRON syntax and frequency of running the job. When a job is run more frequently than once per 1 minute,
+actionlint reports it as error.
+
 ### 
 
 Example input:
@@ -796,18 +831,7 @@ Output:
 ```
 ```
 
-### 
-
-Example input:
-
-```yaml
-```
-
-Output:
-
-```
-```
-
+<a name="config-file"></a>
 ## Configuration file
 
 Configuration file `actionlint.yaml` or `actionlint.yml` can be put in `.github` directory.
@@ -888,3 +912,5 @@ actionlint is distributed under [the MIT license](./LICENSE.txt).
 [shell-doc]: https://docs.github.com/en/actions/reference/workflow-syntax-for-github-actions#using-a-specific-shell
 [matrix-doc]: https://docs.github.com/en/actions/reference/workflow-syntax-for-github-actions#jobsjob_idstrategymatrix
 [webhook-doc]: https://docs.github.com/en/actions/reference/events-that-trigger-workflows#webhook-events
+[schedule-event-doc]: https://docs.github.com/en/actions/reference/events-that-trigger-workflows#scheduled-events
+[cron-syntax]: https://pubs.opengroup.org/onlinepubs/9699919799/utilities/crontab.html#tag_20_25_07
