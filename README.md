@@ -54,7 +54,7 @@ example.yaml:16:20: property "platform" is not defined in object type {os: strin
 
 actionlint tries to catch errors as much as possible and tries to make false positive as minimal as possible.
 
-## Why?
+# Why?
 
 - **Running workflow is very time consuming.** You need to push the changes and wait until the workflow runs on GitHub even
   if it contains some trivial mistakes. [act][] is useful to run the workflow locally. But it is not suitable for CI and
@@ -65,7 +65,7 @@ actionlint tries to catch errors as much as possible and tries to make false pos
 - **Some mistakes silently breaks workflow.** Most common case I saw is specifying missing property to cache key. In the case
   cache silently does not work properly but workflow itself runs without error. So you might not notice the mistake forever.
 
-## Install
+# Install
 
 As of now, no prebuilt binary is provided. Install [Go][] toolchain and build actionlint from source.
 
@@ -73,7 +73,7 @@ As of now, no prebuilt binary is provided. Install [Go][] toolchain and build ac
 go get github.com/rhysd/actionlint/cmd/actionlint
 ```
 
-## Usage
+# Usage
 
 With no argument, actionlint finds all workflow files in the current repository and checks them.
 
@@ -90,14 +90,14 @@ actionlint path/to/workflow1.yaml path/to/workflow2.yaml
 See `actionlint -h` for all flags and options.
 
 <a name="checks"></a>
-## Checks
+# Checks
 
 This section describes all checks done by actionlint with example input and output.
 
 Note: actionlint focuses on catching mistakes in workflow files. If you want some code style checks, please consider to
 use a general YAML checker like [yamllint][].
 
-### Unexpected keys
+## Unexpected keys
 
 Example input:
 
@@ -122,7 +122,7 @@ are simply ignored and don't affect workflow behavior. It means typo in keys is 
 
 actionlint can detect unexpected keys while parsing workflow syntax and report them as error.
 
-### Missing required keys or key duplicates
+## Missing required keys or key duplicates
 
 Example input:
 
@@ -156,7 +156,7 @@ And duplicate in keys is not allowed. In workflow syntax, comparing keys is **ca
 
 actionlint checks these missing required keys and duplicate of keys while parsing, and reports an error.
 
-### Unexpected empty mappings
+## Unexpected empty mappings
 
 Example input:
 
@@ -177,7 +177,7 @@ Some mappings and sequences should not be empty. For example, `steps:` must incl
 
 actionlint checks such mappings and sequences are not empty while parsing, and reports the empty mappings and sequences as error.
 
-### Unexpected mapping values
+## Unexpected mapping values
 
 Example input:
 
@@ -210,7 +210,7 @@ one of `none`, `read`, `write`. And several mapping values expect boolean value 
 actionlint checks such constant strings are used properly while parsing, and reports an error when unexpected string
 value is specified.
 
-### Syntax check for expression `${{ }}`
+## Syntax check for expression `${{ }}`
 
 Example input:
 
@@ -250,7 +250,7 @@ test.yaml:13:38: unexpected end of input while parsing object property dereferen
 actionlint lexes and parses expression in `${{ }}` following [the expression syntax document][expr-doc]. It can detect
 many syntax errors like invalid characters, missing parens, unexpected end of input, ...
 
-### Type checks for expression syntax in `${{ }}`
+## Type checks for expression syntax in `${{ }}`
 
 Example input:
 
@@ -328,7 +328,7 @@ test.yaml:19:14: type of expression at "env" must be object but found type strin
 
 In above example, environment variables mapping is expanded at `env:` section. actionlint checks type of the expanded value.
 
-### Contexts and built-in functions
+## Contexts and built-in functions
 
 Example input:
 
@@ -392,7 +392,7 @@ In addition, `format()` function has special check for placeholders in the first
 
 Note that context names and function names are case insensitive. For example, `toJSON` and `toJson` are the same function.
 
-### Contextual type for `steps.<step_id>` objects
+## Contextual type for `steps.<step_id>` objects
 
 Example input:
 
@@ -442,7 +442,7 @@ copying&pasting steps.
 
 actionlint can catch the invalid accesses to step outputs and reports them as errors.
 
-### Contextual type for `matrix` object
+## Contextual type for `matrix` object
 
 Example input:
 
@@ -522,7 +522,7 @@ steps:
   - run: echo ${{ matrix.bar[0] }}
 ```
 
-### Contextual type for `needs` object
+## Contextual type for `needs` object
 
 Example input:
 
@@ -584,7 +584,7 @@ Outputs from the jobs can be accessed only from jobs following them via [`needs`
 
 actionlint defines type of `needs` variable contextually looking at each job's `outputs:` section and `needs:` section.
 
-### [shellcheck][] integration
+## [shellcheck][] integration
 
 Example input:
 
@@ -633,7 +633,7 @@ disables shellcheck integration explicitly.
 Since both `${{ }}` expression syntax and ShellScript's variable access `$FOO` use `$`, remaining `${{ }}` confuses shellcheck.
 To avoid it, actionlint replaces `${{ }}` with spaces, for example `echo '${{ matrix.os }}'` is replaced with `echo '                '`.
 
-### Job dependencies
+## Job dependencies
 
 Example input:
 
@@ -698,7 +698,7 @@ test.yaml:8:3: job "bar" needs job "unknown" which does not exist in this workfl
  |   ^~~~
 ```
 
-### Matrix values
+## Matrix values
 
 Example input:
 
@@ -740,7 +740,7 @@ combination of matrix values. actionlint checks
 - values in `exclude:` appear in `matrix:` or `include:`
 - duplicate in variations of matrix values
 
-### Webhook events validation
+## Webhook events validation
 
 Example input:
 
@@ -784,7 +784,7 @@ actionlint validates the Webhook configurations:
 - unknown type for Webhook event
 - invalid filter names
 
-### CRON syntax check at `schedule:`
+## CRON syntax check at `schedule:`
 
 Example input:
 
@@ -819,7 +819,7 @@ To trigger a workflow in specific interval, [scheduled event][schedule-event-doc
 actionlint checks the CRON syntax and frequency of running the job. When a job is run more frequently than once per 1 minute,
 actionlint reports it as error.
 
-### Runner labels
+## Runner labels
 
 Example input:
 
@@ -876,7 +876,7 @@ When you define some custom labels for your self-hosted runner, actionlint does 
 names in [`actionlint.yaml` configuration file](#config-file) to let actionlint know them.
 
 
-### 
+## 
 
 Example input:
 
@@ -888,7 +888,7 @@ Output:
 ```
 ```
 
-### 
+## 
 
 Example input:
 
@@ -901,7 +901,7 @@ Output:
 ```
 
 <a name="config-file"></a>
-## Configuration file
+# Configuration file
 
 Configuration file `actionlint.yaml` or `actionlint.yml` can be put in `.github` directory.
 
@@ -930,7 +930,7 @@ Note that configuration file is optional. The author tries to keep configuration
 bother users to configure behavior of actionlint. Running actionlint without configuration file would work fine in most
 cases.
 
-## Use actionlint as library
+# Use actionlint as library
 
 actionlint can be used from Go programs. See [the documentation][apidoc] to know the list of all APIs. Followings are
 unexhaustive list of interesting APIs.
@@ -957,9 +957,9 @@ unexhaustive list of interesting APIs.
 
 
 
-## Testing
+# Testing
 
-## License
+# License
 
 actionlint is distributed under [the MIT license](./LICENSE.txt).
 
