@@ -1,0 +1,34 @@
+on: push
+jobs:
+  test:
+    strategy:
+      matrix:
+        os: [ubuntu-latest, windows-latest]
+        node: [14, 15]
+        package:
+          - name: 'foo'
+            optional: true
+          - name: 'bar'
+            optional: false
+        include:
+          - node: 15
+            npm: 7.5.4
+    runs-on: ${{ matrix.os }}
+    steps:
+      # Access to undefined matrix value
+      - run: echo '${{ matrix.platform }}'
+      # Matrix value is strongly typed. Below line causes an error since matrix.package is {name: string, optional: bool}
+      - run: echo '${{ matrix.package.dev }}'
+      # OK
+      - run: |
+          echo 'os: ${{ matrix.os }}'
+          echo 'node version: ${{ matrix.node }}'
+          echo 'package: ${{ matrix.package.name }} (optional=${{ matrix.package.optional }})'
+      # Additional matrix values in 'include:' are supported
+      - run: echo 'npm version is specified'
+        if: contains(matrix.npm, '7.5')
+  test2:
+    runs-on: ubuntu-latest
+    steps:
+      # Matrix values in other job is not accessible
+      - run: echo '${{ matrix.os }}'

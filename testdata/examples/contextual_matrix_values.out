@@ -1,0 +1,3 @@
+/test\.yaml:19:24: property "platform" is not defined in object type {.+} \[expression\]/
+test.yaml:21:24: property "dev" is not defined in object type {name: string; optional: bool} [expression]
+test.yaml:34:24: property "os" is not defined in object type {} [expression]

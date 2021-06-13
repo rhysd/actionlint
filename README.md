@@ -361,23 +361,104 @@ Note that context names and function names are case insensitive. For example, `t
 Example input:
 
 ```yaml
+on: push
+jobs:
+  test:
+    runs-on: ubuntu-latest
+    outputs:
+      # Step outputs can be used in job outputs since this section is evaluated after all steps were run
+      foo: '${{ steps.get_value.outputs.name }}'
+    steps:
+      # Access to undefined step outputs
+      - run: echo '${{ steps.get_value.outputs.name }}'
+      # Outputs are set here
+      - run: echo '::set-output name=foo::value'
+        id: get_value
+      # OK
+      - run: echo '${{ steps.get_value.outputs.name }}'
+      # OK
+      - run: echo '${{ steps.get_value.conclusion }}'
+  other:
+    runs-on: ubuntu-latest
+    steps:
+      # Access to undefined step outputs. Step objects are job-local
+      - run: echo '${{ steps.get_value.outputs.name }}'
 ```
 
 Output:
 
 ```
+test.yaml:10:24: property "get_value" is not defined in object type {} [expression]
+10|       - run: echo '${{ steps.get_value.outputs.name }}'
+  |                        ^~~~~~~~~~~~~~~~~~~~~~~~~~~~
+test.yaml:22:24: property "get_value" is not defined in object type {} [expression]
+22|       - run: echo '${{ steps.get_value.outputs.name }}'
+  |                        ^~~~~~~~~~~~~~~~~~~~~~~~~~~~
 ```
+
+Outputs of step can be accessed via `steps.<step_id>` objects. The `steps` context is dynamic:
+
+- Accessing to the outputs before running the step are `null`
+- Outputs of steps only in the job can be accessed. It cannot access to steps across jobs
+
+It is actually common mistake to access to the wrong step outputs since people often forget fixing placeholders on
+copying&pasting steps.
+
+actionlint can catch the invalid accesses to step outputs and reports them as errors.
 
 ### Contextual type for `matrix` object
 
 Example input:
 
 ```yaml
+on: push
+jobs:
+  test:
+    strategy:
+      matrix:
+        os: [ubuntu-latest, windows-latest]
+        node: [14, 15]
+        package:
+          - name: 'foo'
+            optional: true
+          - name: 'bar'
+            optional: false
+        include:
+          - node: 15
+            npm: 7.5.4
+    runs-on: ${{ matrix.os }}
+    steps:
+      # Access to undefined matrix value
+      - run: echo '${{ matrix.platform }}'
+      # Matrix value is strongly typed. Below line causes an error since matrix.package is {name: string, optional: bool}
+      - run: echo '${{ matrix.package.dev }}'
+      # OK
+      - run: |
+          echo 'os: ${{ matrix.os }}'
+          echo 'node version: ${{ matrix.node }}'
+          echo 'package: ${{ matrix.package.name }} (optional=${{ matrix.package.optional }})'
+      # Additional matrix values in 'include:' are supported
+      - run: echo 'npm version is specified'
+        if: contains(matrix.npm, '7.5')
+  test2:
+    runs-on: ubuntu-latest
+    steps:
+      # Matrix values in other job is not accessible
+      - run: echo '${{ matrix.os }}'
 ```
 
 Output:
 
 ```
+test.yaml:19:24: property "platform" is not defined in object type {os: string; node: number; package: {name: string; optional: bool}; npm: string} [expression]
+19|       - run: echo '${{ matrix.platform }}'
+  |                        ^~~~~~~~~~~~~~~
+test.yaml:21:24: property "dev" is not defined in object type {name: string; optional: bool} [expression]
+21|       - run: echo '${{ matrix.package.dev }}'
+  |                        ^~~~~~~~~~~~~~~~~~
+test.yaml:34:24: property "os" is not defined in object type {} [expression]
+34|       - run: echo '${{ matrix.os }}'
+  |                        ^~~~~~~~~
 ```
 
 ### Contextual type for `needs` object
@@ -430,7 +511,8 @@ self-hosted-runner:
   - `labels`: Label names added to your self-hoted runners as list of string
 
 Note that configuration file is optional. The author tries to keep configuration file as minimal as possible not to
-bother users to configure behavior of it. Running actionlint without configuration file would work fine in most cases.
+bother users to configure behavior of actionlint. Running actionlint without configuration file would work fine in most
+cases.
 
 ## Use actionlint as library
 
@@ -477,3 +559,4 @@ actionlint is distributed under [the MIT license](./LICENSE.txt).
 [expr-doc]: https://docs.github.com/en/actions/reference/context-and-expression-syntax-for-github-actions
 [contexts-doc]: https://docs.github.com/en/actions/reference/context-and-expression-syntax-for-github-actions#contexts
 [funcs-doc]: https://docs.github.com/en/actions/reference/context-and-expression-syntax-for-github-actions#functions
+[steps-doc]: https://docs.github.com/en/actions/reference/context-and-expression-syntax-for-github-actions#steps-context

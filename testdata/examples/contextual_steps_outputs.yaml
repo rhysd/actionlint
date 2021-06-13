@@ -1,0 +1,22 @@
+on: push
+jobs:
+  test:
+    runs-on: ubuntu-latest
+    outputs:
+      # Step outputs can be used in job outputs since this section is evaluated after all steps were run
+      foo: '${{ steps.get_value.outputs.name }}'
+    steps:
+      # Access to undefined step outputs
+      - run: echo '${{ steps.get_value.outputs.name }}'
+      # Outputs are set here
+      - run: echo '::set-output name=foo::value'
+        id: get_value
+      # OK
+      - run: echo '${{ steps.get_value.outputs.name }}'
+      # OK
+      - run: echo '${{ steps.get_value.conclusion }}'
+  other:
+    runs-on: ubuntu-latest
+    steps:
+      # Access to undefined step outputs. Step objects are job-local
+      - run: echo '${{ steps.get_value.outputs.name }}'
