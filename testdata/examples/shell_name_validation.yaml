@@ -1,0 +1,30 @@
+on: push
+jobs:
+  linux:
+    runs-on: ubuntu-latest
+    steps:
+      - run: echo 'hello'
+        # ERROR: Unavailable shell
+        shell: dash
+      - run: echo 'hello'
+        # ERROR: 'powershell' is only available on Windows
+        shell: powershell
+      - run: echo 'hello'
+        # OK: 'powershell' is only available on Windows
+        shell: powershell
+  mac:
+    runs-on: macos-latest
+    defaults:
+      run:
+        # ERROR: default config is also checked. fish is not supported
+        shell: fish
+    steps:
+      - run: echo 'hello'
+        # OK: Custom shell
+        shell: 'perl {0}'
+  windows:
+    runs-on: windows-latest
+    steps:
+      - run: echo 'hello'
+        # ERROR: 'sh' is only available on Windows
+        shell: sh

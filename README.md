@@ -978,6 +978,66 @@ test.yaml:13:11: input "additions" is not defined in action "./.github/actions/m
 When a local action is run in `uses:` of `step:`, actionlint reads `action.yaml` file in the local action directory and
 validates inputs at `with:` in the workflow are correct. Missing required inputs and unexpected inputs can be detected.
 
+## Shell name validation at `shell:`
+
+Example input:
+
+```yaml
+on: push
+jobs:
+  linux:
+    runs-on: ubuntu-latest
+    steps:
+      - run: echo 'hello'
+        # ERROR: Unavailable shell
+        shell: dash
+      - run: echo 'hello'
+        # ERROR: 'powershell' is only available on Windows
+        shell: powershell
+      - run: echo 'hello'
+        # OK: 'powershell' is only available on Windows
+        shell: powershell
+  mac:
+    runs-on: macos-latest
+    defaults:
+      run:
+        # ERROR: default config is also checked. fish is not supported
+        shell: fish
+    steps:
+      - run: echo 'hello'
+        # OK: Custom shell
+        shell: 'perl {0}'
+  windows:
+    runs-on: windows-latest
+    steps:
+      - run: echo 'hello'
+        # ERROR: 'sh' is only available on Windows
+        shell: sh
+```
+
+Output:
+
+```
+test.yaml:8:16: shell name "dash" is invalid. available names are "bash", "pwsh", "python", "sh" [shell-name]
+8|         shell: dash
+ |                ^~~~
+test.yaml:11:16: shell name "powershell" is invalid on macOS or Linux. available names are "bash", "pwsh", "python", "sh" [shell-name]
+11|         shell: powershell
+  |                ^~~~~~~~~~
+test.yaml:14:16: shell name "powershell" is invalid on macOS or Linux. available names are "bash", "pwsh", "python", "sh" [shell-name]
+14|         shell: powershell
+  |                ^~~~~~~~~~
+test.yaml:20:16: shell name "fish" is invalid. available names are "bash", "pwsh", "python", "sh" [shell-name]
+20|         shell: fish
+  |                ^~~~
+test.yaml:30:16: shell name "sh" is invalid on Windows. available names are "bash", "pwsh", "python", "cmd", "powershell" [shell-name]
+30|         shell: sh
+  |                ^~
+```
+
+Available shells for runners are defined in [the documentation][shell-doc]. actionlint checks shell names at `shell:`
+configuration are properly using the available shells.
+
 ## 
 
 Example input:
@@ -1028,6 +1088,7 @@ unexhaustive list of interesting APIs.
 - `Linter` manages linter lifecycle and applies checks to given files. If you want to run actionlint checks in your
   program, please use this struct.
 - `Project` and `Projects` detect a project (Git repository) in a given directory path and find configuration in it.
+- `Config` represents structure of `actionlint.yaml` config file. It can be decoded by [go-yaml/yaml][go-yaml] library.
 - `Workflow`, `Job`, `Step`, ... are nodes of workflow syntax tree. `Workflow` is a root node.
 - `Parse()` parses given contents into a workflow syntax tree. It tries to find syntax errors as much as possible and
   returns found errors as slice.
@@ -1044,8 +1105,6 @@ unexhaustive list of interesting APIs.
   `NumberType`, ... are structs to represent actual types of expression.
 - `ExprSemanticsChecker` checks semantics of expression syntax `${{ }}`. It traverses given expression syntax tree and
   deduces its type, checking types and resolving variables (contexts).
-
-
 
 # Testing
 
@@ -1077,3 +1136,4 @@ actionlint is distributed under [the MIT license](./LICENSE.txt).
 [self-hosted-runner]: https://docs.github.com/en/actions/hosting-your-own-runners/about-self-hosted-runners
 [action-uses-doc]: https://docs.github.com/en/actions/reference/workflow-syntax-for-github-actions#jobsjob_idstepsuses
 [action-metadata-doc]: https://docs.github.com/en/actions/creating-actions/metadata-syntax-for-github-actions
+[go-yaml]: https://github.com/go-yaml/yaml
