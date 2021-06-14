@@ -1117,17 +1117,37 @@ test.yaml:17:21: "password" section in "redis" service should be specified via s
 and the value should be expanded with `${{ }}` syntax at `password:`. actionlint checks hardcoded credentials and reports
 them as error.
 
-## 
+## Environment variable names
 
 Example input:
 
 ```yaml
+on: push
+jobs:
+  test:
+    runs-on: ubuntu-latest
+    env:
+      FOO=BAR: foo
+      FOO BAR: foo
+    steps:
+      - run: echo 'hello'
 ```
 
 Output:
 
 ```
+test.yaml:6:7: environment variable name "foo=bar" is invalid. '&', '=' and spaces should not be contained [env-var]
+6|       FOO=BAR: foo
+ |       ^~~~~~~~
+test.yaml:7:7: environment variable name "foo bar" is invalid. '&', '=' and spaces should not be contained [env-var]
+7|       FOO BAR: foo
+ |       ^~~
 ```
+
+`=` must not be included in environment variable names. And `&` and spaces should not be included in them. In almost all
+cases they are mistakes and they may cause some issues on using them in shell since they have special meaning in shell syntax.
+
+actionlint checks environment variable names are correct in `env:` configuration.
 
 <a name="config-file"></a>
 # Configuration file
@@ -1217,3 +1237,4 @@ actionlint is distributed under [the MIT license](./LICENSE.txt).
 [action-metadata-doc]: https://docs.github.com/en/actions/creating-actions/metadata-syntax-for-github-actions
 [go-yaml]: https://github.com/go-yaml/yaml
 [credentials-doc]: https://docs.github.com/en/actions/reference/workflow-syntax-for-github-actions#jobsjob_idcontainercredentials
+[opengroup-env-vars]: https://pubs.opengroup.org/onlinepubs/007904875/basedefs/xbd_chap08.html
