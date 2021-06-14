@@ -1076,6 +1076,47 @@ test.yaml:10:13: step ID "line:7,col:13" duplicates. previously defined at STEP_
 Job IDs and step IDs in each job must be unique. IDs are compared in case insensitive. actionlint checks all job IDs
 and step IDs and reoprts errors when some IDs duplicate.
 
+## Hardcoded credentials
+
+Example input:
+
+```yaml
+on: push
+jobs:
+  test:
+    runs-on: ubuntu-latest
+    container:
+      image: 'example.com/owner/image'
+      credentials:
+        username: user
+        # ERROR: Hardcoded password
+        password: pass
+    services:
+      redis:
+        image: redis
+        credentials:
+          username: user
+          # ERROR: Hardcoded password
+          password: pass
+    steps:
+      - run: echo 'hello'
+```
+
+Output:
+
+```
+test.yaml:10:19: "password" section in "container" section should be specified via secrets. do not put password value directly [credentials]
+10|         password: pass
+  |                   ^~~~
+test.yaml:17:21: "password" section in "redis" service should be specified via secrets. do not put password value directly [credentials]
+17|           password: pass
+  |                     ^~~~
+```
+
+[Credentials for container][credentials-doc] can be put in `container:` configuration. Password should be put in secrets
+and the value should be expanded with `${{ }}` syntax at `password:`. actionlint checks hardcoded credentials and reports
+them as error.
+
 ## 
 
 Example input:
@@ -1175,3 +1216,4 @@ actionlint is distributed under [the MIT license](./LICENSE.txt).
 [action-uses-doc]: https://docs.github.com/en/actions/reference/workflow-syntax-for-github-actions#jobsjob_idstepsuses
 [action-metadata-doc]: https://docs.github.com/en/actions/creating-actions/metadata-syntax-for-github-actions
 [go-yaml]: https://github.com/go-yaml/yaml
+[credentials-doc]: https://docs.github.com/en/actions/reference/workflow-syntax-for-github-actions#jobsjob_idcontainercredentials
