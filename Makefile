@@ -1,10 +1,11 @@
 SRCS := $(filter-out %_test.go, $(wildcard *.go cmd/actionlint/*.go))
 TESTS := $(filter %_test.go, $(wildcard *.go))
+TESTDATA := $(wildcard testdata/examples/*.yaml testdata/examples/*.out)
 GOTEST := $(shell command -v gotest 2>/dev/null)
 
 all: clean build test
 
-.testtimestamp: $(TESTS) $(SRCS)
+.testtimestamp: $(TESTS) $(SRCS) $(TESTDATA)
 ifdef GOTEST
 	gotest  # https://github.com/rhysd/gotest
 else
