@@ -30,7 +30,6 @@ func (by byErrorPosition) Swap(i, j int) {
 }
 
 func TestExamples(t *testing.T) {
-
 	wd, err := os.Getwd()
 	if err != nil {
 		panic(err)
@@ -38,22 +37,23 @@ func TestExamples(t *testing.T) {
 
 	dir := filepath.Join(wd, "testdata", "examples")
 
-	infiles := []string{}
-
-	if err := filepath.Walk(dir, func(path string, info os.FileInfo, err error) error {
-		if err != nil {
-			return err
-		}
-		if info.IsDir() {
-			return nil
-		}
-		if strings.HasSuffix(path, ".yaml") || strings.HasSuffix(path, ".yml") {
-			infiles = append(infiles, path)
-		}
-		return nil
-	}); err != nil {
+	entries, err := ioutil.ReadDir(dir)
+	if err != nil {
 		panic(err)
 	}
+
+	infiles := make([]string, 0, len(entries))
+	for _, info := range entries {
+		if info.IsDir() {
+			continue
+		}
+		n := info.Name()
+		if strings.HasSuffix(n, ".yaml") || strings.HasSuffix(n, ".yml") {
+			infiles = append(infiles, filepath.Join(dir, n))
+		}
+	}
+
+	proj := &Project{root: dir}
 
 	for _, infile := range infiles {
 		base := strings.TrimSuffix(infile, filepath.Ext(infile))
@@ -98,7 +98,7 @@ func TestExamples(t *testing.T) {
 				}
 			}
 
-			errs, err := linter.Lint("test.yaml", b, nil)
+			errs, err := linter.Lint("test.yaml", b, proj)
 			if err != nil {
 				t.Fatal(err)
 			}

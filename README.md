@@ -876,17 +876,107 @@ When you define some custom labels for your self-hosted runner, actionlint does 
 names in [`actionlint.yaml` configuration file](#config-file) to let actionlint know them.
 
 
-## 
+## Action step `uses:` format
 
 Example input:
 
 ```yaml
+on: push
+jobs:
+  test:
+    runs-on: ubuntu-latest
+    steps:
+      # ERROR: ref is missing
+      - uses: actions/checkout
+      # ERROR: owner name is missing
+      - uses: checkout@v2
+      # ERROR: tag is empty
+      - uses: 'docker://image:'
+      # ERROR: local action does not exist
+      - uses: ./github/actions/my-action
 ```
 
 Output:
 
 ```
+test.yaml:7:15: specifying action "actions/checkout" in invalid format because ref is missng. available formats are "{owner}/{repo}@{ref}" or "{owner}/{repo}/{path}@{ref}" [action]
+7|       - uses: actions/checkout
+ |               ^~~~~~~~~~~~~~~~
+test.yaml:9:15: specifying action "checkout@v2" in invalid format because owner is missing. available formats are "{owner}/{repo}@{ref}" or "{owner}/{repo}/{path}@{ref}" [action]
+9|       - uses: checkout@v2
+ |               ^~~~~~~~~~~
+test.yaml:11:15: tag of Docker action should not be empty: "docker://image" [action]
+11|       - uses: 'docker://image:'
+  |               ^~~~~~~~~~~~~~~~~
+test.yaml:13:15: Neither action.yaml nor action.yml is found in directory "github/actions/my-action" [action]
+13|       - uses: ./github/actions/my-action
+  |               ^~~~~~~~~~~~~~~~~~~~~~~~~~
 ```
+
+Action needs to be specified in a format defined in [the document][action-uses-doc]. There are 3 types of actions:
+
+- action hosted on GitHub: `owner/repo/path@ref`
+- local action: `./path/to/my-action`
+- Docker action: `docker://image:tag`
+
+actionlint checks values at `uses:` sections follow one of these formats.
+
+## Local action inputs validation at `with:`
+
+`.github/actions/my-action/action.yaml`:
+
+```yaml
+name: 'My action'
+author: 'rhysd <https://rhysd.github.io>'
+description: 'my action'
+
+inputs:
+  name:
+    description: your name
+    default: anonymous
+  message:
+    description: message to this action
+    required: true
+  addition:
+    description: additional information
+    required: false
+
+runs:
+  using: 'node14'
+  main: 'index.js'
+```
+
+Example input:
+
+```yaml
+on: push
+jobs:
+  test:
+    runs-on: ubuntu-latest
+    steps:
+      # missing required input "message"
+      - uses: ./.github/actions/my-action
+      # unexpected input "additions"
+      - uses: ./.github/actions/my-action
+        with:
+          name: rhysd
+          message: hello
+          additions: foo, bar
+```
+
+Output:
+
+```
+test.yaml:7:15: missing input "message" which is required by action "My action" defined at "./.github/actions/my-action" [action]
+7|       - uses: ./.github/actions/my-action
+ |               ^~~~~~~~~~~~~~~~~~~~~~~~~~~
+test.yaml:13:11: input "additions" is not defined in action "./.github/actions/my-action" defined at "My action". available inputs are "addition", "message", "name" [action]
+13|           additions: foo, bar
+  |           ^~~~~~~~~~
+```
+
+When a local action is run in `uses:` of `step:`, actionlint reads `action.yaml` file in the local action directory and
+validates inputs at `with:` in the workflow are correct. Missing required inputs and unexpected inputs can be detected.
 
 ## 
 
@@ -985,3 +1075,5 @@ actionlint is distributed under [the MIT license](./LICENSE.txt).
 [cron-syntax]: https://pubs.opengroup.org/onlinepubs/9699919799/utilities/crontab.html#tag_20_25_07
 [gh-hosted-runner]: https://docs.github.com/en/actions/using-github-hosted-runners/about-github-hosted-runners
 [self-hosted-runner]: https://docs.github.com/en/actions/hosting-your-own-runners/about-self-hosted-runners
+[action-uses-doc]: https://docs.github.com/en/actions/reference/workflow-syntax-for-github-actions#jobsjob_idstepsuses
+[action-metadata-doc]: https://docs.github.com/en/actions/creating-actions/metadata-syntax-for-github-actions

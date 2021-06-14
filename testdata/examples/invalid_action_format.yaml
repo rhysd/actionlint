@@ -1,0 +1,13 @@
+on: push
+jobs:
+  test:
+    runs-on: ubuntu-latest
+    steps:
+      # ERROR: ref is missing
+      - uses: actions/checkout
+      # ERROR: owner name is missing
+      - uses: checkout@v2
+      # ERROR: tag is empty
+      - uses: 'docker://image:'
+      # ERROR: local action does not exist
+      - uses: ./github/actions/my-action

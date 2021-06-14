@@ -1,0 +1,13 @@
+on: push
+jobs:
+  test:
+    runs-on: ubuntu-latest
+    steps:
+      # missing required input "message"
+      - uses: ./.github/actions/my-action
+      # unexpected input "additions"
+      - uses: ./.github/actions/my-action
+        with:
+          name: rhysd
+          message: hello
+          additions: foo, bar
