@@ -3,6 +3,7 @@ package actionlint
 import (
 	"io/ioutil"
 	"net/url"
+	"os"
 	"path/filepath"
 	"sort"
 	"strconv"
@@ -19,11 +20,16 @@ type RuleAction struct {
 }
 
 // ActionSpec represents structure of action.yaml.
+// https://docs.github.com/en/actions/creating-actions/metadata-syntax-for-github-actions
 type ActionSpec struct {
+	// Name is "name" field of action.yaml
+	Name string `yaml:"name"`
+	// Inputs is "inputs" field of action.yaml
 	Inputs map[string]struct {
 		Required bool    `yaml:"required"`
 		Default  *string `yaml:"default"`
 	} `yaml:"inputs"`
+	// Outputs is "outputs" field of action.yaml
 	Outputs map[string]struct{} `yaml:"outputs"`
 }
 
@@ -77,7 +83,7 @@ func (rule *RuleAction) checkRepoAction(spec string, exec *ExecAction) {
 	s := spec
 	idx := strings.IndexRune(s, '@')
 	if idx == -1 {
-		rule.invalidActionFormat(exec.Uses.Pos, spec)
+		rule.invalidActionFormat(exec.Uses.Pos, spec, "ref is missng")
 		return
 	}
 	ref := s[idx+1:]
@@ -85,7 +91,7 @@ func (rule *RuleAction) checkRepoAction(spec string, exec *ExecAction) {
 
 	idx = strings.IndexRune(s, '/')
 	if idx == -1 {
-		rule.invalidActionFormat(exec.Uses.Pos, spec)
+		rule.invalidActionFormat(exec.Uses.Pos, spec, "owner is missing")
 		return
 	}
 
@@ -99,24 +105,26 @@ func (rule *RuleAction) checkRepoAction(spec string, exec *ExecAction) {
 	}
 
 	if owner == "" || repo == "" || ref == "" {
-		rule.invalidActionFormat(exec.Uses.Pos, spec)
+		rule.invalidActionFormat(exec.Uses.Pos, spec, "owner and repo and ref should not be empty")
 	}
 
 	// TODO?: Fetch action.yaml from GitHub and check the specification with checkAction()
 }
 
-func (rule *RuleAction) invalidActionFormat(pos *Pos, spec string) {
-	rule.errorf(pos, "specifying action %q in invalid format. available formats are \"{owner}/{repo}@{ref}\" or \"{owner}/{repo}/{path}@{ref}\". each pat should not be empty", spec)
+func (rule *RuleAction) invalidActionFormat(pos *Pos, spec string, why string) {
+	rule.errorf(pos, "specifying action %q in invalid format because %s. available formats are \"{owner}/{repo}@{ref}\" or \"{owner}/{repo}/{path}@{ref}\"", spec, why)
 }
 
 // https://docs.github.com/en/actions/reference/workflow-syntax-for-github-actions#example-using-the-github-packages-container-registry
 func (rule *RuleAction) checkDockerAction(uri string, exec *ExecAction) {
 	tag := ""
+	tagExists := false
 	if idx := strings.IndexRune(uri[len("docker://"):], ':'); idx != -1 {
 		idx += len("docker://")
 		if idx < len(uri) {
 			tag = uri[idx+1:]
 			uri = uri[:idx]
+			tagExists = true
 		}
 	}
 
@@ -128,6 +136,10 @@ func (rule *RuleAction) checkDockerAction(uri string, exec *ExecAction) {
 			err.Error(),
 			tag,
 		)
+	}
+
+	if tagExists && tag == "" {
+		rule.errorf(exec.Uses.Pos, "tag of Docker action should not be empty: %q", uri)
 	}
 }
 
@@ -149,18 +161,19 @@ func (rule *RuleAction) checkActionInSameRepo(path string, action *ExecAction) {
 		return
 	}
 
-	rule.checkAction(dir, &spec, action)
+	rule.checkAction(path, &spec, action)
 }
 
-func (rule *RuleAction) checkAction(action string, spec *ActionSpec, exec *ExecAction) {
+func (rule *RuleAction) checkAction(path string, spec *ActionSpec, exec *ExecAction) {
 	// Check specified inputs are defined in action's inputs spec
 	for name, val := range exec.Inputs {
 		if _, ok := spec.Inputs[name]; !ok {
 			rule.errorf(
 				val.Name.Pos,
-				"input %q is not defined in action %q. available inputs are %s",
+				"input %q is not defined in action %q defined at %q. available inputs are %s",
 				name,
-				action,
+				path,
+				spec.Name,
 				spec.describeInputs(),
 			)
 		}
@@ -172,9 +185,10 @@ func (rule *RuleAction) checkAction(action string, spec *ActionSpec, exec *ExecA
 			if _, ok := exec.Inputs[name]; !ok {
 				rule.errorf(
 					exec.Uses.Pos,
-					"missing input %q which is required by action %q",
+					"missing input %q which is required by action %q defined at %q",
 					name,
-					action,
+					spec.Name,
+					path,
 				)
 			}
 		}
@@ -190,6 +204,12 @@ func (rule *RuleAction) readActionSpecFile(dir string, pos *Pos) []byte {
 			return b
 		}
 	}
-	rule.errorf(pos, "Neither action.yaml nor action.yml is found in %q", dir)
+
+	if wd, err := os.Getwd(); err == nil {
+		if p, err := filepath.Rel(wd, dir); err == nil {
+			dir = p
+		}
+	}
+	rule.errorf(pos, "Neither action.yaml nor action.yml is found in directory %q", dir)
 	return nil
 }
