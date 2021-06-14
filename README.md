@@ -94,9 +94,33 @@ See `actionlint -h` for all flags and options.
 
 This section describes all checks done by actionlint with example input and output.
 
-Note: actionlint focuses on catching mistakes in workflow files. If you want some code style checks, please consider to
+Note that actionlint focuses on catching mistakes in workflow files. If you want some code style checks, please consider to
 use a general YAML checker like [yamllint][].
 
+- [Unexpected keys](#check-unexpected-keys)
+- [Missing required keys or key duplicates](#check-missing-required-duplicate-keys)
+- [Unexpected empty mappings](#check-empty-mapping)
+- [Unexpected mapping values](#check-mapping-values)
+- [Syntax check for expression `${{ }}`](#check-syntax-expression)
+- [Type checks for expression syntax in `${{ }}`](#check-type-check-expression)
+- [Contexts and built-in functions](#check-contexts-and-builtin-func)
+- [Contextual typing for `steps.<step_id>` objects](#check-contextual-step-object)
+- [Contextual typing for `matrix` object](#check-contextual-matrix-object)
+- [Contextual typing for `needs` object](#check-contextual-needs-object)
+- [shellcheck integration](#check-shellcheck-integ)
+- [Job dependencies validation](#check-job-deps)
+- [Matrix values](#check-matrix-values)
+- [Webhook events validation](#check-webhook-events)
+- [CRON syntax check at `schedule:`](#check-cron-syntax)
+- [Runner labels](#check-runner-labels)
+- [Action format in `uses:`](#check-action-format)
+- [Local action inputs validation at `with:`](#check-local-action-inputs)
+- [Shell name validation at `shell:`](#check-shell-names)
+- [Job ID and step ID uniqueness](#check-job-step-ids)
+- [Hardcoded credentials](#check-hardcoded-credentials)
+- [Environment variable names](#check-env-var-names)
+
+<a name="check-unexpected-keys"></a>
 ## Unexpected keys
 
 Example input:
@@ -122,6 +146,7 @@ are simply ignored and don't affect workflow behavior. It means typo in keys is 
 
 actionlint can detect unexpected keys while parsing workflow syntax and report them as error.
 
+<a name="check-missing-required-duplicate-keys"></a>
 ## Missing required keys or key duplicates
 
 Example input:
@@ -156,6 +181,7 @@ And duplicate in keys is not allowed. In workflow syntax, comparing keys is **ca
 
 actionlint checks these missing required keys and duplicate of keys while parsing, and reports an error.
 
+<a name="check-empty-mapping"></a>
 ## Unexpected empty mappings
 
 Example input:
@@ -177,6 +203,7 @@ Some mappings and sequences should not be empty. For example, `steps:` must incl
 
 actionlint checks such mappings and sequences are not empty while parsing, and reports the empty mappings and sequences as error.
 
+<a name="check-mapping-values"></a>
 ## Unexpected mapping values
 
 Example input:
@@ -210,6 +237,7 @@ one of `none`, `read`, `write`. And several mapping values expect boolean value 
 actionlint checks such constant strings are used properly while parsing, and reports an error when unexpected string
 value is specified.
 
+<a name="check-syntax-expression"></a>
 ## Syntax check for expression `${{ }}`
 
 Example input:
@@ -250,6 +278,7 @@ test.yaml:13:38: unexpected end of input while parsing object property dereferen
 actionlint lexes and parses expression in `${{ }}` following [the expression syntax document][expr-doc]. It can detect
 many syntax errors like invalid characters, missing parens, unexpected end of input, ...
 
+<a name="check-type-check-expression"></a>
 ## Type checks for expression syntax in `${{ }}`
 
 Example input:
@@ -328,6 +357,7 @@ test.yaml:19:14: type of expression at "env" must be object but found type strin
 
 In above example, environment variables mapping is expanded at `env:` section. actionlint checks type of the expanded value.
 
+<a name="check-contexts-and-builtin-func"></a>
 ## Contexts and built-in functions
 
 Example input:
@@ -392,7 +422,8 @@ In addition, `format()` function has special check for placeholders in the first
 
 Note that context names and function names are case insensitive. For example, `toJSON` and `toJson` are the same function.
 
-## Contextual type for `steps.<step_id>` objects
+<a name="check-contextual-step-object"></a>
+## Contextual typing for `steps.<step_id>` objects
 
 Example input:
 
@@ -442,7 +473,8 @@ copying&pasting steps.
 
 actionlint can catch the invalid accesses to step outputs and reports them as errors.
 
-## Contextual type for `matrix` object
+<a name="check-contextual-matrix-object"></a>
+## Contextual typing for `matrix` object
 
 Example input:
 
@@ -522,7 +554,8 @@ steps:
   - run: echo ${{ matrix.bar[0] }}
 ```
 
-## Contextual type for `needs` object
+<a name="check-contextual-needs-object"></a>
+## Contextual typing for `needs` object
 
 Example input:
 
@@ -584,6 +617,7 @@ Outputs from the jobs can be accessed only from jobs following them via [`needs`
 
 actionlint defines type of `needs` variable contextually looking at each job's `outputs:` section and `needs:` section.
 
+<a name="check-shellcheck-integ"></a>
 ## [shellcheck][] integration
 
 Example input:
@@ -633,7 +667,8 @@ disables shellcheck integration explicitly.
 Since both `${{ }}` expression syntax and ShellScript's variable access `$FOO` use `$`, remaining `${{ }}` confuses shellcheck.
 To avoid it, actionlint replaces `${{ }}` with spaces, for example `echo '${{ matrix.os }}'` is replaced with `echo '                '`.
 
-## Job dependencies
+<a name="check-job-deps"></a>
+## Job dependencies validation
 
 Example input:
 
@@ -698,6 +733,7 @@ test.yaml:8:3: job "bar" needs job "unknown" which does not exist in this workfl
  |   ^~~~
 ```
 
+<a name="check-matrix-values"></a>
 ## Matrix values
 
 Example input:
@@ -740,6 +776,7 @@ combination of matrix values. actionlint checks
 - values in `exclude:` appear in `matrix:` or `include:`
 - duplicate in variations of matrix values
 
+<a name="check-webhook-events"></a>
 ## Webhook events validation
 
 Example input:
@@ -784,6 +821,7 @@ actionlint validates the Webhook configurations:
 - unknown type for Webhook event
 - invalid filter names
 
+<a name="check-cron-syntax"></a>
 ## CRON syntax check at `schedule:`
 
 Example input:
@@ -819,6 +857,7 @@ To trigger a workflow in specific interval, [scheduled event][schedule-event-doc
 actionlint checks the CRON syntax and frequency of running the job. When a job is run more frequently than once per 1 minute,
 actionlint reports it as error.
 
+<a name="check-runner-labels"></a>
 ## Runner labels
 
 Example input:
@@ -876,7 +915,8 @@ When you define some custom labels for your self-hosted runner, actionlint does 
 names in [`actionlint.yaml` configuration file](#config-file) to let actionlint know them.
 
 
-## Action step `uses:` format
+<a name="check-action-format"></a>
+## Action format in `uses:`
 
 Example input:
 
@@ -921,6 +961,7 @@ Action needs to be specified in a format defined in [the document][action-uses-d
 
 actionlint checks values at `uses:` sections follow one of these formats.
 
+<a name="check-local-action-inputs"></a>
 ## Local action inputs validation at `with:`
 
 `.github/actions/my-action/action.yaml`:
@@ -978,6 +1019,7 @@ test.yaml:13:11: input "additions" is not defined in action "./.github/actions/m
 When a local action is run in `uses:` of `step:`, actionlint reads `action.yaml` file in the local action directory and
 validates inputs at `with:` in the workflow are correct. Missing required inputs and unexpected inputs can be detected.
 
+<a name="check-shell-names"></a>
 ## Shell name validation at `shell:`
 
 Example input:
@@ -1038,6 +1080,7 @@ test.yaml:30:16: shell name "sh" is invalid on Windows. available names are "bas
 Available shells for runners are defined in [the documentation][shell-doc]. actionlint checks shell names at `shell:`
 configuration are properly using the available shells.
 
+<a name="check-job-step-ids"></a>
 ## Job ID and step ID uniqueness
 
 Example input:
@@ -1076,6 +1119,7 @@ test.yaml:10:13: step ID "line:7,col:13" duplicates. previously defined at STEP_
 Job IDs and step IDs in each job must be unique. IDs are compared in case insensitive. actionlint checks all job IDs
 and step IDs and reoprts errors when some IDs duplicate.
 
+<a name="check-hardcoded-credentials"></a>
 ## Hardcoded credentials
 
 Example input:
@@ -1117,6 +1161,7 @@ test.yaml:17:21: "password" section in "redis" service should be specified via s
 and the value should be expanded with `${{ }}` syntax at `password:`. actionlint checks hardcoded credentials and reports
 them as error.
 
+<a name="check-env-var-names"></a>
 ## Environment variable names
 
 Example input:
