@@ -1,0 +1,17 @@
+on: push
+jobs:
+  test:
+    runs-on: ubuntu-latest
+    steps:
+      - run: echo 'hello'
+        id: step_id
+      - run: echo 'bye'
+        # ERROR: Duplicate of step ID
+        id: STEP_ID
+  # ERROR: Duplicate of job ID
+  TEST:
+    runs-on: ubuntu-latest
+    steps:
+      - run: echo 'hello'
+        # OK. Step ID uniqueness is job-local
+        id: step_id

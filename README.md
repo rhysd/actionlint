@@ -1038,6 +1038,44 @@ test.yaml:30:16: shell name "sh" is invalid on Windows. available names are "bas
 Available shells for runners are defined in [the documentation][shell-doc]. actionlint checks shell names at `shell:`
 configuration are properly using the available shells.
 
+## Job ID and step ID uniqueness
+
+Example input:
+
+```yaml
+on: push
+jobs:
+  test:
+    runs-on: ubuntu-latest
+    steps:
+      - run: echo 'hello'
+        id: step_id
+      - run: echo 'bye'
+        # ERROR: Duplicate of step ID
+        id: STEP_ID
+  # ERROR: Duplicate of job ID
+  TEST:
+    runs-on: ubuntu-latest
+    steps:
+      - run: echo 'hello'
+        # OK. Step ID uniqueness is job-local
+        id: step_id
+```
+
+Output:
+
+```
+test.yaml:12:3: key "test" is duplicate in "jobs" section. previously defined at line:3,col:3. note that key names are case insensitive [syntax-check]
+12|   TEST:
+  |   ^~~~~
+test.yaml:10:13: step ID "line:7,col:13" duplicates. previously defined at STEP_ID. step ID must be unique within a job. note that step ID is case insensitive [step-id]
+10|         id: STEP_ID
+  |             ^~~~~~~
+```
+
+Job IDs and step IDs in each job must be unique. IDs are compared in case insensitive. actionlint checks all job IDs
+and step IDs and reoprts errors when some IDs duplicate.
+
 ## 
 
 Example input:
