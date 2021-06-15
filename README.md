@@ -1252,6 +1252,10 @@ unexhaustive list of interesting APIs.
 
 # Testing
 
+- All examples in ['Checks' section](#checks) are tested in [`example_test.go`](./example_test.go)
+- I cloned GitHub top 1000 repositories and extracted 1400+ workflow files. And I tried actionlint with the collected workflow
+  files. All bugs found while tye trial were fixed and I confirmed no more false positive.
+
 # License
 
 actionlint is distributed under [the MIT license](./LICENSE.txt).
