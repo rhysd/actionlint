@@ -210,6 +210,6 @@ func (rule *RuleAction) readActionSpecFile(dir string, pos *Pos) []byte {
 			dir = p
 		}
 	}
-	rule.errorf(pos, "Neither action.yaml nor action.yml is found in directory %q", dir)
+	rule.errorf(pos, "Neither action.yaml nor action.yml is found in directory \"%s\"", dir)
 	return nil
 }

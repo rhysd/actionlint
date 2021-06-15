@@ -1260,8 +1260,8 @@ unexhaustive list of interesting APIs.
 
 actionlint is distributed under [the MIT license](./LICENSE.txt).
 
-[CI Badge]: https://github.com/rhysd/actionlint/workflows/CI/badge.svg?branch=master&event=push
-[CI]: https://github.com/rhysd/actionlint/actions?query=workflow%3ACI+branch%3Amaster
+[CI Badge]: https://github.com/rhysd/actionlint/workflows/CI/badge.svg?branch=main&event=push
+[CI]: https://github.com/rhysd/actionlint/actions?query=workflow%3ACI+branch%3Amain
 [repo]: https://github.com/rhysd/actionlint
 [shellcheck]: https://github.com/koalaman/shellcheck
 [yamllint]: https://github.com/adrienverge/yamllint
