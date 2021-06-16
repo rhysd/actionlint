@@ -67,7 +67,29 @@ actionlint tries to catch errors as much as possible and tries to make false pos
 
 # Install
 
-As of now, no prebuilt binary is provided. Install [Go][] toolchain and build actionlint from source.
+## [Homebrew][homebrew] on macOS
+
+Tap this repository and install `actionlint` package.
+
+```
+brew tap "rhysd/actionlint" "https://github.com/rhysd/actionlint"
+brew install actionlint
+```
+
+## Prebuilt binaries
+
+Download an archive file from [releases page][releases], unarchive it and put the executable file to a directory in `$PATH`.
+
+Prebuilt binaries are built at each release for the following OS/arch:
+
+- macOS (x86_64)
+- Linux (i386, x86_64, arm32, arm64)
+- Windows (i386, x86_64)
+- FreeBSD (i386, x86_64)
+
+## Build from source
+
+[Go][] toolchain is necessary.
 
 ```
 go get github.com/rhysd/actionlint/cmd/actionlint
@@ -1266,6 +1288,8 @@ actionlint is distributed under [the MIT license](./LICENSE.txt).
 [shellcheck]: https://github.com/koalaman/shellcheck
 [yamllint]: https://github.com/adrienverge/yamllint
 [act]: https://github.com/nektos/act
+[homebrew]: https://brew.sh/
+[releases]: https://github.com/rhysd/actionlint/releases
 [Go]: https://golang.org/
 [apidoc]: https://pkg.go.dev/github.com/rhysd/actionlint
 [syntax-doc]: https://docs.github.com/en/actions/reference/workflow-syntax-for-github-actions
