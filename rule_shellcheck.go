@@ -133,7 +133,11 @@ func sanitizeExpressionsInScript(src string) string {
 func (rule *RuleShellcheck) runShellcheck(src string, sh string, pos *Pos) {
 	src = sanitizeExpressionsInScript(src)
 
-	cmd := exec.Command(rule.cmd, "-f", "json", "-x", "--shell", sh, "-")
+	// Reasons to exclude the rules:
+	//
+	// SC1091: File not found. Scripts are for CI environment. Not suitable for checking this in current local environment
+	// SC2194: The word is constant. This sometimes happens at constants by replacing ${{ }} with spaces
+	cmd := exec.Command(rule.cmd, "-f", "json", "-x", "--shell", sh, "-e", "SC1091,SC2194", "-")
 	cmd.Stderr = nil
 	rule.debug("%s: Running shellcheck: %s", pos, cmd)
 
