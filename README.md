@@ -1,6 +1,7 @@
 actionlint
 ==========
 [![CI Badge][]][CI]
+[![API Document][api-badge]][apidoc]
 
 [actionlint][repo] is a static checker for GitHub Actions workflow files.
 
@@ -1284,6 +1285,8 @@ actionlint is distributed under [the MIT license](./LICENSE.txt).
 
 [CI Badge]: https://github.com/rhysd/actionlint/workflows/CI/badge.svg?branch=main&event=push
 [CI]: https://github.com/rhysd/actionlint/actions?query=workflow%3ACI+branch%3Amain
+[api-badge]: https://pkg.go.dev/badge/github.com/rhysd/actionlint.svg
+[apidoc]: https://pkg.go.dev/github.com/rhysd/actionlint
 [repo]: https://github.com/rhysd/actionlint
 [shellcheck]: https://github.com/koalaman/shellcheck
 [yamllint]: https://github.com/adrienverge/yamllint
@@ -1291,7 +1294,6 @@ actionlint is distributed under [the MIT license](./LICENSE.txt).
 [homebrew]: https://brew.sh/
 [releases]: https://github.com/rhysd/actionlint/releases
 [Go]: https://golang.org/
-[apidoc]: https://pkg.go.dev/github.com/rhysd/actionlint
 [syntax-doc]: https://docs.github.com/en/actions/reference/workflow-syntax-for-github-actions
 [expr-doc]: https://docs.github.com/en/actions/reference/context-and-expression-syntax-for-github-actions
 [contexts-doc]: https://docs.github.com/en/actions/reference/context-and-expression-syntax-for-github-actions#contexts
