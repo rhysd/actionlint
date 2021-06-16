@@ -10,7 +10,9 @@ import (
 	"github.com/rhysd/actionlint"
 )
 
-const version = "0.0.0"
+// do not use `const` for this variable because this variable is replaced at link time on releasing
+var version = "DEV"
+
 const usageHeader = `Usage: actionlint [FLAGS] [FILES...] [-]
 
   actionlint is a linter for GitHub Actions workflow files.

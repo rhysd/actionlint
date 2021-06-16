@@ -1,0 +1,65 @@
+release:
+  prerelease: auto
+  draft: true
+
+before:
+  hooks:
+    - go mod download
+
+builds:
+  - <<: &build_defaults
+      main: ./cmd/actionlint
+      ldflags: -s -w -X main.version={{.Version}}
+      env:
+        - CGO_ENABLED=0
+    id: macos
+    goos: [darwin]
+    goarch: [amd64]
+
+  - <<: *build_defaults
+    id: linux
+    goos: [linux]
+    goarch: [386, arm, amd64, arm64]
+
+  - <<: *build_defaults
+    id: windows
+    goos: [windows]
+    goarch: [386, amd64]
+
+  - <<: *build_defaults
+    id: freebsd
+    goos: [freebsd]
+    goarch: [386, amd64]
+
+archives:
+  - <<: &archives_defaults
+      files:
+        - README.md
+        - LICENSE.txt
+    id: nix
+    builds: [macos, linux, freebsd]
+    format: tar.gz
+  - <<: *archives_defaults
+    id: windows
+    builds: [windows]
+    format: zip
+
+brews:
+  - name: actionlint
+    tap:
+      owner: rhysd
+      name: actionlint
+    folder: HomebrewFormula
+    commit_author:
+      name: github-actions
+      email: github@users.noreply.github.com
+    homepage: https://github.com/rhysd/actionlint#readme
+    description: Static checker for GitHub Actions workflow files
+    license: MIT
+    install: |
+      bin.install "actionlint"
+    test: |
+      system "#{bin}/actionlint -version"
+
+changelog:
+  skip: true
