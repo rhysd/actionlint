@@ -90,7 +90,7 @@ Prebuilt binaries are built at each release for the following OS/arch:
 
 ## On CI
 
-Please try [the download script](./download-actionlint.bash). It downloads the latest version of actionlint automatically.
+Please try [the download script](./scripts/download-actionlint.bash). It downloads the latest version of actionlint automatically.
 Here is an example of simple workflow to run actionlint on GitHub Actions.
 
 ```yaml
@@ -106,7 +106,7 @@ jobs:
     steps:
       - uses: actions/checkout@v2
       - name: Download actionlint
-        run: bash <(curl https://raw.githubusercontent.com/rhysd/actionlint/main/download-actionlint.bash)
+        run: bash <(curl https://raw.githubusercontent.com/rhysd/actionlint/main/scripts/download-actionlint.bash)
         shell: bash
       - run: ./actionlint
 ```
