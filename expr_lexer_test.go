@@ -703,6 +703,11 @@ func TestLexExprError(t *testing.T) {
 			input: "",
 			want:  "unexpected EOF while lexing expression",
 		},
+		{
+			what:  "special note for string literals with double quotes",
+			input: "\"hello\"",
+			want:  "do you mean string literals? only single quotes are available for string delimiter",
+		},
 	}
 
 	for _, tc := range testCases {
