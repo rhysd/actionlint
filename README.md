@@ -79,9 +79,9 @@ brew install actionlint
 
 ## Prebuilt binaries
 
-Download an archive file from [releases page][releases], unarchive it and put the executable file to a directory in `$PATH`.
+Download an archive file from [releases page][releases], unarchive it and put the executable file at a directory in `$PATH`.
 
-Prebuilt binaries are built at each release for the following OS/arch:
+Prebuilt binaries are built at each release by CI for the following OS and arch:
 
 - macOS (x86_64)
 - Linux (i386, x86_64, arm32, arm64)
@@ -90,11 +90,12 @@ Prebuilt binaries are built at each release for the following OS/arch:
 
 ## On CI
 
-Please try [the download script](./scripts/download-actionlint.bash). It downloads the latest version of actionlint automatically.
+Please try [the download script](./scripts/download-actionlint.bash). It downloads the latest version of actionlint to
+the current directory automatically.
 Here is an example of simple workflow to run actionlint on GitHub Actions.
 
 ```yaml
-name: Apply actionlint
+name: Lint GitHub Actions workflows
 on: [push, pull_request]
 
 jobs:
@@ -108,12 +109,13 @@ jobs:
       - name: Download actionlint
         run: bash <(curl https://raw.githubusercontent.com/rhysd/actionlint/main/scripts/download-actionlint.bash)
         shell: bash
-      - run: ./actionlint
+      - name: Check workflow files
+        run: ./actionlint
 ```
 
 ## Build from source
 
-[Go][] toolchain is necessary.
+[Go][] toolchain is necessary. It builds the latest `main` branch.
 
 ```
 go get github.com/rhysd/actionlint/cmd/actionlint
@@ -127,7 +129,7 @@ With no argument, actionlint finds all workflow files in the current repository 
 actionlint
 ```
 
-When path to YAML workflow files are given, actionlint checks them.
+When paths to YAML workflow files are given, actionlint checks them.
 
 ```
 actionlint path/to/workflow1.yaml path/to/workflow2.yaml
@@ -1302,6 +1304,11 @@ unexhaustive list of interesting APIs.
 - I cloned GitHub top 1000 repositories and extracted 1400+ workflow files. And I tried actionlint with the collected workflow
   files. All bugs found while the trial were fixed and I confirmed no more false positives.
 
+# Bug reporting
+
+When you 're seeing some bugs or false positives, it is helpful to [file a new issue][issue-form] with a minimal example
+of input. Giving me some feedbacks like feature requests or idea of additional checks is also welcome.
+
 # License
 
 actionlint is distributed under [the MIT license](./LICENSE.txt).
@@ -1336,3 +1343,4 @@ actionlint is distributed under [the MIT license](./LICENSE.txt).
 [go-yaml]: https://github.com/go-yaml/yaml
 [credentials-doc]: https://docs.github.com/en/actions/reference/workflow-syntax-for-github-actions#jobsjob_idcontainercredentials
 [opengroup-env-vars]: https://pubs.opengroup.org/onlinepubs/007904875/basedefs/xbd_chap08.html
+[issue-form]: https://github.com/rhysd/actionlint/issues/new
