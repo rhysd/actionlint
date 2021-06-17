@@ -218,7 +218,7 @@ var BuiltinGlobalVariableTypes = map[string]ExprType{
 			"env":               StringType{},
 			"graphql_url":       StringType{},
 			"path":              StringType{},
-			"repositoryUrl":     StringType{},
+			"repositoryurl":     StringType{}, // repositoryUrl
 			"retention_days":    NumberType{},
 			"server_url":        StringType{},
 		},

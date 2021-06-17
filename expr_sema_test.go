@@ -968,3 +968,34 @@ func TestExprSemanticsCheckerUpdateSteps(t *testing.T) {
 		t.Fatalf("Global variables map was copied when calling UpdateSteps again")
 	}
 }
+
+func testObjectPropertiesAreInLowerCase(t *testing.T, ty ExprType) {
+	switch ty := ty.(type) {
+	case *ObjectType:
+		for n, ty := range ty.Props {
+			for _, r := range n {
+				if 'A' <= r && r <= 'Z' {
+					t.Errorf("Property of object must not contain uppercase character because comparison is case insensitive but got %q", n)
+					break
+				}
+			}
+			testObjectPropertiesAreInLowerCase(t, ty)
+		}
+	case *ArrayType:
+		testObjectPropertiesAreInLowerCase(t, ty.Elem)
+	case *ArrayDerefType:
+		testObjectPropertiesAreInLowerCase(t, ty.Elem)
+	}
+}
+
+func TestBuiltinGlobalVariableTypesValidation(t *testing.T) {
+	for ctx, ty := range BuiltinGlobalVariableTypes {
+		for _, r := range ctx {
+			if 'A' <= r && r <= 'Z' {
+				t.Errorf("Context name must not contain uppercase character because comparison is case insensitive but got %q", ctx)
+				break
+			}
+		}
+		testObjectPropertiesAreInLowerCase(t, ty)
+	}
+}
