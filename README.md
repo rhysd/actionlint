@@ -88,6 +88,29 @@ Prebuilt binaries are built at each release for the following OS/arch:
 - Windows (i386, x86_64)
 - FreeBSD (i386, x86_64)
 
+## On CI
+
+Please try [a download script](./download-actionlint.bash). Here is an example of simple workflow to run actionlint on
+GitHub Actions.
+
+```yaml
+name: Apply actionlint
+on: [push, pull_request]
+
+jobs:
+  actionlint:
+    strategy:
+      matrix:
+        os: [ubuntu-latest, macos-latest, windows-latest]
+    runs-on: ${{ matrix.os }}
+    steps:
+      - uses: actions/checkout@v2
+      - name: Download actionlint
+        run: bash <(curl https://raw.githubusercontent.com/rhysd/actionlint/main/download-actionlint.bash)
+        shell: bash
+      - run: ./actionlint
+```
+
 ## Build from source
 
 [Go][] toolchain is necessary.
@@ -1277,7 +1300,7 @@ unexhaustive list of interesting APIs.
 
 - All examples in ['Checks' section](#checks) are tested in [`example_test.go`](./example_test.go)
 - I cloned GitHub top 1000 repositories and extracted 1400+ workflow files. And I tried actionlint with the collected workflow
-  files. All bugs found while tye trial were fixed and I confirmed no more false positive.
+  files. All bugs found while the trial were fixed and I confirmed no more false positives.
 
 # License
 
