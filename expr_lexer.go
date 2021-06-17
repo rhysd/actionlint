@@ -220,11 +220,17 @@ func (lex *ExprLexer) unexpected(r rune, where string, expected []rune) *ExprErr
 		what = "character " + strconv.QuoteRune(r)
 	}
 
+	var note string
+	if r == '"' {
+		note = ". do you mean string literals? only single quotes are available for string delimiter"
+	}
+
 	msg := fmt.Sprintf(
-		"got unexpected %s while lexing %s, expecting %s",
+		"got unexpected %s while lexing %s, expecting %s%s",
 		what,
 		where,
 		strings.Join(qs, ", "),
+		note,
 	)
 	p := lex.scan.Pos()
 	return &ExprError{
