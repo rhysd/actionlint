@@ -90,8 +90,8 @@ Prebuilt binaries are built at each release for the following OS/arch:
 
 ## On CI
 
-Please try [a download script](./download-actionlint.bash). Here is an example of simple workflow to run actionlint on
-GitHub Actions.
+Please try [the download script](./download-actionlint.bash). It downloads the latest version of actionlint automatically.
+Here is an example of simple workflow to run actionlint on GitHub Actions.
 
 ```yaml
 name: Apply actionlint
@@ -277,7 +277,7 @@ test.yaml:7:24: expecting a string with ${{...}} expression or boolean literal "
  |                        ^~~
 ```
 
-Some mapping's values are stricted to some constant strings. For example, values of `permissions:` mappings should be
+Some mapping's values are restricted to some constant strings. For example, values of `permissions:` mappings should be
 one of `none`, `read`, `write`. And several mapping values expect boolean value like `true` or `false`.
 
 actionlint checks such constant strings are used properly while parsing, and reports an error when unexpected string
@@ -365,7 +365,7 @@ There are two types of object types internally. One is an object which is strict
 when trying to access to unknown properties. And another is an object which is not strict for properties, which allows to
 access to unknown properties. In the case, accessing to unknown property is typed as `any`.
 
-When the type check cannot be done statically, the type is deducted to `any` (e.g. return type from `toJSON()`).
+When the type check cannot be done statically, the type is deduced to `any` (e.g. return type from `toJSON()`).
 
 And `${{ }}` can be used for expanding values.
 
@@ -1163,7 +1163,7 @@ test.yaml:10:13: step ID "line:7,col:13" duplicates. previously defined at STEP_
 ```
 
 Job IDs and step IDs in each job must be unique. IDs are compared in case insensitive. actionlint checks all job IDs
-and step IDs and reoprts errors when some IDs duplicate.
+and step IDs and reports errors when some IDs duplicate.
 
 <a name="check-hardcoded-credentials"></a>
 ## Hardcoded credentials
@@ -1264,7 +1264,7 @@ self-hosted-runner:
 ```
 
 - `self-hosted-runner`: Configuration for your self-hosted runner environment
-  - `labels`: Label names added to your self-hoted runners as list of string
+  - `labels`: Label names added to your self-hosted runners as list of string
 
 Note that configuration file is optional. The author tries to keep configuration file as minimal as possible not to
 bother users to configure behavior of actionlint. Running actionlint without configuration file would work fine in most
