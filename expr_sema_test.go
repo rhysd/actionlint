@@ -549,7 +549,7 @@ func TestExprSemanticsCheckError(t *testing.T) {
 			what:  "array element is not object for filtering array dereference",
 			input: "test().*.bar",
 			expected: []string{
-				"object proprety filter \"bar\" of array element dereference must be type of object but got \"string\"",
+				"object property filter \"bar\" of array element dereference must be type of object but got \"string\"",
 			},
 			funcs: map[string][]*FuncSignature{
 				"test": {

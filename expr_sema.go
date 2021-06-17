@@ -389,7 +389,7 @@ func (sema *ExprSemanticsChecker) checkObjectDeref(n *ObjectDerefNode) ExprType 
 		default:
 			sema.errorf(
 				n,
-				"object proprety filter %q of array element dereference must be type of object but got %q",
+				"object property filter %q of array element dereference must be type of object but got %q",
 				n.Property,
 				ty.Elem.String(),
 			)
