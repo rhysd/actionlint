@@ -713,7 +713,8 @@ option on running `actionlint` command specifies the executable path of shellche
 disables shellcheck integration explicitly.
 
 Since both `${{ }}` expression syntax and ShellScript's variable access `$FOO` use `$`, remaining `${{ }}` confuses shellcheck.
-To avoid it, actionlint replaces `${{ }}` with spaces, for example `echo '${{ matrix.os }}'` is replaced with `echo '                '`.
+To avoid it, actionlint replaces `${{ }}` with underscores. For example `echo '${{ matrix.os }}'` is replaced with
+`echo '________________'`.
 
 <a name="check-job-deps"></a>
 ## Job dependencies validation

@@ -112,7 +112,11 @@ func (rule *RuleShellcheck) getShellName(exec *ExecRun) string {
 	return rule.workflowShell
 }
 
-// Replace ${{ ... }} with spaces
+// Replace ${{ ... }} with underscores like __________
+// Note: replacing with spaces sometimes causes syntax error. For example,
+//   if ${{ contains(xs, s) }}; then
+//     echo 'hello'
+//   fi
 func sanitizeExpressionsInScript(src string) string {
 	for {
 		s := strings.Index(src, "${{")
@@ -126,17 +130,20 @@ func sanitizeExpressionsInScript(src string) string {
 		e += 2 // offset for len("}}")
 		// Note: If ${{ ... }} includes newline, line and column reported by shellcheck will be
 		// shifted.
-		src = src[:s] + strings.Repeat(" ", e-s) + src[e:]
+		src = src[:s] + strings.Repeat("_", e-s) + src[e:]
 	}
 }
 
 func (rule *RuleShellcheck) runShellcheck(src string, sh string, pos *Pos) {
 	src = sanitizeExpressionsInScript(src)
+	rule.debug("%s: Run shellcheck for %s script:\n%s", pos, sh, src)
 
 	// Reasons to exclude the rules:
 	//
-	// SC1091: File not found. Scripts are for CI environment. Not suitable for checking this in current local environment
-	// SC2194: The word is constant. This sometimes happens at constants by replacing ${{ }} with spaces
+	// - SC1091: File not found. Scripts are for CI environment. Not suitable for checking this in current local
+	//           environment
+	// - SC2194: The word is constant. This sometimes happens at constants by replacing ${{ }} with spaces.
+	//           For example, `if ${{ matrix.foo }}; then ...` -> `if _________________; then ...`
 	cmd := exec.Command(rule.cmd, "-f", "json", "-x", "--shell", sh, "-e", "SC1091,SC2194", "-")
 	cmd.Stderr = nil
 	rule.debug("%s: Running shellcheck: %s", pos, cmd)
