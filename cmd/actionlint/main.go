@@ -5,7 +5,6 @@ import (
 	"fmt"
 	"io/ioutil"
 	"os"
-	"regexp"
 
 	"github.com/rhysd/actionlint"
 )
@@ -75,13 +74,24 @@ func run(args []string, opts *actionlint.LinterOptions, initConfig bool) ([]*act
 	return l.LintFiles(args)
 }
 
+type ignorePatterns []string
+
+func (i *ignorePatterns) String() string {
+	return "option for ignore patterns"
+}
+func (i *ignorePatterns) Set(v string) error {
+	*i = append(*i, v)
+	return nil
+}
+
 func main() {
+
 	var ver bool
 	var opts actionlint.LinterOptions
-	var ignorePat string
+	var ignorePats ignorePatterns
 	var initConfig bool
 
-	flag.StringVar(&ignorePat, "ignore", "", "Regular expression matching to error messages which you want to ignore")
+	flag.Var(&ignorePats, "ignore", "Regular expression matching to error messages you want to ignore. This flag can be specified multiple times")
 	flag.StringVar(&opts.Shellcheck, "shellcheck", "shellcheck", "Command name or file path of \"shellcheck\" external command")
 	flag.BoolVar(&opts.Oneline, "oneline", false, "Use one line per one error. Useful for reading error messages from programs")
 	flag.StringVar(&opts.ConfigFile, "config-file", "", "File path to config file")
@@ -98,14 +108,7 @@ func main() {
 		return
 	}
 
-	if ignorePat != "" {
-		r, err := regexp.Compile(ignorePat)
-		if err != nil {
-			fmt.Fprintf(os.Stderr, "invalid regular expression %q: %s", ignorePat, err.Error())
-			os.Exit(1)
-		}
-		opts.IgnorePattern = r
-	}
+	opts.IgnorePatterns = ignorePats
 
 	errs, err := run(flag.Args(), &opts, initConfig)
 	if err != nil {

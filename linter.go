@@ -48,9 +48,9 @@ type LinterOptions struct {
 	// "shellcheck" or file path like "/path/to/shellcheck", "path/to/shellcheck". When this value
 	// is empty, shellcheck won't run to check scripts in workflow file.
 	Shellcheck string
-	// IgnorePattern is regular expression to filter errors. The pattern is applied to error messages.
-	// When an error is matched, the error is ignored.
-	IgnorePattern *regexp.Regexp
+	// IgnorePatterns is list of regular expression to filter errors. The pattern is applied to error
+	// messages. When an error is matched, the error is ignored.
+	IgnorePatterns []string
 	// ConfigFile is a path to config file. Empty string means no config file path is given. In
 	// the case, actionlint will try to read config from .github/actionlint.yaml.
 	ConfigFile string
@@ -66,7 +66,7 @@ type Linter struct {
 	noColor       bool
 	oneline       bool
 	shellcheck    string
-	ignoreRe      *regexp.Regexp
+	ignorePats    []*regexp.Regexp
 	defaultConfig *Config
 }
 
@@ -101,6 +101,15 @@ func NewLinter(out io.Writer, opts *LinterOptions) (*Linter, error) {
 		cfg = c
 	}
 
+	ignore := make([]*regexp.Regexp, 0, len(opts.IgnorePatterns))
+	for _, s := range opts.IgnorePatterns {
+		r, err := regexp.Compile(s)
+		if err != nil {
+			return nil, fmt.Errorf("invalid regular expression for ignore pattern %q: %s", s, err.Error())
+		}
+		ignore = append(ignore, r)
+	}
+
 	return &Linter{
 		NewProjects(),
 		out,
@@ -109,7 +118,7 @@ func NewLinter(out io.Writer, opts *LinterOptions) (*Linter, error) {
 		opts.NoColor,
 		opts.Oneline,
 		opts.Shellcheck,
-		opts.IgnorePattern,
+		ignore,
 		cfg,
 	}, nil
 }
@@ -336,12 +345,16 @@ func (l *Linter) Lint(path string, content []byte, project *Project) ([]*Error, 
 		all = append(all, errs...)
 	}
 
-	if l.ignoreRe != nil {
+	if len(l.ignorePats) > 0 {
 		filtered := make([]*Error, 0, len(all))
+	Loop:
 		for _, err := range all {
-			if !l.ignoreRe.MatchString(err.Message) {
-				filtered = append(filtered, err)
+			for _, pat := range l.ignorePats {
+				if pat.MatchString(err.Message) {
+					continue Loop
+				}
 			}
+			filtered = append(filtered, err)
 		}
 		all = filtered
 	}
