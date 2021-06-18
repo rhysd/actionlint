@@ -675,6 +675,7 @@ func guessTypeOfRawYAMLValue(v RawYAMLValue) ExprType {
 }
 
 func guessTypeFromString(s string) ExprType {
+	// Note that keywords are case sensitive. TRUE, FALSE, NULL are invalid named value.
 	if s == "true" || s == "false" {
 		return BoolType{}
 	}

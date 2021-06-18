@@ -352,7 +352,7 @@ func (sema *ExprSemanticsChecker) checkVariable(n *VariableNode) ExprType {
 			qs = append(qs, strconv.Quote(n))
 		}
 		sort.Strings(qs)
-		sema.errorf(n, "undefined variable %q. available variables are %s", n.Name, strings.Join(qs, ", "))
+		sema.errorf(n, "undefined variable %q. available variables are %s", n.Token().Value, strings.Join(qs, ", "))
 		return AnyType{}
 	}
 

@@ -101,7 +101,7 @@ func (p *ExprParser) parseIdent() (ExprNode, *ExprError) {
 		}
 		return &FuncCallNode{ident.Value, args, ident}, nil
 	default:
-		// Handle keywords
+		// Handle keywords. Note that keywords are case sensitive. TRUE, FALSE, NULL are invalid named value.
 		switch ident.Value {
 		case "null":
 			return &NullNode{ident}, nil
