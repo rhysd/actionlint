@@ -1,0 +1,1 @@
+test.yaml:7:28: this expression must be contained within ${{ }} like `if: ${{ ... }}` since it contains operator ".". see https://docs.github.com/en/actions/reference/workflow-syntax-for-github-actions#jobsjob_idif for more details [expression]

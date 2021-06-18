@@ -14,5 +14,5 @@ jobs:
         with:
           path: ~/.npm
           key: ${{ matrix.platform }}-node-${{ hashFiles('**/package-lock.json') }}
-        if: github.repository.permissions.admin == true
+        if: ${{ github.repository.permissions.admin == true }}
       - run: npm install && npm test

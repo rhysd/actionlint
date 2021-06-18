@@ -26,7 +26,7 @@ jobs:
           echo 'package: ${{ matrix.package.name }} (optional=${{ matrix.package.optional }})'
       # Additional matrix values in 'include:' are supported
       - run: echo 'npm version is specified'
-        if: contains(matrix.npm, '7.5')
+        if: ${{ contains(matrix.npm, '7.5') }}
   test2:
     runs-on: ubuntu-latest
     steps:

@@ -900,3 +900,122 @@ func TestParseExpressionTokenPosition(t *testing.T) {
 		})
 	}
 }
+
+func TestParseExpressionOperatorDetection(t *testing.T) {
+	testCases := []struct {
+		what  string
+		op    string
+		input string
+	}{
+		{
+			what:  "nested expression",
+			op:    "(",
+			input: "(foo)",
+		},
+		{
+			what:  "index access",
+			op:    "[",
+			input: "arr[idx]",
+		},
+		{
+			what:  "property access",
+			op:    ".",
+			input: "github.event",
+		},
+		{
+			what:  "not",
+			op:    "!",
+			input: "!foo",
+		},
+		{
+			what:  "less",
+			op:    "<",
+			input: "a < b",
+		},
+		{
+			what:  "less equal",
+			op:    "<=",
+			input: "a <= b",
+		},
+		{
+			what:  "greater",
+			op:    ">",
+			input: "a > b",
+		},
+		{
+			what:  "greater equal",
+			op:    ">=",
+			input: "a >= b",
+		},
+		{
+			what:  "equal",
+			op:    "==",
+			input: "a == b",
+		},
+		{
+			what:  "not equal",
+			op:    "!=",
+			input: "a != b",
+		},
+		{
+			what:  "and",
+			op:    "&&",
+			input: "a && b",
+		},
+		{
+			what:  "or",
+			op:    "||",
+			input: "a || b",
+		},
+		{
+			what:  "multiple operators",
+			op:    "==",
+			input: "(a == b) || (c < d)",
+		},
+		{
+			what:  "no operator",
+			op:    "",
+			input: "true",
+		},
+		{
+			what:  "func call is not operator",
+			op:    "",
+			input: "contains(foo, 'hello')",
+		},
+		{
+			what:  "operator inside expression",
+			op:    ".",
+			input: "contains(github.repository, 'hello')",
+		},
+	}
+
+	for _, tc := range testCases {
+		t.Run(tc.what, func(t *testing.T) {
+			l := NewExprLexer()
+			tok, _, err := l.Lex(tc.input + "}}")
+			if err != nil {
+				panic(err)
+			}
+
+			p := NewExprParser()
+			if _, err := p.Parse(tok); err != nil {
+				t.Fatal("Parse error:", err)
+			}
+
+			op := p.sawOperator
+			if tc.op == "" {
+				if op != nil {
+					t.Fatalf("no operator was expected but found %q in %q", op.Kind.String(), tc.input)
+				}
+			} else {
+				if op == nil {
+					t.Fatalf("operator was not found in %q", tc.input)
+				}
+
+				if op.Kind.String() != tc.op {
+					t.Fatalf("Wanted operator %q but got %q", tc.op, op.Kind.String())
+				}
+			}
+		})
+	}
+}

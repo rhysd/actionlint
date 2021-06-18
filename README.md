@@ -32,7 +32,7 @@ jobs:
         with:
           path: ~/.npm
           key: ${{ matrix.platform }}-node-${{ hashFiles('**/package-lock.json') }}
-        if: github.repository.permissions.admin == true
+        if: ${{ github.repository.permissions.admin == true }}
       - run: npm install && npm test
 ```
 
@@ -45,9 +45,9 @@ example.yaml:3:5: unexpected key "branch" for "push" section. expected one of "t
 example.yaml:9:28: label "linux-latest" is unknown. available labels are "windows-latest", "windows-2019", "windows-2016", "ubuntu-latest", ... [runner-label]
 9|         os: [macos-latest, linux-latest]
  |                            ^~~~~~~~~~~~~
-example.yaml:17:13: receiver of object dereference "permissions" must be type of object but got "string" [expression]
-17|         if: github.repository.permissions.admin == true
-  |             ^~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+example.yaml:17:17: receiver of object dereference "permissions" must be type of object but got "string" [expression]
+17|         if: ${{ github.repository.permissions.admin == true }}
+  |                 ^~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 example.yaml:16:20: property "platform" is not defined in object type {os: string} [expression]
 16|           key: ${{ matrix.platform }}-node-${{ hashFiles('**/package-lock.json') }}
   |                    ^~~~~~~~~~~~~~~
@@ -555,7 +555,7 @@ jobs:
           echo 'package: ${{ matrix.package.name }} (optional=${{ matrix.package.optional }})'
       # Additional matrix values in 'include:' are supported
       - run: echo 'npm version is specified'
-        if: contains(matrix.npm, '7.5')
+        if: ${{ contains(matrix.npm, '7.5') }}
   test2:
     runs-on: ubuntu-latest
     steps:
