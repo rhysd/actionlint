@@ -297,6 +297,22 @@ func TestParseExpressionSyntaxOK(t *testing.T) {
 			},
 		},
 		{
+			what:  "property includes uppercase character",
+			input: "a.doSomething",
+			expected: &ObjectDerefNode{
+				Receiver: &VariableNode{Name: "a"},
+				Property: "dosomething",
+			},
+		},
+		{
+			what:  "property includes -",
+			input: "a.foo-bar",
+			expected: &ObjectDerefNode{
+				Receiver: &VariableNode{Name: "a"},
+				Property: "foo-bar",
+			},
+		},
+		{
 			what:  "array element dereference",
 			input: "a.*",
 			expected: &ArrayDerefNode{
