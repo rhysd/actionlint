@@ -423,6 +423,33 @@ func TestExprSemanticsCheckOK(t *testing.T) {
 			input:    "!'hello'",
 			expected: BoolType{},
 		},
+		{
+			what:     "case insensitive comparison for object property",
+			input:    "test().foo-Bar_PIYO",
+			expected: NullType{},
+			funcs: map[string][]*FuncSignature{
+				"test": {
+					{
+						Name: "test",
+						Ret: &ObjectType{
+							Props: map[string]ExprType{
+								"foo-bar_piyo": NullType{},
+							},
+						},
+					},
+				},
+			},
+		},
+		{
+			what:     "case insensitive comparison for function name",
+			input:    "toJSON(fromjson(toJson(github)))",
+			expected: StringType{},
+		},
+		{
+			what:     "case insensitive comparison for context name",
+			input:    "JOB.CONTAINER.NETWORK",
+			expected: StringType{},
+		},
 	}
 
 	for _, tc := range testCases {
@@ -891,6 +918,20 @@ func TestExprSemanticsCheckError(t *testing.T) {
 			input: "needs.foo",
 			expected: []string{
 				"property \"foo\" is not defined in object type ",
+			},
+		},
+		{
+			what:  "bool literal in upper case",
+			input: "TRUE",
+			expected: []string{
+				"undefined variable \"TRUE\"",
+			},
+		},
+		{
+			what:  "null literal in upper case",
+			input: "NULL",
+			expected: []string{
+				"undefined variable \"NULL\"",
 			},
 		},
 	}
