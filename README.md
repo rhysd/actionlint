@@ -1275,8 +1275,9 @@ cases.
 
 # Use actionlint as library
 
-actionlint can be used from Go programs. See [the documentation][apidoc] to know the list of all APIs. Followings are
-unexhaustive list of interesting APIs.
+actionlint can be used from Go programs. See [the documentation][apidoc] to know the list of all APIs. It contains
+workflow file parser built on top of `go-yaml/yaml`, expression `${{ }}` lexer/parser/checker, etc.
+Followings are unexhaustive list of interesting APIs.
 
 - `Linter` manages linter lifecycle and applies checks to given files. If you want to run actionlint checks in your
   program, please use this struct.
@@ -1298,6 +1299,9 @@ unexhaustive list of interesting APIs.
   `NumberType`, ... are structs to represent actual types of expression.
 - `ExprSemanticsChecker` checks semantics of expression syntax `${{ }}`. It traverses given expression syntax tree and
   deduces its type, checking types and resolving variables (contexts).
+
+Note that the version of this repository is for command line tool `actionlint`. So it does not represent version of the
+library, meant that patch version bump may introduce some breaking changes.
 
 # Testing
 
