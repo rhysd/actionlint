@@ -18,7 +18,8 @@ func errorAtToken(t *Token, msg string) *ExprError {
 // ExprParser is a parser for expression syntax. To know the details, see
 // https://docs.github.com/en/actions/reference/context-and-expression-syntax-for-github-actions
 type ExprParser struct {
-	input []*Token
+	input       []*Token
+	sawOperator *Token
 }
 
 // NewExprParser creates new ExprParser instance.
@@ -62,6 +63,13 @@ func (p *ExprParser) next() *Token {
 
 func (p *ExprParser) peek() *Token {
 	return p.input[0]
+}
+
+// Note: List of operators: https://docs.github.com/en/actions/reference/context-and-expression-syntax-for-github-actions#operators
+func (p *ExprParser) seeingOperator(tok *Token) {
+	if p.sawOperator == nil {
+		p.sawOperator = tok
+	}
 }
 
 func (p *ExprParser) parseIdent() (ExprNode, *ExprError) {
@@ -117,7 +125,7 @@ func (p *ExprParser) parseIdent() (ExprNode, *ExprError) {
 }
 
 func (p *ExprParser) parseNestedExpr() (ExprNode, *ExprError) {
-	p.next() // eat '('
+	lparen := p.next() // eat '('
 
 	nested, err := p.parseLogicalOr()
 	if err != nil {
@@ -130,6 +138,7 @@ func (p *ExprParser) parseNestedExpr() (ExprNode, *ExprError) {
 		return nil, p.unexpected("closing ')' of nexted expression (...)", []TokenKind{TokenKindRightParen})
 	}
 
+	p.seeingOperator(lparen)
 	return nested, nil
 }
 
@@ -200,7 +209,7 @@ func (p *ExprParser) parsePostfixOp() (ExprNode, *ExprError) {
 	for {
 		switch p.peek().Kind {
 		case TokenKindDot:
-			p.next() // eat '.'
+			dot := p.next() // eat '.'
 			switch p.peek().Kind {
 			case TokenKindStar:
 				p.next() // eat '*'
@@ -215,8 +224,9 @@ func (p *ExprParser) parsePostfixOp() (ExprNode, *ExprError) {
 					[]TokenKind{TokenKindIdent, TokenKindStar},
 				)
 			}
+			p.seeingOperator(dot)
 		case TokenKindLeftBracket:
-			p.next() // eat '['
+			lbra := p.next() // eat '['
 			idx, err := p.parseLogicalOr()
 			if err != nil {
 				return nil, err
@@ -226,6 +236,7 @@ func (p *ExprParser) parsePostfixOp() (ExprNode, *ExprError) {
 				return nil, p.unexpected("closing bracket ']' for index access", []TokenKind{TokenKindRightBracket})
 			}
 			p.next() // eat ']'
+			p.seeingOperator(lbra)
 		default:
 			return ret, nil
 		}
@@ -237,12 +248,13 @@ func (p *ExprParser) parsePrefixOp() (ExprNode, *ExprError) {
 	if t.Kind != TokenKindNot {
 		return p.parsePostfixOp()
 	}
-	p.next() // eat '!' token
+	not := p.next() // eat '!' token
 
 	o, err := p.parsePostfixOp()
 	if err != nil {
 		return nil, err
 	}
+	p.seeingOperator(not)
 
 	return &NotOpNode{o, t}, nil
 }
@@ -270,12 +282,14 @@ func (p *ExprParser) parseCompareBinOp() (ExprNode, *ExprError) {
 	default:
 		return l, nil
 	}
-	p.next() // eat the operator token
+	op := p.next() // eat the operator token
 
 	r, err := p.parseCompareBinOp()
 	if err != nil {
 		return nil, err
 	}
+
+	p.seeingOperator(op)
 
 	return &CompareOpNode{k, l, r}, nil
 }
@@ -288,11 +302,12 @@ func (p *ExprParser) parseLogicalAnd() (ExprNode, *ExprError) {
 	if p.peek().Kind != TokenKindAnd {
 		return l, nil
 	}
-	p.next() // eat &&
+	and := p.next() // eat &&
 	r, err := p.parseLogicalAnd()
 	if err != nil {
 		return nil, err
 	}
+	p.seeingOperator(and)
 	return &LogicalOpNode{LogicalOpNodeKindAnd, l, r}, nil
 }
 
@@ -304,11 +319,12 @@ func (p *ExprParser) parseLogicalOr() (ExprNode, *ExprError) {
 	if p.peek().Kind != TokenKindOr {
 		return l, nil
 	}
-	p.next() // eat ||
+	or := p.next() // eat ||
 	r, err := p.parseLogicalOr()
 	if err != nil {
 		return nil, err
 	}
+	p.seeingOperator(or)
 	return &LogicalOpNode{LogicalOpNodeKindOr, l, r}, nil
 }
 
@@ -320,6 +336,7 @@ func (p *ExprParser) Parse(t []*Token) (ExprNode, *ExprError) {
 		panic("tokens must not be empty")
 	}
 	p.input = t
+	p.sawOperator = nil
 
 	root, err := p.parseLogicalOr()
 	if err != nil {

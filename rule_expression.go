@@ -350,17 +350,19 @@ func (rule *RuleExpression) checkIfCondition(str *String) {
 	// > expression contains any operators. If the expression contains any operators, the expression
 	// > must be contained within ${{ }} to explicitly mark it for evaluation.
 	//
-	// This document is wrong. Actually I confirmed that any strings without surrounding in ${{ }}
+	// This document is actually wrong. I confirmed that any strings without surrounding in ${{ }}
 	// are evaluated.
 	//
 	// - run: echo 'run'
-	//   if: true
+	//   if: '!false'
 	// - run: echo 'not run'
-	//   if: false
+	//   if: '!true'
 	// - run: echo 'run'
-	//   if: contains('abc', 'ab')
+	//   if: false || true
+	// - run: echo 'run'
+	//   if: true && true
 	// - run: echo 'not run'
-	//   if: contains('abc', 'xy')
+	//   if: true && false
 
 	var condTy ExprType
 	if strings.Contains(str.Value, "${{") && strings.Contains(str.Value, "}}") {
@@ -372,7 +374,33 @@ func (rule *RuleExpression) checkIfCondition(str *String) {
 		}
 	} else {
 		src := str.Value + "}}" // }} is necessary since lexer lexes it as end of tokens
-		condTy, _ = rule.checkSemantics(src, str.Pos.Line, str.Pos.Col)
+		line, col := str.Pos.Line, str.Pos.Col
+
+		l := NewExprLexer()
+		tok, _, err := l.Lex(src)
+		if err != nil {
+			rule.exprError(err, line, col)
+			return
+		}
+
+		p := NewExprParser()
+		expr, err := p.Parse(tok)
+		if err != nil {
+			rule.exprError(err, line, col)
+			return
+		}
+
+		if p.sawOperator != nil {
+			op := p.sawOperator
+			pos := convertExprLineColToPos(op.Line, op.Column, str.Pos.Line, str.Pos.Col)
+			rule.errorf(
+				pos,
+				"this expression must be contained within ${{ }} since it contains operator %q. see https://docs.github.com/en/actions/reference/workflow-syntax-for-github-actions#jobsjob_idif for more details",
+				p.sawOperator.Kind.String(),
+			)
+		}
+
+		condTy = rule.checkSemanticsOfExprNode(expr, line, col)
 	}
 
 	if condTy != nil && !(BoolType{}).Assignable(condTy) {
@@ -461,11 +489,28 @@ func (rule *RuleExpression) checkRawYAMLValue(v RawYAMLValue) {
 }
 
 func (rule *RuleExpression) exprError(err *ExprError, lineBase, colBase int) {
-	// Line and column in ExprError are 1-based
-	line := err.Line - 1 + lineBase
-	col := err.Column - 1 + colBase
-	pos := Pos{Line: line, Col: col}
-	rule.error(&pos, err.Message)
+	pos := convertExprLineColToPos(err.Line, err.Column, lineBase, colBase)
+	rule.error(pos, err.Message)
+}
+
+func (rule *RuleExpression) checkSemanticsOfExprNode(expr ExprNode, line, col int) ExprType {
+	c := NewExprSemanticsChecker()
+	if rule.matrixTy != nil {
+		c.UpdateMatrix(rule.matrixTy)
+	}
+	if rule.stepsTy != nil {
+		c.UpdateSteps(rule.stepsTy)
+	}
+	if rule.needsTy != nil {
+		c.UpdateNeeds(rule.needsTy)
+	}
+
+	ty, errs := c.Check(expr)
+	for _, err := range errs {
+		rule.exprError(err, line, col)
+	}
+
+	return ty
 }
 
 func (rule *RuleExpression) checkSemantics(src string, line, col int) (ExprType, int) {
@@ -483,22 +528,7 @@ func (rule *RuleExpression) checkSemantics(src string, line, col int) (ExprType,
 		return nil, offset
 	}
 
-	c := NewExprSemanticsChecker()
-	if rule.matrixTy != nil {
-		c.UpdateMatrix(rule.matrixTy)
-	}
-	if rule.stepsTy != nil {
-		c.UpdateSteps(rule.stepsTy)
-	}
-	if rule.needsTy != nil {
-		c.UpdateNeeds(rule.needsTy)
-	}
-	ty, errs := c.Check(expr)
-	for _, err := range errs {
-		rule.exprError(err, line, col)
-	}
-
-	return ty, offset
+	return rule.checkSemanticsOfExprNode(expr, line, col), offset
 }
 
 func (rule *RuleExpression) calcNeedsType(job *Job) *ObjectType {
@@ -686,4 +716,12 @@ func guessTypeFromString(s string) ExprType {
 		return NumberType{}
 	}
 	return StringType{}
+}
+
+func convertExprLineColToPos(line, col, lineBase, colBase int) *Pos {
+	// Line and column in ExprError are 1-based
+	return &Pos{
+		Line: line - 1 + lineBase,
+		Col:  col - 1 + colBase,
+	}
 }
