@@ -7,10 +7,10 @@ actionlint
 
 Features:
 
-- **Syntax check for workflow files**: When some keys are missing or unexpected, actionlint reports them
-- **Strong type check for `${{ }}` expressions**: It can catch access to not existing property as well as type mismatches
-- **[shellcheck][] integration** for `run:` section
-- **Other several useful checks**; dependencies check for `needs:` section, runner label validation, cron syntax validation, ...
+- **Syntax check for workflow files**: actionlint checks unexpected or missing keys following [workflow syntax][syntax-doc]
+- **Strong type check for `${{ }}` expressions**: actionlint catches several semantic errors like access to not existing property, type mismatches, ...
+- **[shellcheck][] integration** for scripts in `run:`
+- **Other several useful checks**; dependencies check for `needs:`, runner label validation, cron syntax validation, ...
 
 See ['Checks' section](#checks) for full list of checks done by actionlint.
 
@@ -53,7 +53,7 @@ example.yaml:16:20: property "platform" is not defined in object type {os: strin
   |                    ^~~~~~~~~~~~~~~
 ```
 
-actionlint tries to catch errors as much as possible and tries to make false positive as minimal as possible.
+actionlint tries to catch errors as much as possible and make false positives as minimal as possible.
 
 # Why?
 
