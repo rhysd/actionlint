@@ -2,7 +2,7 @@
 
 set -e -o pipefail
 
-version="1.0.0"
+version="1.1.0"
 echo "Start downloading actionlint v${version}"
 
 case "$OSTYPE" in
