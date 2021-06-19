@@ -96,6 +96,24 @@ func TestErrorPrettyPrint(t *testing.T) {
  |               ^`,
 		},
 		{
+			message: "error at one character word in source",
+			line:    1,
+			column:  5,
+			source:  "foo . bar",
+			expected: `filename.txt:1:5: error at one character word in source [kind]
+1| foo . bar
+ |     ^`,
+		},
+		{
+			message: "error at space in source",
+			line:    1,
+			column:  4,
+			source:  "foo bar",
+			expected: `filename.txt:1:4: error at space in source [kind]
+1| foo bar
+ |    ^`,
+		},
+		{
 			message: "simple message with multi-line source",
 			line:    3,
 			column:  3,
