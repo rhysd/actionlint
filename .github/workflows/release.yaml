@@ -9,6 +9,17 @@ jobs:
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v2
+      - name: Clone nested repository to make version bump commit
+        uses: actions/checkout@v2
+        with:
+          path: ./tmp-actionlint-for-update-ver
+          ref: main
+          fetch-depth: 0
+      - name: Update versions in sources
+        run: |
+          cd ./tmp-actionlint-for-update-ver
+          bash ./scripts/update-download-actionlint.bash "${GITHUB_REF#refs/tags/v}"
+          rm -rf ./tmp-actionlint-for-update-ver
       - uses: actions/setup-go@v2
       - uses: goreleaser/goreleaser-action@v2
         with:
@@ -16,4 +27,5 @@ jobs:
           args: --rm-dist
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
-      # TODO: Add post-release check
+      - name: Check the download script works after release
+        run: bash <(curl https://raw.githubusercontent.com/rhysd/actionlint/main/scripts/download-actionlint.bash)
