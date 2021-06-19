@@ -1,0 +1,14 @@
+name: Test
+on:
+  push:
+    tags:
+      - test
+
+jobs:
+  release:
+    runs-on: ubuntu-latest
+    steps:
+      - run: env
+      - uses: actions/checkout@v2
+      # - run: bash ./scripts/update-download-actionlint.bash "${GITHUB_REF#refs/tags/v}"
+      - run: bash ./scripts/update-download-actionlint.bash "${GITHUB_REF#refs/tags/}"
