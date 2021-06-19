@@ -1,10 +1,6 @@
 package actionlint
 
-import (
-	"sort"
-	"strconv"
-	"strings"
-)
+import "strings"
 
 // RuleMatrix is a rule checker to check 'matrix' field of job.
 type RuleMatrix struct {
@@ -112,16 +108,15 @@ func (rule *RuleMatrix) checkExclude(m *Matrix) {
 		for k, a := range combi.Assigns {
 			vs, ok := vals[k]
 			if !ok {
-				qs := make([]string, 0, len(vals))
+				ss := make([]string, 0, len(vals))
 				for k := range vals {
-					qs = append(qs, strconv.Quote(k))
+					ss = append(ss, k)
 				}
-				sort.Strings(qs)
 				rule.errorf(
 					a.Key.Pos,
 					"%q in \"exclude\" section does not exist in matrix. available matrix configurations are %s",
 					k,
-					strings.Join(qs, ", "),
+					sortedQuotes(ss),
 				)
 				continue
 			}
@@ -130,17 +125,16 @@ func (rule *RuleMatrix) checkExclude(m *Matrix) {
 				continue
 			}
 
-			qs := make([]string, 0, len(vs))
+			ss := make([]string, 0, len(vs))
 			for _, v := range vs {
-				qs = append(qs, v.String())
+				ss = append(ss, v.String())
 			}
-			sort.Strings(qs)
 			rule.errorf(
 				a.Value.Pos(),
 				"value %s in \"exclude\" does not exist in matrix %q combinations. possible values are %s",
 				a.Value.String(),
 				k,
-				strings.Join(qs, ", "),
+				strings.Join(ss, ", "), // Note: do not use quotesBuilder
 			)
 		}
 	}

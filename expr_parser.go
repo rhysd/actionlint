@@ -37,9 +37,9 @@ func (p *ExprParser) errorf(format string, args ...interface{}) *ExprError {
 }
 
 func (p *ExprParser) unexpected(where string, expected []TokenKind) *ExprError {
-	qs := make([]string, 0, len(expected))
+	qb := quotesBuilder{}
 	for _, e := range expected {
-		qs = append(qs, strconv.Quote(e.String()))
+		qb.append(e.String())
 	}
 	var what string
 	if p.input[0].Kind == TokenKindEnd {
@@ -47,7 +47,7 @@ func (p *ExprParser) unexpected(where string, expected []TokenKind) *ExprError {
 	} else {
 		what = fmt.Sprintf("token %q", p.input[0].Kind.String())
 	}
-	msg := fmt.Sprintf("unexpected %s while parsing %s. expecting %s", what, where, strings.Join(qs, ", "))
+	msg := fmt.Sprintf("unexpected %s while parsing %s. expecting %s", what, where, qb.build())
 	return p.error(msg)
 }
 
@@ -345,14 +345,14 @@ func (p *ExprParser) Parse(t []*Token) (ExprNode, *ExprError) {
 
 	if p.peek().Kind != TokenKindEnd {
 		// It did not reach the end of sequence
-		qs := make([]string, 0, len(p.input)-1)
+		qb := quotesBuilder{}
 		for _, t := range p.input {
 			if t.Kind == TokenKindEnd {
 				break
 			}
-			qs = append(qs, strconv.Quote(t.Kind.String()))
+			qb.append(t.Kind.String())
 		}
-		return nil, p.errorf("parser did not reach end of input after parsing expression. remaining tokens are %s", strings.Join(qs, ", "))
+		return nil, p.errorf("parser did not reach end of input after parsing expression. remaining tokens are %s", qb.build())
 	}
 
 	return root, nil

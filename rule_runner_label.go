@@ -1,7 +1,6 @@
 package actionlint
 
 import (
-	"strconv"
 	"strings"
 )
 
@@ -99,21 +98,15 @@ func (rule *RuleRunnerLabel) verifyRunnerLabel(label *String) string {
 		}
 	}
 
-	qs := make([]string, 0, len(allGitHubHostedRunnerLabels)+len(allSelfHostedRunnerPresetLabels)+len(rule.knownLabels))
-	for _, ls := range [][]string{
-		allGitHubHostedRunnerLabels,
-		allSelfHostedRunnerPresetLabels,
-		rule.knownLabels,
-	} {
-		for _, l := range ls {
-			qs = append(qs, strconv.Quote(l))
-		}
-	}
 	rule.errorf(
 		label.Pos,
 		"label %q is unknown. available labels are %s. if it is a custom label for self-hosted runner, set list of labels in actionlint.yaml config file",
 		label.Value,
-		strings.Join(qs, ", "),
+		quotesAll(
+			allGitHubHostedRunnerLabels,
+			allSelfHostedRunnerPresetLabels,
+			rule.knownLabels,
+		),
 	)
 
 	return ""

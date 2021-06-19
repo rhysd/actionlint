@@ -5,8 +5,6 @@ import (
 	"net/url"
 	"os"
 	"path/filepath"
-	"sort"
-	"strconv"
 	"strings"
 
 	"gopkg.in/yaml.v3"
@@ -31,15 +29,6 @@ type ActionSpec struct {
 	} `yaml:"inputs"`
 	// Outputs is "outputs" field of action.yaml
 	Outputs map[string]struct{} `yaml:"outputs"`
-}
-
-func (s *ActionSpec) describeInputs() string {
-	qs := make([]string, 0, len(s.Inputs))
-	for k := range s.Inputs {
-		qs = append(qs, strconv.Quote(k))
-	}
-	sort.Strings(qs)
-	return strings.Join(qs, ", ")
 }
 
 // NewRuleAction creates new RuleAction instance.
@@ -168,13 +157,17 @@ func (rule *RuleAction) checkAction(path string, spec *ActionSpec, exec *ExecAct
 	// Check specified inputs are defined in action's inputs spec
 	for name, val := range exec.Inputs {
 		if _, ok := spec.Inputs[name]; !ok {
+			ss := make([]string, 0, len(spec.Inputs))
+			for k := range spec.Inputs {
+				ss = append(ss, k)
+			}
 			rule.errorf(
 				val.Name.Pos,
 				"input %q is not defined in action %q defined at %q. available inputs are %s",
 				name,
 				path,
 				spec.Name,
-				spec.describeInputs(),
+				sortedQuotes(ss),
 			)
 		}
 	}

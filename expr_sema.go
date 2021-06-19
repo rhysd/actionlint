@@ -2,8 +2,6 @@ package actionlint
 
 import (
 	"fmt"
-	"sort"
-	"strconv"
 	"strings"
 )
 
@@ -347,12 +345,11 @@ func (sema *ExprSemanticsChecker) UpdateNeeds(ty *ObjectType) {
 func (sema *ExprSemanticsChecker) checkVariable(n *VariableNode) ExprType {
 	v, ok := sema.vars[n.Name]
 	if !ok {
-		qs := make([]string, 0, len(sema.vars))
+		ss := make([]string, 0, len(sema.vars))
 		for n := range sema.vars {
-			qs = append(qs, strconv.Quote(n))
+			ss = append(ss, n)
 		}
-		sort.Strings(qs)
-		sema.errorf(n, "undefined variable %q. available variables are %s", n.Token().Value, strings.Join(qs, ", "))
+		sema.errorf(n, "undefined variable %q. available variables are %s", n.Token().Value, sortedQuotes(ss))
 		return AnyType{}
 	}
 
@@ -550,12 +547,11 @@ func (sema *ExprSemanticsChecker) checkFuncCall(n *FuncCallNode) ExprType {
 	callee := strings.ToLower(n.Callee)
 	sigs, ok := sema.funcs[callee]
 	if !ok {
-		qs := make([]string, 0, len(sema.funcs))
+		ss := make([]string, 0, len(sema.funcs))
 		for n := range sema.funcs {
-			qs = append(qs, strconv.Quote(n))
+			ss = append(ss, n)
 		}
-		sort.Strings(qs)
-		sema.errorf(n, "undefined function %q. available functions are %s", n.Callee, strings.Join(qs, ", "))
+		sema.errorf(n, "undefined function %q. available functions are %s", n.Callee, sortedQuotes(ss))
 		return AnyType{}
 	}
 

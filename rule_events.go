@@ -1,8 +1,6 @@
 package actionlint
 
 import (
-	"strconv"
-	"strings"
 	"time"
 
 	"github.com/robfig/cron"
@@ -198,16 +196,12 @@ func (rule *RuleEvents) checkTypes(hook *String, types []*String, expected []str
 			}
 		}
 		if !valid {
-			qs := make([]string, 0, len(expected))
-			for _, s := range expected {
-				qs = append(qs, strconv.Quote(s))
-			}
 			rule.errorf(
 				ty.Pos,
 				"invalid activity type %q for %q Webhook event. available types are %s",
 				ty.Value,
 				hook.Value,
-				strings.Join(qs, ", "),
+				sortedQuotes(expected),
 			)
 		}
 	}

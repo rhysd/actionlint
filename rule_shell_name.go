@@ -1,7 +1,6 @@
 package actionlint
 
 import (
-	"strconv"
 	"strings"
 )
 
@@ -93,17 +92,12 @@ func (rule *RuleShellName) checkShellName(name *String) {
 		}
 	}
 
-	qs := make([]string, 0, len(available))
-	for _, s := range available {
-		qs = append(qs, strconv.Quote(s))
-	}
-
 	rule.errorf(
 		name.Pos,
 		"shell name %q is invalid%s. available names are %s",
 		name.Value,
 		onPlatform,
-		strings.Join(qs, ", "),
+		sortedQuotes(available),
 	)
 }
 

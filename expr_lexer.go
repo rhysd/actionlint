@@ -208,9 +208,9 @@ func (lex *ExprLexer) skipWhite() {
 }
 
 func (lex *ExprLexer) unexpected(r rune, where string, expected []rune) *ExprError {
-	qs := make([]string, 0, len(expected))
-	for _, e := range expected {
-		qs = append(qs, strconv.QuoteRune(e))
+	qb := quotesBuilder{}
+	for _, r := range expected {
+		qb.appendRune(r)
 	}
 
 	var what string
@@ -229,7 +229,7 @@ func (lex *ExprLexer) unexpected(r rune, where string, expected []rune) *ExprErr
 		"got unexpected %s while lexing %s, expecting %s%s",
 		what,
 		where,
-		strings.Join(qs, ", "),
+		qb.build(),
 		note,
 	)
 	p := lex.scan.Pos()

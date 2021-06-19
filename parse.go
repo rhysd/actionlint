@@ -77,11 +77,7 @@ func (p *parser) unexpectedKey(s *String, sec string, expected []string) {
 	if l == 1 {
 		m = fmt.Sprintf("expected %q key for %q section but got %q", expected[0], sec, s.Value)
 	} else if l > 1 {
-		q := make([]string, 0, len(expected))
-		for _, e := range expected {
-			q = append(q, strconv.Quote(e))
-		}
-		m = fmt.Sprintf("unexpected key %q for %q section. expected one of %v", s.Value, sec, strings.Join(q, ", "))
+		m = fmt.Sprintf("unexpected key %q for %q section. expected one of %v", s.Value, sec, sortedQuotes(expected))
 	} else {
 		m = fmt.Sprintf("unexpected key %q for %q section", s.Value, sec)
 	}
