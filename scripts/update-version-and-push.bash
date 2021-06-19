@@ -29,6 +29,6 @@ echo 'Updated ./scripts/download-actionlint.bash'
 set -x
 git diff
 git add ./cmd/actionlint/main.go ./scripts/download-actionlint.bash
-git -c user.email='github@users.noreply.github.com' -c user.name='github-actions' commit -m "update versions in sources to $ver by update-download-actionlint.bash"
+git -c user.email='github@users.noreply.github.com' -c user.name='github-actions' commit -m "update versions in sources to $ver by update-version-and-push.bash"
 git log -n 1
 git push

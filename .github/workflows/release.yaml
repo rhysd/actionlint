@@ -18,7 +18,7 @@ jobs:
       - name: Update versions in sources
         run: |
           cd ./tmp-actionlint-for-update-ver
-          bash ./scripts/update-download-actionlint.bash "${GITHUB_REF#refs/tags/v}"
+          bash ./scripts/update-version-and-push.bash "${GITHUB_REF#refs/tags/v}"
           rm -rf ./tmp-actionlint-for-update-ver
       - uses: actions/setup-go@v2
       - uses: goreleaser/goreleaser-action@v2
