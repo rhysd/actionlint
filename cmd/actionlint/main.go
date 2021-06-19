@@ -9,7 +9,8 @@ import (
 	"github.com/rhysd/actionlint"
 )
 
-const version = "1.1.0"
+// do not use `const` for this variable because this variable is replaced at link time on releasing
+var version = "DEV"
 
 const usageHeader = `Usage: actionlint [FLAGS] [FILES...] [-]
 
@@ -90,7 +91,7 @@ func main() {
 	var ignorePats ignorePatterns
 	var initConfig bool
 
-	flag.Var(&ignorePats, "ignore", "Regular expression matching to error messages you want to ignore. This flag is repeatable")
+	flag.Var(&ignorePats, "ignore", "Regular expression matching to error messages you want to ignore. This flag can be specified multiple times")
 	flag.StringVar(&opts.Shellcheck, "shellcheck", "shellcheck", "Command name or file path of \"shellcheck\" external command")
 	flag.BoolVar(&opts.Oneline, "oneline", false, "Use one line per one error. Useful for reading error messages from programs")
 	flag.StringVar(&opts.ConfigFile, "config-file", "", "File path to config file")
