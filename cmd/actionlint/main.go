@@ -9,7 +9,7 @@ import (
 	"github.com/rhysd/actionlint"
 )
 
-const version = "1.1.0"
+const version = "test"
 
 const usageHeader = `Usage: actionlint [FLAGS] [FILES...] [-]
 
