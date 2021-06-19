@@ -7,8 +7,8 @@ actionlint
 
 Features:
 
-- **Syntax check for workflow files**: actionlint checks unexpected or missing keys following [workflow syntax][syntax-doc]
-- **Strong type check for `${{ }}` expressions**: actionlint catches several semantic errors like access to not existing property, type mismatches, ...
+- **Syntax check for workflow files** to check unexpected or missing keys following [workflow syntax][syntax-doc]
+- **Strong type check for `${{ }}` expressions** to catch several semantic errors like access to not existing property, type mismatches, ...
 - **[shellcheck][] integration** for scripts in `run:`
 - **Other several useful checks**; dependencies check for `needs:`, runner label validation, cron syntax validation, ...
 
@@ -72,7 +72,7 @@ actionlint tries to catch errors as much as possible and make false positives as
 
 Tap this repository and install `actionlint` package.
 
-```
+```sh
 brew tap "rhysd/actionlint" "https://github.com/rhysd/actionlint"
 brew install actionlint
 ```
@@ -117,21 +117,25 @@ jobs:
 
 [Go][] toolchain is necessary. It builds the latest `main` branch.
 
-```
-go get github.com/rhysd/actionlint/cmd/actionlint
+```sh
+# Install the latest version
+go install github.com/rhysd/actionlint/cmd/actionlint@latest
+
+# Install the head of main branch
+go install github.com/rhysd/actionlint/cmd/actionlint
 ```
 
 # Usage
 
 With no argument, actionlint finds all workflow files in the current repository and checks them.
 
-```
+```sh
 actionlint
 ```
 
 When paths to YAML workflow files are given, actionlint checks them.
 
-```
+```sh
 actionlint path/to/workflow1.yaml path/to/workflow2.yaml
 ```
 
@@ -1250,7 +1254,7 @@ Configuration file `actionlint.yaml` or `actionlint.yml` can be put in `.github`
 
 You don't need to write first configuration file by your hand. `actionlint` command can generate a default configuration.
 
-```
+```sh
 actionlint -init-config
 vim .github/actionlint.yaml
 ```
