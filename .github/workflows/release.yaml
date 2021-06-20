@@ -27,3 +27,20 @@ jobs:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
       - name: Post-release download check
         run: bash ./scripts/download-actionlint.bash "${GITHUB_REF#refs/tags/v}"
+      - name: Clone nested repository to make version bump commit
+        uses: actions/checkout@v2
+        with:
+          path: ./tmp-actionlint-for-update-ver
+          ref: main
+          fetch-depth: 0
+      - name: Update version in download script
+        run: |
+          set -x
+          ver="${GITHUB_REF#refs/tags/v}"
+          cd ./tmp-actionlint-for-update-ver
+          sed -i -E "s/version=\"[^\"]+\"/version=\"\${1:-${ver}}\"/" ./scripts/download-actionlint.bash
+          git diff
+          git add ./scripts/download-actionlint.bash
+          git -c user.email='github@users.noreply.github.com' -c user.name='github-actions' commit -m "update version to $ver in download-actionlint.bash"
+          git log -n 1
+          git push
