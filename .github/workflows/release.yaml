@@ -9,6 +9,15 @@ jobs:
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v2
+      - name: Check tag was created by make-release-tag.bash
+        run: |
+          subject="$(git show -s --format=%s "$GITHUB_REF")"
+          if [[ "$subject" != *" by make-release-tag.bash"* ]]; then
+            echo "Tag '${GITHUB_REF}' did not seem to be created by scripts/make-release-tag.bash" >&2
+            echo "Run 'bash ./scripts/make-release-tag.bash ${GITHUB_REF#refs/tags/v}' to make tag" >&2
+            exit 1
+          fi
+          echo OK
       - uses: actions/setup-go@v2
       - uses: goreleaser/goreleaser-action@v2
         with:
