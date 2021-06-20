@@ -1,9 +1,20 @@
+<a name="v1.1.1"></a>
+# [v1.1.1](https://github.com/rhysd/actionlint/releases/tag/v1.1.1) - 20 Jun 2021
+
+- [`download-actionlint.yaml`](https://github.com/rhysd/actionlint/blob/main/scripts/download-actionlint.bash) now sets `executable` output when it is run in GitHub Actions environment. Please see [instruction in 'Install' document](https://github.com/rhysd/actionlint#ci-services) for the usage.
+- Redundant type `ArrayDerefType` was removed. Instead, [`Deref` field](https://pkg.go.dev/github.com/rhysd/actionlint#ArrayType) is now provided in `ArrayType`.
+- Fix crash on broken YAML input.
+- `actionlint -version` returns correct version string even if the `actionlint` command was installed via `go install`.
+
+[Changes][v1.1.1]
+
+
 <a name="v1.1.0"></a>
 # [v1.1.0](https://github.com/rhysd/actionlint/releases/tag/v1.1.0) - 19 Jun 2021
 
 - Ignore [SC1091](https://github.com/koalaman/shellcheck/wiki/SC1091) and [SC2194](https://github.com/koalaman/shellcheck/wiki/SC2194) on running shellcheck. These are reported as false positives due to sanitization of `${{ ... }}`. See [the check doc](https://github.com/rhysd/actionlint#check-shellcheck-integ) to know the sanitization.
 - actionlint replaces `${{ }}` in `run:` scripts before passing them to shellcheck. v1.0.0 replaced `${{ }}` with whitespaces, but it caused syntax errors in some scripts (e.g. `if ${{ ... }}; then ...`). Instead, v1.1.0 replaces `${{ }}` with underscores. For example, `${{ matrix.os }}` is replaced with `________________`.
-- Add [download-actionlint.bash](https://github.com/rhysd/actionlint/blob/main/scripts/download-actionlint.bash) script to download pre-built binary easily on CI services. See [installation document](https://github.com/rhysd/actionlint#on-ci) for the usage.
+- Add [`download-actionlint.bash`](https://github.com/rhysd/actionlint/blob/main/scripts/download-actionlint.bash) script to download pre-built binaries easily on CI services. See [installation document](https://github.com/rhysd/actionlint#on-ci) for the usage.
 - Better error message on lexing `"` in `${{ }}` expression since double quote is usually misused for string delimiters
 - `-ignore` option can now be specified multiple times.
 - Fix `github.repositoryUrl` was not correctly resolved in `${{ }}` expression
@@ -28,6 +39,7 @@ See documentation for more details:
 [Changes][v1.0.0]
 
 
+[v1.1.1]: https://github.com/rhysd/actionlint/compare/v1.1.0...v1.1.1
 [v1.1.0]: https://github.com/rhysd/actionlint/compare/v1.0.0...v1.1.0
 [v1.0.0]: https://github.com/rhysd/actionlint/tree/v1.0.0
 
