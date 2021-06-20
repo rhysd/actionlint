@@ -88,11 +88,14 @@ Prebuilt binaries are built at each release by CI for the following OS and arch:
 - Windows (i386, x86_64)
 - FreeBSD (i386, x86_64)
 
-## On CI
+## CI services
 
-Please try [the download script](./scripts/download-actionlint.bash). It downloads the latest version of actionlint to
-the current directory automatically.
-Here is an example of simple workflow to run actionlint on GitHub Actions.
+Please try [the download script](./scripts/download-actionlint.bash). It downloads the latest version of actionlint
+(`actionlint.exe` on Windows and `actionlint` on other OSes) to the current directory automatically. On GitHub Actions
+environment, it sets `executable` output to use the executable in the following steps easily.
+
+Here is an example of simple workflow to run actionlint on GitHub Actions. Please ensure `shell: bash` since the default
+shell for Windows runners is `pwsh`.
 
 ```yaml
 name: Lint GitHub Actions workflows
@@ -107,10 +110,12 @@ jobs:
     steps:
       - uses: actions/checkout@v2
       - name: Download actionlint
+        id: get_actionlint
         run: bash <(curl https://raw.githubusercontent.com/rhysd/actionlint/main/scripts/download-actionlint.bash)
         shell: bash
       - name: Check workflow files
-        run: ./actionlint
+        run: ${{ steps.get_actionlint.outputs.executable }}
+        shell: bash
 ```
 
 ## Build from source
