@@ -9,7 +9,6 @@ before:
 builds:
   - <<: &build_defaults
       main: ./cmd/actionlint
-      ldflags: -s -w -X main.version={{.Version}}
       env:
         - CGO_ENABLED=0
     id: macos

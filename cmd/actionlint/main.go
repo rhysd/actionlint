@@ -9,8 +9,8 @@ import (
 	"github.com/rhysd/actionlint"
 )
 
-// do not use `const` for this variable because this variable is replaced at link time on releasing
-var version = "DEV"
+// This constant is updated by scripts/make-release-tag.bash. Do not modify it manually.
+const version = "1.1.0"
 
 const usageHeader = `Usage: actionlint [FLAGS] [FILES...] [-]
 
