@@ -61,12 +61,17 @@ if [[ "$os" == "windows" ]]; then
     curl -L -o "$tempdir/tmp.zip" "${url}"
     unzip "$tempdir/tmp.zip" actionlint.exe -d .
     rm -r "$tempdir"
-    exe="./actionlint.exe"
+    exe="$(pwd)/actionlint.exe"
 else
     curl -L "${url}" | tar xvz actionlint
-    exe="./actionlint"
+    exe="$(pwd)/actionlint"
 fi
 
 echo "Downloaded and unarchived executable: ${exe}"
 
 echo "Done: $("${exe}" -version)"
+
+if [ -n "$GITHUB_ACTION" ]; then
+    # On GitHub Actions, set executable path to output
+    echo "::set-output name=executable::${exe}"
+fi
