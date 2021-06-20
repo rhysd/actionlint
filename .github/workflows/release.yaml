@@ -9,6 +9,15 @@ jobs:
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v2
+      - name: Check tag was created by make-release-tag.bash
+        run: |
+          subject="$(git show -s --format=%s "$GITHUB_REF")"
+          if [[ "$subject" != *" by make-release-tag.bash"* ]]; then
+            echo "Tag '${GITHUB_REF}' did not seem to be created by scripts/make-release-tag.bash" >&2
+            echo "Run 'bash ./scripts/make-release-tag.bash ${GITHUB_REF#refs/tags/v}' to make tag" >&2
+            exit 1
+          fi
+          echo OK
       - uses: actions/setup-go@v2
       - uses: goreleaser/goreleaser-action@v2
         with:
@@ -18,3 +27,20 @@ jobs:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
       - name: Post-release download check
         run: bash ./scripts/download-actionlint.bash "${GITHUB_REF#refs/tags/v}"
+      - name: Clone nested repository to make version bump commit
+        uses: actions/checkout@v2
+        with:
+          path: ./tmp-actionlint-for-update-ver
+          ref: main
+          fetch-depth: 0
+      - name: Update version in download script
+        run: |
+          set -x
+          ver="${GITHUB_REF#refs/tags/v}"
+          cd ./tmp-actionlint-for-update-ver
+          sed -i -E "s/version=\"[^\"]+\"/version=\"\${1:-${ver}}\"/" ./scripts/download-actionlint.bash
+          git diff
+          git add ./scripts/download-actionlint.bash
+          git -c user.email='github@users.noreply.github.com' -c user.name='github-actions' commit -m "update version to $ver in download-actionlint.bash"
+          git log -n 1
+          git push
