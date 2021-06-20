@@ -2,8 +2,13 @@
 
 set -e -o pipefail
 
-# This variable is updated manually on release
-version="1.1.0"
+# Default value is updated manually on release
+version="${1:-1.1.0}"
+
+if [[ ! "$version" =~ ^[0-9]+\.[0-9]+\.[0-9]+$ ]]; then
+    echo "Given version '${version}' does not match to regex" '^[0-9]+\.[0-9]+\.[0-9]+$' >&2
+    exit 1
+fi
 
 echo "Start downloading actionlint v${version}"
 
@@ -15,7 +20,6 @@ case "$OSTYPE" in
     darwin*)
         os=darwin
         ext=tar.gz
-        arch=amd64
     ;;
     freebsd*)
         os=freebsd
