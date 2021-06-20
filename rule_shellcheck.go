@@ -6,6 +6,7 @@ import (
 	"io"
 	"os/exec"
 	"strings"
+	"sync"
 )
 
 type shellcheckError struct {
@@ -23,6 +24,8 @@ type RuleShellcheck struct {
 	cmd           string
 	workflowShell string
 	jobShell      string
+	wg            sync.WaitGroup
+	mu            sync.Mutex
 }
 
 // NewRuleShellcheck craetes new RuleShellcheck instance. Parameter executable can be command name
@@ -58,7 +61,8 @@ func (rule *RuleShellcheck) VisitStep(n *Step) {
 		return
 	}
 
-	rule.runShellcheck(run.Run.Value, name, run.RunPos)
+	rule.wg.Add(1)
+	go rule.runShellcheck(rule.cmd, run.Run.Value, name, run.RunPos)
 }
 
 // VisitJobPre is callback when visiting Job node before visiting its children.
@@ -99,6 +103,7 @@ func (rule *RuleShellcheck) VisitWorkflowPre(n *Workflow) {
 
 // VisitWorkflowPost is callback when visiting Workflow node after visiting its children.
 func (rule *RuleShellcheck) VisitWorkflowPost(n *Workflow) {
+	rule.wg.Wait() // Wait all shellcheck processes finish
 	rule.workflowShell = ""
 }
 
@@ -118,6 +123,7 @@ func (rule *RuleShellcheck) getShellName(exec *ExecRun) string {
 //     echo 'hello'
 //   fi
 func sanitizeExpressionsInScript(src string) string {
+	// TODO: Inefficient implementation. Use strings.Builder
 	for {
 		s := strings.Index(src, "${{")
 		if s == -1 {
@@ -134,7 +140,9 @@ func sanitizeExpressionsInScript(src string) string {
 	}
 }
 
-func (rule *RuleShellcheck) runShellcheck(src string, sh string, pos *Pos) {
+func (rule *RuleShellcheck) runShellcheck(executable, src, sh string, pos *Pos) {
+	defer rule.wg.Done()
+
 	src = sanitizeExpressionsInScript(src)
 	rule.debug("%s: Run shellcheck for %s script:\n%s", pos, sh, src)
 
@@ -144,7 +152,7 @@ func (rule *RuleShellcheck) runShellcheck(src string, sh string, pos *Pos) {
 	//           environment
 	// - SC2194: The word is constant. This sometimes happens at constants by replacing ${{ }} with spaces.
 	//           For example, `if ${{ matrix.foo }}; then ...` -> `if _________________; then ...`
-	cmd := exec.Command(rule.cmd, "-f", "json", "-x", "--shell", sh, "-e", "SC1091,SC2194", "-")
+	cmd := exec.Command(executable, "-f", "json", "-x", "--shell", sh, "-e", "SC1091,SC2194", "-")
 	cmd.Stderr = nil
 	rule.debug("%s: Running shellcheck: %s", pos, cmd)
 
@@ -169,7 +177,7 @@ func (rule *RuleShellcheck) runShellcheck(src string, sh string, pos *Pos) {
 
 	b, err := cmd.Output()
 	if err != nil {
-		rule.debug("Command %s failed: %v", rule.cmd, err)
+		rule.debug("Command %s failed: %v", executable, err)
 	}
 	if len(b) == 0 {
 		return
@@ -181,6 +189,8 @@ func (rule *RuleShellcheck) runShellcheck(src string, sh string, pos *Pos) {
 		return
 	}
 
+	rule.mu.Lock()
+	defer rule.mu.Unlock()
 	// It's better to show source location in the script as position of error, but it's not
 	// possible easily. YAML has multiple block styles with '|', '>', '|+', '>+', '|-', '>-'. Some
 	// of them remove indentation and/or blank lines. So restoring source position in block string
