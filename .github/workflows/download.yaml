@@ -1,0 +1,19 @@
+name: Download script
+on:
+  push:
+    paths:
+      - 'scripts/download-actionlint.bash'
+  pull_request:
+    paths:
+      - 'scripts/download-actionlint.bash'
+
+jobs:
+  download:
+    name: Test download script
+    strategy:
+      matrix:
+        os: [ubuntu-latest, macos-latest, windows-latest]
+    runs-on: ${{ matrix.os }}
+    steps:
+      - run: bash <(curl https://raw.githubusercontent.com/rhysd/actionlint/main/scripts/download-actionlint.bash)
+        shell: bash

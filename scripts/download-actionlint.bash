@@ -2,7 +2,9 @@
 
 set -e -o pipefail
 
+# This variable is updated manually on release
 version="1.1.0"
+
 echo "Start downloading actionlint v${version}"
 
 case "$OSTYPE" in
