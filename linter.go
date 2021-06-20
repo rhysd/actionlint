@@ -291,58 +291,60 @@ func (l *Linter) Lint(path string, content []byte, project *Project) ([]*Error, 
 		fmt.Fprintln(l.logOut, "=========== WORKFLOW TREE END ===========")
 	}
 
-	dbgOut := l.logOut
-	if l.logLevel < LogLevelDebug {
-		dbgOut = nil
-	}
-
-	var labels []string
-	if cfg != nil {
-		labels = cfg.SelfHostedRunner.Labels
-	}
-
-	var root string
-	if project != nil {
-		root = project.RootDir()
-	}
-
-	rules := []Rule{
-		NewRuleMatrix(),
-		NewRuleCredentials(),
-		NewRuleShellName(),
-		NewRuleRunnerLabel(labels),
-		NewRuleEvents(),
-		NewRuleJobNeeds(),
-		NewRuleAction(root),
-		NewRuleEnvVar(),
-		NewRuleStepID(),
-		NewRuleExpression(),
-	}
-	if l.shellcheck != "" {
-		r, err := NewRuleShellcheck(l.shellcheck, dbgOut)
-		if err == nil {
-			rules = append(rules, r)
-		} else {
-			l.log("Rule \"shellcheck\" was disabled:", err)
+	if w != nil {
+		dbgOut := l.logOut
+		if l.logLevel < LogLevelDebug {
+			dbgOut = nil
 		}
-	} else {
-		l.log("Rule \"shellcheck\" was disabled since shellcheck command name was empty")
-	}
 
-	v := NewVisitor()
-	for _, rule := range rules {
-		v.AddPass(rule)
-	}
-	if dbgOut != nil {
-		v.EnableDebug(dbgOut)
-	}
+		var labels []string
+		if cfg != nil {
+			labels = cfg.SelfHostedRunner.Labels
+		}
 
-	v.Visit(w)
+		var root string
+		if project != nil {
+			root = project.RootDir()
+		}
 
-	for _, rule := range rules {
-		errs := rule.Errs()
-		l.debug("%s found %d errors", rule.Name(), len(errs))
-		all = append(all, errs...)
+		rules := []Rule{
+			NewRuleMatrix(),
+			NewRuleCredentials(),
+			NewRuleShellName(),
+			NewRuleRunnerLabel(labels),
+			NewRuleEvents(),
+			NewRuleJobNeeds(),
+			NewRuleAction(root),
+			NewRuleEnvVar(),
+			NewRuleStepID(),
+			NewRuleExpression(),
+		}
+		if l.shellcheck != "" {
+			r, err := NewRuleShellcheck(l.shellcheck, dbgOut)
+			if err == nil {
+				rules = append(rules, r)
+			} else {
+				l.log("Rule \"shellcheck\" was disabled:", err)
+			}
+		} else {
+			l.log("Rule \"shellcheck\" was disabled since shellcheck command name was empty")
+		}
+
+		v := NewVisitor()
+		for _, rule := range rules {
+			v.AddPass(rule)
+		}
+		if dbgOut != nil {
+			v.EnableDebug(dbgOut)
+		}
+
+		v.Visit(w)
+
+		for _, rule := range rules {
+			errs := rule.Errs()
+			l.debug("%s found %d errors", rule.Name(), len(errs))
+			all = append(all, errs...)
+		}
 	}
 
 	if len(l.ignorePats) > 0 {
