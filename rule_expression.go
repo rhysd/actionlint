@@ -214,7 +214,7 @@ func (rule *RuleExpression) checkArrayTy(ty ExprType, pos *Pos, what string) Exp
 		return nil
 	}
 	switch ty.(type) {
-	case *ArrayType, *ArrayDerefType, AnyType:
+	case *ArrayType, AnyType:
 		return ty
 	default:
 		rule.errorf(pos, "type of expression at %q must be array but found type %s", what, ty.String())
@@ -690,13 +690,13 @@ func guessTypeOfRawYAMLValue(v RawYAMLValue) ExprType {
 		return &ObjectType{Props: m, StrictProps: true}
 	case *RawYAMLArray:
 		if len(v.Elems) == 0 {
-			return &ArrayType{AnyType{}}
+			return &ArrayType{AnyType{}, false}
 		}
 		elem := guessTypeOfRawYAMLValue(v.Elems[0])
 		for _, v := range v.Elems[1:] {
 			elem = elem.Fuse(guessTypeOfRawYAMLValue(v))
 		}
-		return &ArrayType{elem}
+		return &ArrayType{elem, false}
 	case *RawYAMLString:
 		return guessTypeFromString(v.Value)
 	default:

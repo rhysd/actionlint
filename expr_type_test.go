@@ -147,34 +147,6 @@ func TestExprTypeEquals(t *testing.T) {
 				Elem: &ArrayType{Elem: BoolType{}},
 			},
 		},
-		{
-			what:  "array deref",
-			ty:    &ArrayDerefType{Elem: StringType{}},
-			other: NewObjectType(),
-		},
-		{
-			what:  "array deref element type",
-			ty:    &ArrayDerefType{Elem: StringType{}},
-			other: &ArrayDerefType{Elem: BoolType{}},
-		},
-		{
-			what: "nested array derefs",
-			ty: &ArrayDerefType{
-				Elem: &ArrayDerefType{Elem: StringType{}},
-			},
-			other: &ArrayDerefType{
-				Elem: &ArrayDerefType{Elem: BoolType{}},
-			},
-		},
-		{
-			what: "mix of array derefs and arrays",
-			ty: &ArrayType{
-				Elem: &ArrayDerefType{Elem: StringType{}},
-			},
-			otherEq: &ArrayDerefType{
-				Elem: &ArrayType{Elem: StringType{}},
-			},
-		},
 	}
 
 	for _, tc := range testCases {
@@ -275,9 +247,9 @@ func TestExprTypeStringize(t *testing.T) {
 			want: "array<any>",
 		},
 		{
-			what: "array deref",
-			ty:   &ArrayDerefType{Elem: AnyType{}},
-			want: "array<any>",
+			what: "nested array",
+			ty:   &ArrayType{Elem: &ArrayType{BoolType{}, true}},
+			want: "array<array<bool>>",
 		},
 		{
 			what: "object",
@@ -318,7 +290,6 @@ func TestExprTypeFuseSimple(t *testing.T) {
 		NewObjectType(),
 		NewStrictObjectType(),
 		&ArrayType{Elem: StringType{}},
-		&ArrayDerefType{Elem: StringType{}},
 	}
 
 	for _, ty := range testCases {
@@ -536,27 +507,15 @@ func TestExprTypeFuseComplicated(t *testing.T) {
 		},
 		{
 			what: "array into array deref",
-			ty: &ArrayType{
-				Elem: StringType{},
-			},
-			into: &ArrayDerefType{
-				Elem: StringType{},
-			},
-			want: &ArrayDerefType{
-				Elem: StringType{},
-			},
+			ty:   &ArrayType{StringType{}, false},
+			into: &ArrayType{StringType{}, true},
+			want: &ArrayType{StringType{}, true},
 		},
 		{
 			what: "array deref into array",
-			ty: &ArrayDerefType{
-				Elem: StringType{},
-			},
-			into: &ArrayType{
-				Elem: StringType{},
-			},
-			want: &ArrayType{
-				Elem: StringType{},
-			},
+			ty:   &ArrayType{StringType{}, true},
+			into: &ArrayType{StringType{}, false},
+			want: &ArrayType{StringType{}, false},
 		},
 	}
 

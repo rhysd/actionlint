@@ -82,7 +82,7 @@ func TestExprSemanticsCheckOK(t *testing.T) {
 		{
 			what:     "array element dereference",
 			input:    "test().bar.*",
-			expected: &ArrayDerefType{Elem: BoolType{}},
+			expected: &ArrayType{BoolType{}, true},
 			funcs: map[string][]*FuncSignature{
 				"test": {
 					{
@@ -99,7 +99,7 @@ func TestExprSemanticsCheckOK(t *testing.T) {
 		{
 			what:     "filter object property by array element dereference",
 			input:    "test().foo.*.bar.piyo",
-			expected: &ArrayDerefType{Elem: StringType{}},
+			expected: &ArrayType{StringType{}, true},
 			funcs: map[string][]*FuncSignature{
 				"test": {
 					{
@@ -124,14 +124,45 @@ func TestExprSemanticsCheckOK(t *testing.T) {
 			},
 		},
 		{
+			what:     "filter strict object property by array element dereference",
+			input:    "test().foo.*.bar.piyo",
+			expected: &ArrayType{StringType{}, true},
+			funcs: map[string][]*FuncSignature{
+				"test": {
+					{
+						Name: "test",
+						Ret: &ObjectType{
+							Props: map[string]ExprType{
+								"foo": &ArrayType{
+									Elem: &ObjectType{
+										Props: map[string]ExprType{
+											"bar": &ObjectType{
+												Props: map[string]ExprType{
+													"piyo": StringType{},
+												},
+												StrictProps: true,
+											},
+										},
+										StrictProps: true,
+									},
+								},
+							},
+							StrictProps: true,
+						},
+					},
+				},
+			},
+		},
+		// TODO: Add strictprops
+		{
 			what:     "array element dereference with any type",
 			input:    "github.event.labels.*.name",
-			expected: &ArrayDerefType{Elem: AnyType{}},
+			expected: &ArrayType{AnyType{}, true},
 		},
 		{
 			what:     "nested array element dereference",
 			input:    "github.event.issues.*.labels.*.name",
-			expected: &ArrayDerefType{Elem: AnyType{}},
+			expected: &ArrayType{AnyType{}, true},
 		},
 		{
 			what:     "function call",
@@ -1023,8 +1054,6 @@ func testObjectPropertiesAreInLowerCase(t *testing.T, ty ExprType) {
 			testObjectPropertiesAreInLowerCase(t, ty)
 		}
 	case *ArrayType:
-		testObjectPropertiesAreInLowerCase(t, ty.Elem)
-	case *ArrayDerefType:
 		testObjectPropertiesAreInLowerCase(t, ty.Elem)
 	}
 }

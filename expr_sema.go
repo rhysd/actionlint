@@ -368,7 +368,11 @@ func (sema *ExprSemanticsChecker) checkObjectDeref(n *ObjectDerefNode) ExprType 
 			sema.errorf(n, "property %q is not defined in object type %s", n.Property, ty.String())
 		}
 		return AnyType{}
-	case *ArrayDerefType:
+	case *ArrayType:
+		if !ty.Deref {
+			sema.errorf(n, "receiver of object dereference %q must be type of object but got %q", n.Property, ty.String())
+			return AnyType{}
+		}
 		switch et := ty.Elem.(type) {
 		case AnyType:
 			// When element type is any, map the any type to any. Reuse `ty`
@@ -378,11 +382,10 @@ func (sema *ExprSemanticsChecker) checkObjectDeref(n *ObjectDerefNode) ExprType 
 			var elem ExprType = AnyType{}
 			if t, ok := et.Props[n.Property]; ok {
 				elem = t
+			} else if et.StrictProps {
+				sema.errorf(n, "property %q is not defined in object type %s as element of filtered array", n.Property, et.String())
 			}
-			if et.StrictProps {
-				sema.errorf(n, "property %q is not defined in object type %s", n.Property, et.String())
-			}
-			return &ArrayDerefType{Elem: elem}
+			return &ArrayType{elem, true}
 		default:
 			sema.errorf(
 				n,
@@ -401,11 +404,10 @@ func (sema *ExprSemanticsChecker) checkObjectDeref(n *ObjectDerefNode) ExprType 
 func (sema *ExprSemanticsChecker) checkArrayDeref(n *ArrayDerefNode) ExprType {
 	switch ty := sema.check(n.Receiver).(type) {
 	case AnyType:
-		return &ArrayDerefType{Elem: AnyType{}}
+		return &ArrayType{AnyType{}, true}
 	case *ArrayType:
-		return &ArrayDerefType{Elem: ty.Elem}
-	case *ArrayDerefType:
-		return &ArrayDerefType{Elem: ty.Elem}
+		ty.Deref = true
+		return ty
 	default:
 		sema.errorf(n, "receiver of array element dereference must be type of array but got %q", ty.String())
 		return AnyType{}
@@ -418,14 +420,6 @@ func (sema *ExprSemanticsChecker) checkIndexAccess(n *IndexAccessNode) ExprType 
 	case AnyType:
 		return AnyType{}
 	case *ArrayType:
-		switch idx.(type) {
-		case AnyType, NumberType:
-			return ty.Elem
-		default:
-			sema.errorf(n.Index, "index access of array must be type of number but got %q", idx.String())
-			return AnyType{}
-		}
-	case *ArrayDerefType:
 		switch idx.(type) {
 		case AnyType, NumberType:
 			return ty.Elem

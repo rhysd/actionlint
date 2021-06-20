@@ -292,6 +292,8 @@ func (ty *ObjectType) Fuse(other ExprType) ExprType {
 type ArrayType struct {
 	// Elem is type of element of the array.
 	Elem ExprType
+	// Deref is true when this type was derived from array filter syntax (foo.*).
+	Deref bool
 }
 
 func (ty *ArrayType) String() string {
@@ -305,8 +307,6 @@ func (ty *ArrayType) Equals(other ExprType) bool {
 		return true
 	case *ArrayType:
 		return ty.Elem.Equals(other.Elem)
-	case *ArrayDerefType:
-		return ty.Elem.Equals(other.Elem)
 	default:
 		return false
 	}
@@ -314,13 +314,10 @@ func (ty *ArrayType) Equals(other ExprType) bool {
 
 // Assignable returns if other type can be assignable to the type.
 func (ty *ArrayType) Assignable(other ExprType) bool {
-	// Note: ArrayType and ArrayDerefType are compatible
 	switch other := other.(type) {
 	case AnyType:
 		return true
 	case *ArrayType:
-		return ty.Elem.Assignable(other.Elem)
-	case *ArrayDerefType:
 		return ty.Elem.Assignable(other.Elem)
 	default:
 		return false
@@ -336,68 +333,6 @@ func (ty *ArrayType) Fuse(other ExprType) ExprType {
 	case *ArrayType:
 		ty.Elem = ty.Elem.Fuse(other.Elem)
 		return ty
-	case *ArrayDerefType:
-		ty.Elem = ty.Elem.Fuse(other.Elem)
-		return ty
-	default:
-		return AnyType{}
-	}
-}
-
-// ArrayDerefType is a type for array element dereference with '.*'. It is distinguished from ArrayType
-// for type checker.
-// For example, when type of 'a' is '{foo: {bar: int}[]}', 'a.*' is type of 'array_deref<{bar: int}>
-// ' and 'a.*.b' is type of 'array_deref<int>'.
-type ArrayDerefType struct {
-	// Elem is type of element of dereferenced (and filtered) array.
-	Elem ExprType
-}
-
-func (ty *ArrayDerefType) String() string {
-	return fmt.Sprintf("array<%s>", ty.Elem.String())
-}
-
-// Assignable returns if other type can be assignable to the type.
-func (ty *ArrayDerefType) Assignable(other ExprType) bool {
-	// Note: ArrayType and ArrayDerefType are compatible
-	switch other := other.(type) {
-	case AnyType:
-		return true
-	case *ArrayType:
-		return ty.Elem.Assignable(other.Elem)
-	case *ArrayDerefType:
-		return ty.Elem.Assignable(other.Elem)
-	default:
-		return false
-	}
-}
-
-// Equals returns if the type is equal to the other type.
-func (ty *ArrayDerefType) Equals(other ExprType) bool {
-	switch other := other.(type) {
-	case AnyType:
-		return true
-	case *ArrayType:
-		return ty.Elem.Equals(other.Elem)
-	case *ArrayDerefType:
-		return ty.Elem.Equals(other.Elem)
-	default:
-		return false
-	}
-}
-
-// Fuse merges two object types into one. When other object has unknown props, they are merged into
-// current object. When both have same property, when they are assignable, it remains as-is.
-// Otherwise, the property falls back to any type.
-// Note that this method modifies itself destructively for efficiency.
-func (ty *ArrayDerefType) Fuse(other ExprType) ExprType {
-	switch other := other.(type) {
-	case *ArrayType:
-		ty.Elem = ty.Elem.Fuse(other.Elem)
-		return ty
-	case *ArrayDerefType:
-		ty.Elem = ty.Elem.Fuse(other.Elem)
-		return ty
 	default:
 		return AnyType{}
 	}
@@ -410,8 +345,6 @@ func ElemTypeOf(ty ExprType) (ExprType, bool) {
 	case AnyType:
 		return AnyType{}, true
 	case *ArrayType:
-		return ty.Elem, true
-	case *ArrayDerefType:
 		return ty.Elem, true
 	default:
 		return nil, false
