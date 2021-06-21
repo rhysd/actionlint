@@ -8,6 +8,7 @@ import (
 	"os"
 	"path/filepath"
 	"regexp"
+	"sort"
 	"strings"
 	"time"
 
@@ -361,12 +362,14 @@ func (l *Linter) Lint(path string, content []byte, project *Project) ([]*Error, 
 		all = filtered
 	}
 
+	sort.Sort(ByErrorPosition(all))
+
+	src := content
+	if l.oneline {
+		src = nil
+	}
 	for _, err := range all {
 		err.Filepath = path // Populate filename in the error
-		src := content
-		if l.oneline {
-			src = nil
-		}
 		err.PrettyPrint(l.out, src)
 	}
 

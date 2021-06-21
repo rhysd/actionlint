@@ -12,23 +12,6 @@ import (
 	"testing"
 )
 
-type byErrorPosition []*Error
-
-func (by byErrorPosition) Len() int {
-	return len(by)
-}
-
-func (by byErrorPosition) Less(i, j int) bool {
-	if by[i].Line == by[j].Line {
-		return by[i].Column < by[j].Column
-	}
-	return by[i].Line < by[j].Line
-}
-
-func (by byErrorPosition) Swap(i, j int) {
-	by[i], by[j] = by[j], by[i]
-}
-
 func TestExamples(t *testing.T) {
 	wd, err := os.Getwd()
 	if err != nil {
@@ -107,7 +90,7 @@ func TestExamples(t *testing.T) {
 				t.Fatalf("%d errors are expected but actually got %d errors: %# v", len(expected), len(errs), errs)
 			}
 
-			sort.Sort(byErrorPosition(errs))
+			sort.Sort(ByErrorPosition(errs))
 
 			for i := 0; i < len(errs); i++ {
 				want, have := expected[i], errs[i].Error()

@@ -2,6 +2,8 @@ package actionlint
 
 import (
 	"bytes"
+	"sort"
+	"strconv"
 	"testing"
 
 	"github.com/fatih/color"
@@ -179,6 +181,51 @@ func TestErrorPrettyPrint(t *testing.T) {
 			want := tc.expected + "\n"
 			if out != want {
 				t.Fatalf("wanted:\n%q\n\nhave:\n%q", want, out)
+			}
+		})
+	}
+}
+
+func TestErrorSortByErrorPosition(t *testing.T) {
+	testCases := [][]struct {
+		line int
+		col  int
+	}{
+		{},
+		{
+			{1, 2},
+		},
+		{
+			{1, 2},
+			{4, 1},
+			{3, 20},
+			{1, 1},
+		},
+		{
+			{1, 1},
+			{1, 1},
+			{1, 1},
+		},
+	}
+
+	for i, tc := range testCases {
+		t.Run(strconv.Itoa(i), func(t *testing.T) {
+			errs := make([]*Error, 0, len(tc))
+			for _, p := range tc {
+				errs = append(errs, &Error{Line: p.line, Column: p.col})
+			}
+
+			sort.Sort(ByErrorPosition(errs))
+
+			for i := 0; i < len(errs)-1; i++ {
+				l, r := errs[i], errs[i+1]
+				sorted := l.Line <= r.Line
+				if l.Line == r.Line {
+					sorted = l.Column <= r.Column
+				}
+				if !sorted {
+					t.Fatalf("errs[%d] and errs[%d] are not sorted: %s", i, i+1, errs)
+				}
 			}
 		})
 	}

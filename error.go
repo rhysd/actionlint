@@ -116,3 +116,21 @@ func (e *Error) getIndicator(line string) string {
 	sw := runewidth.StringWidth(line[:start])
 	return fmt.Sprintf("%s^%s", strings.Repeat(" ", sw), strings.Repeat("~", uw))
 }
+
+// ByErrorPosition is type for sort.Interface. It sorts errors slice in line and column order.
+type ByErrorPosition []*Error
+
+func (by ByErrorPosition) Len() int {
+	return len(by)
+}
+
+func (by ByErrorPosition) Less(i, j int) bool {
+	if by[i].Line == by[j].Line {
+		return by[i].Column < by[j].Column
+	}
+	return by[i].Line < by[j].Line
+}
+
+func (by ByErrorPosition) Swap(i, j int) {
+	by[i], by[j] = by[j], by[i]
+}
