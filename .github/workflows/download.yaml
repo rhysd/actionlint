@@ -6,6 +6,11 @@ on:
   pull_request:
     paths:
       - 'scripts/download-actionlint.bash'
+  workflow_run:
+    workflows:
+      - Release
+    types:
+      - completed
 
 jobs:
   download:
