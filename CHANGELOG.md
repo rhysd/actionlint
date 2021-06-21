@@ -1,3 +1,12 @@
+<a name="v1.1.2"></a>
+# [v1.1.2](https://github.com/rhysd/actionlint/releases/tag/v1.1.2) - 21 Jun 2021
+
+- Run `shellcheck` command for scripts at `run:` in parallel. Since executing an external process is heavy and running shellcheck was bottleneck of actionlint, this brought better performance. In my environment, it was **more than 3x faster** than before.
+- Sort errors by their positions in the source file.
+
+[Changes][v1.1.2]
+
+
 <a name="v1.1.1"></a>
 # [v1.1.1](https://github.com/rhysd/actionlint/releases/tag/v1.1.1) - 20 Jun 2021
 
@@ -39,6 +48,7 @@ See documentation for more details:
 [Changes][v1.0.0]
 
 
+[v1.1.2]: https://github.com/rhysd/actionlint/compare/v1.1.1...v1.1.2
 [v1.1.1]: https://github.com/rhysd/actionlint/compare/v1.1.0...v1.1.1
 [v1.1.0]: https://github.com/rhysd/actionlint/compare/v1.0.0...v1.1.0
 [v1.0.0]: https://github.com/rhysd/actionlint/tree/v1.0.0
