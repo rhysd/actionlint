@@ -5,29 +5,29 @@
 class Actionlint < Formula
   desc "Static checker for GitHub Actions workflow files"
   homepage "https://github.com/rhysd/actionlint#readme"
-  version "1.1.1"
+  version "1.1.2"
   license "MIT"
   bottle :unneeded
 
   on_macos do
     if Hardware::CPU.intel?
-      url "https://github.com/rhysd/actionlint/releases/download/v1.1.1/actionlint_1.1.1_darwin_amd64.tar.gz"
-      sha256 "5bbd1bc8724f69ddf7db003c1a5f223d4774b649a5d06d63075f7e68d50e67c0"
+      url "https://github.com/rhysd/actionlint/releases/download/v1.1.2/actionlint_1.1.2_darwin_amd64.tar.gz"
+      sha256 "a378ce566594526662c1be376da9ae998db71769265cd29955d32d6f9f804611"
     end
   end
 
   on_linux do
     if Hardware::CPU.intel?
-      url "https://github.com/rhysd/actionlint/releases/download/v1.1.1/actionlint_1.1.1_linux_amd64.tar.gz"
-      sha256 "a4455c51c00921e3fc672c56cc60ed6fda25ccabacf2b8b7dfcf36c33653d2e0"
+      url "https://github.com/rhysd/actionlint/releases/download/v1.1.2/actionlint_1.1.2_linux_amd64.tar.gz"
+      sha256 "de82d901690f9a95731b869838ff49c75e57a7b4aa44769d42624c0f5f08fc7e"
     end
     if Hardware::CPU.arm? && !Hardware::CPU.is_64_bit?
-      url "https://github.com/rhysd/actionlint/releases/download/v1.1.1/actionlint_1.1.1_linux_armv6.tar.gz"
-      sha256 "f1832d6ccbb6e5e2fcf117fec92ab3f6e2bf9556753a88018fc367e572861fbc"
+      url "https://github.com/rhysd/actionlint/releases/download/v1.1.2/actionlint_1.1.2_linux_armv6.tar.gz"
+      sha256 "b66ae5559b9adbe6930d0ef92ffc0b8d48134af250337497d4348ef5d75099c8"
     end
     if Hardware::CPU.arm? && Hardware::CPU.is_64_bit?
-      url "https://github.com/rhysd/actionlint/releases/download/v1.1.1/actionlint_1.1.1_linux_arm64.tar.gz"
-      sha256 "f668fedafb1337cca8e7ebaf283eee7e7d6d324f5e6041b02f9784d6fad0adca"
+      url "https://github.com/rhysd/actionlint/releases/download/v1.1.2/actionlint_1.1.2_linux_arm64.tar.gz"
+      sha256 "0592449eafbb585d1a910019ebfe3e4687ea81edfcd6e4eae860136ffba4be3c"
     end
   end
 
