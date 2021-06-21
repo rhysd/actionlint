@@ -118,6 +118,16 @@ jobs:
         shell: bash
 ```
 
+or simply run
+
+```yaml
+- name: Check workflow files
+  run: |
+    bash <(curl https://raw.githubusercontent.com/rhysd/actionlint/main/scripts/download-actionlint.bash)
+    ./actionlint
+  shell: bash
+```
+
 ## Build from source
 
 [Go][] toolchain is necessary. It builds the latest `main` branch.
