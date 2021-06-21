@@ -10,7 +10,7 @@ import (
 )
 
 // This constant is updated by scripts/make-release-tag.bash. Do not modify it manually.
-const version = "1.1.1"
+const version = "1.1.2"
 
 const usageHeader = `Usage: actionlint [FLAGS] [FILES...] [-]
 
