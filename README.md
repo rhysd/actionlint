@@ -9,7 +9,7 @@ Features:
 
 - **Syntax check for workflow files** to check unexpected or missing keys following [workflow syntax][syntax-doc]
 - **Strong type check for `${{ }}` expressions** to catch several semantic errors like access to not existing property, type mismatches, ...
-- **[shellcheck][] integration** for scripts in `run:`
+- **[shellcheck][] and [pyflakes][] integrations** for scripts in `run:`
 - **Other several useful checks**; dependencies check for `needs:`, runner label validation, cron syntax validation, ...
 
 See ['Checks' section](#checks) for full list of checks done by actionlint.
@@ -174,7 +174,8 @@ use a general YAML checker like [yamllint][].
 - [Contextual typing for `steps.<step_id>` objects](#check-contextual-step-object)
 - [Contextual typing for `matrix` object](#check-contextual-matrix-object)
 - [Contextual typing for `needs` object](#check-contextual-needs-object)
-- [shellcheck integration](#check-shellcheck-integ)
+- [shellcheck integration for `run:`](#check-shellcheck-integ)
+- [pyflakes integration for `run:`](#check-pyflakes-integ)
 - [Job dependencies validation](#check-job-deps)
 - [Matrix values](#check-matrix-values)
 - [Webhook events validation](#check-webhook-events)
@@ -685,7 +686,7 @@ Outputs from the jobs can be accessed only from jobs following them via [`needs`
 actionlint defines type of `needs` variable contextually looking at each job's `outputs:` section and `needs:` section.
 
 <a name="check-shellcheck-integ"></a>
-## [shellcheck][] integration
+## [shellcheck][] integration for `run:`
 
 Example input:
 
@@ -719,6 +720,7 @@ test.yaml:14:9: shellcheck reported issue in this script: SC2086:info:1:6: Doubl
 ```
 
 [shellcheck][] is a famous linter for ShellScript. actionlint runs shellcheck for scripts at `run:` step in workflow.
+For installing shellcheck, see [the official installation document][shellcheck-install].
 
 actionlint detects which shell is used to run the scripts following [the documentation][shell-doc]. On Linux or macOS,
 the default shell is `bash` and on Windows it is `pwsh`. Shell can be configured by `shell:` configuration at workflow level
@@ -734,6 +736,70 @@ disables shellcheck integration explicitly.
 Since both `${{ }}` expression syntax and ShellScript's variable access `$FOO` use `$`, remaining `${{ }}` confuses shellcheck.
 To avoid it, actionlint replaces `${{ }}` with underscores. For example `echo '${{ matrix.os }}'` is replaced with
 `echo '________________'`.
+
+<a name="check-pyflake-integ"></a>
+## [pyflake][] integration for `run:`
+
+Example input:
+
+```yaml
+on: push
+jobs:
+  linux:
+    runs-on: ubuntu-latest
+    steps:
+      # Yay! No error
+      - run: print('${{ runner.os }}')
+        shell: python
+      # ERROR: Undefined variable
+      - run: print(hello)
+        shell: python
+  linux2:
+    runs-on: ubuntu-latest
+    defaults:
+      run:
+        # Run script with Python by default
+        shell: python
+    steps:
+      - run: |
+          import sys
+          for sys in ['system1', 'system2']:
+            print(sys)
+      - run: |
+          from time import sleep
+          print(100)
+```
+
+Output:
+
+```
+test.yaml:10:9: pyflakes reported issue in this script: 1:7 undefined name 'hello' [pyflakes]
+10|       - run: print(hello)
+  |         ^~~~
+test.yaml:19:9: pyflakes reported issue in this script: 2:5 import 'sys' from line 1 shadowed by loop variable [pyflakes]
+19|       - run: |
+  |         ^~~~
+test.yaml:23:9: pyflakes reported issue in this script: 1:1 'time.sleep' imported but unused [pyflakes]
+23|       - run: |
+  |         ^~~~
+```
+
+Python script can be written in `run:` when `shell: python` is configured.
+
+[pyflakes][] is a famous linter for Python. It is suitable for linting small code like scripts at `run:` since it focuses
+on finding mistakes (not a code style issue) and tries to make false positives as minimal as possible. Install pyflakes
+by `pip install pyflakes`.
+
+actionlint runs pyflakes for scripts at `run:` steps in workflow and reports errors found by pyflakes. actionlint detects
+Python scripts in workflow by checking `shell: python` at steps and `defaults:` configurations at workflows and jobs.
+
+By default, actionlint checks if `pyflakes` command exists in your system and uses it when found. The `-pyflakes` option
+of `actionlint` command allows to specify the executable path of pyflakes. Setting empty string by `pyflakes=` disables
+pyflakes integration explicitly.
+
+Since both `${{ }}` expression syntax is invalid as Python, remaining `${{ }}` might confuse pyflakes. To avoid it,
+actionlint replaces `${{ }}` with underscores. For example `print('${{ matrix.os }}')` is replaced with
+`print('________________')`.
 
 <a name="check-job-deps"></a>
 ## Job dependencies validation
@@ -1343,6 +1409,8 @@ actionlint is distributed under [the MIT license](./LICENSE.txt).
 [apidoc]: https://pkg.go.dev/github.com/rhysd/actionlint
 [repo]: https://github.com/rhysd/actionlint
 [shellcheck]: https://github.com/koalaman/shellcheck
+[shellcheck-install]: https://github.com/koalaman/shellcheck#installing
+[pyflakes]: https://github.com/PyCQA/pyflakes
 [yamllint]: https://github.com/adrienverge/yamllint
 [act]: https://github.com/nektos/act
 [homebrew]: https://brew.sh/
