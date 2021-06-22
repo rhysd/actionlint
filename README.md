@@ -737,8 +737,8 @@ Since both `${{ }}` expression syntax and ShellScript's variable access `$FOO` u
 To avoid it, actionlint replaces `${{ }}` with underscores. For example `echo '${{ matrix.os }}'` is replaced with
 `echo '________________'`.
 
-<a name="check-pyflake-integ"></a>
-## [pyflake][] integration for `run:`
+<a name="check-pyflakes-integ"></a>
+## [pyflakes][] integration for `run:`
 
 Example input:
 
