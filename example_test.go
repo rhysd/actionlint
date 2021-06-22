@@ -58,6 +58,14 @@ func TestExamples(t *testing.T) {
 				opts.Shellcheck = p
 			}
 
+			if strings.Contains(testName, "pyflakes") {
+				p, err := exec.LookPath("pyflakes")
+				if err != nil {
+					t.Skip("skipped because \"pyflakes\" command does not exist in system")
+				}
+				opts.Pyflakes = p
+			}
+
 			linter, err := NewLinter(ioutil.Discard, &opts)
 			if err != nil {
 				t.Fatal(err)
