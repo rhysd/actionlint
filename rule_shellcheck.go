@@ -17,7 +17,7 @@ type shellcheckError struct {
 	Message string `json:"message"`
 }
 
-// RuleShellcheck is a rule to check scripts using shellcheck.
+// RuleShellcheck is a rule to check shell scripts at 'run:' using shellcheck.
 // https://github.com/koalaman/shellcheck
 type RuleShellcheck struct {
 	RuleBase
@@ -154,7 +154,7 @@ func (rule *RuleShellcheck) runShellcheck(executable, src, sh string, pos *Pos) 
 	//           For example, `if ${{ matrix.foo }}; then ...` -> `if _________________; then ...`
 	cmd := exec.Command(executable, "-f", "json", "-x", "--shell", sh, "-e", "SC1091,SC2194", "-")
 	cmd.Stderr = nil
-	rule.debug("%s: Running shellcheck: %s", pos, cmd)
+	rule.debug("%s: Running shellcheck command: %s", pos, cmd)
 
 	// Use same options to run shell process described at document
 	// https://docs.github.com/en/actions/reference/workflow-syntax-for-github-actions#using-a-specific-shell
@@ -177,7 +177,7 @@ func (rule *RuleShellcheck) runShellcheck(executable, src, sh string, pos *Pos) 
 
 	b, err := cmd.Output()
 	if err != nil {
-		rule.debug("Command %s failed: %v", executable, err)
+		rule.debug("Command %s failed: %v", cmd, err)
 	}
 	if len(b) == 0 {
 		return
