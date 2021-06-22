@@ -132,27 +132,27 @@ func (rule *RulePyflakes) runPyflakes(executable, src string, pos *Pos) {
 	}
 
 	for len(b) > 0 {
-		b = rule.parseOneError(b, pos)
+		b = rule.parseNextError(b, pos)
 	}
 }
 
-func (rule *RulePyflakes) parseOneError(input []byte, pos *Pos) []byte {
+func (rule *RulePyflakes) parseNextError(output []byte, pos *Pos) []byte {
 	// Eat "<stdin>:"
-	idx := bytes.Index(input, []byte("<stdin>:"))
+	idx := bytes.Index(output, []byte("<stdin>:"))
 	if idx == -1 {
-		rule.debug("%s: error message does not start with \"<stdin>\": %q", pos, input)
+		rule.debug("%s: error message does not start with \"<stdin>\": %q", pos, output)
 		return nil
 	}
-	input = input[idx+len("<stdin>:"):]
+	output = output[idx+len("<stdin>:"):]
 
-	idx = bytes.IndexByte(input, '\n')
+	idx = bytes.IndexByte(output, '\n')
 	if idx == -1 {
-		rule.debug("%s: error message does not end with \\n: %q", pos, input)
+		rule.debug("%s: error message does not end with \\n: %q", pos, output)
 		return nil
 	}
-	msg := input[:idx]
-	input = input[idx+1:]
+	msg := output[:idx]
+	output = output[idx+1:]
 
 	rule.errorf(pos, "pyflakes reported issue in this script: %s", msg)
-	return input
+	return output
 }

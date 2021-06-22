@@ -49,6 +49,10 @@ type LinterOptions struct {
 	// "shellcheck" or file path like "/path/to/shellcheck", "path/to/shellcheck". When this value
 	// is empty, shellcheck won't run to check scripts in workflow file.
 	Shellcheck string
+	// Pyflakes is executable for running pyflakes external command. It can be command name like "pyflakes"
+	// or file path like "/path/to/pyflakes", "path/to/pyflakes". When this value is empty, pyflakes
+	// won't run to check scripts in workflow file.
+	Pyflakes string
 	// IgnorePatterns is list of regular expression to filter errors. The pattern is applied to error
 	// messages. When an error is matched, the error is ignored.
 	IgnorePatterns []string
@@ -67,6 +71,7 @@ type Linter struct {
 	noColor       bool
 	oneline       bool
 	shellcheck    string
+	pyflakes      string
 	ignorePats    []*regexp.Regexp
 	defaultConfig *Config
 }
@@ -119,6 +124,7 @@ func NewLinter(out io.Writer, opts *LinterOptions) (*Linter, error) {
 		opts.NoColor,
 		opts.Oneline,
 		opts.Shellcheck,
+		opts.Pyflakes,
 		ignore,
 		cfg,
 	}, nil
@@ -330,9 +336,15 @@ func (l *Linter) Lint(path string, content []byte, project *Project) ([]*Error, 
 		} else {
 			l.log("Rule \"shellcheck\" was disabled since shellcheck command name was empty")
 		}
-		// TODO: Temporary
-		if r, err := NewRulePyflakes("pyflakes", dbgOut); err == nil {
-			rules = append(rules, r)
+		if l.pyflakes != "" {
+			r, err := NewRulePyflakes(l.pyflakes, dbgOut)
+			if err == nil {
+				rules = append(rules, r)
+			} else {
+				l.log("Rule \"pyflakes\" was disabled:", err)
+			}
+		} else {
+			l.log("Rule \"pyflakes\" was disabled since pyflakes command name was empty")
 		}
 
 		v := NewVisitor()

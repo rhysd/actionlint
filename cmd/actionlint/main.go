@@ -93,6 +93,7 @@ func main() {
 
 	flag.Var(&ignorePats, "ignore", "Regular expression matching to error messages you want to ignore. This flag can be specified multiple times")
 	flag.StringVar(&opts.Shellcheck, "shellcheck", "shellcheck", "Command name or file path of \"shellcheck\" external command")
+	flag.StringVar(&opts.Pyflakes, "pyflakes", "pyflakes", "Command name or file path of \"pyflakes\" external command")
 	flag.BoolVar(&opts.Oneline, "oneline", false, "Use one line per one error. Useful for reading error messages from programs")
 	flag.StringVar(&opts.ConfigFile, "config-file", "", "File path to config file")
 	flag.BoolVar(&initConfig, "init-config", false, "Generate default config file at .github/actionlint.yaml in current project")
