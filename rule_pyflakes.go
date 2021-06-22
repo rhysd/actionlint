@@ -4,6 +4,7 @@ import (
 	"bytes"
 	"io"
 	"os/exec"
+	"sync"
 )
 
 type shellIsPythonKind int
@@ -31,6 +32,8 @@ type RulePyflakes struct {
 	cmd                   string
 	workflowShellIsPython shellIsPythonKind
 	jobShellIsPython      shellIsPythonKind
+	wg                    sync.WaitGroup
+	mu                    sync.Mutex
 }
 
 // NewRulePyflakes creates new RulePyflakes instance. Parameter executable can be command name
@@ -71,7 +74,9 @@ func (rule *RulePyflakes) VisitWorkflowPre(n *Workflow) {
 
 // VisitWorkflowPost is callback when visiting Workflow node after visiting its children.
 func (rule *RulePyflakes) VisitWorkflowPost(n *Workflow) {
-	rule.workflowShellIsPython = shellIsPythonKindUnspecified // reset
+	rule.wg.Wait() // Wait all pyflakes processes finish
+	// reset
+	rule.workflowShellIsPython = shellIsPythonKindUnspecified
 }
 
 // VisitStep is callback when visiting Step node.
@@ -89,7 +94,8 @@ func (rule *RulePyflakes) VisitStep(n *Step) {
 		return
 	}
 
-	rule.runPyflakes(rule.cmd, run.Run.Value, run.RunPos)
+	rule.wg.Add(1)
+	go rule.runPyflakes(rule.cmd, run.Run.Value, run.RunPos)
 }
 
 func (rule *RulePyflakes) isPythonShell(r *ExecRun) bool {
@@ -105,6 +111,8 @@ func (rule *RulePyflakes) isPythonShell(r *ExecRun) bool {
 }
 
 func (rule *RulePyflakes) runPyflakes(executable, src string, pos *Pos) {
+	defer rule.wg.Done()
+
 	src = sanitizeExpressionsInScript(src) // Defiend at rule_shellcheck.go
 	rule.debug("%s: Run pyflakes for Python script:\n%s", pos, src)
 
@@ -131,6 +139,8 @@ func (rule *RulePyflakes) runPyflakes(executable, src string, pos *Pos) {
 		return
 	}
 
+	rule.mu.Lock()
+	defer rule.mu.Unlock()
 	for len(b) > 0 {
 		b = rule.parseNextError(b, pos)
 	}
