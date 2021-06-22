@@ -330,6 +330,10 @@ func (l *Linter) Lint(path string, content []byte, project *Project) ([]*Error, 
 		} else {
 			l.log("Rule \"shellcheck\" was disabled since shellcheck command name was empty")
 		}
+		// TODO: Temporary
+		if r, err := NewRulePyflakes("pyflakes", dbgOut); err == nil {
+			rules = append(rules, r)
+		}
 
 		v := NewVisitor()
 		for _, rule := range rules {
