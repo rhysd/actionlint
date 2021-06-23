@@ -42,13 +42,13 @@ type RulePyflakes struct {
 // NewRulePyflakes creates new RulePyflakes instance. Parameter executable can be command name
 // or relative/absolute file path. When the given executable is not found in system, it returns
 // an error.
-func NewRulePyflakes(executable string, debug io.Writer) (*RulePyflakes, error) {
+func NewRulePyflakes(executable string) (*RulePyflakes, error) {
 	p, err := exec.LookPath(executable)
 	if err != nil {
 		return nil, err
 	}
 	r := &RulePyflakes{
-		RuleBase:              RuleBase{name: "pyflakes", dbg: debug},
+		RuleBase:              RuleBase{name: "pyflakes"},
 		cmd:                   p,
 		workflowShellIsPython: shellIsPythonKindUnspecified,
 		jobShellIsPython:      shellIsPythonKindUnspecified,

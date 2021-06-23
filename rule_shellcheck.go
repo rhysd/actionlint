@@ -33,13 +33,13 @@ type RuleShellcheck struct {
 // NewRuleShellcheck craetes new RuleShellcheck instance. Parameter executable can be command name
 // or relative/absolute file path. When the given executable is not found in system, it returns an
 // error as 2nd return value.
-func NewRuleShellcheck(executable string, debug io.Writer) (*RuleShellcheck, error) {
+func NewRuleShellcheck(executable string) (*RuleShellcheck, error) {
 	p, err := exec.LookPath(executable)
 	if err != nil {
 		return nil, err
 	}
 	r := &RuleShellcheck{
-		RuleBase:      RuleBase{name: "shellcheck", dbg: debug},
+		RuleBase:      RuleBase{name: "shellcheck"},
 		cmd:           p,
 		workflowShell: "",
 		jobShell:      "",

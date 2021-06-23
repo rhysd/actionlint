@@ -299,9 +299,9 @@ func (l *Linter) Lint(path string, content []byte, project *Project) ([]*Error, 
 	}
 
 	if w != nil {
-		dbgOut := l.logOut
+		dbg := l.logOut
 		if l.logLevel < LogLevelDebug {
-			dbgOut = nil
+			dbg = nil
 		}
 
 		var labels []string
@@ -327,7 +327,7 @@ func (l *Linter) Lint(path string, content []byte, project *Project) ([]*Error, 
 			NewRuleExpression(),
 		}
 		if l.shellcheck != "" {
-			r, err := NewRuleShellcheck(l.shellcheck, dbgOut)
+			r, err := NewRuleShellcheck(l.shellcheck)
 			if err == nil {
 				rules = append(rules, r)
 			} else {
@@ -337,7 +337,7 @@ func (l *Linter) Lint(path string, content []byte, project *Project) ([]*Error, 
 			l.log("Rule \"shellcheck\" was disabled since shellcheck command name was empty")
 		}
 		if l.pyflakes != "" {
-			r, err := NewRulePyflakes(l.pyflakes, dbgOut)
+			r, err := NewRulePyflakes(l.pyflakes)
 			if err == nil {
 				rules = append(rules, r)
 			} else {
@@ -351,11 +351,15 @@ func (l *Linter) Lint(path string, content []byte, project *Project) ([]*Error, 
 		for _, rule := range rules {
 			v.AddPass(rule)
 		}
-		if dbgOut != nil {
-			v.EnableDebug(dbgOut)
+		if dbg != nil {
+			v.EnableDebug(dbg)
+			for _, r := range rules {
+				r.EnableDebug(dbg)
+			}
 		}
 
 		if err := v.Visit(w); err != nil {
+			l.debug("error occurred while visiting workflow syntax tree: %v", err)
 			return nil, err
 		}
 

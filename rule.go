@@ -56,9 +56,16 @@ func (r *RuleBase) Name() string {
 	return r.name
 }
 
+// EnableDebug enables debug output from the rule. Given io.Writer instance is used to print debug
+// information to console
+func (r *RuleBase) EnableDebug(out io.Writer) {
+	r.dbg = out
+}
+
 // Rule is an interface which all rule structs must meet
 type Rule interface {
 	Pass
 	Errs() []*Error
 	Name() string
+	EnableDebug(out io.Writer)
 }
