@@ -355,7 +355,9 @@ func (l *Linter) Lint(path string, content []byte, project *Project) ([]*Error, 
 			v.EnableDebug(dbgOut)
 		}
 
-		v.Visit(w)
+		if err := v.Visit(w); err != nil {
+			return nil, err
+		}
 
 		for _, rule := range rules {
 			errs := rule.Errs()

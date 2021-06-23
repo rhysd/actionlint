@@ -30,7 +30,7 @@ func NewRuleExpression() *RuleExpression {
 }
 
 // VisitWorkflowPre is callback when visiting Workflow node before visiting its children.
-func (rule *RuleExpression) VisitWorkflowPre(n *Workflow) {
+func (rule *RuleExpression) VisitWorkflowPre(n *Workflow) error {
 	rule.checkString(n.Name)
 
 	for _, e := range n.On {
@@ -63,15 +63,17 @@ func (rule *RuleExpression) VisitWorkflowPre(n *Workflow) {
 	rule.checkConcurrency(n.Concurrency)
 
 	rule.workflow = n
+	return nil
 }
 
 // VisitWorkflowPost is callback when visiting Workflow node after visiting its children
-func (rule *RuleExpression) VisitWorkflowPost(n *Workflow) {
+func (rule *RuleExpression) VisitWorkflowPost(n *Workflow) error {
 	rule.workflow = nil
+	return nil
 }
 
 // VisitJobPre is callback when visiting Job node before visiting its children.
-func (rule *RuleExpression) VisitJobPre(n *Job) {
+func (rule *RuleExpression) VisitJobPre(n *Job) error {
 	// Type of needs must be resolved before resolving type of matrix because `needs` context can
 	// be used in matrix configuration.
 	rule.needsTy = rule.calcNeedsType(n)
@@ -132,10 +134,12 @@ func (rule *RuleExpression) VisitJobPre(n *Job) {
 	}
 
 	rule.stepsTy = NewStrictObjectType()
+
+	return nil
 }
 
 // VisitJobPost is callback when visiting Job node after visiting its children
-func (rule *RuleExpression) VisitJobPost(n *Job) {
+func (rule *RuleExpression) VisitJobPost(n *Job) error {
 	// outputs section is evaluated after all steps are run
 	for _, output := range n.Outputs {
 		rule.checkString(output.Value)
@@ -144,10 +148,12 @@ func (rule *RuleExpression) VisitJobPost(n *Job) {
 	rule.matrixTy = nil
 	rule.stepsTy = nil
 	rule.needsTy = nil
+
+	return nil
 }
 
 // VisitStep is callback when visiting Step node.
-func (rule *RuleExpression) VisitStep(n *Step) {
+func (rule *RuleExpression) VisitStep(n *Step) error {
 	rule.checkIfCondition(n.If)
 	rule.checkString(n.Name)
 
@@ -181,6 +187,8 @@ func (rule *RuleExpression) VisitStep(n *Step) {
 			StrictProps: true,
 		}
 	}
+
+	return nil
 }
 
 func (rule *RuleExpression) checkOneExpression(s *String, what string) ExprType {

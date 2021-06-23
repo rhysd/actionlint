@@ -51,7 +51,7 @@ func contains(heystack []string, needle string) bool {
 }
 
 // VisitJobPre is callback when visiting Job node before visiting its children.
-func (rule *RuleJobNeeds) VisitJobPre(n *Job) {
+func (rule *RuleJobNeeds) VisitJobPre(n *Job) error {
 	needs := make([]string, 0, len(n.Needs))
 	for _, j := range n.Needs {
 		id := strings.ToLower(j.Value)
@@ -75,10 +75,12 @@ func (rule *RuleJobNeeds) VisitJobPre(n *Job) {
 		status: nodeStatusNew,
 		pos:    n.ID.Pos,
 	}
+
+	return nil
 }
 
 // VisitWorkflowPost is callback when visiting Workflow node after visiting its children.
-func (rule *RuleJobNeeds) VisitWorkflowPost(n *Workflow) {
+func (rule *RuleJobNeeds) VisitWorkflowPost(n *Workflow) error {
 	// Resolve nodes
 	valid := true
 	for id, node := range rule.nodes {
@@ -94,7 +96,7 @@ func (rule *RuleJobNeeds) VisitWorkflowPost(n *Workflow) {
 		}
 	}
 	if !valid {
-		return
+		return nil
 	}
 
 	if edge := detectCyclic(rule.nodes); edge != nil {
@@ -113,6 +115,8 @@ func (rule *RuleJobNeeds) VisitWorkflowPost(n *Workflow) {
 			strings.Join(desc, ", "),
 		)
 	}
+
+	return nil
 }
 
 func collectCyclic(src *jobNode, edges map[string]string) bool {

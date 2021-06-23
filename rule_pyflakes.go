@@ -54,48 +54,56 @@ func NewRulePyflakes(executable string, debug io.Writer) (*RulePyflakes, error) 
 }
 
 // VisitJobPre is callback when visiting Job node before visiting its children.
-func (rule *RulePyflakes) VisitJobPre(n *Job) {
+func (rule *RulePyflakes) VisitJobPre(n *Job) error {
 	if n.Defaults != nil && n.Defaults.Run != nil {
 		rule.jobShellIsPython = getShellIsPythonKind(n.Defaults.Run.Shell)
 	}
+	return nil
 }
 
 // VisitJobPost is callback when visiting Job node after visiting its children.
-func (rule *RulePyflakes) VisitJobPost(n *Job) {
+func (rule *RulePyflakes) VisitJobPost(n *Job) error {
 	rule.jobShellIsPython = shellIsPythonKindUnspecified // reset
+	return nil
 }
 
 // VisitWorkflowPre is callback when visiting Workflow node before visiting its children.
-func (rule *RulePyflakes) VisitWorkflowPre(n *Workflow) {
+func (rule *RulePyflakes) VisitWorkflowPre(n *Workflow) error {
 	if n.Defaults != nil && n.Defaults.Run != nil {
 		rule.workflowShellIsPython = getShellIsPythonKind(n.Defaults.Run.Shell)
 	}
+	return nil
 }
 
 // VisitWorkflowPost is callback when visiting Workflow node after visiting its children.
-func (rule *RulePyflakes) VisitWorkflowPost(n *Workflow) {
-	rule.wg.Wait() // Wait all pyflakes processes finish
-	// reset
-	rule.workflowShellIsPython = shellIsPythonKindUnspecified
+func (rule *RulePyflakes) VisitWorkflowPost(n *Workflow) error {
+	// TODO: Check errors caused in goroutines to run pyflakes and returns it
+
+	// Wait all pyflakes processes finish
+	rule.wg.Wait()
+	rule.workflowShellIsPython = shellIsPythonKindUnspecified // reset
+
+	return nil
 }
 
 // VisitStep is callback when visiting Step node.
-func (rule *RulePyflakes) VisitStep(n *Step) {
+func (rule *RulePyflakes) VisitStep(n *Step) error {
 	if rule.cmd == "" {
-		return
+		return nil
 	}
 
 	run, ok := n.Exec.(*ExecRun)
 	if !ok || run.Run == nil {
-		return
+		return nil
 	}
 
 	if !rule.isPythonShell(run) {
-		return
+		return nil
 	}
 
 	rule.wg.Add(1)
 	go rule.runPyflakes(rule.cmd, run.Run.Value, run.RunPos)
+	return nil
 }
 
 func (rule *RulePyflakes) isPythonShell(r *ExecRun) bool {

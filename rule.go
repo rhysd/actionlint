@@ -14,19 +14,19 @@ type RuleBase struct {
 }
 
 // VisitStep is callback when visiting Step node.
-func (r *RuleBase) VisitStep(node *Step) {}
+func (r *RuleBase) VisitStep(node *Step) error { return nil }
 
 // VisitJobPre is callback when visiting Job node before visiting its children.
-func (r *RuleBase) VisitJobPre(node *Job) {}
+func (r *RuleBase) VisitJobPre(node *Job) error { return nil }
 
 // VisitJobPost is callback when visiting Job node after visiting its children.
-func (r *RuleBase) VisitJobPost(node *Job) {}
+func (r *RuleBase) VisitJobPost(node *Job) error { return nil }
 
 // VisitWorkflowPre is callback when visiting Workflow node before visiting its children.
-func (r *RuleBase) VisitWorkflowPre(node *Workflow) {}
+func (r *RuleBase) VisitWorkflowPre(node *Workflow) error { return nil }
 
 // VisitWorkflowPost is callback when visiting Workflow node after visiting its children.
-func (r *RuleBase) VisitWorkflowPost(node *Workflow) {}
+func (r *RuleBase) VisitWorkflowPost(node *Workflow) error { return nil }
 
 func (r *RuleBase) error(pos *Pos, msg string) {
 	err := errorAt(pos, r.name, msg)

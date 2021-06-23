@@ -18,13 +18,14 @@ func NewRuleCredentials() *RuleCredentials {
 }
 
 // VisitJobPre is callback when visiting Job node before visiting its children.
-func (rule *RuleCredentials) VisitJobPre(n *Job) {
+func (rule *RuleCredentials) VisitJobPre(n *Job) error {
 	if n.Container != nil {
 		rule.checkContainer("\"container\" section", n.Container)
 	}
 	for _, s := range n.Services {
 		rule.checkContainer(fmt.Sprintf("%q service", s.Name.Value), s.Container)
 	}
+	return nil
 }
 
 func (rule *RuleCredentials) checkContainer(where string, n *Container) {

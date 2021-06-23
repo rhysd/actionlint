@@ -40,31 +40,32 @@ func NewRuleAction(repoDir string) *RuleAction {
 }
 
 // VisitStep is callback when visiting Step node.
-func (rule *RuleAction) VisitStep(n *Step) {
+func (rule *RuleAction) VisitStep(n *Step) error {
 	e, ok := n.Exec.(*ExecAction)
 	if !ok || e.Uses == nil {
-		return
+		return nil
 	}
 
 	spec := e.Uses.Value
 
 	if strings.Contains(spec, "${{") && strings.Contains(spec, "}}") {
 		// Cannot parse specification made with interpolation. Give up
-		return
+		return nil
 	}
 
 	if strings.HasPrefix(spec, "./") {
 		// Relative to repository root
 		rule.checkActionInSameRepo(spec, e)
-		return
+		return nil
 	}
 
 	if strings.HasPrefix(spec, "docker://") {
 		rule.checkDockerAction(spec, e)
-		return
+		return nil
 	}
 
 	rule.checkRepoAction(spec, e)
+	return nil
 }
 
 // Parse {owner}/{repo}@{ref} or {owner}/{repo}/{path}@{ref}

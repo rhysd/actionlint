@@ -8,16 +8,16 @@ import (
 
 // Pass is an interface to traverse a workflow syntax tree
 type Pass interface {
-	// VisitStep is callback when visiting Step node
-	VisitStep(node *Step)
-	// VisitJobPre is callback when visiting Job node before visiting its children
-	VisitJobPre(node *Job)
-	// VisitJobPost is callback when visiting Job node after visiting its children
-	VisitJobPost(node *Job)
-	// VisitWorkflowPre is callback when visiting Workflow node before visiting its children
-	VisitWorkflowPre(node *Workflow)
-	// VisitWorkflowPost is callback when visiting Workflow node after visiting its children
-	VisitWorkflowPost(node *Workflow)
+	// VisitStep is callback when visiting Step node. It returns internal error when it cannot continue the process
+	VisitStep(node *Step) error
+	// VisitJobPre is callback when visiting Job node before visiting its children. It returns internal error when it cannot continue the process
+	VisitJobPre(node *Job) error
+	// VisitJobPost is callback when visiting Job node after visiting its children. It returns internal error when it cannot continue the process
+	VisitJobPost(node *Job) error
+	// VisitWorkflowPre is callback when visiting Workflow node before visiting its children. It returns internal error when it cannot continue the process
+	VisitWorkflowPre(node *Workflow) error
+	// VisitWorkflowPost is callback when visiting Workflow node after visiting its children. It returns internal error when it cannot continue the process
+	VisitWorkflowPost(node *Workflow) error
 }
 
 // Visitor visits syntax tree from root in depth-first order
@@ -47,14 +47,16 @@ func (v *Visitor) reportElapsedTime(what string, start time.Time) {
 }
 
 // Visit visits given syntax tree in depth-first order
-func (v *Visitor) Visit(n *Workflow) {
+func (v *Visitor) Visit(n *Workflow) error {
 	var t time.Time
 	if v.dbg != nil {
 		t = time.Now()
 	}
 
 	for _, p := range v.passes {
-		p.VisitWorkflowPre(n)
+		if err := p.VisitWorkflowPre(n); err != nil {
+			return err
+		}
 	}
 
 	if v.dbg != nil {
@@ -63,7 +65,9 @@ func (v *Visitor) Visit(n *Workflow) {
 	}
 
 	for _, j := range n.Jobs {
-		v.visitJob(j)
+		if err := v.visitJob(j); err != nil {
+			return err
+		}
 	}
 
 	if v.dbg != nil {
@@ -72,22 +76,28 @@ func (v *Visitor) Visit(n *Workflow) {
 	}
 
 	for _, p := range v.passes {
-		p.VisitWorkflowPost(n)
+		if err := p.VisitWorkflowPost(n); err != nil {
+			return err
+		}
 	}
 
 	if v.dbg != nil {
 		v.reportElapsedTime("VisitWorkflowPost", t)
 	}
+
+	return nil
 }
 
-func (v *Visitor) visitJob(n *Job) {
+func (v *Visitor) visitJob(n *Job) error {
 	var t time.Time
 	if v.dbg != nil {
 		t = time.Now()
 	}
 
 	for _, p := range v.passes {
-		p.VisitJobPre(n)
+		if err := p.VisitJobPre(n); err != nil {
+			return err
+		}
 	}
 
 	if v.dbg != nil {
@@ -96,7 +106,9 @@ func (v *Visitor) visitJob(n *Job) {
 	}
 
 	for _, s := range n.Steps {
-		v.visitStep(s)
+		if err := v.visitStep(s); err != nil {
+			return err
+		}
 	}
 
 	if v.dbg != nil {
@@ -105,25 +117,33 @@ func (v *Visitor) visitJob(n *Job) {
 	}
 
 	for _, p := range v.passes {
-		p.VisitJobPost(n)
+		if err := p.VisitJobPost(n); err != nil {
+			return err
+		}
 	}
 
 	if v.dbg != nil {
 		v.reportElapsedTime(fmt.Sprintf("VisitWorkflowJobPost at job %q", n.ID.Value), t)
 	}
+
+	return nil
 }
 
-func (v *Visitor) visitStep(n *Step) {
+func (v *Visitor) visitStep(n *Step) error {
 	var t time.Time
 	if v.dbg != nil {
 		t = time.Now()
 	}
 
 	for _, p := range v.passes {
-		p.VisitStep(n)
+		if err := p.VisitStep(n); err != nil {
+			return err
+		}
 	}
 
 	if v.dbg != nil {
 		v.reportElapsedTime(fmt.Sprintf("VisitStep at %s", n.Pos), t)
 	}
+
+	return nil
 }

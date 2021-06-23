@@ -46,34 +46,35 @@ func NewRuleShellcheck(executable string, debug io.Writer) (*RuleShellcheck, err
 }
 
 // VisitStep is callback when visiting Step node.
-func (rule *RuleShellcheck) VisitStep(n *Step) {
+func (rule *RuleShellcheck) VisitStep(n *Step) error {
 	if rule.cmd == "" {
-		return
+		return nil
 	}
 
 	run, ok := n.Exec.(*ExecRun)
 	if !ok || run.Run == nil {
-		return
+		return nil
 	}
 
 	name := rule.getShellName(run)
 	if name != "bash" && name != "sh" {
-		return
+		return nil
 	}
 
 	rule.wg.Add(1)
 	go rule.runShellcheck(rule.cmd, run.Run.Value, name, run.RunPos)
+	return nil
 }
 
 // VisitJobPre is callback when visiting Job node before visiting its children.
-func (rule *RuleShellcheck) VisitJobPre(n *Job) {
+func (rule *RuleShellcheck) VisitJobPre(n *Job) error {
 	if n.Defaults != nil && n.Defaults.Run != nil && n.Defaults.Run.Shell != nil {
 		rule.jobShell = n.Defaults.Run.Shell.Value
-		return
+		return nil
 	}
 
 	if n.RunsOn == nil {
-		return
+		return nil
 	}
 
 	for _, label := range n.RunsOn.Labels {
@@ -81,30 +82,38 @@ func (rule *RuleShellcheck) VisitJobPre(n *Job) {
 		// Default shell on Windows is PowerShell.
 		// https://docs.github.com/en/actions/reference/workflow-syntax-for-github-actions#using-a-specific-shell
 		if l == "windows" || strings.HasPrefix(l, "windows-") {
-			return
+			return nil
 		}
 	}
 
 	// TODO: When bash is not found, GitHub-hosted runner fallbacks to sh. What OSes require this behavior?
 	rule.jobShell = "bash"
+
+	return nil
 }
 
 // VisitJobPost is callback when visiting Job node after visiting its children.
-func (rule *RuleShellcheck) VisitJobPost(n *Job) {
+func (rule *RuleShellcheck) VisitJobPost(n *Job) error {
 	rule.jobShell = ""
+	return nil
 }
 
 // VisitWorkflowPre is callback when visiting Workflow node before visiting its children.
-func (rule *RuleShellcheck) VisitWorkflowPre(n *Workflow) {
+func (rule *RuleShellcheck) VisitWorkflowPre(n *Workflow) error {
 	if n.Defaults != nil && n.Defaults.Run != nil && n.Defaults.Run.Shell != nil {
 		rule.workflowShell = n.Defaults.Run.Shell.Value
 	}
+	return nil
 }
 
 // VisitWorkflowPost is callback when visiting Workflow node after visiting its children.
-func (rule *RuleShellcheck) VisitWorkflowPost(n *Workflow) {
+func (rule *RuleShellcheck) VisitWorkflowPost(n *Workflow) error {
+	// TODO: Check errors caused in goroutines to run shellcheck and returns it
+
 	rule.wg.Wait() // Wait all shellcheck processes finish
 	rule.workflowShell = ""
+
+	return nil
 }
 
 func (rule *RuleShellcheck) getShellName(exec *ExecRun) string {
