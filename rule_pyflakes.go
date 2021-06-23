@@ -2,9 +2,12 @@ package actionlint
 
 import (
 	"bytes"
+	"fmt"
 	"io"
 	"os/exec"
 	"sync"
+
+	"golang.org/x/sync/errgroup"
 )
 
 type shellIsPythonKind int
@@ -32,7 +35,7 @@ type RulePyflakes struct {
 	cmd                   string
 	workflowShellIsPython shellIsPythonKind
 	jobShellIsPython      shellIsPythonKind
-	wg                    sync.WaitGroup
+	group                 errgroup.Group
 	mu                    sync.Mutex
 }
 
@@ -54,48 +57,60 @@ func NewRulePyflakes(executable string, debug io.Writer) (*RulePyflakes, error) 
 }
 
 // VisitJobPre is callback when visiting Job node before visiting its children.
-func (rule *RulePyflakes) VisitJobPre(n *Job) {
+func (rule *RulePyflakes) VisitJobPre(n *Job) error {
 	if n.Defaults != nil && n.Defaults.Run != nil {
 		rule.jobShellIsPython = getShellIsPythonKind(n.Defaults.Run.Shell)
 	}
+	return nil
 }
 
 // VisitJobPost is callback when visiting Job node after visiting its children.
-func (rule *RulePyflakes) VisitJobPost(n *Job) {
+func (rule *RulePyflakes) VisitJobPost(n *Job) error {
 	rule.jobShellIsPython = shellIsPythonKindUnspecified // reset
+	return nil
 }
 
 // VisitWorkflowPre is callback when visiting Workflow node before visiting its children.
-func (rule *RulePyflakes) VisitWorkflowPre(n *Workflow) {
+func (rule *RulePyflakes) VisitWorkflowPre(n *Workflow) error {
 	if n.Defaults != nil && n.Defaults.Run != nil {
 		rule.workflowShellIsPython = getShellIsPythonKind(n.Defaults.Run.Shell)
 	}
+	return nil
 }
 
 // VisitWorkflowPost is callback when visiting Workflow node after visiting its children.
-func (rule *RulePyflakes) VisitWorkflowPost(n *Workflow) {
-	rule.wg.Wait() // Wait all pyflakes processes finish
-	// reset
-	rule.workflowShellIsPython = shellIsPythonKindUnspecified
+func (rule *RulePyflakes) VisitWorkflowPost(n *Workflow) error {
+	// TODO: Check errors caused in goroutines to run pyflakes and returns it
+
+	// Wait all pyflakes processes finish
+	if err := rule.group.Wait(); err != nil {
+		return err
+	}
+
+	rule.workflowShellIsPython = shellIsPythonKindUnspecified // reset
+
+	return nil
 }
 
 // VisitStep is callback when visiting Step node.
-func (rule *RulePyflakes) VisitStep(n *Step) {
+func (rule *RulePyflakes) VisitStep(n *Step) error {
 	if rule.cmd == "" {
-		return
+		return nil
 	}
 
 	run, ok := n.Exec.(*ExecRun)
 	if !ok || run.Run == nil {
-		return
+		return nil
 	}
 
 	if !rule.isPythonShell(run) {
-		return
+		return nil
 	}
 
-	rule.wg.Add(1)
-	go rule.runPyflakes(rule.cmd, run.Run.Value, run.RunPos)
+	rule.group.Go(func() error {
+		return rule.runPyflakes(rule.cmd, run.Run.Value, run.RunPos)
+	})
+	return nil
 }
 
 func (rule *RulePyflakes) isPythonShell(r *ExecRun) bool {
@@ -110,9 +125,7 @@ func (rule *RulePyflakes) isPythonShell(r *ExecRun) bool {
 	return rule.workflowShellIsPython == shellIsPythonKindPython
 }
 
-func (rule *RulePyflakes) runPyflakes(executable, src string, pos *Pos) {
-	defer rule.wg.Done()
-
+func (rule *RulePyflakes) runPyflakes(executable, src string, pos *Pos) error {
 	src = sanitizeExpressionsInScript(src) // Defiend at rule_shellcheck.go
 	rule.debug("%s: Run pyflakes for Python script:\n%s", pos, src)
 
@@ -122,47 +135,57 @@ func (rule *RulePyflakes) runPyflakes(executable, src string, pos *Pos) {
 
 	stdin, err := cmd.StdinPipe()
 	if err != nil {
-		rule.debug("%s: Could not make stdin pipe: %v", pos, err)
-		return
+		return fmt.Errorf("could not make stdin pipe for pyflakes while checking script at %s: %w", pos, err)
 	}
 	if _, err := io.WriteString(stdin, src); err != nil {
-		rule.debug("%s: Could not write stdin: %v", pos, err)
-		return
+		return fmt.Errorf("could not write to stdin of pyflakes process while checking script at %s: %w", pos, err)
 	}
 	stdin.Close()
 
-	b, err := cmd.Output()
+	stdout, err := cmd.Output()
 	if err != nil {
-		rule.debug("%s: Command %s failed: %v", pos, cmd, err)
+		rule.debug("Command %s failed: %v", cmd, err)
+		if err, ok := err.(*exec.ExitError); ok {
+			// When exit status is non-zero and stdout is not empty, pyflakes successfully found some errors
+			if len(stdout) == 0 {
+				return fmt.Errorf("pyflakes did not run successfully while checking script at %s. stderr:\n%s", pos, err.Stderr)
+			}
+		} else {
+			return fmt.Errorf("`%s` did not run successfully while checking script at %s: %w", cmd, pos, err)
+		}
 	}
-	if len(b) == 0 {
-		return
+	if len(stdout) == 0 {
+		return nil
 	}
 
 	rule.mu.Lock()
 	defer rule.mu.Unlock()
-	for len(b) > 0 {
-		b = rule.parseNextError(b, pos)
+	for len(stdout) > 0 {
+		if stdout, err = rule.parseNextError(stdout, pos); err != nil {
+			return err
+		}
 	}
+
+	return nil
 }
 
-func (rule *RulePyflakes) parseNextError(output []byte, pos *Pos) []byte {
-	// Eat "<stdin>:"
-	idx := bytes.Index(output, []byte("<stdin>:"))
-	if idx == -1 {
-		rule.debug("%s: error message does not start with \"<stdin>\": %q", pos, output)
-		return nil
-	}
-	output = output[idx+len("<stdin>:"):]
+func (rule *RulePyflakes) parseNextError(stdout []byte, pos *Pos) ([]byte, error) {
+	b := stdout
 
-	idx = bytes.IndexByte(output, '\n')
+	// Eat "<stdin>:"
+	idx := bytes.Index(b, []byte("<stdin>:"))
 	if idx == -1 {
-		rule.debug("%s: error message does not end with \\n: %q", pos, output)
-		return nil
+		return nil, fmt.Errorf("error message from pyflakes does not start with \"<stdin>:\" while checking script at %s. stdout:\n%s", pos, stdout)
 	}
-	msg := output[:idx]
-	output = output[idx+1:]
+	b = b[idx+len("<stdin>:"):]
+
+	idx = bytes.IndexByte(b, '\n')
+	if idx == -1 {
+		return nil, fmt.Errorf("error message from pyflakes does not end with \\n while checking script at %s. output: %q", pos, stdout)
+	}
+	msg := b[:idx]
+	b = b[idx+1:]
 
 	rule.errorf(pos, "pyflakes reported issue in this script: %s", msg)
-	return output
+	return b, nil
 }

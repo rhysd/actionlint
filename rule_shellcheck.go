@@ -7,6 +7,8 @@ import (
 	"os/exec"
 	"strings"
 	"sync"
+
+	"golang.org/x/sync/errgroup"
 )
 
 type shellcheckError struct {
@@ -24,7 +26,7 @@ type RuleShellcheck struct {
 	cmd           string
 	workflowShell string
 	jobShell      string
-	wg            sync.WaitGroup
+	group         errgroup.Group
 	mu            sync.Mutex
 }
 
@@ -46,34 +48,36 @@ func NewRuleShellcheck(executable string, debug io.Writer) (*RuleShellcheck, err
 }
 
 // VisitStep is callback when visiting Step node.
-func (rule *RuleShellcheck) VisitStep(n *Step) {
+func (rule *RuleShellcheck) VisitStep(n *Step) error {
 	if rule.cmd == "" {
-		return
+		return nil
 	}
 
 	run, ok := n.Exec.(*ExecRun)
 	if !ok || run.Run == nil {
-		return
+		return nil
 	}
 
 	name := rule.getShellName(run)
 	if name != "bash" && name != "sh" {
-		return
+		return nil
 	}
 
-	rule.wg.Add(1)
-	go rule.runShellcheck(rule.cmd, run.Run.Value, name, run.RunPos)
+	rule.group.Go(func() error {
+		return rule.runShellcheck(rule.cmd, run.Run.Value, name, run.RunPos)
+	})
+	return nil
 }
 
 // VisitJobPre is callback when visiting Job node before visiting its children.
-func (rule *RuleShellcheck) VisitJobPre(n *Job) {
+func (rule *RuleShellcheck) VisitJobPre(n *Job) error {
 	if n.Defaults != nil && n.Defaults.Run != nil && n.Defaults.Run.Shell != nil {
 		rule.jobShell = n.Defaults.Run.Shell.Value
-		return
+		return nil
 	}
 
 	if n.RunsOn == nil {
-		return
+		return nil
 	}
 
 	for _, label := range n.RunsOn.Labels {
@@ -81,30 +85,40 @@ func (rule *RuleShellcheck) VisitJobPre(n *Job) {
 		// Default shell on Windows is PowerShell.
 		// https://docs.github.com/en/actions/reference/workflow-syntax-for-github-actions#using-a-specific-shell
 		if l == "windows" || strings.HasPrefix(l, "windows-") {
-			return
+			return nil
 		}
 	}
 
 	// TODO: When bash is not found, GitHub-hosted runner fallbacks to sh. What OSes require this behavior?
 	rule.jobShell = "bash"
+
+	return nil
 }
 
 // VisitJobPost is callback when visiting Job node after visiting its children.
-func (rule *RuleShellcheck) VisitJobPost(n *Job) {
+func (rule *RuleShellcheck) VisitJobPost(n *Job) error {
 	rule.jobShell = ""
+	return nil
 }
 
 // VisitWorkflowPre is callback when visiting Workflow node before visiting its children.
-func (rule *RuleShellcheck) VisitWorkflowPre(n *Workflow) {
+func (rule *RuleShellcheck) VisitWorkflowPre(n *Workflow) error {
 	if n.Defaults != nil && n.Defaults.Run != nil && n.Defaults.Run.Shell != nil {
 		rule.workflowShell = n.Defaults.Run.Shell.Value
 	}
+	return nil
 }
 
 // VisitWorkflowPost is callback when visiting Workflow node after visiting its children.
-func (rule *RuleShellcheck) VisitWorkflowPost(n *Workflow) {
-	rule.wg.Wait() // Wait all shellcheck processes finish
+func (rule *RuleShellcheck) VisitWorkflowPost(n *Workflow) error {
+	// TODO: Check errors caused in goroutines to run shellcheck and returns it
+
+	if err := rule.group.Wait(); err != nil {
+		return err
+	}
+
 	rule.workflowShell = ""
+	return nil
 }
 
 func (rule *RuleShellcheck) getShellName(exec *ExecRun) string {
@@ -140,9 +154,7 @@ func sanitizeExpressionsInScript(src string) string {
 	}
 }
 
-func (rule *RuleShellcheck) runShellcheck(executable, src, sh string, pos *Pos) {
-	defer rule.wg.Done()
-
+func (rule *RuleShellcheck) runShellcheck(executable, src, sh string, pos *Pos) error {
 	src = sanitizeExpressionsInScript(src)
 	rule.debug("%s: Run shellcheck for %s script:\n%s", pos, sh, src)
 
@@ -166,27 +178,32 @@ func (rule *RuleShellcheck) runShellcheck(executable, src, sh string, pos *Pos) 
 
 	stdin, err := cmd.StdinPipe()
 	if err != nil {
-		rule.debug("%s: Could not make stdin pipe: %v", pos, err)
-		return
+		return fmt.Errorf("could not make stdin pipe for shellcheck while checking script at %s: %w", pos, err)
 	}
 	if _, err := io.WriteString(stdin, script); err != nil {
-		rule.debug("%s: Could not write stdin: %v", pos, err)
-		return
+		return fmt.Errorf("could not write to stdin of shellcheck process while checking script at %s: %w", pos, err)
 	}
 	stdin.Close()
 
-	b, err := cmd.Output()
+	stdout, err := cmd.Output()
 	if err != nil {
 		rule.debug("Command %s failed: %v", cmd, err)
-	}
-	if len(b) == 0 {
-		return
+		if err, ok := err.(*exec.ExitError); ok {
+			// When exit status is non-zero and stdout is not empty, shellcheck successfully found some errors
+			if len(stdout) == 0 {
+				return fmt.Errorf("shellcheck did not run successfully while checking script at %s. stderr:\n%s", pos, err.Stderr)
+			}
+		} else {
+			return fmt.Errorf("`%s` did not run successfully while checking script at %s: %w", cmd, pos, err)
+		}
 	}
 
 	errs := []shellcheckError{}
-	if err := json.Unmarshal(b, &errs); err != nil {
-		rule.debug("Could not unmarshal JSON input from shellcheck: %q: %v", b, err)
-		return
+	if err := json.Unmarshal(stdout, &errs); err != nil {
+		return fmt.Errorf("could not parse JSON output from shellcheck: %w: stdout=%q", err, stdout)
+	}
+	if len(errs) == 0 {
+		return nil
 	}
 
 	rule.mu.Lock()
@@ -203,4 +220,6 @@ func (rule *RuleShellcheck) runShellcheck(executable, src, sh string, pos *Pos) 
 		msg := strings.TrimSuffix(err.Message, ".") // Trim period aligning style of error message
 		rule.errorf(pos, "shellcheck reported issue in this script: SC%d:%s:%d:%d: %s", err.Code, err.Level, line, err.Column, msg)
 	}
+
+	return nil
 }

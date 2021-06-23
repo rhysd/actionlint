@@ -15,9 +15,9 @@ func NewRuleMatrix() *RuleMatrix {
 }
 
 // VisitJobPre is callback when visiting Job node before visiting its children.
-func (rule *RuleMatrix) VisitJobPre(n *Job) {
+func (rule *RuleMatrix) VisitJobPre(n *Job) error {
 	if n.Strategy == nil || n.Strategy.Matrix == nil || n.Strategy.Matrix.Expression != nil {
-		return
+		return nil
 	}
 
 	m := n.Strategy.Matrix
@@ -37,6 +37,7 @@ func (rule *RuleMatrix) VisitJobPre(n *Job) {
 	//       sh: pwsh
 
 	rule.checkExclude(m)
+	return nil
 }
 
 func (rule *RuleMatrix) checkDuplicateInRow(row *MatrixRow) {

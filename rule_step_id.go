@@ -16,25 +16,28 @@ func NewRuleStepID() *RuleStepID {
 }
 
 // VisitJobPre is callback when visiting Job node before visiting its children.
-func (rule *RuleStepID) VisitJobPre(n *Job) {
+func (rule *RuleStepID) VisitJobPre(n *Job) error {
 	rule.seen = map[string]*Pos{}
+	return nil
 }
 
 // VisitJobPost is callback when visiting Job node after visiting its children.
-func (rule *RuleStepID) VisitJobPost(n *Job) {
+func (rule *RuleStepID) VisitJobPost(n *Job) error {
 	rule.seen = nil
+	return nil
 }
 
 // VisitStep is callback when visiting Step node.
-func (rule *RuleStepID) VisitStep(n *Step) {
+func (rule *RuleStepID) VisitStep(n *Step) error {
 	if n.ID == nil {
-		return
+		return nil
 	}
 
 	id := strings.ToLower(n.ID.Value)
 	if prev, ok := rule.seen[id]; ok {
 		rule.errorf(n.ID.Pos, "step ID %q duplicates. previously defined at %s. step ID must be unique within a job. note that step ID is case insensitive", prev.String(), n.ID.Value)
-		return
+		return nil
 	}
 	rule.seen[id] = n.ID.Pos
+	return nil
 }

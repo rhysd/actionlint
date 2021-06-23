@@ -15,12 +15,13 @@ func NewRuleEnvVar() *RuleEnvVar {
 }
 
 // VisitStep is callback when visiting Step node.
-func (rule *RuleEnvVar) VisitStep(n *Step) {
+func (rule *RuleEnvVar) VisitStep(n *Step) error {
 	rule.checkEnv(n.Env)
+	return nil
 }
 
 // VisitJobPre is callback when visiting Job node before visiting its children.
-func (rule *RuleEnvVar) VisitJobPre(n *Job) {
+func (rule *RuleEnvVar) VisitJobPre(n *Job) error {
 	rule.checkEnv(n.Env)
 	if n.Container != nil {
 		rule.checkEnv(n.Container.Env)
@@ -28,11 +29,13 @@ func (rule *RuleEnvVar) VisitJobPre(n *Job) {
 	for _, s := range n.Services {
 		rule.checkEnv(s.Container.Env)
 	}
+	return nil
 }
 
 // VisitWorkflowPre is callback when visiting Workflow node before visiting its children.
-func (rule *RuleEnvVar) VisitWorkflowPre(n *Workflow) {
+func (rule *RuleEnvVar) VisitWorkflowPre(n *Workflow) error {
 	rule.checkEnv(n.Env)
+	return nil
 }
 
 func (rule *RuleEnvVar) checkEnv(env *Env) {

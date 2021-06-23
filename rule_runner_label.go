@@ -48,9 +48,9 @@ func NewRuleRunnerLabel(labels []string) *RuleRunnerLabel {
 }
 
 // VisitJobPre is callback when visiting Job node before visiting its children.
-func (rule *RuleRunnerLabel) VisitJobPre(n *Job) {
+func (rule *RuleRunnerLabel) VisitJobPre(n *Job) error {
 	if n.RunsOn == nil {
-		return
+		return nil
 	}
 
 	var m *Matrix
@@ -64,6 +64,8 @@ func (rule *RuleRunnerLabel) VisitJobPre(n *Job) {
 	for _, label := range n.RunsOn.Labels {
 		rule.checkLabel(label, m)
 	}
+
+	return nil
 }
 
 // https://docs.github.com/en/actions/using-github-hosted-runners/about-github-hosted-runners
