@@ -9,9 +9,15 @@ jobs:
         os: [ubuntu-latest, macos-latest, windows-latest]
     runs-on: ${{ matrix.os }}
     steps:
-      - name: Install shellcheck on macOS
-        run: brew install shellcheck
+      - name: Install dependencies on macOS
+        run: |
+          set -x
+          brew install shellcheck python3
+          pip3 install pyflakes
         if: ${{ matrix.os == 'macos-latest' }}
+      - name: Install dependencies on Linux and Windows
+        run: pip install pyflakes
+        if: ${{ matrix.os != 'macos-latest' }}
       - uses: actions/checkout@v2
       - uses: actions/setup-go@v2
       - run: go build ./cmd/actionlint
