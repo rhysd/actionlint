@@ -14,10 +14,24 @@ jobs:
           set -x
           brew install shellcheck python3
           pip3 install pyflakes
+          shellcheck --version
+          pyflakes --version
         if: ${{ matrix.os == 'macos-latest' }}
-      - name: Install dependencies on Linux and Windows
-        run: pip install pyflakes
-        if: ${{ matrix.os != 'macos-latest' }}
+      - name: Install dependencies on Linux
+        run: |
+          set -x
+          sudo apt install shellcheck
+          pip install pyflakes
+          shellcheck --version
+          pyflakes --version
+        if: ${{ matrix.os == 'ubuntu-latest' }}
+      - name: Install dependencies on Windows
+        run: |
+          # `choco install shellcheck` is too slow on GitHub Actions. It takes more than 3 minutes to install one package
+          # choco install shellcheck
+          pip install pyflakes
+          pyflakes --version
+        if: ${{ matrix.os == 'windows-latest' }}
       - uses: actions/checkout@v2
       - uses: actions/setup-go@v2
       - run: go build ./cmd/actionlint
