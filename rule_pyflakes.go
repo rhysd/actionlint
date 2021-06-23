@@ -179,13 +179,17 @@ func (rule *RulePyflakes) parseNextError(stdout []byte, pos *Pos) ([]byte, error
 	}
 	b = b[idx+len("<stdin>:"):]
 
-	idx = bytes.IndexByte(b, '\n')
-	if idx == -1 {
-		return nil, fmt.Errorf("error message from pyflakes does not end with \\n while checking script at %s. output: %q", pos, stdout)
+	var msg []byte
+	if idx := bytes.Index(b, []byte("\r\n")); idx >= 0 {
+		msg = b[:idx]
+		b = b[idx+2:]
+	} else if idx := bytes.IndexByte(b, '\n'); idx >= 0 {
+		msg = b[:idx]
+		b = b[idx+1:]
+	} else {
+		return nil, fmt.Errorf("error message from pyflakes does not end with \\n nor \\r\\n while checking script at %s. output: %q", pos, stdout)
 	}
-	msg := b[:idx]
-	b = b[idx+1:]
-
 	rule.errorf(pos, "pyflakes reported issue in this script: %s", msg)
+
 	return b, nil
 }
