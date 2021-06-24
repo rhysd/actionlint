@@ -58,6 +58,10 @@ func TestRuleShellcheckSanitizeExpressionsInScript(t *testing.T) {
 			"a${{b}}c}}d",
 			"a______c}}d",
 		},
+		{
+			"a}}b${{c}}d",
+			"a}}b______d",
+		},
 	}
 
 	for i, tc := range testCases {

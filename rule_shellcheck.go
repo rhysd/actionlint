@@ -148,15 +148,15 @@ func sanitizeExpressionsInScript(src string) string {
 			return b.String()
 		}
 
-		e := strings.Index(src, "}}")
-		if e == -1 || e < s {
+		e := strings.Index(src[s:], "}}")
+		if e == -1 {
 			if b.Len() == 0 {
 				return src
 			}
 			b.WriteString(src)
 			return b.String()
 		}
-		e += 2 // offset for len("}}")
+		e += s + 2 // 2 is offset for len("}}")
 
 		// Note: If ${{ ... }} includes newline, line and column reported by shellcheck will be
 		// shifted.
