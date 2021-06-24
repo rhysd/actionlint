@@ -35,6 +35,9 @@ jobs:
       - uses: actions/checkout@v2
       - uses: actions/setup-go@v2
       - run: go build ./cmd/actionlint
+        env:
+          # Note: -race requires cgo
+          CGO_ENABLED: 0
       - run: go test -v -race -coverprofile coverage.txt -covermode=atomic
       # Dog fooding 🐶
       - run: ./actionlint

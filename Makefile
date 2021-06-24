@@ -16,7 +16,7 @@ endif
 test: .testtimestamp
 
 actionlint: $(SRCS)
-	go build ./cmd/actionlint
+	CGO_ENABLED=0 go build ./cmd/actionlint
 
 build: actionlint
 
