@@ -137,20 +137,35 @@ func (rule *RuleShellcheck) getShellName(exec *ExecRun) string {
 //     echo 'hello'
 //   fi
 func sanitizeExpressionsInScript(src string) string {
-	// TODO: Inefficient implementation. Use strings.Builder
+	b := strings.Builder{}
 	for {
 		s := strings.Index(src, "${{")
 		if s == -1 {
-			return src
+			if b.Len() == 0 {
+				return src
+			}
+			b.WriteString(src)
+			return b.String()
 		}
+
 		e := strings.Index(src, "}}")
 		if e == -1 || e < s {
-			return src
+			if b.Len() == 0 {
+				return src
+			}
+			b.WriteString(src)
+			return b.String()
 		}
 		e += 2 // offset for len("}}")
+
 		// Note: If ${{ ... }} includes newline, line and column reported by shellcheck will be
 		// shifted.
-		src = src[:s] + strings.Repeat("_", e-s) + src[e:]
+		b.WriteString(src[:s])
+		for i := 0; i < e-s; i++ {
+			b.WriteByte('_')
+		}
+
+		src = src[e:]
 	}
 }
 
