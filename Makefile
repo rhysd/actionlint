@@ -23,8 +23,8 @@ build: actionlint
 actionlint_fuzz-fuzz.zip:
 	go-fuzz-build ./fuzz
 
-fuzz:
-	go-fuzz -bin ./actionlint_fuzz-fuzz.zip
+fuzz: actionlint_fuzz-fuzz.zip
+	go-fuzz -bin ./actionlint_fuzz-fuzz.zip -func $(FUZZ_FUNC)
 
 clean:
 	rm -f ./actionlint ./.testtimestamp ./actionlint_fuzz-fuzz.zip

@@ -31,18 +31,20 @@ make test
 
 Fuzz tests use [go-fuzz](https://github.com/dvyukov/go-fuzz). Install `go-fuzz` and `go-fuzz-build` in your system.
 
+Since there are multiple fuzzing targets, `-func` argument is necessary. Specify a target which you want to run.
+
 ```sh
 # Create first corpus
 go-fuzz-build ./fuzz
 
 # Run fuzzer
-go-fuzz -bin ./actionlint_fuzz-fuzz.zip
+go-fuzz -bin ./actionlint_fuzz-fuzz.zip -func FuzzParse
 ```
 
 or
 
 ```sh
-make fuzz
+make fuzz FUZZ_FUNC=FuzzParse
 ```
 
 ## How to release
