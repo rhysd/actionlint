@@ -1,3 +1,13 @@
+<a name="v1.2.0"></a>
+# [v1.2.0](https://github.com/rhysd/actionlint/releases/tag/v1.2.0) - 25 Jun 2021
+
+- [pyflakes](https://github.com/PyCQA/pyflakes) integration was added. If `pyflakes` is installed on your system, actionlint checks Python scripts in `run:` (when `shell: python`) with it. See [the rule document](https://github.com/rhysd/actionlint#check-pyflakes-integ) for more details.
+- Error handling while running rule checkers was improved. When some internal error occurs while applying rules, actionlint stops correctly due to the error. Previously, such errors were only shown in debug logs and actionlint continued checks.
+- Fixed sanitizing `${{ }}` expressions in scripts before passing them to shellcheck or pyflakes. Previously expressions were not correctly sanitized when `}}` came before `${{`.
+
+[Changes][v1.2.0]
+
+
 <a name="v1.1.2"></a>
 # [v1.1.2](https://github.com/rhysd/actionlint/releases/tag/v1.1.2) - 21 Jun 2021
 
@@ -48,6 +58,7 @@ See documentation for more details:
 [Changes][v1.0.0]
 
 
+[v1.2.0]: https://github.com/rhysd/actionlint/compare/v1.1.2...v1.2.0
 [v1.1.2]: https://github.com/rhysd/actionlint/compare/v1.1.1...v1.1.2
 [v1.1.1]: https://github.com/rhysd/actionlint/compare/v1.1.0...v1.1.1
 [v1.1.0]: https://github.com/rhysd/actionlint/compare/v1.0.0...v1.1.0
