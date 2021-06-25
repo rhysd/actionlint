@@ -3,3 +3,6 @@
 /env.sh
 /.github/actionlint.yaml
 /.github/actionlint.yml
+/actionlint_fuzz-fuzz.zip
+/corpus
+/crashers

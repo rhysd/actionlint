@@ -20,10 +20,18 @@ actionlint: $(SRCS)
 
 build: actionlint
 
+actionlint_fuzz-fuzz.zip:
+	go-fuzz-build ./fuzz
+
+fuzz:
+	go-fuzz -bin ./actionlint_fuzz-fuzz.zip
+
 clean:
-	rm -f ./actionlint ./.testtimestamp
+	rm -f ./actionlint ./.testtimestamp ./actionlint_fuzz-fuzz.zip
+	rm -rf ./corpus ./crashers
 
 b: build
 t: test
+c: clean
 
-.PHONY: all test clean build b t
+.PHONY: all test clean build fuzz b t c

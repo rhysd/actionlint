@@ -3,6 +3,7 @@ module github.com/rhysd/actionlint
 go 1.16
 
 require (
+	github.com/dvyukov/go-fuzz v0.0.0-20210602112143-b1f3d6f4ef4e // indirect
 	github.com/fatih/color v1.12.0
 	github.com/google/go-cmp v0.5.6
 	github.com/kr/pretty v0.2.1
