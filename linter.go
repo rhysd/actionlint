@@ -204,12 +204,13 @@ func (l *Linter) LintRepository(dir string) ([]*Error, error) {
 	}
 	l.log("Collected", len(files), "YAML files")
 
-	return l.LintFiles(files)
+	return l.LintFiles(files, proj)
 }
 
-// LintFiles lints YAML workflow files and outputs the errors to given writer.
-// It applies lint rules to all given files.
-func (l *Linter) LintFiles(filepaths []string) ([]*Error, error) {
+// LintFiles lints YAML workflow files and outputs the errors to given writer. It applies lint
+// rules to all given files. The project parameter can be nil. In the case, a project is detected
+// from the file path.
+func (l *Linter) LintFiles(filepaths []string, project *Project) ([]*Error, error) {
 	n := len(filepaths)
 	if n > 1 {
 		l.log("Linting", n, "files")
@@ -219,7 +220,7 @@ func (l *Linter) LintFiles(filepaths []string) ([]*Error, error) {
 
 	// TODO: Use multiple threads (per file)
 	for _, p := range filepaths {
-		errs, err := l.LintFile(p)
+		errs, err := l.LintFile(p, project)
 		if err != nil {
 			return all, err
 		}
@@ -232,14 +233,17 @@ func (l *Linter) LintFiles(filepaths []string) ([]*Error, error) {
 	return all, nil
 }
 
-// LintFile lints one YAML workflow file and outputs the errors to given writer.
-func (l *Linter) LintFile(path string) ([]*Error, error) {
+// LintFile lints one YAML workflow file and outputs the errors to given writer. The project
+//parameter can be nil. In the case, the project is detected from the given path.
+func (l *Linter) LintFile(path string, project *Project) ([]*Error, error) {
 	b, err := ioutil.ReadFile(path)
 	if err != nil {
 		return nil, fmt.Errorf("could not read %q: %w", path, err)
 	}
 
-	proj := l.projects.At(path)
+	if project == nil {
+		project = l.projects.At(path)
+	}
 
 	// Use relative path if possible
 	if wd, err := os.Getwd(); err == nil {
@@ -248,7 +252,7 @@ func (l *Linter) LintFile(path string) ([]*Error, error) {
 		}
 	}
 
-	return l.Lint(path, b, proj)
+	return l.Lint(path, b, project)
 }
 
 // Lint lints YAML workflow file content given as byte sequence. The path parameter is used as file

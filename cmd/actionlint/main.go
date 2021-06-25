@@ -71,7 +71,7 @@ func run(args []string, opts *actionlint.LinterOptions, initConfig bool) ([]*act
 		return l.Lint("<stdin>", b, nil)
 	}
 
-	return l.LintFiles(args)
+	return l.LintFiles(args, nil)
 }
 
 type ignorePatterns []string
