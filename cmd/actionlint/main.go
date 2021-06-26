@@ -5,12 +5,16 @@ import (
 	"fmt"
 	"io/ioutil"
 	"os"
+	"runtime/debug"
 
 	"github.com/rhysd/actionlint"
 )
 
-// This constant is updated by scripts/make-release-tag.bash. Do not modify it manually.
-const version = "1.2.0"
+// These variables might be modified by ldflags on building release binaries by GoReleaser. Do not modify manually
+var (
+	version = ""
+	gotFrom = "built from source"
+)
 
 const usageHeader = `Usage: actionlint [FLAGS] [FILES...] [-]
 
@@ -47,6 +51,19 @@ Flags:`
 func usage() {
 	fmt.Fprintln(os.Stderr, usageHeader)
 	flag.PrintDefaults()
+}
+
+func getVersion() string {
+	if version != "" {
+		return version
+	}
+
+	info, ok := debug.ReadBuildInfo()
+	if !ok {
+		return "unknown" // Should be unreachable though
+	}
+
+	return info.Main.Version
 }
 
 func run(args []string, opts *actionlint.LinterOptions, initConfig bool) ([]*actionlint.Error, error) {
@@ -100,12 +117,12 @@ func main() {
 	flag.BoolVar(&opts.NoColor, "no-color", false, "Disable colorful output")
 	flag.BoolVar(&opts.Verbose, "verbose", false, "Enable verbose output")
 	flag.BoolVar(&opts.Debug, "debug", false, "Enable debug output (for development)")
-	flag.BoolVar(&ver, "version", false, "Show version")
+	flag.BoolVar(&ver, "version", false, "Show version and how this binary was installed")
 	flag.Usage = usage
 	flag.Parse()
 
 	if ver {
-		fmt.Println(version)
+		fmt.Printf("%s\n%s\n", getVersion(), gotFrom)
 		return
 	}
 
