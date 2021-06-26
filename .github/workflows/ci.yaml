@@ -40,7 +40,7 @@ jobs:
           CGO_ENABLED: 0
       - run: go test -v -race -coverprofile coverage.txt -covermode=atomic
       # Dog fooding 🐶
-      - run: ./actionlint
+      - run: ./actionlint -color
       - uses: codecov/codecov-action@v1
   lint:
     name: Lint
