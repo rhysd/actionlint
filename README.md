@@ -38,20 +38,7 @@ jobs:
 
 **Output from actionlint:**
 
-```
-example.yaml:3:5: unexpected key "branch" for "push" section. expected one of "types", "branches", "branches-ignore", "tags", "tags-ignore", "paths", "paths-ignore", "workflows" [syntax-check]
-3|     branch: main
- |     ^~~~~~~
-example.yaml:9:28: label "linux-latest" is unknown. available labels are "windows-latest", "windows-2019", "windows-2016", "ubuntu-latest", ... [runner-label]
-9|         os: [macos-latest, linux-latest]
- |                            ^~~~~~~~~~~~~
-example.yaml:17:17: receiver of object dereference "permissions" must be type of object but got "string" [expression]
-17|         if: ${{ github.repository.permissions.admin == true }}
-  |                 ^~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
-example.yaml:16:20: property "platform" is not defined in object type {os: string} [expression]
-16|           key: ${{ matrix.platform }}-node-${{ hashFiles('**/package-lock.json') }}
-  |                    ^~~~~~~~~~~~~~~
-```
+<img src="https://github.com/rhysd/ss/blob/master/actionlint/main.png?raw=true" alt="output example" width="1004" height="536"/>
 
 actionlint tries to catch errors as much as possible and make false positives as minimal as possible.
 
@@ -124,7 +111,7 @@ or simply run
 - name: Check workflow files
   run: |
     bash <(curl https://raw.githubusercontent.com/rhysd/actionlint/main/scripts/download-actionlint.bash)
-    ./actionlint
+    ./actionlint -color
   shell: bash
 ```
 
