@@ -94,12 +94,13 @@ type Linter struct {
 // want the outputs.
 // The opts parameter is LinterOptions instance which configures behavior of linting.
 func NewLinter(out io.Writer, opts *LinterOptions) (*Linter, error) {
-	l := LogLevelNone
+	level := LogLevelNone
 	if opts.Verbose {
-		l = LogLevelVerbose
+		level = LogLevelVerbose
 	} else if opts.Debug {
-		l = LogLevelDebug
+		level = LogLevelDebug
 	}
+
 	if opts.Color == ColorOptionKindNever {
 		color.NoColor = true
 	} else {
@@ -112,7 +113,7 @@ func NewLinter(out io.Writer, opts *LinterOptions) (*Linter, error) {
 		}
 	}
 
-	var lout io.Writer = os.Stderr
+	var lout io.Writer = ioutil.Discard
 	if opts.LogWriter != nil {
 		lout = opts.LogWriter
 	}
@@ -139,7 +140,7 @@ func NewLinter(out io.Writer, opts *LinterOptions) (*Linter, error) {
 		NewProjects(),
 		out,
 		lout,
-		l,
+		level,
 		opts.Oneline,
 		opts.Shellcheck,
 		opts.Pyflakes,

@@ -1351,6 +1351,8 @@ actionlint can be used from Go programs. See [the documentation][apidoc] to know
 workflow file parser built on top of `go-yaml/yaml`, expression `${{ }}` lexer/parser/checker, etc.
 Followings are unexhaustive list of interesting APIs.
 
+- `Command` struct represents entire `actionlint` command. `Command.Main` takes command line arguments and runs command
+  until the end and returns exit status.
 - `Linter` manages linter lifecycle and applies checks to given files. If you want to run actionlint checks in your
   program, please use this struct.
 - `Project` and `Projects` detect a project (Git repository) in a given directory path and find configuration in it.
