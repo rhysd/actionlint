@@ -89,13 +89,16 @@ func NewLinter(out io.Writer, opts *LinterOptions) (*Linter, error) {
 	}
 	if opts.NoColor {
 		color.NoColor = true
+	} else {
+		// Allow colorful output on Windows
+		if f, ok := out.(*os.File); ok {
+			out = colorable.NewColorable(f)
+		}
 	}
 
 	var lout io.Writer = os.Stderr
 	if opts.LogWriter != nil {
 		lout = opts.LogWriter
-	} else if !opts.NoColor {
-		lout = colorable.NewColorable(os.Stderr)
 	}
 
 	var cfg *Config
