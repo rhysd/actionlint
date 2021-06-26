@@ -5,6 +5,7 @@ import (
 	"fmt"
 	"io/ioutil"
 	"os"
+	"runtime"
 	"runtime/debug"
 
 	"github.com/rhysd/actionlint"
@@ -12,8 +13,8 @@ import (
 
 // These variables might be modified by ldflags on building release binaries by GoReleaser. Do not modify manually
 var (
-	version = ""
-	gotFrom = "built from source"
+	version       = ""
+	installedFrom = "installed by building from source"
 )
 
 const usageHeader = `Usage: actionlint [FLAGS] [FILES...] [-]
@@ -125,7 +126,7 @@ func main() {
 	flag.Parse()
 
 	if ver {
-		fmt.Printf("%s\n%s\n", getVersion(), gotFrom)
+		fmt.Printf("%s\n%s\nbuild with %s compiler for target %s-%s\n", getVersion(), installedFrom, runtime.Version(), runtime.GOARCH, runtime.GOOS)
 		return
 	}
 
