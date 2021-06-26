@@ -30,6 +30,20 @@ const (
 	LogLevelDebug = 2
 )
 
+// ColorOptionKind is kind of colorful output behavior.
+type ColorOptionKind int
+
+const (
+	// ColorOptionKindAuto is kind to determine to colorize errors output automatically. It is
+	// determined based on pty and $NO_COLOR environment variable. See document of fatih/color
+	// for more details.
+	ColorOptionKindAuto ColorOptionKind = iota
+	// ColorOptionKindAlways is kind to always colorize errors output.
+	ColorOptionKindAlways
+	// ColorOptionKindNever is kind never to colorize errors output.
+	ColorOptionKindNever
+)
+
 // LinterOptions is set of options for Linter instance. This struct should be created by user and
 // given to NewLinter factory function.
 type LinterOptions struct {
@@ -40,8 +54,8 @@ type LinterOptions struct {
 	// LogWriter is io.Writer object to use to print log outputs. Note that error outputs detected
 	// by the linter are not included in the log outputs.
 	LogWriter io.Writer
-	// NoColor is flag if colorful output is enabled.
-	NoColor bool
+	// Color is option for colorizing error outputs. See ColorOptionKind document for each enum values.
+	Color ColorOptionKind
 	// Oneline is flag if one line output is enabled. When enabling it, one error is output per one
 	// line. It is useful when reading outputs from programs.
 	Oneline bool
@@ -68,7 +82,6 @@ type Linter struct {
 	out           io.Writer
 	logOut        io.Writer
 	logLevel      LogLevel
-	noColor       bool
 	oneline       bool
 	shellcheck    string
 	pyflakes      string
@@ -87,15 +100,21 @@ func NewLinter(out io.Writer, opts *LinterOptions) (*Linter, error) {
 	} else if opts.Debug {
 		l = LogLevelDebug
 	}
-	if opts.NoColor {
+	if opts.Color == ColorOptionKindNever {
 		color.NoColor = true
+	} else {
+		if opts.Color == ColorOptionKindAlways {
+			color.NoColor = false
+		}
+		// Allow colorful output on Windows
+		if f, ok := out.(*os.File); ok {
+			out = colorable.NewColorable(f)
+		}
 	}
 
 	var lout io.Writer = os.Stderr
 	if opts.LogWriter != nil {
 		lout = opts.LogWriter
-	} else if !opts.NoColor {
-		lout = colorable.NewColorable(os.Stderr)
 	}
 
 	var cfg *Config
@@ -121,7 +140,6 @@ func NewLinter(out io.Writer, opts *LinterOptions) (*Linter, error) {
 		out,
 		lout,
 		l,
-		opts.NoColor,
 		opts.Oneline,
 		opts.Shellcheck,
 		opts.Pyflakes,
