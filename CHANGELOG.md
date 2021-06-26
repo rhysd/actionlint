@@ -1,3 +1,40 @@
+<a name="v1.3.0"></a>
+# [v1.3.0](https://github.com/rhysd/actionlint/releases/tag/v1.3.0) - 26 Jun 2021
+
+- `-version` now outputs how the executable was installed.
+- Fix errors output to stdout is not colorful on Windows.
+- Add new `-color` flag to force to enable colorful outputs. This is useful when running actionlint on GitHub Actions since script at `run:` does not enable colors.
+- `Linter.LintFiles` and `Linter.LintFile` methods take `project` parameter to explicitly specify what project the files belong. Leaving it `nil` automatically detects project from their file paths.
+- `LintOptions.NoColor` is replaced by `LintOptions.Color`.
+
+Example of `-version` output:
+
+```console
+$ brew install actionlint
+$ actionlint -version
+1.3.0
+downloaded from release page
+
+$ go install github.com/rhysd/actionlint/cmd/actionlint@v1.3.0
+go: downloading github.com/rhysd/actionlint v1.3.0
+$ actionlint -version
+v1.3.0
+built from source
+```
+
+Example of running actionlint on GitHub Actions forcing to enable color output:
+
+```yaml
+- name: Check workflow files
+  run: |
+    bash <(curl https://raw.githubusercontent.com/rhysd/actionlint/main/scripts/download-actionlint.bash)
+    ./actionlint -color
+  shell: bash
+```
+
+[Changes][v1.3.0]
+
+
 <a name="v1.2.0"></a>
 # [v1.2.0](https://github.com/rhysd/actionlint/releases/tag/v1.2.0) - 25 Jun 2021
 
@@ -58,6 +95,7 @@ See documentation for more details:
 [Changes][v1.0.0]
 
 
+[v1.3.0]: https://github.com/rhysd/actionlint/compare/v1.2.0...v1.3.0
 [v1.2.0]: https://github.com/rhysd/actionlint/compare/v1.1.2...v1.2.0
 [v1.1.2]: https://github.com/rhysd/actionlint/compare/v1.1.1...v1.1.2
 [v1.1.1]: https://github.com/rhysd/actionlint/compare/v1.1.0...v1.1.1
