@@ -107,6 +107,8 @@ func main() {
 	var opts actionlint.LinterOptions
 	var ignorePats ignorePatterns
 	var initConfig bool
+	var noColor bool
+	var color bool
 
 	flag.Var(&ignorePats, "ignore", "Regular expression matching to error messages you want to ignore. This flag can be specified multiple times")
 	flag.StringVar(&opts.Shellcheck, "shellcheck", "shellcheck", "Command name or file path of \"shellcheck\" external command")
@@ -114,7 +116,8 @@ func main() {
 	flag.BoolVar(&opts.Oneline, "oneline", false, "Use one line per one error. Useful for reading error messages from programs")
 	flag.StringVar(&opts.ConfigFile, "config-file", "", "File path to config file")
 	flag.BoolVar(&initConfig, "init-config", false, "Generate default config file at .github/actionlint.yaml in current project")
-	flag.BoolVar(&opts.NoColor, "no-color", false, "Disable colorful output")
+	flag.BoolVar(&noColor, "no-color", false, "Disable colorful output")
+	flag.BoolVar(&color, "color", false, "Always enable colorful output. This is useful to force colorful outputs")
 	flag.BoolVar(&opts.Verbose, "verbose", false, "Enable verbose output")
 	flag.BoolVar(&opts.Debug, "debug", false, "Enable debug output (for development)")
 	flag.BoolVar(&ver, "version", false, "Show version and how this binary was installed")
@@ -127,6 +130,13 @@ func main() {
 	}
 
 	opts.IgnorePatterns = ignorePats
+
+	if color {
+		opts.Color = actionlint.ColorOptionKindAlways
+	}
+	if noColor {
+		opts.Color = actionlint.ColorOptionKindNever
+	}
 
 	errs, err := run(flag.Args(), &opts, initConfig)
 	if err != nil {
