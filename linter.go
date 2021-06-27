@@ -15,6 +15,7 @@ import (
 	"github.com/fatih/color"
 	"github.com/kr/pretty"
 	"github.com/mattn/go-colorable"
+	"golang.org/x/sync/errgroup"
 )
 
 // LogLevel is log level of logger used in Linter instance.
@@ -234,23 +235,69 @@ func (l *Linter) LintRepository(dir string) ([]*Error, error) {
 // from the file path.
 func (l *Linter) LintFiles(filepaths []string, project *Project) ([]*Error, error) {
 	n := len(filepaths)
-	if n > 1 {
-		l.log("Linting", n, "files")
+	switch n {
+	case 0:
+		return []*Error{}, nil
+	case 1:
+		return l.LintFile(filepaths[0], project)
 	}
 
-	all := []*Error{}
+	l.log("Linting", n, "files")
 
-	// TODO: Use multiple threads (per file)
+	cwd := ""
+	if wd, err := os.Getwd(); err == nil {
+		cwd = wd
+	}
+
+	type workspace struct {
+		path string
+		errs []*Error
+		src  []byte
+	}
+
+	ws := make([]workspace, 0, len(filepaths))
 	for _, p := range filepaths {
-		errs, err := l.LintFile(p, project)
-		if err != nil {
-			return all, err
+		ws = append(ws, workspace{path: p})
+	}
+
+	eg := errgroup.Group{}
+	for i := range ws {
+		// Each element of ws is accessed by single goroutine so mutex is unnecessary
+		w := &ws[i]
+		p := project
+		if p == nil {
+			// This method modifies state of l.projects so it cannot be called in parallel.
+			// Before entering goroutine, resolve project instance.
+			p = l.projects.At(w.path)
 		}
-		all = append(all, errs...)
+		eg.Go(func() error {
+			src, errs, err := l.checkFile(w.path, cwd, p)
+			if err != nil {
+				return err
+			}
+			w.src = src
+			w.errs = errs
+			return nil
+		})
 	}
-	if n > 1 {
-		l.log("Found", len(all), "errors in", n, "files")
+
+	if err := eg.Wait(); err != nil {
+		return nil, err
 	}
+
+	total := 0
+	for i := range ws {
+		total += len(ws[i].errs)
+	}
+
+	all := make([]*Error, 0, total)
+	for i := range ws {
+		w := &ws[i]
+		l.printErrors(w.errs, w.src)
+		all = append(all, w.errs...)
+	}
+
+	l.log("Found", total, "errors in", n, "files")
 
 	return all, nil
 }
@@ -258,23 +305,39 @@ func (l *Linter) LintFiles(filepaths []string, project *Project) ([]*Error, erro
 // LintFile lints one YAML workflow file and outputs the errors to given writer. The project
 //parameter can be nil. In the case, the project is detected from the given path.
 func (l *Linter) LintFile(path string, project *Project) ([]*Error, error) {
-	b, err := ioutil.ReadFile(path)
-	if err != nil {
-		return nil, fmt.Errorf("could not read %q: %w", path, err)
-	}
-
 	if project == nil {
 		project = l.projects.At(path)
 	}
 
-	// Use relative path if possible
+	cwd := ""
 	if wd, err := os.Getwd(); err == nil {
-		if r, err := filepath.Rel(wd, path); err == nil {
+		cwd = wd
+	}
+
+	src, errs, err := l.checkFile(path, cwd, project)
+	if err != nil {
+		return nil, err
+	}
+
+	l.printErrors(errs, src)
+	return errs, err
+}
+
+func (l *Linter) checkFile(path string, cwd string, project *Project) ([]byte, []*Error, error) {
+	b, err := ioutil.ReadFile(path)
+	if err != nil {
+		return nil, nil, fmt.Errorf("could not read %q: %w", path, err)
+	}
+
+	// Use relative path if possible
+	if cwd != "" {
+		if r, err := filepath.Rel(cwd, path); err == nil {
 			path = r
 		}
 	}
 
-	return l.Lint(path, b, project)
+	errs, err := l.check(path, b, project)
+	return b, errs, err
 }
 
 // Lint lints YAML workflow file content given as byte sequence. The path parameter is used as file
@@ -283,6 +346,18 @@ func (l *Linter) LintFile(path string, project *Project) ([]*Error, error) {
 // Note that only given Project instance is used for configuration. No config is automatically loaded
 // based on path parameter.
 func (l *Linter) Lint(path string, content []byte, project *Project) ([]*Error, error) {
+	errs, err := l.check(path, content, project)
+	if err != nil {
+		return nil, err
+	}
+	l.printErrors(errs, content)
+	return errs, nil
+}
+
+func (l *Linter) check(path string, content []byte, project *Project) ([]*Error, error) {
+	// Note: This method is called to check multiple files in parallel.
+	// It must be thread safe assuming fields of Linter are not modified while running.
+
 	var start time.Time
 	if l.logLevel >= LogLevelVerbose {
 		start = time.Now()
@@ -412,13 +487,8 @@ func (l *Linter) Lint(path string, content []byte, project *Project) ([]*Error, 
 
 	sort.Sort(ByErrorPosition(all))
 
-	src := content
-	if l.oneline {
-		src = nil
-	}
 	for _, err := range all {
 		err.Filepath = path // Populate filename in the error
-		err.PrettyPrint(l.out, src)
 	}
 
 	if l.logLevel >= LogLevelVerbose {
@@ -427,4 +497,13 @@ func (l *Linter) Lint(path string, content []byte, project *Project) ([]*Error, 
 	}
 
 	return all, nil
+}
+
+func (l *Linter) printErrors(errs []*Error, src []byte) {
+	if l.oneline {
+		src = nil
+	}
+	for _, err := range errs {
+		err.PrettyPrint(l.out, src)
+	}
 }
