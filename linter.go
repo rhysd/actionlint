@@ -223,6 +223,9 @@ func (l *Linter) LintRepository(dir string) ([]*Error, error) {
 	}
 	l.log("Collected", len(files), "YAML files")
 
+	// To make output deterministic, sort order of file paths
+	sort.Strings(files)
+
 	return l.LintFiles(files, proj)
 }
 
