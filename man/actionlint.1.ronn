@@ -80,6 +80,10 @@ argument. It reads stdin and checks it as workflow file:
 
 ## REFERENCES
 
+### List of all checks
+
+https://github.com/rhysd/actionlint/blob/main/README.md#checks
+
 ### Workflow syntax
 
 https://docs.github.com/en/actions/reference/workflow-syntax-for-github-actions
