@@ -144,12 +144,12 @@ func (cmd *Command) Main(args []string) int {
 	if ver {
 		fmt.Fprintf(
 			cmd.Stdout,
-			"%s\n%s\nbuild with %s compiler for target %s-%s\n",
+			"%s\n%s\nbuilt with %s compiler for %s/%s\n",
 			getCommandVersion(),
 			installedFrom,
 			runtime.Version(),
-			runtime.GOARCH,
 			runtime.GOOS,
+			runtime.GOARCH,
 		)
 		return 0
 	}
