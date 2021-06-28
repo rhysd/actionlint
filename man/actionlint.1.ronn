@@ -74,6 +74,9 @@ argument. It reads stdin and checks it as workflow file:
   * `-version`:
     Show version and how this binary was installed
 
+  * `-help`, `-h`:
+    Show help
+
 
 ## REFERENCES
 
