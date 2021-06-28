@@ -59,3 +59,17 @@ When releasing v1.2.3 as example:
 4. Open the pre-release at [release page](https://github.com/rhysd/actionlint/releases) with browser
 5. Write up release notes, uncheck pre-release checkbox and publish the new release
 6. Run `git pull && changelog-from-release > CHANGELOG.md` locally to update [CHANGELOG.md](./CHANGELOG.md)
+
+## How to generate manual
+
+`actionlint.1` manual is generated from [`actionlint.1.ronn`](./man/actionlint.1.ronn) by [ronn](https://github.com/rtomayko/ronn).
+
+```sh
+ronn ./man/actionlint.1.ronn
+```
+
+or
+
+```sh
+make ./man/actionlint.1
+```
