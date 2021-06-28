@@ -26,12 +26,17 @@ actionlint_fuzz-fuzz.zip:
 fuzz: actionlint_fuzz-fuzz.zip
 	go-fuzz -bin ./actionlint_fuzz-fuzz.zip -func $(FUZZ_FUNC)
 
+man/actionlint.1: man/actionlint.1.ronn
+	ronn man/actionlint.1.ronn
+
+man: man/actionlint.1
+
 clean:
-	rm -f ./actionlint ./.testtimestamp ./actionlint_fuzz-fuzz.zip
+	rm -f ./actionlint ./.testtimestamp ./actionlint_fuzz-fuzz.zip ./man/actionlint.1 ./man/actionlint.1.html
 	rm -rf ./corpus ./crashers
 
 b: build
 t: test
 c: clean
 
-.PHONY: all test clean build fuzz b t c
+.PHONY: all test clean build fuzz man b t c

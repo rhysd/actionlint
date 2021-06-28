@@ -36,6 +36,7 @@ archives:
       files:
         - README.md
         - LICENSE.txt
+        - man/actionlint.1
     id: nix
     builds: [macos, linux, freebsd]
     format: tar.gz
@@ -58,6 +59,7 @@ brews:
     license: MIT
     install: |
       bin.install "actionlint"
+      man1.install "man/actionlint.1"
     test: |
       system "#{bin}/actionlint -version"
 

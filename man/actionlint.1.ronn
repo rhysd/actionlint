@@ -1,0 +1,112 @@
+actionlint(1) -- static checker for GitHub Actions workflow files
+=================================================================
+
+## SYNOPSIS
+
+`actionlint` [<flags>] <br>
+`actionlint` [<flags>] <file>...<br>
+`actionlint` [<flags>] -<br>
+
+
+## DESCRIPTION
+
+**actionlint** is a linter for GitHub Actions workflow files.
+
+Features:
+
+- **Syntax check for workflow files** to check unexpected or missing keys following workflow syntax
+- **Strong type check for `${{ }}` expressions** to catch several semantic errors like access to
+  not existing property, type mismatches, ...
+- **shellcheck and pyflakes integrations** for scripts in `run:`
+- **Other several useful checks**; dependencies check for `needs:`, runner label validation, cron
+  syntax validation, ...
+
+
+## USAGE
+
+To check all workflow files in the current repository, just run **actionlint** without arguments.
+It automatically finds the nearest `.github/workflows` directory:
+
+    $ actionlint
+
+To check specific workflow files, pass the file paths as arguments:
+
+    $ actionlint file1.yaml file2.yaml
+
+To check a content which is not saved in file yet (e.g. output from some command), pass **-**
+argument. It reads stdin and checks it as workflow file:
+
+    $ actionlint -
+
+
+## FLAGS
+
+  * `-color`:
+    Always enable colorful output. This is useful to force colorful outputs
+
+  * `-config-file` <PATH>:
+    File path to config file
+
+  * `-debug`:
+    Enable debug output (for development)
+
+  * `-ignore` <PATTERN>:
+    Regular expression matching to error messages you want to ignore. This flag is repeatable
+
+  * `-init-config`:
+    Generate default config file at .github/actionlint.yaml in current project
+
+  * `-no-color`:
+    Disable colorful output
+
+  * `-oneline`:
+    Use one line per one error. Useful for reading error messages from programs
+
+  * `-pyflakes` <EXECUTABLE>:
+    Command name or file path of "pyflakes" external command (default "pyflakes")
+
+  * `-shellcheck` <EXECUTABLE>:
+    Command name or file path of "shellcheck" external command (default "shellcheck")
+
+  * `-verbose`:
+    Enable verbose output
+
+  * `-version`:
+    Show version and how this binary was installed
+
+  * `-help`, `-h`:
+    Show help
+
+
+## REFERENCES
+
+### Workflow syntax
+
+https://docs.github.com/en/actions/reference/workflow-syntax-for-github-actions
+
+### Expression syntax in ${{ }}
+
+https://docs.github.com/en/actions/reference/context-and-expression-syntax-for-github-actions
+
+### shellcheck
+
+https://github.com/koalaman/shellcheck
+
+### pyflakes
+
+https://github.com/PyCQA/pyflakes
+
+
+## BUGS
+
+Please visit issues page to see known bugs. If you found a new bug or have some feature request,
+please report it here.
+
+https://github.com/rhysd/actionlint/issues
+
+
+## COPYRIGHT
+
+**actionlint** is licensed under the MIT License Copyright (c) 2021 rhysd
+
+<!-- vim: set ft=markdown: -->
