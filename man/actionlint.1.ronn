@@ -51,10 +51,11 @@ argument. It reads stdin and checks it as workflow file:
     Enable debug output (for development)
 
   * `-ignore` <PATTERN>:
-    Regular expression matching to error messages you want to ignore. This flag is repeatable
+    Regular expression matching to error messages you want to ignore. This flag is repeatable. For
+    example, `-gnore A -ignore B` ignores errors whose message includes "A" OR "B".
 
   * `-init-config`:
-    Generate default config file at .github/actionlint.yaml in current project
+    Generate default config file at `.github/actionlint.yaml` in current project
 
   * `-no-color`:
     Disable colorful output
@@ -76,6 +77,29 @@ argument. It reads stdin and checks it as workflow file:
 
   * `-help`, `-h`:
     Show help
+
+
+## CONFIGURATION
+
+Configuration file can be put at `.github/actionlint.yaml` or `.github/actionlint.yml`.
+
+Note that configuration file is basically unnecessary. Please consider to make it only when it is
+necessary. Since the author tries to keep configuration file as minimal as possible, currently only
+custom runner labels can be configured.
+
+```
+self-hosted-runner:
+  # Labels of self-hosted runner in array of string
+  labels:
+    - linux.2xlarge
+    - windows-latest-xl
+    - linux-multi-gpu
+```
+
+You don't need to write the configuration file from scratch. `actionlint` can generate the default
+configuration file.
+
+    $ actionlint -init-config
 
 
 ## REFERENCES
@@ -104,13 +128,15 @@ https://github.com/PyCQA/pyflakes
 ## BUGS
 
 Please visit issues page to see known bugs. If you found a new bug or have some feature request,
-please report it here.
+please report by making a new issue.
 
 https://github.com/rhysd/actionlint/issues
 
 
 ## COPYRIGHT
 
-**actionlint** is licensed under the MIT License Copyright (c) 2021 rhysd
+**actionlint** is licensed under the MIT License: `Copyright (c) 2021 rhysd`
+
+https://github.com/rhysd/actionlint/blob/main/LICENSE.txt
 
 <!-- vim: set ft=markdown: -->
