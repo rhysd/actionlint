@@ -1,10 +1,23 @@
+<a name="v1.3.1"></a>
+# [v1.3.1](https://github.com/rhysd/actionlint/releases/tag/v1.3.1) - 30 Jun 2021
+
+- Files are checked in parallel. This made actionlint around 1.3x faster with 3 workflow files in my environment
+- Manual for `man` command was added. `actionlint.1` is included in released archives
+- `-version` now reports how the binary was built (Go version, arch, os, ...)
+- Added `Command` struct to manage entire command lifecycle
+- Order of checked files is now stable
+- Added fuzz target for rule checkers
+
+[Changes][v1.3.1]
+
+
 <a name="v1.3.0"></a>
 # [v1.3.0](https://github.com/rhysd/actionlint/releases/tag/v1.3.0) - 26 Jun 2021
 
 - `-version` now outputs how the executable was installed.
-- Fix errors output to stdout is not colorful on Windows.
-- Add new `-color` flag to force to enable colorful outputs. This is useful when running actionlint on GitHub Actions since script at `run:` does not enable colors.
-- `Linter.LintFiles` and `Linter.LintFile` methods take `project` parameter to explicitly specify what project the files belong. Leaving it `nil` automatically detects project from their file paths.
+- Fix errors output to stdout was not colorful on Windows.
+- Add new `-color` flag to force to enable colorful outputs. This is useful when running actionlint on GitHub Actions since scripts at `run:` don't enable colors.
+- `Linter.LintFiles` and `Linter.LintFile` methods take `project` parameter to explicitly specify what project the files belong to. Leaving it `nil` automatically detects projects from their file paths.
 - `LintOptions.NoColor` is replaced by `LintOptions.Color`.
 
 Example of `-version` output:
@@ -95,6 +108,7 @@ See documentation for more details:
 [Changes][v1.0.0]
 
 
+[v1.3.1]: https://github.com/rhysd/actionlint/compare/v1.3.0...v1.3.1
 [v1.3.0]: https://github.com/rhysd/actionlint/compare/v1.2.0...v1.3.0
 [v1.2.0]: https://github.com/rhysd/actionlint/compare/v1.1.2...v1.2.0
 [v1.1.2]: https://github.com/rhysd/actionlint/compare/v1.1.1...v1.1.2
