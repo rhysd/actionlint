@@ -5,34 +5,35 @@
 class Actionlint < Formula
   desc "Static checker for GitHub Actions workflow files"
   homepage "https://github.com/rhysd/actionlint#readme"
-  version "1.3.0"
+  version "1.3.1"
   license "MIT"
   bottle :unneeded
 
   on_macos do
     if Hardware::CPU.intel?
-      url "https://github.com/rhysd/actionlint/releases/download/v1.3.0/actionlint_1.3.0_darwin_amd64.tar.gz"
-      sha256 "b5a14dbcf3ce4d4bf8101bd35c263c0175c8a390f2bd68a382eab6407d392fb2"
+      url "https://github.com/rhysd/actionlint/releases/download/v1.3.1/actionlint_1.3.1_darwin_amd64.tar.gz"
+      sha256 "9987a517c5b352542a8e6d3359595c374b8863871567bc03a1920f1b9510ab56"
     end
   end
 
   on_linux do
     if Hardware::CPU.intel?
-      url "https://github.com/rhysd/actionlint/releases/download/v1.3.0/actionlint_1.3.0_linux_amd64.tar.gz"
-      sha256 "3640e7ae85f4064e7f83322ef7d50e035f03e8c3eee4af88a88f2b02eea9c91c"
+      url "https://github.com/rhysd/actionlint/releases/download/v1.3.1/actionlint_1.3.1_linux_amd64.tar.gz"
+      sha256 "a2cbae9ddd235aa867995ea2187346bc7650c01bc5968743ffdb501a94bf8516"
     end
     if Hardware::CPU.arm? && !Hardware::CPU.is_64_bit?
-      url "https://github.com/rhysd/actionlint/releases/download/v1.3.0/actionlint_1.3.0_linux_armv6.tar.gz"
-      sha256 "cd9249833bc6501f02cbaa1c8fbc8a52253a269bc7193fef005c662fbf76d870"
+      url "https://github.com/rhysd/actionlint/releases/download/v1.3.1/actionlint_1.3.1_linux_armv6.tar.gz"
+      sha256 "e97a165e83b6035268c84c1cf2197bc2c09ea397f6c5656521d0d10fd099f95f"
     end
     if Hardware::CPU.arm? && Hardware::CPU.is_64_bit?
-      url "https://github.com/rhysd/actionlint/releases/download/v1.3.0/actionlint_1.3.0_linux_arm64.tar.gz"
-      sha256 "3eb0863200cd72f3d7273e8bb480ac82cd81c42ccb372ac9a6324fa8a12a0078"
+      url "https://github.com/rhysd/actionlint/releases/download/v1.3.1/actionlint_1.3.1_linux_arm64.tar.gz"
+      sha256 "01a2cfd2e102a7f18a46520b5fea2331df0248582bf1ceadb0d52bdc9ca5b5df"
     end
   end
 
   def install
     bin.install "actionlint"
+    man1.install "man/actionlint.1"
   end
 
   test do
