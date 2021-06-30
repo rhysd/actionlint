@@ -9,13 +9,6 @@ import (
 	"gopkg.in/yaml.v3"
 )
 
-// func dumpYAML(n *yaml.Node, level int) {
-// 	fmt.Printf("%s%s (%s, %d,%d): %q\n", strings.Repeat(". ", level), nodeKindName(n.Kind), n.Tag, n.Line, n.Column, n.Value)
-// 	for _, c := range n.Content {
-// 		dumpYAML(c, level+1)
-// 	}
-// }
-
 func nodeKindName(k yaml.Kind) string {
 	switch k {
 	case yaml.DocumentNode:
@@ -1083,6 +1076,18 @@ func (p *parser) parse(n *yaml.Node) *Workflow {
 	return w
 }
 
+// func dumpYAML(n *yaml.Node, level int) {
+// 	fmt.Printf("%s%s (%s, %d,%d): %q\n", strings.Repeat(". ", level), nodeKindName(n.Kind), n.Tag, n.Line, n.Column, n.Value)
+// 	for _, c := range n.Content {
+// 		dumpYAML(c, level+1)
+// 	}
+// }
+
+func yamlError(msg string) *Error {
+	msg = fmt.Sprintf("could not parse as YAML: %s", msg)
+	return &Error{msg, "", 0, 0, "yaml-syntax"}
+}
+
 // Parse parses given source as byte sequence into workflow syntax tree. It returns all errors
 // detected while parsing the input. It means that detecting one error does not stop parsing. Even
 // if one or more errors are detected, parser will try to continue parsing and finding more errors.
@@ -1090,8 +1095,14 @@ func Parse(b []byte) (*Workflow, []*Error) {
 	var n yaml.Node
 
 	if err := yaml.Unmarshal(b, &n); err != nil {
-		msg := fmt.Sprintf("could not parse as YAML: %s", err.Error())
-		return nil, []*Error{{msg, "", 0, 0, "yaml-syntax"}}
+		if te, ok := err.(*yaml.TypeError); ok {
+			errs := make([]*Error, 0, len(te.Errors))
+			for _, msg := range te.Errors {
+				errs = append(errs, yamlError(msg))
+			}
+			return nil, errs
+		}
+		return nil, []*Error{yamlError(err.Error())}
 	}
 
 	// Uncomment for checking YAML tree
