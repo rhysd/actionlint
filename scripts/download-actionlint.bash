@@ -3,7 +3,7 @@
 set -e -o pipefail
 
 # Default value is updated manually on release
-version="${1:-1.3.0}"
+version="${1:-1.3.1}"
 
 if [[ ! "$version" =~ ^[0-9]+\.[0-9]+\.[0-9]+$ ]]; then
     echo "Given version '${version}' does not match to regex" '^[0-9]+\.[0-9]+\.[0-9]+$' >&2
