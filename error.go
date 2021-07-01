@@ -68,7 +68,7 @@ func (e *Error) PrettyPrint(w io.Writer, source []byte) {
 	bold.Fprint(w, e.Message)
 	gray.Fprintf(w, " [%s]\n", e.Kind)
 
-	if len(source) == 0 || e.Line <= 0 || e.Column <= 0 {
+	if len(source) == 0 || e.Line <= 0 {
 		return
 	}
 	line, ok := e.getLine(source)
@@ -98,6 +98,10 @@ func (e *Error) getLine(source []byte) (string, bool) {
 }
 
 func (e *Error) getIndicator(line string) string {
+	if e.Column <= 0 {
+		return ""
+	}
+
 	start := e.Column - 1 // Column is 1-based
 
 	// Count width of non-space characters after '^' for underline

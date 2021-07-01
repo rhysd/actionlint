@@ -177,6 +177,23 @@ func TestErrorPrettyPrint(t *testing.T) {
 			source:   "aaa\nbbb\nccc",
 			expected: "filename.txt:2:6: error at out of source [kind]",
 		},
+		{
+			message: "error at zero column",
+			line:    1,
+			column:  0,
+			source:  "this is source",
+			expected: `filename.txt:1:0: error at zero column [kind]
+  |
+1 | this is source
+  | `,
+		},
+		{
+			message:  "error at zero line and zero column",
+			line:     0,
+			column:   0,
+			source:   "this is source",
+			expected: `filename.txt:0:0: error at zero line and zero column [kind]`,
+		},
 	}
 
 	for _, tc := range testCases {
