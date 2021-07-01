@@ -86,7 +86,8 @@ brew install actionlint
 
 ## Prebuilt binaries
 
-Download an archive file from [releases page][releases], unarchive it and put the executable file at a directory in `$PATH`.
+Download an archive file from [releases page][releases] for your platform, unarchive it and put the executable file to a
+directory in `$PATH`.
 
 Prebuilt binaries are built at each release by CI for the following OS and arch:
 
@@ -141,10 +142,10 @@ If you want to enable [shellcheck integration](#check-shellcheck-integ), install
 
 ## Build from source
 
-[Go][] toolchain is necessary. It builds the latest `main` branch.
+[Go][] toolchain is necessary.
 
 ```sh
-# Install the latest version
+# Install the latest stable version
 go install github.com/rhysd/actionlint/cmd/actionlint@latest
 
 # Install the head of main branch
