@@ -38,7 +38,7 @@ jobs:
 
 **Output from actionlint:**
 
-<img src="https://github.com/rhysd/ss/blob/master/actionlint/main.png?raw=true" alt="output example" width="1004" height="536"/>
+<img src="https://github.com/rhysd/ss/blob/master/actionlint/main.png?raw=true" alt="output example" width="801" height="531"/>
 
 actionlint tries to catch errors as much as possible and make false positives as minimal as possible.
 
