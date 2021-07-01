@@ -192,9 +192,9 @@ Output:
 
 ```
 test.yaml:5:5: unexpected key "step" for "job" section. expected one of "name", "needs", "runs-on", "permissions", "environment", "concurrency", "outputs", "env", "defaults", "if", "steps", "timeout-minutes", "strategy", "continue-on-error", "container", "services" [syntax-check]
- |
-5|     step:
- |     ^~~~~
+  |
+5 |     step:
+  |     ^~~~~
 ```
 
 [Workflow syntax][syntax-doc] defines what keys can be defined in which mapping object. When other keys are defined, they
@@ -223,13 +223,13 @@ Output:
 
 ```
 test.yaml:6:3: key "test" is duplicate in "jobs" section. previously defined at line:3,col:3. note that key names are case insensitive [syntax-check]
- |
-6|   TEST:
- |   ^~~~~
+  |
+6 |   TEST:
+  |   ^~~~~
 test.yaml:4:5: "runs-on" section is missing in job "test" [syntax-check]
- |
-4|     steps:
- |     ^~~~~~
+  |
+4 |     steps:
+  |     ^~~~~~
 ```
 
 Some mappings must include specific keys. For example, job mapping must include `runs-on:` and `steps:`.
@@ -253,9 +253,9 @@ Output:
 
 ```
 test.yaml:2:6: "jobs" section should not be empty. please remove this section if it's unnecessary [syntax-check]
- |
-2| jobs:
- |      ^
+  |
+2 | jobs:
+  |      ^
 ```
 
 Some mappings and sequences should not be empty. For example, `steps:` must include at least one step.
@@ -283,13 +283,13 @@ Output:
 
 ```
 test.yaml:6:15: permission must be one of "none", "read", "write" but got "foo" [syntax-check]
- |
-6|       issues: foo
- |               ^~~
+  |
+6 |       issues: foo
+  |               ^~~
 test.yaml:7:24: expecting a string with ${{...}} expression or boolean literal "true" or "false", but found plain text node [syntax-check]
- |
-7|     continue-on-error: foo
- |                        ^~~
+  |
+7 |     continue-on-error: foo
+  |                        ^~~
 ```
 
 Some mapping's values are restricted to some constant strings. For example, values of `permissions:` mappings should be
@@ -323,21 +323,21 @@ Output:
 
 ```
 test.yaml:7:25: got unexpected character '"' while lexing expression, expecting '_', '\'', '}', '(', ')', '[', ']', '.', '!', '<', '>', '=', '&', ... [expression]
- |
-7|       - run: echo '${{ "hello" }}'
- |                         ^~~~~~
+  |
+7 |       - run: echo '${{ "hello" }}'
+  |                         ^~~~~~
 test.yaml:9:27: got unexpected character '+' while lexing expression, expecting '_', '\'', '}', '(', ')', '[', ']', '.', '!', '<', '>', '=', '&', ... [expression]
- |
-9|       - run: echo '${{ 1 + 1 }}'
- |                           ^
+  |
+9 |       - run: echo '${{ 1 + 1 }}'
+  |                           ^
 test.yaml:11:65: unexpected end of input while parsing arguments of function call. expecting ",", ")" [expression]
-  |
-11|       - run: echo "${{ toJson(hashFiles('**/lock', '**/cache/') }}"
-  |                                                                 ^~~
+   |
+11 |       - run: echo "${{ toJson(hashFiles('**/lock', '**/cache/') }}"
+   |                                                                 ^~~
 test.yaml:13:38: unexpected end of input while parsing object property dereference like 'a.b' or array element dereference like 'a.*'. expecting "IDENT", "*" [expression]
-  |
-13|       - run: echo '${{ github.event. }}'
-  |                                      ^~~
+   |
+13 |       - run: echo '${{ github.event. }}'
+   |                                      ^~~
 ```
 
 actionlint lexes and parses expression in `${{ }}` following [the expression syntax document][expr-doc]. It can detect
@@ -366,17 +366,17 @@ Output:
 
 ```
 test.yaml:7:28: property access of object must be type of string but got "number" [expression]
- |
-7|       - run: echo '${{ env[0] }}'
- |                            ^~
-test.yaml:9:24: property "os" is not defined in object type {id: string; network: string} [expression]
- |
-9|       - run: echo '${{ job.container.os }}'
- |                        ^~~~~~~~~~~~~~~~
-test.yaml:11:24: receiver of object dereference "owner" must be type of object but got "string" [expression]
   |
-11|       - run: echo '${{ github.repository.owner }}'
-  |                        ^~~~~~~~~~~~~~~~~~~~~~~
+7 |       - run: echo '${{ env[0] }}'
+  |                            ^~
+test.yaml:9:24: property "os" is not defined in object type {id: string; network: string} [expression]
+  |
+9 |       - run: echo '${{ job.container.os }}'
+  |                        ^~~~~~~~~~~~~~~~
+test.yaml:11:24: receiver of object dereference "owner" must be type of object but got "string" [expression]
+   |
+11 |       - run: echo '${{ github.repository.owner }}'
+   |                        ^~~~~~~~~~~~~~~~~~~~~~~
 ```
 
 Type checks for expression syntax in `${{ }}` are done by semantics checker. Note that actual type checks by GitHub Actions
@@ -419,9 +419,9 @@ Output:
 
 ```
 test.yaml:19:14: type of expression at "env" must be object but found type string [expression]
-  |
-19|         env: ${{ matrix.env_string }}
-  |              ^~~
+   |
+19 |         env: ${{ matrix.env_string }}
+   |              ^~~
 ```
 
 In above example, environment variables mapping is expanded at `env:` section. actionlint checks type of the expanded value.
@@ -458,29 +458,29 @@ Output:
 
 ```
 test.yaml:7:24: undefined variable "unknown_context". available variables are "env", "github", "job", "matrix", "needs", "runner", "secrets", "steps", "strategy" [expression]
- |
-7|       - run: echo '${{ unknown_context }}'
- |                        ^~~~~~~~~~~~~~~
+  |
+7 |       - run: echo '${{ unknown_context }}'
+  |                        ^~~~~~~~~~~~~~~
 test.yaml:9:24: property "events" is not defined in object type {workspace: string; env: string; event_name: string; event_path: string; ...} [expression]
- |
-9|       - run: echo '${{ github.events }}'
- |                        ^~~~~~~~~~~~~
+  |
+9 |       - run: echo '${{ github.events }}'
+  |                        ^~~~~~~~~~~~~
 test.yaml:11:24: undefined function "startWith". available functions are "always", "cancelled", "contains", "endswith", "failure", "format", "fromjson", "hashfiles", "join", "startswith", "success", "tojson" [expression]
-  |
-11|       - run: echo "${{ startWith('hello, world', 'lo,') }}"
-  |                        ^~~~~~~~~~~~~~~~~
+   |
+11 |       - run: echo "${{ startWith('hello, world', 'lo,') }}"
+   |                        ^~~~~~~~~~~~~~~~~
 test.yaml:13:24: number of arguments is wrong. function "startsWith(string, string) -> bool" takes 2 parameters but 1 arguments are provided [expression]
-  |
-13|       - run: echo "${{ startsWith('hello, world') }}"
-  |                        ^~~~~~~~~~~~~~~~~~
+   |
+13 |       - run: echo "${{ startsWith('hello, world') }}"
+   |                        ^~~~~~~~~~~~~~~~~~
 test.yaml:15:51: 2nd argument of function call is not assignable. "object" cannot be assigned to "string". called function type is "startsWith(string, string) -> bool" [expression]
-  |
-15|       - run: echo "${{ startsWith('hello, world', github.event) }}"
-  |                                                   ^~~~~~~~~~~~~
+   |
+15 |       - run: echo "${{ startsWith('hello, world', github.event) }}"
+   |                                                   ^~~~~~~~~~~~~
 test.yaml:20:24: format string "{0}{1}" contains 2 placeholders but 3 arguments are given to format [expression]
-  |
-20|       - run: echo "${{ format('{0}{1}', 1, 2, 3) }}"
-  |                        ^~~~~~~~~~~~~~~~
+   |
+20 |       - run: echo "${{ format('{0}{1}', 1, 2, 3) }}"
+   |                        ^~~~~~~~~~~~~~~~
 ```
 
 [Contexts][contexts-doc] and [built-in functions][funcs-doc] are strongly typed. Typos in property access of contexts and
@@ -531,13 +531,13 @@ Output:
 
 ```
 test.yaml:10:24: property "get_value" is not defined in object type {} [expression]
-  |
-10|       - run: echo '${{ steps.get_value.outputs.name }}'
-  |                        ^~~~~~~~~~~~~~~~~~~~~~~~~~~~
+   |
+10 |       - run: echo '${{ steps.get_value.outputs.name }}'
+   |                        ^~~~~~~~~~~~~~~~~~~~~~~~~~~~
 test.yaml:22:24: property "get_value" is not defined in object type {} [expression]
-  |
-22|       - run: echo '${{ steps.get_value.outputs.name }}'
-  |                        ^~~~~~~~~~~~~~~~~~~~~~~~~~~~
+   |
+22 |       - run: echo '${{ steps.get_value.outputs.name }}'
+   |                        ^~~~~~~~~~~~~~~~~~~~~~~~~~~~
 ```
 
 Outputs of step can be accessed via `steps.<step_id>` objects. The `steps` context is dynamic:
@@ -596,17 +596,17 @@ Output:
 
 ```
 test.yaml:19:24: property "platform" is not defined in object type {os: string; node: number; package: {name: string; optional: bool}; npm: string} [expression]
-  |
-19|       - run: echo '${{ matrix.platform }}'
-  |                        ^~~~~~~~~~~~~~~
+   |
+19 |       - run: echo '${{ matrix.platform }}'
+   |                        ^~~~~~~~~~~~~~~
 test.yaml:21:24: property "dev" is not defined in object type {name: string; optional: bool} [expression]
-  |
-21|       - run: echo '${{ matrix.package.dev }}'
-  |                        ^~~~~~~~~~~~~~~~~~
+   |
+21 |       - run: echo '${{ matrix.package.dev }}'
+   |                        ^~~~~~~~~~~~~~~~~~
 test.yaml:34:24: property "os" is not defined in object type {} [expression]
-  |
-34|       - run: echo '${{ matrix.os }}'
-  |                        ^~~~~~~~~
+   |
+34 |       - run: echo '${{ matrix.os }}'
+   |                        ^~~~~~~~~
 ```
 
 Types of `matrix` context is contextually checked by the semantics checker. Type of matrix values in `matrix:` section
@@ -679,21 +679,21 @@ Output:
 
 ```
 test.yaml:16:24: property "prepare" is not defined in object type {} [expression]
-  |
-16|       - run: echo '${{ needs.prepare.outputs.prepared }}'
-  |                        ^~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+   |
+16 |       - run: echo '${{ needs.prepare.outputs.prepared }}'
+   |                        ^~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 test.yaml:26:24: property "foo" is not defined in object type {installed: string} [expression]
-  |
-26|       - run: echo '${{ needs.install.outputs.foo }}'
-  |                        ^~~~~~~~~~~~~~~~~~~~~~~~~
+   |
+26 |       - run: echo '${{ needs.install.outputs.foo }}'
+   |                        ^~~~~~~~~~~~~~~~~~~~~~~~~
 test.yaml:28:24: property "some_job" is not defined in object type {install: {outputs: {installed: string}; result: string}; prepare: {outputs: {prepared: string}; result: string}} [expression]
-  |
-28|       - run: echo '${{ needs.some_job }}'
-  |                        ^~~~~~~~~~~~~~
+   |
+28 |       - run: echo '${{ needs.some_job }}'
+   |                        ^~~~~~~~~~~~~~
 test.yaml:33:24: property "build" is not defined in object type {} [expression]
-  |
-33|       - run: echo '${{ needs.build.outputs.built }}'
-  |                        ^~~~~~~~~~~~~~~~~~~~~~~~~
+   |
+33 |       - run: echo '${{ needs.build.outputs.built }}'
+   |                        ^~~~~~~~~~~~~~~~~~~~~~~~~
 ```
 
 Job dependencies can be defined at [`needs:`][needs-doc]. A job runs after all jobs defined in `needs:` are done.
@@ -728,13 +728,13 @@ Output:
 
 ```
 test.yaml:6:9: shellcheck reported issue in this script: SC2086:info:1:6: Double quote to prevent globbing and word splitting [shellcheck]
- |
-6|       - run: echo $FOO
- |         ^~~~
-test.yaml:14:9: shellcheck reported issue in this script: SC2086:info:1:6: Double quote to prevent globbing and word splitting [shellcheck]
   |
-14|       - run: echo $FOO
+6 |       - run: echo $FOO
   |         ^~~~
+test.yaml:14:9: shellcheck reported issue in this script: SC2086:info:1:6: Double quote to prevent globbing and word splitting [shellcheck]
+   |
+14 |       - run: echo $FOO
+   |         ^~~~
 ```
 
 [shellcheck][] is a famous linter for ShellScript. actionlint runs shellcheck for scripts at `run:` step in workflow.
@@ -792,17 +792,17 @@ Output:
 
 ```
 test.yaml:10:9: pyflakes reported issue in this script: 1:7 undefined name 'hello' [pyflakes]
-  |
-10|       - run: print(hello)
-  |         ^~~~
+   |
+10 |       - run: print(hello)
+   |         ^~~~
 test.yaml:19:9: pyflakes reported issue in this script: 2:5 import 'sys' from line 1 shadowed by loop variable [pyflakes]
-  |
-19|       - run: |
-  |         ^~~~
+   |
+19 |       - run: |
+   |         ^~~~
 test.yaml:23:9: pyflakes reported issue in this script: 1:1 'time.sleep' imported but unused [pyflakes]
-  |
-23|       - run: |
-  |         ^~~~
+   |
+23 |       - run: |
+   |         ^~~~
 ```
 
 Python script can be written in `run:` when `shell: python` is configured.
@@ -851,9 +851,9 @@ Output:
 
 ```
 test.yaml:8:3: cyclic dependencies in "needs" configurations of jobs are detected. detected cycle is "install" -> "prepare", "prepare" -> "build", "build" -> "install" [job-needs]
- |
-8|   install:
- |   ^~~~~~~~
+  |
+8 |   install:
+  |   ^~~~~~~~
 ```
 
 Job dependencies can be defined at [`needs:`][needs-doc]. If cyclic dependencies exist, jobs never start to run. actionlint
@@ -882,13 +882,13 @@ Output:
 
 ```
 test.yaml:4:18: job ID "BAR" duplicates in "needs" section. note that job ID is case insensitive [job-needs]
- |
-4|     needs: [bar, BAR]
- |                  ^~~~
+  |
+4 |     needs: [bar, BAR]
+  |                  ^~~~
 test.yaml:8:3: job "bar" needs job "unknown" which does not exist in this workflow [job-needs]
- |
-8|   bar:
- |   ^~~~
+  |
+8 |   bar:
+  |   ^~~~
 ```
 
 <a name="check-matrix-values"></a>
@@ -918,17 +918,17 @@ Output:
 
 ```
 test.yaml:6:28: duplicate value "14" is found in matrix "node". the same value is at line:6,col:24 [matrix]
- |
-6|         node: [10, 12, 14, 14]
- |                            ^~~
-test.yaml:9:19: value "13" in "exclude" does not exist in matrix "node" combinations. possible values are "10", "12", "14", "14" [matrix]
- |
-9|           - node: 13
- |                   ^~
-test.yaml:12:13: "platform" in "exclude" section does not exist in matrix. available matrix configurations are "node", "os" [matrix]
   |
-12|             platform: ubuntu-latest
-  |             ^~~~~~~~~
+6 |         node: [10, 12, 14, 14]
+  |                            ^~~
+test.yaml:9:19: value "13" in "exclude" does not exist in matrix "node" combinations. possible values are "10", "12", "14", "14" [matrix]
+  |
+9 |           - node: 13
+  |                   ^~
+test.yaml:12:13: "platform" in "exclude" section does not exist in matrix. available matrix configurations are "node", "os" [matrix]
+   |
+12 |             platform: ubuntu-latest
+   |             ^~~~~~~~~
 ```
 
 [`matrix:`][matrix-doc] defines combinations of multiple values. Nested `include:` and `exclude:` can add/remove specific
@@ -963,17 +963,17 @@ Output:
 
 ```
 test.yaml:4:5: unexpected key "branch" for "push" section. expected one of "types", "branches", "branches-ignore", "tags", "tags-ignore", ... [syntax-check]
- |
-4|     branch: foo
- |     ^~~~~~~
+  |
+4 |     branch: foo
+  |     ^~~~~~~
 test.yaml:7:12: invalid activity type "created" for "issues" Webhook event. available types are "opened", "edited", "deleted", "transferred", ... [events]
- |
-7|     types: created
- |            ^~~~~~~
+  |
+7 |     types: created
+  |            ^~~~~~~
 test.yaml:8:3: unknown Webhook event "pullreq". see https://docs.github.com/en/actions/reference/events-that-trigger-workflows#webhook-events for list of all Webhook event names [events]
- |
-8|   pullreq:
- |   ^~~~~~~~
+  |
+8 |   pullreq:
+  |   ^~~~~~~~
 ```
 
 At `on:`, Webhook events can be specified to trigger the workflow. [Webhook event documentation][webhook-doc] defines
@@ -1009,13 +1009,13 @@ Output:
 
 ```
 test.yaml:4:13: invalid CRON format "0 */3 * *" in schedule event: Expected exactly 5 fields, found 4: 0 */3 * * [events]
- |
-4|     - cron: '0 */3 * *'
- |             ^~
+  |
+4 |     - cron: '0 */3 * *'
+  |             ^~
 test.yaml:6:13: scheduled job runs too frequently. it runs once per 60 seconds [events]
- |
-6|     - cron: '* */3 * * *'
- |             ^~
+  |
+6 |     - cron: '* */3 * * *'
+  |             ^~
 ```
 
 To trigger a workflow in specific interval, [scheduled event][schedule-event-doc] can be defined in [POSIX CRON syntax][cron-syntax].
@@ -1060,17 +1060,17 @@ Output:
 
 ```
 test.yaml:10:13: label "linux-latest" is unknown. available labels are "windows-latest", "windows-2019", "windows-2016", "ubuntu-latest", ... [runner-label]
-  |
-10|           - linux-latest
-  |             ^~~~~~~~~~~~
+   |
+10 |           - linux-latest
+   |             ^~~~~~~~~~~~
 test.yaml:16:13: label "gpu" is unknown. available labels are "windows-latest", "windows-2019", "windows-2016", "ubuntu-latest", ... [runner-label]
-  |
-16|           - gpu
-  |             ^~~
+   |
+16 |           - gpu
+   |             ^~~
 test.yaml:23:14: label "macos-10.13" is unknown. available labels are "windows-latest", "windows-2019", "windows-2016", "ubuntu-latest", ... [runner-label]
-  |
-23|     runs-on: macos-10.13
-  |              ^~~~~~~~~~~
+   |
+23 |     runs-on: macos-10.13
+   |              ^~~~~~~~~~~
 ```
 
 GitHub Actions provides two kinds of job runners, [GitHub-hosted runner][gh-hosted-runner] and [self-hosted runner][self-hosted-runner].
@@ -1109,21 +1109,21 @@ Output:
 
 ```
 test.yaml:7:15: specifying action "actions/checkout" in invalid format because ref is missng. available formats are "{owner}/{repo}@{ref}" or "{owner}/{repo}/{path}@{ref}" [action]
- |
-7|       - uses: actions/checkout
- |               ^~~~~~~~~~~~~~~~
+  |
+7 |       - uses: actions/checkout
+  |               ^~~~~~~~~~~~~~~~
 test.yaml:9:15: specifying action "checkout@v2" in invalid format because owner is missing. available formats are "{owner}/{repo}@{ref}" or "{owner}/{repo}/{path}@{ref}" [action]
- |
-9|       - uses: checkout@v2
- |               ^~~~~~~~~~~
+  |
+9 |       - uses: checkout@v2
+  |               ^~~~~~~~~~~
 test.yaml:11:15: tag of Docker action should not be empty: "docker://image" [action]
-  |
-11|       - uses: 'docker://image:'
-  |               ^~~~~~~~~~~~~~~~~
+   |
+11 |       - uses: 'docker://image:'
+   |               ^~~~~~~~~~~~~~~~~
 test.yaml:13:15: Neither action.yaml nor action.yml is found in directory "github/actions/my-action" [action]
-  |
-13|       - uses: ./github/actions/my-action
-  |               ^~~~~~~~~~~~~~~~~~~~~~~~~~
+   |
+13 |       - uses: ./github/actions/my-action
+   |               ^~~~~~~~~~~~~~~~~~~~~~~~~~
 ```
 
 Action needs to be specified in a format defined in [the document][action-uses-doc]. There are 3 types of actions:
@@ -1182,13 +1182,13 @@ Output:
 
 ```
 test.yaml:7:15: missing input "message" which is required by action "My action" defined at "./.github/actions/my-action" [action]
- |
-7|       - uses: ./.github/actions/my-action
- |               ^~~~~~~~~~~~~~~~~~~~~~~~~~~
-test.yaml:13:11: input "additions" is not defined in action "./.github/actions/my-action" defined at "My action". available inputs are "addition", "message", "name" [action]
   |
-13|           additions: foo, bar
-  |           ^~~~~~~~~~
+7 |       - uses: ./.github/actions/my-action
+  |               ^~~~~~~~~~~~~~~~~~~~~~~~~~~
+test.yaml:13:11: input "additions" is not defined in action "./.github/actions/my-action" defined at "My action". available inputs are "addition", "message", "name" [action]
+   |
+13 |           additions: foo, bar
+   |           ^~~~~~~~~~
 ```
 
 When a local action is run in `uses:` of `step:`, actionlint reads `action.yaml` file in the local action directory and
@@ -1236,25 +1236,25 @@ Output:
 
 ```
 test.yaml:8:16: shell name "dash" is invalid. available names are "bash", "pwsh", "python", "sh" [shell-name]
- |
-8|         shell: dash
- |                ^~~~
-test.yaml:11:16: shell name "powershell" is invalid on macOS or Linux. available names are "bash", "pwsh", "python", "sh" [shell-name]
   |
-11|         shell: powershell
-  |                ^~~~~~~~~~
-test.yaml:14:16: shell name "powershell" is invalid on macOS or Linux. available names are "bash", "pwsh", "python", "sh" [shell-name]
-  |
-14|         shell: powershell
-  |                ^~~~~~~~~~
-test.yaml:20:16: shell name "fish" is invalid. available names are "bash", "pwsh", "python", "sh" [shell-name]
-  |
-20|         shell: fish
+8 |         shell: dash
   |                ^~~~
+test.yaml:11:16: shell name "powershell" is invalid on macOS or Linux. available names are "bash", "pwsh", "python", "sh" [shell-name]
+   |
+11 |         shell: powershell
+   |                ^~~~~~~~~~
+test.yaml:14:16: shell name "powershell" is invalid on macOS or Linux. available names are "bash", "pwsh", "python", "sh" [shell-name]
+   |
+14 |         shell: powershell
+   |                ^~~~~~~~~~
+test.yaml:20:16: shell name "fish" is invalid. available names are "bash", "pwsh", "python", "sh" [shell-name]
+   |
+20 |         shell: fish
+   |                ^~~~
 test.yaml:30:16: shell name "sh" is invalid on Windows. available names are "bash", "pwsh", "python", "cmd", "powershell" [shell-name]
-  |
-30|         shell: sh
-  |                ^~
+   |
+30 |         shell: sh
+   |                ^~
 ```
 
 Available shells for runners are defined in [the documentation][shell-doc]. actionlint checks shell names at `shell:`
@@ -1288,14 +1288,14 @@ jobs:
 Output:
 
 ```
-test.yaml:12:3: key "test" is duplicate in "jobs" section. previously defined at line:3,col:3. note that key names are case insensitive [syntax-check]
-  |
-12|   TEST:
-  |   ^~~~~
 test.yaml:10:13: step ID "line:7,col:13" duplicates. previously defined at STEP_ID. step ID must be unique within a job. note that step ID is case insensitive [step-id]
-  |
-10|         id: STEP_ID
-  |             ^~~~~~~
+   |
+10 |         id: STEP_ID
+   |             ^~~~~~~
+test.yaml:12:3: key "test" is duplicate in "jobs" section. previously defined at line:3,col:3. note that key names are case insensitive [syntax-check]
+   |
+12 |   TEST:
+   |   ^~~~~
 ```
 
 Job IDs and step IDs in each job must be unique. IDs are compared in case insensitive. actionlint checks all job IDs
@@ -1332,13 +1332,13 @@ Output:
 
 ```
 test.yaml:10:19: "password" section in "container" section should be specified via secrets. do not put password value directly [credentials]
-  |
-10|         password: pass
-  |                   ^~~~
+   |
+10 |         password: pass
+   |                   ^~~~
 test.yaml:17:21: "password" section in "redis" service should be specified via secrets. do not put password value directly [credentials]
-  |
-17|           password: pass
-  |                     ^~~~
+   |
+17 |           password: pass
+   |                     ^~~~
 ```
 
 [Credentials for container][credentials-doc] can be put in `container:` configuration. Password should be put in secrets
@@ -1366,13 +1366,13 @@ Output:
 
 ```
 test.yaml:6:7: environment variable name "foo=bar" is invalid. '&', '=' and spaces should not be contained [env-var]
- |
-6|       FOO=BAR: foo
- |       ^~~~~~~~
+  |
+6 |       FOO=BAR: foo
+  |       ^~~~~~~~
 test.yaml:7:7: environment variable name "foo bar" is invalid. '&', '=' and spaces should not be contained [env-var]
- |
-7|       FOO BAR: foo
- |       ^~~
+  |
+7 |       FOO BAR: foo
+  |       ^~~
 ```
 
 `=` must not be included in environment variable names. And `&` and spaces should not be included in them. In almost all
