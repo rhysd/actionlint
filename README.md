@@ -90,10 +90,7 @@ on: [push, pull_request]
 
 jobs:
   actionlint:
-    strategy:
-      matrix:
-        os: [ubuntu-latest, macos-latest, windows-latest]
-    runs-on: ${{ matrix.os }}
+    runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v2
       - name: Download actionlint
@@ -113,6 +110,13 @@ or simply run
     bash <(curl https://raw.githubusercontent.com/rhysd/actionlint/main/scripts/download-actionlint.bash)
     ./actionlint -color
   shell: bash
+```
+
+If you want to enable [shellcheck integration](#check-shellcheck-integ), install `shellcheck` command as follows:
+
+```yaml
+- name: Install shellcheck to enable shellcheck integration
+  run: sudo apt install shellcheck
 ```
 
 ## Build from source
