@@ -76,10 +76,12 @@ func (e *Error) PrettyPrint(w io.Writer, source []byte) {
 		return
 	}
 
-	lnum := fmt.Sprintf("%d| ", e.Line)
+	lnum := fmt.Sprintf("%d | ", e.Line)
+	indent := strings.Repeat(" ", len(lnum)-2)
+	gray.Fprintf(w, "%s|\n", indent)
 	gray.Fprint(w, lnum)
 	fmt.Fprintln(w, line)
-	gray.Fprintf(w, "%s| ", strings.Repeat(" ", len(lnum)-2))
+	gray.Fprintf(w, "%s| ", indent)
 	green.Fprintln(w, e.getIndicator(line))
 }
 

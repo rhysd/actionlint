@@ -76,8 +76,9 @@ func TestErrorPrettyPrint(t *testing.T) {
 			column:  1,
 			source:  "this is source",
 			expected: `filename.txt:1:1: simple message with source [kind]
-1| this is source
- | ^~~~`,
+  |
+1 | this is source
+  | ^~~~`,
 		},
 		{
 			message: "error at middle of source",
@@ -85,8 +86,9 @@ func TestErrorPrettyPrint(t *testing.T) {
 			column:  6,
 			source:  "this is source",
 			expected: `filename.txt:1:6: error at middle of source [kind]
-1| this is source
- |      ^~`,
+  |
+1 | this is source
+  |      ^~`,
 		},
 		{
 			message: "error at end of source",
@@ -94,8 +96,9 @@ func TestErrorPrettyPrint(t *testing.T) {
 			column:  15,
 			source:  "this is source",
 			expected: `filename.txt:1:15: error at end of source [kind]
-1| this is source
- |               ^`,
+  |
+1 | this is source
+  |               ^`,
 		},
 		{
 			message: "error at one character word in source",
@@ -103,8 +106,9 @@ func TestErrorPrettyPrint(t *testing.T) {
 			column:  5,
 			source:  "foo . bar",
 			expected: `filename.txt:1:5: error at one character word in source [kind]
-1| foo . bar
- |     ^`,
+  |
+1 | foo . bar
+  |     ^`,
 		},
 		{
 			message: "error at space in source",
@@ -112,8 +116,9 @@ func TestErrorPrettyPrint(t *testing.T) {
 			column:  4,
 			source:  "foo bar",
 			expected: `filename.txt:1:4: error at space in source [kind]
-1| foo bar
- |    ^`,
+  |
+1 | foo bar
+  |    ^`,
 		},
 		{
 			message: "simple message with multi-line source",
@@ -121,8 +126,9 @@ func TestErrorPrettyPrint(t *testing.T) {
 			column:  3,
 			source:  "this\nis\nsource",
 			expected: `filename.txt:3:3: simple message with multi-line source [kind]
-3| source
- |   ^~~~`,
+  |
+3 | source
+  |   ^~~~`,
 		},
 		{
 			message: "error at end of multi-line source",
@@ -130,8 +136,9 @@ func TestErrorPrettyPrint(t *testing.T) {
 			column:  7,
 			source:  "this\nis\nsource",
 			expected: `filename.txt:3:7: error at end of multi-line source [kind]
-3| source
- |       ^`,
+  |
+3 | source
+  |       ^`,
 		},
 		{
 			message: "error at newline of multi-line source",
@@ -139,8 +146,9 @@ func TestErrorPrettyPrint(t *testing.T) {
 			column:  3,
 			source:  "this\nis\nsource",
 			expected: `filename.txt:2:3: error at newline of multi-line source [kind]
-2| is
- |   ^`,
+  |
+2 | is
+  |   ^`,
 		},
 		{
 			message: "error at blank line of multi-line source",
@@ -148,8 +156,9 @@ func TestErrorPrettyPrint(t *testing.T) {
 			column:  1,
 			source:  "this\n\nsource",
 			expected: `filename.txt:2:1: error at blank line of multi-line source [kind]
-2| 
- | ^`,
+  |
+2 | 
+  | ^`,
 		},
 		{
 			message: "error at line more than 10",
@@ -157,8 +166,9 @@ func TestErrorPrettyPrint(t *testing.T) {
 			column:  2,
 			source:  "\n\n\n\n\n\n\n\n\n\nfooo",
 			expected: `filename.txt:11:2: error at line more than 10 [kind]
-11| fooo
-  |  ^~~`,
+   |
+11 | fooo
+   |  ^~~`,
 		},
 		{
 			message:  "error at out of source",
