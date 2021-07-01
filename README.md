@@ -63,14 +63,15 @@ actionlint tries to catch errors as much as possible and make false positives as
 
 # Why?
 
-- **Running workflow is very time consuming.** You need to push the changes and wait until the workflow runs on GitHub even
-  if it contains some trivial mistakes. [act][] is useful to run the workflow locally. But it is not suitable for CI and
-  still time consuming when your workflow gets larger.
-- **Checks of workflow files by GitHub is very loose.** It reports no error even if unexpected keys are in mappings
+- **Running workflow is time consuming.** You need to push the changes and wait until the workflow runs on GitHub even if
+  it contains some trivial mistakes. [act][] is useful to run the workflow locally. But it is not suitable for CI and still
+  time consuming when your workflow gets larger.
+- **Checks of workflow files by GitHub are very loose.** It reports no error even if unexpected keys are in mappings
   (meant that some typos in keys). And also it reports no error when accessing to property which is actually not existing.
   For example `matrix.foo` when no `foo` is defined in `matrix:` section, it is evaluated to `null` and causes no error.
-- **Some mistakes silently breaks workflow.** Most common case I saw is specifying missing property to cache key. In the case
-  cache silently does not work properly but workflow itself runs without error. So you might not notice the mistake forever.
+- **Some mistakes silently break a workflow.** Most common case I saw is specifying missing property to cache key. In the
+  case cache silently does not work properly but workflow itself runs without error. So you might not notice the mistake
+  forever.
 
 # Install
 
