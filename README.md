@@ -192,6 +192,7 @@ Output:
 
 ```
 test.yaml:5:5: unexpected key "step" for "job" section. expected one of "name", "needs", "runs-on", "permissions", "environment", "concurrency", "outputs", "env", "defaults", "if", "steps", "timeout-minutes", "strategy", "continue-on-error", "container", "services" [syntax-check]
+ |
 5|     step:
  |     ^~~~~
 ```
@@ -222,9 +223,11 @@ Output:
 
 ```
 test.yaml:6:3: key "test" is duplicate in "jobs" section. previously defined at line:3,col:3. note that key names are case insensitive [syntax-check]
+ |
 6|   TEST:
  |   ^~~~~
 test.yaml:4:5: "runs-on" section is missing in job "test" [syntax-check]
+ |
 4|     steps:
  |     ^~~~~~
 ```
@@ -250,6 +253,7 @@ Output:
 
 ```
 test.yaml:2:6: "jobs" section should not be empty. please remove this section if it's unnecessary [syntax-check]
+ |
 2| jobs:
  |      ^
 ```
@@ -279,9 +283,11 @@ Output:
 
 ```
 test.yaml:6:15: permission must be one of "none", "read", "write" but got "foo" [syntax-check]
+ |
 6|       issues: foo
  |               ^~~
 test.yaml:7:24: expecting a string with ${{...}} expression or boolean literal "true" or "false", but found plain text node [syntax-check]
+ |
 7|     continue-on-error: foo
  |                        ^~~
 ```
@@ -317,15 +323,19 @@ Output:
 
 ```
 test.yaml:7:25: got unexpected character '"' while lexing expression, expecting '_', '\'', '}', '(', ')', '[', ']', '.', '!', '<', '>', '=', '&', ... [expression]
+ |
 7|       - run: echo '${{ "hello" }}'
  |                         ^~~~~~
 test.yaml:9:27: got unexpected character '+' while lexing expression, expecting '_', '\'', '}', '(', ')', '[', ']', '.', '!', '<', '>', '=', '&', ... [expression]
+ |
 9|       - run: echo '${{ 1 + 1 }}'
  |                           ^
 test.yaml:11:65: unexpected end of input while parsing arguments of function call. expecting ",", ")" [expression]
+  |
 11|       - run: echo "${{ toJson(hashFiles('**/lock', '**/cache/') }}"
   |                                                                 ^~~
 test.yaml:13:38: unexpected end of input while parsing object property dereference like 'a.b' or array element dereference like 'a.*'. expecting "IDENT", "*" [expression]
+  |
 13|       - run: echo '${{ github.event. }}'
   |                                      ^~~
 ```
@@ -356,12 +366,15 @@ Output:
 
 ```
 test.yaml:7:28: property access of object must be type of string but got "number" [expression]
+ |
 7|       - run: echo '${{ env[0] }}'
  |                            ^~
 test.yaml:9:24: property "os" is not defined in object type {id: string; network: string} [expression]
+ |
 9|       - run: echo '${{ job.container.os }}'
  |                        ^~~~~~~~~~~~~~~~
 test.yaml:11:24: receiver of object dereference "owner" must be type of object but got "string" [expression]
+  |
 11|       - run: echo '${{ github.repository.owner }}'
   |                        ^~~~~~~~~~~~~~~~~~~~~~~
 ```
@@ -406,6 +419,7 @@ Output:
 
 ```
 test.yaml:19:14: type of expression at "env" must be object but found type string [expression]
+  |
 19|         env: ${{ matrix.env_string }}
   |              ^~~
 ```
@@ -444,21 +458,27 @@ Output:
 
 ```
 test.yaml:7:24: undefined variable "unknown_context". available variables are "env", "github", "job", "matrix", "needs", "runner", "secrets", "steps", "strategy" [expression]
+ |
 7|       - run: echo '${{ unknown_context }}'
  |                        ^~~~~~~~~~~~~~~
 test.yaml:9:24: property "events" is not defined in object type {workspace: string; env: string; event_name: string; event_path: string; ...} [expression]
+ |
 9|       - run: echo '${{ github.events }}'
  |                        ^~~~~~~~~~~~~
 test.yaml:11:24: undefined function "startWith". available functions are "always", "cancelled", "contains", "endswith", "failure", "format", "fromjson", "hashfiles", "join", "startswith", "success", "tojson" [expression]
+  |
 11|       - run: echo "${{ startWith('hello, world', 'lo,') }}"
   |                        ^~~~~~~~~~~~~~~~~
 test.yaml:13:24: number of arguments is wrong. function "startsWith(string, string) -> bool" takes 2 parameters but 1 arguments are provided [expression]
+  |
 13|       - run: echo "${{ startsWith('hello, world') }}"
   |                        ^~~~~~~~~~~~~~~~~~
 test.yaml:15:51: 2nd argument of function call is not assignable. "object" cannot be assigned to "string". called function type is "startsWith(string, string) -> bool" [expression]
+  |
 15|       - run: echo "${{ startsWith('hello, world', github.event) }}"
   |                                                   ^~~~~~~~~~~~~
 test.yaml:20:24: format string "{0}{1}" contains 2 placeholders but 3 arguments are given to format [expression]
+  |
 20|       - run: echo "${{ format('{0}{1}', 1, 2, 3) }}"
   |                        ^~~~~~~~~~~~~~~~
 ```
@@ -511,9 +531,11 @@ Output:
 
 ```
 test.yaml:10:24: property "get_value" is not defined in object type {} [expression]
+  |
 10|       - run: echo '${{ steps.get_value.outputs.name }}'
   |                        ^~~~~~~~~~~~~~~~~~~~~~~~~~~~
 test.yaml:22:24: property "get_value" is not defined in object type {} [expression]
+  |
 22|       - run: echo '${{ steps.get_value.outputs.name }}'
   |                        ^~~~~~~~~~~~~~~~~~~~~~~~~~~~
 ```
@@ -574,12 +596,15 @@ Output:
 
 ```
 test.yaml:19:24: property "platform" is not defined in object type {os: string; node: number; package: {name: string; optional: bool}; npm: string} [expression]
+  |
 19|       - run: echo '${{ matrix.platform }}'
   |                        ^~~~~~~~~~~~~~~
 test.yaml:21:24: property "dev" is not defined in object type {name: string; optional: bool} [expression]
+  |
 21|       - run: echo '${{ matrix.package.dev }}'
   |                        ^~~~~~~~~~~~~~~~~~
 test.yaml:34:24: property "os" is not defined in object type {} [expression]
+  |
 34|       - run: echo '${{ matrix.os }}'
   |                        ^~~~~~~~~
 ```
@@ -654,15 +679,19 @@ Output:
 
 ```
 test.yaml:16:24: property "prepare" is not defined in object type {} [expression]
+  |
 16|       - run: echo '${{ needs.prepare.outputs.prepared }}'
   |                        ^~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 test.yaml:26:24: property "foo" is not defined in object type {installed: string} [expression]
+  |
 26|       - run: echo '${{ needs.install.outputs.foo }}'
   |                        ^~~~~~~~~~~~~~~~~~~~~~~~~
 test.yaml:28:24: property "some_job" is not defined in object type {install: {outputs: {installed: string}; result: string}; prepare: {outputs: {prepared: string}; result: string}} [expression]
+  |
 28|       - run: echo '${{ needs.some_job }}'
   |                        ^~~~~~~~~~~~~~
 test.yaml:33:24: property "build" is not defined in object type {} [expression]
+  |
 33|       - run: echo '${{ needs.build.outputs.built }}'
   |                        ^~~~~~~~~~~~~~~~~~~~~~~~~
 ```
@@ -699,9 +728,11 @@ Output:
 
 ```
 test.yaml:6:9: shellcheck reported issue in this script: SC2086:info:1:6: Double quote to prevent globbing and word splitting [shellcheck]
+ |
 6|       - run: echo $FOO
  |         ^~~~
 test.yaml:14:9: shellcheck reported issue in this script: SC2086:info:1:6: Double quote to prevent globbing and word splitting [shellcheck]
+  |
 14|       - run: echo $FOO
   |         ^~~~
 ```
@@ -761,12 +792,15 @@ Output:
 
 ```
 test.yaml:10:9: pyflakes reported issue in this script: 1:7 undefined name 'hello' [pyflakes]
+  |
 10|       - run: print(hello)
   |         ^~~~
 test.yaml:19:9: pyflakes reported issue in this script: 2:5 import 'sys' from line 1 shadowed by loop variable [pyflakes]
+  |
 19|       - run: |
   |         ^~~~
 test.yaml:23:9: pyflakes reported issue in this script: 1:1 'time.sleep' imported but unused [pyflakes]
+  |
 23|       - run: |
   |         ^~~~
 ```
@@ -817,6 +851,7 @@ Output:
 
 ```
 test.yaml:8:3: cyclic dependencies in "needs" configurations of jobs are detected. detected cycle is "install" -> "prepare", "prepare" -> "build", "build" -> "install" [job-needs]
+ |
 8|   install:
  |   ^~~~~~~~
 ```
@@ -847,9 +882,11 @@ Output:
 
 ```
 test.yaml:4:18: job ID "BAR" duplicates in "needs" section. note that job ID is case insensitive [job-needs]
+ |
 4|     needs: [bar, BAR]
  |                  ^~~~
 test.yaml:8:3: job "bar" needs job "unknown" which does not exist in this workflow [job-needs]
+ |
 8|   bar:
  |   ^~~~
 ```
@@ -881,12 +918,15 @@ Output:
 
 ```
 test.yaml:6:28: duplicate value "14" is found in matrix "node". the same value is at line:6,col:24 [matrix]
+ |
 6|         node: [10, 12, 14, 14]
  |                            ^~~
 test.yaml:9:19: value "13" in "exclude" does not exist in matrix "node" combinations. possible values are "10", "12", "14", "14" [matrix]
+ |
 9|           - node: 13
  |                   ^~
 test.yaml:12:13: "platform" in "exclude" section does not exist in matrix. available matrix configurations are "node", "os" [matrix]
+  |
 12|             platform: ubuntu-latest
   |             ^~~~~~~~~
 ```
@@ -923,12 +963,15 @@ Output:
 
 ```
 test.yaml:4:5: unexpected key "branch" for "push" section. expected one of "types", "branches", "branches-ignore", "tags", "tags-ignore", ... [syntax-check]
+ |
 4|     branch: foo
  |     ^~~~~~~
 test.yaml:7:12: invalid activity type "created" for "issues" Webhook event. available types are "opened", "edited", "deleted", "transferred", ... [events]
+ |
 7|     types: created
  |            ^~~~~~~
 test.yaml:8:3: unknown Webhook event "pullreq". see https://docs.github.com/en/actions/reference/events-that-trigger-workflows#webhook-events for list of all Webhook event names [events]
+ |
 8|   pullreq:
  |   ^~~~~~~~
 ```
@@ -966,9 +1009,11 @@ Output:
 
 ```
 test.yaml:4:13: invalid CRON format "0 */3 * *" in schedule event: Expected exactly 5 fields, found 4: 0 */3 * * [events]
+ |
 4|     - cron: '0 */3 * *'
  |             ^~
 test.yaml:6:13: scheduled job runs too frequently. it runs once per 60 seconds [events]
+ |
 6|     - cron: '* */3 * * *'
  |             ^~
 ```
@@ -1015,12 +1060,15 @@ Output:
 
 ```
 test.yaml:10:13: label "linux-latest" is unknown. available labels are "windows-latest", "windows-2019", "windows-2016", "ubuntu-latest", ... [runner-label]
+  |
 10|           - linux-latest
   |             ^~~~~~~~~~~~
 test.yaml:16:13: label "gpu" is unknown. available labels are "windows-latest", "windows-2019", "windows-2016", "ubuntu-latest", ... [runner-label]
+  |
 16|           - gpu
   |             ^~~
 test.yaml:23:14: label "macos-10.13" is unknown. available labels are "windows-latest", "windows-2019", "windows-2016", "ubuntu-latest", ... [runner-label]
+  |
 23|     runs-on: macos-10.13
   |              ^~~~~~~~~~~
 ```
@@ -1061,15 +1109,19 @@ Output:
 
 ```
 test.yaml:7:15: specifying action "actions/checkout" in invalid format because ref is missng. available formats are "{owner}/{repo}@{ref}" or "{owner}/{repo}/{path}@{ref}" [action]
+ |
 7|       - uses: actions/checkout
  |               ^~~~~~~~~~~~~~~~
 test.yaml:9:15: specifying action "checkout@v2" in invalid format because owner is missing. available formats are "{owner}/{repo}@{ref}" or "{owner}/{repo}/{path}@{ref}" [action]
+ |
 9|       - uses: checkout@v2
  |               ^~~~~~~~~~~
 test.yaml:11:15: tag of Docker action should not be empty: "docker://image" [action]
+  |
 11|       - uses: 'docker://image:'
   |               ^~~~~~~~~~~~~~~~~
 test.yaml:13:15: Neither action.yaml nor action.yml is found in directory "github/actions/my-action" [action]
+  |
 13|       - uses: ./github/actions/my-action
   |               ^~~~~~~~~~~~~~~~~~~~~~~~~~
 ```
@@ -1130,9 +1182,11 @@ Output:
 
 ```
 test.yaml:7:15: missing input "message" which is required by action "My action" defined at "./.github/actions/my-action" [action]
+ |
 7|       - uses: ./.github/actions/my-action
  |               ^~~~~~~~~~~~~~~~~~~~~~~~~~~
 test.yaml:13:11: input "additions" is not defined in action "./.github/actions/my-action" defined at "My action". available inputs are "addition", "message", "name" [action]
+  |
 13|           additions: foo, bar
   |           ^~~~~~~~~~
 ```
@@ -1182,18 +1236,23 @@ Output:
 
 ```
 test.yaml:8:16: shell name "dash" is invalid. available names are "bash", "pwsh", "python", "sh" [shell-name]
+ |
 8|         shell: dash
  |                ^~~~
 test.yaml:11:16: shell name "powershell" is invalid on macOS or Linux. available names are "bash", "pwsh", "python", "sh" [shell-name]
+  |
 11|         shell: powershell
   |                ^~~~~~~~~~
 test.yaml:14:16: shell name "powershell" is invalid on macOS or Linux. available names are "bash", "pwsh", "python", "sh" [shell-name]
+  |
 14|         shell: powershell
   |                ^~~~~~~~~~
 test.yaml:20:16: shell name "fish" is invalid. available names are "bash", "pwsh", "python", "sh" [shell-name]
+  |
 20|         shell: fish
   |                ^~~~
 test.yaml:30:16: shell name "sh" is invalid on Windows. available names are "bash", "pwsh", "python", "cmd", "powershell" [shell-name]
+  |
 30|         shell: sh
   |                ^~
 ```
@@ -1230,9 +1289,11 @@ Output:
 
 ```
 test.yaml:12:3: key "test" is duplicate in "jobs" section. previously defined at line:3,col:3. note that key names are case insensitive [syntax-check]
+  |
 12|   TEST:
   |   ^~~~~
 test.yaml:10:13: step ID "line:7,col:13" duplicates. previously defined at STEP_ID. step ID must be unique within a job. note that step ID is case insensitive [step-id]
+  |
 10|         id: STEP_ID
   |             ^~~~~~~
 ```
@@ -1271,9 +1332,11 @@ Output:
 
 ```
 test.yaml:10:19: "password" section in "container" section should be specified via secrets. do not put password value directly [credentials]
+  |
 10|         password: pass
   |                   ^~~~
 test.yaml:17:21: "password" section in "redis" service should be specified via secrets. do not put password value directly [credentials]
+  |
 17|           password: pass
   |                     ^~~~
 ```
@@ -1303,9 +1366,11 @@ Output:
 
 ```
 test.yaml:6:7: environment variable name "foo=bar" is invalid. '&', '=' and spaces should not be contained [env-var]
+ |
 6|       FOO=BAR: foo
  |       ^~~~~~~~
 test.yaml:7:7: environment variable name "foo bar" is invalid. '&', '=' and spaces should not be contained [env-var]
+ |
 7|       FOO BAR: foo
  |       ^~~
 ```
