@@ -3,6 +3,7 @@ package actionlint
 import (
 	"fmt"
 	"os"
+	"regexp"
 	"strconv"
 	"strings"
 
@@ -1083,9 +1084,27 @@ func (p *parser) parse(n *yaml.Node) *Workflow {
 // 	}
 // }
 
-func yamlError(msg string) *Error {
-	msg = fmt.Sprintf("could not parse as YAML: %s", msg)
-	return &Error{msg, "", 0, 0, "yaml-syntax"}
+func handleYAMLError(err error) []*Error {
+	re := regexp.MustCompile(`\bline (\d+):`)
+
+	yamlErr := func(msg string) *Error {
+		l := 0
+		if ss := re.FindStringSubmatch(msg); len(ss) > 1 {
+			l, _ = strconv.Atoi(ss[1])
+		}
+		msg = fmt.Sprintf("could not parse as YAML: %s", msg)
+		return &Error{msg, "", l, 0, "yaml-syntax"}
+	}
+
+	if te, ok := err.(*yaml.TypeError); ok {
+		errs := make([]*Error, 0, len(te.Errors))
+		for _, msg := range te.Errors {
+			errs = append(errs, yamlErr(msg))
+		}
+		return errs
+	}
+
+	return []*Error{yamlErr(err.Error())}
 }
 
 // Parse parses given source as byte sequence into workflow syntax tree. It returns all errors
@@ -1095,14 +1114,7 @@ func Parse(b []byte) (*Workflow, []*Error) {
 	var n yaml.Node
 
 	if err := yaml.Unmarshal(b, &n); err != nil {
-		if te, ok := err.(*yaml.TypeError); ok {
-			errs := make([]*Error, 0, len(te.Errors))
-			for _, msg := range te.Errors {
-				errs = append(errs, yamlError(msg))
-			}
-			return nil, errs
-		}
-		return nil, []*Error{yamlError(err.Error())}
+		return nil, handleYAMLError(err)
 	}
 
 	// Uncomment for checking YAML tree
