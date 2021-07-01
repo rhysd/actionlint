@@ -39,6 +39,25 @@ jobs:
 **Output from actionlint:**
 
 <img src="https://github.com/rhysd/ss/blob/master/actionlint/main.png?raw=true" alt="output example" width="801" height="531"/>
+<!-- content of screenshot:
+> actionlint
+.github/workflows/test.yaml:3:5: unexpected key "branch" for "push" section. expected one of "branches", "branches-ignore", "paths", "paths-ignore", "tags", "tags-ignore", "types", "workflows" [syntax-check]
+  |
+3 |     branch: main
+  |     ^~~~~~~
+.github/workflows/test.yaml:9:28: label "linux-latest" is unknown. available labels are "windows-latest", "windows-2019", "windows-2016", "ubuntu-latest", "ubuntu-20.04", "ubuntu-18.04", "ubuntu-16.04", "macos-latest", "macos-11", "macos-11.0", "macos-10.15", "self-hosted", "linux", "macos", "windows", "x64", "arm", "arm64". if it is a custom label for self-hosted runner, set list of labels in actionlint.yaml config file [runner-label]
+  |
+9 |         os: [macos-latest, linux-latest]
+  |                            ^~~~~~~~~~~~~
+.github/workflows/test.yaml:16:20: property "platform" is not defined in object type {os: string} [expression]
+   |
+16 |           key: ${{ matrix.platform }}-node-${{ hashFiles('**/package-lock.json') }}
+   |                    ^~~~~~~~~~~~~~~
+.github/workflows/test.yaml:17:17: receiver of object dereference "permissions" must be type of object but got "string" [expression]
+   |
+17 |         if: ${{ github.repository.permissions.admin == true }}
+   |                 ^~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+-->
 
 actionlint tries to catch errors as much as possible and make false positives as minimal as possible.
 
