@@ -1,0 +1,15 @@
+{
+  "name": "actionlint-playground",
+  "private": true,
+  "version": "0.0.0",
+  "description": "",
+  "main": "main.js",
+  "scripts": {
+    "build:go": "GOOS=js GOARCH=wasm go build -o main.wasm",
+    "serve": "python3 -m http.server 1234",
+    "test": "echo \"Error: no test specified\" && exit 1",
+    "install": "cp $(go env GOROOT)/misc/wasm/wasm_exec.js ."
+  },
+  "author": "rhysd <lin90162@yahoo.co.jp> (https://rhysd.github.io/)",
+  "license": "MIT"
+}

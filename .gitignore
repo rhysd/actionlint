@@ -8,3 +8,7 @@
 /crashers
 /man/actionlint.1
 /man/actionlint.1.html
+/wasm/wasm_exec.js
+/wasm/main.wasm
+/wasm/node_modules
+/wasm/dist
