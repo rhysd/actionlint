@@ -12,3 +12,4 @@
 /wasm/main.wasm
 /wasm/node_modules
 /wasm/dist
+/wasm/package-lock.json

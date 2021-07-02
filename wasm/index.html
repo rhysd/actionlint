@@ -3,34 +3,17 @@
   <head>
     <title>actionlint playground</title>
     <meta charset="utf-8"/>
+    <link rel="stylesheet" href="node_modules/codemirror/lib/codemirror.css">
     <link rel="stylesheet" href="style.css">
+    <script src="node_modules/codemirror/lib/codemirror.js"></script>
+    <script src="node_modules/codemirror/addon/selection/active-line.js"></script>
+    <script src="node_modules/codemirror/mode/yaml/yaml.js"></script>
     <script src="wasm_exec.js"></script>
-    <script src="index.js"></script>
   </head>
   <body>
     <main>
       <div class="split-pane">
-        <textarea id="editor">
-on:
-  push:
-    branch: main
-
-jobs:
-  test:
-    strategy:
-      matrix:
-        os: [macos-latest, linux-latest]
-    runs-on: ${{ matrix.os }}
-    steps:
-      - uses: actions/checkout@v2
-      - uses: actions/cache@v2
-        with:
-          path: ~/.npm
-          key: ${{ matrix.platform }}-node-${{ hashFiles('**/package-lock.json') }}
-        if: ${{ github.repository.permissions.admin == true }}
-      - run: npm install &amp;&amp; npm test
-        </textarea>
-        <span><button id="button">Check workflow</button></span>
+        <div id="editor"></div>
         <div id="error-msg"></div>
       </div>
       <div class="split-pane">
@@ -47,5 +30,6 @@ jobs:
         </table>
       </div>
     </main>
+    <script src="index.js"></script>
   </body>
 </html>

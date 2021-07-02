@@ -11,5 +11,8 @@
     "install": "cp $(go env GOROOT)/misc/wasm/wasm_exec.js ."
   },
   "author": "rhysd <lin90162@yahoo.co.jp> (https://rhysd.github.io/)",
-  "license": "MIT"
+  "license": "MIT",
+  "dependencies": {
+    "codemirror": "^5.62.0"
+  }
 }

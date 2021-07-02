@@ -25,9 +25,7 @@ func encodeErrorAsValue(err *actionlint.Error) js.Value {
 	return js.ValueOf(obj)
 }
 
-func onButtonClick(this js.Value, args []js.Value) interface{} {
-	source := window.Call("getYamlSource").String()
-
+func lint(source string) interface{} {
 	opts := actionlint.LinterOptions{}
 	linter, err := actionlint.NewLinter(ioutil.Discard, &opts)
 	if err != nil {
@@ -51,8 +49,13 @@ func onButtonClick(this js.Value, args []js.Value) interface{} {
 	return nil
 }
 
+func runActionlint(_this js.Value, args []js.Value) interface{} {
+	source := args[0].String()
+	return lint(source)
+}
+
 func main() {
-	cb := js.FuncOf(onButtonClick)
-	document.Call("getElementById", "button").Call("addEventListener", "click", cb)
+	window.Set("runActionlint", js.FuncOf(runActionlint))
+	lint(window.Call("getYamlSource").String()) // Show the first result
 	select {}
 }
