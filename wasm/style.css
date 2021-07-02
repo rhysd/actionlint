@@ -29,6 +29,10 @@ main {
   display: none;
 }
 
+#success-msg {
+  display: none;
+}
+
 .CodeMirror {
   height: auto;
   border: solid 1px #555;

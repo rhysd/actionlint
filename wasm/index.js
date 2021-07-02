@@ -1,4 +1,8 @@
 (function() {
+    const body = document.getElementById('lint-result-body');
+    const errorMessage = document.getElementById('error-msg');
+    const successMessage = document.getElementById('success-msg');
+
     const editor = CodeMirror(document.getElementById('editor'), {
         mode: 'yaml',
         theme: 'material-darker',
@@ -17,7 +21,9 @@
             },
         },
         value:
-`on:
+`# Paste your workflow YAML to this code editor
+
+on:
   push:
     branch: main
 
@@ -52,13 +58,11 @@ jobs:
         debounceId = window.setTimeout(() => {
             debounceId = null;
             errorMessage.style.display = 'none';
+            successMessage.style.display = 'none';
             editor.clearGutter('error-marker');
             window.runActionlint(editor.getValue());
         }, debounceInterval);
     });
-
-    const body = document.getElementById('lint-result-body');
-    const errorMessage = document.getElementById('error-msg');
 
     function getSource() {
         return editor.getValue();
@@ -72,8 +76,15 @@ jobs:
 
     function onCheckCompleted(errors) {
         body.textContent = '';
+
+        if (errors.length === 0) {
+            successMessage.style.display = 'block';
+            return;
+        }
+
         for (const error of errors) {
             const row = document.createElement('tr');
+            row.className = 'is-size-5';
             row.addEventListener('click', () => {
                 console.log(editor.getCursor(), error);
                 editor.setCursor({line: error.line - 1, ch: error.column - 1});
