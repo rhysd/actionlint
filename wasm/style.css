@@ -18,30 +18,12 @@ main {
   flex-direction: column;
 }
 
-#editor {
-  height: 100%;
-  width: 100%;
-  max-height: 60em;
-  border: solid 1px black;
+#error-msg {
+  display: none;
 }
 
 .CodeMirror {
   height: 100%;
-}
-
-#error-msg {
-  color: red;
-}
-
-table, th, td {
-  border: 1px solid black;
-}
-
-td {
-  padding: 4px;
-}
-
-table {
-  border-collapse: collapse;
-  border-spacing: 0px;
+  border: solid 1px #aaa;
+  border-radius: 4px;
 }

@@ -4,6 +4,7 @@
     <title>actionlint playground</title>
     <meta charset="utf-8"/>
     <link rel="stylesheet" href="node_modules/codemirror/lib/codemirror.css">
+    <link rel="stylesheet" href="node_modules/bulma/css/bulma.min.css">
     <link rel="stylesheet" href="style.css">
     <script src="node_modules/codemirror/lib/codemirror.js"></script>
     <script src="node_modules/codemirror/addon/selection/active-line.js"></script>
@@ -12,22 +13,14 @@
   </head>
   <body>
     <main>
+      <div id="editor" class="split-pane"></div>
       <div class="split-pane">
-        <div id="editor"></div>
-        <div id="error-msg"></div>
-      </div>
-      <div class="split-pane">
-        <table id="lint-result">
-          <thead>
-            <tr>
-              <th>Pos</th>
-              <th>Message</th>
-              <th>Kind</th>
-            </tr>
-          </thead>
+        <table id="lint-result" class="table is-hoverable">
           <tbody id="lint-result-body">
           </tbody>
         </table>
+        <div id="error-msg" class="notification is-danger is-light">
+      </div>
       </div>
     </main>
     <script src="index.js"></script>

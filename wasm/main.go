@@ -13,7 +13,7 @@ var (
 )
 
 func fail(err error, when string) {
-	window.Call("onCheckFailed", err.Error()+" on "+when)
+	window.Call("showError", err.Error()+" on "+when)
 }
 
 func encodeErrorAsValue(err *actionlint.Error) js.Value {

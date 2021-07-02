@@ -38,6 +38,7 @@ jobs:
 
         debounceId = window.setTimeout(() => {
             debounceId = null;
+            errorMessage.style.display = 'none';
             const src = editor.getValue();
             window.runActionlint(src);
         }, debounceInterval);
@@ -50,30 +51,43 @@ jobs:
         return editor.getValue();
     }
 
-    function onCheckFailed(message) {
+    function showError(message) {
         console.error('Check failed!:', message);
         errorMessage.textContent = message;
+        errorMessage.style.display = 'block';
     }
 
     function onCheckCompleted(errors) {
-        function td(row, text) {
-            const e = document.createElement('td');
-            e.textContent = text;
-            row.appendChild(e);
-        }
-
         body.textContent = '';
         for (const error of errors) {
+            console.log(error);
             const row = document.createElement('tr');
-            td(row, `${error.line}:${error.column}`);
-            td(row, error.message);
-            td(row, error.kind);
+
+            const pos = document.createElement('td');
+            const tag = document.createElement('span');
+            tag.className = 'tag is-info is-light';
+            tag.textContent = `line:${error.line}, col:${error.column}`;
+            pos.appendChild(tag);
+            row.appendChild(pos);
+
+            const desc = document.createElement('td');
+            const msg = document.createElement('span');
+            msg.textContent = error.message;
+            desc.appendChild(msg);
+            const kind = document.createElement('span');
+            kind.className = 'tag is-light';
+            kind.textContent = error.kind;
+            kind.style.marginLeft = '4px';
+            desc.appendChild(kind);
+
+            row.appendChild(desc);
+
             body.appendChild(row);
         }
     }
 
     window.getYamlSource = getSource;
-    window.onCheckFailed = onCheckFailed;
+    window.showError = showError;
     window.onCheckCompleted = onCheckCompleted;
 
     async function main() {
