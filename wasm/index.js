@@ -69,6 +69,11 @@ jobs:
         body.textContent = '';
         for (const error of errors) {
             const row = document.createElement('tr');
+            row.addEventListener('click', () => {
+                console.log(editor.getCursor(), error);
+                editor.setCursor({line: error.line-1, ch: error.column-1});
+                editor.focus();
+            });
 
             const pos = document.createElement('td');
             const tag = document.createElement('span');
