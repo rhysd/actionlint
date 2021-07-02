@@ -68,7 +68,6 @@ jobs:
     function onCheckCompleted(errors) {
         body.textContent = '';
         for (const error of errors) {
-            console.log(error);
             const row = document.createElement('tr');
 
             const pos = document.createElement('td');

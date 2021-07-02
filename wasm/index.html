@@ -5,6 +5,7 @@
     <meta charset="utf-8"/>
     <link rel="stylesheet" href="node_modules/codemirror/lib/codemirror.css">
     <link rel="stylesheet" href="node_modules/bulma/css/bulma.min.css">
+    <link rel="stylesheet" href="node_modules/devicon/devicon.min.css">
     <link rel="stylesheet" href="style.css">
     <script src="node_modules/codemirror/lib/codemirror.js"></script>
     <script src="node_modules/codemirror/addon/selection/active-line.js"></script>
@@ -12,6 +13,10 @@
     <script src="wasm_exec.js"></script>
   </head>
   <body>
+    <header>
+      <h1 class="title"><a id="logo" rel="noopener" href="https://github.com/rhysd/actionlint"><i class="devicon-github-original"></i></a> actionlint playground</h1>
+      <h2 class="subtitle">Static checker for GitHub Actions workflow files</h2>
+    </header>
     <main>
       <div id="editor" class="left-pane"></div>
       <div class="split-pane">
