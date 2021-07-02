@@ -5,6 +5,15 @@
         lineWrapping: true,
         autofocus: true,
         styleActiveLine: true,
+        extraKeys: {
+            Tab(cm) {
+                if (cm.somethingSelected()) {
+                    cm.execCommand('indentMore');
+                } else {
+                    cm.execCommand('insertSoftTab');
+                }
+            },
+        },
         value:
 `on:
   push:
