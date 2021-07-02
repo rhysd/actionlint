@@ -48,8 +48,7 @@ jobs:
         debounceId = window.setTimeout(() => {
             debounceId = null;
             errorMessage.style.display = 'none';
-            const src = editor.getValue();
-            window.runActionlint(src);
+            window.runActionlint(editor.getValue());
         }, debounceInterval);
     });
 
@@ -88,7 +87,6 @@ jobs:
             kind.textContent = error.kind;
             kind.style.marginLeft = '4px';
             desc.appendChild(kind);
-
             row.appendChild(desc);
 
             body.appendChild(row);
