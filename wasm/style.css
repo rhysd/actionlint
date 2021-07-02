@@ -4,7 +4,7 @@ body {
 }
 
 header {
-  margin: 0 0 1rem 1rem;
+  margin: 1rem;
 }
 
 #logo {
@@ -31,10 +31,14 @@ main {
 
 .CodeMirror {
   height: auto;
-  border: solid 1px #aaa;
+  border: solid 1px #555;
   border-radius: 4px;
 }
 
 .error-marker {
   width: 1em;
+}
+
+#lint-result {
+  border-radius: 4px;
 }

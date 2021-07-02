@@ -1,6 +1,7 @@
 (function() {
     const editor = CodeMirror(document.getElementById('editor'), {
         mode: 'yaml',
+        theme: 'material-darker',
         lineNumbers: true,
         lineWrapping: true,
         autofocus: true,
@@ -40,6 +41,7 @@ jobs:
     let debounceId = null;
     editor.on('change', function() {
         if (typeof window.runActionlint !== 'function') {
+            showError('Fetching Wasm file is not completed yet. Please wait for a while and try again.');
             return;
         }
 
@@ -80,7 +82,7 @@ jobs:
 
             const pos = document.createElement('td');
             const tag = document.createElement('span');
-            tag.className = 'tag is-info is-light';
+            tag.className = 'tag is-primary is-dark';
             tag.textContent = `line:${error.line}, col:${error.column}`;
             pos.appendChild(tag);
             row.appendChild(pos);
@@ -90,7 +92,7 @@ jobs:
             msg.textContent = error.message;
             desc.appendChild(msg);
             const kind = document.createElement('span');
-            kind.className = 'tag is-light';
+            kind.className = 'tag is-dark';
             kind.textContent = error.kind;
             kind.style.marginLeft = '4px';
             desc.appendChild(kind);
@@ -99,7 +101,7 @@ jobs:
             body.appendChild(row);
 
             const marker = document.createElement('div');
-            marker.style.color = '#a11';
+            marker.style.color = '#ff5370';
             marker.textContent = '●';
             editor.setGutterMarker(error.line - 1, 'error-marker', marker);
         }
