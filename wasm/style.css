@@ -34,3 +34,7 @@ main {
   border: solid 1px #aaa;
   border-radius: 4px;
 }
+
+.error-marker {
+  width: 1em;
+}

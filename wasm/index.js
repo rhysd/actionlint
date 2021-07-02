@@ -5,6 +5,7 @@
         lineWrapping: true,
         autofocus: true,
         styleActiveLine: true,
+        gutters: ['CodeMirror-linenumbers', 'error-marker'],
         extraKeys: {
             Tab(cm) {
                 if (cm.somethingSelected()) {
@@ -34,6 +35,7 @@ jobs:
         if: \${{ github.repository.permissions.admin == true }}
       - run: npm install && npm test`,
     });
+
     const debounceInterval = 300; // TODO: Change interval looking at desktop or mobile
     let debounceId = null;
     editor.on('change', function() {
@@ -48,6 +50,7 @@ jobs:
         debounceId = window.setTimeout(() => {
             debounceId = null;
             errorMessage.style.display = 'none';
+            editor.clearGutter('error-marker');
             window.runActionlint(editor.getValue());
         }, debounceInterval);
     });
@@ -71,7 +74,7 @@ jobs:
             const row = document.createElement('tr');
             row.addEventListener('click', () => {
                 console.log(editor.getCursor(), error);
-                editor.setCursor({line: error.line-1, ch: error.column-1});
+                editor.setCursor({line: error.line - 1, ch: error.column - 1});
                 editor.focus();
             });
 
@@ -94,6 +97,11 @@ jobs:
             row.appendChild(desc);
 
             body.appendChild(row);
+
+            const marker = document.createElement('div');
+            marker.style.color = '#a11';
+            marker.textContent = '●';
+            editor.setGutterMarker(error.line - 1, 'error-marker', marker);
         }
     }
 
