@@ -3,25 +3,13 @@
     const errorMessage = document.getElementById('error-msg');
     const successMessage = document.getElementById('success-msg');
 
-    const editor = CodeMirror(document.getElementById('editor'), {
-        mode: 'yaml',
-        theme: 'material-darker',
-        lineNumbers: true,
-        lineWrapping: true,
-        autofocus: true,
-        styleActiveLine: true,
-        gutters: ['CodeMirror-linenumbers', 'error-marker'],
-        extraKeys: {
-            Tab(cm) {
-                if (cm.somethingSelected()) {
-                    cm.execCommand('indentMore');
-                } else {
-                    cm.execCommand('insertSoftTab');
-                }
-            },
-        },
-        value:
-`# Paste your workflow YAML to this code editor
+    function getDefaultSource() {
+        const p = new URLSearchParams(window.location.search).get('s');
+        if (p !== null) {
+            return p;
+        }
+
+        return `# Paste your workflow YAML to this code editor
 
 on:
   push:
@@ -40,14 +28,34 @@ jobs:
           path: ~/.npm
           key: \${{ matrix.platform }}-node-\${{ hashFiles('**/package-lock.json') }}
         if: \${{ github.repository.permissions.admin == true }}
-      - run: npm install && npm test`,
+      - run: npm install && npm test`;
+    }
+
+    const editor = CodeMirror(document.getElementById('editor'), {
+        mode: 'yaml',
+        theme: 'material-darker',
+        lineNumbers: true,
+        lineWrapping: true,
+        autofocus: true,
+        styleActiveLine: true,
+        gutters: ['CodeMirror-linenumbers', 'error-marker'],
+        extraKeys: {
+            Tab(cm) {
+                if (cm.somethingSelected()) {
+                    cm.execCommand('indentMore');
+                } else {
+                    cm.execCommand('insertSoftTab');
+                }
+            },
+        },
+        value: getDefaultSource(),
     });
 
     const debounceInterval = isMobile.phone ? 1000 : 300;
     let debounceId = null;
     editor.on('change', function(_, e) {
         if (typeof window.runActionlint !== 'function') {
-            showError('Fetching Wasm file is not completed yet. Please wait for a while and try again.');
+            showError('Preparing Wasm file is not completed yet. Please wait for a while and try again.');
             return;
         }
 
