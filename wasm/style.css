@@ -38,11 +38,7 @@ main {
 }
 
 
-#error-msg {
-  display: none;
-}
-
-#success-msg {
+#error-msg, #success-msg {
   display: none;
 }
 

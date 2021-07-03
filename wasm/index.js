@@ -45,7 +45,7 @@ jobs:
 
     const debounceInterval = isMobile.phone ? 1000 : 300;
     let debounceId = null;
-    editor.on('change', function() {
+    editor.on('change', function(_, e) {
         if (typeof window.runActionlint !== 'function') {
             showError('Fetching Wasm file is not completed yet. Please wait for a while and try again.');
             return;
@@ -55,13 +55,20 @@ jobs:
             window.clearTimeout(debounceId);
         }
 
-        debounceId = window.setTimeout(() => {
+        function startActionlint() {
             debounceId = null;
             errorMessage.style.display = 'none';
             successMessage.style.display = 'none';
             editor.clearGutter('error-marker');
             window.runActionlint(editor.getValue());
-        }, debounceInterval);
+        }
+
+        if (e.origin === 'paste') {
+            startActionlint(); // When pasting some code, apply actionlint instantly
+            return;
+        }
+
+        debounceId = window.setTimeout(() => startActionlint(), debounceInterval);
     });
 
     function getSource() {
