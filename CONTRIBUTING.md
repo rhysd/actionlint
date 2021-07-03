@@ -73,3 +73,26 @@ or
 ```sh
 make ./man/actionlint.1
 ```
+
+## How to develop playground
+
+Visit [`playground/README.md`](./playground/README.md).
+
+## How to deploy playground
+
+Run [`deploy.bash`](./playground/deploy.bash) at root of repository. It does:
+
+1. Ensures to install dependencies and to build `main.wasm`
+2. Copy all assets to `./playground-dist` directory
+3. Switch branch to `gh-pages`
+4. Move all files in `./playground-dist` to root of repository and add to repository
+5. Make commit for deployment
+
+```sh
+# Prepare deployment
+bash ./playground/deploy.bash
+# Check it works fine by visiting localhost:1234
+python3 -m http.server 1234
+# If it looks good, deploy it
+git push
+```
