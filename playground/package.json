@@ -5,9 +5,10 @@
   "description": "",
   "main": "main.js",
   "scripts": {
+    "lint:stylelint": "stylelint style.css",
     "lint:prettier": "prettier --check index.js",
     "lint:eslint": "eslint index.js",
-    "lint": "npm run lint:prettier && npm run lint:eslint",
+    "lint": "npm run lint:prettier && npm run lint:eslint && npm run lint:stylelint",
     "prettier": "prettier --write index.js",
     "test": "echo \"Error: no test specified\" && exit 1"
   },
@@ -22,6 +23,8 @@
   },
   "devDependencies": {
     "eslint": "^7.30.0",
-    "prettier": "^2.3.2"
+    "prettier": "^2.3.2",
+    "stylelint": "^13.13.1",
+    "stylelint-config-standard": "^22.0.0"
   }
 }

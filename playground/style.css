@@ -37,8 +37,8 @@ main {
   }
 }
 
-
-#error-msg, #success-msg {
+#error-msg,
+#success-msg {
   display: none;
 }
 
