@@ -1,0 +1,5 @@
+/lib
+/main.wasm
+/node_modules
+/dist
+/package-lock.json
