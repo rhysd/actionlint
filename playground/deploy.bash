@@ -30,6 +30,10 @@ for f in "${files[@]}"; do
     cp -R "./playground/${f}" "./playground-dist/${f}"
 done
 
+echo 'Applying wasm-opt to ./playground-dist/main.wasm'
+wasm-opt -O -o ./playground-dist/opt.wasm ./playground-dist/main.wasm
+mv ./playground-dist/opt.wasm ./playground-dist/main.wasm
+
 echo 'Switching to gh-pages branch'
 git checkout gh-pages
 

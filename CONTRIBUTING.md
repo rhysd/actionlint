@@ -84,6 +84,7 @@ Run [`deploy.bash`](./playground/deploy.bash) at root of repository. It does:
 
 1. Ensures to install dependencies and to build `main.wasm`
 2. Copy all assets to `./playground-dist` directory
+3. Optimize `main.wasm` with `wasm-opt` which is a part of [Binaryen](https://github.com/WebAssembly/binaryen) toolchain
 3. Switch branch to `gh-pages`
 4. Move all files in `./playground-dist` to root of repository and add to repository
 5. Make commit for deployment
