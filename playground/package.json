@@ -1,0 +1,19 @@
+{
+  "name": "actionlint-playground",
+  "private": true,
+  "version": "0.0.0",
+  "description": "",
+  "main": "main.js",
+  "scripts": {
+    "test": "echo \"Error: no test specified\" && exit 1"
+  },
+  "author": "rhysd <lin90162@yahoo.co.jp> (https://rhysd.github.io/)",
+  "license": "MIT",
+  "dependencies": {
+    "bulma": "^0.9.3",
+    "bulmaswatch": "^0.8.1",
+    "codemirror": "^5.62.0",
+    "devicon": "^2.12.0",
+    "ismobilejs": "^1.1.1"
+  }
+}

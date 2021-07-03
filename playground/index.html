@@ -1,0 +1,49 @@
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <title>actionlint playground</title>
+    <meta charset="utf-8"/>
+    <meta name="twitter:card" content="summary_large_image"/>
+    <meta name="twitter:title" content="actionlint, a static checker for GitHub Actions workflow files"/>
+    <meta name="twitter:image" content="https://github.com/rhysd/ss/blob/master/actionlint/ogp.jpg?raw=true"/>
+    <meta name="twitter:image:alt" content="Screenshot of actionlint playground"/>
+    <link rel="stylesheet" href="lib/css/codemirror.css">
+    <link rel="stylesheet" href="lib/css/material-darker.css">
+    <link rel="stylesheet" href="lib/css/bulma.min.css">
+    <link rel="stylesheet" href="lib/css/bulmaswatch.min.css">
+    <link rel="stylesheet" href="lib/css/devicon.min.css">
+    <link rel="stylesheet" href="style.css">
+    <script src="lib/js/codemirror.js"></script>
+    <script src="lib/js/active-line.js"></script>
+    <script src="lib/js/yaml.js"></script>
+    <script src="lib/js/isMobile.min.js"></script>
+    <script src="lib/js/wasm_exec.js"></script>
+  </head>
+  <body>
+    <header>
+      <h1 class="title"><a id="logo" rel="noopener" href="https://github.com/rhysd/actionlint"><i class="devicon-github-original"></i></a> actionlint playground</h1>
+      <h2 class="subtitle">Static checker for GitHub Actions workflow files</h2>
+    </header>
+    <main>
+      <div id="editor" class="split-pane"></div>
+      <div class="split-pane">
+        <table id="lint-result" class="table is-hoverable">
+          <tbody id="lint-result-body">
+          </tbody>
+        </table>
+        <div id="error-msg" class="notification is-danger is-light is-size-5">
+        </div>
+        <div id="success-msg" class="notification is-success is-light is-size-5">Yay! No error was detected.</div>
+      </div>
+    </main>
+    <footer class="footer">
+      <div class="content has-text-centered has-text-grey-light">
+        <p>
+          <a class="has-text-grey-lighter" rel="noopener" href="https://github.com/rhysd/actionlint">actionlint</a> by <a class="has-text-grey-lighter" rel="noopener" href="https://github.com/rhysd">@rhysd</a>.
+          The source code and website content are licensed <a class="has-text-grey-lighter" rel="noopener" href="https://github.com/rhysd/actionlint/blob/main/LICENSE.txt">MIT</a>.
+        </p>
+      </div>
+    </footer>
+    <script src="index.js"></script>
+  </body>
+</html>

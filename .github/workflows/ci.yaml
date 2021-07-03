@@ -52,4 +52,4 @@ jobs:
       - run: go get honnef.co/go/tools/cmd/staticcheck@latest
       - name: Add staticcheck to PATH
         run: echo "$(go env GOPATH)/bin" >> "$GITHUB_PATH"
-      - run: staticcheck ./...
+      - run: staticcheck ./ ./cmd/actionlint

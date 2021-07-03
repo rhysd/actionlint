@@ -3,7 +3,7 @@ actionlint
 [![CI Badge][]][CI]
 [![API Document][api-badge]][apidoc]
 
-[actionlint][repo] is a static checker for GitHub Actions workflow files.
+[actionlint][repo] is a static checker for GitHub Actions workflow files. [Try it online!][playground]
 
 Features:
 
@@ -151,6 +151,16 @@ go install github.com/rhysd/actionlint/cmd/actionlint@latest
 # Install the head of main branch
 go install github.com/rhysd/actionlint/cmd/actionlint
 ```
+
+## Try it online
+
+Thanks to WebAssembly, actionlint playground is available on your browser. It never sends any data to outside of your browser.
+
+https://rhysd.github.io/actionlint/
+
+Paste your workflow content to the code editor at left pane in the page. It automatically shows the results at right pane
+in the page. When editing the workflow in the code editor, the results will be updated on the fly. Clicking an error message
+in the results table moves a cursor to position of the error in the code editor.
 
 # Usage
 
@@ -1487,6 +1497,7 @@ actionlint is distributed under [the MIT license](./LICENSE.txt).
 [api-badge]: https://pkg.go.dev/badge/github.com/rhysd/actionlint.svg
 [apidoc]: https://pkg.go.dev/github.com/rhysd/actionlint
 [repo]: https://github.com/rhysd/actionlint
+[playground]: https://rhysd.github.io/actionlint/
 [shellcheck]: https://github.com/koalaman/shellcheck
 [shellcheck-install]: https://github.com/koalaman/shellcheck#installing
 [pyflakes]: https://github.com/PyCQA/pyflakes
