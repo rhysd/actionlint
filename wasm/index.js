@@ -43,7 +43,7 @@ jobs:
       - run: npm install && npm test`,
     });
 
-    const debounceInterval = 300; // TODO: Change interval looking at desktop or mobile
+    const debounceInterval = isMobile.phone ? 1000 : 300;
     let debounceId = null;
     editor.on('change', function() {
         if (typeof window.runActionlint !== 'function') {

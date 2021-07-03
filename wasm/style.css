@@ -17,6 +17,12 @@ main {
   flex-direction: row;
 }
 
+@media (max-width: 1200px) {
+  main {
+    flex-direction: column;
+  }
+}
+
 .split-pane {
   box-sizing: border-box;
   padding: 8px;
@@ -24,6 +30,13 @@ main {
   display: flex;
   flex-direction: column;
 }
+
+@media (max-width: 1200px) {
+  .split-pane {
+    width: 100%;
+  }
+}
+
 
 #error-msg {
   display: none;
