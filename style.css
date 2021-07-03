@@ -1,0 +1,58 @@
+body {
+  padding: 8px;
+  width: 100%;
+}
+
+header {
+  margin: 1rem;
+}
+
+#logo {
+  color: inherit;
+}
+
+main {
+  width: 100%;
+  display: flex;
+  flex-direction: row;
+}
+
+@media (max-width: 1200px) {
+  main {
+    flex-direction: column;
+  }
+}
+
+.split-pane {
+  box-sizing: border-box;
+  padding: 8px;
+  width: 50%;
+  display: flex;
+  flex-direction: column;
+}
+
+@media (max-width: 1200px) {
+  .split-pane {
+    width: 100%;
+  }
+}
+
+
+#error-msg, #success-msg {
+  display: none;
+}
+
+.CodeMirror {
+  height: auto;
+  border: solid 1px #555;
+  border-radius: 4px;
+}
+
+.error-marker {
+  width: 1em;
+}
+
+#lint-result {
+  border-radius: 4px;
+  cursor: pointer;
+}
