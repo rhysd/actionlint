@@ -5,7 +5,9 @@
   "description": "",
   "main": "main.js",
   "scripts": {
-    "lint": "prettier --check index.js",
+    "lint:prettier": "prettier --check index.js",
+    "lint:eslint": "eslint index.js",
+    "lint": "npm run lint:prettier && npm run lint:eslint",
     "prettier": "prettier --write index.js",
     "test": "echo \"Error: no test specified\" && exit 1"
   },
@@ -19,6 +21,7 @@
     "ismobilejs": "^1.1.1"
   },
   "devDependencies": {
+    "eslint": "^7.30.0",
     "prettier": "^2.3.2"
   }
 }
