@@ -54,4 +54,5 @@ main {
 
 #lint-result {
   border-radius: 4px;
+  cursor: pointer;
 }
