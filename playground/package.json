@@ -5,10 +5,7 @@
   "description": "",
   "main": "main.js",
   "scripts": {
-    "build": "GOOS=js GOARCH=wasm go build -o main.wasm",
-    "serve": "python3 -m http.server 1234",
-    "test": "echo \"Error: no test specified\" && exit 1",
-    "prepare": "bash ./post-install.bash"
+    "test": "echo \"Error: no test specified\" && exit 1"
   },
   "author": "rhysd <lin90162@yahoo.co.jp> (https://rhysd.github.io/)",
   "license": "MIT",
