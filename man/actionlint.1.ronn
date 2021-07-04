@@ -102,11 +102,57 @@ configuration file.
     $ actionlint -init-config
 
 
+## USAGE ON CI SERVICES
+
+Please try a download script.
+
+https://github.com/rhysd/actionlint/blob/main/scripts/download-actionlint.bash
+
+It downloads the latest version of actionlint executable to the current directory automatically.
+On GitHub Actions environment, it sets a file path to executable to`executable` output for using
+the executable in the following steps easily.
+
+Here is an example of simple workflow to run actionlint on GitHub Actions. Please ensure `shell: bash`
+since the default shell for Windows runners is `pwsh`.
+
+```
+name: Lint GitHub Actions workflows
+on: [push, pull_request]
+
+jobs:
+  actionlint:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v2
+      - name: Download actionlint
+        id: get_actionlint
+        run: bash <(curl https://raw.githubusercontent.com/rhysd/actionlint/main/scripts/download-actionlint.bash)
+        shell: bash
+      - name: Check workflow files
+        run: ${{ steps.get_actionlint.outputs.executable }} -color
+        shell: bash
+```
+
+or simply run
+
+```yaml
+- name: Check workflow files
+  run: |
+    bash <(curl https://raw.githubusercontent.com/rhysd/actionlint/main/scripts/download-actionlint.bash)
+    ./actionlint -color
+  shell: bash
+```
+
+
 ## REFERENCES
 
 ### List of all checks
 
 https://github.com/rhysd/actionlint/blob/main/README.md#checks
+
+### Online playground
+
+https://rhysd.github.io/actionlint/
 
 ### Workflow syntax
 

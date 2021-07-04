@@ -100,7 +100,8 @@ Prebuilt binaries are built at each release by CI for the following OS and arch:
 
 Please try [the download script](./scripts/download-actionlint.bash). It downloads the latest version of actionlint
 (`actionlint.exe` on Windows and `actionlint` on other OSes) to the current directory automatically. On GitHub Actions
-environment, it sets `executable` output to use the executable in the following steps easily.
+environment, it sets a file path of downloaded executable to `executable` output in order to use the executable in the
+following steps easily.
 
 Here is an example of simple workflow to run actionlint on GitHub Actions. Please ensure `shell: bash` since the default
 shell for Windows runners is `pwsh`.
