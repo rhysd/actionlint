@@ -1,11 +1,43 @@
+<a name="v1.3.2"></a>
+# [v1.3.2](https://github.com/rhysd/actionlint/releases/tag/v1.3.2) - 04 Jul 2021
+
+- [actionlint playground](https://rhysd.github.io/actionlint) was implemented thanks to WebAssembly. actionlint is now available on browser without installing anything. The playground does not send user's workflow content to any remote server.
+- Some margins are added to code snippets in error message. See below examples. I believe it's easier to recognize code in bunch of error messages than before.
+- Line number is parsed from YAML syntax error. Since errors from [go-yaml/go](https://github.com/go-yaml/yaml) don't have position information, previously YAML syntax errors are reported at line:0, col:0. Now line number is parsed from error message and set correctly (if error message includes line number).
+- Code snippet is shown in error message even if column number of the error position is unknown.
+- Fix error message on detecting duplicate of step IDs.
+- Fix and improve validating arguments of `format()` calls.
+- All rule documents have links to actionlint playground with example code.
+- `man` manual covers usage of actionlint on CI services.
+
+Error message until v1.3.1:
+
+```
+test.yaml:4:13: invalid CRON format "0 */3 * *" in schedule event: Expected exactly 5 fields, found 4: 0 */3 * * [events]
+4|     - cron: '0 */3 * *'
+ |             ^~
+```
+
+Error message at v1.3.2:
+
+```
+test.yaml:4:13: invalid CRON format "0 */3 * *" in schedule event: Expected exactly 5 fields, found 4: 0 */3 * * [events]
+  |
+4 |     - cron: '0 */3 * *'
+  |             ^~
+```
+
+[Changes][v1.3.2]
+
+
 <a name="v1.3.1"></a>
 # [v1.3.1](https://github.com/rhysd/actionlint/releases/tag/v1.3.1) - 30 Jun 2021
 
 - Files are checked in parallel. This made actionlint around 1.3x faster with 3 workflow files in my environment
-- Manual for `man` command was added. `actionlint.1` is included in released archives
+- Manual for `man` command was added. `actionlint.1` is included in released archives. If you installed actionlint via Homebrew, the manual is also installed automatically
 - `-version` now reports how the binary was built (Go version, arch, os, ...)
-- Added `Command` struct to manage entire command lifecycle
-- Order of checked files is now stable
+- Added [`Command`](https://pkg.go.dev/github.com/rhysd/actionlint#Command) struct to manage entire command lifecycle
+- Order of checked files is now stable. When all the workflows in the current repository are checked, the order is sorted by file names
 - Added fuzz target for rule checkers
 
 [Changes][v1.3.1]
@@ -108,6 +140,7 @@ See documentation for more details:
 [Changes][v1.0.0]
 
 
+[v1.3.2]: https://github.com/rhysd/actionlint/compare/v1.3.1...v1.3.2
 [v1.3.1]: https://github.com/rhysd/actionlint/compare/v1.3.0...v1.3.1
 [v1.3.0]: https://github.com/rhysd/actionlint/compare/v1.2.0...v1.3.0
 [v1.2.0]: https://github.com/rhysd/actionlint/compare/v1.1.2...v1.2.0
