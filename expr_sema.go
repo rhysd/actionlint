@@ -465,7 +465,7 @@ func checkFuncSignature(n *FuncCallNode, sig *FuncSignature, args []ExprType) *E
 		}
 		return errorfAtExpr(
 			n,
-			"number of arguments is wrong. function %q takes %s%d parameters but %d arguments are provided",
+			"number of arguments is wrong. function %q takes %s%d parameters but %d arguments are given",
 			sig.String(),
 			atLeast,
 			lp,

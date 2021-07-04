@@ -710,15 +710,15 @@ func TestExprSemanticsCheckError(t *testing.T) {
 			what:  "wrong number of arguments at function call",
 			input: "contains('foo')",
 			expected: []string{
-				"number of arguments is wrong. function \"contains(string, string) -> bool\" takes 2 parameters but 1 arguments are provided",
-				"number of arguments is wrong. function \"contains(array<any>, any) -> bool\" takes 2 parameters but 1 arguments are provided",
+				"number of arguments is wrong. function \"contains(string, string) -> bool\" takes 2 parameters but 1 arguments are given",
+				"number of arguments is wrong. function \"contains(array<any>, any) -> bool\" takes 2 parameters but 1 arguments are given",
 			},
 		},
 		{
 			what:  "wrong number of arguments at function call for variable length parameters",
 			input: "hashFiles()",
 			expected: []string{
-				"number of arguments is wrong. function \"hashFiles(string...) -> string\" takes at least 1 parameters but 0 arguments are provided",
+				"number of arguments is wrong. function \"hashFiles(string...) -> string\" takes at least 1 parameters but 0 arguments are given",
 			},
 		},
 		{
@@ -783,7 +783,7 @@ func TestExprSemanticsCheckError(t *testing.T) {
 			what:  "zero format arguments for format() call",
 			input: "format('hi')",
 			expected: []string{
-				"takes at least 2 parameters but 1 arguments are provided",
+				"takes at least 2 parameters but 1 arguments are given",
 			},
 		},
 		{
