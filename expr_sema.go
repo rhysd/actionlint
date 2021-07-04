@@ -2,8 +2,12 @@ package actionlint
 
 import (
 	"fmt"
+	"regexp"
+	"strconv"
 	"strings"
 )
+
+var reFormatPlaceholder = regexp.MustCompile(`{\d+}`)
 
 func ordinal(i int) string {
 	suffix := "th"
@@ -512,26 +516,26 @@ func (sema *ExprSemanticsChecker) checkBuiltinFunctionCall(n *FuncCallNode, sig 
 		if !ok {
 			return
 		}
+		l := len(n.Args) - 1 // -1 means removing first format string argument
 
-		// Count number of placeholders in format string
-		c := 0
-		for i := 0; ; i++ {
-			p := fmt.Sprintf("{%d}", i)
-			if !strings.Contains(lit.Value, p) {
-				break
-			}
-			c++
+		// Find all placeholders in format string
+		holders := make(map[int]struct{}, l)
+		for _, m := range reFormatPlaceholder.FindAllString(lit.Value, -1) {
+			i, _ := strconv.Atoi(m[1 : len(m)-1])
+			holders[i] = struct{}{}
 		}
 
-		// -1 means removing first format string argument
-		if len(n.Args)-1 != c {
-			sema.errorf(
-				n,
-				"format string %q contains %d placeholders but %d arguments are given to format",
-				lit.Value,
-				c,
-				len(n.Args)-1,
-			)
+		for i := 0; i < l; i++ {
+			_, ok := holders[i]
+			if !ok {
+				sema.errorf(n, "format string %q does not contain placeholder {%d}. remove argument which is unused in the format string", lit.Value, i)
+				continue
+			}
+			delete(holders, i) // forget it to check unused placeholders
+		}
+
+		for i := range holders {
+			sema.errorf(n, "format string %q contains placeholder {%d} but only %d arguments are given to format", lit.Value, i, l)
 		}
 	}
 }

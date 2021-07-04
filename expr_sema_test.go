@@ -481,6 +481,16 @@ func TestExprSemanticsCheckOK(t *testing.T) {
 			input:    "JOB.CONTAINER.NETWORK",
 			expected: StringType{},
 		},
+		{
+			what:     "format() function arguments varlidation",
+			input:    "format('{0}{0}{0} {1}{2}{1} {1}{2}{1}{2} {0} {1}{1}{1} {2}{2}{2} {0}{0}{0}{0} {0}', 1, 'foo', true)",
+			expected: StringType{},
+		},
+		{
+			what:     "braces not for placeholders in format string of format() call",
+			input:    "format('{0} {} {x} {', 1)",
+			expected: StringType{},
+		},
 	}
 
 	for _, tc := range testCases {
@@ -742,16 +752,38 @@ func TestExprSemanticsCheckError(t *testing.T) {
 		},
 		{
 			what:  "less arguments for format() builtin function call",
-			input: "format('format {0} {1} {2}', 'foo')",
+			input: "format('format {0} {1}', 'foo')",
 			expected: []string{
-				"format string \"format {0} {1} {2}\" contains 3 placeholders but 1 arguments are given to format",
+				"format string \"format {0} {1}\" contains placeholder {1} but only 1 arguments are given to format",
 			},
 		},
 		{
 			what:  "more arguments for format() builtin function call",
 			input: "format('format {0} {1} {2}', 'foo', 1, true, null)",
 			expected: []string{
-				"format string \"format {0} {1} {2}\" contains 3 placeholders but 4 arguments are given to format",
+				"format string \"format {0} {1} {2}\" does not contain placeholder {3}. remove argument which is unused in the format string",
+			},
+		},
+		{
+			what:  "unused placeholder in format string of format()",
+			input: "format('format {0} {2}', 1, 2, 3)",
+			expected: []string{
+				"format string \"format {0} {2}\" does not contain placeholder {1}. remove argument which is unused in the format string",
+			},
+		},
+		{
+			what:  "missing placeholder and less argument at the same time in format string of format()",
+			input: "format('format {0} {2}', 1, 2)",
+			expected: []string{
+				"format string \"format {0} {2}\" does not contain placeholder {1}. remove argument which is unused in the format string",
+				"format string \"format {0} {2}\" contains placeholder {2} but only 2 arguments are given to format",
+			},
+		},
+		{
+			what:  "zero format arguments for format() call",
+			input: "format('hi')",
+			expected: []string{
+				"takes at least 2 parameters but 1 arguments are provided",
 			},
 		},
 		{

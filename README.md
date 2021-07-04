@@ -526,7 +526,7 @@ test.yaml:15:51: 2nd argument of function call is not assignable. "object" canno
    |
 15 |       - run: echo "${{ startsWith('hello, world', github.event) }}"
    |                                                   ^~~~~~~~~~~~~
-test.yaml:20:24: format string "{0}{1}" contains 2 placeholders but 3 arguments are given to format [expression]
+test.yaml:20:24: format string "{0}{1}" does not contain placeholder {2}. remove argument which is unused in the format string [expression]
    |
 20 |       - run: echo "${{ format('{0}{1}', 1, 2, 3) }}"
    |                        ^~~~~~~~~~~~~~~~
