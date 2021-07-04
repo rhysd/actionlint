@@ -1,2 +1,2 @@
-test.yaml:10:13: step ID "line:7,col:13" duplicates. previously defined at STEP_ID. step ID must be unique within a job. note that step ID is case insensitive [step-id]
+test.yaml:10:13: step ID "STEP_ID" duplicates. previously defined at line:7,col:13. step ID must be unique within a job. note that step ID is case insensitive [step-id]
 test.yaml:12:3: key "test" is duplicate in "jobs" section. previously defined at line:3,col:3. note that key names are case insensitive [syntax-check]

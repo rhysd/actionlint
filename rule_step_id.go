@@ -35,7 +35,7 @@ func (rule *RuleStepID) VisitStep(n *Step) error {
 
 	id := strings.ToLower(n.ID.Value)
 	if prev, ok := rule.seen[id]; ok {
-		rule.errorf(n.ID.Pos, "step ID %q duplicates. previously defined at %s. step ID must be unique within a job. note that step ID is case insensitive", prev.String(), n.ID.Value)
+		rule.errorf(n.ID.Pos, "step ID %q duplicates. previously defined at %s. step ID must be unique within a job. note that step ID is case insensitive", n.ID.Value, prev.String())
 		return nil
 	}
 	rule.seen[id] = n.ID.Pos
