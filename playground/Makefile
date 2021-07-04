@@ -22,6 +22,6 @@ main.wasm: main.go
 
 clean:
 	rm -f ./main.wasm
-	rm -rf ./lib ./node_modules
+	rm -rf ./lib
 
 .PHONY: build install serve clean
