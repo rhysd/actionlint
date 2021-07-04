@@ -1,4 +1,4 @@
-(function() {
+(function () {
     const body = document.getElementById('lint-result-body');
     const errorMessage = document.getElementById('error-msg');
     const successMessage = document.getElementById('success-msg');
@@ -53,7 +53,7 @@ jobs:
 
     const debounceInterval = isMobile.phone ? 1000 : 300;
     let debounceId = null;
-    editor.on('change', function(_, e) {
+    editor.on('change', function (_, e) {
         if (typeof window.runActionlint !== 'function') {
             showError('Preparing Wasm file is not completed yet. Please wait for a while and try again.');
             return;
@@ -101,7 +101,7 @@ jobs:
             const row = document.createElement('tr');
             row.className = 'is-size-5';
             row.addEventListener('click', () => {
-                editor.setCursor({line: error.line - 1, ch: error.column - 1});
+                editor.setCursor({ line: error.line - 1, ch: error.column - 1 });
                 editor.focus();
             });
 
@@ -138,7 +138,7 @@ jobs:
 
     async function main() {
         const go = new Go();
-        const result = await WebAssembly.instantiateStreaming(fetch("main.wasm"), go.importObject);
+        const result = await WebAssembly.instantiateStreaming(fetch('main.wasm'), go.importObject);
         await go.run(result.instance); // This function will never return
     }
 
