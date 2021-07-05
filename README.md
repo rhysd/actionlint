@@ -795,8 +795,6 @@ test.yaml:14:9: shellcheck reported issue in this script: SC2086:info:1:6: Doubl
    |         ^~~~
 ```
 
-[Playground](https://rhysd.github.io/actionlint/?s=on%3A+push%0Ajobs%3A%0A++test%3A%0A++++runs-on%3A+ubuntu-latest%0A++++steps%3A%0A++++++-+run%3A+echo+%24FOO%0A++test-win%3A%0A++++runs-on%3A+windows-latest%0A++++steps%3A%0A++++++-+run%3A+echo+%24FOO%0A++++++-+run%3A+echo+%24FOO%0A++++++++shell%3A+bash)
-
 [shellcheck][] is a famous linter for ShellScript. actionlint runs shellcheck for scripts at `run:` step in workflow.
 For installing shellcheck, see [the official installation document][shellcheck-install].
 
@@ -864,8 +862,6 @@ test.yaml:23:9: pyflakes reported issue in this script: 1:1 'time.sleep' importe
 23 |       - run: |
    |         ^~~~
 ```
-
-[Playground](https://rhysd.github.io/actionlint/?s=on%3A+push%0Ajobs%3A%0A++linux%3A%0A++++runs-on%3A+ubuntu-latest%0A++++steps%3A%0A++++++-+run%3A+print%28%27%24%7B%7B+runner.os+%7D%7D%27%29%0A++++++++shell%3A+python%0A++++++-+run%3A+print%28hello%29%0A++++++++shell%3A+python%0A++linux2%3A%0A++++runs-on%3A+ubuntu-latest%0A++++defaults%3A%0A++++++run%3A%0A++++++++shell%3A+python%0A++++steps%3A%0A++++++-+run%3A+%7C%0A++++++++++import+sys%0A++++++++++for+sys+in+%5B%27system1%27%2C+%27system2%27%5D%3A%0A++++++++++++print%28sys%29%0A++++++-+run%3A+%7C%0A++++++++++from+time+import+sleep%0A++++++++++print%28100%29)
 
 Python script can be written in `run:` when `shell: python` is configured.
 
