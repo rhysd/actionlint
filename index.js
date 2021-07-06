@@ -89,6 +89,10 @@ jobs:
         errorMessage.style.display = 'block';
     }
 
+    function dismissLoading() {
+        document.getElementById('loading').style.display = 'none';
+    }
+
     function onCheckCompleted(errors) {
         body.textContent = '';
 
@@ -135,6 +139,7 @@ jobs:
     window.getYamlSource = getSource;
     window.showError = showError;
     window.onCheckCompleted = onCheckCompleted;
+    window.dismissLoading = dismissLoading;
 
     async function main() {
         const go = new Go();
