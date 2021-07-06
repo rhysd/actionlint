@@ -56,6 +56,7 @@ func runActionlint(_this js.Value, args []js.Value) interface{} {
 
 func main() {
 	window.Set("runActionlint", js.FuncOf(runActionlint))
+	window.Call("dismissLoading")
 	lint(window.Call("getYamlSource").String()) // Show the first result
 	select {}
 }
