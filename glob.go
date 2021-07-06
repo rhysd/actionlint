@@ -152,7 +152,7 @@ func (v *globValidator) validateNext() bool {
 
 	if v.scan.Peek() == scanner.EOF {
 		if v.isRef && (c == '/' || c == '.') {
-			v.invalidRefChar(c, "ref name must not end with / nor .")
+			v.invalidRefChar(c, "ref name must not end with / and .")
 		}
 		return false
 	}
