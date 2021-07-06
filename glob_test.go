@@ -225,7 +225,7 @@ func TestValidateGlobSyntaxError(t *testing.T) {
 	}
 }
 
-func TestValidateGitRefNameInvalidCharacter(t *testing.T) {
+func TestValidateGlobGitRefNameInvalidCharacter(t *testing.T) {
 	testCases := []struct {
 		what        string
 		input       string
@@ -298,4 +298,42 @@ func TestValidateGitRefNameInvalidCharacter(t *testing.T) {
 	}
 }
 
-// TODO: Test column
+func TestValidateGlobErrorColumn(t *testing.T) {
+	testCases := []struct {
+		input string
+		col   int
+	}{
+		{"", 0},
+		{"!", 1},
+		{"?", 1},
+		{"+", 1},
+		{"*?", 2},
+		{"a++", 3},
+		{"a\n", 0}, // fallback
+		{"[]", 2},
+		{"[0", 2},
+		{"[0-]", 4},
+		{"[0-", 3},
+		{"[b-a]", 4},
+		{"/foo", 1},
+		{"foo/", 4},
+		{"foo.", 4},
+		{`\[`, 2},
+		{`foo bar`, 4},
+	}
+
+	for _, tc := range testCases {
+		t.Run(tc.input, func(t *testing.T) {
+			errs := ValidateRefGlob(tc.input)
+
+			if len(errs) != 1 {
+				t.Fatalf("wanted 1 error from %q but got %d errors: %#v", tc.input, len(errs), errs)
+			}
+
+			want, have := tc.col, errs[0].Column
+			if want != have {
+				t.Errorf("error position is unexpected. wanted col:%d but have col:%d: %s", want, have, errs[0].Message)
+			}
+		})
+	}
+}

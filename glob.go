@@ -21,7 +21,9 @@ import (
 type InvalidGlobPattern struct {
 	// Message is a human readable error message.
 	Message string
-	// Column is a column number of the error in the glob pattern.
+	// Column is a column number of the error in the glob pattern. This value is 1-based, but zero
+	// is valid value. Zero means the error occurred before reading first character. This happens
+	// when a given pattern is empty.
 	Column int
 }
 
@@ -37,7 +39,13 @@ type globValidator struct {
 }
 
 func (v *globValidator) error(msg string) {
-	v.errs = append(v.errs, InvalidGlobPattern{msg, v.scan.Pos().Column})
+	p := v.scan.Pos()
+	c := p.Column - 1
+	if p.Line > 1 {
+		c = 0 // fallback to 0
+	}
+	// - 1 because character at the error position is already eaten from scanner
+	v.errs = append(v.errs, InvalidGlobPattern{msg, c})
 }
 
 func (v *globValidator) unexpected(char rune, what, why string) {
@@ -75,17 +83,17 @@ func (v *globValidator) validateNext() bool {
 	case '\\':
 		switch v.scan.Peek() {
 		case '[', '?', '*':
+			c = v.scan.Next() // eat escaped character
 			if v.isRef {
 				v.invalidRefChar(v.scan.Peek(), "ref name cannot contain spaces, ~, ^, :, [, ?, *")
 			}
-			c = v.scan.Next() // eat escaped character
 		case '+', '\\':
 			c = v.scan.Next() // eat escaped character
 		default:
 			// file path can contain '\' (`mkdir 'foo\bar'` works)
 			if v.isRef {
-				v.invalidRefChar('\\', "only special characters [, ?, +, *, \\ can be escaped with \\")
 				c = v.scan.Next()
+				v.invalidRefChar('\\', "only special characters [, ?, +, *, \\ can be escaped with \\")
 			}
 		}
 		v.prec = true
@@ -103,7 +111,10 @@ func (v *globValidator) validateNext() bool {
 		v.prec = false
 	case '[':
 		if v.scan.Peek() == ']' {
+			c = v.scan.Next() // eat ]
 			v.unexpected(']', "content of character match []", "character match must not be empty")
+			v.prec = true
+			break
 		}
 	Loop:
 		for {
@@ -123,8 +134,8 @@ func (v *globValidator) validateNext() bool {
 				c = v.scan.Next() // eat -
 				switch v.scan.Peek() {
 				case ']':
-					v.unexpected(c, "character range in []", "end of range is missing")
 					c = v.scan.Next() // eat ]
+					v.unexpected(c, "character range in []", "end of range is missing")
 					break Loop
 				case scanner.EOF:
 					// do nothing
@@ -168,13 +179,14 @@ func (v *globValidator) validate(pat string) {
 		return
 	}
 	if pat == "!" {
+		v.scan.Next()
 		v.unexpected('!', "! at first character (negate pattern)", "at least one character must follow !")
 		return
 	}
 
 	if v.isRef && v.scan.Peek() == '/' {
-		v.invalidRefChar('/', "ref name must not start with /")
 		v.scan.Next()
+		v.invalidRefChar('/', "ref name must not start with /")
 	}
 
 	for v.validateNext() {
