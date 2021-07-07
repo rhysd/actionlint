@@ -1,6 +1,7 @@
 package actionlint
 
 import (
+	"fmt"
 	"strings"
 	"testing"
 )
@@ -367,6 +368,30 @@ func TestValidateGlobErrorColumn(t *testing.T) {
 			want, have := tc.col, errs[0].Column
 			if want != have {
 				t.Errorf("error position is unexpected. wanted col:%d but have col:%d: %s", want, have, errs[0].Message)
+			}
+		})
+	}
+}
+
+func TestValidateGlobQuoteCharacterInErrorMessage(t *testing.T) {
+	testCases := []struct {
+		input    string
+		expected string
+	}{
+		{"!", "'!'"},
+		{`\d`, `'\'`},
+		{"\n", `'\n'`},
+	}
+
+	for _, tc := range testCases {
+		t.Run(fmt.Sprintf("%q shows %s", tc.input, tc.expected), func(t *testing.T) {
+			errs := ValidateRefGlob(tc.input)
+			if len(errs) == 0 {
+				t.Fatalf("no error found in %q", tc.input)
+			}
+			m := errs[0].Message
+			if !strings.Contains(m, tc.expected) {
+				t.Fatalf("error message %q does not contain %q", m, tc.expected)
 			}
 		})
 	}

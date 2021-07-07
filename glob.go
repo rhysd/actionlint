@@ -4,6 +4,7 @@ import (
 	"fmt"
 	"strings"
 	"text/scanner"
+	"unicode"
 )
 
 // Note:
@@ -63,8 +64,13 @@ func (v *globValidator) unexpected(char rune, what, why string) {
 	v.error(fmt.Sprintf("invalid glob pattern. %s%s. %s", unexpected, while, why))
 }
 
-func (v *globValidator) invalidRefChar(char rune, why string) {
-	msg := fmt.Sprintf("character %q is invalid for Git ref name. %s. see `man git-check-ref-format` for more details. note that regular expression is unavailable", char, why)
+func (v *globValidator) invalidRefChar(c rune, why string) {
+	cfmt := "%q"
+	if unicode.IsPrint(c) {
+		cfmt = "'%c'" // avoid '\\'
+	}
+	format := "character " + cfmt + " is invalid for Git ref name. %s. see `man git-check-ref-format` for more details. note that regular expression is unavailable"
+	msg := fmt.Sprintf(format, c, why)
 	v.error(msg)
 }
 
