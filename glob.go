@@ -23,7 +23,8 @@ type InvalidGlobPattern struct {
 	Message string
 	// Column is a column number of the error in the glob pattern. This value is 1-based, but zero
 	// is valid value. Zero means the error occurred before reading first character. This happens
-	// when a given pattern is empty.
+	// when a given pattern is empty. When the given pattern include a newline and line number
+	// increases (invalid pattern), the column number falls back into always 0.
 	Column int
 }
 
@@ -87,13 +88,13 @@ func (v *globValidator) validateNext() bool {
 			if v.isRef {
 				v.invalidRefChar(v.scan.Peek(), "ref name cannot contain spaces, ~, ^, :, [, ?, *")
 			}
-		case '+', '\\':
+		case '+', '\\', '!':
 			c = v.scan.Next() // eat escaped character
 		default:
 			// file path can contain '\' (`mkdir 'foo\bar'` works)
 			if v.isRef {
 				c = v.scan.Next()
-				v.invalidRefChar('\\', "only special characters [, ?, +, *, \\ can be escaped with \\")
+				v.invalidRefChar('\\', "only special characters [, ?, +, *, \\ ! can be escaped with \\")
 			}
 		}
 		v.prec = true
@@ -131,6 +132,7 @@ func (v *globValidator) validateNext() bool {
 					break
 				}
 				s := c
+				//lint:ignore SA4006 c should always holds the current character even if it is unused
 				c = v.scan.Next() // eat -
 				switch v.scan.Peek() {
 				case ']':
@@ -178,15 +180,22 @@ func (v *globValidator) validate(pat string) {
 		v.error("glob pattern cannot be empty")
 		return
 	}
-	if pat == "!" {
-		v.scan.Next()
-		v.unexpected('!', "! at first character (negate pattern)", "at least one character must follow !")
-		return
-	}
 
-	if v.isRef && v.scan.Peek() == '/' {
+	// Handle first character if necessary
+	switch v.scan.Peek() {
+	case '/':
+		if v.isRef {
+			v.scan.Next()
+			v.invalidRefChar('/', "ref name must not start with /")
+			v.prec = true
+		}
+	case '!':
 		v.scan.Next()
-		v.invalidRefChar('/', "ref name must not start with /")
+		if v.scan.Peek() == scanner.EOF {
+			v.unexpected('!', "! at first character (negate pattern)", "at least one character must follow !")
+			return
+		}
+		v.prec = false
 	}
 
 	for v.validateNext() {

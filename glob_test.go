@@ -21,18 +21,28 @@ func TestValidateGlobOK(t *testing.T) {
 		"[ab]",
 		"[a-z]",
 		"[a-zA-Z_]",
+		"[xA-Zy0-9z]",
+		"[xy][A-Z][yz][0-9][zx]",
+		"xy[A-Z]yz[0-9]zx",
 		"*",
 		"**",
+		"*/*",
+		"*/**",
 		"a?",
 		"a+",
 		`\+`,
 		`\\`,
+		`\!`,       // escaped as "!"
+		`foo\!bar`, // escaped as "foo!bar"
 		`\++\\?`,
 		"[a-z]+",
 		"[a-z]?",
 		"*.*.*-**",
 		"!a",
 		"a!",
+		"a!+", // this is ok because ! has no special meaning
+		"a!?",
+		"!*",
 		// examples in official documents
 		"feature/*",
 		"feature/**",
@@ -192,6 +202,16 @@ func TestValidateGlobSyntaxError(t *testing.T) {
 				"missing ]",
 			},
 		},
+		{
+			what:     "preceding character is negate for ?",
+			input:    "!?",
+			expected: "the preceding character must not be special character",
+		},
+		{
+			what:     "preceding character is negate for +",
+			input:    "!+",
+			expected: "the preceding character must not be special character",
+		},
 	}
 
 	for _, kind := range []string{"ref", "path"} {
@@ -259,7 +279,7 @@ func TestValidateGlobGitRefNameInvalidCharacter(t *testing.T) {
 		{
 			what:     "escaped non-special character",
 			input:    `\d`,
-			expected: "only special characters [, ?, +, *, \\ can be escaped with \\",
+			expected: "only special characters [, ?, +, *, \\ ! can be escaped with \\",
 		},
 		{
 			what: "prohibited characters for ref names",
@@ -270,6 +290,20 @@ func TestValidateGlobGitRefNameInvalidCharacter(t *testing.T) {
 				"ref name cannot contain spaces, ~, ^, :, [, ?, *",
 				"ref name cannot contain spaces, ~, ^, :, [, ?, *",
 				"ref name cannot contain spaces, ~, ^, :, [, ?, *",
+			},
+		},
+		{
+			what:  "regular expression string",
+			input: `/^v\d+\.\d+\.(x|\d+)$/`,
+			expectedAll: []string{
+				"ref name must not start with /",
+				"ref name cannot contain spaces, ~, ^, :, [, ?, *",
+				"only special characters [, ?, +, *, \\ ! can be escaped with \\",
+				"only special characters [, ?, +, *, \\ ! can be escaped with \\",
+				"only special characters [, ?, +, *, \\ ! can be escaped with \\",
+				"only special characters [, ?, +, *, \\ ! can be escaped with \\",
+				"only special characters [, ?, +, *, \\ ! can be escaped with \\",
+				"ref name must not end with / and .",
 			},
 		},
 	}
