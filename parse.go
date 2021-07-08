@@ -38,6 +38,11 @@ func isNull(n *yaml.Node) bool {
 	return n.Kind == yaml.ScalarNode && n.Tag == "!!null"
 }
 
+func newString(n *yaml.Node) *String {
+	quoted := n.Style&(yaml.DoubleQuotedStyle|yaml.SingleQuotedStyle) != 0
+	return &String{n.Value, quoted, posAt(n)}
+}
+
 type keyVal struct {
 	key *String
 	val *yaml.Node
@@ -108,7 +113,7 @@ func (p *parser) parseExpression(n *yaml.Node, expecting string) *String {
 		p.missingExpression(n, expecting)
 		return nil
 	}
-	return &String{n.Value, posAt(n)}
+	return newString(n)
 }
 
 func (p *parser) parseString(n *yaml.Node, allowEmpty bool) *String {
@@ -116,12 +121,12 @@ func (p *parser) parseString(n *yaml.Node, allowEmpty bool) *String {
 	// In almost all cases, other nodes (like 42) are handled as string with its string representation.
 	if n.Kind != yaml.ScalarNode {
 		p.errorf(n, "expected scalar node for string value but found %s node with %q tag", nodeKindName(n.Kind), n.Tag)
-		return &String{"", posAt(n)}
+		return &String{"", false, posAt(n)}
 	}
 	if !allowEmpty && n.Value == "" {
 		p.error(n, "string should not be empty")
 	}
-	return &String{n.Value, posAt(n)}
+	return newString(n)
 }
 
 func (p *parser) parseStringSequence(sec string, n *yaml.Node, allowEmpty bool, allowElemEmpty bool) []*String {

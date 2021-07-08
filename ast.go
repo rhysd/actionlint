@@ -24,6 +24,8 @@ func (p *Pos) String() string {
 type String struct {
 	// Value is a raw value of the string.
 	Value string
+	// Quoted represents the string is quoted with ' or " in the YAML source.
+	Quoted bool
 	// Pos is a position of the string in source.
 	Pos *Pos
 }

@@ -30,20 +30,23 @@ func (rule *RuleGlob) VisitWorkflowPre(n *Workflow) error {
 
 func (rule *RuleGlob) checkGitRefGlobs(names []*String) {
 	for _, n := range names {
-		rule.globErrors(ValidateRefGlob(n.Value), n.Pos)
+		rule.globErrors(ValidateRefGlob(n.Value), n.Pos, n.Quoted)
 	}
 }
 
 func (rule *RuleGlob) checkFilePathGlobs(paths []*String) {
 	for _, p := range paths {
-		rule.globErrors(ValidatePathGlob(p.Value), p.Pos)
+		rule.globErrors(ValidatePathGlob(p.Value), p.Pos, p.Quoted)
 	}
 }
 
-func (rule *RuleGlob) globErrors(errs []InvalidGlobPattern, pos *Pos) {
+func (rule *RuleGlob) globErrors(errs []InvalidGlobPattern, pos *Pos, quoted bool) {
 	for i := range errs {
 		err := &errs[i]
 		p := *pos
+		if quoted {
+			p.Col++
+		}
 		if err.Column != 0 {
 			p.Col += err.Column - 1
 		}

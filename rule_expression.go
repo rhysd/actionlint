@@ -420,7 +420,7 @@ func (rule *RuleExpression) checkString(str *String) []ExprType {
 	if str == nil {
 		return nil
 	}
-	return rule.checkExprsIn(str.Value, str.Pos)
+	return rule.checkExprsIn(str.Value, str.Pos, str.Quoted)
 }
 
 func (rule *RuleExpression) checkBool(b *Bool) {
@@ -450,10 +450,13 @@ func (rule *RuleExpression) checkFloat(f *Float) {
 	rule.checkNumberExpression(f.Expression, "float number value")
 }
 
-func (rule *RuleExpression) checkExprsIn(s string, pos *Pos) []ExprType {
+func (rule *RuleExpression) checkExprsIn(s string, pos *Pos, quoted bool) []ExprType {
 	// TODO: Line number is not correct when the string contains newlines.
 
 	line, col := pos.Line, pos.Col
+	if quoted {
+		col++ // when the string is quoted like 'foo' or "foo", colmun should be incremented
+	}
 	offset := 0
 	tys := []ExprType{}
 	for {
@@ -490,7 +493,7 @@ func (rule *RuleExpression) checkRawYAMLValue(v RawYAMLValue) {
 			rule.checkRawYAMLValue(v)
 		}
 	case *RawYAMLString:
-		rule.checkExprsIn(v.Value, v.Pos())
+		rule.checkExprsIn(v.Value, v.Pos(), false)
 	default:
 		panic("unreachable")
 	}

@@ -49,10 +49,10 @@ test.yaml:3:5: unexpected key "branch" for "push" section. expected one of "bran
   |
 3 |     branch: main
   |     ^~~~~~~
-test.yaml:5:11: character '\' is invalid for Git ref name. only special characters [, ?, +, *, \ ! can be escaped with \. see `man git-check-ref-format` for more details. note that regular expression is unavailable. note: filter pattern syntax is explained at https://docs.github.com/en/actions/reference/workflow-syntax-for-github-actions#filter-pattern-cheat-sheet [glob]
+test.yaml:5:12: character '\' is invalid for Git ref name. only special characters [, ?, +, *, \ ! can be escaped with \. see `man git-check-ref-format` for more details. note that regular expression is unavailable. note: filter pattern syntax is explained at https://docs.github.com/en/actions/reference/workflow-syntax-for-github-actions#filter-pattern-cheat-sheet [glob]
   |
 5 |       - 'v\d+'
-  |           ^~~~
+  |            ^~~
 test.yaml:10:28: label "linux-latest" is unknown. available labels are "windows-latest", "windows-2019", "windows-2016", "ubuntu-latest", "ubuntu-20.04", "ubuntu-18.04", "ubuntu-16.04", "macos-latest", "macos-11", "macos-11.0", "macos-10.15", "self-hosted", "linux", "macos", "windows", "x64", "arm", "arm64". if it is a custom label for self-hosted runner, set list of labels in actionlint.yaml config file [runner-label]
    |
 10 |         os: [macos-latest, linux-latest]
@@ -1088,15 +1088,15 @@ jobs:
 Output:
 
 ```
-test.yaml:6:9: character '^' is invalid for Git ref name. ref name cannot contain spaces, ~, ^, :, [, ?, *. see `man git-check-ref-format` for more details. note that regular expression is unavailable. note: filter pattern syntax is explained at https://docs.github.com/en/actions/reference/workflow-syntax-for-github-actions#filter-pattern-cheat-sheet [glob]
+test.yaml:6:10: character '^' is invalid for Git ref name. ref name cannot contain spaces, ~, ^, :, [, ?, *. see `man git-check-ref-format` for more details. note that regular expression is unavailable. note: filter pattern syntax is explained at https://docs.github.com/en/actions/reference/workflow-syntax-for-github-actions#filter-pattern-cheat-sheet [glob]
   |
 6 |       - '^foo-'
   |          ^~~~~~
-test.yaml:9:11: invalid glob pattern. unexpected character '+' while checking + (one or more of preceding character). the preceding character must not be special character. note: filter pattern syntax is explained at https://docs.github.com/en/actions/reference/workflow-syntax-for-github-actions#filter-pattern-cheat-sheet [glob]
+test.yaml:9:12: invalid glob pattern. unexpected character '+' while checking + (one or more of preceding character). the preceding character must not be special character. note: filter pattern syntax is explained at https://docs.github.com/en/actions/reference/workflow-syntax-for-github-actions#filter-pattern-cheat-sheet [glob]
   |
 9 |       - 'v*+'
   |            ^~
-test.yaml:11:13: invalid glob pattern. unexpected character '1' while checking character range in []. start of range '9' (57) is larger than end of range '1' (49). note: filter pattern syntax is explained at https://docs.github.com/en/actions/reference/workflow-syntax-for-github-actions#filter-pattern-cheat-sheet [glob]
+test.yaml:11:14: invalid glob pattern. unexpected character '1' while checking character range in []. start of range '9' (57) is larger than end of range '1' (49). note: filter pattern syntax is explained at https://docs.github.com/en/actions/reference/workflow-syntax-for-github-actions#filter-pattern-cheat-sheet [glob]
    |
 11 |       - 'v[9-1]'
    |              ^~~
