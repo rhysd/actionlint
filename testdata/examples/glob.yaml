@@ -9,6 +9,7 @@ on:
       - v[9-0]
     paths:
       - '!'
+      - 'foo\bar'
       -
 
 jobs:

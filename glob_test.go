@@ -156,6 +156,16 @@ func TestValidateGlobSyntaxError(t *testing.T) {
 			expected: "newline cannot be contained",
 		},
 		{
+			what:     `newline with \r in pattern`,
+			input:    "\r",
+			expected: `'\r'`,
+		},
+		{
+			what:     `newline with \r\n in pattern`,
+			input:    "\r\n",
+			expected: `'\n'`,
+		},
+		{
 			what:     "empty match",
 			input:    "[]",
 			expected: "character match must not be empty",

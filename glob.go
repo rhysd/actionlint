@@ -157,6 +157,12 @@ func (v *globValidator) validateNext() bool {
 			}
 		}
 		v.prec = true
+	case '\r':
+		if v.scan.Peek() == '\n' {
+			c = v.scan.Next()
+		}
+		v.unexpected(c, "", "newline cannot be contained")
+		v.prec = true
 	case '\n':
 		v.unexpected('\n', "", "newline cannot be contained")
 		v.prec = true

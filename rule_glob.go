@@ -36,7 +36,7 @@ func (rule *RuleGlob) checkGitRefGlobs(names []*String) {
 
 func (rule *RuleGlob) checkFilePathGlobs(paths []*String) {
 	for _, p := range paths {
-		rule.globErrors(ValidateRefGlob(p.Value), p.Pos)
+		rule.globErrors(ValidatePathGlob(p.Value), p.Pos)
 	}
 }
 
