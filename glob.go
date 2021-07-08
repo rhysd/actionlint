@@ -123,6 +123,8 @@ func (v *globValidator) validateNext() bool {
 			v.prec = true
 			break
 		}
+
+		chars := 0
 	Loop:
 		for {
 			c = v.scan.Next()
@@ -135,8 +137,12 @@ func (v *globValidator) validateNext() bool {
 			default:
 				if v.scan.Peek() != '-' {
 					// in case of single character
-					break
+					chars++
+					continue Loop
 				}
+				// When match is range of character like 0-9
+
+				chars += 2 // actually one or more. but this is ok since we only check chars > 1 later
 				s := c
 				//lint:ignore SA4006 c should always holds the current character even if it is unused
 				c = v.scan.Next() // eat -
@@ -155,6 +161,10 @@ func (v *globValidator) validateNext() bool {
 					}
 				}
 			}
+		}
+
+		if chars == 1 {
+			v.unexpected(c, "character match []", "character match with single character is useless. simply use x instead of [x]")
 		}
 		v.prec = true
 	case '\r':

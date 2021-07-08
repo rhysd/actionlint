@@ -2,6 +2,7 @@ on:
   push:
     branches:
       - '**'
+      - '[x]'
     tags:
       - '!*'
       - /v\d+/

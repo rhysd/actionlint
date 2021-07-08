@@ -201,6 +201,11 @@ func TestValidateGlobSyntaxError(t *testing.T) {
 			expected: "start of range 'b' (98) is larger than end of range 'a' (97)",
 		},
 		{
+			what:     "single character match",
+			input:    "[x]",
+			expected: "character match with single character is useless",
+		},
+		{
 			what:  "multiple errors",
 			input: "+?[][a-]*+\n[b",
 			expectedAll: []string{
