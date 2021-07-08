@@ -455,7 +455,7 @@ func (rule *RuleExpression) checkExprsIn(s string, pos *Pos, quoted bool) []Expr
 
 	line, col := pos.Line, pos.Col
 	if quoted {
-		col++ // when the string is quoted like 'foo' or "foo", colmun should be incremented
+		col++ // when the string is quoted like 'foo' or "foo", column should be incremented
 	}
 	offset := 0
 	tys := []ExprType{}

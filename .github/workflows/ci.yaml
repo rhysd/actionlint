@@ -66,3 +66,5 @@ jobs:
           set -x
           npm install
           npm run lint
+      - name: Lint bash scripts
+        run: shellcheck ./scripts/download-actionlint.bash ./playground/post-install.bash ./playground/deploy.bash
