@@ -179,7 +179,7 @@ func (rule *RuleShellcheck) runShellcheck(executable, src, sh string, pos *Pos) 
 	//           environment
 	// - SC2194: The word is constant. This sometimes happens at constants by replacing ${{ }} with spaces.
 	//           For example, `if ${{ matrix.foo }}; then ...` -> `if _________________; then ...`
-	cmd := exec.Command(executable, "-f", "json", "-x", "--shell", sh, "-e", "SC1091,SC2194", "-")
+	cmd := exec.Command(executable, "--norc", "-f", "json", "-x", "--shell", sh, "-e", "SC1091,SC2194", "-")
 	cmd.Stderr = nil
 	rule.debug("%s: Running shellcheck command: %s", pos, cmd)
 
