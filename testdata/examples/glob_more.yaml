@@ -1,0 +1,19 @@
+on:
+  push:
+    branches:
+      - '**'
+    tags:
+      - '!*'
+      - /v\d+/
+      - v[0-
+      - v[9-0]
+    paths:
+      - '!'
+      - 'foo\bar'
+      -
+
+jobs:
+  test:
+    runs-on: ubuntu-latest
+    steps:
+      - run: echo hi

@@ -14,6 +14,8 @@
 on:
   push:
     branch: main
+    tags:
+      - 'v\\d+'
 
 jobs:
   test:

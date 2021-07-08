@@ -18,8 +18,8 @@ Features:
 - **Strong type check for `${{ }}` expressions** to catch several semantic errors like access to
   not existing property, type mismatches, ...
 - **shellcheck and pyflakes integrations** for scripts in `run:`
-- **Other several useful checks**; dependencies check for `needs:`, runner label validation, cron
-  syntax validation, ...
+- **Other several useful checks**; glob syntax validation,  dependencies check for `needs:`, runner
+  label validation, cron syntax validation, ...
 
 
 ## USAGE

@@ -8,9 +8,11 @@ actionlint
 Features:
 
 - **Syntax check for workflow files** to check unexpected or missing keys following [workflow syntax][syntax-doc]
-- **Strong type check for `${{ }}` expressions** to catch several semantic errors like access to not existing property, type mismatches, ...
+- **Strong type check for `${{ }}` expressions** to catch several semantic errors like access to not existing property,
+  type mismatches, ...
 - **[shellcheck][] and [pyflakes][] integrations** for scripts in `run:`
-- **Other several useful checks**; dependencies check for `needs:`, runner label validation, cron syntax validation, ...
+- **Other several useful checks**; [glob syntax][[filter-pattern-doc] validation, dependencies check for `needs:`,
+  runner label validation, cron syntax validation, ...
 
 See ['Checks' section](#checks) for full list of checks done by actionlint.
 
@@ -20,6 +22,8 @@ See ['Checks' section](#checks) for full list of checks done by actionlint.
 on:
   push:
     branch: main
+    tags:
+      - 'v\d+'
 jobs:
   test:
     strategy:
@@ -41,21 +45,25 @@ jobs:
 <img src="https://github.com/rhysd/ss/blob/master/actionlint/main.png?raw=true" alt="output example" width="801" height="531"/>
 <!-- content of screenshot:
 > actionlint
-.github/workflows/test.yaml:3:5: unexpected key "branch" for "push" section. expected one of "branches", "branches-ignore", "paths", "paths-ignore", "tags", "tags-ignore", "types", "workflows" [syntax-check]
+test.yaml:3:5: unexpected key "branch" for "push" section. expected one of "branches", "branches-ignore", "paths", "paths-ignore", "tags", "tags-ignore", "types", "workflows" [syntax-check]
   |
 3 |     branch: main
   |     ^~~~~~~
-.github/workflows/test.yaml:9:28: label "linux-latest" is unknown. available labels are "windows-latest", "windows-2019", "windows-2016", "ubuntu-latest", "ubuntu-20.04", "ubuntu-18.04", "ubuntu-16.04", "macos-latest", "macos-11", "macos-11.0", "macos-10.15", "self-hosted", "linux", "macos", "windows", "x64", "arm", "arm64". if it is a custom label for self-hosted runner, set list of labels in actionlint.yaml config file [runner-label]
+test.yaml:5:11: character '\' is invalid for Git ref name. only special characters [, ?, +, *, \ ! can be escaped with \. see `man git-check-ref-format` for more details. note that regular expression is unavailable. note: filter pattern syntax is explained at https://docs.github.com/en/actions/reference/workflow-syntax-for-github-actions#filter-pattern-cheat-sheet [glob]
   |
-9 |         os: [macos-latest, linux-latest]
-  |                            ^~~~~~~~~~~~~
-.github/workflows/test.yaml:16:20: property "platform" is not defined in object type {os: string} [expression]
+5 |       - 'v\d+'
+  |           ^~~~
+test.yaml:10:28: label "linux-latest" is unknown. available labels are "windows-latest", "windows-2019", "windows-2016", "ubuntu-latest", "ubuntu-20.04", "ubuntu-18.04", "ubuntu-16.04", "macos-latest", "macos-11", "macos-11.0", "macos-10.15", "self-hosted", "linux", "macos", "windows", "x64", "arm", "arm64". if it is a custom label for self-hosted runner, set list of labels in actionlint.yaml config file [runner-label]
    |
-16 |           key: ${{ matrix.platform }}-node-${{ hashFiles('**/package-lock.json') }}
+10 |         os: [macos-latest, linux-latest]
+   |                            ^~~~~~~~~~~~~
+test.yaml:17:20: property "platform" is not defined in object type {os: string} [expression]
+   |
+17 |           key: ${{ matrix.platform }}-node-${{ hashFiles('**/package-lock.json') }}
    |                    ^~~~~~~~~~~~~~~
-.github/workflows/test.yaml:17:17: receiver of object dereference "permissions" must be type of object but got "string" [expression]
+test.yaml:18:17: receiver of object dereference "permissions" must be type of object but got "string" [expression]
    |
-17 |         if: ${{ github.repository.permissions.admin == true }}
+18 |         if: ${{ github.repository.permissions.admin == true }}
    |                 ^~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 -->
 
@@ -202,6 +210,7 @@ use a general YAML checker like [yamllint][].
 - [Job dependencies validation](#check-job-deps)
 - [Matrix values](#check-matrix-values)
 - [Webhook events validation](#check-webhook-events)
+- [Glob filter pattern syntax validation](#check-glob-pattern)
 - [CRON syntax check at `schedule:`](#check-cron-syntax)
 - [Runner labels](#check-runner-labels)
 - [Action format in `uses:`](#check-action-format)
@@ -1051,6 +1060,63 @@ actionlint validates the Webhook configurations:
 - unknown type for Webhook event
 - invalid filter names
 
+<a name="check-glob-pattern"></a>
+## Glob filter pattern syntax validation
+
+Example input:
+
+```yaml
+on:
+  push:
+    branches:
+      # ^ is not available for branch name. This kind of mistake is usually caused by misunderstanding
+      # that regular expression is available here
+      - '^foo-'
+    tags:
+      # Invalid syntax. + cannot follow special character *
+      - 'v*+'
+      # Invalid character range 9-1
+      - 'v[9-1]'
+
+jobs:
+  test:
+    runs-on: ubuntu-latest
+    steps:
+      - run: echo ...
+```
+
+Output:
+
+```
+test.yaml:6:9: character '^' is invalid for Git ref name. ref name cannot contain spaces, ~, ^, :, [, ?, *. see `man git-check-ref-format` for more details. note that regular expression is unavailable. note: filter pattern syntax is explained at https://docs.github.com/en/actions/reference/workflow-syntax-for-github-actions#filter-pattern-cheat-sheet [glob]
+  |
+6 |       - '^foo-'
+  |          ^~~~~~
+test.yaml:9:11: invalid glob pattern. unexpected character '+' while checking + (one or more of preceding character). the preceding character must not be special character. note: filter pattern syntax is explained at https://docs.github.com/en/actions/reference/workflow-syntax-for-github-actions#filter-pattern-cheat-sheet [glob]
+  |
+9 |       - 'v*+'
+  |            ^~
+test.yaml:11:13: invalid glob pattern. unexpected character '1' while checking character range in []. start of range '9' (57) is larger than end of range '1' (49). note: filter pattern syntax is explained at https://docs.github.com/en/actions/reference/workflow-syntax-for-github-actions#filter-pattern-cheat-sheet [glob]
+   |
+11 |       - 'v[9-1]'
+   |              ^~~
+```
+
+[Playground](https://rhysd.github.io/actionlint/?s=on%3A%0A++push%3A%0A++++branches%3A%0A++++++-+%27%5Efoo-%27%0A++++tags%3A%0A++++++-+%27v*%2B%27%0A++++++-+%27v%5B9-1%5D%27%0A%0Ajobs%3A%0A++test%3A%0A++++runs-on%3A+ubuntu-latest%0A++++steps%3A%0A++++++-+run%3A+echo+...)
+
+For filtering branches, tags and paths in Webhook events, [glob syntax][[filter-pattern-doc] is available.
+actionlint validates glob patterns `branches:`, `branches-ignore:`, `tags:`, `tags-ignore:`, `paths:`, `paths-ignore:` in a
+workflow. It checks:
+
+- syntax errors like missing closing brackets for character range `[..]`
+- invalid usage like `?` following `*`, invalid character range `[9-1]`, ...
+- invalid character usage for Git ref names (branch name, tag name)
+  - ref name cannot start/end with `/`
+  - ref name cannot contain `[`, `:`, `\`, ...
+
+Most common mistake I have ever seen here is misunderstanding that regular expression is available for filtering. This rule
+can catch the mistake so that users can notice their mistakes.
+
 <a name="check-cron-syntax"></a>
 ## CRON syntax check at `schedule:`
 
@@ -1562,6 +1628,7 @@ actionlint is distributed under [the MIT license](./LICENSE.txt).
 [matrix-doc]: https://docs.github.com/en/actions/reference/workflow-syntax-for-github-actions#jobsjob_idstrategymatrix
 [webhook-doc]: https://docs.github.com/en/actions/reference/events-that-trigger-workflows#webhook-events
 [schedule-event-doc]: https://docs.github.com/en/actions/reference/events-that-trigger-workflows#scheduled-events
+[filter-pattern-doc]: https://docs.github.com/en/actions/reference/workflow-syntax-for-github-actions#filter-pattern-cheat-sheet
 [cron-syntax]: https://pubs.opengroup.org/onlinepubs/9699919799/utilities/crontab.html#tag_20_25_07
 [gh-hosted-runner]: https://docs.github.com/en/actions/using-github-hosted-runners/about-github-hosted-runners
 [self-hosted-runner]: https://docs.github.com/en/actions/hosting-your-own-runners/about-self-hosted-runners
