@@ -363,21 +363,23 @@ func (p *parser) parseWebhookEvent(name *String, n *yaml.Node) *WebhookEvent {
 	//
 	// https://github.community/t/using-on-push-tags-ignore-and-paths-ignore-together/16931
 	for _, kv := range p.parseSectionMapping(name.Value, n, true) {
+		// Note: Glob pattern cannot be empty, but it is checked by 'glob' rule with better error
+		// message. So parser allows empty patterns here.
 		switch kv.key.Value {
 		case "types":
 			ret.Types = p.parseStringOrStringSequence(kv.key.Value, kv.val, false, false)
 		case "branches":
-			ret.Branches = p.parseStringOrStringSequence(kv.key.Value, kv.val, true, false)
+			ret.Branches = p.parseStringOrStringSequence(kv.key.Value, kv.val, true, true)
 		case "branches-ignore":
-			ret.BranchesIgnore = p.parseStringOrStringSequence(kv.key.Value, kv.val, true, false)
+			ret.BranchesIgnore = p.parseStringOrStringSequence(kv.key.Value, kv.val, true, true)
 		case "tags":
-			ret.Tags = p.parseStringOrStringSequence(kv.key.Value, kv.val, true, false)
+			ret.Tags = p.parseStringOrStringSequence(kv.key.Value, kv.val, true, true)
 		case "tags-ignore":
-			ret.TagsIgnore = p.parseStringOrStringSequence(kv.key.Value, kv.val, true, false)
+			ret.TagsIgnore = p.parseStringOrStringSequence(kv.key.Value, kv.val, true, true)
 		case "paths":
-			ret.Paths = p.parseStringOrStringSequence(kv.key.Value, kv.val, false, false)
+			ret.Paths = p.parseStringOrStringSequence(kv.key.Value, kv.val, false, true)
 		case "paths-ignore":
-			ret.PathsIgnore = p.parseStringOrStringSequence(kv.key.Value, kv.val, false, false)
+			ret.PathsIgnore = p.parseStringOrStringSequence(kv.key.Value, kv.val, false, true)
 		case "workflows":
 			ret.Workflows = p.parseStringOrStringSequence(kv.key.Value, kv.val, false, false)
 		default:
