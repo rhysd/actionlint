@@ -425,6 +425,7 @@ func (l *Linter) check(path string, content []byte, project *Project) ([]*Error,
 			NewRuleAction(root),
 			NewRuleEnvVar(),
 			NewRuleStepID(),
+			NewRuleGlob(),
 			NewRuleExpression(),
 		}
 		if l.shellcheck != "" {

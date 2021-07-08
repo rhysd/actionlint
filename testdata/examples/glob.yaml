@@ -1,0 +1,17 @@
+on:
+  push:
+    branches:
+      # ^ is not available for branch name. This kind of mistake is usually caused by misunderstanding
+      # that regular expression is available here
+      - '^foo-'
+    tags:
+      # Invalid syntax. + cannot follow special character *
+      - 'v*+'
+      # Invalid character range 9-1
+      - 'v[9-1]'
+
+jobs:
+  test:
+    runs-on: ubuntu-latest
+    steps:
+      - run: echo ...
