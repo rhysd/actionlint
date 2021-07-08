@@ -30,25 +30,23 @@ func (rule *RuleGlob) VisitWorkflowPre(n *Workflow) error {
 
 func (rule *RuleGlob) checkGitRefGlobs(names []*String) {
 	for _, n := range names {
-		errs := ValidateRefGlob(n.Value)
-		for i := range errs {
-			rule.globSyntaxError(&errs[i], *n.Pos)
-		}
+		rule.globErrors(ValidateRefGlob(n.Value), n.Pos)
 	}
 }
 
 func (rule *RuleGlob) checkFilePathGlobs(paths []*String) {
 	for _, p := range paths {
-		errs := ValidateRefGlob(p.Value)
-		for i := range errs {
-			rule.globSyntaxError(&errs[i], *p.Pos)
-		}
+		rule.globErrors(ValidateRefGlob(p.Value), p.Pos)
 	}
 }
 
-func (rule *RuleGlob) globSyntaxError(err *InvalidGlobPattern, pos Pos) {
-	if err.Column != 0 {
-		pos.Col += err.Column - 1
+func (rule *RuleGlob) globErrors(errs []InvalidGlobPattern, pos *Pos) {
+	for i := range errs {
+		err := &errs[i]
+		p := *pos
+		if err.Column != 0 {
+			p.Col += err.Column - 1
+		}
+		rule.errorf(&p, "%s. note: filter pattern syntax is explained at https://docs.github.com/en/actions/reference/workflow-syntax-for-github-actions#filter-pattern-cheat-sheet", err.Message)
 	}
-	rule.errorf(&pos, "%s. note: filter pattern syntax is explained at https://docs.github.com/en/actions/reference/workflow-syntax-for-github-actions#filter-pattern-cheat-sheet", err.Message)
 }
