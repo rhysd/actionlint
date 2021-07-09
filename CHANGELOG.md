@@ -1,3 +1,20 @@
+<a name="v1.4.0"></a>
+# [v1.4.0](https://github.com/rhysd/actionlint/releases/tag/v1.4.0) - 09 Jul 2021
+
+- New rule to validate [glob pattern syntax](https://docs.github.com/en/actions/reference/workflow-syntax-for-github-actions#filter-pattern-cheat-sheet) to filter branches, tags and paths. For more details, see [documentation](https://github.com/rhysd/actionlint#check-glob-pattern).
+  - syntax errors like missing closing brackets for character range `[..]`
+  - invalid usage like `?` following `*`, invalid character range `[9-1]`, ...
+  - invalid character usage for Git ref names (branch name, tag name)
+    - ref name cannot start/end with `/`
+    - ref name cannot contain `[`, `:`, `\`, ...
+- Fix column of error position is off by one when the error is caused by quoted strings like `'...'` or `"..."`.
+- Add `--norc` option to `shellcheck` command to check shell scripts in `run:` in order not to be affected by any user configuration.
+- Improve some error messages
+- Explain playground in `man` manual
+
+[Changes][v1.4.0]
+
+
 <a name="v1.3.2"></a>
 # [v1.3.2](https://github.com/rhysd/actionlint/releases/tag/v1.3.2) - 04 Jul 2021
 
@@ -140,6 +157,7 @@ See documentation for more details:
 [Changes][v1.0.0]
 
 
+[v1.4.0]: https://github.com/rhysd/actionlint/compare/v1.3.2...v1.4.0
 [v1.3.2]: https://github.com/rhysd/actionlint/compare/v1.3.1...v1.3.2
 [v1.3.1]: https://github.com/rhysd/actionlint/compare/v1.3.0...v1.3.1
 [v1.3.0]: https://github.com/rhysd/actionlint/compare/v1.2.0...v1.3.0
