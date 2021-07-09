@@ -99,8 +99,8 @@ func (v *globValidator) validateNext() bool {
 		default:
 			// file path can contain '\' (`mkdir 'foo\bar'` works)
 			if v.isRef {
-				c = v.scan.Next()
 				v.invalidRefChar('\\', "only special characters [, ?, +, *, \\ ! can be escaped with \\")
+				c = v.scan.Next()
 			}
 		}
 		v.prec = true
