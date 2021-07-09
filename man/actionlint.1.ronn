@@ -18,7 +18,7 @@ Features:
 - **Strong type check for `${{ }}` expressions** to catch several semantic errors like access to
   not existing property, type mismatches, ...
 - **shellcheck and pyflakes integrations** for scripts in `run:`
-- **Other several useful checks**; glob syntax validation,  dependencies check for `needs:`, runner
+- **Other several useful checks**; glob syntax validation, dependencies check for `needs:`, runner
   label validation, cron syntax validation, ...
 
 
@@ -144,15 +144,28 @@ or simply run
 ```
 
 
+## PLAYGROUND
+
+Thanks to WebAssembly, actionlint playground is available on your browser. It never sends any data
+to outside of the browser.
+
+https://rhysd.github.io/actionlint/
+
+Paste your workflow content to the code editor at left pane. It automatically shows the results at
+right pane. When editing the workflow content at the left pane, the results will be updated on the
+fly in the right pane. Clicking an error message in the results table moves a cursor to the
+position of the error in the code editor.
+
+
 ## REFERENCES
 
 ### List of all checks
 
 https://github.com/rhysd/actionlint/blob/main/README.md#checks
 
-### Online playground
+### actionlint Go API reference
 
-https://rhysd.github.io/actionlint/
+https://pkg.go.dev/github.com/rhysd/actionlint
 
 ### Workflow syntax
 
