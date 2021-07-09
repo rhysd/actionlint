@@ -69,7 +69,7 @@ func (v *globValidator) invalidRefChar(c rune, why string) {
 	if unicode.IsPrint(c) {
 		cfmt = "'%c'" // avoid '\\'
 	}
-	format := "character " + cfmt + " is invalid for Git ref name. %s. see `man git-check-ref-format` for more details. note that regular expression is unavailable"
+	format := "character " + cfmt + " is invalid for branch and tag names. %s. see `man git-check-ref-format` for more details. note that regular expression is unavailable"
 	msg := fmt.Sprintf(format, c, why)
 	v.error(msg)
 }
@@ -85,6 +85,7 @@ func (v *globValidator) init(pat string) {
 
 func (v *globValidator) validateNext() bool {
 	c := v.scan.Next()
+	prec := true
 
 	switch c {
 	case '\\':
@@ -103,24 +104,22 @@ func (v *globValidator) validateNext() bool {
 				c = v.scan.Next()
 			}
 		}
-		v.prec = true
 	case '?':
 		if !v.prec {
-			v.unexpected('?', "? (zero or one of preceding character)", "the preceding character must not be special character")
+			v.unexpected('?', "special character ? (zero or one)", "the preceding character must not be special character")
 		}
-		v.prec = false
+		prec = false
 	case '+':
 		if !v.prec {
-			v.unexpected('+', "+ (one or more of preceding character)", "the preceding character must not be special character")
+			v.unexpected('+', "special character + (one or more)", "the preceding character must not be special character")
 		}
-		v.prec = false
+		prec = false
 	case '*':
-		v.prec = false
+		prec = false
 	case '[':
 		if v.scan.Peek() == ']' {
 			c = v.scan.Next() // eat ]
 			v.unexpected(']', "content of character match []", "character match must not be empty")
-			v.prec = true
 			break
 		}
 
@@ -166,24 +165,20 @@ func (v *globValidator) validateNext() bool {
 		if chars == 1 {
 			v.unexpected(c, "character match []", "character match with single character is useless. simply use x instead of [x]")
 		}
-		v.prec = true
 	case '\r':
 		if v.scan.Peek() == '\n' {
 			c = v.scan.Next()
 		}
 		v.unexpected(c, "", "newline cannot be contained")
-		v.prec = true
 	case '\n':
 		v.unexpected('\n', "", "newline cannot be contained")
-		v.prec = true
 	case ' ', '\t', '~', '^', ':':
 		if v.isRef {
 			v.invalidRefChar(c, "ref name cannot contain spaces, ~, ^, :, [, ?, *")
 		}
-		v.prec = true
 	default:
-		v.prec = true
 	}
+	v.prec = prec
 
 	if v.scan.Peek() == scanner.EOF {
 		if v.isRef && (c == '/' || c == '.') {
