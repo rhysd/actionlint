@@ -67,7 +67,9 @@ jobs:
    |                 ^~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 -->
 
-actionlint tries to catch errors as much as possible and make false positives as minimal as possible.
+Basically all you need to do is running `acitonlint` command in your repository. actionlint automatically detects workflows in
+your repository and reports errors in them. actionlint focuses on finding out mistakes. It tries to catch errors as much as
+possible and make false positives as minimal as possible.
 
 # Why?
 
@@ -179,7 +181,7 @@ With no argument, actionlint finds all workflow files in the current repository 
 actionlint
 ```
 
-When paths to YAML workflow files are given, actionlint checks them.
+When paths to YAML workflow files are given as arguments, actionlint checks them.
 
 ```sh
 actionlint path/to/workflow1.yaml path/to/workflow2.yaml
@@ -192,8 +194,7 @@ See `actionlint -h` for all flags and options.
 
 This section describes all checks done by actionlint with example input and output.
 
-Note that actionlint focuses on catching mistakes in workflow files. If you want some code style checks, please consider to
-use a general YAML checker like [yamllint][].
+List of checks:
 
 - [Unexpected keys](#check-unexpected-keys)
 - [Missing required keys or key duplicates](#check-missing-required-duplicate-keys)
@@ -219,6 +220,9 @@ use a general YAML checker like [yamllint][].
 - [Job ID and step ID uniqueness](#check-job-step-ids)
 - [Hardcoded credentials](#check-hardcoded-credentials)
 - [Environment variable names](#check-env-var-names)
+
+Note that actionlint focuses on catching mistakes in workflow files. If you want some general code style checks, please consider
+to use a general YAML checker like [yamllint][].
 
 <a name="check-unexpected-keys"></a>
 ## Unexpected keys
@@ -1584,6 +1588,8 @@ Followings are unexhaustive list of interesting APIs.
   `NumberType`, ... are structs to represent actual types of expression.
 - `ExprSemanticsChecker` checks semantics of expression syntax `${{ }}`. It traverses given expression syntax tree and
   deduces its type, checking types and resolving variables (contexts).
+- `ValidateRefGlob()` and `ValidatePathGlob()` validate [glob filter pattern][filter-pattern-doc] and returns all errors
+  found by the validator.
 
 Note that the version of this repository is for command line tool `actionlint`. So it does not represent version of the
 library, meant that patch version bump may introduce some breaking changes.
