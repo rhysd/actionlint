@@ -1108,7 +1108,7 @@ test.yaml:11:14: invalid glob pattern. unexpected character '1' while checking c
 
 [Playground](https://rhysd.github.io/actionlint/?s=on%3A%0A++push%3A%0A++++branches%3A%0A++++++-+%27%5Efoo-%27%0A++++tags%3A%0A++++++-+%27v*%2B%27%0A++++++-+%27v%5B9-1%5D%27%0A%0Ajobs%3A%0A++test%3A%0A++++runs-on%3A+ubuntu-latest%0A++++steps%3A%0A++++++-+run%3A+echo+...)
 
-For filtering branches, tags and paths in Webhook events, [glob syntax][[filter-pattern-doc] is available.
+For filtering branches, tags and paths in Webhook events, [glob syntax][filter-pattern-doc] is available.
 actionlint validates glob patterns `branches:`, `branches-ignore:`, `tags:`, `tags-ignore:`, `paths:`, `paths-ignore:` in a
 workflow. It checks:
 
