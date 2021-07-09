@@ -11,7 +11,7 @@ Features:
 - **Strong type check for `${{ }}` expressions** to catch several semantic errors like access to not existing property,
   type mismatches, ...
 - **[shellcheck][] and [pyflakes][] integrations** for scripts in `run:`
-- **Other several useful checks**; [glob syntax][[filter-pattern-doc] validation, dependencies check for `needs:`,
+- **Other several useful checks**; [glob syntax][filter-pattern-doc] validation, dependencies check for `needs:`,
   runner label validation, cron syntax validation, ...
 
 See ['Checks' section](#checks) for full list of checks done by actionlint.
@@ -42,7 +42,7 @@ jobs:
 
 **Output from actionlint:**
 
-<img src="https://github.com/rhysd/ss/blob/master/actionlint/main.png?raw=true" alt="output example" width="801" height="531"/>
+<img src="https://github.com/rhysd/ss/blob/master/actionlint/main.png?raw=true" alt="output example" width="850" height="621"/>
 <!-- content of screenshot:
 > actionlint
 test.yaml:3:5: unexpected key "branch" for "push" section. expected one of "branches", "branches-ignore", "paths", "paths-ignore", "tags", "tags-ignore", "types", "workflows" [syntax-check]
