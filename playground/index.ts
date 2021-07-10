@@ -168,6 +168,6 @@ jobs:
 
     main().catch(err => {
         console.error('ERROR!:', err);
-        alert(err.stack);
+        alert(`${err.name}: ${err.message}\n\n${err.stack}`);
     });
 })();
