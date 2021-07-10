@@ -1,20 +1,22 @@
-"use strict";
 (function () {
-    function ensureNonNull(x) {
+    function ensureNonNull<T>(x: T | null): T {
         if (x === null) {
             throw new Error('Unexpected null value');
         }
         return x;
     }
+
     const body = ensureNonNull(document.getElementById('lint-result-body'));
     const errorMessage = ensureNonNull(document.getElementById('error-msg'));
     const successMessage = ensureNonNull(document.getElementById('success-msg'));
     const nowLoading = ensureNonNull(document.getElementById('loading'));
-    function getDefaultSource() {
+
+    function getDefaultSource(): string {
         const p = new URLSearchParams(window.location.search).get('s');
         if (p !== null) {
             return p;
         }
+
         return `# Paste your workflow YAML to this code editor
 
 on:
@@ -38,6 +40,7 @@ jobs:
         if: \${{ github.repository.permissions.admin == true }}
       - run: npm install && npm test`;
     }
+
     const editor = CodeMirror(ensureNonNull(document.getElementById('editor')), {
         mode: 'yaml',
         theme: 'material-darker',
@@ -50,54 +53,65 @@ jobs:
             Tab(cm) {
                 if (cm.somethingSelected()) {
                     cm.execCommand('indentMore');
-                }
-                else {
+                } else {
                     cm.execCommand('insertSoftTab');
                 }
             },
         },
         value: getDefaultSource(),
-    });
+    } as CodeMirror.EditorConfiguration);
+
     const debounceInterval = isMobile.phone ? 1000 : 300;
-    let debounceId = null;
+    let debounceId: number | null = null;
     editor.on('change', function (_, e) {
         if (typeof window.runActionlint !== 'function') {
             showError('Preparing Wasm file is not completed yet. Please wait for a while and try again.');
             return;
         }
+
         if (debounceId !== null) {
             window.clearTimeout(debounceId);
         }
-        function startActionlint() {
+
+        function startActionlint(): void {
             debounceId = null;
             errorMessage.style.display = 'none';
             successMessage.style.display = 'none';
             editor.clearGutter('error-marker');
-            window.runActionlint(editor.getValue());
+            // eslint-disable-next-line @typescript-eslint/no-non-null-assertion
+            window.runActionlint!(editor.getValue());
         }
+
         if (e.origin === 'paste') {
-            startActionlint();
+            startActionlint(); // When pasting some code, apply actionlint instantly
             return;
         }
+
         debounceId = window.setTimeout(() => startActionlint(), debounceInterval);
     });
-    function getSource() {
+
+    function getSource(): string {
         return editor.getValue();
     }
-    function showError(message) {
+
+    function showError(message: string): void {
         console.error('Check failed!:', message);
         errorMessage.textContent = message;
         errorMessage.style.display = 'block';
     }
-    function dismissLoading() {
+
+    function dismissLoading(): void {
         nowLoading.style.display = 'none';
     }
-    function onCheckCompleted(errors) {
+
+    function onCheckCompleted(errors: ActionlintError[]): void {
         body.textContent = '';
+
         if (errors.length === 0) {
             successMessage.style.display = 'block';
             return;
         }
+
         for (const error of errors) {
             const row = document.createElement('tr');
             row.className = 'is-size-5';
@@ -105,12 +119,14 @@ jobs:
                 editor.setCursor({ line: error.line - 1, ch: error.column - 1 });
                 editor.focus();
             });
+
             const pos = document.createElement('td');
             const tag = document.createElement('span');
             tag.className = 'tag is-primary is-dark';
             tag.textContent = `line:${error.line}, col:${error.column}`;
             pos.appendChild(tag);
             row.appendChild(pos);
+
             const desc = document.createElement('td');
             const msg = document.createElement('span');
             msg.textContent = error.message;
@@ -121,25 +137,29 @@ jobs:
             kind.style.marginLeft = '4px';
             desc.appendChild(kind);
             row.appendChild(desc);
+
             body.appendChild(row);
+
             const marker = document.createElement('div');
             marker.style.color = '#ff5370';
             marker.textContent = '●';
             editor.setGutterMarker(error.line - 1, 'error-marker', marker);
         }
     }
+
     window.getYamlSource = getSource;
     window.showError = showError;
     window.onCheckCompleted = onCheckCompleted;
     window.dismissLoading = dismissLoading;
-    async function main() {
+
+    async function main(): Promise<void> {
         const go = new Go();
         const result = await WebAssembly.instantiateStreaming(fetch('main.wasm'), go.importObject);
-        await go.run(result.instance);
+        await go.run(result.instance); // This function will never return
     }
+
     main().catch(err => {
         console.error('ERROR!:', err);
         alert(err.stack);
     });
 })();
-//# sourceMappingURL=index.js.map
