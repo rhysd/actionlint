@@ -6,10 +6,10 @@
   "main": "main.js",
   "scripts": {
     "lint:stylelint": "stylelint style.css",
-    "lint:prettier": "prettier --check index.js",
-    "lint:eslint": "eslint index.js",
+    "lint:prettier": "prettier --check \"*.ts\"",
+    "lint:eslint": "eslint --max-warnings 0 \"*.ts\"",
     "lint": "npm run lint:prettier && npm run lint:eslint && npm run lint:stylelint",
-    "prettier": "prettier --write index.js",
+    "prettier": "prettier --write \"*.ts\"",
     "build": "tsc -p .",
     "watch": "tsc -p . --watch",
     "test": "echo \"Error: no test specified\" && exit 1"
@@ -25,6 +25,8 @@
   },
   "devDependencies": {
     "@types/codemirror": "^5.60.2",
+    "@typescript-eslint/eslint-plugin": "^4.28.2",
+    "@typescript-eslint/parser": "^4.28.2",
     "eslint": "^7.30.0",
     "prettier": "^2.3.2",
     "stylelint": "^13.13.1",

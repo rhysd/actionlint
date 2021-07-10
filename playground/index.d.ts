@@ -15,10 +15,7 @@ interface Window {
 
 declare class Go {
     importObject: Imports;
-    run(mod: Instance): Promise<any>;
+    run(mod: Instance): Promise<unknown>;
 }
 
-declare namespace IsMobile {
-    import type { isMobileResult } from 'ismobilejs';
-}
 declare const isMobile: IsMobile.isMobileResult;

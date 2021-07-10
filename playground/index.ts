@@ -78,6 +78,7 @@ jobs:
             errorMessage.style.display = 'none';
             successMessage.style.display = 'none';
             editor.clearGutter('error-marker');
+            // eslint-disable-next-line @typescript-eslint/no-non-null-assertion
             window.runActionlint!(editor.getValue());
         }
 
