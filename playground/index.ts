@@ -154,8 +154,16 @@ jobs:
 
     async function main(): Promise<void> {
         const go = new Go();
-        const result = await WebAssembly.instantiateStreaming(fetch('main.wasm'), go.importObject);
-        await go.run(result.instance); // This function will never return
+        let result;
+        // Note: WebAssembly.instantiateStreaming is not implemented on Safari yet
+        if (typeof WebAssembly.instantiateStreaming == 'function') {
+            result = await WebAssembly.instantiateStreaming(fetch('main.wasm'), go.importObject);
+        } else {
+            const response = await fetch('main.wasm');
+            const mod = await response.arrayBuffer();
+            result = await WebAssembly.instantiate(mod, go.importObject);
+        }
+        await go.run(result.instance);
     }
 
     main().catch(err => {
