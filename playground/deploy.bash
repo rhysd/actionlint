@@ -20,6 +20,8 @@ mkdir ./playground-dist
 files=(
     index.html
     index.js
+    index.js.map
+    index.ts
     lib
     main.wasm
     style.css
