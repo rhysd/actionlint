@@ -1,0 +1,22 @@
+{
+  "compilerOptions": {
+    "target": "es2019",
+    "module": "none",
+    "moduleResolution": "node",
+    "sourceMap": true,
+    "removeComments": true,
+    "strict": true,
+    "noUnusedLocals": true,
+    "noUnusedParameters": true,
+    "noImplicitReturns": true,
+    "noFallthroughCasesInSwitch": true,
+    "noUncheckedIndexedAccess": true,
+    "noImplicitOverride": true,
+    "esModuleInterop": true,
+    "skipLibCheck": true
+  },
+  "files": [
+    "index.ts",
+    "index.d.ts"
+  ]
+}

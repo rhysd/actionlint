@@ -1,9 +1,17 @@
 (function () {
-    const body = document.getElementById('lint-result-body');
-    const errorMessage = document.getElementById('error-msg');
-    const successMessage = document.getElementById('success-msg');
+    function ensureNonNull<T>(x: T | null): T {
+        if (x === null) {
+            throw new Error('Unexpected null value');
+        }
+        return x;
+    }
 
-    function getDefaultSource() {
+    const body = ensureNonNull(document.getElementById('lint-result-body'));
+    const errorMessage = ensureNonNull(document.getElementById('error-msg'));
+    const successMessage = ensureNonNull(document.getElementById('success-msg'));
+    const nowLoading = ensureNonNull(document.getElementById('loading'));
+
+    function getDefaultSource(): string {
         const p = new URLSearchParams(window.location.search).get('s');
         if (p !== null) {
             return p;
@@ -33,7 +41,7 @@ jobs:
       - run: npm install && npm test`;
     }
 
-    const editor = CodeMirror(document.getElementById('editor'), {
+    const editor = CodeMirror(ensureNonNull(document.getElementById('editor')), {
         mode: 'yaml',
         theme: 'material-darker',
         lineNumbers: true,
@@ -51,10 +59,10 @@ jobs:
             },
         },
         value: getDefaultSource(),
-    });
+    } as CodeMirror.EditorConfiguration);
 
     const debounceInterval = isMobile.phone ? 1000 : 300;
-    let debounceId = null;
+    let debounceId: number | null = null;
     editor.on('change', function (_, e) {
         if (typeof window.runActionlint !== 'function') {
             showError('Preparing Wasm file is not completed yet. Please wait for a while and try again.');
@@ -65,12 +73,13 @@ jobs:
             window.clearTimeout(debounceId);
         }
 
-        function startActionlint() {
+        function startActionlint(): void {
             debounceId = null;
             errorMessage.style.display = 'none';
             successMessage.style.display = 'none';
             editor.clearGutter('error-marker');
-            window.runActionlint(editor.getValue());
+            // eslint-disable-next-line @typescript-eslint/no-non-null-assertion
+            window.runActionlint!(editor.getValue());
         }
 
         if (e.origin === 'paste') {
@@ -81,21 +90,21 @@ jobs:
         debounceId = window.setTimeout(() => startActionlint(), debounceInterval);
     });
 
-    function getSource() {
+    function getSource(): string {
         return editor.getValue();
     }
 
-    function showError(message) {
+    function showError(message: string): void {
         console.error('Check failed!:', message);
         errorMessage.textContent = message;
         errorMessage.style.display = 'block';
     }
 
-    function dismissLoading() {
-        document.getElementById('loading').style.display = 'none';
+    function dismissLoading(): void {
+        nowLoading.style.display = 'none';
     }
 
-    function onCheckCompleted(errors) {
+    function onCheckCompleted(errors: ActionlintError[]): void {
         body.textContent = '';
 
         if (errors.length === 0) {
@@ -143,11 +152,14 @@ jobs:
     window.onCheckCompleted = onCheckCompleted;
     window.dismissLoading = dismissLoading;
 
-    async function main() {
+    async function main(): Promise<void> {
         const go = new Go();
         const result = await WebAssembly.instantiateStreaming(fetch('main.wasm'), go.importObject);
         await go.run(result.instance); // This function will never return
     }
 
-    main().catch(err => console.error('ERROR!:', err));
+    main().catch(err => {
+        console.error('ERROR!:', err);
+        alert(err.stack);
+    });
 })();

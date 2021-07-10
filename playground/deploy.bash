@@ -11,7 +11,7 @@ sha="$(git rev-parse HEAD)"
 echo "Deploying playground from ${sha}"
 
 echo 'Ensuring to install dependencies and building wasm'
-(cd ./playground && make build)
+(cd ./playground && make clean && make build)
 
 echo 'Creating ./playground-dist'
 rm -rf ./playground-dist
@@ -20,6 +20,8 @@ mkdir ./playground-dist
 files=(
     index.html
     index.js
+    index.js.map
+    index.ts
     lib
     main.wasm
     style.css
@@ -53,4 +55,4 @@ echo 'Making commit for new deploy'
 git commit -m "deploy from ${sha}"
 
 rm -r ./playground-dist
-echo "Successfully prepared deployment. Run 'python3 -m http.server 1234' and do the final check before deployment. If it looks good, deploy it by 'git push'"
+echo "Successfully prepared deployment. Run './playground/node_modules/.bin/light-server -s . -p 1234' and do the final check before deployment. If it looks good, deploy it by 'git push'"
