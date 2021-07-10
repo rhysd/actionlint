@@ -13,6 +13,8 @@ jobs:
       - run: gem install ronn
       - run: ronn ./man/actionlint.1.ronn
       - uses: actions/setup-go@v2
+        with:
+          go-version: '1.16'
       - uses: goreleaser/goreleaser-action@v2
         with:
           version: latest
