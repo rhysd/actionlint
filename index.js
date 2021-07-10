@@ -134,7 +134,15 @@ jobs:
     window.dismissLoading = dismissLoading;
     async function main() {
         const go = new Go();
-        const result = await WebAssembly.instantiateStreaming(fetch('main.wasm'), go.importObject);
+        let result;
+        if (typeof WebAssembly.instantiateStreaming == 'function') {
+            result = await WebAssembly.instantiateStreaming(fetch('main.wasm'), go.importObject);
+        }
+        else {
+            const response = await fetch('main.wasm');
+            const mod = await response.arrayBuffer();
+            result = await WebAssembly.instantiate(mod, go.importObject);
+        }
         await go.run(result.instance);
     }
     main().catch(err => {
