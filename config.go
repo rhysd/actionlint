@@ -3,6 +3,7 @@ package actionlint
 import (
 	"fmt"
 	"io/ioutil"
+	"strings"
 
 	"gopkg.in/yaml.v3"
 )
@@ -20,7 +21,8 @@ type Config struct {
 func parseConfig(b []byte, path string) (*Config, error) {
 	var c Config
 	if err := yaml.Unmarshal(b, &c); err != nil {
-		return nil, fmt.Errorf("could not parse config file %q: %w", path, err)
+		msg := strings.ReplaceAll(err.Error(), "\n", " ")
+		return nil, fmt.Errorf("could not parse config file %q: %s", path, msg)
 	}
 	return &c, nil
 }
@@ -28,7 +30,7 @@ func parseConfig(b []byte, path string) (*Config, error) {
 func readConfigFile(path string) (*Config, error) {
 	b, err := ioutil.ReadFile(path)
 	if err != nil {
-		return nil, fmt.Errorf("coult not read config file %q: %w", path, err)
+		return nil, fmt.Errorf("could not read config file %q: %w", path, err)
 	}
 	return parseConfig(b, path)
 }
