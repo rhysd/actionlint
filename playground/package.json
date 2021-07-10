@@ -12,6 +12,7 @@
     "prettier": "prettier --write \"*.ts\"",
     "build": "tsc -p .",
     "watch": "tsc -p . --watch",
+    "serve": "light-server -s . -p 1234",
     "test": "echo \"Error: no test specified\" && exit 1"
   },
   "author": "rhysd <lin90162@yahoo.co.jp> (https://rhysd.github.io/)",
@@ -28,6 +29,7 @@
     "@typescript-eslint/eslint-plugin": "^4.28.2",
     "@typescript-eslint/parser": "^4.28.2",
     "eslint": "^7.30.0",
+    "light-server": "^2.9.1",
     "prettier": "^2.3.2",
     "stylelint": "^13.13.1",
     "stylelint-config-standard": "^22.0.0",

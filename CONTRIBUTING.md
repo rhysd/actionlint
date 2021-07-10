@@ -93,7 +93,7 @@ Run [`deploy.bash`](./playground/deploy.bash) at root of repository. It does:
 # Prepare deployment
 bash ./playground/deploy.bash
 # Check it works fine by visiting localhost:1234
-python3 -m http.server 1234
+npm run serve
 # If it looks good, deploy it
 git push
 ```
