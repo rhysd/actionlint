@@ -53,21 +53,19 @@ jobs:
       - uses: actions/setup-go@v2
         with:
           go-version: '1.16'
-      - run: go get honnef.co/go/tools/cmd/staticcheck@latest
-      - name: Add staticcheck to PATH
-        run: echo "$(go env GOPATH)/bin" >> "$GITHUB_PATH"
-      - run: staticcheck ./ ./cmd/actionlint
-      - name: Check wasm build
+      - name: Install staticcheck
         run: |
-          cd ./playground
-          make main.wasm
+          go get honnef.co/go/tools/cmd/staticcheck@latest
+          echo "$(go env GOPATH)/bin" >> "$GITHUB_PATH"
+      - run: make lint
       - uses: actions/setup-node@v2
         with:
           node-version: "lts/*"
-      - name: Lint playground files
+      - name: Check playground files
         run: |
           cd ./playground
           set -x
+          make main.wasm
           npm install
           npm run lint
       - name: Lint bash scripts
