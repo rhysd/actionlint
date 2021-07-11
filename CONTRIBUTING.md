@@ -27,6 +27,23 @@ or
 make test
 ```
 
+## How to run lint
+
+[staticcheck](https://staticcheck.io/) is used to lint Go sources.
+
+```sh
+staticcheck ./ ./cmd/...
+```
+
+or
+
+```sh
+make lint
+```
+
+Note that `staticcheck ./...` is not available because it does not support `syscall/js` yet. `playground/main.go` hits
+this issue.
+
 ## How to run fuzzer
 
 Fuzz tests use [go-fuzz](https://github.com/dvyukov/go-fuzz). Install `go-fuzz` and `go-fuzz-build` in your system.

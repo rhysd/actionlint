@@ -15,6 +15,12 @@ endif
 
 test: .testtimestamp
 
+.staticchecktimestamp: $(TESTS) $(SRCS)
+	staticcheck ./ ./cmd/...
+	touch .staticchecktimestamp
+
+lint: .staticchecktimestamp
+
 actionlint: $(SRCS)
 	CGO_ENABLED=0 go build ./cmd/actionlint
 
@@ -32,11 +38,12 @@ man/actionlint.1: man/actionlint.1.ronn
 man: man/actionlint.1
 
 clean:
-	rm -f ./actionlint ./.testtimestamp ./actionlint_fuzz-fuzz.zip ./man/actionlint.1 ./man/actionlint.1.html
+	rm -f ./actionlint ./.testtimestamp ./.staticchecktimestamp ./actionlint_fuzz-fuzz.zip ./man/actionlint.1 ./man/actionlint.1.html
 	rm -rf ./corpus ./crashers
 
 b: build
 t: test
 c: clean
+l: lint
 
-.PHONY: all test clean build fuzz man b t c
+.PHONY: all test clean build lint fuzz man b t c l
