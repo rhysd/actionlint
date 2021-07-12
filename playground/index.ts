@@ -65,7 +65,10 @@ jobs:
 
         const debounceInterval = isMobile.phone ? 1000 : 300;
         let debounceId: number | null = null;
+        let contentChanged = false;
         editor.on('change', function (_, e) {
+            contentChanged = true;
+
             if (typeof window.runActionlint !== 'function') {
                 showError('Preparing Wasm file is not completed yet. Please wait for a while and try again.');
                 return;
@@ -138,6 +141,7 @@ jobs:
                 a.rel = 'noopener';
                 a.textContent = url;
                 a.className = 'has-text-info-light is-underlined';
+                a.addEventListener('click', e => e.stopPropagation());
                 ret.push(a);
 
                 rest = rest.slice(idx + url.length);
@@ -191,6 +195,13 @@ jobs:
         window.showError = showError;
         window.onCheckCompleted = onCheckCompleted;
         window.dismissLoading = dismissLoading;
+
+        window.addEventListener('beforeunload', e => {
+            if (contentChanged) {
+                e.preventDefault();
+                e.returnValue = '';
+            }
+        });
     }
 
     try {
