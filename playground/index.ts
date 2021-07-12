@@ -1,4 +1,4 @@
-(async function (): Promise<void> {
+(async function () {
     function getElementById(id: string): HTMLElement {
         const e = document.getElementById(id);
         if (e === null) {
@@ -17,7 +17,7 @@
 
         const s = params.get('s');
         if (s !== null) {
-            return Promise.resolve(s);
+            return s;
         }
 
         const u = params.get('u');
@@ -26,7 +26,8 @@
             if (!res.ok) {
                 throw new Error(`Fetching ${u} failed with status ${res.status}: ${res.statusText}`);
             }
-            return res.text();
+            const src = await res.text();
+            return src.trim();
         }
 
         const src = `# Paste your workflow YAML to this code editor
@@ -52,7 +53,7 @@ jobs:
         if: \${{ github.repository.permissions.admin == true }}
       - run: npm install && npm test`;
 
-        return Promise.resolve(src);
+        return src;
     }
 
     const editor = CodeMirror(getElementById('editor'), {
