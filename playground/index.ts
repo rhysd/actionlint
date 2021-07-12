@@ -106,6 +106,44 @@ jobs:
             nowLoading.style.display = 'none';
         }
 
+        const reUrl = /https?:\/\/\S+/;
+        function linkifyMessage(text: string): HTMLElement[] {
+            function span(text: string): HTMLSpanElement {
+                const e = document.createElement('span');
+                e.textContent = text;
+                return e;
+            }
+
+            const ret: HTMLElement[] = [];
+            let rest = text;
+            while (true) {
+                const m = rest.match(reUrl);
+                if (m === null || m.index === undefined || m[0] === undefined) {
+                    if (rest.length > 0) {
+                        ret.push(span(rest));
+                    }
+                    return ret;
+                }
+
+                const idx = m.index;
+                const url = m[0];
+
+                const s = rest.slice(0, idx);
+                if (s.length > 0) {
+                    ret.push(span(s));
+                }
+
+                const a = document.createElement('a');
+                a.href = url;
+                a.rel = 'noopener';
+                a.textContent = url;
+                a.className = 'has-text-info-light is-underlined';
+                ret.push(a);
+
+                rest = rest.slice(idx + url.length);
+            }
+        }
+
         function onCheckCompleted(errors: ActionlintError[]): void {
             body.textContent = '';
 
@@ -130,9 +168,9 @@ jobs:
                 row.appendChild(pos);
 
                 const desc = document.createElement('td');
-                const msg = document.createElement('span');
-                msg.textContent = error.message;
-                desc.appendChild(msg);
+                for (const elem of linkifyMessage(error.message)) {
+                    desc.appendChild(elem);
+                }
                 const kind = document.createElement('span');
                 kind.className = 'tag is-dark';
                 kind.textContent = error.kind;
