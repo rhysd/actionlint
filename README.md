@@ -101,10 +101,12 @@ directory in `$PATH`.
 
 Prebuilt binaries are built at each release by CI for the following OS and arch:
 
-- macOS (x86_64)
+- macOS (x86_64, arm64)
 - Linux (i386, x86_64, arm32, arm64)
 - Windows (i386, x86_64)
 - FreeBSD (i386, x86_64)
+
+Note: The author doesn't have Apple M1 environment so `darwin/arm64` target binary is not tested.
 
 ## CI services
 
