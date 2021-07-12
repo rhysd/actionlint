@@ -1,5 +1,5 @@
 (function () {
-    function init() {
+    async function main(): Promise<void> {
         function getElementById(id: string): HTMLElement {
             const e = document.getElementById(id);
             if (e === null) {
@@ -13,13 +13,24 @@
         const successMessage = getElementById('success-msg');
         const nowLoading = getElementById('loading');
 
-        function getDefaultSource(): string {
-            const p = new URLSearchParams(window.location.search).get('s');
-            if (p !== null) {
-                return p;
+        async function getDefaultSource(): Promise<string> {
+            const params = new URLSearchParams(window.location.search);
+
+            const s = params.get('s');
+            if (s !== null) {
+                return Promise.resolve(s);
             }
 
-            return `# Paste your workflow YAML to this code editor
+            const u = params.get('u');
+            if (u !== null) {
+                const res = await fetch(u);
+                if (!res.ok) {
+                    throw new Error(`Fetching ${u} failed with status ${res.status}: ${res.statusText}`);
+                }
+                return res.text();
+            }
+
+            const src = `# Paste your workflow YAML to this code editor
 
 on:
   push:
@@ -41,6 +52,8 @@ jobs:
           key: \${{ matrix.platform }}-node-\${{ hashFiles('**/package-lock.json') }}
         if: \${{ github.repository.permissions.admin == true }}
       - run: npm install && npm test`;
+
+            return Promise.resolve(src);
         }
 
         const editor = CodeMirror(getElementById('editor'), {
@@ -60,7 +73,7 @@ jobs:
                     }
                 },
             },
-            value: getDefaultSource(),
+            value: await getDefaultSource(),
         } as CodeMirror.EditorConfiguration);
 
         const debounceInterval = isMobile.phone ? 1000 : 300;
@@ -202,18 +215,9 @@ jobs:
                 e.returnValue = '';
             }
         });
-    }
 
-    try {
-        init();
-    } catch (err) {
-        console.error('INIT ERROR!:', err);
-        alert(`Error while initialization.\n${err.name}: ${err.message}\n\n${err.stack}`);
-        return;
-    }
-
-    async function main(): Promise<void> {
         const go = new Go();
+
         let result;
         // Note: WebAssembly.instantiateStreaming is not implemented on Safari yet
         if (typeof WebAssembly.instantiateStreaming == 'function') {
@@ -223,6 +227,7 @@ jobs:
             const mod = await response.arrayBuffer();
             result = await WebAssembly.instantiate(mod, go.importObject);
         }
+
         await go.run(result.instance);
     }
 
