@@ -1,23 +1,25 @@
 (function () {
-    function ensureNonNull<T>(x: T | null): T {
-        if (x === null) {
-            throw new Error('Unexpected null value');
-        }
-        return x;
-    }
-
-    const body = ensureNonNull(document.getElementById('lint-result-body'));
-    const errorMessage = ensureNonNull(document.getElementById('error-msg'));
-    const successMessage = ensureNonNull(document.getElementById('success-msg'));
-    const nowLoading = ensureNonNull(document.getElementById('loading'));
-
-    function getDefaultSource(): string {
-        const p = new URLSearchParams(window.location.search).get('s');
-        if (p !== null) {
-            return p;
+    function init() {
+        function getElementById(id: string): HTMLElement {
+            const e = document.getElementById(id);
+            if (e === null) {
+                throw new Error(`#${id} element does not exist`);
+            }
+            return e;
         }
 
-        return `# Paste your workflow YAML to this code editor
+        const body = getElementById('lint-result-body');
+        const errorMessage = getElementById('error-msg');
+        const successMessage = getElementById('success-msg');
+        const nowLoading = getElementById('loading');
+
+        function getDefaultSource(): string {
+            const p = new URLSearchParams(window.location.search).get('s');
+            if (p !== null) {
+                return p;
+            }
+
+            return `# Paste your workflow YAML to this code editor
 
 on:
   push:
@@ -39,118 +41,176 @@ jobs:
           key: \${{ matrix.platform }}-node-\${{ hashFiles('**/package-lock.json') }}
         if: \${{ github.repository.permissions.admin == true }}
       - run: npm install && npm test`;
-    }
+        }
 
-    const editor = CodeMirror(ensureNonNull(document.getElementById('editor')), {
-        mode: 'yaml',
-        theme: 'material-darker',
-        lineNumbers: true,
-        lineWrapping: true,
-        autofocus: true,
-        styleActiveLine: true,
-        gutters: ['CodeMirror-linenumbers', 'error-marker'],
-        extraKeys: {
-            Tab(cm) {
-                if (cm.somethingSelected()) {
-                    cm.execCommand('indentMore');
-                } else {
-                    cm.execCommand('insertSoftTab');
-                }
+        const editor = CodeMirror(getElementById('editor'), {
+            mode: 'yaml',
+            theme: 'material-darker',
+            lineNumbers: true,
+            lineWrapping: true,
+            autofocus: true,
+            styleActiveLine: true,
+            gutters: ['CodeMirror-linenumbers', 'error-marker'],
+            extraKeys: {
+                Tab(cm) {
+                    if (cm.somethingSelected()) {
+                        cm.execCommand('indentMore');
+                    } else {
+                        cm.execCommand('insertSoftTab');
+                    }
+                },
             },
-        },
-        value: getDefaultSource(),
-    } as CodeMirror.EditorConfiguration);
+            value: getDefaultSource(),
+        } as CodeMirror.EditorConfiguration);
 
-    const debounceInterval = isMobile.phone ? 1000 : 300;
-    let debounceId: number | null = null;
-    editor.on('change', function (_, e) {
-        if (typeof window.runActionlint !== 'function') {
-            showError('Preparing Wasm file is not completed yet. Please wait for a while and try again.');
-            return;
+        const debounceInterval = isMobile.phone ? 1000 : 300;
+        let debounceId: number | null = null;
+        let contentChanged = false;
+        editor.on('change', function (_, e) {
+            contentChanged = true;
+
+            if (typeof window.runActionlint !== 'function') {
+                showError('Preparing Wasm file is not completed yet. Please wait for a while and try again.');
+                return;
+            }
+
+            if (debounceId !== null) {
+                window.clearTimeout(debounceId);
+            }
+
+            function startActionlint(): void {
+                debounceId = null;
+                errorMessage.style.display = 'none';
+                successMessage.style.display = 'none';
+                editor.clearGutter('error-marker');
+                // eslint-disable-next-line @typescript-eslint/no-non-null-assertion
+                window.runActionlint!(editor.getValue());
+            }
+
+            if (e.origin === 'paste') {
+                startActionlint(); // When pasting some code, apply actionlint instantly
+                return;
+            }
+
+            debounceId = window.setTimeout(() => startActionlint(), debounceInterval);
+        });
+
+        function getSource(): string {
+            return editor.getValue();
         }
 
-        if (debounceId !== null) {
-            window.clearTimeout(debounceId);
+        function showError(message: string): void {
+            console.error('Check failed!:', message);
+            errorMessage.textContent = message;
+            errorMessage.style.display = 'block';
         }
 
-        function startActionlint(): void {
-            debounceId = null;
-            errorMessage.style.display = 'none';
-            successMessage.style.display = 'none';
-            editor.clearGutter('error-marker');
-            // eslint-disable-next-line @typescript-eslint/no-non-null-assertion
-            window.runActionlint!(editor.getValue());
+        function dismissLoading(): void {
+            nowLoading.style.display = 'none';
         }
 
-        if (e.origin === 'paste') {
-            startActionlint(); // When pasting some code, apply actionlint instantly
-            return;
+        const reUrl = /https?:\/\/\S+/;
+        function linkifyMessage(text: string): HTMLElement[] {
+            function span(text: string): HTMLSpanElement {
+                const e = document.createElement('span');
+                e.textContent = text;
+                return e;
+            }
+
+            const ret: HTMLElement[] = [];
+            let rest = text;
+            while (true) {
+                const m = rest.match(reUrl);
+                if (m === null || m.index === undefined || m[0] === undefined) {
+                    if (rest.length > 0) {
+                        ret.push(span(rest));
+                    }
+                    return ret;
+                }
+
+                const idx = m.index;
+                const url = m[0];
+
+                const s = rest.slice(0, idx);
+                if (s.length > 0) {
+                    ret.push(span(s));
+                }
+
+                const a = document.createElement('a');
+                a.href = url;
+                a.rel = 'noopener';
+                a.textContent = url;
+                a.className = 'has-text-info-light is-underlined';
+                a.addEventListener('click', e => e.stopPropagation());
+                ret.push(a);
+
+                rest = rest.slice(idx + url.length);
+            }
         }
 
-        debounceId = window.setTimeout(() => startActionlint(), debounceInterval);
-    });
+        function onCheckCompleted(errors: ActionlintError[]): void {
+            body.textContent = '';
 
-    function getSource(): string {
-        return editor.getValue();
+            if (errors.length === 0) {
+                successMessage.style.display = 'block';
+                return;
+            }
+
+            for (const error of errors) {
+                const row = document.createElement('tr');
+                row.className = 'is-size-5';
+                row.addEventListener('click', () => {
+                    editor.setCursor({ line: error.line - 1, ch: error.column - 1 });
+                    editor.focus();
+                });
+
+                const pos = document.createElement('td');
+                const tag = document.createElement('span');
+                tag.className = 'tag is-primary is-dark';
+                tag.textContent = `line:${error.line}, col:${error.column}`;
+                pos.appendChild(tag);
+                row.appendChild(pos);
+
+                const desc = document.createElement('td');
+                for (const elem of linkifyMessage(error.message)) {
+                    desc.appendChild(elem);
+                }
+                const kind = document.createElement('span');
+                kind.className = 'tag is-dark';
+                kind.textContent = error.kind;
+                kind.style.marginLeft = '4px';
+                desc.appendChild(kind);
+                row.appendChild(desc);
+
+                body.appendChild(row);
+
+                const marker = document.createElement('div');
+                marker.style.color = '#ff5370';
+                marker.textContent = '●';
+                editor.setGutterMarker(error.line - 1, 'error-marker', marker);
+            }
+        }
+
+        window.getYamlSource = getSource;
+        window.showError = showError;
+        window.onCheckCompleted = onCheckCompleted;
+        window.dismissLoading = dismissLoading;
+
+        window.addEventListener('beforeunload', e => {
+            if (contentChanged) {
+                e.preventDefault();
+                e.returnValue = '';
+            }
+        });
     }
 
-    function showError(message: string): void {
-        console.error('Check failed!:', message);
-        errorMessage.textContent = message;
-        errorMessage.style.display = 'block';
+    try {
+        init();
+    } catch (err) {
+        console.error('INIT ERROR!:', err);
+        alert(`Error while initialization.\n${err.name}: ${err.message}\n\n${err.stack}`);
+        return;
     }
-
-    function dismissLoading(): void {
-        nowLoading.style.display = 'none';
-    }
-
-    function onCheckCompleted(errors: ActionlintError[]): void {
-        body.textContent = '';
-
-        if (errors.length === 0) {
-            successMessage.style.display = 'block';
-            return;
-        }
-
-        for (const error of errors) {
-            const row = document.createElement('tr');
-            row.className = 'is-size-5';
-            row.addEventListener('click', () => {
-                editor.setCursor({ line: error.line - 1, ch: error.column - 1 });
-                editor.focus();
-            });
-
-            const pos = document.createElement('td');
-            const tag = document.createElement('span');
-            tag.className = 'tag is-primary is-dark';
-            tag.textContent = `line:${error.line}, col:${error.column}`;
-            pos.appendChild(tag);
-            row.appendChild(pos);
-
-            const desc = document.createElement('td');
-            const msg = document.createElement('span');
-            msg.textContent = error.message;
-            desc.appendChild(msg);
-            const kind = document.createElement('span');
-            kind.className = 'tag is-dark';
-            kind.textContent = error.kind;
-            kind.style.marginLeft = '4px';
-            desc.appendChild(kind);
-            row.appendChild(desc);
-
-            body.appendChild(row);
-
-            const marker = document.createElement('div');
-            marker.style.color = '#ff5370';
-            marker.textContent = '●';
-            editor.setGutterMarker(error.line - 1, 'error-marker', marker);
-        }
-    }
-
-    window.getYamlSource = getSource;
-    window.showError = showError;
-    window.onCheckCompleted = onCheckCompleted;
-    window.dismissLoading = dismissLoading;
 
     async function main(): Promise<void> {
         const go = new Go();
@@ -168,6 +228,6 @@ jobs:
 
     main().catch(err => {
         console.error('ERROR!:', err);
-        alert(err.stack);
+        alert(`${err.name}: ${err.message}\n\n${err.stack}`);
     });
 })();
