@@ -55,4 +55,6 @@ echo 'Making commit for new deploy'
 git commit -m "deploy from ${sha}"
 
 rm -r ./playground-dist
-echo "Successfully prepared deployment. Run './playground/node_modules/.bin/light-server -s . -p 1234' and do the final check before deployment. If it looks good, deploy it by 'git push'"
+
+echo "Successfully prepared deployment. Do the final check before deployment. If it looks good, stop the server with Ctrl+C and deploy it by 'git push'"
+(trap '' INT; ./playground/node_modules/.bin/light-server -s . -p 1234 -o || true)
