@@ -1,3 +1,18 @@
+<a name="v1.4.1"></a>
+# [v1.4.1](https://github.com/rhysd/actionlint/releases/tag/v1.4.1) - 12 Jul 2021
+
+- A pre-built executable for `darwin/arm64` (Apple M1) was added to CI (#1)
+  - Managing `actionlint` command with Homebrew on M1 Mac is now available. See [the instaruction](https://github.com/rhysd/actionlint#homebrew-on-macos) for more details
+  - Since the author doesn't have M1 Mac and GitHub Actions does not support M1 Mac yet, the built binary is not tested
+- Pre-built executables are now built with Go 1.16 compiler (previously it was 1.15)
+- Fix error message is sometimes not in one line when the error message was caused by go-yaml/yaml parser
+- Fix playground does not work on Safari browsers on both iOS and Mac since they don't support `WebAssembly.instantiateStreaming()` yet
+- Make URLs in error messages clickable on playground
+- Code base of playground was migrated from JavaScript to Typescript along with improving error handlings
+
+[Changes][v1.4.1]
+
+
 <a name="v1.4.0"></a>
 # [v1.4.0](https://github.com/rhysd/actionlint/releases/tag/v1.4.0) - 09 Jul 2021
 
@@ -157,6 +172,7 @@ See documentation for more details:
 [Changes][v1.0.0]
 
 
+[v1.4.1]: https://github.com/rhysd/actionlint/compare/v1.4.0...v1.4.1
 [v1.4.0]: https://github.com/rhysd/actionlint/compare/v1.3.2...v1.4.0
 [v1.3.2]: https://github.com/rhysd/actionlint/compare/v1.3.1...v1.3.2
 [v1.3.1]: https://github.com/rhysd/actionlint/compare/v1.3.0...v1.3.1
