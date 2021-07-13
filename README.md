@@ -191,6 +191,13 @@ actionlint path/to/workflow1.yaml path/to/workflow2.yaml
 
 See `actionlint -h` for all flags and options.
 
+# Tools integration
+
+These tools have integration with actionlint:
+
+- **[reviewdog/action-actionlint][reviewdog-actionlint]**: [reviewdog][] is an automated review tool for various code hosting
+  services. It officially supports actionlint. You can check errors from actionlint easily in inline comments on code review.
+
 <a name="checks"></a>
 # Checks
 
@@ -1661,3 +1668,5 @@ actionlint is distributed under [the MIT license](./LICENSE.txt).
 [credentials-doc]: https://docs.github.com/en/actions/reference/workflow-syntax-for-github-actions#jobsjob_idcontainercredentials
 [opengroup-env-vars]: https://pubs.opengroup.org/onlinepubs/007904875/basedefs/xbd_chap08.html
 [issue-form]: https://github.com/rhysd/actionlint/issues/new
+[reviewdog-actionlint]: https://github.com/reviewdog/action-actionlint
+[reviewdog]: https://github.com/reviewdog/reviewdog
