@@ -20,7 +20,7 @@
             if (url.host === 'github.com') {
                 // Convert /owner/repo/blob/branch/path/to to /owner/repo/branch/path/to
                 const s = url.pathname.split('/blob/');
-                if (s.length == 2) {
+                if (s.length === 2) {
                     url.pathname = s.join('/');
                     url.host = 'raw.githubusercontent.com';
                     return url.toString();
@@ -244,7 +244,7 @@ jobs:
 
     let result;
     // Note: WebAssembly.instantiateStreaming is not implemented on Safari yet
-    if (typeof WebAssembly.instantiateStreaming == 'function') {
+    if (typeof WebAssembly.instantiateStreaming === 'function') {
         result = await WebAssembly.instantiateStreaming(fetch('main.wasm'), go.importObject);
     } else {
         const response = await fetch('main.wasm');
