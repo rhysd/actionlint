@@ -11,8 +11,11 @@
     const errorMessage = getElementById('error-msg');
     const successMessage = getElementById('success-msg');
     const nowLoading = getElementById('loading');
+    const checkUrlButton = getElementById('check-url-btn');
+    const checkUrlInput = getElementById('check-url-input') as HTMLInputElement;
+    const permalinkButton = getElementById('permalink-btn');
 
-    async function getDefaultSource(): Promise<string> {
+    async function getRemoteSource(url: string): Promise<string> {
         function getUrlToFetch(u: string): string {
             const url = new URL(u);
 
@@ -37,6 +40,15 @@
             return u;
         }
 
+        const res = await fetch(getUrlToFetch(url));
+        if (!res.ok) {
+            throw new Error(`Fetching ${url} failed with status ${res.status}: ${res.statusText}`);
+        }
+        const src = await res.text();
+        return src.trim();
+    }
+
+    async function getDefaultSource(): Promise<string> {
         const params = new URLSearchParams(window.location.search);
 
         const s = params.get('s');
@@ -46,12 +58,7 @@
 
         const u = params.get('u');
         if (u !== null) {
-            const res = await fetch(getUrlToFetch(u));
-            if (!res.ok) {
-                throw new Error(`Fetching ${u} failed with status ${res.status}: ${res.statusText}`);
-            }
-            const src = await res.text();
-            return src.trim();
+            return getRemoteSource(u);
         }
 
         const src = `# Paste your workflow YAML to this code editor
@@ -137,7 +144,6 @@ jobs:
     }
 
     function showError(message: string): void {
-        console.error('Check failed!:', message);
         errorMessage.textContent = message;
         errorMessage.style.display = 'block';
     }
@@ -238,6 +244,35 @@ jobs:
             e.preventDefault();
             e.returnValue = '';
         }
+    });
+
+    checkUrlInput.addEventListener('keyup', e => {
+        if (e.key === 'Enter' || e.keyCode === 13) {
+            e.preventDefault();
+            checkUrlButton.click();
+        }
+    });
+
+    checkUrlButton.addEventListener('click', async e => {
+        e.preventDefault();
+        const input = checkUrlInput.value;
+        let src;
+        try {
+            src = await getRemoteSource(input);
+        } catch (err) {
+            showError(`Incorrect input "${input}": ${err.message}`);
+            return;
+        }
+        editor.setValue(src);
+    });
+
+    permalinkButton.addEventListener('click', e => {
+        e.preventDefault();
+        const src = getSource();
+        const params = new URLSearchParams();
+        params.set('s', src);
+        contentChanged = false;
+        location.search = params.toString();
     });
 
     const go = new Go();
