@@ -3,8 +3,9 @@ body {
   width: 100%;
 }
 
-header {
-  margin: 1rem;
+#header-bar {
+  padding: 1rem;
+  background-color: transparent;
 }
 
 #logo {
