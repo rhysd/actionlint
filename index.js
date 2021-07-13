@@ -12,6 +12,23 @@
     const successMessage = getElementById('success-msg');
     const nowLoading = getElementById('loading');
     async function getDefaultSource() {
+        function getUrlToFetch(u) {
+            const url = new URL(u);
+            if (url.host === 'github.com') {
+                const s = url.pathname.split('/blob/');
+                if (s.length === 2) {
+                    url.pathname = s.join('/');
+                    url.host = 'raw.githubusercontent.com';
+                    return url.toString();
+                }
+            }
+            if (url.host === 'gist.github.com' && /\/[0-9a-f]+$/.test(url.pathname)) {
+                url.host = 'gist.githubusercontent.com';
+                url.pathname += '/raw';
+                return url.toString();
+            }
+            return u;
+        }
         const params = new URLSearchParams(window.location.search);
         const s = params.get('s');
         if (s !== null) {
@@ -19,7 +36,7 @@
         }
         const u = params.get('u');
         if (u !== null) {
-            const res = await fetch(u);
+            const res = await fetch(getUrlToFetch(u));
             if (!res.ok) {
                 throw new Error(`Fetching ${u} failed with status ${res.status}: ${res.statusText}`);
             }
@@ -187,7 +204,7 @@ jobs:
     });
     const go = new Go();
     let result;
-    if (typeof WebAssembly.instantiateStreaming == 'function') {
+    if (typeof WebAssembly.instantiateStreaming === 'function') {
         result = await WebAssembly.instantiateStreaming(fetch('main.wasm'), go.importObject);
     }
     else {
