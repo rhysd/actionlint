@@ -17,6 +17,6 @@
   },
   "files": [
     "index.ts",
-    "index.d.ts"
+    "lib.d.ts"
   ]
 }

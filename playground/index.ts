@@ -13,6 +13,30 @@
     const nowLoading = getElementById('loading');
 
     async function getDefaultSource(): Promise<string> {
+        function getUrlToFetch(u: string): string {
+            const url = new URL(u);
+
+            // Convert repository URL to raw source URL
+            if (url.host === 'github.com') {
+                // Convert /owner/repo/blob/branch/path/to to /owner/repo/branch/path/to
+                const s = url.pathname.split('/blob/');
+                if (s.length == 2) {
+                    url.pathname = s.join('/');
+                    url.host = 'raw.githubusercontent.com';
+                    return url.toString();
+                }
+            }
+
+            // Convert Gist URL to raw source URL
+            if (url.host === 'gist.github.com' && /\/[0-9a-f]+$/.test(url.pathname)) {
+                url.host = 'gist.githubusercontent.com';
+                url.pathname += '/raw';
+                return url.toString();
+            }
+
+            return u;
+        }
+
         const params = new URLSearchParams(window.location.search);
 
         const s = params.get('s');
@@ -22,7 +46,7 @@
 
         const u = params.get('u');
         if (u !== null) {
-            const res = await fetch(u);
+            const res = await fetch(getUrlToFetch(u));
             if (!res.ok) {
                 throw new Error(`Fetching ${u} failed with status ${res.status}: ${res.statusText}`);
             }

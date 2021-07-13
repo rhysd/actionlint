@@ -6,7 +6,7 @@ build: install main.wasm
 node_modules:
 	npm install
 
-index.js: index.ts index.d.ts tsconfig.json
+index.js: index.ts lib.d.ts tsconfig.json
 	npm run build
 
 lib: node_modules index.js
