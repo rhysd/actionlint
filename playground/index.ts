@@ -245,6 +245,13 @@ jobs:
         }
     });
 
+    checkUrlInput.addEventListener('keyup', e => {
+        if (e.key === 'Enter' || e.keyCode === 13) {
+            e.preventDefault();
+            checkUrlButton.click();
+        }
+    });
+
     checkUrlButton.addEventListener('click', async e => {
         e.preventDefault();
         const input = checkUrlInput.value;
@@ -256,7 +263,6 @@ jobs:
             return;
         }
         editor.setValue(src);
-        contentChanged = false;
     });
 
     const go = new Go();
