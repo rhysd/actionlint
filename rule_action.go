@@ -73,7 +73,7 @@ func (rule *RuleAction) checkRepoAction(spec string, exec *ExecAction) {
 	s := spec
 	idx := strings.IndexRune(s, '@')
 	if idx == -1 {
-		rule.invalidActionFormat(exec.Uses.Pos, spec, "ref is missng")
+		rule.invalidActionFormat(exec.Uses.Pos, spec, "ref is missing")
 		return
 	}
 	ref := s[idx+1:]
