@@ -13,6 +13,7 @@
     const nowLoading = getElementById('loading');
     const checkUrlButton = getElementById('check-url-btn');
     const checkUrlInput = getElementById('check-url-input') as HTMLInputElement;
+    const permalinkButton = getElementById('permalink-btn');
 
     async function getRemoteSource(url: string): Promise<string> {
         function getUrlToFetch(u: string): string {
@@ -263,6 +264,15 @@ jobs:
             return;
         }
         editor.setValue(src);
+    });
+
+    permalinkButton.addEventListener('click', e => {
+        e.preventDefault();
+        const src = getSource();
+        const params = new URLSearchParams();
+        params.set('s', src);
+        contentChanged = false;
+        location.search = params.toString();
     });
 
     const go = new Go();

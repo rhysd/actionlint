@@ -8,6 +8,10 @@ body {
   background-color: transparent;
 }
 
+#permalink-btn {
+  margin-right: 1rem;
+}
+
 #logo {
   color: inherit;
 }
