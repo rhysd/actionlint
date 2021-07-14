@@ -4,12 +4,13 @@ import (
 	"bufio"
 	"io/ioutil"
 	"os"
-	"os/exec"
 	"path/filepath"
 	"regexp"
 	"sort"
 	"strings"
 	"testing"
+
+	"golang.org/x/sys/execabs"
 )
 
 func TestExamples(t *testing.T) {
@@ -51,7 +52,7 @@ func TestExamples(t *testing.T) {
 			opts := LinterOptions{}
 
 			if strings.Contains(testName, "shellcheck") {
-				p, err := exec.LookPath("shellcheck")
+				p, err := execabs.LookPath("shellcheck")
 				if err != nil {
 					t.Skip("skipped because \"shellcheck\" command does not exist in system")
 				}
@@ -59,7 +60,7 @@ func TestExamples(t *testing.T) {
 			}
 
 			if strings.Contains(testName, "pyflakes") {
-				p, err := exec.LookPath("pyflakes")
+				p, err := execabs.LookPath("pyflakes")
 				if err != nil {
 					t.Skip("skipped because \"pyflakes\" command does not exist in system")
 				}

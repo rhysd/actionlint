@@ -9,6 +9,7 @@ import (
 	"sync"
 
 	"golang.org/x/sync/errgroup"
+	"golang.org/x/sys/execabs"
 )
 
 type shellcheckError struct {
@@ -34,7 +35,7 @@ type RuleShellcheck struct {
 // or relative/absolute file path. When the given executable is not found in system, it returns an
 // error as 2nd return value.
 func NewRuleShellcheck(executable string) (*RuleShellcheck, error) {
-	p, err := exec.LookPath(executable)
+	p, err := execabs.LookPath(executable)
 	if err != nil {
 		return nil, err
 	}

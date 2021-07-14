@@ -8,6 +8,7 @@ import (
 	"sync"
 
 	"golang.org/x/sync/errgroup"
+	"golang.org/x/sys/execabs"
 )
 
 type shellIsPythonKind int
@@ -43,7 +44,7 @@ type RulePyflakes struct {
 // or relative/absolute file path. When the given executable is not found in system, it returns
 // an error.
 func NewRulePyflakes(executable string) (*RulePyflakes, error) {
-	p, err := exec.LookPath(executable)
+	p, err := execabs.LookPath(executable)
 	if err != nil {
 		return nil, err
 	}
