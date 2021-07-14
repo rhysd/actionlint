@@ -61,6 +61,13 @@
             return getRemoteSource(u);
         }
 
+        if (window.location.hash !== '') {
+            const b64 = window.location.hash.slice(1); // Omit first '#'
+            const compressed = Uint8Array.from(atob(b64), c => c.charCodeAt(0));
+            const decompressed = pako.inflate(compressed);
+            return new TextDecoder().decode(decompressed);
+        }
+
         const src = `# Paste your workflow YAML to this code editor
 
 on:
@@ -269,10 +276,10 @@ jobs:
     permalinkButton.addEventListener('click', e => {
         e.preventDefault();
         const src = getSource();
-        const params = new URLSearchParams();
-        params.set('s', src);
-        contentChanged = false;
-        location.search = params.toString();
+        const bin = new TextEncoder().encode(src);
+        const compressed = pako.deflate(bin);
+        const b64 = btoa(String.fromCharCode(...compressed));
+        window.location.hash = b64;
     });
 
     const go = new Go();
