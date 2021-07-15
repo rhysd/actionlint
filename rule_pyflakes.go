@@ -3,7 +3,6 @@ package actionlint
 import (
 	"bytes"
 	"fmt"
-	"io"
 	"os/exec"
 	"sync"
 
@@ -38,12 +37,13 @@ type RulePyflakes struct {
 	jobShellIsPython      shellIsPythonKind
 	group                 errgroup.Group
 	mu                    sync.Mutex
+	proc                  *concurrentProcess
 }
 
 // NewRulePyflakes creates new RulePyflakes instance. Parameter executable can be command name
 // or relative/absolute file path. When the given executable is not found in system, it returns
 // an error.
-func NewRulePyflakes(executable string) (*RulePyflakes, error) {
+func NewRulePyflakes(executable string, proc *concurrentProcess) (*RulePyflakes, error) {
 	p, err := execabs.LookPath(executable)
 	if err != nil {
 		return nil, err
@@ -53,6 +53,7 @@ func NewRulePyflakes(executable string) (*RulePyflakes, error) {
 		cmd:                   p,
 		workflowShellIsPython: shellIsPythonKindUnspecified,
 		jobShellIsPython:      shellIsPythonKindUnspecified,
+		proc:                  proc,
 	}
 	return r, nil
 }
@@ -133,31 +134,18 @@ func (rule *RulePyflakes) isPythonShell(r *ExecRun) bool {
 
 func (rule *RulePyflakes) runPyflakes(executable, src string, pos *Pos) error {
 	src = sanitizeExpressionsInScript(src) // Defiend at rule_shellcheck.go
-	rule.debug("%s: Run pyflakes for Python script:\n%s", pos, src)
+	rule.debug("%s: Running %s for Python script:\n%s", pos, executable, src)
 
-	cmd := exec.Command(executable)
-	cmd.Stderr = nil
-	rule.debug("%s: Running pyflakes command: %s", pos, cmd)
-
-	stdin, err := cmd.StdinPipe()
+	stdout, err := rule.proc.run(executable, []string{}, src)
 	if err != nil {
-		return fmt.Errorf("could not make stdin pipe for pyflakes while checking script at %s: %w", pos, err)
-	}
-	if _, err := io.WriteString(stdin, src); err != nil {
-		return fmt.Errorf("could not write to stdin of pyflakes process while checking script at %s: %w", pos, err)
-	}
-	stdin.Close()
-
-	stdout, err := cmd.Output()
-	if err != nil {
-		rule.debug("Command %s failed: %v", cmd, err)
+		rule.debug("Command %s failed: %v", executable, err)
 		if err, ok := err.(*exec.ExitError); ok {
 			// When exit status is non-zero and stdout is not empty, pyflakes successfully found some errors
 			if len(stdout) == 0 {
 				return fmt.Errorf("pyflakes did not run successfully while checking script at %s. stderr:\n%s", pos, err.Stderr)
 			}
 		} else {
-			return fmt.Errorf("`%s` did not run successfully while checking script at %s: %w", cmd, pos, err)
+			return fmt.Errorf("`%s` did not run successfully while checking script at %s: %w", executable, pos, err)
 		}
 	}
 	if len(stdout) == 0 {

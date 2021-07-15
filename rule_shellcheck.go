@@ -3,7 +3,6 @@ package actionlint
 import (
 	"encoding/json"
 	"fmt"
-	"io"
 	"os/exec"
 	"strings"
 	"sync"
@@ -29,12 +28,13 @@ type RuleShellcheck struct {
 	jobShell      string
 	group         errgroup.Group
 	mu            sync.Mutex
+	proc          *concurrentProcess
 }
 
 // NewRuleShellcheck craetes new RuleShellcheck instance. Parameter executable can be command name
 // or relative/absolute file path. When the given executable is not found in system, it returns an
 // error as 2nd return value.
-func NewRuleShellcheck(executable string) (*RuleShellcheck, error) {
+func NewRuleShellcheck(executable string, proc *concurrentProcess) (*RuleShellcheck, error) {
 	p, err := execabs.LookPath(executable)
 	if err != nil {
 		return nil, err
@@ -44,6 +44,7 @@ func NewRuleShellcheck(executable string) (*RuleShellcheck, error) {
 		cmd:           p,
 		workflowShell: "",
 		jobShell:      "",
+		proc:          proc,
 	}
 	return r, nil
 }
@@ -185,9 +186,8 @@ func (rule *RuleShellcheck) runShellcheck(executable, src, sh string, pos *Pos) 
 	//           environment
 	// - SC2194: The word is constant. This sometimes happens at constants by replacing ${{ }} with spaces.
 	//           For example, `if ${{ matrix.foo }}; then ...` -> `if _________________; then ...`
-	cmd := exec.Command(executable, "--norc", "-f", "json", "-x", "--shell", sh, "-e", "SC1091,SC2194", "-")
-	cmd.Stderr = nil
-	rule.debug("%s: Running shellcheck command: %s", pos, cmd)
+	args := []string{"--norc", "-f", "json", "-x", "--shell", sh, "-e", "SC1091,SC2194", "-"}
+	rule.debug("%s: Running %s command: %s", pos, executable, args)
 
 	// Use same options to run shell process described at document
 	// https://docs.github.com/en/actions/reference/workflow-syntax-for-github-actions#using-a-specific-shell
@@ -197,25 +197,16 @@ func (rule *RuleShellcheck) runShellcheck(executable, src, sh string, pos *Pos) 
 	}
 	script := fmt.Sprintf("%s\n%s\n", setup, src)
 
-	stdin, err := cmd.StdinPipe()
+	stdout, err := rule.proc.run(executable, args, script)
 	if err != nil {
-		return fmt.Errorf("could not make stdin pipe for shellcheck while checking script at %s: %w", pos, err)
-	}
-	if _, err := io.WriteString(stdin, script); err != nil {
-		return fmt.Errorf("could not write to stdin of shellcheck process while checking script at %s: %w", pos, err)
-	}
-	stdin.Close()
-
-	stdout, err := cmd.Output()
-	if err != nil {
-		rule.debug("Command %s failed: %v", cmd, err)
+		rule.debug("Command %s %s failed: %v", executable, args, err)
 		if exitErr, ok := err.(*exec.ExitError); ok {
 			// When exit status is non-zero and stdout is not empty, shellcheck successfully found some errors
 			if len(stdout) == 0 {
 				return fmt.Errorf("shellcheck did not run successfully while checking script at %s. stderr:\n%s", pos, exitErr.Stderr)
 			}
 		} else {
-			return fmt.Errorf("`%s` did not run successfully while checking script at %s: %w", cmd, pos, err)
+			return fmt.Errorf("`%s %s` did not run successfully while checking script at %s: %w", executable, strings.Join(args, " "), pos, err)
 		}
 	}
 

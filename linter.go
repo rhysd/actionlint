@@ -8,6 +8,7 @@ import (
 	"os"
 	"path/filepath"
 	"regexp"
+	"runtime"
 	"sort"
 	"strings"
 	"time"
@@ -249,6 +250,8 @@ func (l *Linter) LintFiles(filepaths []string, project *Project) ([]*Error, erro
 		cwd = wd
 	}
 
+	proc := newConcurrentProcess(runtime.NumCPU())
+
 	type workspace struct {
 		path string
 		errs []*Error
@@ -271,7 +274,7 @@ func (l *Linter) LintFiles(filepaths []string, project *Project) ([]*Error, erro
 			p = l.projects.At(w.path)
 		}
 		eg.Go(func() error {
-			src, errs, err := l.checkFile(w.path, cwd, p)
+			src, errs, err := l.checkFile(w.path, cwd, p, proc)
 			if err != nil {
 				return fmt.Errorf("%w: error while checking %s", err, w.path)
 			}
@@ -314,7 +317,7 @@ func (l *Linter) LintFile(path string, project *Project) ([]*Error, error) {
 		cwd = wd
 	}
 
-	src, errs, err := l.checkFile(path, cwd, project)
+	src, errs, err := l.checkFile(path, cwd, project, newConcurrentProcess(runtime.NumCPU()))
 	if err != nil {
 		return nil, err
 	}
@@ -323,7 +326,7 @@ func (l *Linter) LintFile(path string, project *Project) ([]*Error, error) {
 	return errs, err
 }
 
-func (l *Linter) checkFile(path string, cwd string, project *Project) ([]byte, []*Error, error) {
+func (l *Linter) checkFile(path string, cwd string, project *Project, proc *concurrentProcess) ([]byte, []*Error, error) {
 	b, err := ioutil.ReadFile(path)
 	if err != nil {
 		return nil, nil, fmt.Errorf("could not read %q: %w", path, err)
@@ -336,7 +339,7 @@ func (l *Linter) checkFile(path string, cwd string, project *Project) ([]byte, [
 		}
 	}
 
-	errs, err := l.check(path, b, project)
+	errs, err := l.check(path, b, project, proc)
 	return b, errs, err
 }
 
@@ -346,7 +349,7 @@ func (l *Linter) checkFile(path string, cwd string, project *Project) ([]byte, [
 // Note that only given Project instance is used for configuration. No config is automatically loaded
 // based on path parameter.
 func (l *Linter) Lint(path string, content []byte, project *Project) ([]*Error, error) {
-	errs, err := l.check(path, content, project)
+	errs, err := l.check(path, content, project, newConcurrentProcess(runtime.NumCPU()))
 	if err != nil {
 		return nil, err
 	}
@@ -354,7 +357,7 @@ func (l *Linter) Lint(path string, content []byte, project *Project) ([]*Error, 
 	return errs, nil
 }
 
-func (l *Linter) check(path string, content []byte, project *Project) ([]*Error, error) {
+func (l *Linter) check(path string, content []byte, project *Project, proc *concurrentProcess) ([]*Error, error) {
 	// Note: This method is called to check multiple files in parallel.
 	// It must be thread safe assuming fields of Linter are not modified while running.
 
@@ -429,7 +432,7 @@ func (l *Linter) check(path string, content []byte, project *Project) ([]*Error,
 			NewRuleExpression(),
 		}
 		if l.shellcheck != "" {
-			r, err := NewRuleShellcheck(l.shellcheck)
+			r, err := NewRuleShellcheck(l.shellcheck, proc)
 			if err == nil {
 				rules = append(rules, r)
 			} else {
@@ -439,7 +442,7 @@ func (l *Linter) check(path string, content []byte, project *Project) ([]*Error,
 			l.log("Rule \"shellcheck\" was disabled since shellcheck command name was empty")
 		}
 		if l.pyflakes != "" {
-			r, err := NewRulePyflakes(l.pyflakes)
+			r, err := NewRulePyflakes(l.pyflakes, proc)
 			if err == nil {
 				rules = append(rules, r)
 			} else {
