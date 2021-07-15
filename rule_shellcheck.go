@@ -122,6 +122,11 @@ func (rule *RuleShellcheck) VisitWorkflowPost(n *Workflow) error {
 	return nil
 }
 
+// Cleanup is callback when visiting finished. This callback is called even if the visiting failed since some callback returned an error
+func (rule *RuleShellcheck) Cleanup() {
+	rule.group.Wait() // Ensure all processes ended
+}
+
 func (rule *RuleShellcheck) getShellName(exec *ExecRun) string {
 	if exec.Shell != nil {
 		return exec.Shell.Value

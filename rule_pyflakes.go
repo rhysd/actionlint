@@ -114,6 +114,11 @@ func (rule *RulePyflakes) VisitStep(n *Step) error {
 	return nil
 }
 
+// Cleanup is callback when visiting finished. This callback is called even if the visiting failed since some callback returned an error
+func (rule *RulePyflakes) Cleanup() {
+	rule.group.Wait() // Ensure all processes ended
+}
+
 func (rule *RulePyflakes) isPythonShell(r *ExecRun) bool {
 	if r.Shell != nil {
 		return r.Shell.Value == "python"
