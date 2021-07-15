@@ -273,7 +273,7 @@ func (l *Linter) LintFiles(filepaths []string, project *Project) ([]*Error, erro
 		eg.Go(func() error {
 			src, errs, err := l.checkFile(w.path, cwd, p)
 			if err != nil {
-				return err
+				return fmt.Errorf("%w: error while checking %s", err, w.path)
 			}
 			w.src = src
 			w.errs = errs

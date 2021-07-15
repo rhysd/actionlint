@@ -204,10 +204,10 @@ func (rule *RuleShellcheck) runShellcheck(executable, src, sh string, pos *Pos) 
 	stdout, err := cmd.Output()
 	if err != nil {
 		rule.debug("Command %s failed: %v", cmd, err)
-		if err, ok := err.(*exec.ExitError); ok {
+		if exitErr, ok := err.(*exec.ExitError); ok {
 			// When exit status is non-zero and stdout is not empty, shellcheck successfully found some errors
 			if len(stdout) == 0 {
-				return fmt.Errorf("shellcheck did not run successfully while checking script at %s. stderr:\n%s", pos, err.Stderr)
+				return fmt.Errorf("shellcheck did not run successfully while checking script at %s. stderr:\n%s", pos, exitErr.Stderr)
 			}
 		} else {
 			return fmt.Errorf("`%s` did not run successfully while checking script at %s: %w", cmd, pos, err)
