@@ -255,7 +255,7 @@ test.yaml:5:5: unexpected key "step" for "job" section. expected one of "name", 
   |     ^~~~~
 ```
 
-[Playground](https://rhysd.github.io/actionlint/?s=on%3A+push%0Ajobs%3A%0A++test%3A%0A++++runs-on%3A+ubuntu-latest%0A++++step%3A)
+[Playground](https://rhysd.github.io/actionlint#eJzLz7NSKCgtzuDKyk8qtuJSUChJLS4B0QoKRaV5xbr5QPnSpNK8klLdnESQHFiquCS1wAoAMZgSwQ==)
 
 [Workflow syntax][syntax-doc] defines what keys can be defined in which mapping object. When other keys are defined, they
 are simply ignored and don't affect workflow behavior. It means typo in keys is not detected by GitHub.
@@ -292,7 +292,7 @@ test.yaml:4:5: "runs-on" section is missing in job "test" [syntax-check]
   |     ^~~~~~
 ```
 
-[Playground](https://rhysd.github.io/actionlint/?s=on%3A+push%0Ajobs%3A%0A++test%3A%0A++++steps%3A%0A++++++-+run%3A+echo+%27hello%27%0A++TEST%3A%0A++++runs-on%3A+ubuntu-latest%0A++++steps%3A%0A++++++-+run%3A+echo+%27bye%27)
+[Playground](https://rhysd.github.io/actionlint#eJzLz7NSKCgtzuDKyk8qtuJSUChJLS4B0QoKxSWpBcUQpoKCrkJRKVBpanJGvoJ6RmpOTr46UCbENTgEogIoW6ybD1RRmlSaV1Kqm5MIMoiAOUmVqeoAYX8k5Q==)
 
 Some mappings must include specific keys. For example, job mapping must include `runs-on:` and `steps:`.
 
@@ -320,7 +320,7 @@ test.yaml:2:6: "jobs" section should not be empty. please remove this section if
   |      ^
 ```
 
-[Playground](https://rhysd.github.io/actionlint/?s=on%3A+push%0Ajobs%3A)
+[Playground](https://rhysd.github.io/actionlint#eJzLz7NSKCgtzuDKyk8qtgIAJQsE6g==)
 
 Some mappings and sequences should not be empty. For example, `steps:` must include at least one step.
 
@@ -356,7 +356,7 @@ test.yaml:7:24: expecting a string with ${{...}} expression or boolean literal "
   |                        ^~~
 ```
 
-[Playground](https://rhysd.github.io/actionlint/?s=on%3A+push%0Ajobs%3A%0A++test%3A%0A++++runs-on%3A+ubuntu-latest%0A++++permissions%3A%0A++++++issues%3A+foo%0A++++continue-on-error%3A+foo%0A++++steps%3A%0A++++++-+run%3A+echo+%27hello%27)
+[Playground](https://rhysd.github.io/actionlint#eJxFjTEOwzAMA/e8glsmf8C/SQIVduGKhmT9v3YKpBNBHiVSM3p42d48PW/AEB9LAQv1xMnjDB2R2rHYjbrYp7pXqv+6wLQhnvEi7+Sijqoh80MSM9of+ZD+3KW1kyFXIfYirXH/AoOmLY0=)
 
 Some mapping's values are restricted to some constant strings. For example, values of `permissions:` mappings should be
 one of `none`, `read`, `write`. And several mapping values expect boolean value like `true` or `false`.
@@ -406,7 +406,7 @@ test.yaml:13:38: unexpected end of input while parsing object property dereferen
    |                                      ^~~
 ```
 
-[Playground](https://rhysd.github.io/actionlint/?s=on%3A+push%0Ajobs%3A%0A++test%3A%0A++++runs-on%3A+ubuntu-latest%0A++++steps%3A%0A++++++-+run%3A+echo+%27%24%7B%7B+%22hello%22+%7D%7D%27%0A++++++-+run%3A+echo+%27%24%7B%7B+1+%2B+1+%7D%7D%27%0A++++++-+run%3A+echo+%22%24%7B%7B+toJson%28hashFiles%28%27**%2Flock%27%2C+%27**%2Fcache%2F%27%29+%7D%7D%22%0A++++++-+run%3A+echo+%27%24%7B%7B+github.event.+%7D%7D%27)
+[Playground](https://rhysd.github.io/actionlint#eJx1jTEOwjAMRfeewoqQUgptxZoDMHCLJLJwIYor7LBUvTsNrHT48pfekz9nB3MRah4cxDUAiqL1ArxKlp43XkLJWvrkK/siUZzlZwH01XSAkRjsYVnAEKbEBtbV7ikXOG35L5gqKN+Ec0te6DollNZ23Zg4Pu0Zao0+Eo72uP0weyP3SamEAd+YdahjH8ffRDM=)
 
 actionlint lexes and parses expression in `${{ }}` following [the expression syntax document][expr-doc]. It can detect
 many syntax errors like invalid characters, missing parens, unexpected end of input, ...
@@ -447,7 +447,7 @@ test.yaml:11:24: receiver of object dereference "owner" must be type of object b
    |                        ^~~~~~~~~~~~~~~~~~~~~~~
 ```
 
-[Playground](https://rhysd.github.io/actionlint/?s=on%3A+push%0Ajobs%3A%0A++test%3A%0A++++runs-on%3A+ubuntu-latest%0A++++steps%3A%0A++++++-+run%3A+echo+%27%24%7B%7B+env%5B0%5D+%7D%7D%27%0A++++++-+run%3A+echo+%27%24%7B%7B+job.container.os+%7D%7D%27%0A++++++-+run%3A+echo+%27%24%7B%7B+github.repository.owner+%7D%7D%27)
+[Playground](https://rhysd.github.io/actionlint#eJx9jTEOwjAQBPu8YgukVLao/RVEEUcWNkJ3lu8OhKL8PTbUUG0xM1qmgGqSpztHCROgSXQs0IzEcecWjdTcYxnsg0RTla8FuGEGpDUz5tO2IdHzcr5i3+dfRj/zK5MuhVLzLP/cW9Fs0bdUWYpye3t+9WokBx67OoA=)
 
 Type checks for expression syntax in `${{ }}` are done by semantics checker. Note that actual type checks by GitHub Actions
 runtime is loose. For example any object value can be assigned into string value as string `"Object"`. But such loose
@@ -494,7 +494,7 @@ test.yaml:19:14: type of expression at "env" must be object but found type strin
    |              ^~~
 ```
 
-[Playground](https://rhysd.github.io/actionlint/?s=on%3A+push%0Ajobs%3A%0A++test%3A%0A++++strategy%3A%0A++++++matrix%3A%0A++++++++env_string%3A%0A++++++++++-+%27FOO%3DBAR%27%0A++++++++++-+%27FOO%3DPIYO%27%0A++++++++env_object%3A%0A++++++++++-+FOO%3A+BAR%0A++++++++++-+FOO%3A+PIYO%0A++++runs-on%3A+ubuntu-latest%0A++++steps%3A%0A++++++-+run%3A+echo+%22%24FOO%22%0A++++++++env%3A+%24%7B%7B+matrix.env_object+%7D%7D%0A++++++-+run%3A+echo+%22%24FOO%22%0A++++++++env%3A+%24%7B%7B+matrix.env_string+%7D%7D)
+[Playground](https://rhysd.github.io/actionlint#eJydkM0KgzAQhO8+xSCCp/QBAj20h0JPFm89lUSCP7SJmE1pEd+9SVWseOtp2WHm20mM5midraLGSMsjgJSlMAFLnSBVvscNeAjq6te8AUo/b95T63LRAIb0lGX74yFPt+rlfM3SFcDIRhW0BngnhwdsxZD/qp3Tlhnf3UmnybG7CL2n2qq1M5AFJ4cqKoM48Yz49zpH0vfTu3ZLGwzDf/HxN3z8A4EEWVQ=)
 
 In above example, environment variables mapping is expanded at `env:` section. actionlint checks type of the expanded value.
 
@@ -555,7 +555,7 @@ test.yaml:20:24: format string "{0}{1}" does not contain placeholder {2}. remove
    |                        ^~~~~~~~~~~~~~~~
 ```
 
-[Playground](https://rhysd.github.io/actionlint/?s=on%3A+push%0Ajobs%3A%0A++test%3A%0A++++runs-on%3A+ubuntu-latest%0A++++steps%3A%0A++++++-+run%3A+echo+%27%24%7B%7B+unknown_context+%7D%7D%27%0A++++++-+run%3A+echo+%27%24%7B%7B+github.events+%7D%7D%27%0A++++++-+run%3A+echo+%22%24%7B%7B+startWith%28%27hello%2C+world%27%2C+%27lo%2C%27%29+%7D%7D%22%0A++++++-+run%3A+echo+%22%24%7B%7B+startsWith%28%27hello%2C+world%27%29+%7D%7D%22%0A++++++-+run%3A+echo+%22%24%7B%7B+startsWith%28%27hello%2C+world%27%2C+github.event%29+%7D%7D%22%0A++++++-+run%3A+echo+%22%24%7B%7B+contains%28%27hello%2C+world%27%2C+%27lo%2C%27%29+%7D%7D%22%0A++++++-+run%3A+echo+%22%24%7B%7B+contains%28github.event.labels.*.name%2C+%27enhancement%27%29+%7D%7D%22%0A++++++-+run%3A+echo+%22%24%7B%7B+format%28%27%7B0%7D%7B1%7D%27%2C+1%2C+2%2C+3%29+%7D%7D%22)
+[Playground](https://rhysd.github.io/actionlint#eJydkNGKwjAQRd/9ikGEuJIWdd/6Iz5KWmeNazojnYkKpf9uorAorH3wKYR7zs0lTBWcovjJL9dSTQAURfMJ0EWSglMe60gai+Bydo9E8SQPCqDIZAXYeAYz63uIdCS+0LZhUrwqDIN5h+4P6mNd4hlJ5Q04zaCo63ST6LnxGAJbuHAXdsaCSRfzldzpqCv/yJ9Z9mX1aEf+AXcg+WD0n/r8WBlcjUHKRUmuxVSD5B012KZsvO6Hu9bp3PTLoV8NacHKwtrC9126AZ31neg=)
 
 [Contexts][contexts-doc] and [built-in functions][funcs-doc] are strongly typed. Typos in property access of contexts and
 function names can be checked. And invalid function calls like wrong number of arguments or type mismatch at parameter also
@@ -614,7 +614,7 @@ test.yaml:22:24: property "get_value" is not defined in object type {} [expressi
    |                        ^~~~~~~~~~~~~~~~~~~~~~~~~~~~
 ```
 
-[Playground](https://rhysd.github.io/actionlint/?s=on%3A+push%0Ajobs%3A%0A++test%3A%0A++++runs-on%3A+ubuntu-latest%0A++++outputs%3A%0A++++++foo%3A+%27%24%7B%7B+steps.get_value.outputs.name+%7D%7D%27%0A++++steps%3A%0A++++++-+run%3A+echo+%27%24%7B%7B+steps.get_value.outputs.name+%7D%7D%27%0A++++++-+run%3A+echo+%27%3A%3Aset-output+name%3Dfoo%3A%3Avalue%27%0A++++++++id%3A+get_value%0A++++++-+run%3A+echo+%27%24%7B%7B+steps.get_value.outputs.name+%7D%7D%27%0A++++++-+run%3A+echo+%27%24%7B%7B+steps.get_value.conclusion+%7D%7D%27%0A++other%3A%0A++++runs-on%3A+ubuntu-latest%0A++++steps%3A%0A++++++-+run%3A+echo+%27%24%7B%7B+steps.get_value.outputs.name+%7D%7D%27)
+[Playground](https://rhysd.github.io/actionlint#eJytkEsOglAMRees4g5MGD0W0MS1GMAqGHwltHVC2Ls+Pg6MiTE66uCec9tUIqF3bbKLVEoZYKyWJjB41CCP3CuP5qErUzZH4ta76cIBJxFCvhtHqHGvxZntcCs752IFi1heGdOUz8IMbW5IewhcN/JFxYtHpGxhIZHAfTqJ5oJNANoj4dn7z/XvvFpi3bm2EldLrOHh42d/+80ddrSUCw==)
 
 Outputs of step can be accessed via `steps.<step_id>` objects. The `steps` context is dynamic:
 
@@ -685,7 +685,7 @@ test.yaml:34:24: property "os" is not defined in object type {} [expression]
    |                        ^~~~~~~~~
 ```
 
-[Playground](https://rhysd.github.io/actionlint/?s=on%3A+push%0Ajobs%3A%0A++test%3A%0A++++strategy%3A%0A++++++matrix%3A%0A++++++++os%3A+%5Bubuntu-latest%2C+windows-latest%5D%0A++++++++node%3A+%5B14%2C+15%5D%0A++++++++package%3A%0A++++++++++-+name%3A+%27foo%27%0A++++++++++++optional%3A+true%0A++++++++++-+name%3A+%27bar%27%0A++++++++++++optional%3A+false%0A++++++++include%3A%0A++++++++++-+node%3A+15%0A++++++++++++npm%3A+7.5.4%0A++++runs-on%3A+%24%7B%7B+matrix.os+%7D%7D%0A++++steps%3A%0A++++++-+run%3A+echo+%27%24%7B%7B+matrix.platform+%7D%7D%27%0A++++++-+run%3A+echo+%27%24%7B%7B+matrix.package.dev+%7D%7D%27%0A++++++-+run%3A+%7C%0A++++++++++echo+%27os%3A+%24%7B%7B+matrix.os+%7D%7D%27%0A++++++++++echo+%27node+version%3A+%24%7B%7B+matrix.node+%7D%7D%27%0A++++++++++echo+%27package%3A+%24%7B%7B+matrix.package.name+%7D%7D+%28optional%3D%24%7B%7B+matrix.package.optional+%7D%7D%29%27%0A++++++-+run%3A+echo+%27npm+version+is+specified%27%0A++++++++if%3A+%24%7B%7B+contains%28matrix.npm%2C+%277.5%27%29+%7D%7D%0A++test2%3A%0A++++runs-on%3A+ubuntu-latest%0A++++steps%3A%0A++++++-+run%3A+echo+%27%24%7B%7B+matrix.os+%7D%7D%27)
+[Playground](https://rhysd.github.io/actionlint#eJyNUstuwyAQvOcr5lCJRIotpUpUCalfUvVAbJzQ2oBYSFql+fdCHOo8XLUntMsMOzuD0Rw20HbyZtbEJ4CX5NMJkHfCy81nXwGd8E595AowxPES1kH7ULQi8ebYK12bPZ3r1x+sNrWM6MVyjsVqaFtRvYuNHN4ECmjRRSxrjGEX/TjPemW0aDm8C3KMshbuN0ojWho4SldtqG/nnjQuVlcvaNtxPJWrcnlqu6CpMNGzh8PhbEhpCMfj2TFpKT9aJDCHrLYG7AJuozeNcV0ksb+gvT1lLXf36K8LnT0zBXKri92h0prYSUfqZo/TxRgjp4QRacn5SMI0W/08Asp3ETgb3Tm6nCVBEcjKSjVK1oMW1fTjK6O9UJqmWbTt5mAxIDbrU0j/7pFfh3X1Sf+fVG/gN6xO5N4=)
 
 Types of `matrix` context is contextually checked by the semantics checker. Type of matrix values in `matrix:` section
 is deduced from element values of its array. When the matrix value is an array of objects, objects' properties are checked
@@ -774,7 +774,7 @@ test.yaml:33:24: property "build" is not defined in object type {} [expression]
    |                        ^~~~~~~~~~~~~~~~~~~~~~~~~
 ```
 
-[Playground](https://rhysd.github.io/actionlint/?s=on%3A+push%0Ajobs%3A%0A++install%3A%0A++++outputs%3A%0A++++++installed%3A+%27...%27%0A++++runs-on%3A+ubuntu-latest%0A++++steps%3A%0A++++++-+run%3A+echo+%27install+something%27%0A++prepare%3A%0A++++outputs%3A%0A++++++prepared%3A+%27...%27%0A++++runs-on%3A+ubuntu-latest%0A++++steps%3A%0A++++++-+run%3A+echo+%27parepare+something%27%0A++++++-+run%3A+echo+%27%24%7B%7B+needs.prepare.outputs.prepared+%7D%7D%27%0A++build%3A%0A++++needs%3A+%5Binstall%2C+prepare%5D%0A++++outputs%3A%0A++++++built%3A+%27...%27%0A++++runs-on%3A+ubuntu-latest%0A++++steps%3A%0A++++++-+run%3A+echo+%27build+something+with+%24%7B%7B+needs.install.outputs.installed+%7D%7D+and+%24%7B%7B+needs.prepare.outputs.prepared+%7D%7D%27%0A++++++-+run%3A+echo+%27%24%7B%7B+needs.install.outputs.foo+%7D%7D%27%0A++++++-+run%3A+echo+%27%24%7B%7B+needs.some_job+%7D%7D%27%0A++other%3A%0A++++runs-on%3A+ubuntu-latest%0A++++steps%3A%0A++++++-+run%3A+echo+%27%24%7B%7B+needs.build.outputs.built+%7D%7D%27)
+[Playground](https://rhysd.github.io/actionlint#eJylUs1uwjAMvvMUPiD1QvMAeRU0oZZ4S6cujmpHHBDvTh1CKjY0EBwiJfHn78cJBQsxsV99U892BTAElm4cdQtASWISvhxqDZ2FxhjT5OspBW5ppkl9CpLasRNkySUWjLW5VaQF3HuCpjAB0w+KH8KXcsUJYzfhXelSe19ZWXTdSv+BrY9HCIiOTVE2xdD17OB00s4+DaO7KGW8hW0Jt7ma/rgXSPvk7TRZfYkCh0E8LN6Lk+q9PuBsHrrg4OmY/wzot8gn0eMmtbyb/1xBknic7OtzWIjzRKqXPGXVOAPMHOsV)
 
 Job dependencies can be defined at [`needs:`][needs-doc]. A job runs after all jobs defined in `needs:` are done.
 Outputs from the jobs can be accessed only from jobs following them via [`needs` context][needs-context-doc].
@@ -936,7 +936,7 @@ test.yaml:8:3: cyclic dependencies in "needs" configurations of jobs are detecte
   |   ^~~~~~~~
 ```
 
-[Playground](https://rhysd.github.io/actionlint/?s=on%3A+push%0Ajobs%3A%0A++prepare%3A%0A++++needs%3A+%5Bbuild%5D%0A++++runs-on%3A+ubuntu-latest%0A++++steps%3A%0A++++++-+run%3A+echo+%27prepare%27%0A++install%3A%0A++++needs%3A+%5Bprepare%5D%0A++++runs-on%3A+ubuntu-latest%0A++++steps%3A%0A++++++-+run%3A+echo+%27install%27%0A++build%3A%0A++++needs%3A+%5Binstall%5D%0A++++runs-on%3A+ubuntu-latest%0A++++steps%3A%0A++++++-+run%3A+echo+%27build%27)
+[Playground](https://rhysd.github.io/actionlint#eJyljjEOxCAMBPu8YjsqPsBXTikgsZREyCBs/z+Bo0mdzvJ4Z104oJocy1WShAWojWps1EeAiXYJ+CU7876OVTMWX56UJWM1n6OS6ECiVOUfBHy/DKDtKHBT6h52smjM+e2f/EPD1PaG8ezbP+kH/5C6G78nW+Q=)
 
 Job dependencies can be defined at [`needs:`][needs-doc]. If cyclic dependencies exist, jobs never start to run. actionlint
 detects cyclic dependencies in `needs:` sections of jobs and reports it as error.
@@ -973,7 +973,7 @@ test.yaml:8:3: job "bar" needs job "unknown" which does not exist in this workfl
   |   ^~~~
 ```
 
-[Playground](https://rhysd.github.io/actionlint/?s=on%3A+push%0Ajobs%3A%0A++foo%3A%0A++++needs%3A+%5Bbar%2C+BAR%5D%0A++++runs-on%3A+ubuntu-latest%0A++++steps%3A%0A++++++-+run%3A+echo+%27hi%27%0A++bar%3A%0A++++needs%3A+%5Bunknown%5D%0A++++runs-on%3A+ubuntu-latest%0A++++steps%3A%0A++++++-+run%3A+echo+%27hi%27)
+[Playground](https://rhysd.github.io/actionlint#eJyljD0OgiEQRHtOMR2NXIDO7wi2xgJ0v+BPdgnLxusLWFlbTfJm5glHVNPiHpI1OmAXmQEw0U0jzjm1A7bj6bJoM9Yg42TZuFt4pU7aV6Wdqn6/QJjLCLoWgS93P/AQ/ZqNnyxv/k/8AXoNOHs=)
 
 <a name="check-matrix-values"></a>
 ## Matrix values
@@ -1015,7 +1015,7 @@ test.yaml:12:13: "platform" in "exclude" section does not exist in matrix. avail
    |             ^~~~~~~~~
 ```
 
-[Playground](https://rhysd.github.io/actionlint/?s=on%3A+push%0Ajobs%3A%0A++test%3A%0A++++strategy%3A%0A++++++matrix%3A%0A++++++++node%3A+%5B10%2C+12%2C+14%2C+14%5D%0A++++++++os%3A+%5Bubuntu-latest%2C+macos-latest%5D%0A++++++++exclude%3A%0A++++++++++-+node%3A+13%0A++++++++++++os%3A+ubuntu-latest%0A++++++++++-+node%3A+10%0A++++++++++++platform%3A+ubuntu-latest%0A++++runs-on%3A+%24%7B%7B+matrix.os+%7D%7D%0A++++steps%3A%0A++++++-+run%3A+echo+...)
+[Playground](https://rhysd.github.io/actionlint#eJxtkMEOgjAQRO9+xRw80gbUU3/FeACsooEu6bYJhvDvtqGgJBw2zezOvOyWjELvuTm8qWJ1AJxmF1+AnS2dfn5mBXSls69hUYChu1a4FnmG4hTqEuu2jonD0FfeOC/aMmKzgKiJk/o59VC3PrDWBiASvTj/NWfmBrkXyTeRPhgfZLu9oPWGBYUfOI5jOk8SY5rS/brnZSkRzQq6bghSyi9UwlNB)
 
 [`matrix:`][matrix-doc] defines combinations of multiple values. Nested `include:` and `exclude:` can add/remove specific
 combination of matrix values. actionlint checks
@@ -1062,7 +1062,7 @@ test.yaml:8:3: unknown Webhook event "pullreq". see https://docs.github.com/en/a
   |   ^~~~~~~~
 ```
 
-[Playground](https://rhysd.github.io/actionlint/?s=on%3A%0A++push%3A%0A++++branch%3A+foo%0A++issues%3A%0A++++types%3A+created%0A++pullreq%3A%0A%0Ajobs%3A%0A++test%3A%0A++++runs-on%3A+ubuntu-latest%0A++++steps%3A%0A++++++-+run%3A+echo+...)
+[Playground](https://rhysd.github.io/actionlint#eJwtjMERAyEMA/9UoQagALoB4gzJMDbB9iPd5+DysjS7snAOwHTt+wJ1FW494yly9Zeqk97EvvOKaIuK0eOMxlj0ySG8pR7JSO2Wl7NG4QyvzuZxlM0OUqP5fwnEbWZQ64KU0g/W7Cnh)
 
 At `on:`, Webhook events can be specified to trigger the workflow. [Webhook event documentation][webhook-doc] defines
 which Webhook events are available and what types can be specified at `types:` for each event.
@@ -1115,7 +1115,7 @@ test.yaml:11:14: invalid glob pattern. unexpected character '1' while checking c
    |              ^~~
 ```
 
-[Playground](https://rhysd.github.io/actionlint/?s=on%3A%0A++push%3A%0A++++branches%3A%0A++++++-+%27%5Efoo-%27%0A++++tags%3A%0A++++++-+%27v*%2B%27%0A++++++-+%27v%5B9-1%5D%27%0A%0Ajobs%3A%0A++test%3A%0A++++runs-on%3A+ubuntu-latest%0A++++steps%3A%0A++++++-+run%3A+echo+...)
+[Playground](https://rhysd.github.io/actionlint#eJxNjEEKAjEQBO95Rd8CygQ8mq+IQrJEg8jMsjPj+3Wzl5yaoooWzgFYXfu+QN0KL73pQQAhPp4iFAdbec3mezrHiW5XutxjCG+po7KmdtSbs5Jwhldnc/qU3Q2l1tbp819mtKULUko/10snvA==)
 
 For filtering branches, tags and paths in Webhook events, [glob syntax][filter-pattern-doc] is available.
 actionlint validates glob patterns `branches:`, `branches-ignore:`, `tags:`, `tags-ignore:`, `paths:`, `paths-ignore:` in a
@@ -1163,7 +1163,7 @@ test.yaml:6:13: scheduled job runs too frequently. it runs once per 60 seconds [
   |             ^~
 ```
 
-[Playground](https://rhysd.github.io/actionlint/?s=on%3A%0A++schedule%3A%0A++++-+cron%3A+%270+*%2F3+*+*%27%0A++++-+cron%3A+%27*+*%2F3+*+*+*%27%0A%0Ajobs%3A%0A++test%3A%0A++++runs-on%3A+ubuntu-latest%0A++++steps%3A%0A++++++-+run%3A+echo+...)
+[Playground](https://rhysd.github.io/actionlint#eJxVjEEKgDAMBO99xd6EQKvgrb/RGhAprTTN/zWKB2/LzuzWEh0gaedNM1sGPFKrJWKYQOMMAg3/nr7eiDvqKjbsLP09aFrEm6mrlq4+L8YeJJ1PeS07vM0ITntFCOEChKgjxA==)
 
 To trigger a workflow in specific interval, [scheduled event][schedule-event-doc] can be defined in [POSIX CRON syntax][cron-syntax].
 
@@ -1220,7 +1220,7 @@ test.yaml:23:14: label "macos-10.13" is unknown. available labels are "windows-l
    |              ^~~~~~~~~~~
 ```
 
-[Playground](https://rhysd.github.io/actionlint/?s=on%3A+push%0Ajobs%3A%0A++test%3A%0A++++strategy%3A%0A++++++matrix%3A%0A++++++++runner%3A%0A++++++++++-+macos-latest%0A++++++++++-+linux-latest%0A++++++++++-+%5Bself-hosted%2C+linux%2C+x64%5D%0A++++++++++-+arm64%0A++++++++++-+gpu%0A++++runs-on%3A+%24%7B%7B+matrix.runner+%7D%7D%0A++++steps%3A%0A++++++-+run%3A+echo+...%0A%0A++test2%3A%0A++++runs-on%3A+macos-10.13%0A++++steps%3A%0A++++++-+run%3A+echo+...)
+[Playground](https://rhysd.github.io/actionlint#eJyFj8EKgzAQRO/5ijn0aEJtxUN+pfSQ2lQtNpFsAhbx36skUgKFnpbZnR3mWSMxBurY095IMsBr8tsEyDvldfuOCngp7/ppV4ALxmj31QBfPY0lPqgtJTsMvQnTr8OF9PDgnSWv70W0FZjq6pq5lHvVVbZpx8BSC+J2pTjMc6ooYjMsS+LQI+01+fYgoZvOQgjBEvFJ5mGRozyK8vw34wNI+VUQ)
 
 GitHub Actions provides two kinds of job runners, [GitHub-hosted runner][gh-hosted-runner] and [self-hosted runner][self-hosted-runner].
 Each runner has one or more labels. GitHub Actions runtime finds a proper runner based on label(s) specified at `runs-on:`
@@ -1275,7 +1275,7 @@ test.yaml:13:15: Neither action.yaml nor action.yml is found in directory "githu
    |               ^~~~~~~~~~~~~~~~~~~~~~~~~~
 ```
 
-[Playground](https://rhysd.github.io/actionlint/?s=on%3A+push%0Ajobs%3A%0A++test%3A%0A++++runs-on%3A+ubuntu-latest%0A++++steps%3A%0A++++++-+uses%3A+actions%2Fcheckout%0A++++++-+uses%3A+checkout%40v2%0A++++++-+uses%3A+%27docker%3A%2F%2Fimage%3A%27%0A++++++-+uses%3A+.%2Fgithub%2Factions%2Fmy-action)
+[Playground](https://rhysd.github.io/actionlint#eJxdzTEOgzAMBdCdU3hjSi119NSrJKlFUkqMsF2pty8UsWTy139fsjSC1bUML0lKA4Cx2nEBNm8aZHdP3szDOx72JzVe9VwBBHBlJYjZqjTFXDjP4tbxVT8+907Gp+SZN0KsS5yYxs5vOFUrnvD6sHzDGX98DjoH)
 
 Action needs to be specified in a format defined in [the document][action-uses-doc]. There are 3 types of actions:
 
@@ -1408,7 +1408,7 @@ test.yaml:30:16: shell name "sh" is invalid on Windows. available names are "bas
    |                ^~
 ```
 
-[Playground](https://rhysd.github.io/actionlint/?s=on%3A+push%0Ajobs%3A%0A++linux%3A%0A++++runs-on%3A+ubuntu-latest%0A++++steps%3A%0A++++++-+run%3A+echo+%27hello%27%0A++++++++shell%3A+dash%0A++++++-+run%3A+echo+%27hello%27%0A++++++++shell%3A+powershell%0A++++++-+run%3A+echo+%27hello%27%0A++++++++shell%3A+powershell%0A++mac%3A%0A++++runs-on%3A+macos-latest%0A++++defaults%3A%0A++++++run%3A%0A++++++++shell%3A+fish%0A++++steps%3A%0A++++++-+run%3A+echo+%27hello%27%0A++++++++shell%3A+%27perl+%7B0%7D%27%0A++windows%3A%0A++++runs-on%3A+windows-latest%0A++++steps%3A%0A++++++-+run%3A+echo+%27hello%27%0A++++++++shell%3A+sh)
+[Playground](https://rhysd.github.io/actionlint#eJylkLsKwzAMRfd8hbZMhs7+GydWcIpqGcsihdJ/r52GUjz1sUm6R48rjhaSShjOPIkdAGiNem0BQNYohiugk8aihlxBKbskBZM8KQDTSAs4B4YxIBGPh1LBllvwrq74mE68Yd7jH3subu4s1ArLuwOPi1MqLxNtQT9zWY+rv7U7JswEt9O9KdsaPW/SHXRU/3mqhAdbk36k)
 
 Available shells for runners are defined in [the documentation][shell-doc]. actionlint checks shell names at `shell:`
 configuration are properly using the available shells.
@@ -1451,7 +1451,7 @@ test.yaml:12:3: key "test" is duplicate in "jobs" section. previously defined at
    |   ^~~~~
 ```
 
-[Playground](https://rhysd.github.io/actionlint/?s=on%3A+push%0Ajobs%3A%0A++test%3A%0A++++runs-on%3A+ubuntu-latest%0A++++steps%3A%0A++++++-+run%3A+echo+%27hello%27%0A++++++++id%3A+step_id%0A++++++-+run%3A+echo+%27bye%27%0A++++++++id%3A+STEP_ID%0A++TEST%3A%0A++++runs-on%3A+ubuntu-latest%0A++++steps%3A%0A++++++-+run%3A+echo+%27hello%27%0A++++++++id%3A+step_id)
+[Playground](https://rhysd.github.io/actionlint#eJzLz7NSKCgtzuDKyk8qtuJSUChJLS4B0QoKRaV5xbr5QPnSpNK8klLdnESQHFiquCS1oBiiSkFBF6TSSiE1OSNfQT0jNScnXx0qo6CQmWIFVhyfmYJNdVJlKqra4BDXgHhPF6BYiGtwCE3cAQCKgUNq)
 
 Job IDs and step IDs in each job must be unique. IDs are compared in case insensitive. actionlint checks all job IDs
 and step IDs and reports errors when some IDs duplicate.
@@ -1496,7 +1496,7 @@ test.yaml:17:21: "password" section in "redis" service should be specified via s
    |                     ^~~~
 ```
 
-[Playground](https://rhysd.github.io/actionlint/?s=on%3A+push%0Ajobs%3A%0A++test%3A%0A++++runs-on%3A+ubuntu-latest%0A++++container%3A%0A++++++image%3A+%27example.com%2Fowner%2Fimage%27%0A++++++credentials%3A%0A++++++++username%3A+user%0A++++++++password%3A+pass%0A++++services%3A%0A++++++redis%3A%0A++++++++image%3A+redis%0A++++++++credentials%3A%0A++++++++++username%3A+user%0A++++++++++password%3A+pass%0A++++steps%3A%0A++++++-+run%3A+echo+%27hello%27)
+[Playground](https://rhysd.github.io/actionlint#eJx1kLEOwyAMRPd8hTemNDt/4xCroQKMMDT9/AJNUYd0wrp357PgoCEW2acHr6IngEyS2wuQSpCZKy9rCbnMDhvryHDIaAOljxPAeryTBkUv9NHRzbBf+KiGpRN12kyijUK26OSbBChCKaCv8TYNOaLIwWnTfepyxU9raGTrNvuz6Dyiq0O8rPxbel2bKY7w3P5FA5mdQe3kHKs3Uktdww==)
 
 [Credentials for container][credentials-doc] can be put in `container:` configuration. Password should be put in secrets
 and the value should be expanded with `${{ }}` syntax at `password:`. actionlint checks hardcoded credentials and reports
@@ -1532,7 +1532,7 @@ test.yaml:7:7: environment variable name "foo bar" is invalid. '&', '=' and spac
   |       ^~~
 ```
 
-[Playground](https://rhysd.github.io/actionlint/?s=on%3A+push%0Ajobs%3A%0A++test%3A%0A++++runs-on%3A+ubuntu-latest%0A++++env%3A%0A++++++FOO%3DBAR%3A+foo%0A++++++FOO+BAR%3A+foo%0A++++steps%3A%0A++++++-+run%3A+echo+%27hello%27)
+[Playground](https://rhysd.github.io/actionlint#eJzLz7NSKCgtzuDKyk8qtuJSUChJLS4B0QoKRaV5xbr5QPnSpNK8klLdnESQHFgqNa8MokZBwc3f39bJMchKIS0/HyGkgCJUXJJaUAzToAsy2EohNTkjX0E9IzUnJ18dAPhYJMc=)
 
 `=` must not be included in environment variable names. And `&` and spaces should not be included in them. In almost all
 cases they are mistakes and they may cause some issues on using them in shell since they have special meaning in shell syntax.
