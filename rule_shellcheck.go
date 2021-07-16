@@ -124,7 +124,9 @@ func (rule *RuleShellcheck) VisitWorkflowPost(n *Workflow) error {
 
 // Cleanup is callback when visiting finished. This callback is called even if the visiting failed since some callback returned an error
 func (rule *RuleShellcheck) Cleanup() {
-	rule.group.Wait() // Ensure all processes ended
+	if err := rule.group.Wait(); err != nil { // Ensure all processes ended
+		rule.debug("error found while cleanup: %s", err)
+	}
 }
 
 func (rule *RuleShellcheck) getShellName(exec *ExecRun) string {
