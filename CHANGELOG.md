@@ -1,8 +1,23 @@
+<a name="v1.4.2"></a>
+# [v1.4.2](https://github.com/rhysd/actionlint/releases/tag/v1.4.2) - 16 Jul 2021
+
+- Fix executables in the current directory may be used unexpectedly to run `shellcheck` or `pyflakes` on Windows. This behavior could be security vulnerability since an attacker might put malicious executables in shared directories. actionlint searched an executable with [`exec.LookPath`](https://pkg.go.dev/os/exec#LookPath), but it searched the current directory on Windows as [golang/go#43724](https://github.com/golang/go/issues/43724) pointed. Now actionlint uses [`execabs.LookPath`](https://pkg.go.dev/golang.org/x/sys/execabs#LookPath) instead, which does not have the issue. (ref: [sharkdp/bat#1724](https://github.com/sharkdp/bat/pull/1724))
+- Fix issue caused by running so many processes concurrently. Since checking workflows by actionlint is highly parallelized, checking many workflow files makes too many `shellcheck` processes and opens many files in parallel. This hit OS resources limitation (issue #3). Now reading files are serialized and number of processes run concurrently is limited for fixing the issue. Note that checking workflows is still done in parallel so this fix does not affect actionlint's performance.
+- Ensure cleanup processes even if actionlint stops due to some fatal issue while visiting a workflow tree.
+- Improve fatal error message to know which workflow file caused the error.
+- [Playground](https://rhysd.github.io/actionlint/) improvements
+  - "Permalink" button was added to make permalink directly linked to the current workflow source code. The source code is embedded in hash of the URL.
+  - "Check" button and URL input form was added to check workflow files on https://github.com or https://gist.github.com easily. Visit a workflow file on GitHub, copy the URL, paste it to the input form and click the button. It instantly fetches the workflow file content and checks it with actionlint.
+  - `u=` URL parameter was added to specify GitHub or Gist URL like https://rhysd.github.io/actionlint/?u=https://github.com/rhysd/actionlint/blob/main/.github/workflows/ci.yaml
+
+[Changes][v1.4.2]
+
+
 <a name="v1.4.1"></a>
 # [v1.4.1](https://github.com/rhysd/actionlint/releases/tag/v1.4.1) - 12 Jul 2021
 
 - A pre-built executable for `darwin/arm64` (Apple M1) was added to CI (#1)
-  - Managing `actionlint` command with Homebrew on M1 Mac is now available. See [the instaruction](https://github.com/rhysd/actionlint#homebrew-on-macos) for more details
+  - Managing `actionlint` command with Homebrew on M1 Mac is now available. See [the instruction](https://github.com/rhysd/actionlint#homebrew-on-macos) for more details
   - Since the author doesn't have M1 Mac and GitHub Actions does not support M1 Mac yet, the built binary is not tested
 - Pre-built executables are now built with Go 1.16 compiler (previously it was 1.15)
 - Fix error message is sometimes not in one line when the error message was caused by go-yaml/yaml parser
@@ -172,6 +187,7 @@ See documentation for more details:
 [Changes][v1.0.0]
 
 
+[v1.4.2]: https://github.com/rhysd/actionlint/compare/v1.4.1...v1.4.2
 [v1.4.1]: https://github.com/rhysd/actionlint/compare/v1.4.0...v1.4.1
 [v1.4.0]: https://github.com/rhysd/actionlint/compare/v1.3.2...v1.4.0
 [v1.3.2]: https://github.com/rhysd/actionlint/compare/v1.3.1...v1.3.2
