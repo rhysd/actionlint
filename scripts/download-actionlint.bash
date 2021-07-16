@@ -13,11 +13,7 @@ fi
 echo "Start downloading actionlint v${version}"
 
 case "$OSTYPE" in
-    linux-gnu*)
-        os=linux
-        ext=tar.gz
-    ;;
-    linux-musl*)
+    linux-*)
         os=linux
         ext=tar.gz
     ;;
