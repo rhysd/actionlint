@@ -17,6 +17,10 @@ case "$OSTYPE" in
         os=linux
         ext=tar.gz
     ;;
+    linux-musl*)
+        os=linux
+        ext=tar.gz
+    ;;
     darwin*)
         os=darwin
         ext=tar.gz
