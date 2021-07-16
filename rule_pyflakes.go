@@ -3,7 +3,6 @@ package actionlint
 import (
 	"bytes"
 	"fmt"
-	"os/exec"
 	"sync"
 
 	"golang.org/x/sync/errgroup"
@@ -139,14 +138,7 @@ func (rule *RulePyflakes) runPyflakes(executable, src string, pos *Pos) error {
 	stdout, err := rule.proc.run(executable, []string{}, src)
 	if err != nil {
 		rule.debug("Command %s failed: %v", executable, err)
-		if err, ok := err.(*exec.ExitError); ok {
-			// When exit status is non-zero and stdout is not empty, pyflakes successfully found some errors
-			if len(stdout) == 0 {
-				return fmt.Errorf("pyflakes did not run successfully while checking script at %s. stderr:\n%s", pos, err.Stderr)
-			}
-		} else {
-			return fmt.Errorf("`%s` did not run successfully while checking script at %s: %w", executable, pos, err)
-		}
+		return fmt.Errorf("`%s` did not run successfully while checking script at %s: %w", executable, pos, err)
 	}
 	if len(stdout) == 0 {
 		return nil

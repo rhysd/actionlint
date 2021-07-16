@@ -3,7 +3,6 @@ package actionlint
 import (
 	"encoding/json"
 	"fmt"
-	"os/exec"
 	"strings"
 	"sync"
 
@@ -200,14 +199,7 @@ func (rule *RuleShellcheck) runShellcheck(executable, src, sh string, pos *Pos) 
 	stdout, err := rule.proc.run(executable, args, script)
 	if err != nil {
 		rule.debug("Command %s %s failed: %v", executable, args, err)
-		if exitErr, ok := err.(*exec.ExitError); ok {
-			// When exit status is non-zero and stdout is not empty, shellcheck successfully found some errors
-			if len(stdout) == 0 {
-				return fmt.Errorf("shellcheck did not run successfully while checking script at %s. stderr:\n%s", pos, exitErr.Stderr)
-			}
-		} else {
-			return fmt.Errorf("`%s %s` did not run successfully while checking script at %s: %w", executable, strings.Join(args, " "), pos, err)
-		}
+		return fmt.Errorf("`%s %s` did not run successfully while checking script at %s: %w", executable, strings.Join(args, " "), pos, err)
 	}
 
 	errs := []shellcheckError{}
