@@ -8,6 +8,7 @@ import (
 	"os"
 	"path/filepath"
 	"regexp"
+	"runtime"
 	"sort"
 	"strings"
 	"time"
@@ -249,6 +250,8 @@ func (l *Linter) LintFiles(filepaths []string, project *Project) ([]*Error, erro
 		cwd = wd
 	}
 
+	proc := newConcurrentProcess(runtime.NumCPU())
+
 	type workspace struct {
 		path string
 		errs []*Error
@@ -270,12 +273,27 @@ func (l *Linter) LintFiles(filepaths []string, project *Project) ([]*Error, erro
 			// Before entering goroutine, resolve project instance.
 			p = l.projects.At(w.path)
 		}
+
+		// Serialize reading files.
+		// Reading files concurrently in separate goroutines causes "pipe: too many files to open"
+		// error (issue #3)
+		src, err := ioutil.ReadFile(w.path)
+		if err != nil {
+			eg.Wait()
+			return nil, fmt.Errorf("could not read %q: %w", w.path, err)
+		}
+		w.src = src
+
 		eg.Go(func() error {
-			src, errs, err := l.checkFile(w.path, cwd, p)
+			if cwd != "" {
+				if r, err := filepath.Rel(cwd, w.path); err == nil {
+					w.path = r // Use relative path if possible
+				}
+			}
+			errs, err := l.check(w.path, w.src, p, proc)
 			if err != nil {
 				return fmt.Errorf("%w: error while checking %s", err, w.path)
 			}
-			w.src = src
 			w.errs = errs
 			return nil
 		})
@@ -309,12 +327,20 @@ func (l *Linter) LintFile(path string, project *Project) ([]*Error, error) {
 		project = l.projects.At(path)
 	}
 
+	src, err := ioutil.ReadFile(path)
+	if err != nil {
+		return nil, fmt.Errorf("could not read %q: %w", path, err)
+	}
+
 	cwd := ""
 	if wd, err := os.Getwd(); err == nil {
 		cwd = wd
+		if r, err := filepath.Rel(cwd, path); err == nil {
+			path = r
+		}
 	}
 
-	src, errs, err := l.checkFile(path, cwd, project)
+	errs, err := l.check(path, src, project, newConcurrentProcess(runtime.NumCPU()))
 	if err != nil {
 		return nil, err
 	}
@@ -323,30 +349,13 @@ func (l *Linter) LintFile(path string, project *Project) ([]*Error, error) {
 	return errs, err
 }
 
-func (l *Linter) checkFile(path string, cwd string, project *Project) ([]byte, []*Error, error) {
-	b, err := ioutil.ReadFile(path)
-	if err != nil {
-		return nil, nil, fmt.Errorf("could not read %q: %w", path, err)
-	}
-
-	// Use relative path if possible
-	if cwd != "" {
-		if r, err := filepath.Rel(cwd, path); err == nil {
-			path = r
-		}
-	}
-
-	errs, err := l.check(path, b, project)
-	return b, errs, err
-}
-
 // Lint lints YAML workflow file content given as byte sequence. The path parameter is used as file
 // path the content came from. Setting "<stdin>" to path parameter indicates the output came from
 // STDIN.
 // Note that only given Project instance is used for configuration. No config is automatically loaded
 // based on path parameter.
 func (l *Linter) Lint(path string, content []byte, project *Project) ([]*Error, error) {
-	errs, err := l.check(path, content, project)
+	errs, err := l.check(path, content, project, newConcurrentProcess(runtime.NumCPU()))
 	if err != nil {
 		return nil, err
 	}
@@ -354,7 +363,7 @@ func (l *Linter) Lint(path string, content []byte, project *Project) ([]*Error, 
 	return errs, nil
 }
 
-func (l *Linter) check(path string, content []byte, project *Project) ([]*Error, error) {
+func (l *Linter) check(path string, content []byte, project *Project, proc *concurrentProcess) ([]*Error, error) {
 	// Note: This method is called to check multiple files in parallel.
 	// It must be thread safe assuming fields of Linter are not modified while running.
 
@@ -429,7 +438,7 @@ func (l *Linter) check(path string, content []byte, project *Project) ([]*Error,
 			NewRuleExpression(),
 		}
 		if l.shellcheck != "" {
-			r, err := NewRuleShellcheck(l.shellcheck)
+			r, err := NewRuleShellcheck(l.shellcheck, proc)
 			if err == nil {
 				rules = append(rules, r)
 			} else {
@@ -439,7 +448,7 @@ func (l *Linter) check(path string, content []byte, project *Project) ([]*Error,
 			l.log("Rule \"shellcheck\" was disabled since shellcheck command name was empty")
 		}
 		if l.pyflakes != "" {
-			r, err := NewRulePyflakes(l.pyflakes)
+			r, err := NewRulePyflakes(l.pyflakes, proc)
 			if err == nil {
 				rules = append(rules, r)
 			} else {
