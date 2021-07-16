@@ -1,6 +1,7 @@
 package actionlint
 
 import (
+	"context"
 	"errors"
 	"fmt"
 	"io"
@@ -17,6 +18,7 @@ import (
 	"github.com/kr/pretty"
 	"github.com/mattn/go-colorable"
 	"golang.org/x/sync/errgroup"
+	"golang.org/x/sync/semaphore"
 )
 
 // LogLevel is log level of logger used in Linter instance.
@@ -251,6 +253,8 @@ func (l *Linter) LintFiles(filepaths []string, project *Project) ([]*Error, erro
 	}
 
 	proc := newConcurrentProcess(runtime.NumCPU())
+	sema := semaphore.NewWeighted(int64(runtime.NumCPU()))
+	ctx := context.Background()
 
 	type workspace struct {
 		path string
@@ -274,26 +278,25 @@ func (l *Linter) LintFiles(filepaths []string, project *Project) ([]*Error, erro
 			p = l.projects.At(w.path)
 		}
 
-		// Serialize reading files.
-		// Reading files concurrently in separate goroutines causes "pipe: too many files to open"
-		// error (issue #3)
-		src, err := ioutil.ReadFile(w.path)
-		if err != nil {
-			eg.Wait()
-			return nil, fmt.Errorf("could not read %q: %w", w.path, err)
-		}
-		w.src = src
-
 		eg.Go(func() error {
+			// Bound concurrency on reading files to avoid "too many files to open" error (issue #3)
+			sema.Acquire(ctx, 1)
+			src, err := ioutil.ReadFile(w.path)
+			sema.Release(1)
+			if err != nil {
+				return fmt.Errorf("could not read %q: %w", w.path, err)
+			}
+
 			if cwd != "" {
 				if r, err := filepath.Rel(cwd, w.path); err == nil {
 					w.path = r // Use relative path if possible
 				}
 			}
-			errs, err := l.check(w.path, w.src, p, proc)
+			errs, err := l.check(w.path, src, p, proc)
 			if err != nil {
 				return fmt.Errorf("%w: error while checking %s", err, w.path)
 			}
+			w.src = src
 			w.errs = errs
 			return nil
 		})

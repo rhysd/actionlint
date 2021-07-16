@@ -1,9 +1,12 @@
 package actionlint
 
 import (
+	"context"
 	"fmt"
 	"io"
 	"os/exec"
+
+	"golang.org/x/sync/semaphore"
 )
 
 // concurrentProcess is a manager to run process concurrently. Since running process consumes OS
@@ -14,24 +17,17 @@ import (
 //
 // TODO: Reduce number of goroutines by preparing workers in this struct.
 type concurrentProcess struct {
-	guard chan struct{}
+	ctx  context.Context
+	sema *semaphore.Weighted
 }
 
 func newConcurrentProcess(par int) *concurrentProcess {
-	return &concurrentProcess{make(chan struct{}, par)}
-}
-
-func (proc *concurrentProcess) lock() {
-	proc.guard <- struct{}{}
-}
-
-func (proc *concurrentProcess) unlock() {
-	<-proc.guard
+	return &concurrentProcess{context.Background(), semaphore.NewWeighted(int64(par))}
 }
 
 func (proc *concurrentProcess) run(exe string, args []string, stdin string) ([]byte, error) {
-	proc.lock()
-	defer proc.unlock()
+	proc.sema.Acquire(proc.ctx, 1)
+	defer proc.sema.Release(1)
 
 	cmd := exec.Command(exe, args...)
 	cmd.Stderr = nil
