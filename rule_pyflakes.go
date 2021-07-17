@@ -5,7 +5,6 @@ import (
 	"fmt"
 	"sync"
 
-	"golang.org/x/sync/errgroup"
 	"golang.org/x/sys/execabs"
 )
 
@@ -34,7 +33,7 @@ type RulePyflakes struct {
 	cmd                   string
 	workflowShellIsPython shellIsPythonKind
 	jobShellIsPython      shellIsPythonKind
-	group                 errgroup.Group
+	wg                    sync.WaitGroup
 	mu                    sync.Mutex
 	proc                  *concurrentProcess
 }
@@ -81,15 +80,8 @@ func (rule *RulePyflakes) VisitWorkflowPre(n *Workflow) error {
 
 // VisitWorkflowPost is callback when visiting Workflow node after visiting its children.
 func (rule *RulePyflakes) VisitWorkflowPost(n *Workflow) error {
-	// TODO: Check errors caused in goroutines to run pyflakes and returns it
-
-	// Wait all pyflakes processes finish
-	if err := rule.group.Wait(); err != nil {
-		return err
-	}
-
 	rule.workflowShellIsPython = shellIsPythonKindUnspecified // reset
-
+	rule.wg.Wait()
 	return nil
 }
 
@@ -108,17 +100,12 @@ func (rule *RulePyflakes) VisitStep(n *Step) error {
 		return nil
 	}
 
-	rule.group.Go(func() error {
-		return rule.runPyflakes(rule.cmd, run.Run.Value, run.RunPos)
-	})
-	return nil
-}
-
-// Cleanup is callback when visiting finished. This callback is called even if the visiting failed since some callback returned an error
-func (rule *RulePyflakes) Cleanup() {
-	if err := rule.group.Wait(); err != nil { // Ensure all processes ended
-		rule.debug("error found while cleanup: %s", err)
+	if rule.proc.hasError() {
+		return nil
 	}
+
+	rule.runPyflakes(rule.cmd, run.Run.Value, run.RunPos)
+	return nil
 }
 
 func (rule *RulePyflakes) isPythonShell(r *ExecRun) bool {
@@ -133,28 +120,31 @@ func (rule *RulePyflakes) isPythonShell(r *ExecRun) bool {
 	return rule.workflowShellIsPython == shellIsPythonKindPython
 }
 
-func (rule *RulePyflakes) runPyflakes(executable, src string, pos *Pos) error {
+func (rule *RulePyflakes) runPyflakes(executable, src string, pos *Pos) {
 	src = sanitizeExpressionsInScript(src) // Defiend at rule_shellcheck.go
 	rule.debug("%s: Running %s for Python script:\n%s", pos, executable, src)
 
-	stdout, err := rule.proc.run(executable, []string{}, src)
-	if err != nil {
-		rule.debug("Command %s failed: %v", executable, err)
-		return fmt.Errorf("`%s` did not run successfully while checking script at %s: %w", executable, pos, err)
-	}
-	if len(stdout) == 0 {
-		return nil
-	}
+	rule.wg.Add(1)
+	rule.proc.run(executable, []string{}, src, func(stdout []byte, err error) error {
+		defer rule.wg.Done()
 
-	rule.mu.Lock()
-	defer rule.mu.Unlock()
-	for len(stdout) > 0 {
-		if stdout, err = rule.parseNextError(stdout, pos); err != nil {
-			return err
+		if err != nil {
+			rule.debug("Command %s failed: %v", executable, err)
+			return fmt.Errorf("`%s` did not run successfully while checking script at %s: %w", executable, pos, err)
 		}
-	}
+		if len(stdout) == 0 {
+			return nil
+		}
 
-	return nil
+		rule.mu.Lock()
+		defer rule.mu.Unlock()
+		for len(stdout) > 0 {
+			if stdout, err = rule.parseNextError(stdout, pos); err != nil {
+				return err
+			}
+		}
+		return nil
+	})
 }
 
 func (rule *RulePyflakes) parseNextError(stdout []byte, pos *Pos) ([]byte, error) {

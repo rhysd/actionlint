@@ -6,7 +6,6 @@ import (
 	"strings"
 	"sync"
 
-	"golang.org/x/sync/errgroup"
 	"golang.org/x/sys/execabs"
 )
 
@@ -25,8 +24,8 @@ type RuleShellcheck struct {
 	cmd           string
 	workflowShell string
 	jobShell      string
-	group         errgroup.Group
 	mu            sync.Mutex
+	wg            sync.WaitGroup
 	proc          *concurrentProcess
 }
 
@@ -64,9 +63,11 @@ func (rule *RuleShellcheck) VisitStep(n *Step) error {
 		return nil
 	}
 
-	rule.group.Go(func() error {
-		return rule.runShellcheck(rule.cmd, run.Run.Value, name, run.RunPos)
-	})
+	if rule.proc.hasError() {
+		return nil
+	}
+
+	rule.runShellcheck(rule.cmd, run.Run.Value, name, run.RunPos)
 	return nil
 }
 
@@ -112,21 +113,9 @@ func (rule *RuleShellcheck) VisitWorkflowPre(n *Workflow) error {
 
 // VisitWorkflowPost is callback when visiting Workflow node after visiting its children.
 func (rule *RuleShellcheck) VisitWorkflowPost(n *Workflow) error {
-	// TODO: Check errors caused in goroutines to run shellcheck and returns it
-
-	if err := rule.group.Wait(); err != nil {
-		return err
-	}
-
 	rule.workflowShell = ""
+	rule.wg.Wait()
 	return nil
-}
-
-// Cleanup is callback when visiting finished. This callback is called even if the visiting failed since some callback returned an error
-func (rule *RuleShellcheck) Cleanup() {
-	if err := rule.group.Wait(); err != nil { // Ensure all processes ended
-		rule.debug("error found while cleanup: %s", err)
-	}
 }
 
 func (rule *RuleShellcheck) getShellName(exec *ExecRun) string {
@@ -177,7 +166,7 @@ func sanitizeExpressionsInScript(src string) string {
 	}
 }
 
-func (rule *RuleShellcheck) runShellcheck(executable, src, sh string, pos *Pos) error {
+func (rule *RuleShellcheck) runShellcheck(executable, src, sh string, pos *Pos) {
 	src = sanitizeExpressionsInScript(src)
 	rule.debug("%s: Run shellcheck for %s script:\n%s", pos, sh, src)
 
@@ -198,34 +187,38 @@ func (rule *RuleShellcheck) runShellcheck(executable, src, sh string, pos *Pos) 
 	}
 	script := fmt.Sprintf("%s\n%s\n", setup, src)
 
-	stdout, err := rule.proc.run(executable, args, script)
-	if err != nil {
-		rule.debug("Command %s %s failed: %v", executable, args, err)
-		return fmt.Errorf("`%s %s` did not run successfully while checking script at %s: %w", executable, strings.Join(args, " "), pos, err)
-	}
+	rule.wg.Add(1)
+	rule.proc.run(executable, args, script, func(stdout []byte, err error) error {
+		defer rule.wg.Done()
 
-	errs := []shellcheckError{}
-	if err := json.Unmarshal(stdout, &errs); err != nil {
-		return fmt.Errorf("could not parse JSON output from shellcheck: %w: stdout=%q", err, stdout)
-	}
-	if len(errs) == 0 {
+		if err != nil {
+			rule.debug("Command %s %s failed: %v", executable, args, err)
+			return fmt.Errorf("`%s %s` did not run successfully while checking script at %s: %w", executable, strings.Join(args, " "), pos, err)
+		}
+
+		errs := []shellcheckError{}
+		if err := json.Unmarshal(stdout, &errs); err != nil {
+			return fmt.Errorf("could not parse JSON output from shellcheck: %w: stdout=%q", err, stdout)
+		}
+		if len(errs) == 0 {
+			return nil
+		}
+
+		rule.mu.Lock()
+		defer rule.mu.Unlock()
+		// It's better to show source location in the script as position of error, but it's not
+		// possible easily. YAML has multiple block styles with '|', '>', '|+', '>+', '|-', '>-'. Some
+		// of them remove indentation and/or blank lines. So restoring source position in block string
+		// is not possible. Sourcemap is necessary to do it.
+		// Instead, actionlint shows position of 'run:' as position of error. And separately show
+		// location in script which is reported by shellcheck in error message.
+		for _, err := range errs {
+			// Consider the first line is setup for running shell which was implicitly added for better check
+			line := err.Line - 1
+			msg := strings.TrimSuffix(err.Message, ".") // Trim period aligning style of error message
+			rule.errorf(pos, "shellcheck reported issue in this script: SC%d:%s:%d:%d: %s", err.Code, err.Level, line, err.Column, msg)
+		}
+
 		return nil
-	}
-
-	rule.mu.Lock()
-	defer rule.mu.Unlock()
-	// It's better to show source location in the script as position of error, but it's not
-	// possible easily. YAML has multiple block styles with '|', '>', '|+', '>+', '|-', '>-'. Some
-	// of them remove indentation and/or blank lines. So restoring source position in block string
-	// is not possible. Sourcemap is necessary to do it.
-	// Instead, actionlint shows position of 'run:' as position of error. And separately show
-	// location in script which is reported by shellcheck in error message.
-	for _, err := range errs {
-		// Consider the first line is setup for running shell which was implicitly added for better check
-		line := err.Line - 1
-		msg := strings.TrimSuffix(err.Message, ".") // Trim period aligning style of error message
-		rule.errorf(pos, "shellcheck reported issue in this script: SC%d:%s:%d:%d: %s", err.Code, err.Level, line, err.Column, msg)
-	}
-
-	return nil
+	})
 }

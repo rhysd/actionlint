@@ -18,8 +18,6 @@ type Pass interface {
 	VisitWorkflowPre(node *Workflow) error
 	// VisitWorkflowPost is callback when visiting Workflow node after visiting its children. It returns internal error when it cannot continue the process
 	VisitWorkflowPost(node *Workflow) error
-	// Cleanup is callback when visiting finished. This callback is called even if the visiting failed since some callback returned an error
-	Cleanup()
 }
 
 // Visitor visits syntax tree from root in depth-first order
@@ -50,12 +48,6 @@ func (v *Visitor) reportElapsedTime(what string, start time.Time) {
 
 // Visit visits given syntax tree in depth-first order
 func (v *Visitor) Visit(n *Workflow) error {
-	err := v.visitWorkflow(n)
-	v.cleanup()
-	return err
-}
-
-func (v *Visitor) visitWorkflow(n *Workflow) error {
 	var t time.Time
 	if v.dbg != nil {
 		t = time.Now()
@@ -154,10 +146,4 @@ func (v *Visitor) visitStep(n *Step) error {
 	}
 
 	return nil
-}
-
-func (v *Visitor) cleanup() {
-	for _, p := range v.passes {
-		p.Cleanup()
-	}
 }
