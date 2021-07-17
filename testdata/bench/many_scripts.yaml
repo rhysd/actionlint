@@ -1,0 +1,146 @@
+name: CI
+on: [push, pull_request]
+
+# 100 'run:' scripts in one workflow
+
+jobs:
+  unit-tests:
+    name: Unit tests
+    strategy:
+      matrix:
+        os: [ubuntu-latest, macos-latest, windows-latest]
+    runs-on: ${{ matrix.os }}
+    steps:
+      - name: Install dependencies on macOS
+        run: brew install shellcheck python3 && pip3 install pyflakes
+        if: ${{ matrix.os == 'macos-latest' }}
+      - run: ls
+      - name: Install dependencies on Linux
+        run: sudo apt install shellcheck && pip install pyflakes
+        if: ${{ matrix.os == 'ubuntu-latest' }}
+      - name: Install dependencies on Windows
+        run: choco install shellcheck && pip install pyflakes
+        if: ${{ matrix.os == 'windows-latest' }}
+      - run: shellcheck --version
+      - run: pyflakes --version
+      - uses: actions/checkout@v2
+      - run: git --version
+      - uses: actions/setup-go@v2
+        with:
+          go-version: '1.16'
+      - run: go build ./cmd/actionlint
+        env:
+          CGO_ENABLED: 0
+      - run: go test -v -race -coverprofile coverage.txt -covermode=atomic
+      - run: go tool cover -func ./coverage.txt
+      # Dog fooding 🐶
+      - run: ./actionlint -color
+      - run: ./actionlint
+      - run: ./actionlint
+      - run: ./actionlint
+      - run: ./actionlint
+      - run: ./actionlint
+      - run: ./actionlint
+      - run: ./actionlint
+      - run: ./actionlint
+      - run: ./actionlint
+      - run: ./actionlint
+      - run: ./actionlint
+      - run: ./actionlint
+      - run: ./actionlint
+      - run: ./actionlint
+      - run: ./actionlint
+      - run: ./actionlint
+      - uses: codecov/codecov-action@v1
+  lint:
+    name: Lint
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v2
+      - run: git --version
+      - uses: actions/setup-go@v2
+        with:
+          go-version: '1.16'
+      - run: go version
+      - name: Install staticcheck
+        run: |
+          go get honnef.co/go/tools/cmd/staticcheck@latest
+          echo "$(go env GOPATH)/bin" >> "$GITHUB_PATH"
+      - run: make lint
+      - uses: actions/setup-node@v2
+        with:
+          node-version: "lts/*"
+      - run: cd ./playground && make main.wasm && npm install && npm run lint
+      - run: shellcheck ./scripts/download-actionlint.bash
+      - run: shellcheck ./playground/post-install.bash
+      - run: shellcheck ./playground/deploy.bash
+  actionlint-daisuki:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Download actionlint
+        run: bash <(curl https://raw.githubusercontent.com/rhysd/actionlint/main/scripts/download-actionlint.bash)
+        shell: bash
+      - run: ./actionlint
+      - run: ./actionlint
+      - run: ./actionlint
+      - run: ./actionlint
+      - run: ./actionlint
+      - run: ./actionlint
+      - run: ./actionlint
+      - run: ./actionlint
+      - run: ./actionlint
+      - run: ./actionlint
+      - run: ./actionlint
+      - run: ./actionlint
+      - run: ./actionlint
+      - run: ./actionlint
+      - run: ./actionlint
+      - run: ./actionlint
+      - run: ./actionlint
+      - run: ./actionlint
+      - run: ./actionlint
+      - run: ./actionlint
+      - run: ./actionlint
+      - run: ./actionlint
+      - run: ./actionlint
+      - run: ./actionlint
+      - run: ./actionlint
+      - run: ./actionlint
+      - run: ./actionlint
+      - run: ./actionlint
+      - run: ./actionlint
+      - run: ./actionlint
+      - run: ./actionlint
+      - run: ./actionlint
+      - run: ./actionlint
+      - run: ./actionlint
+      - run: ./actionlint
+      - run: ./actionlint
+      - run: ./actionlint
+      - run: ./actionlint
+      - run: ./actionlint
+      - run: ./actionlint
+      - run: ./actionlint
+      - run: ./actionlint
+      - run: ./actionlint
+      - run: ./actionlint
+      - run: ./actionlint
+      - run: ./actionlint
+      - run: ./actionlint
+      - run: ./actionlint
+      - run: ./actionlint
+      - run: ./actionlint
+      - run: ./actionlint
+      - run: ./actionlint
+      - run: ./actionlint
+      - run: ./actionlint
+      - run: ./actionlint
+      - run: ./actionlint
+      - run: ./actionlint
+      - run: ./actionlint
+      - run: ./actionlint
+      - run: ./actionlint
+      - run: ./actionlint
+      - run: ./actionlint
+      - run: ./actionlint
+      - run: ./actionlint

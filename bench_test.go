@@ -1,6 +1,7 @@
 package actionlint
 
 import (
+	"fmt"
 	"io/ioutil"
 	"os"
 	"path/filepath"
@@ -67,41 +68,47 @@ func BenchmarkLintFilesExamples(b *testing.B) {
 	}
 }
 
-func BenchmarkLintFileOneTestWorkflow(b *testing.B) {
+func BenchmarkLintManyScripts(b *testing.B) {
 	dir, err := os.Getwd()
 	if err != nil {
 		panic(err)
 	}
 
-	file := filepath.Join(dir, "test.yaml")
-	if _, err := os.Stat(file); err != nil {
-		b.Fatalf("target workflow file does not exist: %s: %s", file, err)
-	}
-
+	file := filepath.Join(dir, "testdata", "bench", "many_scripts.yaml")
 	proj := &Project{root: dir}
 	shellcheck, err := execabs.LookPath("shellcheck")
 	if err != nil {
 		b.Fatalf("shellcheck is not found: %s", err)
 	}
-	pyflakes, err := execabs.LookPath("pyflakes")
-	if err != nil {
-		b.Fatalf("pyflakes is not found: %s", err)
+
+	bms := [][]string{
+		{file},
+		{file, file, file},
+		{file, file, file, file, file, file, file, file, file, file},
 	}
 
-	for i := 0; i < b.N; i++ {
-		opts := LinterOptions{
-			Shellcheck: shellcheck,
-			Pyflakes:   pyflakes,
-		}
+	for _, bm := range bms {
+		b.Run(fmt.Sprintf("%d", len(bm)), func(b *testing.B) {
+			for i := 0; i < b.N; i++ {
+				opts := LinterOptions{
+					Shellcheck: shellcheck,
+				}
 
-		l, err := NewLinter(ioutil.Discard, &opts)
-		if err != nil {
-			b.Fatal(err)
-		}
-		l.defaultConfig = &Config{}
+				l, err := NewLinter(ioutil.Discard, &opts)
+				if err != nil {
+					b.Fatal(err)
+				}
+				l.defaultConfig = &Config{}
 
-		if _, err := l.LintFile(file, proj); err != nil {
-			b.Fatal(err)
-		}
+				errs, err := l.LintFiles(bm, proj)
+				if err != nil {
+					b.Fatal(err)
+				}
+
+				if len(errs) > 0 {
+					b.Fatal("some error occurred:", errs)
+				}
+			}
+		})
 	}
 }
