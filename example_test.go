@@ -13,28 +13,37 @@ import (
 	"golang.org/x/sys/execabs"
 )
 
-func TestExamples(t *testing.T) {
+func testExampleFilePaths() (string, []string, error) {
 	wd, err := os.Getwd()
 	if err != nil {
-		panic(err)
+		return "", nil, err
 	}
 
 	dir := filepath.Join(wd, "testdata", "examples")
 
 	entries, err := ioutil.ReadDir(dir)
 	if err != nil {
-		panic(err)
+		return "", nil, err
 	}
 
-	infiles := make([]string, 0, len(entries))
+	fs := make([]string, 0, len(entries))
 	for _, info := range entries {
 		if info.IsDir() {
 			continue
 		}
 		n := info.Name()
 		if strings.HasSuffix(n, ".yaml") || strings.HasSuffix(n, ".yml") {
-			infiles = append(infiles, filepath.Join(dir, n))
+			fs = append(fs, filepath.Join(dir, n))
 		}
+	}
+
+	return dir, fs, nil
+}
+
+func TestExamples(t *testing.T) {
+	dir, infiles, err := testExampleFilePaths()
+	if err != nil {
+		panic(err)
 	}
 
 	proj := &Project{root: dir}
