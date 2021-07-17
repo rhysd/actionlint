@@ -37,6 +37,9 @@ man/actionlint.1: man/actionlint.1.ronn
 
 man: man/actionlint.1
 
+bench:
+	go test -bench Lint -benchmem
+
 clean:
 	rm -f ./actionlint ./.testtimestamp ./.staticchecktimestamp ./actionlint_fuzz-fuzz.zip ./man/actionlint.1 ./man/actionlint.1.html
 	rm -rf ./corpus ./crashers
@@ -46,4 +49,4 @@ t: test
 c: clean
 l: lint
 
-.PHONY: all test clean build lint fuzz man b t c l
+.PHONY: all test clean build lint fuzz man bench b t c l
