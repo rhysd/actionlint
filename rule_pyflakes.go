@@ -100,10 +100,6 @@ func (rule *RulePyflakes) VisitStep(n *Step) error {
 		return nil
 	}
 
-	if rule.proc.hasError() {
-		return nil
-	}
-
 	rule.runPyflakes(rule.cmd, run.Run.Value, run.RunPos)
 	return nil
 }

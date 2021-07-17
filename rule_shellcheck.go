@@ -63,10 +63,6 @@ func (rule *RuleShellcheck) VisitStep(n *Step) error {
 		return nil
 	}
 
-	if rule.proc.hasError() {
-		return nil
-	}
-
 	rule.runShellcheck(rule.cmd, run.Run.Value, name, run.RunPos)
 	return nil
 }

@@ -1,18 +1,14 @@
 package actionlint
 
 import (
+	"context"
 	"fmt"
 	"io"
 	"os/exec"
-	"sync"
-)
 
-type processRunRequest struct {
-	exe      string
-	args     []string
-	stdin    string
-	callback func([]byte, error) error
-}
+	"golang.org/x/sync/errgroup"
+	"golang.org/x/sync/semaphore"
+)
 
 // concurrentProcess is a manager to run process concurrently. Since running process consumes OS
 // resources, running too many processes concurrently causes some issues. On macOS, making new
@@ -20,20 +16,15 @@ type processRunRequest struct {
 // "pipe: too many files to open". To avoid it, this class manages how many processes are run at
 // the same time.
 type concurrentProcess struct {
-	wg         sync.WaitGroup
-	ch         chan *processRunRequest
-	done       chan struct{}
-	numWorkers int
-	maxWorkers int
-	err        error
-	errMu      sync.Mutex
+	ctx  context.Context
+	sema *semaphore.Weighted
+	eg   errgroup.Group
 }
 
 func newConcurrentProcess(par int) *concurrentProcess {
 	return &concurrentProcess{
-		ch:         make(chan *processRunRequest),
-		done:       make(chan struct{}),
-		maxWorkers: par,
+		ctx:  context.Background(),
+		sema: semaphore.NewWeighted(int64(par)),
 	}
 }
 
@@ -70,52 +61,15 @@ func runProcessWithStdin(exe string, args []string, stdin string) ([]byte, error
 	return stdout, nil
 }
 
-func (proc *concurrentProcess) handleRequest(req *processRunRequest) {
-	stdout, err := runProcessWithStdin(req.exe, req.args, req.stdin)
-	if err := req.callback(stdout, err); err != nil {
-		proc.errMu.Lock()
-		if proc.err == nil {
-			proc.err = err
-		}
-		proc.errMu.Unlock()
-	}
-}
-
-func (proc *concurrentProcess) newWorker() {
-	proc.numWorkers++
-	proc.wg.Add(1)
-	go func(recv <-chan *processRunRequest, done <-chan struct{}) {
-		for {
-			select {
-			case req := <-recv:
-				proc.handleRequest(req)
-			case <-done:
-				proc.wg.Done()
-				return
-			}
-		}
-	}(proc.ch, proc.done)
-}
-
-func (proc *concurrentProcess) hasError() bool {
-	proc.errMu.Lock()
-	defer proc.errMu.Unlock()
-	return proc.err != nil
-}
-
 func (proc *concurrentProcess) run(exe string, args []string, stdin string, callback func([]byte, error) error) {
-	// This works fine since it is single-producer-multi-consumers
-	if proc.numWorkers < proc.maxWorkers {
-		// Defer making new workers. This is efficient when no worker is necessary. It happens when shellcheck
-		// and pyflakes are never run (e.g. they're disabled).
-		proc.newWorker()
-	}
-	proc.ch <- &processRunRequest{exe, args, stdin, callback}
+	proc.sema.Acquire(proc.ctx, 1)
+	proc.eg.Go(func() error {
+		stdout, err := runProcessWithStdin(exe, args, stdin)
+		proc.sema.Release(1)
+		return callback(stdout, err)
+	})
 }
 
 func (proc *concurrentProcess) wait() error {
-	close(proc.done) // Request workers to shutdown
-	proc.wg.Wait()   // Wait for workers completing to shutdown
-	proc.numWorkers = 0
-	return proc.err
+	return proc.eg.Wait() // Wait for workers completing to shutdown
 }
