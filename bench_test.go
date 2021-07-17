@@ -49,7 +49,7 @@ func BenchmarkLintFilesExamples(b *testing.B) {
 	}
 }
 
-func BenchmarkLintManyScripts(b *testing.B) {
+func BenchmarkLintWorkflows(b *testing.B) {
 	dir, err := os.Getwd()
 	if err != nil {
 		panic(err)
@@ -64,40 +64,63 @@ func BenchmarkLintManyScripts(b *testing.B) {
 	}
 
 	bms := []struct {
-		what  string
-		files []string
+		what       string
+		files      []string
+		shellcheck string
 	}{
 		{
-			"small",
-			[]string{small},
+			what:  "small",
+			files: []string{small},
 		},
 		{
-			"small",
-			[]string{small, small, small},
+			what:  "small",
+			files: []string{small, small, small},
 		},
 		{
-			"small",
-			[]string{small, small, small, small, small, small, small, small, small, small},
+			what:  "small",
+			files: []string{small, small, small, small, small, small, small, small, small, small},
 		},
 		{
-			"large",
-			[]string{large},
+			what:       "small",
+			files:      []string{small},
+			shellcheck: shellcheck,
 		},
 		{
-			"large",
-			[]string{large, large, large},
+			what:       "small",
+			files:      []string{small, small, small},
+			shellcheck: shellcheck,
 		},
 		{
-			"large",
-			[]string{large, large, large, large, large, large, large, large, large, large},
+			what:       "small",
+			files:      []string{small, small, small, small, small, small, small, small, small, small},
+			shellcheck: shellcheck,
+		},
+		{
+			what:       "large",
+			files:      []string{large},
+			shellcheck: shellcheck,
+		},
+		{
+			what:       "large",
+			files:      []string{large, large, large},
+			shellcheck: shellcheck,
+		},
+		{
+			what:       "large",
+			files:      []string{large, large, large, large, large, large, large, large, large, large},
+			shellcheck: shellcheck,
 		},
 	}
 
 	for _, bm := range bms {
-		b.Run(fmt.Sprintf("%s-%d", bm.what, len(bm.files)), func(b *testing.B) {
+		sc := ""
+		if bm.shellcheck != "" {
+			sc = "-shellcheck"
+		}
+		b.Run(fmt.Sprintf("%s%s-%d", bm.what, sc, len(bm.files)), func(b *testing.B) {
 			for i := 0; i < b.N; i++ {
 				opts := LinterOptions{
-					Shellcheck: shellcheck,
+					Shellcheck: bm.shellcheck,
 				}
 
 				l, err := NewLinter(ioutil.Discard, &opts)
