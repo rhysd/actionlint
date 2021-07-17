@@ -126,3 +126,42 @@ func TestExamples(t *testing.T) {
 		})
 	}
 }
+
+func BenchmarkExamplesLintFiles(b *testing.B) {
+	dir, files, err := testExampleFilePaths()
+	if err != nil {
+		panic(err)
+	}
+
+	proj := &Project{root: dir}
+	shellcheck, err := execabs.LookPath("shellcheck")
+	if err != nil {
+		b.Skipf("shellcheck is not found: %s", err)
+	}
+	pyflakes, err := execabs.LookPath("pyflakes")
+	if err != nil {
+		b.Skipf("pyflakes is not found: %s", err)
+	}
+
+	for i := 0; i < b.N; i++ {
+		opts := LinterOptions{
+			Shellcheck: shellcheck,
+			Pyflakes:   pyflakes,
+		}
+
+		l, err := NewLinter(ioutil.Discard, &opts)
+		if err != nil {
+			b.Fatal(err)
+		}
+		l.defaultConfig = &Config{}
+
+		errs, err := l.LintFiles(files, proj)
+		if err != nil {
+			b.Fatal(err)
+		}
+
+		if len(errs) == 0 {
+			b.Fatal("no error found")
+		}
+	}
+}
