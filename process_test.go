@@ -6,15 +6,7 @@ import (
 	"sync"
 	"testing"
 	"time"
-
-	"golang.org/x/sys/execabs"
 )
-
-func testSkipIfCommandDoesNotExist(t *testing.T, cmd string) {
-	if _, err := execabs.LookPath(cmd); err != nil {
-		t.Skipf("%s command is necessary to run this test: %s", cmd, err)
-	}
-}
 
 func testStartEchoCommand(t *testing.T, proc *concurrentProcess, done *bool) {
 	*done = false
