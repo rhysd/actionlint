@@ -10,6 +10,24 @@ import (
 	"golang.org/x/sys/execabs"
 )
 
+func testRequestEchoCommand(t *testing.T, proc *concurrentProcess, done *bool) {
+	*done = false
+	proc.run("echo", []string{}, "", func(b []byte, err error) error {
+		if err != nil {
+			t.Error(err)
+			return err
+		}
+		*done = true
+		return nil
+	})
+}
+
+func testSkipIfCommandDoesNotExist(t *testing.T, cmd string) {
+	if _, err := execabs.LookPath(cmd); err != nil {
+		t.Skipf("%s command is necessary to run this test: %s", cmd, err)
+	}
+}
+
 func TestProcessRunProcessSerial(t *testing.T) {
 	p := newConcurrentProcess(1)
 	ret := []string{}
@@ -67,9 +85,7 @@ func TestProcessRunProcessSerial(t *testing.T) {
 }
 
 func TestProcessRunConcurrently(t *testing.T) {
-	if _, err := execabs.LookPath("sleep"); err != nil {
-		t.Skipf("sleep command is necessary to run this test: %s", err)
-	}
+	testSkipIfCommandDoesNotExist(t, "sleep")
 
 	p := newConcurrentProcess(5)
 
@@ -94,9 +110,7 @@ func TestProcessRunConcurrently(t *testing.T) {
 }
 
 func TestProcessInputStdin(t *testing.T) {
-	if _, err := execabs.LookPath("cat"); err != nil {
-		t.Skipf("cat command is necessary to run this test: %s", err)
-	}
+	testSkipIfCommandDoesNotExist(t, "cat")
 
 	p := newConcurrentProcess(1)
 	out := ""
@@ -130,22 +144,15 @@ func TestProcessErrorCommandNotFound(t *testing.T) {
 		return nil
 	})
 
-	successorDone := false
-	p.run("echo", []string{}, "", func(b []byte, err error) error {
-		if err != nil {
-			t.Error(err)
-			return err
-		}
-		successorDone = true
-		return nil
-	})
+	var echoDone bool
+	testRequestEchoCommand(t, p, &echoDone)
 
 	err := p.wait()
 	if err == nil || !strings.Contains(err.Error(), "yay! error found!") {
 		t.Fatalf("error was not reported by p.wait(): %v", err)
 	}
 
-	if !successorDone {
+	if !echoDone {
 		t.Fatal("a command following the error did not run")
 	}
 }
@@ -161,22 +168,48 @@ func TestProcessErrorInCallback(t *testing.T) {
 		return fmt.Errorf("dummy error")
 	})
 
-	successorDone := false
-	p.run("echo", []string{}, "", func(b []byte, err error) error {
-		if err != nil {
-			t.Error(err)
-			return err
-		}
-		successorDone = true
-		return nil
-	})
+	var echoDone bool
+	testRequestEchoCommand(t, p, &echoDone)
 
 	err := p.wait()
 	if err == nil || err.Error() != "dummy error" {
 		t.Fatalf("error was not reported by p.wait(): %v", err)
 	}
 
-	if !successorDone {
+	if !echoDone {
+		t.Fatal("a command following the error did not run")
+	}
+}
+
+func TestProcessErrorLinterFailed(t *testing.T) {
+	testSkipIfCommandDoesNotExist(t, "ls")
+
+	p := newConcurrentProcess(1)
+
+	// Running ls with directory which does not exist emulates external liter's failure.
+	// For example shellcheck exits with non-zero status but it outputs nothing to stdout when it
+	// fails to run.
+	p.run("ls", []string{"oops-this-directory-does-not-exist"}, "", func(b []byte, err error) error {
+		if err != nil {
+			return err
+		}
+		t.Error("error did not occur on running the process")
+		return nil
+	})
+
+	var echoDone bool
+	testRequestEchoCommand(t, p, &echoDone)
+
+	err := p.wait()
+	if err == nil {
+		t.Fatal("error did not occur")
+	}
+	msg := err.Error()
+	if !strings.Contains(msg, "but stdout was empty") || !strings.Contains(msg, "oops-this-directory-does-not-exist") {
+		t.Fatalf("Error message was unexpected: %q", msg)
+	}
+
+	if !echoDone {
 		t.Fatal("a command following the error did not run")
 	}
 }
