@@ -28,9 +28,6 @@ func (r *RuleBase) VisitWorkflowPre(node *Workflow) error { return nil }
 // VisitWorkflowPost is callback when visiting Workflow node after visiting its children.
 func (r *RuleBase) VisitWorkflowPost(node *Workflow) error { return nil }
 
-// Cleanup is callback when visiting finished. This callback is called even if the visiting failed since some callback returned an error
-func (r *RuleBase) Cleanup() {}
-
 func (r *RuleBase) error(pos *Pos, msg string) {
 	err := errorAt(pos, r.name, msg)
 	r.errs = append(r.errs, err)

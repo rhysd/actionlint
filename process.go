@@ -6,6 +6,7 @@ import (
 	"io"
 	"os/exec"
 
+	"golang.org/x/sync/errgroup"
 	"golang.org/x/sync/semaphore"
 )
 
@@ -14,21 +15,20 @@ import (
 // process hangs (see issue #3). And also running processes which opens files causes an error
 // "pipe: too many files to open". To avoid it, this class manages how many processes are run at
 // the same time.
-//
-// TODO: Reduce number of goroutines by preparing workers in this struct.
 type concurrentProcess struct {
 	ctx  context.Context
 	sema *semaphore.Weighted
+	eg   errgroup.Group
 }
 
 func newConcurrentProcess(par int) *concurrentProcess {
-	return &concurrentProcess{context.Background(), semaphore.NewWeighted(int64(par))}
+	return &concurrentProcess{
+		ctx:  context.Background(),
+		sema: semaphore.NewWeighted(int64(par)),
+	}
 }
 
-func (proc *concurrentProcess) run(exe string, args []string, stdin string) ([]byte, error) {
-	proc.sema.Acquire(proc.ctx, 1)
-	defer proc.sema.Release(1)
-
+func runProcessWithStdin(exe string, args []string, stdin string) ([]byte, error) {
 	cmd := exec.Command(exe, args...)
 	cmd.Stderr = nil
 
@@ -59,4 +59,17 @@ func (proc *concurrentProcess) run(exe string, args []string, stdin string) ([]b
 	}
 
 	return stdout, nil
+}
+
+func (proc *concurrentProcess) run(exe string, args []string, stdin string, callback func([]byte, error) error) {
+	proc.sema.Acquire(proc.ctx, 1)
+	proc.eg.Go(func() error {
+		stdout, err := runProcessWithStdin(exe, args, stdin)
+		proc.sema.Release(1)
+		return callback(stdout, err)
+	})
+}
+
+func (proc *concurrentProcess) wait() error {
+	return proc.eg.Wait() // Wait for workers completing to shutdown
 }

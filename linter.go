@@ -306,6 +306,10 @@ func (l *Linter) LintFiles(filepaths []string, project *Project) ([]*Error, erro
 		return nil, err
 	}
 
+	if err := proc.wait(); err != nil {
+		return nil, err
+	}
+
 	total := 0
 	for i := range ws {
 		total += len(ws[i].errs)
@@ -343,8 +347,12 @@ func (l *Linter) LintFile(path string, project *Project) ([]*Error, error) {
 		}
 	}
 
-	errs, err := l.check(path, src, project, newConcurrentProcess(runtime.NumCPU()))
+	proc := newConcurrentProcess(runtime.NumCPU())
+	errs, err := l.check(path, src, project, proc)
 	if err != nil {
+		return nil, err
+	}
+	if err := proc.wait(); err != nil {
 		return nil, err
 	}
 
@@ -358,8 +366,12 @@ func (l *Linter) LintFile(path string, project *Project) ([]*Error, error) {
 // Note that only given Project instance is used for configuration. No config is automatically loaded
 // based on path parameter.
 func (l *Linter) Lint(path string, content []byte, project *Project) ([]*Error, error) {
-	errs, err := l.check(path, content, project, newConcurrentProcess(runtime.NumCPU()))
+	proc := newConcurrentProcess(runtime.NumCPU())
+	errs, err := l.check(path, content, project, proc)
 	if err != nil {
+		return nil, err
+	}
+	if err := proc.wait(); err != nil {
 		return nil, err
 	}
 	l.printErrors(errs, content)
