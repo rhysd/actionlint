@@ -10,7 +10,7 @@ import (
 	"golang.org/x/sys/execabs"
 )
 
-func BenchmarkLintWorkflows(b *testing.B) {
+func BenchmarkLintWorkflowFiles(b *testing.B) {
 	dir, err := os.Getwd()
 	if err != nil {
 		panic(err)
@@ -95,6 +95,49 @@ func BenchmarkLintWorkflows(b *testing.B) {
 					b.Fatal(err)
 				}
 
+				if len(errs) > 0 {
+					b.Fatal("some error occurred:", errs)
+				}
+			}
+		})
+	}
+}
+
+func BenchmarkLintWorkflowContent(b *testing.B) {
+	dir, err := os.Getwd()
+	if err != nil {
+		panic(err)
+	}
+	proj := &Project{root: dir}
+
+	// Measure performance of traversing with checks except for external process rules (shellcheck, pyflakes)
+	// Reading file content is not included in benchmark measurement.
+
+	for _, name := range []string{"small", "large"} {
+		var f string
+		switch name {
+		case "small":
+			f = filepath.Join(dir, "testdata", "bench", "small.yaml")
+		case "large":
+			f = filepath.Join(dir, "testdata", "bench", "many_scripts.yaml")
+		}
+		content, err := ioutil.ReadFile(f)
+		if err != nil {
+			b.Fatal(err)
+		}
+
+		b.Run(name, func(b *testing.B) {
+			for i := 0; i < b.N; i++ {
+				opts := LinterOptions{}
+				l, err := NewLinter(ioutil.Discard, &opts)
+				if err != nil {
+					b.Fatal(err)
+				}
+				l.defaultConfig = &Config{}
+				errs, err := l.Lint(f, content, proj)
+				if err != nil {
+					b.Fatal(err)
+				}
 				if len(errs) > 0 {
 					b.Fatal("some error occurred:", errs)
 				}
