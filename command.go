@@ -15,6 +15,17 @@ var (
 	installedFrom = "installed by building from source"
 )
 
+const (
+	// ExitStatusSuccessNoProblem is the exit status when the command ran successfully with no problem found.
+	ExitStatusSuccessNoProblem = 0
+	// ExitStatusSuccessProblemFound is the exit status when the command ran successfully with some problem found.
+	ExitStatusSuccessProblemFound = 1
+	// ExitStatusInvalidCommandOption is the exit status when parsing command line options failed.
+	ExitStatusInvalidCommandOption = 2
+	// ExitStatusFailure is the exit status when the command stopped due to some fatal error while checking workflows.
+	ExitStatusFailure = 3
+)
+
 const commandUsageHeader = `Usage: actionlint [FLAGS] [FILES...] [-]
 
   actionlint is a linter for GitHub Actions workflow files.
@@ -136,9 +147,9 @@ func (cmd *Command) Main(args []string) int {
 	if err := flags.Parse(args[1:]); err != nil {
 		if err == flag.ErrHelp {
 			// When -h or -help
-			return 0
+			return ExitStatusSuccessNoProblem
 		}
-		return 1
+		return ExitStatusInvalidCommandOption
 	}
 
 	if ver {
@@ -151,7 +162,7 @@ func (cmd *Command) Main(args []string) int {
 			runtime.GOOS,
 			runtime.GOARCH,
 		)
-		return 0
+		return ExitStatusSuccessNoProblem
 	}
 
 	opts.IgnorePatterns = ignorePats
@@ -167,11 +178,11 @@ func (cmd *Command) Main(args []string) int {
 	errs, err := cmd.runLinter(flags.Args(), &opts, initConfig)
 	if err != nil {
 		fmt.Fprintln(cmd.Stderr, err.Error())
-		return 1
+		return ExitStatusFailure
 	}
 	if len(errs) > 0 {
-		return 1 // Linter found some issues, yay!
+		return ExitStatusSuccessProblemFound // Linter found some issues, yay!
 	}
 
-	return 0
+	return ExitStatusSuccessNoProblem
 }

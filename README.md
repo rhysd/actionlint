@@ -1569,6 +1569,17 @@ Note that configuration file is optional. The author tries to keep configuration
 bother users to configure behavior of actionlint. Running actionlint without configuration file would work fine in most
 cases.
 
+# Exit status
+
+`actionlint` command exits with one of the following exit statuses.
+
+| Status | Description                                             |
+|--------|---------------------------------------------------------|
+| `0`    | The command ran successfully and no problem was found   |
+| `1`    | The command ran successfully and some problem was found |
+| `2`    | The command failed due to invalid command line option   |
+| `3`    | The command failed due to some fatal error              |
+
 # Use actionlint as library
 
 actionlint can be used from Go programs. See [the documentation][apidoc] to know the list of all APIs. It contains

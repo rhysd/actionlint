@@ -144,6 +144,16 @@ or simply run
 ```
 
 
+## EXIT STATUS
+
+`actionlint` command exits with one of the following exit statuses.
+
+  - **0**: It ran successfully and no problem was found.
+  - **1**: It ran successfully and some problem was found.
+  - **2**: It failed due to invalid command line option.
+  - **3**: It failed due to some fatal error.
+
+
 ## PLAYGROUND
 
 Thanks to WebAssembly, actionlint playground is available on your browser. It never sends any data
