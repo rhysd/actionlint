@@ -5,8 +5,6 @@ import (
 	"fmt"
 	"strings"
 	"sync"
-
-	"golang.org/x/sys/execabs"
 )
 
 type shellcheckError struct {
@@ -21,38 +19,31 @@ type shellcheckError struct {
 // https://github.com/koalaman/shellcheck
 type RuleShellcheck struct {
 	RuleBase
-	cmd           string
+	cmd           *externalCommand
 	workflowShell string
 	jobShell      string
 	mu            sync.Mutex
-	wg            sync.WaitGroup
-	proc          *concurrentProcess
 }
 
 // NewRuleShellcheck craetes new RuleShellcheck instance. Parameter executable can be command name
 // or relative/absolute file path. When the given executable is not found in system, it returns an
 // error as 2nd return value.
 func NewRuleShellcheck(executable string, proc *concurrentProcess) (*RuleShellcheck, error) {
-	p, err := execabs.LookPath(executable)
+	cmd, err := proc.newCommandRunner(executable)
 	if err != nil {
 		return nil, err
 	}
 	r := &RuleShellcheck{
 		RuleBase:      RuleBase{name: "shellcheck"},
-		cmd:           p,
+		cmd:           cmd,
 		workflowShell: "",
 		jobShell:      "",
-		proc:          proc,
 	}
 	return r, nil
 }
 
 // VisitStep is callback when visiting Step node.
 func (rule *RuleShellcheck) VisitStep(n *Step) error {
-	if rule.cmd == "" {
-		return nil
-	}
-
 	run, ok := n.Exec.(*ExecRun)
 	if !ok || run.Run == nil {
 		return nil
@@ -63,7 +54,7 @@ func (rule *RuleShellcheck) VisitStep(n *Step) error {
 		return nil
 	}
 
-	rule.runShellcheck(rule.cmd, run.Run.Value, name, run.RunPos)
+	rule.runShellcheck(run.Run.Value, name, run.RunPos)
 	return nil
 }
 
@@ -110,8 +101,7 @@ func (rule *RuleShellcheck) VisitWorkflowPre(n *Workflow) error {
 // VisitWorkflowPost is callback when visiting Workflow node after visiting its children.
 func (rule *RuleShellcheck) VisitWorkflowPost(n *Workflow) error {
 	rule.workflowShell = ""
-	rule.wg.Wait()
-	return nil
+	return rule.cmd.wait() // Wait until all processes running for this rule
 }
 
 func (rule *RuleShellcheck) getShellName(exec *ExecRun) string {
@@ -162,7 +152,7 @@ func sanitizeExpressionsInScript(src string) string {
 	}
 }
 
-func (rule *RuleShellcheck) runShellcheck(executable, src, sh string, pos *Pos) {
+func (rule *RuleShellcheck) runShellcheck(src, sh string, pos *Pos) {
 	src = sanitizeExpressionsInScript(src)
 	rule.debug("%s: Run shellcheck for %s script:\n%s", pos, sh, src)
 
@@ -173,7 +163,7 @@ func (rule *RuleShellcheck) runShellcheck(executable, src, sh string, pos *Pos) 
 	// - SC2194: The word is constant. This sometimes happens at constants by replacing ${{ }} with spaces.
 	//           For example, `if ${{ matrix.foo }}; then ...` -> `if _________________; then ...`
 	args := []string{"--norc", "-f", "json", "-x", "--shell", sh, "-e", "SC1091,SC2194", "-"}
-	rule.debug("%s: Running %s command: %s", pos, executable, args)
+	rule.debug("%s: Running %s command with %s", pos, rule.cmd.exe, args)
 
 	// Use same options to run shell process described at document
 	// https://docs.github.com/en/actions/reference/workflow-syntax-for-github-actions#using-a-specific-shell
@@ -183,13 +173,10 @@ func (rule *RuleShellcheck) runShellcheck(executable, src, sh string, pos *Pos) 
 	}
 	script := fmt.Sprintf("%s\n%s\n", setup, src)
 
-	rule.wg.Add(1)
-	rule.proc.run(executable, args, script, func(stdout []byte, err error) error {
-		defer rule.wg.Done()
-
+	rule.cmd.run(args, script, func(stdout []byte, err error) error {
 		if err != nil {
-			rule.debug("Command %s %s failed: %v", executable, args, err)
-			return fmt.Errorf("`%s %s` did not run successfully while checking script at %s: %w", executable, strings.Join(args, " "), pos, err)
+			rule.debug("Command %s %s failed: %v", rule.cmd.exe, args, err)
+			return fmt.Errorf("`%s %s` did not run successfully while checking script at %s: %w", rule.cmd.exe, strings.Join(args, " "), pos, err)
 		}
 
 		errs := []shellcheckError{}

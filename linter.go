@@ -294,7 +294,7 @@ func (l *Linter) LintFiles(filepaths []string, project *Project) ([]*Error, erro
 			}
 			errs, err := l.check(w.path, src, p, proc)
 			if err != nil {
-				return fmt.Errorf("%w: error while checking %s", err, w.path)
+				return fmt.Errorf("fatal error while checking %s: %w", w.path, err)
 			}
 			w.src = src
 			w.errs = errs
@@ -302,11 +302,8 @@ func (l *Linter) LintFiles(filepaths []string, project *Project) ([]*Error, erro
 		})
 	}
 
+	proc.wait()
 	if err := eg.Wait(); err != nil {
-		return nil, err
-	}
-
-	if err := proc.wait(); err != nil {
 		return nil, err
 	}
 
@@ -349,10 +346,8 @@ func (l *Linter) LintFile(path string, project *Project) ([]*Error, error) {
 
 	proc := newConcurrentProcess(runtime.NumCPU())
 	errs, err := l.check(path, src, project, proc)
+	proc.wait()
 	if err != nil {
-		return nil, err
-	}
-	if err := proc.wait(); err != nil {
 		return nil, err
 	}
 
@@ -368,10 +363,8 @@ func (l *Linter) LintFile(path string, project *Project) ([]*Error, error) {
 func (l *Linter) Lint(path string, content []byte, project *Project) ([]*Error, error) {
 	proc := newConcurrentProcess(runtime.NumCPU())
 	errs, err := l.check(path, content, project, proc)
+	proc.wait()
 	if err != nil {
-		return nil, err
-	}
-	if err := proc.wait(); err != nil {
 		return nil, err
 	}
 	l.printErrors(errs, content)

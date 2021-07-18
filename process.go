@@ -5,9 +5,11 @@ import (
 	"fmt"
 	"io"
 	"os/exec"
+	"sync"
 
 	"golang.org/x/sync/errgroup"
 	"golang.org/x/sync/semaphore"
+	"golang.org/x/sys/execabs"
 )
 
 // concurrentProcess is a manager to run process concurrently. Since running process consumes OS
@@ -18,7 +20,7 @@ import (
 type concurrentProcess struct {
 	ctx  context.Context
 	sema *semaphore.Weighted
-	eg   errgroup.Group
+	wg   sync.WaitGroup
 }
 
 func newConcurrentProcess(par int) *concurrentProcess {
@@ -61,15 +63,55 @@ func runProcessWithStdin(exe string, args []string, stdin string) ([]byte, error
 	return stdout, nil
 }
 
-func (proc *concurrentProcess) run(exe string, args []string, stdin string, callback func([]byte, error) error) {
+func (proc *concurrentProcess) run(eg *errgroup.Group, exe string, args []string, stdin string, callback func([]byte, error) error) {
 	proc.sema.Acquire(proc.ctx, 1)
-	proc.eg.Go(func() error {
+	proc.wg.Add(1)
+	eg.Go(func() error {
+		defer proc.wg.Done()
 		stdout, err := runProcessWithStdin(exe, args, stdin)
 		proc.sema.Release(1)
 		return callback(stdout, err)
 	})
 }
 
-func (proc *concurrentProcess) wait() error {
-	return proc.eg.Wait() // Wait for workers completing to shutdown
+// wait waits all goroutines started by this concurrentProcess instance finish.
+func (proc *concurrentProcess) wait() {
+	proc.wg.Wait() // Wait for all gorotines completing to shutdown
+}
+
+// newCommandRunner creates new external command runner for given executable. The executable path
+// is resolved in this function.
+func (proc *concurrentProcess) newCommandRunner(exe string) (*externalCommand, error) {
+	p, err := execabs.LookPath(exe)
+	if err != nil {
+		return nil, err
+	}
+	cmd := &externalCommand{
+		proc: proc,
+		exe:  p,
+	}
+	return cmd, nil
+}
+
+// externalCommand is struct to run specific command concurrently with concurrentProcess bounding
+// number of processes at the same time. This type manages fatal errors while running the command
+// by using errgroup.Group. The wait() method must be called at the end for checking if some fatal
+// error occurred.
+type externalCommand struct {
+	proc *concurrentProcess
+	eg   errgroup.Group
+	exe  string
+}
+
+// run runs the command with given arguments and stdin. The callback function is called after the
+// process runs. First argument is stdout and the second argument is an error while running the
+// process.
+func (cmd *externalCommand) run(args []string, stdin string, callback func([]byte, error) error) {
+	cmd.proc.run(&cmd.eg, cmd.exe, args, stdin, callback)
+}
+
+// wait waits until all goroutines for this command finish. Note that it does not wait for
+// goroutines for other commands.
+func (cmd *externalCommand) wait() error {
+	return cmd.eg.Wait()
 }

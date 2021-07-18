@@ -4,8 +4,6 @@ import (
 	"bytes"
 	"fmt"
 	"sync"
-
-	"golang.org/x/sys/execabs"
 )
 
 type shellIsPythonKind int
@@ -30,28 +28,25 @@ func getShellIsPythonKind(shell *String) shellIsPythonKind {
 // https://github.com/PyCQA/pyflakes
 type RulePyflakes struct {
 	RuleBase
-	cmd                   string
+	cmd                   *externalCommand
 	workflowShellIsPython shellIsPythonKind
 	jobShellIsPython      shellIsPythonKind
-	wg                    sync.WaitGroup
 	mu                    sync.Mutex
-	proc                  *concurrentProcess
 }
 
 // NewRulePyflakes creates new RulePyflakes instance. Parameter executable can be command name
 // or relative/absolute file path. When the given executable is not found in system, it returns
 // an error.
 func NewRulePyflakes(executable string, proc *concurrentProcess) (*RulePyflakes, error) {
-	p, err := execabs.LookPath(executable)
+	cmd, err := proc.newCommandRunner(executable)
 	if err != nil {
 		return nil, err
 	}
 	r := &RulePyflakes{
 		RuleBase:              RuleBase{name: "pyflakes"},
-		cmd:                   p,
+		cmd:                   cmd,
 		workflowShellIsPython: shellIsPythonKindUnspecified,
 		jobShellIsPython:      shellIsPythonKindUnspecified,
-		proc:                  proc,
 	}
 	return r, nil
 }
@@ -81,16 +76,11 @@ func (rule *RulePyflakes) VisitWorkflowPre(n *Workflow) error {
 // VisitWorkflowPost is callback when visiting Workflow node after visiting its children.
 func (rule *RulePyflakes) VisitWorkflowPost(n *Workflow) error {
 	rule.workflowShellIsPython = shellIsPythonKindUnspecified // reset
-	rule.wg.Wait()
-	return nil
+	return rule.cmd.wait()                                    // Wait until all processes running for this rule
 }
 
 // VisitStep is callback when visiting Step node.
 func (rule *RulePyflakes) VisitStep(n *Step) error {
-	if rule.cmd == "" {
-		return nil
-	}
-
 	run, ok := n.Exec.(*ExecRun)
 	if !ok || run.Run == nil {
 		return nil
@@ -100,7 +90,7 @@ func (rule *RulePyflakes) VisitStep(n *Step) error {
 		return nil
 	}
 
-	rule.runPyflakes(rule.cmd, run.Run.Value, run.RunPos)
+	rule.runPyflakes(run.Run.Value, run.RunPos)
 	return nil
 }
 
@@ -116,17 +106,14 @@ func (rule *RulePyflakes) isPythonShell(r *ExecRun) bool {
 	return rule.workflowShellIsPython == shellIsPythonKindPython
 }
 
-func (rule *RulePyflakes) runPyflakes(executable, src string, pos *Pos) {
+func (rule *RulePyflakes) runPyflakes(src string, pos *Pos) {
 	src = sanitizeExpressionsInScript(src) // Defiend at rule_shellcheck.go
-	rule.debug("%s: Running %s for Python script:\n%s", pos, executable, src)
+	rule.debug("%s: Running %s for Python script:\n%s", pos, rule.cmd.exe, src)
 
-	rule.wg.Add(1)
-	rule.proc.run(executable, []string{}, src, func(stdout []byte, err error) error {
-		defer rule.wg.Done()
-
+	rule.cmd.run([]string{}, src, func(stdout []byte, err error) error {
 		if err != nil {
-			rule.debug("Command %s failed: %v", executable, err)
-			return fmt.Errorf("`%s` did not run successfully while checking script at %s: %w", executable, pos, err)
+			rule.debug("Command %s failed: %v", rule.cmd.exe, err)
+			return fmt.Errorf("`%s` did not run successfully while checking script at %s: %w", rule.cmd.exe, pos, err)
 		}
 		if len(stdout) == 0 {
 			return nil
