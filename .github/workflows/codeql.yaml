@@ -27,6 +27,7 @@ jobs:
       - uses: actions/checkout@v2
       - uses: github/codeql-action/init@v1
         with:
+          config-file: ./.github/codeql/codeql-config.yaml
           languages: ${{ matrix.language }}
       - uses: github/codeql-action/autobuild@v1
       - uses: github/codeql-action/analyze@v1
