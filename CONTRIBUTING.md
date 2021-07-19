@@ -114,3 +114,11 @@ npm run serve
 # If it looks good, deploy it
 git push
 ```
+
+## Inspect workflow AST
+
+Please use [actionlint-workflow-ast](./scripts/actionlint-workflow-ast) script.
+
+```sh
+go run ./scripts/actionlint-workflow-ast /path/to/workflow.yaml
+```

@@ -15,7 +15,6 @@ import (
 	"time"
 
 	"github.com/fatih/color"
-	"github.com/kr/pretty"
 	"github.com/mattn/go-colorable"
 	"golang.org/x/sync/errgroup"
 	"golang.org/x/sync/semaphore"
@@ -395,12 +394,10 @@ func (l *Linter) check(path string, content []byte, project *Project, proc *conc
 		}
 		cfg = c
 	}
-	if l.logLevel >= LogLevelDebug {
-		if cfg != nil {
-			pretty.Fprintf(l.logOut, "[Linter] Config: %# v\n", cfg)
-		} else {
-			l.debug("No config was found")
-		}
+	if cfg != nil {
+		l.debug("Config: %#v", cfg)
+	} else {
+		l.debug("No config was found")
 	}
 
 	w, all := Parse(content)
@@ -408,12 +405,6 @@ func (l *Linter) check(path string, content []byte, project *Project, proc *conc
 	if l.logLevel >= LogLevelVerbose {
 		elapsed := time.Since(start)
 		l.log("Found", len(all), "parse errors in", elapsed.Milliseconds(), "ms for", path)
-	}
-
-	if l.logLevel >= LogLevelDebug {
-		fmt.Fprintln(l.logOut, "========== WORKFLOW TREE START ==========")
-		pretty.Fprintf(l.logOut, "%# v\n", w)
-		fmt.Fprintln(l.logOut, "=========== WORKFLOW TREE END ===========")
 	}
 
 	if w != nil {
