@@ -133,9 +133,11 @@ func BenchmarkLintWorkflowContent(b *testing.B) {
 	// Measure performance of traversing with checks except for external process rules (shellcheck, pyflakes)
 	// Reading file content is not included in benchmark measurement.
 
-	for _, name := range []string{"small", "large"} {
+	for _, name := range []string{"minimal", "small", "large"} {
 		var f string
 		switch name {
+		case "minimal":
+			f = filepath.Join(dir, "testdata", "bench", "minimal.yaml")
 		case "small":
 			f = filepath.Join(dir, "testdata", "bench", "small.yaml")
 		case "large":
