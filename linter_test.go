@@ -18,6 +18,7 @@ func BenchmarkLintWorkflowFiles(b *testing.B) {
 
 	large := filepath.Join(dir, "testdata", "bench", "many_scripts.yaml")
 	small := filepath.Join(dir, "testdata", "bench", "small.yaml")
+	min := filepath.Join(dir, "testdata", "bench", "minimal.yaml")
 	proj := &Project{root: dir}
 	shellcheck, err := execabs.LookPath("shellcheck")
 	if err != nil {
@@ -29,6 +30,25 @@ func BenchmarkLintWorkflowFiles(b *testing.B) {
 		files      []string
 		shellcheck string
 	}{
+		{
+			what:  "minimal",
+			files: []string{min},
+		},
+		{
+			what:  "minimal",
+			files: []string{min, min, min, min, min},
+		},
+		{
+			what:  "minimal",
+			files: []string{min, min, min, min, min, min, min, min, min, min, min, min, min, min, min, min, min, min, min, min},
+		},
+		{
+			what: "minimal",
+			files: []string{
+				min, min, min, min, min, min, min, min, min, min, min, min, min, min, min, min, min, min, min, min,
+				min, min, min, min, min, min, min, min, min, min, min, min, min, min, min, min, min, min, min, min,
+			},
+		},
 		{
 			what:  "small",
 			files: []string{small},
