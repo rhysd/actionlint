@@ -40,7 +40,7 @@ jobs:
         env:
           # Note: -race requires cgo
           CGO_ENABLED: 0
-      - run: go test -v -race -coverprofile coverage.txt -covermode=atomic
+      - run: go test -v -race -coverprofile coverage.txt -covermode=atomic ./ ./scripts/actionlint-workflow-ast/
       - run: go tool cover -func ./coverage.txt
       # Dog fooding 🐶
       - run: ./actionlint -color
