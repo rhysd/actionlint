@@ -7,6 +7,8 @@ jobs:
     strategy:
       matrix:
         os: [ubuntu-latest, macos-latest, windows-latest]
+    env:
+      OS: ${{ matrix.os }}
     runs-on: ${{ matrix.os }}
     steps:
       - name: Install dependencies on macOS
@@ -44,7 +46,9 @@ jobs:
       - run: go tool cover -func ./coverage.txt
       # Dog fooding 🐶
       - run: ./actionlint -color
-      - uses: codecov/codecov-action@v1
+      - uses: codecov/codecov-action@v2
+        with:
+          env_vars: OS
   lint:
     name: Lint
     runs-on: ubuntu-latest
