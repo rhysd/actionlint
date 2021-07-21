@@ -75,6 +75,24 @@ func (rule *RuleEvents) checkWebhookEvent(event *WebhookEvent) {
 	case "delete":
 	case "deployment":
 	case "deployment_status":
+	case "discussion":
+		types = []string{
+			"opened",
+			"edited",
+			"deleted",
+			"transferred",
+			"pinned",
+			"unpinned",
+			"labeled",
+			"unlabeled",
+			"locked",
+			"unlocked",
+			"category_changed",
+			"answered",
+			"unanswered",
+		}
+	case "discussion_comment":
+		types = []string{"created", "edited", "deleted"}
 	case "fork":
 	case "gollum":
 	case "issue_comment":
