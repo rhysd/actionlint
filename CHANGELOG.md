@@ -1,8 +1,22 @@
+<a name="v1.4.3"></a>
+# [v1.4.3](https://github.com/rhysd/actionlint/releases/tag/v1.4.3) - 21 Jul 2021
+
+- Support new Webhook events [`discussion` and `discussion_comment`](https://docs.github.com/en/actions/reference/events-that-trigger-workflows#discussion) (#8).
+- Read file concurrently with limiting concurrency to number of CPUs. This improves performance when checking many files and disabling shellcheck/pyflakes integration.
+- Support Linux based on musl libc by [the download script](https://github.com/rhysd/actionlint/blob/main/scripts/download-actionlint.bash) (#5).
+- Reduce number of goroutines created while running shellcheck/pyflakes processes. This has small impact on memory usage when your workflows have many `run:` steps.
+- Reduce built binary size by splitting an external library which is only used for debugging into a separate command line tool.
+- Introduce several micro benchmark suites to track performance.
+- Enable code scanning for Go/TypeScript/JavaScript sources in actionlint repository.
+
+[Changes][v1.4.3]
+
+
 <a name="v1.4.2"></a>
 # [v1.4.2](https://github.com/rhysd/actionlint/releases/tag/v1.4.2) - 16 Jul 2021
 
 - Fix executables in the current directory may be used unexpectedly to run `shellcheck` or `pyflakes` on Windows. This behavior could be security vulnerability since an attacker might put malicious executables in shared directories. actionlint searched an executable with [`exec.LookPath`](https://pkg.go.dev/os/exec#LookPath), but it searched the current directory on Windows as [golang/go#43724](https://github.com/golang/go/issues/43724) pointed. Now actionlint uses [`execabs.LookPath`](https://pkg.go.dev/golang.org/x/sys/execabs#LookPath) instead, which does not have the issue. (ref: [sharkdp/bat#1724](https://github.com/sharkdp/bat/pull/1724))
-- Fix issue caused by running so many processes concurrently. Since checking workflows by actionlint is highly parallelized, checking many workflow files makes too many `shellcheck` processes and opens many files in parallel. This hit OS resources limitation (issue #3). Now reading files are serialized and number of processes run concurrently is limited for fixing the issue. Note that checking workflows is still done in parallel so this fix does not affect actionlint's performance.
+- Fix issue caused by running so many processes concurrently. Since checking workflows by actionlint is highly parallelized, checking many workflow files makes too many `shellcheck` processes and opens many files in parallel. This hit OS resources limitation (issue #3). Now reading files is serialized and number of processes run concurrently is limited for fixing the issue. Note that checking workflows is still done in parallel so this fix does not affect actionlint's performance.
 - Ensure cleanup processes even if actionlint stops due to some fatal issue while visiting a workflow tree.
 - Improve fatal error message to know which workflow file caused the error.
 - [Playground](https://rhysd.github.io/actionlint/) improvements
@@ -187,6 +201,7 @@ See documentation for more details:
 [Changes][v1.0.0]
 
 
+[v1.4.3]: https://github.com/rhysd/actionlint/compare/v1.4.2...v1.4.3
 [v1.4.2]: https://github.com/rhysd/actionlint/compare/v1.4.1...v1.4.2
 [v1.4.1]: https://github.com/rhysd/actionlint/compare/v1.4.0...v1.4.1
 [v1.4.0]: https://github.com/rhysd/actionlint/compare/v1.3.2...v1.4.0
