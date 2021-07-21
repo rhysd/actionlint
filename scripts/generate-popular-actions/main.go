@@ -9,6 +9,7 @@ import (
 	"io/ioutil"
 	"net/http"
 	"os"
+	"sort"
 	"strings"
 
 	"github.com/rhysd/actionlint"
@@ -142,13 +143,27 @@ func addressOfString(s string) *string {
 var PopularActions = map[string]*actionlint.ActionSpec{
 `)
 
-	for spec, meta := range actions {
+	specs := make([]string, 0, len(actions))
+	for s := range actions {
+		specs = append(specs, s)
+	}
+	sort.Strings(specs)
+
+	for _, spec := range specs {
+		meta := actions[spec]
 		fmt.Fprintf(out, "\t%q: {\n", spec)
 		fmt.Fprintf(out, "\t\tName: %q,\n", meta.Name)
 
 		if len(meta.Inputs) > 0 {
+			names := make([]string, 0, len(meta.Inputs))
+			for n := range meta.Inputs {
+				names = append(names, n)
+			}
+			sort.Strings(names)
+
 			fmt.Fprintf(out, "\t\tInputs: map[string]*actionlint.ActionInput{\n")
-			for name, input := range meta.Inputs {
+			for _, name := range names {
+				input := meta.Inputs[name]
 				fmt.Fprintf(out, "\t\t\t%q: {\n", name)
 				if input.Required {
 					fmt.Fprintf(out, "\t\t\t\tRequired: true,\n")
@@ -163,8 +178,15 @@ var PopularActions = map[string]*actionlint.ActionSpec{
 		}
 
 		if len(meta.Outputs) > 0 {
+			names := make([]string, 0, len(meta.Outputs))
+			for n := range meta.Outputs {
+				names = append(names, n)
+			}
+			sort.Strings(names)
+
 			fmt.Fprintf(out, "\t\tOutputs: map[string]string{\n")
-			for name, desc := range meta.Outputs {
+			for _, name := range names {
+				desc := meta.Outputs
 				fmt.Fprintf(out, "\t\t\t%q: %q,\n", name, desc)
 			}
 			fmt.Fprintf(out, "\t\t},\n")
