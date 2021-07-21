@@ -5,33 +5,33 @@
 class Actionlint < Formula
   desc "Static checker for GitHub Actions workflow files"
   homepage "https://github.com/rhysd/actionlint#readme"
-  version "1.4.2"
+  version "1.4.3"
   license "MIT"
   bottle :unneeded
 
   on_macos do
     if Hardware::CPU.intel?
-      url "https://github.com/rhysd/actionlint/releases/download/v1.4.2/actionlint_1.4.2_darwin_amd64.tar.gz"
-      sha256 "2c157e9e6cffea390c5a09cd8136ed812705f6ab9dbda590749abd6bd976b3cf"
+      url "https://github.com/rhysd/actionlint/releases/download/v1.4.3/actionlint_1.4.3_darwin_amd64.tar.gz"
+      sha256 "0bae5143c2682991b47ad525809e5a9a03f065f1014053b01513b37524a14c34"
     end
     if Hardware::CPU.arm?
-      url "https://github.com/rhysd/actionlint/releases/download/v1.4.2/actionlint_1.4.2_darwin_arm64.tar.gz"
-      sha256 "39024f734ecd989af8b6d7346fdf043eabbf4d5b07f7a84d6f69d780a6fc7aac"
+      url "https://github.com/rhysd/actionlint/releases/download/v1.4.3/actionlint_1.4.3_darwin_arm64.tar.gz"
+      sha256 "24d05cdcdf06aa84ab89d6b4ba159ff08f9da3bc642cc0625a3a566b81e013bf"
     end
   end
 
   on_linux do
     if Hardware::CPU.intel?
-      url "https://github.com/rhysd/actionlint/releases/download/v1.4.2/actionlint_1.4.2_linux_amd64.tar.gz"
-      sha256 "a29b97dd0f8342216804fb2ebaaf28f2e5b51399de0b5fe49a09680b8008815a"
+      url "https://github.com/rhysd/actionlint/releases/download/v1.4.3/actionlint_1.4.3_linux_amd64.tar.gz"
+      sha256 "5331e494151df5fd032f0525b397751ac18b4736db66eca1ec7fc2df6db430ad"
     end
     if Hardware::CPU.arm? && !Hardware::CPU.is_64_bit?
-      url "https://github.com/rhysd/actionlint/releases/download/v1.4.2/actionlint_1.4.2_linux_armv6.tar.gz"
-      sha256 "7262a5bff5fa41cb6e3f8ff59c55f64edbbac47a01518b60db48b42c09b68a11"
+      url "https://github.com/rhysd/actionlint/releases/download/v1.4.3/actionlint_1.4.3_linux_armv6.tar.gz"
+      sha256 "cf68fa13801caeefd2baf8ab883101d85aacdef9e9c712ddb5b4bb428240ff22"
     end
     if Hardware::CPU.arm? && Hardware::CPU.is_64_bit?
-      url "https://github.com/rhysd/actionlint/releases/download/v1.4.2/actionlint_1.4.2_linux_arm64.tar.gz"
-      sha256 "1bf741572026147a79d92bd8e2d2d3e3450111ebea4b485bba5178e7edab3239"
+      url "https://github.com/rhysd/actionlint/releases/download/v1.4.3/actionlint_1.4.3_linux_arm64.tar.gz"
+      sha256 "6060e2498524294e474c94d3f6cf5c2bca71fb81970926d34b11950c1cd4f65d"
     end
   end
 
