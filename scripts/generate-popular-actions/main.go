@@ -143,6 +143,9 @@ func addressOfString(s string) *string {
 var PopularActions = map[string]*actionlint.ActionSpec{
 `)
 
+	defCount := 0
+	defaults := map[string]int{}
+
 	specs := make([]string, 0, len(actions))
 	for s := range actions {
 		specs = append(specs, s)
@@ -169,7 +172,18 @@ var PopularActions = map[string]*actionlint.ActionSpec{
 					fmt.Fprintf(out, "\t\t\t\tRequired: true,\n")
 				}
 				if input.Default != nil {
-					fmt.Fprintf(out, "\t\t\t\tDefault: addressOfString(%q),\n", *input.Default)
+					i := defCount
+					if c, ok := defaults[*input.Default]; ok {
+						i = c
+					} else {
+						defaults[*input.Default] = i
+						defCount++
+					}
+					// Go does not allow to take address of string literal like &"foo". Instead,
+					// put strings at global variables and take addresses of them.
+					// func(s string){ return &s } also works well, but it requires additional
+					// heap allocation.
+					fmt.Fprintf(out, "\t\t\t\tDefault: &popularActionDefaultValue%d,\n", i)
 				}
 				fmt.Fprintf(out, "\t\t\t\tDescription: %q,\n", input.Description)
 				fmt.Fprintf(out, "\t\t\t},\n")
@@ -196,6 +210,14 @@ var PopularActions = map[string]*actionlint.ActionSpec{
 	}
 
 	fmt.Fprintln(out, "}")
+
+	sortedDefs := make([]string, len(defaults))
+	for def, i := range defaults {
+		sortedDefs[i] = def
+	}
+	for i, def := range sortedDefs {
+		fmt.Fprintf(out, "var popularActionDefaultValue%d = %q\n", i, def)
+	}
 }
 
 func readJSONL(file string) (map[string]*actionlint.ActionSpec, error) {
