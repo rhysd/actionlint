@@ -304,7 +304,7 @@ var PopularActions = map[string]*actionlint.ActionSpec{
 
 	fmt.Fprintln(b, "}")
 
-	// Format sources with checking Go syntax
+	// Format the generated source with checking Go syntax
 	gen := b.Bytes()
 	src, err := format.Source(gen)
 	if err != nil {
@@ -351,7 +351,7 @@ func run(args []string, stdout, stderr io.Writer, knownActions []action) int {
 	var quiet bool
 
 	flags := flag.NewFlagSet(args[0], flag.ContinueOnError)
-	flags.StringVar(&source, "s", "remote", "source of actions. \"remote\" or jsonl file")
+	flags.StringVar(&source, "s", "remote", "source of actions. \"remote\" or jsonl file path. \"remote\" fetches data from github.com")
 	flags.StringVar(&format, "f", "go", "format of generated code output to stdout. \"go\" or \"jsonl\"")
 	flags.BoolVar(&quiet, "q", false, "disable log output to stderr")
 	flags.SetOutput(stderr)
@@ -360,7 +360,7 @@ func run(args []string, stdout, stderr io.Writer, knownActions []action) int {
 
   This tool fetches action.yml files of popular actions and generates code to
   stdout. It can fetch data from remote GitHub repositories and from local
-  JSONL file (-s flag). And it can output Go code or JSONL serialized data
+  JSONL file (-s option). And it can output Go code or JSONL serialized data
   (-f option).
 
 Flags:`)
@@ -414,7 +414,7 @@ Flags:`)
 			return 1
 		}
 	default:
-		fmt.Fprintf(stderr, "invalid -format value: %s\n", format)
+		fmt.Fprintf(stderr, "invalid value for -f option: %s\n", format)
 		return 1
 	}
 
