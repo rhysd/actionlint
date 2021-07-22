@@ -237,10 +237,6 @@ func writeGo(out io.Writer, actions map[string]*actionlint.ActionSpec) error {
 
 package actionlint
 
-func addressOfString(s string) *string {
-	return &s // Go does not allow get pointer of string literal
-}
-
 // PopularActions is data set of known popular actions. Keys are specs (owner/repo@ref) of actions
 // and values are their metadata.
 var PopularActions = map[string]*ActionSpec{
@@ -251,6 +247,9 @@ var PopularActions = map[string]*ActionSpec{
 		specs = append(specs, s)
 	}
 	sort.Strings(specs)
+
+	defs := map[string]int{}
+	defID := 0
 
 	for _, spec := range specs {
 		meta := actions[spec]
@@ -272,7 +271,15 @@ var PopularActions = map[string]*ActionSpec{
 					fmt.Fprintf(b, "Required: true,\n")
 				}
 				if input.Default != nil {
-					fmt.Fprintf(b, "Default: addressOfString(%q),\n", *input.Default)
+					var id int
+					if i, ok := defs[*input.Default]; ok {
+						id = i
+					} else {
+						defs[*input.Default] = defID
+						id = defID
+						defID++
+					}
+					fmt.Fprintf(b, "Default: &popularActionDefaultValue%d,\n", id)
 				}
 				fmt.Fprintf(b, "},\n")
 			}
@@ -297,6 +304,14 @@ var PopularActions = map[string]*ActionSpec{
 	}
 
 	fmt.Fprintln(b, "}")
+
+	sortedDefs := make([]string, len(defs))
+	for s, i := range defs {
+		sortedDefs[i] = s
+	}
+	for i, s := range sortedDefs {
+		fmt.Fprintf(b, "var popularActionDefaultValue%d = %q\n", i, s)
+	}
 
 	// Format the generated source with checking Go syntax
 	gen := b.Bytes()
