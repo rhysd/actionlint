@@ -69,7 +69,13 @@ func fetchRemote(actions []action) (map[string]*actionlint.ActionSpec, error) {
 			for {
 				select {
 				case req := <-reqs:
-					url := fmt.Sprintf("https://raw.githubusercontent.com/%s/%s/action.%s", req.slug, req.tag, req.ext.String())
+					slug := req.slug
+					path := ""
+					if ss := strings.Split(slug, "/"); len(ss) > 2 {
+						slug = ss[0] + "/" + ss[1]
+						path = strings.Join(ss[2:], "/") + "/"
+					}
+					url := fmt.Sprintf("https://raw.githubusercontent.com/%s/%s/%saction.%s", slug, req.tag, path, req.ext.String())
 					res, err := c.Get(url)
 					if err != nil {
 						ret <- &fetched{err: fmt.Errorf("could not fetch %s: %w", url, err)}
