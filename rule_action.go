@@ -27,14 +27,6 @@ type ActionInput struct {
 	// Default is a default value of the input. This is optional field. nil is set when it is
 	// missing.
 	Default *string `yaml:"default" json:"default"`
-	// Description is description of the input.
-	Description string `yaml:"description" json:"description"`
-}
-
-// ActionOutput is output metadata of action.
-// https://docs.github.com/en/actions/creating-actions/metadata-syntax-for-github-actions#outputs
-type ActionOutput struct {
-	Description string `yaml:"description" json:"description"`
 }
 
 // ActionSpec represents structure of action.yaml.
@@ -45,7 +37,7 @@ type ActionSpec struct {
 	// Inputs is "inputs" field of action.yaml
 	Inputs map[string]*ActionInput `yaml:"inputs" json:"inputs"`
 	// Outputs is "outputs" field of action.yaml. Key is name of output.
-	Outputs map[string]*ActionOutput `yaml:"outputs" json:"outputs"`
+	Outputs map[string]struct{} `yaml:"outputs" json:"outputs"`
 }
 
 // NewRuleAction creates new RuleAction instance.

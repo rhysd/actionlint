@@ -274,7 +274,6 @@ var PopularActions = map[string]*ActionSpec{
 				if input.Default != nil {
 					fmt.Fprintf(b, "Default: addressOfString(%q),\n", *input.Default)
 				}
-				fmt.Fprintf(b, "Description: %q,\n", input.Description)
 				fmt.Fprintf(b, "},\n")
 			}
 			fmt.Fprintf(b, "},\n")
@@ -287,10 +286,9 @@ var PopularActions = map[string]*ActionSpec{
 			}
 			sort.Strings(names)
 
-			fmt.Fprintf(b, "Outputs: map[string]*ActionOutput{\n")
+			fmt.Fprintf(b, "Outputs: map[string]struct{}{\n")
 			for _, name := range names {
-				output := meta.Outputs[name]
-				fmt.Fprintf(b, "%q: {Description: %q},\n", name, output.Description)
+				fmt.Fprintf(b, "%q: {},\n", name)
 			}
 			fmt.Fprintf(b, "},\n")
 		}
