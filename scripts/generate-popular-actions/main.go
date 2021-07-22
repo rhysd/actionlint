@@ -237,17 +237,13 @@ func writeGo(out io.Writer, actions map[string]*actionlint.ActionSpec) error {
 
 package actionlint
 
-import (
-	"github.com/rhysd/actionlint"
-)
-
 func addressOfString(s string) *string {
 	return &s // Go does not allow get pointer of string literal
 }
 
 // PopularActions is data set of known popular actions. Keys are specs (owner/repo@ref) of actions
 // and values are their metadata.
-var PopularActions = map[string]*actionlint.ActionSpec{
+var PopularActions = map[string]*ActionSpec{
 `)
 
 	specs := make([]string, 0, len(actions))
@@ -268,7 +264,7 @@ var PopularActions = map[string]*actionlint.ActionSpec{
 			}
 			sort.Strings(names)
 
-			fmt.Fprintf(b, "Inputs: map[string]*actionlint.ActionInput{\n")
+			fmt.Fprintf(b, "Inputs: map[string]*ActionInput{\n")
 			for _, name := range names {
 				input := meta.Inputs[name]
 				fmt.Fprintf(b, "%q: {\n", name)
@@ -291,7 +287,7 @@ var PopularActions = map[string]*actionlint.ActionSpec{
 			}
 			sort.Strings(names)
 
-			fmt.Fprintf(b, "Outputs: map[string]*actionlint.ActionOutput{\n")
+			fmt.Fprintf(b, "Outputs: map[string]*ActionOutput{\n")
 			for _, name := range names {
 				output := meta.Outputs[name]
 				fmt.Fprintf(b, "%q: {Description: %q},\n", name, output.Description)

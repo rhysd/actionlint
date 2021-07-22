@@ -1,5 +1,7 @@
 package actionlint
 
+//go:generate go run ./scripts/generate-popular-actions -s remote -f go ./popular_actions.go
+
 import (
 	"io/ioutil"
 	"net/url"

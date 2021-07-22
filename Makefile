@@ -1,5 +1,6 @@
 SRCS := $(filter-out %_test.go, $(wildcard *.go cmd/actionlint/*.go))
 TESTS := $(filter %_test.go, $(wildcard *.go))
+TOOL_SRCS := $(wildcard scripts/*/*.go)
 TESTDATA := $(wildcard testdata/examples/*.yaml testdata/examples/*.out)
 TOOL := $(wildcard scripts/actionlint-workflow-ast/*.go)
 GOTEST := $(shell command -v gotest 2>/dev/null)
@@ -16,13 +17,16 @@ endif
 
 test: .testtimestamp
 
-.staticchecktimestamp: $(TESTS) $(SRCS)
-	staticcheck ./ ./cmd/...
+.staticchecktimestamp: $(TESTS) $(SRCS) $(TOOL_SRCS)
+	staticcheck ./ ./cmd/... ./scripts/...
 	touch .staticchecktimestamp
 
 lint: .staticchecktimestamp
 
-actionlint: $(SRCS)
+popular_actions.go: scripts/generate-popular-actions/main.go
+	go generate
+
+actionlint: $(SRCS) popular_actions.go
 	CGO_ENABLED=0 go build ./cmd/actionlint
 
 build: actionlint
