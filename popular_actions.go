@@ -4,10 +4,10 @@ package actionlint
 
 // PopularActions is data set of known popular actions. Keys are specs (owner/repo@ref) of actions
 // and values are their metadata.
-var PopularActions = map[string]*ActionSpec{
+var PopularActions = map[string]*ActionMetadata{
 	"8398a7/action-slack@v1": {
 		Name: "action-slack",
-		Inputs: map[string]*ActionInput{
+		Inputs: map[string]*ActionMetadataInput{
 			"failedMention": {
 				Default: &popularActionDefaultValue0,
 			},
@@ -18,7 +18,7 @@ var PopularActions = map[string]*ActionSpec{
 	},
 	"8398a7/action-slack@v2": {
 		Name: "action-slack",
-		Inputs: map[string]*ActionInput{
+		Inputs: map[string]*ActionMetadataInput{
 			"author_name": {
 				Default: &popularActionDefaultValue1,
 			},
@@ -49,7 +49,7 @@ var PopularActions = map[string]*ActionSpec{
 	},
 	"8398a7/action-slack@v3": {
 		Name: "action-slack",
-		Inputs: map[string]*ActionInput{
+		Inputs: map[string]*ActionMetadataInput{
 			"author_name": {
 				Default: &popularActionDefaultValue1,
 			},
@@ -95,7 +95,7 @@ var PopularActions = map[string]*ActionSpec{
 	},
 	"Azure/container-scan@v0": {
 		Name: "Container image scan",
-		Inputs: map[string]*ActionInput{
+		Inputs: map[string]*ActionMetadataInput{
 			"image-name": {
 				Required: true,
 			},
@@ -119,7 +119,7 @@ var PopularActions = map[string]*ActionSpec{
 	},
 	"EnricoMi/publish-unit-test-result-action@v1": {
 		Name: "Publish Unit Test Results",
-		Inputs: map[string]*ActionInput{
+		Inputs: map[string]*ActionMetadataInput{
 			"check_name": {
 				Default: &popularActionDefaultValue6,
 			},
@@ -168,7 +168,7 @@ var PopularActions = map[string]*ActionSpec{
 	},
 	"JamesIves/github-pages-deploy-action@releases/v3": {
 		Name: "Deploy to GitHub Pages",
-		Inputs: map[string]*ActionInput{
+		Inputs: map[string]*ActionMetadataInput{
 			"ACCESS_TOKEN": {},
 			"BASE_BRANCH":  {},
 			"BRANCH": {
@@ -200,7 +200,7 @@ var PopularActions = map[string]*ActionSpec{
 	},
 	"JamesIves/github-pages-deploy-action@releases/v4": {
 		Name: "Deploy to GitHub Pages",
-		Inputs: map[string]*ActionInput{
+		Inputs: map[string]*ActionMetadataInput{
 			"branch": {
 				Required: true,
 			},
@@ -231,7 +231,7 @@ var PopularActions = map[string]*ActionSpec{
 	},
 	"ReactiveCircus/android-emulator-runner@v1": {
 		Name: "Android Emulator Runner",
-		Inputs: map[string]*ActionInput{
+		Inputs: map[string]*ActionMetadataInput{
 			"api-level": {
 				Required: true,
 			},
@@ -255,7 +255,7 @@ var PopularActions = map[string]*ActionSpec{
 	},
 	"ReactiveCircus/android-emulator-runner@v2": {
 		Name: "Android Emulator Runner",
-		Inputs: map[string]*ActionInput{
+		Inputs: map[string]*ActionMetadataInput{
 			"api-level": {
 				Required: true,
 			},
@@ -300,7 +300,7 @@ var PopularActions = map[string]*ActionSpec{
 	},
 	"actions-cool/issues-helper@v1": {
 		Name: "Issues Helper",
-		Inputs: map[string]*ActionInput{
+		Inputs: map[string]*ActionMetadataInput{
 			"actions":         {},
 			"assignees":       {},
 			"body":            {},
@@ -333,7 +333,7 @@ var PopularActions = map[string]*ActionSpec{
 	},
 	"actions-cool/issues-helper@v2": {
 		Name: "Issues Helper",
-		Inputs: map[string]*ActionInput{
+		Inputs: map[string]*ActionMetadataInput{
 			"actions":            {},
 			"assignee-includes":  {},
 			"assignees":          {},
@@ -378,7 +378,7 @@ var PopularActions = map[string]*ActionSpec{
 	},
 	"actions-rs/audit-check@v1": {
 		Name: "rust-audit-check",
-		Inputs: map[string]*ActionInput{
+		Inputs: map[string]*ActionMetadataInput{
 			"token": {
 				Required: true,
 			},
@@ -386,7 +386,7 @@ var PopularActions = map[string]*ActionSpec{
 	},
 	"actions-rs/cargo@v1": {
 		Name: "rust-cargo",
-		Inputs: map[string]*ActionInput{
+		Inputs: map[string]*ActionMetadataInput{
 			"args": {},
 			"command": {
 				Required: true,
@@ -399,7 +399,7 @@ var PopularActions = map[string]*ActionSpec{
 	},
 	"actions-rs/clippy-check@v1": {
 		Name: "rust-clippy-check",
-		Inputs: map[string]*ActionInput{
+		Inputs: map[string]*ActionMetadataInput{
 			"args": {},
 			"name": {
 				Default: &popularActionDefaultValue21,
@@ -415,7 +415,7 @@ var PopularActions = map[string]*ActionSpec{
 	},
 	"actions-rs/toolchain@v1": {
 		Name: "rust-toolchain",
-		Inputs: map[string]*ActionInput{
+		Inputs: map[string]*ActionMetadataInput{
 			"components": {},
 			"default": {
 				Default: &popularActionDefaultValue19,
@@ -436,7 +436,7 @@ var PopularActions = map[string]*ActionSpec{
 	},
 	"actions/cache@v1": {
 		Name: "Cache",
-		Inputs: map[string]*ActionInput{
+		Inputs: map[string]*ActionMetadataInput{
 			"key": {
 				Required: true,
 			},
@@ -451,7 +451,7 @@ var PopularActions = map[string]*ActionSpec{
 	},
 	"actions/cache@v2": {
 		Name: "Cache",
-		Inputs: map[string]*ActionInput{
+		Inputs: map[string]*ActionMetadataInput{
 			"key": {
 				Required: true,
 			},
@@ -467,7 +467,7 @@ var PopularActions = map[string]*ActionSpec{
 	},
 	"actions/checkout@v1": {
 		Name: "Checkout",
-		Inputs: map[string]*ActionInput{
+		Inputs: map[string]*ActionMetadataInput{
 			"clean": {
 				Default: &popularActionDefaultValue4,
 			},
@@ -482,7 +482,7 @@ var PopularActions = map[string]*ActionSpec{
 	},
 	"actions/checkout@v2": {
 		Name: "Checkout",
-		Inputs: map[string]*ActionInput{
+		Inputs: map[string]*ActionMetadataInput{
 			"clean": {
 				Default: &popularActionDefaultValue4,
 			},
@@ -515,7 +515,7 @@ var PopularActions = map[string]*ActionSpec{
 	},
 	"actions/delete-package-versions@v1": {
 		Name: "Delete Package Versions",
-		Inputs: map[string]*ActionInput{
+		Inputs: map[string]*ActionMetadataInput{
 			"num-old-versions-to-delete": {
 				Default: &popularActionDefaultValue22,
 			},
@@ -530,7 +530,7 @@ var PopularActions = map[string]*ActionSpec{
 	},
 	"actions/download-artifact@v1": {
 		Name: "Download a Build Artifact",
-		Inputs: map[string]*ActionInput{
+		Inputs: map[string]*ActionMetadataInput{
 			"name": {
 				Required: true,
 			},
@@ -539,14 +539,14 @@ var PopularActions = map[string]*ActionSpec{
 	},
 	"actions/download-artifact@v2": {
 		Name: "Download a Build Artifact",
-		Inputs: map[string]*ActionInput{
+		Inputs: map[string]*ActionMetadataInput{
 			"name": {},
 			"path": {},
 		},
 	},
 	"actions/first-interaction@v1": {
 		Name: "First interaction",
-		Inputs: map[string]*ActionInput{
+		Inputs: map[string]*ActionMetadataInput{
 			"issue-message": {},
 			"pr-message":    {},
 			"repo-token": {
@@ -556,7 +556,7 @@ var PopularActions = map[string]*ActionSpec{
 	},
 	"actions/github-script@v1": {
 		Name: "GitHub Script",
-		Inputs: map[string]*ActionInput{
+		Inputs: map[string]*ActionMetadataInput{
 			"debug": {
 				Default: &popularActionDefaultValue19,
 			},
@@ -580,7 +580,7 @@ var PopularActions = map[string]*ActionSpec{
 	},
 	"actions/github-script@v2": {
 		Name: "GitHub Script",
-		Inputs: map[string]*ActionInput{
+		Inputs: map[string]*ActionMetadataInput{
 			"debug": {
 				Default: &popularActionDefaultValue19,
 			},
@@ -604,7 +604,7 @@ var PopularActions = map[string]*ActionSpec{
 	},
 	"actions/github-script@v3": {
 		Name: "GitHub Script",
-		Inputs: map[string]*ActionInput{
+		Inputs: map[string]*ActionMetadataInput{
 			"debug": {
 				Default: &popularActionDefaultValue19,
 			},
@@ -628,7 +628,7 @@ var PopularActions = map[string]*ActionSpec{
 	},
 	"actions/github-script@v4": {
 		Name: "GitHub Script",
-		Inputs: map[string]*ActionInput{
+		Inputs: map[string]*ActionMetadataInput{
 			"debug": {
 				Default: &popularActionDefaultValue19,
 			},
@@ -652,7 +652,7 @@ var PopularActions = map[string]*ActionSpec{
 	},
 	"actions/labeler@v2": {
 		Name: "Pull Request Labeler",
-		Inputs: map[string]*ActionInput{
+		Inputs: map[string]*ActionMetadataInput{
 			"configuration-path": {
 				Default: &popularActionDefaultValue26,
 			},
@@ -664,7 +664,7 @@ var PopularActions = map[string]*ActionSpec{
 	},
 	"actions/labeler@v3": {
 		Name: "Labeler",
-		Inputs: map[string]*ActionInput{
+		Inputs: map[string]*ActionMetadataInput{
 			"configuration-path": {
 				Default: &popularActionDefaultValue26,
 			},
@@ -676,7 +676,7 @@ var PopularActions = map[string]*ActionSpec{
 	},
 	"actions/setup-dotnet@v1": {
 		Name: "Setup .NET Core SDK",
-		Inputs: map[string]*ActionInput{
+		Inputs: map[string]*ActionMetadataInput{
 			"config-file":        {},
 			"dotnet-version":     {},
 			"include-prerelease": {},
@@ -686,7 +686,7 @@ var PopularActions = map[string]*ActionSpec{
 	},
 	"actions/setup-go@v1": {
 		Name: "Setup Go environment",
-		Inputs: map[string]*ActionInput{
+		Inputs: map[string]*ActionMetadataInput{
 			"go-version": {
 				Default: &popularActionDefaultValue27,
 			},
@@ -695,7 +695,7 @@ var PopularActions = map[string]*ActionSpec{
 	},
 	"actions/setup-go@v2": {
 		Name: "Setup Go environment",
-		Inputs: map[string]*ActionInput{
+		Inputs: map[string]*ActionMetadataInput{
 			"go-version": {},
 			"stable": {
 				Default: &popularActionDefaultValue4,
@@ -707,7 +707,7 @@ var PopularActions = map[string]*ActionSpec{
 	},
 	"actions/setup-java@v1": {
 		Name: "Setup Java JDK",
-		Inputs: map[string]*ActionInput{
+		Inputs: map[string]*ActionMetadataInput{
 			"architecture": {
 				Default: &popularActionDefaultValue28,
 			},
@@ -738,7 +738,7 @@ var PopularActions = map[string]*ActionSpec{
 	},
 	"actions/setup-java@v2": {
 		Name: "Setup Java JDK",
-		Inputs: map[string]*ActionInput{
+		Inputs: map[string]*ActionMetadataInput{
 			"architecture": {
 				Default: &popularActionDefaultValue28,
 			},
@@ -779,7 +779,7 @@ var PopularActions = map[string]*ActionSpec{
 	},
 	"actions/setup-node@v1": {
 		Name: "Setup Node.js environment",
-		Inputs: map[string]*ActionInput{
+		Inputs: map[string]*ActionMetadataInput{
 			"always-auth": {
 				Default: &popularActionDefaultValue19,
 			},
@@ -793,7 +793,7 @@ var PopularActions = map[string]*ActionSpec{
 	},
 	"actions/setup-node@v2": {
 		Name: "Setup Node.js environment",
-		Inputs: map[string]*ActionInput{
+		Inputs: map[string]*ActionMetadataInput{
 			"always-auth": {
 				Default: &popularActionDefaultValue19,
 			},
@@ -813,7 +813,7 @@ var PopularActions = map[string]*ActionSpec{
 	},
 	"actions/setup-python@v1": {
 		Name: "Setup Python",
-		Inputs: map[string]*ActionInput{
+		Inputs: map[string]*ActionMetadataInput{
 			"architecture": {
 				Default: &popularActionDefaultValue28,
 			},
@@ -827,7 +827,7 @@ var PopularActions = map[string]*ActionSpec{
 	},
 	"actions/setup-python@v2": {
 		Name: "Setup Python",
-		Inputs: map[string]*ActionInput{
+		Inputs: map[string]*ActionMetadataInput{
 			"architecture": {},
 			"python-version": {
 				Default: &popularActionDefaultValue34,
@@ -842,7 +842,7 @@ var PopularActions = map[string]*ActionSpec{
 	},
 	"actions/stale@v1": {
 		Name: "Close Stale Issues",
-		Inputs: map[string]*ActionInput{
+		Inputs: map[string]*ActionMetadataInput{
 			"days-before-close": {
 				Default: &popularActionDefaultValue35,
 			},
@@ -869,7 +869,7 @@ var PopularActions = map[string]*ActionSpec{
 	},
 	"actions/stale@v2": {
 		Name: "Close Stale Issues",
-		Inputs: map[string]*ActionInput{
+		Inputs: map[string]*ActionMetadataInput{
 			"days-before-close": {
 				Default: &popularActionDefaultValue35,
 			},
@@ -906,7 +906,7 @@ var PopularActions = map[string]*ActionSpec{
 	},
 	"actions/stale@v3": {
 		Name: "Close Stale Issues",
-		Inputs: map[string]*ActionInput{
+		Inputs: map[string]*ActionMetadataInput{
 			"any-of-issue-labels": {
 				Default: &popularActionDefaultValue2,
 			},
@@ -1029,7 +1029,7 @@ var PopularActions = map[string]*ActionSpec{
 	},
 	"actions/stale@v4": {
 		Name: "Close Stale Issues",
-		Inputs: map[string]*ActionInput{
+		Inputs: map[string]*ActionMetadataInput{
 			"any-of-issue-labels": {
 				Default: &popularActionDefaultValue2,
 			},
@@ -1150,7 +1150,7 @@ var PopularActions = map[string]*ActionSpec{
 	},
 	"actions/upload-artifact@v1": {
 		Name: "Upload a Build Artifact",
-		Inputs: map[string]*ActionInput{
+		Inputs: map[string]*ActionMetadataInput{
 			"name": {
 				Required: true,
 			},
@@ -1161,7 +1161,7 @@ var PopularActions = map[string]*ActionSpec{
 	},
 	"actions/upload-artifact@v2": {
 		Name: "Upload a Build Artifact",
-		Inputs: map[string]*ActionInput{
+		Inputs: map[string]*ActionMetadataInput{
 			"if-no-files-found": {
 				Default: &popularActionDefaultValue39,
 			},
@@ -1176,7 +1176,7 @@ var PopularActions = map[string]*ActionSpec{
 	},
 	"aws-actions/configure-aws-credentials@v1": {
 		Name: "\"Configure AWS Credentials\" Action For GitHub Actions",
-		Inputs: map[string]*ActionInput{
+		Inputs: map[string]*ActionMetadataInput{
 			"aws-access-key-id": {},
 			"aws-region": {
 				Required: true,
@@ -1196,7 +1196,7 @@ var PopularActions = map[string]*ActionSpec{
 	},
 	"azure/aks-set-context@v1": {
 		Name: "Azure Kubernetes set context",
-		Inputs: map[string]*ActionInput{
+		Inputs: map[string]*ActionMetadataInput{
 			"cluster-name": {
 				Default: &popularActionDefaultValue2,
 			},
@@ -1211,7 +1211,7 @@ var PopularActions = map[string]*ActionSpec{
 	},
 	"azure/login@v1": {
 		Name: "Azure Login",
-		Inputs: map[string]*ActionInput{
+		Inputs: map[string]*ActionMetadataInput{
 			"allow-no-subscriptions": {
 				Default: &popularActionDefaultValue19,
 			},
@@ -1228,7 +1228,7 @@ var PopularActions = map[string]*ActionSpec{
 	},
 	"bahmutov/npm-install@v1": {
 		Name: "NPM or Yarn install with caching",
-		Inputs: map[string]*ActionInput{
+		Inputs: map[string]*ActionMetadataInput{
 			"install-command":   {},
 			"useLockFile":       {},
 			"useRollingCache":   {},
@@ -1237,7 +1237,7 @@ var PopularActions = map[string]*ActionSpec{
 	},
 	"codecov/codecov-action@v1": {
 		Name: "Codecov",
-		Inputs: map[string]*ActionInput{
+		Inputs: map[string]*ActionMetadataInput{
 			"aws_curl_args":          {},
 			"codecov_curl_args":      {},
 			"commit_parent":          {},
@@ -1273,7 +1273,7 @@ var PopularActions = map[string]*ActionSpec{
 	},
 	"codecov/codecov-action@v2": {
 		Name: "Codecov",
-		Inputs: map[string]*ActionInput{
+		Inputs: map[string]*ActionMetadataInput{
 			"commit_parent":          {},
 			"directory":              {},
 			"dry_run":                {},
@@ -1300,7 +1300,7 @@ var PopularActions = map[string]*ActionSpec{
 	},
 	"dawidd6/action-download-artifact@v2": {
 		Name: "Download workflow artifact",
-		Inputs: map[string]*ActionInput{
+		Inputs: map[string]*ActionMetadataInput{
 			"branch": {},
 			"commit": {},
 			"event":  {},
@@ -1327,7 +1327,7 @@ var PopularActions = map[string]*ActionSpec{
 	},
 	"dawidd6/action-send-mail@v1": {
 		Name: "Send email",
-		Inputs: map[string]*ActionInput{
+		Inputs: map[string]*ActionMetadataInput{
 			"body": {
 				Required: true,
 			},
@@ -1359,7 +1359,7 @@ var PopularActions = map[string]*ActionSpec{
 	},
 	"dawidd6/action-send-mail@v2": {
 		Name: "Send email",
-		Inputs: map[string]*ActionInput{
+		Inputs: map[string]*ActionMetadataInput{
 			"attachments": {},
 			"bcc":         {},
 			"body": {
@@ -1397,7 +1397,7 @@ var PopularActions = map[string]*ActionSpec{
 	},
 	"dawidd6/action-send-mail@v3": {
 		Name: "Send email",
-		Inputs: map[string]*ActionInput{
+		Inputs: map[string]*ActionMetadataInput{
 			"attachments":      {},
 			"bcc":              {},
 			"body":             {},
@@ -1429,7 +1429,7 @@ var PopularActions = map[string]*ActionSpec{
 	},
 	"dessant/lock-threads@v2": {
 		Name: "Lock Threads",
-		Inputs: map[string]*ActionInput{
+		Inputs: map[string]*ActionMetadataInput{
 			"github-token": {
 				Default: &popularActionDefaultValue3,
 			},
@@ -1480,7 +1480,7 @@ var PopularActions = map[string]*ActionSpec{
 	},
 	"docker/build-push-action@v1": {
 		Name: "Build and push Docker images",
-		Inputs: map[string]*ActionInput{
+		Inputs: map[string]*ActionMetadataInput{
 			"add_git_labels": {
 				Default: &popularActionDefaultValue19,
 			},
@@ -1515,7 +1515,7 @@ var PopularActions = map[string]*ActionSpec{
 	},
 	"docker/build-push-action@v2": {
 		Name: "Build and push Docker images",
-		Inputs: map[string]*ActionInput{
+		Inputs: map[string]*ActionMetadataInput{
 			"allow":      {},
 			"build-args": {},
 			"builder":    {},
@@ -1554,7 +1554,7 @@ var PopularActions = map[string]*ActionSpec{
 	},
 	"docker/login-action@v1": {
 		Name: "Docker Login",
-		Inputs: map[string]*ActionInput{
+		Inputs: map[string]*ActionMetadataInput{
 			"logout": {
 				Default: &popularActionDefaultValue4,
 			},
@@ -1565,7 +1565,7 @@ var PopularActions = map[string]*ActionSpec{
 	},
 	"docker/metadata-action@v1": {
 		Name: "Docker Meta",
-		Inputs: map[string]*ActionInput{
+		Inputs: map[string]*ActionMetadataInput{
 			"github-token": {
 				Required: true,
 				Default:  &popularActionDefaultValue3,
@@ -1609,7 +1609,7 @@ var PopularActions = map[string]*ActionSpec{
 	},
 	"docker/metadata-action@v2": {
 		Name: "Docker Meta",
-		Inputs: map[string]*ActionInput{
+		Inputs: map[string]*ActionMetadataInput{
 			"bake-target": {},
 			"flavor":      {},
 			"github-token": {
@@ -1633,7 +1633,7 @@ var PopularActions = map[string]*ActionSpec{
 	},
 	"docker/metadata-action@v3": {
 		Name: "Docker Metadata action",
-		Inputs: map[string]*ActionInput{
+		Inputs: map[string]*ActionMetadataInput{
 			"bake-target": {},
 			"flavor":      {},
 			"github-token": {
@@ -1657,7 +1657,7 @@ var PopularActions = map[string]*ActionSpec{
 	},
 	"docker/setup-buildx-action@v1": {
 		Name: "Docker Setup Buildx",
-		Inputs: map[string]*ActionInput{
+		Inputs: map[string]*ActionMetadataInput{
 			"buildkitd-flags": {
 				Default: &popularActionDefaultValue52,
 			},
@@ -1686,7 +1686,7 @@ var PopularActions = map[string]*ActionSpec{
 	},
 	"docker/setup-qemu-action@v1": {
 		Name: "Docker Setup QEMU",
-		Inputs: map[string]*ActionInput{
+		Inputs: map[string]*ActionMetadataInput{
 			"image": {
 				Default: &popularActionDefaultValue54,
 			},
@@ -1700,7 +1700,7 @@ var PopularActions = map[string]*ActionSpec{
 	},
 	"dorny/paths-filter@v1": {
 		Name: "Pull request changed files filter",
-		Inputs: map[string]*ActionInput{
+		Inputs: map[string]*ActionMetadataInput{
 			"filters": {
 				Required: true,
 			},
@@ -1711,7 +1711,7 @@ var PopularActions = map[string]*ActionSpec{
 	},
 	"dorny/paths-filter@v2": {
 		Name: "Paths Changes Filter",
-		Inputs: map[string]*ActionInput{
+		Inputs: map[string]*ActionMetadataInput{
 			"base": {},
 			"filters": {
 				Required: true,
@@ -1735,7 +1735,7 @@ var PopularActions = map[string]*ActionSpec{
 	},
 	"enriikke/gatsby-gh-pages-action@v2": {
 		Name: "Gatsby Publish",
-		Inputs: map[string]*ActionInput{
+		Inputs: map[string]*ActionMetadataInput{
 			"access-token": {
 				Required: true,
 			},
@@ -1767,7 +1767,7 @@ var PopularActions = map[string]*ActionSpec{
 	},
 	"erlef/setup-beam@v1": {
 		Name: "Setup Erlang/OTP with optional Elixir (and mix) and/or rebar3",
-		Inputs: map[string]*ActionInput{
+		Inputs: map[string]*ActionMetadataInput{
 			"elixir-version": {},
 			"install-hex": {
 				Default: &popularActionDefaultValue4,
@@ -1789,7 +1789,7 @@ var PopularActions = map[string]*ActionSpec{
 	},
 	"game-ci/unity-builder@v2": {
 		Name: "Unity - Builder",
-		Inputs: map[string]*ActionInput{
+		Inputs: map[string]*ActionMetadataInput{
 			"allowDirtyBuild": {
 				Default: &popularActionDefaultValue2,
 			},
@@ -1882,7 +1882,7 @@ var PopularActions = map[string]*ActionSpec{
 	},
 	"getsentry/paths-filter@v1": {
 		Name: "Pull request changed files filter",
-		Inputs: map[string]*ActionInput{
+		Inputs: map[string]*ActionMetadataInput{
 			"filters": {
 				Required: true,
 			},
@@ -1893,7 +1893,7 @@ var PopularActions = map[string]*ActionSpec{
 	},
 	"getsentry/paths-filter@v2": {
 		Name: "Paths Changes Filter",
-		Inputs: map[string]*ActionInput{
+		Inputs: map[string]*ActionMetadataInput{
 			"base": {},
 			"filters": {
 				Required: true,
@@ -1917,7 +1917,7 @@ var PopularActions = map[string]*ActionSpec{
 	},
 	"github/codeql-action/analyze@v1": {
 		Name: "CodeQL: Finish",
-		Inputs: map[string]*ActionInput{
+		Inputs: map[string]*ActionMetadataInput{
 			"add-snippets": {
 				Default: &popularActionDefaultValue19,
 			},
@@ -1956,7 +1956,7 @@ var PopularActions = map[string]*ActionSpec{
 	},
 	"github/codeql-action/autobuild@v1": {
 		Name: "CodeQL: Autobuild",
-		Inputs: map[string]*ActionInput{
+		Inputs: map[string]*ActionMetadataInput{
 			"matrix": {
 				Default: &popularActionDefaultValue68,
 			},
@@ -1967,7 +1967,7 @@ var PopularActions = map[string]*ActionSpec{
 	},
 	"github/codeql-action/init@v1": {
 		Name: "CodeQL: Init",
-		Inputs: map[string]*ActionInput{
+		Inputs: map[string]*ActionMetadataInput{
 			"config-file":               {},
 			"db-location":               {},
 			"external-repository-token": {},
@@ -1999,7 +1999,7 @@ var PopularActions = map[string]*ActionSpec{
 	},
 	"githubocto/flat@v1": {
 		Name: "Flat Data",
-		Inputs: map[string]*ActionInput{
+		Inputs: map[string]*ActionMetadataInput{
 			"http_url": {},
 			"outfile_basename": {
 				Default: &popularActionDefaultValue70,
@@ -2019,7 +2019,7 @@ var PopularActions = map[string]*ActionSpec{
 	},
 	"githubocto/flat@v2": {
 		Name: "Flat Data",
-		Inputs: map[string]*ActionInput{
+		Inputs: map[string]*ActionMetadataInput{
 			"downloaded_filename": {},
 			"http_url":            {},
 			"postprocess":         {},
@@ -2034,7 +2034,7 @@ var PopularActions = map[string]*ActionSpec{
 	},
 	"githubocto/flat@v3": {
 		Name: "Flat Data",
-		Inputs: map[string]*ActionInput{
+		Inputs: map[string]*ActionMetadataInput{
 			"authorization":       {},
 			"axios_config":        {},
 			"downloaded_filename": {},
@@ -2053,7 +2053,7 @@ var PopularActions = map[string]*ActionSpec{
 	},
 	"golangci/golangci-lint-action@v1": {
 		Name: "Run golangci-lint",
-		Inputs: map[string]*ActionInput{
+		Inputs: map[string]*ActionMetadataInput{
 			"args": {
 				Default: &popularActionDefaultValue2,
 			},
@@ -2073,7 +2073,7 @@ var PopularActions = map[string]*ActionSpec{
 	},
 	"golangci/golangci-lint-action@v2": {
 		Name: "Run golangci-lint",
-		Inputs: map[string]*ActionInput{
+		Inputs: map[string]*ActionMetadataInput{
 			"args": {
 				Default: &popularActionDefaultValue2,
 			},
@@ -2103,7 +2103,7 @@ var PopularActions = map[string]*ActionSpec{
 	},
 	"goreleaser/goreleaser-action@v1": {
 		Name: "GoReleaser Action",
-		Inputs: map[string]*ActionInput{
+		Inputs: map[string]*ActionMetadataInput{
 			"args": {},
 			"key":  {},
 			"version": {
@@ -2116,7 +2116,7 @@ var PopularActions = map[string]*ActionSpec{
 	},
 	"goreleaser/goreleaser-action@v2": {
 		Name: "GoReleaser Action",
-		Inputs: map[string]*ActionInput{
+		Inputs: map[string]*ActionMetadataInput{
 			"args": {},
 			"distribution": {
 				Default: &popularActionDefaultValue73,
@@ -2134,7 +2134,7 @@ var PopularActions = map[string]*ActionSpec{
 	},
 	"gradle/wrapper-validation-action@v1": {
 		Name: "Gradle Wrapper Validation",
-		Inputs: map[string]*ActionInput{
+		Inputs: map[string]*ActionMetadataInput{
 			"allow-checksums": {
 				Default: &popularActionDefaultValue2,
 			},
@@ -2148,7 +2148,7 @@ var PopularActions = map[string]*ActionSpec{
 	},
 	"haskell/actions/setup@v1": {
 		Name: "Setup Haskell",
-		Inputs: map[string]*ActionInput{
+		Inputs: map[string]*ActionMetadataInput{
 			"cabal-version": {
 				Default: &popularActionDefaultValue72,
 			},
@@ -2176,7 +2176,7 @@ var PopularActions = map[string]*ActionSpec{
 	},
 	"marvinpinto/action-automatic-releases@latest": {
 		Name: "Automatic Releases",
-		Inputs: map[string]*ActionInput{
+		Inputs: map[string]*ActionMetadataInput{
 			"automatic_release_tag": {},
 			"draft": {
 				Default: &popularActionDefaultValue19,
@@ -2200,7 +2200,7 @@ var PopularActions = map[string]*ActionSpec{
 	},
 	"mikepenz/release-changelog-builder-action@v1": {
 		Name: "Release Changelog Builder",
-		Inputs: map[string]*ActionInput{
+		Inputs: map[string]*ActionMetadataInput{
 			"commitMode": {
 				Default: &popularActionDefaultValue19,
 			},
@@ -2230,7 +2230,7 @@ var PopularActions = map[string]*ActionSpec{
 	},
 	"mikepenz/release-changelog-builder-action@v2": {
 		Name: "Release Changelog Builder",
-		Inputs: map[string]*ActionInput{
+		Inputs: map[string]*ActionMetadataInput{
 			"commitMode": {
 				Default: &popularActionDefaultValue19,
 			},
@@ -2260,7 +2260,7 @@ var PopularActions = map[string]*ActionSpec{
 	},
 	"msys2/setup-msys2@v1": {
 		Name: "Setup MSYS2 environment",
-		Inputs: map[string]*ActionInput{
+		Inputs: map[string]*ActionMetadataInput{
 			"cache": {
 				Default: &popularActionDefaultValue19,
 			},
@@ -2283,7 +2283,7 @@ var PopularActions = map[string]*ActionSpec{
 	},
 	"msys2/setup-msys2@v2": {
 		Name: "Setup MSYS2",
-		Inputs: map[string]*ActionInput{
+		Inputs: map[string]*ActionMetadataInput{
 			"install": {
 				Default: &popularActionDefaultValue19,
 			},
@@ -2303,7 +2303,7 @@ var PopularActions = map[string]*ActionSpec{
 	},
 	"ncipollo/release-action@v1": {
 		Name: "Create Release",
-		Inputs: map[string]*ActionInput{
+		Inputs: map[string]*ActionMetadataInput{
 			"allowUpdates": {
 				Default: &popularActionDefaultValue2,
 			},
@@ -2377,7 +2377,7 @@ var PopularActions = map[string]*ActionSpec{
 	},
 	"nwtgck/actions-netlify@v1": {
 		Name: "Netlify Actions",
-		Inputs: map[string]*ActionInput{
+		Inputs: map[string]*ActionMetadataInput{
 			"alias":                           {},
 			"deploy-message":                  {},
 			"enable-commit-comment":           {},
@@ -2402,7 +2402,7 @@ var PopularActions = map[string]*ActionSpec{
 	},
 	"octokit/request-action@v1.x": {
 		Name: "GitHub API Request",
-		Inputs: map[string]*ActionInput{
+		Inputs: map[string]*ActionMetadataInput{
 			"route": {
 				Required: true,
 			},
@@ -2415,7 +2415,7 @@ var PopularActions = map[string]*ActionSpec{
 	},
 	"octokit/request-action@v2.x": {
 		Name: "GitHub API Request",
-		Inputs: map[string]*ActionInput{
+		Inputs: map[string]*ActionMetadataInput{
 			"mediaType": {
 				Default: &popularActionDefaultValue77,
 			},
@@ -2431,7 +2431,7 @@ var PopularActions = map[string]*ActionSpec{
 	},
 	"peaceiris/actions-gh-pages@v2": {
 		Name: "GitHub Pages action",
-		Inputs: map[string]*ActionInput{
+		Inputs: map[string]*ActionMetadataInput{
 			"commitMessage": {},
 			"emptyCommits": {
 				Default: &popularActionDefaultValue4,
@@ -2453,7 +2453,7 @@ var PopularActions = map[string]*ActionSpec{
 	},
 	"peaceiris/actions-gh-pages@v3": {
 		Name: "GitHub Pages action",
-		Inputs: map[string]*ActionInput{
+		Inputs: map[string]*ActionMetadataInput{
 			"allow_empty_commit": {
 				Default: &popularActionDefaultValue19,
 			},
@@ -2496,7 +2496,7 @@ var PopularActions = map[string]*ActionSpec{
 	},
 	"peter-evans/create-pull-request@v1": {
 		Name: "Create Pull Request",
-		Inputs: map[string]*ActionInput{
+		Inputs: map[string]*ActionMetadataInput{
 			"assignees":       {},
 			"author-email":    {},
 			"author-name":     {},
@@ -2524,7 +2524,7 @@ var PopularActions = map[string]*ActionSpec{
 	},
 	"peter-evans/create-pull-request@v2": {
 		Name: "Create Pull Request",
-		Inputs: map[string]*ActionInput{
+		Inputs: map[string]*ActionMetadataInput{
 			"assignees":      {},
 			"author":         {},
 			"base":           {},
@@ -2555,7 +2555,7 @@ var PopularActions = map[string]*ActionSpec{
 	},
 	"peter-evans/create-pull-request@v3": {
 		Name: "Create Pull Request",
-		Inputs: map[string]*ActionInput{
+		Inputs: map[string]*ActionMetadataInput{
 			"assignees": {},
 			"author": {
 				Default: &popularActionDefaultValue81,
@@ -2602,7 +2602,7 @@ var PopularActions = map[string]*ActionSpec{
 	},
 	"preactjs/compressed-size-action@v1": {
 		Name: "compressed-size-action",
-		Inputs: map[string]*ActionInput{
+		Inputs: map[string]*ActionMetadataInput{
 			"build-script": {
 				Default: &popularActionDefaultValue87,
 			},
@@ -2621,7 +2621,7 @@ var PopularActions = map[string]*ActionSpec{
 	},
 	"preactjs/compressed-size-action@v2": {
 		Name: "compressed-size-action",
-		Inputs: map[string]*ActionInput{
+		Inputs: map[string]*ActionMetadataInput{
 			"build-script": {
 				Default: &popularActionDefaultValue87,
 			},
@@ -2653,7 +2653,7 @@ var PopularActions = map[string]*ActionSpec{
 	},
 	"reviewdog/action-actionlint@v1": {
 		Name: "actionlint with reviewdog",
-		Inputs: map[string]*ActionInput{
+		Inputs: map[string]*ActionMetadataInput{
 			"actionlint_flags": {
 				Default: &popularActionDefaultValue2,
 			},
@@ -2688,7 +2688,7 @@ var PopularActions = map[string]*ActionSpec{
 	},
 	"reviewdog/action-eslint@v1": {
 		Name: "Run eslint with reviewdog",
-		Inputs: map[string]*ActionInput{
+		Inputs: map[string]*ActionMetadataInput{
 			"eslint_flags": {
 				Default: &popularActionDefaultValue49,
 			},
@@ -2721,7 +2721,7 @@ var PopularActions = map[string]*ActionSpec{
 	},
 	"reviewdog/action-golangci-lint@v1": {
 		Name: "Run golangci-lint with reviewdog",
-		Inputs: map[string]*ActionInput{
+		Inputs: map[string]*ActionMetadataInput{
 			"fail_on_error": {
 				Default: &popularActionDefaultValue19,
 			},
@@ -2754,7 +2754,7 @@ var PopularActions = map[string]*ActionSpec{
 	},
 	"reviewdog/action-hadolint@v1": {
 		Name: "Run hadolint with reviewdog",
-		Inputs: map[string]*ActionInput{
+		Inputs: map[string]*ActionMetadataInput{
 			"exclude": {
 				Default: &popularActionDefaultValue2,
 			},
@@ -2789,7 +2789,7 @@ var PopularActions = map[string]*ActionSpec{
 	},
 	"reviewdog/action-misspell@v1": {
 		Name: "Run misspell with reviewdog",
-		Inputs: map[string]*ActionInput{
+		Inputs: map[string]*ActionMetadataInput{
 			"exclude": {
 				Default: &popularActionDefaultValue2,
 			},
@@ -2824,7 +2824,7 @@ var PopularActions = map[string]*ActionSpec{
 	},
 	"reviewdog/action-rubocop@v1": {
 		Name: "Run rubocop with reviewdog",
-		Inputs: map[string]*ActionInput{
+		Inputs: map[string]*ActionMetadataInput{
 			"fail_on_error": {
 				Default: &popularActionDefaultValue19,
 			},
@@ -2860,7 +2860,7 @@ var PopularActions = map[string]*ActionSpec{
 	},
 	"reviewdog/action-shellcheck@v1": {
 		Name: "Run shellcheck with reviewdog",
-		Inputs: map[string]*ActionInput{
+		Inputs: map[string]*ActionMetadataInput{
 			"exclude": {},
 			"fail_on_error": {
 				Default: &popularActionDefaultValue19,
@@ -2893,7 +2893,7 @@ var PopularActions = map[string]*ActionSpec{
 	},
 	"reviewdog/action-tflint@v1": {
 		Name: "Run tflint with reviewdog",
-		Inputs: map[string]*ActionInput{
+		Inputs: map[string]*ActionMetadataInput{
 			"fail_on_error": {
 				Default: &popularActionDefaultValue19,
 			},
@@ -2929,7 +2929,7 @@ var PopularActions = map[string]*ActionSpec{
 	},
 	"rhysd/action-setup-vim@v1": {
 		Name: "Setup Vim",
-		Inputs: map[string]*ActionInput{
+		Inputs: map[string]*ActionMetadataInput{
 			"neovim": {
 				Default: &popularActionDefaultValue19,
 			},
@@ -2946,7 +2946,7 @@ var PopularActions = map[string]*ActionSpec{
 	},
 	"ridedott/merge-me-action@v1": {
 		Name: "Merge me!",
-		Inputs: map[string]*ActionInput{
+		Inputs: map[string]*ActionMetadataInput{
 			"GITHUB_LOGIN": {
 				Default: &popularActionDefaultValue104,
 			},
@@ -2961,7 +2961,7 @@ var PopularActions = map[string]*ActionSpec{
 	},
 	"ridedott/merge-me-action@v2": {
 		Name: "Merge me!",
-		Inputs: map[string]*ActionInput{
+		Inputs: map[string]*ActionMetadataInput{
 			"ENABLED_FOR_MANUAL_CHANGES": {
 				Default: &popularActionDefaultValue19,
 			},
@@ -2988,7 +2988,7 @@ var PopularActions = map[string]*ActionSpec{
 	},
 	"ruby/setup-ruby@v1": {
 		Name: "Setup Ruby, JRuby and TruffleRuby",
-		Inputs: map[string]*ActionInput{
+		Inputs: map[string]*ActionMetadataInput{
 			"bundler": {
 				Default: &popularActionDefaultValue16,
 			},
@@ -3011,7 +3011,7 @@ var PopularActions = map[string]*ActionSpec{
 	},
 	"shivammathur/setup-php@v1": {
 		Name: "Setup PHP Action",
-		Inputs: map[string]*ActionInput{
+		Inputs: map[string]*ActionMetadataInput{
 			"coverage":       {},
 			"extension-csv":  {},
 			"extensions":     {},
@@ -3027,7 +3027,7 @@ var PopularActions = map[string]*ActionSpec{
 	},
 	"shivammathur/setup-php@v2": {
 		Name: "Setup PHP Action",
-		Inputs: map[string]*ActionInput{
+		Inputs: map[string]*ActionMetadataInput{
 			"coverage":   {},
 			"extensions": {},
 			"ini-values": {},
@@ -3043,7 +3043,7 @@ var PopularActions = map[string]*ActionSpec{
 	},
 	"softprops/action-gh-release@v1": {
 		Name: "GH Release",
-		Inputs: map[string]*ActionInput{
+		Inputs: map[string]*ActionMetadataInput{
 			"body":       {},
 			"body_path":  {},
 			"draft":      {},
@@ -3058,7 +3058,7 @@ var PopularActions = map[string]*ActionSpec{
 	},
 	"subosito/flutter-action@v1": {
 		Name: "Flutter action",
-		Inputs: map[string]*ActionInput{
+		Inputs: map[string]*ActionMetadataInput{
 			"channel": {
 				Default: &popularActionDefaultValue103,
 			},
@@ -3067,7 +3067,7 @@ var PopularActions = map[string]*ActionSpec{
 	},
 	"treosh/lighthouse-ci-action@v1": {
 		Name: "Lighthouse CI Action",
-		Inputs: map[string]*ActionInput{
+		Inputs: map[string]*ActionMetadataInput{
 			"url":  {},
 			"urls": {},
 		},
@@ -3077,7 +3077,7 @@ var PopularActions = map[string]*ActionSpec{
 	},
 	"treosh/lighthouse-ci-action@v2": {
 		Name: "Lighthouse CI Action",
-		Inputs: map[string]*ActionInput{
+		Inputs: map[string]*ActionMetadataInput{
 			"budgetPath": {},
 			"configPath": {},
 			"runs": {
@@ -3095,7 +3095,7 @@ var PopularActions = map[string]*ActionSpec{
 	},
 	"treosh/lighthouse-ci-action@v3": {
 		Name: "Lighthouse CI Action",
-		Inputs: map[string]*ActionInput{
+		Inputs: map[string]*ActionMetadataInput{
 			"basicAuthPassword":      {},
 			"basicAuthUsername":      {},
 			"budgetPath":             {},
@@ -3115,7 +3115,7 @@ var PopularActions = map[string]*ActionSpec{
 	},
 	"treosh/lighthouse-ci-action@v7": {
 		Name: "Lighthouse CI Action",
-		Inputs: map[string]*ActionInput{
+		Inputs: map[string]*ActionMetadataInput{
 			"basicAuthPassword":      {},
 			"basicAuthUsername":      {},
 			"budgetPath":             {},
@@ -3135,7 +3135,7 @@ var PopularActions = map[string]*ActionSpec{
 	},
 	"treosh/lighthouse-ci-action@v8": {
 		Name: "Lighthouse CI Action",
-		Inputs: map[string]*ActionInput{
+		Inputs: map[string]*ActionMetadataInput{
 			"artifactName": {
 				Default: &popularActionDefaultValue110,
 			},
@@ -3158,7 +3158,7 @@ var PopularActions = map[string]*ActionSpec{
 	},
 	"wearerequired/lint-action@v1": {
 		Name: "Lint Action",
-		Inputs: map[string]*ActionInput{
+		Inputs: map[string]*ActionMetadataInput{
 			"auto_fix": {
 				Default: &popularActionDefaultValue19,
 			},

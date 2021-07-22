@@ -19,9 +19,10 @@ type RuleAction struct {
 	repoPath string
 }
 
-// ActionInput is input metadata of action.
+// ActionMetadataInput is input metadata of action. Description is omitted because it is unused by
+// actionlint.
 // https://docs.github.com/en/actions/creating-actions/metadata-syntax-for-github-actions#inputs
-type ActionInput struct {
+type ActionMetadataInput struct {
 	// Required is whether the input is required.
 	Required bool `yaml:"required" json:"required"`
 	// Default is a default value of the input. This is optional field. nil is set when it is
@@ -29,14 +30,15 @@ type ActionInput struct {
 	Default *string `yaml:"default" json:"default"`
 }
 
-// ActionSpec represents structure of action.yaml.
+// ActionMetadata represents structure of action.yaml.
 // https://docs.github.com/en/actions/creating-actions/metadata-syntax-for-github-actions
-type ActionSpec struct {
+type ActionMetadata struct {
 	// Name is "name" field of action.yaml
 	Name string `yaml:"name" json:"name"`
 	// Inputs is "inputs" field of action.yaml
-	Inputs map[string]*ActionInput `yaml:"inputs" json:"inputs"`
-	// Outputs is "outputs" field of action.yaml. Key is name of output.
+	Inputs map[string]*ActionMetadataInput `yaml:"inputs" json:"inputs"`
+	// Outputs is "outputs" field of action.yaml. Key is name of output. Description is omitted
+	// since actionlint does not use it.
 	Outputs map[string]struct{} `yaml:"outputs" json:"outputs"`
 }
 
@@ -154,7 +156,7 @@ func (rule *RuleAction) checkActionInSameRepo(path string, action *ExecAction) {
 		return
 	}
 
-	var spec ActionSpec
+	var spec ActionMetadata
 	if err := yaml.Unmarshal(b, &spec); err != nil {
 		rule.errorf(action.Uses.Pos, "action.yaml in %q is invalid: %s", dir, err.Error())
 		return
@@ -163,7 +165,7 @@ func (rule *RuleAction) checkActionInSameRepo(path string, action *ExecAction) {
 	rule.checkAction(path, &spec, action)
 }
 
-func (rule *RuleAction) checkAction(path string, spec *ActionSpec, exec *ExecAction) {
+func (rule *RuleAction) checkAction(path string, spec *ActionMetadata, exec *ExecAction) {
 	// Check specified inputs are defined in action's inputs spec
 	for name, val := range exec.Inputs {
 		if _, ok := spec.Inputs[name]; !ok {
