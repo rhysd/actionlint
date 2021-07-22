@@ -43,6 +43,7 @@ type action struct {
 
 var popularActions = []action{
 	{"actions/checkout", []string{"v1", "v2"}, yamlExtYML},
+	{"actions/labeler", []string{"v2", "v3"}, yamlExtYML}, // v1 does not exist
 }
 
 func fetchRemote(actions []action) (map[string]*actionlint.ActionSpec, error) {
@@ -74,6 +75,10 @@ func fetchRemote(actions []action) (map[string]*actionlint.ActionSpec, error) {
 						ret <- &fetched{err: fmt.Errorf("could not fetch %s: %w", url, err)}
 						break
 					}
+					if res.StatusCode < 200 || 300 <= res.StatusCode {
+						ret <- &fetched{err: fmt.Errorf("could not fetch %s: %s", url, res.Status)}
+						break
+					}
 					body, err := ioutil.ReadAll(res.Body)
 					res.Body.Close()
 					if err != nil {
@@ -96,11 +101,20 @@ func fetchRemote(actions []action) (map[string]*actionlint.ActionSpec, error) {
 
 	n := 0
 	for _, action := range actions {
-		for _, tag := range action.tags {
-			reqs <- &request{action.slug, tag, action.ext}
-			n++
-		}
+		n += len(action.tags)
 	}
+
+	go func(reqs chan<- *request, done <-chan struct{}) {
+		for _, action := range actions {
+			for _, tag := range action.tags {
+				select {
+				case reqs <- &request{action.slug, tag, action.ext}:
+				case <-done:
+					return
+				}
+			}
+		}
+	}(reqs, done)
 
 	ret := make(map[string]*actionlint.ActionSpec, n)
 	for i := 0; i < n; i++ {
