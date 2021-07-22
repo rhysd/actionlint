@@ -29,6 +29,12 @@ type ActionInput struct {
 	Description string `yaml:"description" json:"description"`
 }
 
+// ActionOutput is output metadata of action.
+// https://docs.github.com/en/actions/creating-actions/metadata-syntax-for-github-actions#outputs
+type ActionOutput struct {
+	Description string `yaml:"description" json:"description"`
+}
+
 // ActionSpec represents structure of action.yaml.
 // https://docs.github.com/en/actions/creating-actions/metadata-syntax-for-github-actions
 type ActionSpec struct {
@@ -36,9 +42,8 @@ type ActionSpec struct {
 	Name string `yaml:"name" json:"name"`
 	// Inputs is "inputs" field of action.yaml
 	Inputs map[string]*ActionInput `yaml:"inputs" json:"inputs"`
-	// Outputs is "outputs" field of action.yaml. Key is name of output. Value is description of
-	// the output.
-	Outputs map[string]string `yaml:"outputs" json:"outputs"`
+	// Outputs is "outputs" field of action.yaml. Key is name of output.
+	Outputs map[string]*ActionOutput `yaml:"outputs" json:"outputs"`
 }
 
 // NewRuleAction creates new RuleAction instance.

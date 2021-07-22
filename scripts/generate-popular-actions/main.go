@@ -198,10 +198,10 @@ var PopularActions = map[string]*actionlint.ActionSpec{
 			}
 			sort.Strings(names)
 
-			fmt.Fprintf(out, "\t\tOutputs: map[string]string{\n")
+			fmt.Fprintf(out, "\t\tOutputs: map[string]*actionlint.ActionOutput{\n")
 			for _, name := range names {
-				desc := meta.Outputs
-				fmt.Fprintf(out, "\t\t\t%q: %q,\n", name, desc)
+				output := meta.Outputs[name]
+				fmt.Fprintf(out, "\t\t\t%q: {Description: %q},\n", name, output.Description)
 			}
 			fmt.Fprintf(out, "\t\t},\n")
 		}
