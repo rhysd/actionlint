@@ -356,12 +356,13 @@ func run(args []string, stdout, stderr io.Writer, knownActions []action) int {
 	flags.BoolVar(&quiet, "q", false, "disable log output to stderr")
 	flags.SetOutput(stderr)
 	flags.Usage = func() {
-		fmt.Fprintln(stderr, `Usage: go run generate-popular-actions [FLAGS]
+		fmt.Fprintln(stderr, `Usage: go run generate-popular-actions [FLAGS] [FILE]
 
   This tool fetches action.yml files of popular actions and generates code to
-  stdout. It can fetch data from remote GitHub repositories and from local
-  JSONL file (-s option). And it can output Go code or JSONL serialized data
-  (-f option).
+  given file. When no file path is given in arguments, this tool outputs
+  generated code to stdout. It can fetch data from remote GitHub repositories
+  and from local JSONL file (-s option). And it can output Go code or JSONL
+  serialized data (-f option).
 
 Flags:`)
 		flags.PrintDefaults()
@@ -372,13 +373,26 @@ Flags:`)
 		}
 		return 1
 	}
-	if flags.NArg() > 0 {
-		fmt.Fprintf(stderr, "this command takes no argument but given: %s\n", flags.Args())
+	if flags.NArg() > 1 {
+		fmt.Fprintf(stderr, "this command takes one or zero argument but given: %s\n", flags.Args())
 		return 1
 	}
 
 	if quiet {
 		log.SetOutput(ioutil.Discard)
+	}
+
+	where := "stdout"
+	out := stdout
+	if flags.NArg() == 1 {
+		where = flags.Arg(0)
+		f, err := os.Create(where)
+		if err != nil {
+			fmt.Fprintf(stderr, "could not open file to output: %s\n", err)
+			return 1
+		}
+		defer f.Close()
+		out = f
 	}
 
 	var actions map[string]*actionlint.ActionSpec
@@ -402,14 +416,14 @@ Flags:`)
 
 	switch format {
 	case "go":
-		log.Println("Generating Go source code")
-		if err := writeGo(stdout, actions); err != nil {
+		log.Println("Generating Go source code to", where)
+		if err := writeGo(out, actions); err != nil {
 			fmt.Fprintln(stderr, err)
 			return 1
 		}
 	case "jsonl":
-		log.Println("Generating JSONL source")
-		if err := writeJSONL(stdout, actions); err != nil {
+		log.Println("Generating JSONL source to", where)
+		if err := writeJSONL(out, actions); err != nil {
 			fmt.Fprintln(stderr, err)
 			return 1
 		}
