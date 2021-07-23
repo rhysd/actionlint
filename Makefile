@@ -9,9 +9,9 @@ all: clean build test
 
 .testtimestamp: $(TESTS) $(SRCS) $(TESTDATA) $(TOOL)
 ifdef GOTEST
-	gotest ./ ./scripts/actionlint-workflow-ast # https://github.com/rhysd/gotest
+	gotest ./ ./scripts/... # https://github.com/rhysd/gotest
 else
-	go test -v ./ ./scripts/actionlint-workflow-ast
+	go test -v ./ ./scripts/...
 endif
 	touch .testtimestamp
 
