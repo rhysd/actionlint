@@ -19,6 +19,7 @@ test: .testtimestamp
 
 .staticchecktimestamp: $(TESTS) $(SRCS) $(TOOL_SRCS)
 	staticcheck ./ ./cmd/... ./scripts/...
+	GOOS=js GOARCH=wasm staticcheck ./playground
 	touch .staticchecktimestamp
 
 lint: .staticchecktimestamp

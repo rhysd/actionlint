@@ -8,8 +8,7 @@ import (
 )
 
 var (
-	document = js.Global().Get("document")
-	window   = js.Global().Get("window")
+	window = js.Global().Get("window")
 )
 
 func fail(err error, when string) {
