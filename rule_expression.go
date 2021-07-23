@@ -157,6 +157,7 @@ func (rule *RuleExpression) VisitStep(n *Step) error {
 	rule.checkIfCondition(n.If)
 	rule.checkString(n.Name)
 
+	var spec *String
 	switch e := n.Exec.(type) {
 	case *ExecRun:
 		rule.checkString(e.Run)
@@ -169,6 +170,7 @@ func (rule *RuleExpression) VisitStep(n *Step) error {
 		}
 		rule.checkString(e.Entrypoint)
 		rule.checkString(e.Args)
+		spec = e.Uses
 	}
 
 	rule.checkEnv(n.Env)
@@ -176,11 +178,23 @@ func (rule *RuleExpression) VisitStep(n *Step) error {
 	rule.checkFloat(n.TimeoutMinutes)
 
 	if n.ID != nil {
+		// When the action run at this step is a popular action, we know what outputs are set by it.
+		// Set the output names to `steps.{step_id}.outputs.{name}`.
+		outputsTy := NewObjectType()
+		if spec != nil {
+			if meta, ok := PopularActions[spec.Value]; ok {
+				for n := range meta.Outputs {
+					outputsTy.Props[n] = AnyType{}
+				}
+				outputsTy.StrictProps = true
+			}
+		}
+
 		// Step ID is case insensitive
 		id := strings.ToLower(n.ID.Value)
 		rule.stepsTy.Props[id] = &ObjectType{
 			Props: map[string]ExprType{
-				"outputs":    NewObjectType(),
+				"outputs":    outputsTy,
 				"conclusion": StringType{},
 				"outcome":    StringType{},
 			},
