@@ -1332,11 +1332,11 @@ jobs:
 Output:
 
 ```
-test.yaml:7:15: missing input "message" which is required by action "My action" defined at "./.github/actions/my-action" [action]
+test.yaml:7:15: missing input "message" which is required by action "My action" defined at "./.github/actions/my-action". all required inputs are "message" [action]
   |
 7 |       - uses: ./.github/actions/my-action
   |               ^~~~~~~~~~~~~~~~~~~~~~~~~~~
-test.yaml:13:11: input "additions" is not defined in action "./.github/actions/my-action" defined at "My action". available inputs are "addition", "message", "name" [action]
+test.yaml:13:11: input "additions" is not defined in action "My action" defined at "./.github/actions/my-action". available inputs are "addition", "message", "name" [action]
    |
 13 |           additions: foo, bar
    |           ^~~~~~~~~~

@@ -3,10 +3,12 @@ package actionlint
 //go:generate go run ./scripts/generate-popular-actions -s remote -f go ./popular_actions.go
 
 import (
+	"fmt"
 	"io/ioutil"
 	"net/url"
 	"os"
 	"path/filepath"
+	"strconv"
 	"strings"
 
 	"gopkg.in/yaml.v3"
@@ -28,6 +30,11 @@ type ActionMetadataInput struct {
 	// Default is a default value of the input. This is optional field. nil is set when it is
 	// missing.
 	Default *string `yaml:"default" json:"default"`
+}
+
+// IsRequired returns whether this input is required
+func (input *ActionMetadataInput) IsRequired() bool {
+	return input.Required && input.Default == nil
 }
 
 // ActionMetadata represents structure of action.yaml.
@@ -66,7 +73,7 @@ func (rule *RuleAction) VisitStep(n *Step) error {
 
 	if strings.HasPrefix(spec, "./") {
 		// Relative to repository root
-		rule.checkActionInSameRepo(spec, e)
+		rule.checkLocalAction(spec, e)
 		return nil
 	}
 
@@ -109,7 +116,14 @@ func (rule *RuleAction) checkRepoAction(spec string, exec *ExecAction) {
 		rule.invalidActionFormat(exec.Uses.Pos, spec, "owner and repo and ref should not be empty")
 	}
 
-	// TODO?: Fetch action.yaml from GitHub and check the specification with checkAction()
+	meta, ok := PopularActions[spec]
+	if !ok {
+		return
+	}
+
+	rule.checkAction(meta, exec, func(m *ActionMetadata) string {
+		return strconv.Quote(spec)
+	})
 }
 
 func (rule *RuleAction) invalidActionFormat(pos *Pos, spec string, why string) {
@@ -145,62 +159,69 @@ func (rule *RuleAction) checkDockerAction(uri string, exec *ExecAction) {
 }
 
 // https://docs.github.com/en/actions/reference/workflow-syntax-for-github-actions#example-using-action-in-the-same-repository-as-the-workflow
-func (rule *RuleAction) checkActionInSameRepo(path string, action *ExecAction) {
+func (rule *RuleAction) checkLocalAction(path string, action *ExecAction) {
 	if rule.repoPath == "" {
 		return // Give up
 	}
 
 	dir := filepath.Join(rule.repoPath, filepath.FromSlash(path))
-	b := rule.readActionSpecFile(dir, action.Uses.Pos)
+	b := rule.readActionMetadataFile(dir, action.Uses.Pos)
 	if len(b) == 0 {
 		return
 	}
 
-	var spec ActionMetadata
-	if err := yaml.Unmarshal(b, &spec); err != nil {
-		rule.errorf(action.Uses.Pos, "action.yaml in %q is invalid: %s", dir, err.Error())
+	var meta ActionMetadata
+	if err := yaml.Unmarshal(b, &meta); err != nil {
+		rule.errorf(action.Uses.Pos, "action.yml in %q is invalid: %s", dir, err.Error())
 		return
 	}
 
-	rule.checkAction(path, &spec, action)
+	rule.checkAction(&meta, action, func(m *ActionMetadata) string {
+		return fmt.Sprintf("%q defined at %q", meta.Name, path)
+	})
 }
 
-func (rule *RuleAction) checkAction(path string, spec *ActionMetadata, exec *ExecAction) {
+func (rule *RuleAction) checkAction(meta *ActionMetadata, exec *ExecAction, describe func(*ActionMetadata) string) {
 	// Check specified inputs are defined in action's inputs spec
 	for name, val := range exec.Inputs {
-		if _, ok := spec.Inputs[name]; !ok {
-			ss := make([]string, 0, len(spec.Inputs))
-			for k := range spec.Inputs {
-				ss = append(ss, k)
+		if _, ok := meta.Inputs[name]; !ok {
+			ns := make([]string, 0, len(meta.Inputs))
+			for n := range meta.Inputs {
+				ns = append(ns, n)
 			}
 			rule.errorf(
 				val.Name.Pos,
-				"input %q is not defined in action %q defined at %q. available inputs are %s",
+				"input %q is not defined in action %s. available inputs are %s",
 				name,
-				path,
-				spec.Name,
-				sortedQuotes(ss),
+				describe(meta),
+				sortedQuotes(ns),
 			)
 		}
 	}
 
 	// Check mandatory inputs are specified
-	for name, input := range spec.Inputs {
-		if input.Required && input.Default == nil {
+	for name, input := range meta.Inputs {
+		if input.IsRequired() {
 			if _, ok := exec.Inputs[name]; !ok {
+				ns := make([]string, 0, len(meta.Inputs))
+				for n, i := range meta.Inputs {
+					if i.IsRequired() {
+						ns = append(ns, n)
+					}
+				}
 				rule.errorf(
 					exec.Uses.Pos,
-					"missing input %q which is required by action %q defined at %q",
+					"missing input %q which is required by action %s. all required inputs are %s",
 					name,
-					spec.Name,
-					path,
+					describe(meta),
+					sortedQuotes(ns),
 				)
 			}
 		}
 	}
 }
 
-func (rule *RuleAction) readActionSpecFile(dir string, pos *Pos) []byte {
+func (rule *RuleAction) readActionMetadataFile(dir string, pos *Pos) []byte {
 	for _, p := range []string{
 		filepath.Join(dir, "action.yaml"),
 		filepath.Join(dir, "action.yml"),
