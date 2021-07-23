@@ -586,7 +586,7 @@ jobs:
       # Step outputs can be used in job outputs since this section is evaluated after all steps were run
       foo: '${{ steps.get_value.outputs.name }}'
     steps:
-      # Access to undefined step outputs
+      # ERROR: Access to undefined step outputs
       - run: echo '${{ steps.get_value.outputs.name }}'
       # Outputs are set here
       - run: echo '::set-output name=foo::value'
@@ -598,7 +598,7 @@ jobs:
   other:
     runs-on: ubuntu-latest
     steps:
-      # Access to undefined step outputs. Step objects are job-local
+      # ERROR: Access to undefined step outputs. Step objects are job-local
       - run: echo '${{ steps.get_value.outputs.name }}'
 ```
 
@@ -623,9 +623,53 @@ Outputs of step can be accessed via `steps.<step_id>` objects. The `steps` conte
 - Outputs of steps only in the job can be accessed. It cannot access to steps across jobs
 
 It is actually common mistake to access to the wrong step outputs since people often forget fixing placeholders on
-copying&pasting steps.
+copying&pasting steps. actionlint can catch the invalid accesses to step outputs and reports them as errors.
 
-actionlint can catch the invalid accesses to step outputs and reports them as errors.
+When the outputs are set by popular actions, the outputs object is more strictly typed.
+
+Example input:
+
+```yaml
+on: push
+
+jobs:
+  test:
+    runs-on: ubuntu-latest
+    steps:
+      # ERROR: The step is not run yet at this point
+      - run: echo ${{ steps.cache.outputs.cache-hit }}
+      # actions/cache sets cache-hit output
+      - uses: actions/cache@v2
+        id: cache
+        with:
+          key: ${{ hashFiles('**/*.lock') }}
+          path: ./packages
+      # OK
+      - run: echo ${{ steps.cache.outputs.cache-hit }}
+      # ERROR: Typo at output name
+      - run: echo ${{ steps.cache.outputs.cache_hit }}
+```
+
+Output:
+
+```
+test.yaml:8:23: property "cache" is not defined in object type {} [expression]
+  |
+8 |       - run: echo ${{ steps.cache.outputs.cache-hit }}
+  |                       ^~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+test.yaml:18:23: property "cache_hit" is not defined in object type {cache-hit: any} [expression]
+   |
+18 |       - run: echo ${{ steps.cache.outputs.cache_hit }}
+   |                       ^~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+```
+
+[Playground](https://rhysd.github.io/actionlint#eJyNTksKwjAQ3fcUbyFUC0nBZVauvIakMZjY0gRnokjp3W3TUl26Gt53XugVYiJXFPfQkCoAtsTzBR6pJxEmQ2pSz0l0etayRGwjLS5AIJElBW3Yh55qo42zp+dxlQF/Vcjkxrw8O7UhoLVvhd0wwGlyZ99Z2pdVVVeyC6YtDxjHH3PUUxiyjtq0+mZpmzENVrDGhVyVN8r8V4bEMfGKhPP8bfw7dlliH1xHWso=)
+
+In the above example, [actions/cache][actions-cache] action sets `cache-hit` output so that following steps can know the
+cache was hit or not. At line 8, the cache action is not run yet. So `cache` property does not exit in `steps` context yet.
+On running the step whose ID is `cache`, `steps.cache` object is typed as `{outputs: {cache-hit: any}, conclusion: string, outcome: string}`.
+At line 18, the expression has typo in output name. actionlint can check it because properties of `steps.cache.outputs` are
+typed.
 
 <a name="check-contextual-matrix-object"></a>
 ## Contextual typing for `matrix` object
@@ -1731,3 +1775,4 @@ actionlint is distributed under [the MIT license](./LICENSE.txt).
 [reviewdog-actionlint]: https://github.com/reviewdog/action-actionlint
 [reviewdog]: https://github.com/reviewdog/reviewdog
 [generate-popular-actions]: https://github.com/rhysd/actionlint/tree/main/scripts/generate-popular-actions
+[actions-cache]: https://github.com/actions/cache
