@@ -225,6 +225,7 @@ List of checks:
 - [Runner labels](#check-runner-labels)
 - [Action format in `uses:`](#check-action-format)
 - [Local action inputs validation at `with:`](#check-local-action-inputs)
+- [Popular action inputs validation at `with:`](#check-popular-action-inputs)
 - [Shell name validation at `shell:`](#check-shell-names)
 - [Job ID and step ID uniqueness](#check-job-step-ids)
 - [Hardcoded credentials](#check-hardcoded-credentials)
@@ -1342,8 +1343,56 @@ test.yaml:13:11: input "additions" is not defined in action "My action" defined 
    |           ^~~~~~~~~~
 ```
 
-When a local action is run in `uses:` of `step:`, actionlint reads `action.yaml` file in the local action directory and
+When a local action is run in `uses:` of `step:`, actionlint reads `action.yml` file in the local action directory and
 validates inputs at `with:` in the workflow are correct. Missing required inputs and unexpected inputs can be detected.
+
+<a name="check-popular-action-inputs"></a>
+## Popular action inputs validation at `with:`
+
+Example input:
+
+```yaml
+on: push
+
+jobs:
+  test:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/cache@v2
+        with:
+          keys: |
+            ${{ hashFiles('**/*.lock') }}
+            ${{ hashFiles('**/*.cache') }}
+          path: ./packages
+      - run: make
+```
+
+Output:
+
+```
+test.yaml:7:15: missing input "key" which is required by action "actions/cache@v2". all required inputs are "key", "path" [action]
+  |
+7 |       - uses: actions/cache@v2
+  |               ^~~~~~~~~~~~~~~~
+test.yaml:9:11: input "keys" is not defined in action "actions/cache@v2". available inputs are "key", "path", "restore-keys", "upload-chunk-size" [action]
+  |
+9 |           keys: |
+  |           ^~~~~
+```
+
+[Playground](https://rhysd.github.io/actionlint#eJyFj0EKwjAQRfc9xV8I1UJbcJmVK+8xDYOpqUlwEkVq725apYgbV8PMe/Dne6cQkpiiOPtOVAFEljhP4Jqc1D4LqUsupnqgmS1IIgd5W0CNJCwKpGPvnbSatOHDbf/BwL2PRq0bYPmR9efXBdiMIwyJOfYDy7asqrZqBq9tucM0/TWXyF81UI5F0wbSlk4s67u5mMKFLL8A+h9EEw==)
+
+actionlint checks inputs of many popular actions such as `actions/checkout@v2`. It checks
+
+- some input is required by the action but it not set at `with:`
+- input set at `with:` is not defined in the action (this commonly occurs by typo)
+
+this is done by checking `with:` section items with a small database collected at building `actionlint` binary. actionlint
+can check popular actions without fetching any `action.yml` of the actions from remote so that it can run efficiently.
+
+Currently actionlint supports more than 100 popular actions The data are put at [`popular_actions.go`](./popular_actions.go)
+and were automatically collected by [a script][generate-popular-actions]. If you want more checks for other actions, please
+make a request [as an issue][issue-form].
 
 <a name="check-shell-names"></a>
 ## Shell name validation at `shell:`
@@ -1681,3 +1730,4 @@ actionlint is distributed under [the MIT license](./LICENSE.txt).
 [issue-form]: https://github.com/rhysd/actionlint/issues/new
 [reviewdog-actionlint]: https://github.com/reviewdog/action-actionlint
 [reviewdog]: https://github.com/reviewdog/reviewdog
+[generate-popular-actions]: https://github.com/rhysd/actionlint/tree/main/scripts/generate-popular-actions
