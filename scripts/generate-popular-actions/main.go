@@ -101,7 +101,6 @@ var popularActions = []action{
 	{"haskell/actions/setup", []string{"v1"}, yamlExtYML},
 	{"marvinpinto/action-automatic-releases", []string{"latest"}, yamlExtYML},
 	{"microsoft/playwright-github-action", []string{"v1"}, yamlExtYML},
-	{"microsoft/playwright-github-action", []string{"v1"}, yamlExtYML},
 	{"mikepenz/release-changelog-builder-action", []string{"v1", "v2"}, yamlExtYML},
 	{"msys2/setup-msys2", []string{"v1", "v2"}, yamlExtYML},
 	{"ncipollo/release-action", []string{"v1"}, yamlExtYML},
@@ -166,7 +165,7 @@ func fetchRemote(actions []action) (map[string]*actionlint.ActionMetadata, error
 						break
 					}
 					if res.StatusCode < 200 || 300 <= res.StatusCode {
-						ret <- &fetched{err: fmt.Errorf("could not fetch %s: %s", url, res.Status)}
+						ret <- &fetched{err: fmt.Errorf("request was not successful %s: %s", url, res.Status)}
 						break
 					}
 					body, err := ioutil.ReadAll(res.Body)
@@ -225,7 +224,7 @@ func writeJSONL(out io.Writer, actions map[string]*actionlint.ActionMetadata) er
 	for spec, meta := range actions {
 		j := actionJSON{spec, meta}
 		if err := enc.Encode(&j); err != nil {
-			return err
+			return fmt.Errorf("could not encode action %q data into JSON: %w", spec, err)
 		}
 	}
 	return nil
@@ -389,6 +388,13 @@ Flags:`)
 
 	if quiet {
 		log.SetOutput(ioutil.Discard)
+	} else {
+		log.SetOutput(stderr)
+	}
+
+	if format != "go" && format != "jsonl" {
+		fmt.Fprintf(stderr, "invalid value for -f option: %s\n", format)
+		return 1
 	}
 
 	where := "stdout"
@@ -436,9 +442,6 @@ Flags:`)
 			fmt.Fprintln(stderr, err)
 			return 1
 		}
-	default:
-		fmt.Fprintf(stderr, "invalid value for -f option: %s\n", format)
-		return 1
 	}
 
 	log.Println("Done")
