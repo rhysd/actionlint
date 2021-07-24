@@ -1,0 +1,11 @@
+name: 'My action with output'
+author: 'rhysd <https://rhysd.github.io>'
+description: 'my action with outputs'
+
+outputs:
+  some_value:
+    description: some value returned from this action
+
+runs:
+  using: 'node14'
+  main: 'index.js'

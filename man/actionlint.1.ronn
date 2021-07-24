@@ -17,6 +17,8 @@ Features:
 - **Syntax check for workflow files** to check unexpected or missing keys following workflow syntax
 - **Strong type check for `${{ }}` expressions** to catch several semantic errors like access to
   not existing property, type mismatches, ...
+- **Actions usage check** to check that inputs at `with:` and outputs in `steps.{id}.outputs` are
+  correct in workflow steps
 - **shellcheck and pyflakes integrations** for scripts in `run:`
 - **Other several useful checks**; glob syntax validation, dependencies check for `needs:`, runner
   label validation, cron syntax validation, ...

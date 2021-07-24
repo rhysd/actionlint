@@ -1,7 +1,10 @@
 #!/usr/bin/env node
 
+// This script inputs YAML workflow code from stdin and outputs a playground URL
+// for the workflow to stdout.
+//
 // Usage:
-//   pbpaste| node ./scripts/yaml-to-playground-url.js
+//   pbpaste | node ./scripts/yaml-to-playground-url.js
 //   node ./scripts/yaml-to-playground-url.js < test.yaml
 
 const fs = require('fs');

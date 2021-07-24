@@ -252,6 +252,7 @@ func (l *Linter) LintFiles(filepaths []string, project *Project) ([]*Error, erro
 	}
 
 	proc := newConcurrentProcess(runtime.NumCPU())
+	localActions := NewLocalActionsCache(project)
 	sema := semaphore.NewWeighted(int64(runtime.NumCPU()))
 	ctx := context.Background()
 
@@ -291,7 +292,7 @@ func (l *Linter) LintFiles(filepaths []string, project *Project) ([]*Error, erro
 					w.path = r // Use relative path if possible
 				}
 			}
-			errs, err := l.check(w.path, src, p, proc)
+			errs, err := l.check(w.path, src, p, proc, localActions)
 			if err != nil {
 				return fmt.Errorf("fatal error while checking %s: %w", w.path, err)
 			}
@@ -344,7 +345,8 @@ func (l *Linter) LintFile(path string, project *Project) ([]*Error, error) {
 	}
 
 	proc := newConcurrentProcess(runtime.NumCPU())
-	errs, err := l.check(path, src, project, proc)
+	localActions := NewLocalActionsCache(project)
+	errs, err := l.check(path, src, project, proc, localActions)
 	proc.wait()
 	if err != nil {
 		return nil, err
@@ -361,7 +363,8 @@ func (l *Linter) LintFile(path string, project *Project) ([]*Error, error) {
 // based on path parameter.
 func (l *Linter) Lint(path string, content []byte, project *Project) ([]*Error, error) {
 	proc := newConcurrentProcess(runtime.NumCPU())
-	errs, err := l.check(path, content, project, proc)
+	localActions := NewLocalActionsCache(project)
+	errs, err := l.check(path, content, project, proc, localActions)
 	proc.wait()
 	if err != nil {
 		return nil, err
@@ -370,7 +373,7 @@ func (l *Linter) Lint(path string, content []byte, project *Project) ([]*Error, 
 	return errs, nil
 }
 
-func (l *Linter) check(path string, content []byte, project *Project, proc *concurrentProcess) ([]*Error, error) {
+func (l *Linter) check(path string, content []byte, project *Project, proc *concurrentProcess, localActions *LocalActionsCache) ([]*Error, error) {
 	// Note: This method is called to check multiple files in parallel.
 	// It must be thread safe assuming fields of Linter are not modified while running.
 
@@ -418,11 +421,6 @@ func (l *Linter) check(path string, content []byte, project *Project, proc *conc
 			labels = cfg.SelfHostedRunner.Labels
 		}
 
-		var root string
-		if project != nil {
-			root = project.RootDir()
-		}
-
 		rules := []Rule{
 			NewRuleMatrix(),
 			NewRuleCredentials(),
@@ -430,11 +428,11 @@ func (l *Linter) check(path string, content []byte, project *Project, proc *conc
 			NewRuleRunnerLabel(labels),
 			NewRuleEvents(),
 			NewRuleJobNeeds(),
-			NewRuleAction(root),
+			NewRuleAction(localActions),
 			NewRuleEnvVar(),
 			NewRuleStepID(),
 			NewRuleGlob(),
-			NewRuleExpression(),
+			NewRuleExpression(localActions),
 		}
 		if l.shellcheck != "" {
 			r, err := NewRuleShellcheck(l.shellcheck, proc)

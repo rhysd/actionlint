@@ -10,6 +10,8 @@ Features:
 - **Syntax check for workflow files** to check unexpected or missing keys following [workflow syntax][syntax-doc]
 - **Strong type check for `${{ }}` expressions** to catch several semantic errors like access to not existing property,
   type mismatches, ...
+- **Actions usage check** to check that inputs at `with:` and outputs in `steps.{id}.outputs` are correct in workflow
+  steps
 - **[shellcheck][] and [pyflakes][] integrations** for scripts in `run:`
 - **Other several useful checks**; [glob syntax][filter-pattern-doc] validation, dependencies check for `needs:`,
   runner label validation, cron syntax validation, ...
@@ -225,6 +227,7 @@ List of checks:
 - [Runner labels](#check-runner-labels)
 - [Action format in `uses:`](#check-action-format)
 - [Local action inputs validation at `with:`](#check-local-action-inputs)
+- [Popular action inputs validation at `with:`](#check-popular-action-inputs)
 - [Shell name validation at `shell:`](#check-shell-names)
 - [Job ID and step ID uniqueness](#check-job-step-ids)
 - [Hardcoded credentials](#check-hardcoded-credentials)
@@ -585,7 +588,7 @@ jobs:
       # Step outputs can be used in job outputs since this section is evaluated after all steps were run
       foo: '${{ steps.get_value.outputs.name }}'
     steps:
-      # Access to undefined step outputs
+      # ERROR: Access to undefined step outputs
       - run: echo '${{ steps.get_value.outputs.name }}'
       # Outputs are set here
       - run: echo '::set-output name=foo::value'
@@ -597,7 +600,7 @@ jobs:
   other:
     runs-on: ubuntu-latest
     steps:
-      # Access to undefined step outputs. Step objects are job-local
+      # ERROR: Access to undefined step outputs. Step objects are job-local
       - run: echo '${{ steps.get_value.outputs.name }}'
 ```
 
@@ -622,9 +625,105 @@ Outputs of step can be accessed via `steps.<step_id>` objects. The `steps` conte
 - Outputs of steps only in the job can be accessed. It cannot access to steps across jobs
 
 It is actually common mistake to access to the wrong step outputs since people often forget fixing placeholders on
-copying&pasting steps.
+copying&pasting steps. actionlint can catch the invalid accesses to step outputs and reports them as errors.
 
-actionlint can catch the invalid accesses to step outputs and reports them as errors.
+When the outputs are set by popular actions, the outputs object is more strictly typed.
+
+Example input:
+
+```yaml
+on: push
+
+jobs:
+  test:
+    runs-on: ubuntu-latest
+    steps:
+      # ERROR: The step is not run yet at this point
+      - run: echo ${{ steps.cache.outputs.cache-hit }}
+      # actions/cache sets cache-hit output
+      - uses: actions/cache@v2
+        id: cache
+        with:
+          key: ${{ hashFiles('**/*.lock') }}
+          path: ./packages
+      # OK
+      - run: echo ${{ steps.cache.outputs.cache-hit }}
+      # ERROR: Typo at output name
+      - run: echo ${{ steps.cache.outputs.cache_hit }}
+```
+
+Output:
+
+```
+test.yaml:8:23: property "cache" is not defined in object type {} [expression]
+  |
+8 |       - run: echo ${{ steps.cache.outputs.cache-hit }}
+  |                       ^~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+test.yaml:18:23: property "cache_hit" is not defined in object type {cache-hit: any} [expression]
+   |
+18 |       - run: echo ${{ steps.cache.outputs.cache_hit }}
+   |                       ^~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+```
+
+[Playground](https://rhysd.github.io/actionlint#eJyNTksKwjAQ3fcUbyFUC0nBZVauvIakMZjY0gRnokjp3W3TUl26Gt53XugVYiJXFPfQkCoAtsTzBR6pJxEmQ2pSz0l0etayRGwjLS5AIJElBW3Yh55qo42zp+dxlQF/Vcjkxrw8O7UhoLVvhd0wwGlyZ99Z2pdVVVeyC6YtDxjHH3PUUxiyjtq0+mZpmzENVrDGhVyVN8r8V4bEMfGKhPP8bfw7dlliH1xHWso=)
+
+In the above example, [actions/cache][actions-cache] action sets `cache-hit` output so that following steps can know the
+cache was hit or not. At line 8, the cache action is not run yet. So `cache` property does not exit in `steps` context yet.
+On running the step whose ID is `cache`, `steps.cache` object is typed as `{outputs: {cache-hit: any}, conclusion: string, outcome: string}`.
+At line 18, the expression has typo in output name. actionlint can check it because properties of `steps.cache.outputs` are
+typed.
+
+This strict outputs typing is also applied to local actions. Let's say we have the following local action.
+
+```yaml
+name: 'My action with output'
+author: 'rhysd <https://rhysd.github.io>'
+description: 'my action with outputs'
+
+outputs:
+  some_value:
+    description: some value returned from this action
+
+runs:
+  using: 'node14'
+  main: 'index.js'
+```
+
+Example input:
+
+```yaml
+on: push
+
+jobs:
+  test:
+    runs-on: ubuntu-latest
+    steps:
+      # ERROR: The step is not yet run
+      - run: echo ${{ steps.my_action.outputs.some_value }}
+      # The action runs here and sets its outputs
+      - uses: ./.github/actions/my-action-with-output
+        id: my_action
+      # OK
+      - run: echo ${{ steps.my_action.outputs.some_value }}
+      # ERROR: No output named 'some-value' (typo)
+      - run: echo ${{ steps.my_action.outputs.some-value }}
+```
+
+Output:
+
+```
+test.yaml:8:23: property "my_action" is not defined in object type {} [expression]
+  |
+8 |       - run: echo ${{ steps.my_action.outputs.some_value }}
+  |                       ^~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+test.yaml:15:23: property "some-value" is not defined in object type {some_value: any} [expression]
+   |
+15 |       - run: echo ${{ steps.my_action.outputs.some-value }}
+   |                       ^~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+```
+
+The 'My action with output' action defines one output `some_value`. The property is typed at `steps.my_action.outputs` object
+so that actionlint can check incorrect property accesses like a typo in output name.
 
 <a name="check-contextual-matrix-object"></a>
 ## Contextual typing for `matrix` object
@@ -1269,7 +1368,7 @@ test.yaml:11:15: tag of Docker action should not be empty: "docker://image" [act
    |
 11 |       - uses: 'docker://image:'
    |               ^~~~~~~~~~~~~~~~~
-test.yaml:13:15: Neither action.yaml nor action.yml is found in directory "github/actions/my-action" [action]
+test.yaml:13:15: neither action.yaml nor action.yml is found in directory "github/actions/my-action" [action]
    |
 13 |       - uses: ./github/actions/my-action
    |               ^~~~~~~~~~~~~~~~~~~~~~~~~~
@@ -1332,18 +1431,66 @@ jobs:
 Output:
 
 ```
-test.yaml:7:15: missing input "message" which is required by action "My action" defined at "./.github/actions/my-action" [action]
+test.yaml:7:15: missing input "message" which is required by action "My action" defined at "./.github/actions/my-action". all required inputs are "message" [action]
   |
 7 |       - uses: ./.github/actions/my-action
   |               ^~~~~~~~~~~~~~~~~~~~~~~~~~~
-test.yaml:13:11: input "additions" is not defined in action "./.github/actions/my-action" defined at "My action". available inputs are "addition", "message", "name" [action]
+test.yaml:13:11: input "additions" is not defined in action "My action" defined at "./.github/actions/my-action". available inputs are "addition", "message", "name" [action]
    |
 13 |           additions: foo, bar
    |           ^~~~~~~~~~
 ```
 
-When a local action is run in `uses:` of `step:`, actionlint reads `action.yaml` file in the local action directory and
+When a local action is run in `uses:` of `step:`, actionlint reads `action.yml` file in the local action directory and
 validates inputs at `with:` in the workflow are correct. Missing required inputs and unexpected inputs can be detected.
+
+<a name="check-popular-action-inputs"></a>
+## Popular action inputs validation at `with:`
+
+Example input:
+
+```yaml
+on: push
+
+jobs:
+  test:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/cache@v2
+        with:
+          keys: |
+            ${{ hashFiles('**/*.lock') }}
+            ${{ hashFiles('**/*.cache') }}
+          path: ./packages
+      - run: make
+```
+
+Output:
+
+```
+test.yaml:7:15: missing input "key" which is required by action "actions/cache@v2". all required inputs are "key", "path" [action]
+  |
+7 |       - uses: actions/cache@v2
+  |               ^~~~~~~~~~~~~~~~
+test.yaml:9:11: input "keys" is not defined in action "actions/cache@v2". available inputs are "key", "path", "restore-keys", "upload-chunk-size" [action]
+  |
+9 |           keys: |
+  |           ^~~~~
+```
+
+[Playground](https://rhysd.github.io/actionlint#eJyFj0EKwjAQRfc9xV8I1UJbcJmVK+8xDYOpqUlwEkVq725apYgbV8PMe/Dne6cQkpiiOPtOVAFEljhP4Jqc1D4LqUsupnqgmS1IIgd5W0CNJCwKpGPvnbSatOHDbf/BwL2PRq0bYPmR9efXBdiMIwyJOfYDy7asqrZqBq9tucM0/TWXyF81UI5F0wbSlk4s67u5mMKFLL8A+h9EEw==)
+
+actionlint checks inputs of many popular actions such as `actions/checkout@v2`. It checks
+
+- some input is required by the action but it not set at `with:`
+- input set at `with:` is not defined in the action (this commonly occurs by typo)
+
+this is done by checking `with:` section items with a small database collected at building `actionlint` binary. actionlint
+can check popular actions without fetching any `action.yml` of the actions from remote so that it can run efficiently.
+
+Currently actionlint supports more than 100 popular actions The data are put at [`popular_actions.go`](./popular_actions.go)
+and were automatically collected by [a script][generate-popular-actions]. If you want more checks for other actions, please
+make a request [as an issue][issue-form].
 
 <a name="check-shell-names"></a>
 ## Shell name validation at `shell:`
@@ -1681,3 +1828,5 @@ actionlint is distributed under [the MIT license](./LICENSE.txt).
 [issue-form]: https://github.com/rhysd/actionlint/issues/new
 [reviewdog-actionlint]: https://github.com/reviewdog/action-actionlint
 [reviewdog]: https://github.com/reviewdog/reviewdog
+[generate-popular-actions]: https://github.com/rhysd/actionlint/tree/main/scripts/generate-popular-actions
+[actions-cache]: https://github.com/actions/cache

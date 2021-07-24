@@ -2,6 +2,7 @@ package actionlint
 
 import (
 	"fmt"
+	"runtime"
 	"strings"
 	"sync"
 	"testing"
@@ -89,6 +90,10 @@ func TestProcessRunProcessSerial(t *testing.T) {
 }
 
 func TestProcessRunConcurrently(t *testing.T) {
+	if runtime.GOOS == "windows" {
+		t.Skip("this test is flaky on Windows")
+	}
+
 	p := newConcurrentProcess(5)
 	sleep := testSkipIfNoCommand(t, p, "sleep")
 

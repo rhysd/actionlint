@@ -1,0 +1,18 @@
+on: push
+
+jobs:
+  test:
+    runs-on: ubuntu-latest
+    steps:
+      # ERROR: The step is not run yet at this point
+      - run: echo ${{ steps.cache.outputs.cache-hit }}
+      # actions/cache sets cache-hit output
+      - uses: actions/cache@v2
+        id: cache
+        with:
+          key: ${{ hashFiles('**/*.lock') }}
+          path: ./packages
+      # OK
+      - run: echo ${{ steps.cache.outputs.cache-hit }}
+      # ERROR: Typo at output name
+      - run: echo ${{ steps.cache.outputs.cache_hit }}

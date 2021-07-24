@@ -1,41 +1,24 @@
 package actionlint
 
 import (
-	"io/ioutil"
+	"fmt"
 	"net/url"
-	"os"
-	"path/filepath"
+	"strconv"
 	"strings"
-
-	"gopkg.in/yaml.v3"
 )
 
 // RuleAction is a rule to check running action in steps of jobs.
 // https://docs.github.com/en/actions/reference/workflow-syntax-for-github-actions#jobsjob_idstepsuses
 type RuleAction struct {
 	RuleBase
-	repoPath string
-}
-
-// ActionSpec represents structure of action.yaml.
-// https://docs.github.com/en/actions/creating-actions/metadata-syntax-for-github-actions
-type ActionSpec struct {
-	// Name is "name" field of action.yaml
-	Name string `yaml:"name"`
-	// Inputs is "inputs" field of action.yaml
-	Inputs map[string]struct {
-		Required bool    `yaml:"required"`
-		Default  *string `yaml:"default"`
-	} `yaml:"inputs"`
-	// Outputs is "outputs" field of action.yaml
-	Outputs map[string]struct{} `yaml:"outputs"`
+	cache *LocalActionsCache
 }
 
 // NewRuleAction creates new RuleAction instance.
-func NewRuleAction(repoDir string) *RuleAction {
+func NewRuleAction(cache *LocalActionsCache) *RuleAction {
 	return &RuleAction{
 		RuleBase: RuleBase{name: "action"},
-		repoPath: repoDir,
+		cache:    cache,
 	}
 }
 
@@ -55,7 +38,7 @@ func (rule *RuleAction) VisitStep(n *Step) error {
 
 	if strings.HasPrefix(spec, "./") {
 		// Relative to repository root
-		rule.checkActionInSameRepo(spec, e)
+		rule.checkLocalAction(spec, e)
 		return nil
 	}
 
@@ -98,7 +81,14 @@ func (rule *RuleAction) checkRepoAction(spec string, exec *ExecAction) {
 		rule.invalidActionFormat(exec.Uses.Pos, spec, "owner and repo and ref should not be empty")
 	}
 
-	// TODO?: Fetch action.yaml from GitHub and check the specification with checkAction()
+	meta, ok := PopularActions[spec]
+	if !ok {
+		return
+	}
+
+	rule.checkAction(meta, exec, func(m *ActionMetadata) string {
+		return strconv.Quote(spec)
+	})
 }
 
 func (rule *RuleAction) invalidActionFormat(pos *Pos, spec string, why string) {
@@ -134,76 +124,57 @@ func (rule *RuleAction) checkDockerAction(uri string, exec *ExecAction) {
 }
 
 // https://docs.github.com/en/actions/reference/workflow-syntax-for-github-actions#example-using-action-in-the-same-repository-as-the-workflow
-func (rule *RuleAction) checkActionInSameRepo(path string, action *ExecAction) {
-	if rule.repoPath == "" {
-		return // Give up
+func (rule *RuleAction) checkLocalAction(path string, action *ExecAction) {
+	meta, err := rule.cache.FindMetadata(path)
+	if err != nil {
+		rule.error(action.Uses.Pos, err.Error())
+		return
 	}
-
-	dir := filepath.Join(rule.repoPath, filepath.FromSlash(path))
-	b := rule.readActionSpecFile(dir, action.Uses.Pos)
-	if len(b) == 0 {
+	if meta == nil {
 		return
 	}
 
-	var spec ActionSpec
-	if err := yaml.Unmarshal(b, &spec); err != nil {
-		rule.errorf(action.Uses.Pos, "action.yaml in %q is invalid: %s", dir, err.Error())
-		return
-	}
-
-	rule.checkAction(path, &spec, action)
+	rule.checkAction(meta, action, func(m *ActionMetadata) string {
+		return fmt.Sprintf("%q defined at %q", meta.Name, path)
+	})
 }
 
-func (rule *RuleAction) checkAction(path string, spec *ActionSpec, exec *ExecAction) {
+func (rule *RuleAction) checkAction(meta *ActionMetadata, exec *ExecAction, describe func(*ActionMetadata) string) {
 	// Check specified inputs are defined in action's inputs spec
 	for name, val := range exec.Inputs {
-		if _, ok := spec.Inputs[name]; !ok {
-			ss := make([]string, 0, len(spec.Inputs))
-			for k := range spec.Inputs {
-				ss = append(ss, k)
+		if _, ok := meta.Inputs[name]; !ok {
+			ns := make([]string, 0, len(meta.Inputs))
+			for n := range meta.Inputs {
+				ns = append(ns, n)
 			}
 			rule.errorf(
 				val.Name.Pos,
-				"input %q is not defined in action %q defined at %q. available inputs are %s",
+				"input %q is not defined in action %s. available inputs are %s",
 				name,
-				path,
-				spec.Name,
-				sortedQuotes(ss),
+				describe(meta),
+				sortedQuotes(ns),
 			)
 		}
 	}
 
 	// Check mandatory inputs are specified
-	for name, input := range spec.Inputs {
-		if input.Required && input.Default == nil {
+	for name, input := range meta.Inputs {
+		if input.IsRequired() {
 			if _, ok := exec.Inputs[name]; !ok {
+				ns := make([]string, 0, len(meta.Inputs))
+				for n, i := range meta.Inputs {
+					if i.IsRequired() {
+						ns = append(ns, n)
+					}
+				}
 				rule.errorf(
 					exec.Uses.Pos,
-					"missing input %q which is required by action %q defined at %q",
+					"missing input %q which is required by action %s. all required inputs are %s",
 					name,
-					spec.Name,
-					path,
+					describe(meta),
+					sortedQuotes(ns),
 				)
 			}
 		}
 	}
-}
-
-func (rule *RuleAction) readActionSpecFile(dir string, pos *Pos) []byte {
-	for _, p := range []string{
-		filepath.Join(dir, "action.yaml"),
-		filepath.Join(dir, "action.yml"),
-	} {
-		if b, err := ioutil.ReadFile(p); err == nil {
-			return b
-		}
-	}
-
-	if wd, err := os.Getwd(); err == nil {
-		if p, err := filepath.Rel(wd, dir); err == nil {
-			dir = p
-		}
-	}
-	rule.errorf(pos, "Neither action.yaml nor action.yml is found in directory \"%s\"", dir)
-	return nil
 }

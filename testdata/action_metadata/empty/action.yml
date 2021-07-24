@@ -1,0 +1,6 @@
+name: 'My action'
+author: 'rhysd <https://rhysd.github.io>'
+description: 'my action'
+runs:
+  using: 'node14'
+  main: 'index.js'

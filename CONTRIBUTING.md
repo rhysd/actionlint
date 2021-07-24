@@ -15,10 +15,13 @@ or
 make build
 ```
 
+It generates data set for checking popular actions in `popular_actions.go`. To regenerate it, run `go generate`.
+The command runs [`generate-popular-actions`](./scripts/generate-popular-actions) script.
+
 ## How to run tests
 
 ```sh
-go test ./...
+go test
 ```
 
 or

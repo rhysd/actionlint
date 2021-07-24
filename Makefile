@@ -1,5 +1,6 @@
 SRCS := $(filter-out %_test.go, $(wildcard *.go cmd/actionlint/*.go))
 TESTS := $(filter %_test.go, $(wildcard *.go))
+TOOL_SRCS := $(wildcard scripts/*/*.go)
 TESTDATA := $(wildcard testdata/examples/*.yaml testdata/examples/*.out)
 TOOL := $(wildcard scripts/actionlint-workflow-ast/*.go)
 GOTEST := $(shell command -v gotest 2>/dev/null)
@@ -8,21 +9,25 @@ all: clean build test
 
 .testtimestamp: $(TESTS) $(SRCS) $(TESTDATA) $(TOOL)
 ifdef GOTEST
-	gotest ./ ./scripts/actionlint-workflow-ast # https://github.com/rhysd/gotest
+	gotest ./ ./scripts/... # https://github.com/rhysd/gotest
 else
-	go test -v ./ ./scripts/actionlint-workflow-ast
+	go test -v ./ ./scripts/...
 endif
 	touch .testtimestamp
 
 test: .testtimestamp
 
-.staticchecktimestamp: $(TESTS) $(SRCS)
-	staticcheck ./ ./cmd/...
+.staticchecktimestamp: $(TESTS) $(SRCS) $(TOOL_SRCS)
+	staticcheck ./ ./cmd/... ./scripts/...
+	GOOS=js GOARCH=wasm staticcheck ./playground
 	touch .staticchecktimestamp
 
 lint: .staticchecktimestamp
 
-actionlint: $(SRCS)
+popular_actions.go: scripts/generate-popular-actions/main.go
+	go generate
+
+actionlint: $(SRCS) popular_actions.go
 	CGO_ENABLED=0 go build ./cmd/actionlint
 
 build: actionlint

@@ -12,20 +12,22 @@ import (
 // https://docs.github.com/en/actions/reference/context-and-expression-syntax-for-github-actions
 type RuleExpression struct {
 	RuleBase
-	matrixTy *ObjectType
-	stepsTy  *ObjectType
-	needsTy  *ObjectType
-	workflow *Workflow
+	matrixTy     *ObjectType
+	stepsTy      *ObjectType
+	needsTy      *ObjectType
+	workflow     *Workflow
+	localActions *LocalActionsCache
 }
 
 // NewRuleExpression creates new RuleExpression instance.
-func NewRuleExpression() *RuleExpression {
+func NewRuleExpression(cache *LocalActionsCache) *RuleExpression {
 	return &RuleExpression{
-		RuleBase: RuleBase{name: "expression"},
-		matrixTy: nil,
-		stepsTy:  nil,
-		needsTy:  nil,
-		workflow: nil,
+		RuleBase:     RuleBase{name: "expression"},
+		matrixTy:     nil,
+		stepsTy:      nil,
+		needsTy:      nil,
+		workflow:     nil,
+		localActions: cache,
 	}
 }
 
@@ -157,6 +159,7 @@ func (rule *RuleExpression) VisitStep(n *Step) error {
 	rule.checkIfCondition(n.If)
 	rule.checkString(n.Name)
 
+	var spec *String
 	switch e := n.Exec.(type) {
 	case *ExecRun:
 		rule.checkString(e.Run)
@@ -169,6 +172,7 @@ func (rule *RuleExpression) VisitStep(n *Step) error {
 		}
 		rule.checkString(e.Entrypoint)
 		rule.checkString(e.Args)
+		spec = e.Uses
 	}
 
 	rule.checkEnv(n.Env)
@@ -180,7 +184,7 @@ func (rule *RuleExpression) VisitStep(n *Step) error {
 		id := strings.ToLower(n.ID.Value)
 		rule.stepsTy.Props[id] = &ObjectType{
 			Props: map[string]ExprType{
-				"outputs":    NewObjectType(),
+				"outputs":    rule.getActionOutputsType(spec),
 				"conclusion": StringType{},
 				"outcome":    StringType{},
 			},
@@ -189,6 +193,43 @@ func (rule *RuleExpression) VisitStep(n *Step) error {
 	}
 
 	return nil
+}
+
+func (rule *RuleExpression) getActionOutputsType(spec *String) *ObjectType {
+	if spec == nil {
+		return NewObjectType()
+	}
+
+	if strings.HasPrefix(spec.Value, "./") {
+		meta, err := rule.localActions.FindMetadata(spec.Value)
+		if err != nil {
+			rule.error(spec.Pos, err.Error())
+			return NewObjectType()
+		}
+		if meta == nil {
+			return NewObjectType()
+		}
+
+		ty := NewObjectType()
+		for n := range meta.Outputs {
+			ty.Props[n] = AnyType{}
+		}
+		ty.StrictProps = true
+		return ty
+	}
+
+	// When the action run at this step is a popular action, we know what outputs are set by it.
+	// Set the output names to `steps.{step_id}.outputs.{name}`.
+	if meta, ok := PopularActions[spec.Value]; ok {
+		ty := NewObjectType()
+		for n := range meta.Outputs {
+			ty.Props[n] = AnyType{}
+		}
+		ty.StrictProps = true
+		return ty
+	}
+
+	return NewObjectType()
 }
 
 func (rule *RuleExpression) checkOneExpression(s *String, what string) ExprType {
