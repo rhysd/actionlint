@@ -1,3 +1,3 @@
-test.yaml:4:14: permission must be one of "read-all", "write-all" but got "write" [syntax-check]
+test.yaml:4:14: "write" is invalid for permission for all the scopes. available values are "read-all" and "write-all" [permissions]
 test.yaml:11:7: unknown permission scope "check". all available permission scopes are "actions", "checks", "contents", "deployments", "issues", "metadata", "packages", "pull-requests", "repository-projects", "security-events", "statuses" [permissions]
-test.yaml:13:15: permission must be one of "none", "read", "write" but got "readable" [syntax-check]
+test.yaml:13:15: "readable" is invalid for permission of scope "issues". available values are "read", "write" or "none" [permissions]

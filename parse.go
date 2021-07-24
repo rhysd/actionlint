@@ -477,41 +477,16 @@ func (p *parser) parsePermissions(pos *Pos, n *yaml.Node) *Permissions {
 	ret := &Permissions{Pos: pos}
 
 	if n.Kind == yaml.ScalarNode {
-		var kind PermKind
-		switch n.Value {
-		case "read-all":
-			kind = PermKindRead
-		case "write-all":
-			kind = PermKindWrite
-		default:
-			p.errorf(n, "permission must be one of \"read-all\", \"write-all\" but got %q", n.Value)
-		}
-		ret.All = &Permission{nil, kind, posAt(n)}
+		ret.All = p.parseString(n, false)
 	} else {
 		m := p.parseSectionMapping("permissions", n, false)
-		scopes := make(map[string]*Permission, len(m))
-
+		scopes := make(map[string]*PermissionScope, len(m))
 		for _, kv := range m {
-			perm := p.parseString(kv.val, false).Value
-			kind := PermKindNone
-			switch perm {
-			case "read":
-				kind = PermKindRead
-			case "write":
-				kind = PermKindWrite
-			case "none":
-				kind = PermKindNone
-			default:
-				p.errorf(kv.val, "permission must be one of \"none\", \"read\", \"write\" but got %q", perm)
-				continue
-			}
-			scopes[kv.key.Value] = &Permission{
-				Name: kv.key,
-				Kind: kind,
-				Pos:  kv.key.Pos,
+			scopes[kv.key.Value] = &PermissionScope{
+				Name:  kv.key,
+				Value: p.parseString(kv.val, false),
 			}
 		}
-
 		ret.Scopes = scopes
 	}
 

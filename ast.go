@@ -154,37 +154,23 @@ func (e *RepositoryDispatchEvent) EventName() string {
 	return "repository_dispatch"
 }
 
-// PermKind is kind of permissions.
-// https://docs.github.com/en/actions/reference/workflow-syntax-for-github-actions#permissions
-type PermKind uint8
-
-const (
-	// PermKindNone represents 'none' permission. No operation is permitted.
-	PermKindNone PermKind = iota
-	// PermKindRead represents 'read' permission. Only read operations are permitted.
-	PermKindRead
-	// PermKindWrite represents 'write' permission. Both read and write operations are permitted.
-	PermKindWrite
-)
-
-// Permission is configuration for permissions.
-type Permission struct {
-	// Name is name of permission. This value is nil when it represents all scopes (read-all or write-all)
+// PermissionScope is struct for respective permission scope like "issues", "checks", ...
+// https://docs.github.com/en/actions/reference/authentication-in-a-workflow#permissions-for-the-github_token
+type PermissionScope struct {
+	// Name is name of the scope.
 	Name *String
-	// Kind is kind of the permission configured in workflow.
-	Kind PermKind
-	// Pos is a position in source.
-	Pos *Pos
+	// Value is permission value of the scope.
+	Value *String
 }
 
 // Permissions is set of permission configurations in workflow file. All permissions can be set at
 // once. Or each permission can be configured respectively.
 // https://docs.github.com/en/actions/reference/workflow-syntax-for-github-actions#permissions
 type Permissions struct {
-	// All represents read-all or write-all, which define permissions of all scopes at once.
-	All *Permission
-	// Scopes is mappings from permission name to permission value
-	Scopes map[string]*Permission
+	// All represents a permission value for all the scopes at once.
+	All *String
+	// Scopes is mappings from scope name to its permission configuration
+	Scopes map[string]*PermissionScope
 	// Pos is a position in source.
 	Pos *Pos
 }
