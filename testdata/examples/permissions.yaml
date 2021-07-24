@@ -1,0 +1,15 @@
+on: push
+
+# ERROR: Available values for whole permissions are "write-all", "read-all" or "none"
+permissions: write
+
+jobs:
+  test:
+    runs-on: ubuntu-latest
+    permissions:
+      # ERROR: "checks" is correct scope name
+      check: write
+      # ERROR: Available values are "read", "write" or "none"
+      issues: readable
+    steps:
+      - run: echo hello

@@ -231,6 +231,7 @@ List of checks:
 - [Job ID and step ID uniqueness](#check-job-step-ids)
 - [Hardcoded credentials](#check-hardcoded-credentials)
 - [Environment variable names](#check-env-var-names)
+- [Permissions](#permissions)
 
 Note that actionlint focuses on catching mistakes in workflow files. If you want some general code style checks, please consider
 to use a general YAML checker like [yamllint][].
@@ -337,34 +338,42 @@ Example input:
 on: push
 jobs:
   test:
+    strategy:
+      # ERROR: Boolean value "true" or "false" is expected
+      fail-fast: off
+      # ERROR: Integer value is expected
+      max-parallel: 1.5
     runs-on: ubuntu-latest
-    permissions:
-      issues: foo
-    continue-on-error: foo
     steps:
-      - run: echo 'hello'
+      - run: sleep 200
+        # ERROR: Float value is expected
+        timeout-minutes: two minutes
 ```
 
 Output:
 
 ```
-test.yaml:6:15: permission must be one of "none", "read", "write" but got "foo" [syntax-check]
+test.yaml:6:18: expecting a string with ${{...}} expression or boolean literal "true" or "false", but found plain text node [syntax-check]
   |
-6 |       issues: foo
-  |               ^~~
-test.yaml:7:24: expecting a string with ${{...}} expression or boolean literal "true" or "false", but found plain text node [syntax-check]
+6 |       fail-fast: off
+  |                  ^~~
+test.yaml:8:21: expected scalar node for integer value but found scalar node with "!!float" tag [syntax-check]
   |
-7 |     continue-on-error: foo
-  |                        ^~~
+8 |       max-parallel: 1.5
+  |                     ^~~
+test.yaml:13:26: expecting a string with ${{...}} expression or float number literal, but found plain text node [syntax-check]
+   |
+13 |         timeout-minutes: two minutes
+   |                          ^~~
 ```
 
-[Playground](https://rhysd.github.io/actionlint#eJxFjTEOwzAMA/e8glsmf8C/SQIVduGKhmT9v3YKpBNBHiVSM3p42d48PW/AEB9LAQv1xMnjDB2R2rHYjbrYp7pXqv+6wLQhnvEi7+Sijqoh80MSM9of+ZD+3KW1kyFXIfYirXH/AoOmLY0=)
+[Playground](https://rhysd.github.io/actionlint#eJw1jssNAjEMRO9bxTQQtCBxSTdeyYGg/BTbArongXCy5o395Fo8msl9e9RD/AYoi84JiHZSvr1/CQgUkws0atQQFsz0co06pcTJ43y6fnm3Iq4OtR1W1FyiqV1WbvJXurnpIYm54bLvC48vYuZq6nIsNk499FmxwgdsuTVm)
 
-Some mapping's values are restricted to some constant strings. For example, values of `permissions:` mappings should be
-one of `none`, `read`, `write`. And several mapping values expect boolean value like `true` or `false`.
+Some mapping's values are restricted to some constant strings. Several mapping values expect boolean value like `true` or
+`false`. And some mapping values expect integer or floating number values.
 
-actionlint checks such constant strings are used properly while parsing, and reports an error when unexpected string
-value is specified.
+actionlint checks such constant strings are used properly while parsing, and reports an error when unexpected value is
+specified.
 
 <a name="check-syntax-expression"></a>
 ## Syntax check for expression `${{ }}`
@@ -1685,6 +1694,51 @@ cases they are mistakes and they may cause some issues on using them in shell si
 
 actionlint checks environment variable names are correct in `env:` configuration.
 
+<a name="permissions"></a>
+## Permissions
+
+Example input:
+
+```yaml
+on: push
+
+# ERROR: Available values for whole permissions are "write-all", "read-all" or "none"
+permissions: write
+
+jobs:
+  test:
+    runs-on: ubuntu-latest
+    permissions:
+      # ERROR: "checks" is correct scope name
+      check: write
+      # ERROR: Available values are "read", "write" or "none"
+      issues: readable
+    steps:
+      - run: echo hello
+```
+
+Output:
+
+```
+test.yaml:4:14: "write" is invalid for permission for all the scopes. available values are "read-all" and "write-all" [permissions]
+  |
+4 | permissions: write
+  |              ^~~~~
+test.yaml:11:7: unknown permission scope "check". all available permission scopes are "actions", "checks", "contents", "deployments", "issues", "metadata", "packages", "pull-requests", "repository-projects", "security-events", "statuses" [permissions]
+   |
+11 |       check: write
+   |       ^~~~~~
+test.yaml:13:15: "readable" is invalid for permission of scope "issues". available values are "read", "write" or "none" [permissions]
+   |
+13 |       issues: readable
+   |               ^~~~~~~~
+```
+
+[Playground](https://rhysd.github.io/actionlint#eJxNjd0NwyAMhN89xS3AAmwDxBK0FCOMlfUDiVr16aTv/qR5dNNM1Hl8imqRph7nKJOJXhLVEzBZ51ZgWFMnq2TR2jRXw/Zu63/gBkDKnN7ftQethPF6GByOEOuDdXL/ldw+8eCUBZlrlQvntjLp)
+
+Permissions of `GITHUB_TOKEN` token can be configured at workflow-level or job-level by [`permissions:` section][perm-config-doc].
+actionlint checks permission scopes and permission values in workflow are correct.
+
 <a name="config-file"></a>
 # Configuration file
 
@@ -1832,3 +1886,5 @@ actionlint is distributed under [the MIT license](./LICENSE.txt).
 [reviewdog]: https://github.com/reviewdog/reviewdog
 [generate-popular-actions]: https://github.com/rhysd/actionlint/tree/main/scripts/generate-popular-actions
 [actions-cache]: https://github.com/actions/cache
+[permissions-doc]: https://docs.github.com/en/actions/reference/authentication-in-a-workflow#permissions-for-the-github_token
+[perm-config-doc]: https://docs.github.com/en/actions/reference/workflow-syntax-for-github-actions#permissions

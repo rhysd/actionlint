@@ -1,2 +1,3 @@
-test.yaml:6:15: permission must be one of "none", "read", "write" but got "foo" [syntax-check]
-test.yaml:7:24: expecting a string with ${{...}} expression or boolean literal "true" or "false", but found plain text node [syntax-check]
+test.yaml:6:18: expecting a string with ${{...}} expression or boolean literal "true" or "false", but found plain text node [syntax-check]
+test.yaml:8:21: expected scalar node for integer value but found scalar node with "!!float" tag [syntax-check]
+test.yaml:13:26: expecting a string with ${{...}} expression or float number literal, but found plain text node [syntax-check]
