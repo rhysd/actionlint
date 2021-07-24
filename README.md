@@ -671,6 +671,58 @@ On running the step whose ID is `cache`, `steps.cache` object is typed as `{outp
 At line 18, the expression has typo in output name. actionlint can check it because properties of `steps.cache.outputs` are
 typed.
 
+This strict outputs typing is also applied to local actions. Let's say we have the following local action.
+
+```yaml
+name: 'My action with output'
+author: 'rhysd <https://rhysd.github.io>'
+description: 'my action with outputs'
+
+outputs:
+  some_value:
+    description: some value returned from this action
+
+runs:
+  using: 'node14'
+  main: 'index.js'
+```
+
+Example input:
+
+```yaml
+on: push
+
+jobs:
+  test:
+    runs-on: ubuntu-latest
+    steps:
+      # ERROR: The step is not yet run
+      - run: echo ${{ steps.my_action.outputs.some_value }}
+      # The action runs here and sets its outputs
+      - uses: ./.github/actions/my-action-with-output
+        id: my_action
+      # OK
+      - run: echo ${{ steps.my_action.outputs.some_value }}
+      # ERROR: No output named 'some-value' (typo)
+      - run: echo ${{ steps.my_action.outputs.some-value }}
+```
+
+Output:
+
+```
+test.yaml:8:23: property "my_action" is not defined in object type {} [expression]
+  |
+8 |       - run: echo ${{ steps.my_action.outputs.some_value }}
+  |                       ^~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+test.yaml:15:23: property "some-value" is not defined in object type {some_value: any} [expression]
+   |
+15 |       - run: echo ${{ steps.my_action.outputs.some-value }}
+   |                       ^~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+```
+
+The 'My action with output' action defines one output `some_value`. The property is typed at `steps.my_action.outputs` object
+so that actionlint can check incorrect property accesses like a typo in output name.
+
 <a name="check-contextual-matrix-object"></a>
 ## Contextual typing for `matrix` object
 
