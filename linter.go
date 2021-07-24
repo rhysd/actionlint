@@ -431,7 +431,7 @@ func (l *Linter) check(path string, content []byte, project *Project, proc *conc
 			NewRuleEnvVar(),
 			NewRuleStepID(),
 			NewRuleGlob(),
-			NewRuleExpression(),
+			NewRuleExpression(localActions),
 		}
 		if l.shellcheck != "" {
 			r, err := NewRuleShellcheck(l.shellcheck, proc)

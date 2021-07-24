@@ -13,6 +13,10 @@ inputs:
     description: additional information
     required: false
 
+outputs:
+  user_id:
+    description: user ID
+
 runs:
   using: 'node14'
   main: 'index.js'

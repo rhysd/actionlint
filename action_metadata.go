@@ -41,69 +41,64 @@ type ActionMetadata struct {
 	Outputs map[string]struct{} `yaml:"outputs" json:"outputs"`
 }
 
-type cachedLocalActionResult struct {
-	meta *ActionMetadata
-	err  error
-}
-
 // LocalActionsCache is cache for local actions' metadata. It avoids repeating to find/read/parse
 // local action's metadata file (action.yml).
 type LocalActionsCache struct {
 	mu    sync.RWMutex
 	proj  *Project // might be nil
-	cache map[string]cachedLocalActionResult
-	errs  map[string]error
+	cache map[string]*ActionMetadata
 }
 
 // NewLocalActionsCache creates new LocalActionsCache instance.
 func NewLocalActionsCache(proj *Project) *LocalActionsCache {
 	return &LocalActionsCache{
 		proj:  proj,
-		cache: map[string]cachedLocalActionResult{},
+		cache: map[string]*ActionMetadata{},
 	}
 }
 
-func (c *LocalActionsCache) cached(key string) (cachedLocalActionResult, bool) {
+func (c *LocalActionsCache) readCache(key string) (*ActionMetadata, bool) {
 	c.mu.RLock()
-	r, ok := c.cache[key]
+	m, ok := c.cache[key]
 	c.mu.RUnlock()
-	return r, ok
+	return m, ok
 }
 
-func (c *LocalActionsCache) remember(key string, m *ActionMetadata, err error) {
+func (c *LocalActionsCache) writeCache(key string, val *ActionMetadata) {
 	c.mu.Lock()
-	c.cache[key] = cachedLocalActionResult{m, err}
+	c.cache[key] = val
 	c.mu.Unlock()
 }
 
 // FindMetadata finds metadata for given spec. The spec should indicate for local action hence it
-// should start with "./". LocalActionCache caches the both results that it was found and it was
-// not found. When the local action was not found, the same error is returned at the next call.
+// should start with "./". The first return value can be nil even if error did not occur.
+// LocalActionCache caches that the action was not found. At first search, it returns an error that
+// the action was not found. But at the second search, it does not return an error even if the result
+// is nil. This behavior prevents repeating to report the same error from multiple places.
 func (c *LocalActionsCache) FindMetadata(spec string) (*ActionMetadata, error) {
 	if c.proj == nil || !strings.HasPrefix(spec, "./") {
 		return nil, nil
 	}
 
-	if r, ok := c.cached(spec); ok {
-		return r.meta, r.err
+	if m, ok := c.readCache(spec); ok {
+		return m, nil
 	}
 
 	dir := filepath.Join(c.proj.RootDir(), filepath.FromSlash(spec))
 	b, err := readLocalActionMetadataFile(dir)
 	if err != nil {
-		c.remember(spec, nil, err)
+		c.writeCache(spec, nil) // Remember action was not found
 		return nil, err
 	}
 
 	var meta ActionMetadata
 	if err := yaml.Unmarshal(b, &meta); err != nil {
+		c.writeCache(spec, nil) // Remember action was invalid
 		msg := strings.ReplaceAll(err.Error(), "\n", " ")
-		err := fmt.Errorf("action.yml in %q is invalid: %s", dir, msg)
-		c.remember(spec, nil, err)
-		return nil, err
+		return nil, fmt.Errorf("action.yml in %q is invalid: %s", dir, msg)
 	}
 
-	c.remember(spec, &meta, nil)
+	c.writeCache(spec, &meta)
 	return &meta, nil
 }
 
