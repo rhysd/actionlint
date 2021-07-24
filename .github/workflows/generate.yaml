@@ -34,6 +34,7 @@ jobs:
           title: 'Update popular_actions.go by CI'
           body: |
             This PR updates `popular_actions.go` to the latest by running `go generate`.
-            This PR was created by [CI workflow](https://github.com/rhysd/actionlint/actions/workflows/generate.yaml) automatically.
+            This PR was created by [this workflow run](https://github.com/rhysd/actionlint/actions/runs/${{ github.run_id }}) automatically.
+            List of workflow runs is [here](https://github.com/rhysd/actionlint/actions/workflows/generate.yaml).
           assignees: rhysd
         if: ${{ steps.diff.outputs.pr == 'true' }}

@@ -52,8 +52,8 @@ brews:
       name: actionlint
     folder: HomebrewFormula
     commit_author:
-      name: github-actions
-      email: github@users.noreply.github.com
+      name: 'github-actions[bot]'
+      email: '41898282+github-actions[bot]@users.noreply.github.com'
     homepage: https://github.com/rhysd/actionlint#readme
     description: Static checker for GitHub Actions workflow files
     license: MIT
