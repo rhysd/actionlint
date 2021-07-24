@@ -1,0 +1,42 @@
+name: Generate
+on:
+  push:
+    branches: [gen-ci]
+
+jobs:
+  go-generate:
+    runs-on: ubuntu-latest
+    permissions:
+      contents: write
+      pull-requests: write
+    steps:
+      - uses: actions/checkout@v2
+      - uses: actions/setup-go@v2
+        with:
+          go-version: '1.16'
+      # - run: go generate
+      - run: echo >> command.go
+      - run: |
+          if git diff-files --quiet; then
+            echo '::set-output name=pr::false'
+          else
+            git diff
+            echo '::set-output name=pr::true'
+          fi
+        id: diff
+      - uses: peter-evans/create-pull-request@v3
+        with:
+          branch: 'ci/${{ github.run_id }}'
+          # commit-message: 'update popular_actions.go by `go generate` on CI'
+          commit-message: 'this is test'
+          committer: 'github-actions[bot] <41898282+github-actions[bot]@users.noreply.github.com>'
+          author: 'github-actions[bot] <41898282+github-actions[bot]@users.noreply.github.com>'
+          # title: 'Update popular_actions.go by CI'
+          title: 'Test'
+          # body: |
+          #   This PR updates `popular_actions.go` to the latest by running `go generate`.
+          #   This PR was created by [CI workflow](https://github.com/rhysd/actionlint/actions/workflows/generate.yaml) automatically.
+          body: |
+            This PR was created for testing. Please close me.
+          assignees: rhysd
+        if: ${{ steps.diff.outputs.pr == 'true' }}
