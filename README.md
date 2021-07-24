@@ -231,6 +231,7 @@ List of checks:
 - [Job ID and step ID uniqueness](#check-job-step-ids)
 - [Hardcoded credentials](#check-hardcoded-credentials)
 - [Environment variable names](#check-env-var-names)
+- [Permissions](#permissions)
 
 Note that actionlint focuses on catching mistakes in workflow files. If you want some general code style checks, please consider
 to use a general YAML checker like [yamllint][].
@@ -1685,6 +1686,51 @@ cases they are mistakes and they may cause some issues on using them in shell si
 
 actionlint checks environment variable names are correct in `env:` configuration.
 
+<a name="permissions"></a>
+## Permissions
+
+Example input:
+
+```yaml
+on: push
+
+# ERROR: Available values for whole permissions are "write-all", "read-all" or "none"
+permissions: write
+
+jobs:
+  test:
+    runs-on: ubuntu-latest
+    permissions:
+      # ERROR: "checks" is correct scope name
+      check: write
+      # ERROR: Available values are "read", "write" or "none"
+      issues: readable
+    steps:
+      - run: echo hello
+```
+
+Output:
+
+```
+test.yaml:4:14: permission must be one of "read-all", "write-all" but got "write" [syntax-check]
+  |
+4 | permissions: write
+  |              ^~~~~
+test.yaml:11:7: unknown permission scope "check". all available permission scopes are "actions", "checks", "contents", "deployments", "issues", "metadata", "packages", "pull-requests", "repository-projects", "security-events", "statuses" [permissions]
+   |
+11 |       check: write
+   |       ^~~~~~
+test.yaml:13:15: permission must be one of "none", "read", "write" but got "readable" [syntax-check]
+   |
+13 |       issues: readable
+   |               ^~~~~~~~
+```
+
+[Playground](https://rhysd.github.io/actionlint#eJxNjd0NwyAMhN89xS3AAmwDxBK0FCOMlfUDiVr16aTv/qR5dNNM1Hl8imqRph7nKJOJXhLVEzBZ51ZgWFMnq2TR2jRXw/Zu63/gBkDKnN7ftQethPF6GByOEOuDdXL/ldw+8eCUBZlrlQvntjLp)
+
+Permissions of `GITHUB_TOKEN` token can be configured at workflow-level or job-level by [`permissions:` section][perm-config-doc].
+actionlint checks permission scopes and permission values in workflow are correct.
+
 <a name="config-file"></a>
 # Configuration file
 
@@ -1832,3 +1878,5 @@ actionlint is distributed under [the MIT license](./LICENSE.txt).
 [reviewdog]: https://github.com/reviewdog/reviewdog
 [generate-popular-actions]: https://github.com/rhysd/actionlint/tree/main/scripts/generate-popular-actions
 [actions-cache]: https://github.com/actions/cache
+[permissions-doc]: https://docs.github.com/en/actions/reference/authentication-in-a-workflow#permissions-for-the-github_token
+[perm-config-doc]: https://docs.github.com/en/actions/reference/workflow-syntax-for-github-actions#permissions
