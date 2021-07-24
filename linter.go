@@ -418,10 +418,7 @@ func (l *Linter) check(path string, content []byte, project *Project, proc *conc
 			labels = cfg.SelfHostedRunner.Labels
 		}
 
-		var root string
-		if project != nil {
-			root = project.RootDir()
-		}
+		localActions := NewLocalActionsCache(project)
 
 		rules := []Rule{
 			NewRuleMatrix(),
@@ -430,7 +427,7 @@ func (l *Linter) check(path string, content []byte, project *Project, proc *conc
 			NewRuleRunnerLabel(labels),
 			NewRuleEvents(),
 			NewRuleJobNeeds(),
-			NewRuleAction(root),
+			NewRuleAction(localActions),
 			NewRuleEnvVar(),
 			NewRuleStepID(),
 			NewRuleGlob(),

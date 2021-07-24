@@ -1314,7 +1314,7 @@ test.yaml:11:15: tag of Docker action should not be empty: "docker://image" [act
    |
 11 |       - uses: 'docker://image:'
    |               ^~~~~~~~~~~~~~~~~
-test.yaml:13:15: Neither action.yaml nor action.yml is found in directory "github/actions/my-action" [action]
+test.yaml:13:15: neither action.yaml nor action.yml is found in directory "github/actions/my-action" [action]
    |
 13 |       - uses: ./github/actions/my-action
    |               ^~~~~~~~~~~~~~~~~~~~~~~~~~
