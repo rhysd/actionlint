@@ -10,8 +10,7 @@ Features:
 - **Syntax check for workflow files** to check unexpected or missing keys following [workflow syntax][syntax-doc]
 - **Strong type check for `${{ }}` expressions** to catch several semantic errors like access to not existing property,
   type mismatches, ...
-- **Actions usage check** to check that inputs at `with:` and outputs in `steps.{id}.outputs` are correct in workflow
-  steps
+- **Actions usage check** to check that inputs at `with:` and outputs in `steps.{id}.outputs` are correct
 - **[shellcheck][] and [pyflakes][] integrations** for scripts in `run:`
 - **Other several useful checks**; [glob syntax][filter-pattern-doc] validation, dependencies check for `needs:`,
   runner label validation, cron syntax validation, ...
@@ -1757,6 +1756,9 @@ Followings are unexhaustive list of interesting APIs.
   deduces its type, checking types and resolving variables (contexts).
 - `ValidateRefGlob()` and `ValidatePathGlob()` validate [glob filter pattern][filter-pattern-doc] and returns all errors
   found by the validator.
+- `ActionMetadata` is a struct for action metadata file (`action.yml`). It is used to check inputs specified at `with:`
+  and typing `steps.{id}.outputs` object strictly.
+- `PopularActions` global variable is data set of popular actions' metadata collected by [the script][generate-popular-actions].
 
 Note that the version of this repository is for command line tool `actionlint`. So it does not represent version of the
 library, meant that patch version bump may introduce some breaking changes.

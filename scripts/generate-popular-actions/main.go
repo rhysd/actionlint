@@ -44,7 +44,7 @@ type action struct {
 	ext  yamlExt
 }
 
-// Note: Actions used by top 1000 public repositories at GitHub sorted by number of occurences:
+// Note: Actions used by top 1000 public repositories at GitHub sorted by number of occurrences:
 // https://gist.github.com/rhysd/1db81fa80096b699b9c045f435d0cace
 
 var popularActions = []action{
