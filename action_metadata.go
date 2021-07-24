@@ -75,6 +75,7 @@ func (c *LocalActionsCache) writeCache(key string, val *ActionMetadata) {
 // LocalActionCache caches that the action was not found. At first search, it returns an error that
 // the action was not found. But at the second search, it does not return an error even if the result
 // is nil. This behavior prevents repeating to report the same error from multiple places.
+// Calling this method is thread-safe.
 func (c *LocalActionsCache) FindMetadata(spec string) (*ActionMetadata, error) {
 	if c.proj == nil || !strings.HasPrefix(spec, "./") {
 		return nil, nil
