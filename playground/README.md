@@ -18,8 +18,22 @@ make build
 # Install dependencies
 make install
 
+# Run tests
+make test
+
 # Clean all built files and dependencies
 make clean
+```
+
+## Lint
+
+Sources are linted with [eslint](https://eslint.org/) with [typescript-eslint](https://github.com/typescript-eslint/typescript-eslint),
+[prettier](https://prettier.io/) and [stylelint](https://stylelint.io/).
+
+`lint` npm script applies all the liters:
+
+```sh
+npm run lint
 ```
 
 ## Deployment

@@ -3,5 +3,6 @@
 /node_modules
 /package-lock.json
 /image
-/index.js
-/index.js.map
+/*.js
+/*.js.map
+/.testtimestamp

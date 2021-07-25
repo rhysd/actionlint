@@ -49,6 +49,28 @@ jobs:
           env_vars: OS
         env:
           OS: ${{ matrix.os }}
+  wasm:
+    name: Wasm
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v2
+      - uses: actions/setup-go@v2
+        with:
+          go-version: '1.16'
+      - uses: actions/setup-node@v2
+        with:
+          node-version: "lts/*"
+      - name: Cache node_modules
+        uses: actions/cache@v2
+        with:
+          path: ./playground/node_modules
+          key: ${{ hashFiles('./playground/package.json') }}
+      - name: Build playground
+        run: cd ./playground && make build
+      - name: Lint playground
+        run: cd ./playground && npm run lint
+      - name: Run tests for wasm
+        run: cd ./playground && npm test
   lint:
     name: Lint
     runs-on: ubuntu-latest
@@ -69,15 +91,5 @@ jobs:
           go get honnef.co/go/tools/cmd/staticcheck@latest
           echo "$(go env GOPATH)/bin" >> "$GITHUB_PATH"
       - run: make lint
-      - uses: actions/setup-node@v2
-        with:
-          node-version: "lts/*"
-      - name: Check playground files
-        run: |
-          cd ./playground
-          set -x
-          make main.wasm
-          npm install
-          npm run lint
       - name: Lint bash scripts
         run: shellcheck ./scripts/download-actionlint.bash ./playground/post-install.bash ./playground/deploy.bash
