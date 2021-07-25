@@ -60,6 +60,11 @@ jobs:
       - uses: actions/setup-node@v2
         with:
           node-version: "lts/*"
+      - name: Cache node_modules
+        uses: actions/cache@v2
+        with:
+          path: ./playground/node_modules
+          key: ${{ hashFiles('./playground/package.json') }}
       - name: Build playground
         run: cd ./playground && make build
       - name: Lint playground
