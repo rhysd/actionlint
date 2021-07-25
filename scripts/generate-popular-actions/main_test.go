@@ -241,7 +241,50 @@ func TestHelpOutput(t *testing.T) {
 	}
 }
 
-// TODO: Fetch from github.com
+func TestDetectNewRelease(t *testing.T) {
+	data := []*action{
+		{"rhysd/action-setup-vim", []string{"v0"}, "v1", yamlExtYML},
+	}
+	stdout := &bytes.Buffer{}
+	stderr := ioutil.Discard
+	status := run([]string{"test", "-d"}, stdout, stderr, data)
+	if status != 2 {
+		t.Fatal("exit status is not 2:", status)
+	}
+	out := stdout.String()
+	want := "https://github.com/rhysd/action-setup-vim/tree/v1"
+	if !strings.Contains(out, want) {
+		t.Fatalf("expected URL %q is not included in stdout: %q", want, out)
+	}
+}
+
+func TestDetectNoRelease(t *testing.T) {
+	testCases := []struct {
+		what string
+		next string
+	}{
+		{"no new version yet", "this-is-awesome-new-version"},
+		{"no next version", ""},
+	}
+
+	for _, tc := range testCases {
+		t.Run(tc.what, func(t *testing.T) {
+			data := []*action{
+				{"rhysd/action-setup-vim", []string{"v1"}, tc.next, yamlExtYML},
+			}
+			stdout := &bytes.Buffer{}
+			stderr := ioutil.Discard
+			status := run([]string{"test", "-d"}, stdout, stderr, data)
+			if status != 0 {
+				t.Fatal("exit status is non-zero:", status)
+			}
+			out := stdout.String()
+			if out != "" {
+				t.Fatalf("stdout is not empty: %q", out)
+			}
+		})
+	}
+}
 
 // Error cases
 
@@ -360,5 +403,22 @@ func TestInvalidCommandArgs(t *testing.T) {
 				t.Fatalf("wanted %q in stderr: %q", tc.want, msg)
 			}
 		})
+	}
+}
+
+func TestDetectErrorBadRequest(t *testing.T) {
+	data := []*action{
+		// This expects to cause 400 Bad Request
+		{"", []string{"v1"}, "v2", yamlExtYML},
+	}
+	stdout := ioutil.Discard
+	stderr := &bytes.Buffer{}
+	status := run([]string{"test", "-d"}, stdout, stderr, data)
+	if status != 1 {
+		t.Fatal("exit status is not 1:", status)
+	}
+	out := stderr.String()
+	if !strings.Contains(out, "head request for https://raw.githubusercontent.com//v2/action.yml was not successful") {
+		t.Fatalf("stderr was unexpected: %q", out)
 	}
 }

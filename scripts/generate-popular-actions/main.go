@@ -38,11 +38,6 @@ type actionJSON struct {
 	Meta *actionlint.ActionMetadata `json:"metadata"`
 }
 
-type newRelease struct {
-	slug string
-	ver  string
-}
-
 type action struct {
 	slug string
 	tags []string
@@ -490,7 +485,7 @@ Flags:`)
 		for _, u := range urls {
 			fmt.Fprintln(stdout, u)
 		}
-		return 1
+		return 2
 	}
 
 	if format != "go" && format != "jsonl" {
