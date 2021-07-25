@@ -17,6 +17,7 @@
   },
   "files": [
     "index.ts",
-    "lib.d.ts"
+    "lib.d.ts",
+    "test.ts"
   ]
 }

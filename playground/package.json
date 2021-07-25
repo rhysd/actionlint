@@ -13,20 +13,25 @@
     "build": "tsc -p .",
     "watch": "tsc -p . --watch",
     "serve": "light-server -s . -p 1234",
-    "test": "echo \"Error: no test specified\" && exit 1"
+    "test": "mocha ./test.js"
   },
   "author": "rhysd <lin90162@yahoo.co.jp> (https://rhysd.github.io/)",
   "license": "MIT",
   "dependencies": {
+    "@types/jsdom": "^16.2.13",
+    "@types/mocha": "^9.0.0",
     "bulma": "^0.9.3",
     "bulmaswatch": "^0.8.1",
     "codemirror": "^5.62.0",
     "devicon": "^2.12.0",
     "ismobilejs": "^1.1.1",
+    "jsdom": "^16.6.0",
+    "mocha": "^9.0.2",
     "pako": "^2.0.3"
   },
   "devDependencies": {
     "@types/codemirror": "^5.60.2",
+    "@types/node": "^16.4.2",
     "@types/pako": "^1.0.2",
     "@typescript-eslint/eslint-plugin": "^4.28.2",
     "@typescript-eslint/parser": "^4.28.2",
