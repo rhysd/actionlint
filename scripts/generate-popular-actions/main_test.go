@@ -12,8 +12,8 @@ import (
 	"github.com/google/go-cmp/cmp"
 )
 
-var testDummyPopularActions = []action{
-	{"rhysd/action-setup-vim", []string{"v1"}, yamlExtYML},
+var testDummyPopularActions = []*action{
+	{"rhysd/action-setup-vim", []string{"v1"}, "v2", yamlExtYML},
 }
 
 // Normal cases
@@ -46,6 +46,13 @@ func TestDataSource(t *testing.T) {
 
 		tags := map[string]int{}
 		for i, tag := range a.tags {
+			if tag == "" {
+				t.Errorf("tags[%d] at action %q must not be empty string", i, a.slug)
+				continue
+			}
+			if tag == a.next {
+				t.Errorf("tags[%d] at action %q is equal to next verion %q", i, a.slug, a.next)
+			}
 			if j, ok := tags[tag]; ok {
 				t.Errorf("duplicate tag %q at action %q appears: tags[%d] v.s. tags[%d]", tag, a.slug, i, j)
 			} else {
@@ -163,9 +170,9 @@ func TestWriteGoFile(t *testing.T) {
 }
 
 func TestFetchRemoteYAML(t *testing.T) {
-	data := []action{
-		{"rhysd/action-setup-vim", []string{"v1.2.7"}, yamlExtYML},
-		{"rhysd/changelog-from-release/action", []string{"v2.2.2"}, yamlExtYML},
+	data := []*action{
+		{"rhysd/action-setup-vim", []string{"v1.2.7"}, "", yamlExtYML},
+		{"rhysd/changelog-from-release/action", []string{"v2.2.2"}, "", yamlExtYML},
 	}
 	stdout := &bytes.Buffer{}
 	stderr := ioutil.Discard
@@ -310,8 +317,8 @@ func TestWriteError(t *testing.T) {
 }
 
 func TestCouldNotFetch(t *testing.T) {
-	data := []action{
-		{"rhysd/this-action-does-not-exist", []string{"v1"}, yamlExtYML},
+	data := []*action{
+		{"rhysd/this-action-does-not-exist", []string{"v1"}, "v2", yamlExtYML},
 	}
 
 	stdout := testErrorWriter{}

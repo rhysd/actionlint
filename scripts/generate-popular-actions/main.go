@@ -38,97 +38,112 @@ type actionJSON struct {
 	Meta *actionlint.ActionMetadata `json:"metadata"`
 }
 
+type newRelease struct {
+	slug string
+	ver  string
+}
+
 type action struct {
 	slug string
 	tags []string
+	next string
 	ext  yamlExt
 }
 
 // Note: Actions used by top 1000 public repositories at GitHub sorted by number of occurrences:
 // https://gist.github.com/rhysd/1db81fa80096b699b9c045f435d0cace
 
-var popularActions = []action{
-	{"8398a7/action-slack", []string{"v1", "v2", "v3"}, yamlExtYML},
-	{"Azure/container-scan", []string{"v0"}, yamlExtYAML},
-	{"EnricoMi/publish-unit-test-result-action", []string{"v1"}, yamlExtYML},
-	{"JamesIves/github-pages-deploy-action", []string{"releases/v3", "releases/v4"}, yamlExtYML},
-	{"ReactiveCircus/android-emulator-runner", []string{"v1", "v2"}, yamlExtYML},
-	{"actions-cool/issues-helper", []string{"v1", "v2"}, yamlExtYML},
-	{"actions-rs/audit-check", []string{"v1"}, yamlExtYML},
-	{"actions-rs/cargo", []string{"v1"}, yamlExtYML},
-	{"actions-rs/clippy-check", []string{"v1"}, yamlExtYML},
-	{"actions-rs/toolchain", []string{"v1"}, yamlExtYML},
-	{"actions/cache", []string{"v1", "v2"}, yamlExtYML},
-	{"actions/checkout", []string{"v1", "v2"}, yamlExtYML},
-	{"actions/delete-package-versions", []string{"v1"}, yamlExtYML},
-	{"actions/download-artifact", []string{"v1", "v2"}, yamlExtYML},
-	{"actions/first-interaction", []string{"v1"}, yamlExtYML},
-	{"actions/github-script", []string{"v1", "v2", "v3", "v4"}, yamlExtYML},
-	{"actions/labeler", []string{"v2", "v3"}, yamlExtYML}, // v1 does not exist
-	{"actions/setup-dotnet", []string{"v1"}, yamlExtYML},
-	{"actions/setup-go", []string{"v1", "v2"}, yamlExtYML},
-	{"actions/setup-java", []string{"v1", "v2"}, yamlExtYML},
-	{"actions/setup-node", []string{"v1", "v2"}, yamlExtYML},
-	{"actions/setup-python", []string{"v1", "v2"}, yamlExtYML},
-	{"actions/stale", []string{"v1", "v2", "v3", "v4"}, yamlExtYML},
-	{"actions/upload-artifact", []string{"v1", "v2"}, yamlExtYML},
-	{"aws-actions/configure-aws-credentials", []string{"v1"}, yamlExtYML},
-	{"azure/aks-set-context", []string{"v1"}, yamlExtYML},
-	{"azure/login", []string{"v1"}, yamlExtYML},
-	{"bahmutov/npm-install", []string{"v1"}, yamlExtYML},
-	{"codecov/codecov-action", []string{"v1", "v2"}, yamlExtYML},
-	{"dawidd6/action-download-artifact", []string{"v2"}, yamlExtYML},
-	{"dawidd6/action-send-mail", []string{"v1", "v2", "v3"}, yamlExtYML},
-	{"dessant/lock-threads", []string{"v2"}, yamlExtYML}, // v1 does not exist
-	{"docker/build-push-action", []string{"v1", "v2"}, yamlExtYML},
-	{"docker/login-action", []string{"v1"}, yamlExtYML},
-	{"docker/metadata-action", []string{"v1", "v2", "v3"}, yamlExtYML},
-	{"docker/setup-buildx-action", []string{"v1"}, yamlExtYML},
-	{"docker/setup-qemu-action", []string{"v1"}, yamlExtYML},
-	{"dorny/paths-filter", []string{"v1", "v2"}, yamlExtYML},
-	{"enriikke/gatsby-gh-pages-action", []string{"v2"}, yamlExtYML},
-	{"erlef/setup-beam", []string{"v1"}, yamlExtYML},
-	{"game-ci/unity-builder", []string{"v2"}, yamlExtYML},
-	{"getsentry/paths-filter", []string{"v1", "v2"}, yamlExtYML},
-	{"github/codeql-action/analyze", []string{"v1"}, yamlExtYML},
-	{"github/codeql-action/autobuild", []string{"v1"}, yamlExtYML},
-	{"github/codeql-action/init", []string{"v1"}, yamlExtYML},
-	{"github/super-linter", []string{"v3", "v4"}, yamlExtYML},
-	{"githubocto/flat", []string{"v1", "v2", "v3"}, yamlExtYML},
-	{"golangci/golangci-lint-action", []string{"v1", "v2"}, yamlExtYML},
-	{"goreleaser/goreleaser-action", []string{"v1", "v2"}, yamlExtYML},
-	{"gradle/wrapper-validation-action", []string{"v1"}, yamlExtYML},
-	{"haskell/actions/setup", []string{"v1"}, yamlExtYML},
-	{"marvinpinto/action-automatic-releases", []string{"latest"}, yamlExtYML},
-	{"microsoft/playwright-github-action", []string{"v1"}, yamlExtYML},
-	{"mikepenz/release-changelog-builder-action", []string{"v1", "v2"}, yamlExtYML},
-	{"msys2/setup-msys2", []string{"v1", "v2"}, yamlExtYML},
-	{"ncipollo/release-action", []string{"v1"}, yamlExtYML},
-	{"nwtgck/actions-netlify", []string{"v1"}, yamlExtYML},
-	{"octokit/request-action", []string{"v1.x", "v2.x"}, yamlExtYML},
-	{"peaceiris/actions-gh-pages", []string{"v2", "v3"}, yamlExtYML},
-	{"peter-evans/create-pull-request", []string{"v1", "v2", "v3"}, yamlExtYML},
-	{"preactjs/compressed-size-action", []string{"v1", "v2"}, yamlExtYML},
-	{"reviewdog/action-actionlint", []string{"v1"}, yamlExtYML},
-	{"reviewdog/action-eslint", []string{"v1"}, yamlExtYML},
-	{"reviewdog/action-golangci-lint", []string{"v1"}, yamlExtYML},
-	{"reviewdog/action-hadolint", []string{"v1"}, yamlExtYML},
-	{"reviewdog/action-misspell", []string{"v1"}, yamlExtYML},
-	{"reviewdog/action-rubocop", []string{"v1"}, yamlExtYML},
-	{"reviewdog/action-shellcheck", []string{"v1"}, yamlExtYML},
-	{"reviewdog/action-tflint", []string{"v1"}, yamlExtYML},
-	{"rhysd/action-setup-vim", []string{"v1"}, yamlExtYML},
-	{"ridedott/merge-me-action", []string{"v1", "v2"}, yamlExtYML},
-	{"rtCamp/action-slack-notify", []string{"v2"}, yamlExtYML},
-	{"ruby/setup-ruby", []string{"v1"}, yamlExtYML},
-	{"shivammathur/setup-php", []string{"v1", "v2"}, yamlExtYML},
-	{"softprops/action-gh-release", []string{"v1"}, yamlExtYML},
-	{"subosito/flutter-action", []string{"v1"}, yamlExtYML},
-	{"treosh/lighthouse-ci-action", []string{"v1", "v2", "v3", "v7", "v8"}, yamlExtYML},
-	{"wearerequired/lint-action", []string{"v1"}, yamlExtYML},
+var popularActions = []*action{
+	{"8398a7/action-slack", []string{"v1", "v2", "v3"}, "v4", yamlExtYML},
+	{"Azure/container-scan", []string{"v0"}, "v1", yamlExtYAML},
+	{"EnricoMi/publish-unit-test-result-action", []string{"v1"}, "v2", yamlExtYML},
+	{"JamesIves/github-pages-deploy-action", []string{"releases/v3", "releases/v4"}, "release/v5", yamlExtYML},
+	{"ReactiveCircus/android-emulator-runner", []string{"v1", "v2"}, "v3", yamlExtYML},
+	{"actions-cool/issues-helper", []string{"v1", "v2"}, "v3", yamlExtYML},
+	{"actions-rs/audit-check", []string{"v1"}, "v2", yamlExtYML},
+	{"actions-rs/cargo", []string{"v1"}, "v2", yamlExtYML},
+	{"actions-rs/clippy-check", []string{"v1"}, "v2", yamlExtYML},
+	{"actions-rs/toolchain", []string{"v1"}, "v2", yamlExtYML},
+	{"actions/cache", []string{"v1", "v2"}, "v3", yamlExtYML},
+	{"actions/checkout", []string{"v1", "v2"}, "v3", yamlExtYML},
+	{"actions/delete-package-versions", []string{"v1"}, "v2", yamlExtYML},
+	{"actions/download-artifact", []string{"v1", "v2"}, "v3", yamlExtYML},
+	{"actions/first-interaction", []string{"v1"}, "v2", yamlExtYML},
+	{"actions/github-script", []string{"v1", "v2", "v3", "v4"}, "v5", yamlExtYML},
+	{"actions/labeler", []string{"v2", "v3"}, "v4", yamlExtYML}, // v1 does not exist
+	{"actions/setup-dotnet", []string{"v1"}, "v2", yamlExtYML},
+	{"actions/setup-go", []string{"v1", "v2"}, "v3", yamlExtYML},
+	{"actions/setup-java", []string{"v1", "v2"}, "v3", yamlExtYML},
+	{"actions/setup-node", []string{"v1", "v2"}, "v3", yamlExtYML},
+	{"actions/setup-python", []string{"v1", "v2"}, "v3", yamlExtYML},
+	{"actions/stale", []string{"v1", "v2", "v3", "v4"}, "v5", yamlExtYML},
+	{"actions/upload-artifact", []string{"v1", "v2"}, "v3", yamlExtYML},
+	{"aws-actions/configure-aws-credentials", []string{"v1"}, "v2", yamlExtYML},
+	{"azure/aks-set-context", []string{"v1"}, "v2", yamlExtYML},
+	{"azure/login", []string{"v1"}, "v2", yamlExtYML},
+	{"bahmutov/npm-install", []string{"v1"}, "v2", yamlExtYML},
+	{"codecov/codecov-action", []string{"v1", "v2"}, "v3", yamlExtYML},
+	{"dawidd6/action-download-artifact", []string{"v2"}, "v3", yamlExtYML},
+	{"dawidd6/action-send-mail", []string{"v1", "v2", "v3"}, "v4", yamlExtYML},
+	{"dessant/lock-threads", []string{"v2"}, "v3", yamlExtYML}, // v1 does not exist
+	{"docker/build-push-action", []string{"v1", "v2"}, "v3", yamlExtYML},
+	{"docker/login-action", []string{"v1"}, "v2", yamlExtYML},
+	{"docker/metadata-action", []string{"v1", "v2", "v3"}, "v4", yamlExtYML},
+	{"docker/setup-buildx-action", []string{"v1"}, "v2", yamlExtYML},
+	{"docker/setup-qemu-action", []string{"v1"}, "v2", yamlExtYML},
+	{"dorny/paths-filter", []string{"v1", "v2"}, "v3", yamlExtYML},
+	{"enriikke/gatsby-gh-pages-action", []string{"v2"}, "v3", yamlExtYML},
+	{"erlef/setup-beam", []string{"v1"}, "v2", yamlExtYML},
+	{"game-ci/unity-builder", []string{"v2"}, "v3", yamlExtYML},
+	{"getsentry/paths-filter", []string{"v1", "v2"}, "v3", yamlExtYML},
+	{"github/codeql-action/analyze", []string{"v1"}, "v2", yamlExtYML},
+	{"github/codeql-action/autobuild", []string{"v1"}, "v2", yamlExtYML},
+	{"github/codeql-action/init", []string{"v1"}, "v2", yamlExtYML},
+	{"github/super-linter", []string{"v3", "v4"}, "v5", yamlExtYML},
+	{"githubocto/flat", []string{"v1", "v2", "v3"}, "v4", yamlExtYML},
+	{"golangci/golangci-lint-action", []string{"v1", "v2"}, "v3", yamlExtYML},
+	{"goreleaser/goreleaser-action", []string{"v1", "v2"}, "v3", yamlExtYML},
+	{"gradle/wrapper-validation-action", []string{"v1"}, "v2", yamlExtYML},
+	{"haskell/actions/setup", []string{"v1"}, "v2", yamlExtYML},
+	{"marvinpinto/action-automatic-releases", []string{"latest"}, "", yamlExtYML},
+	{"microsoft/playwright-github-action", []string{"v1"}, "v2", yamlExtYML},
+	{"mikepenz/release-changelog-builder-action", []string{"v1", "v2"}, "v3", yamlExtYML},
+	{"msys2/setup-msys2", []string{"v1", "v2"}, "v3", yamlExtYML},
+	{"ncipollo/release-action", []string{"v1"}, "v2", yamlExtYML},
+	{"nwtgck/actions-netlify", []string{"v1"}, "v2", yamlExtYML},
+	{"octokit/request-action", []string{"v1.x", "v2.x"}, "v3.x", yamlExtYML},
+	{"peaceiris/actions-gh-pages", []string{"v2", "v3"}, "v4", yamlExtYML},
+	{"peter-evans/create-pull-request", []string{"v1", "v2", "v3"}, "v4", yamlExtYML},
+	{"preactjs/compressed-size-action", []string{"v1", "v2"}, "v3", yamlExtYML},
+	{"reviewdog/action-actionlint", []string{"v1"}, "v2", yamlExtYML},
+	{"reviewdog/action-eslint", []string{"v1"}, "v2", yamlExtYML},
+	{"reviewdog/action-golangci-lint", []string{"v1"}, "v2", yamlExtYML},
+	{"reviewdog/action-hadolint", []string{"v1"}, "v2", yamlExtYML},
+	{"reviewdog/action-misspell", []string{"v1"}, "v2", yamlExtYML},
+	{"reviewdog/action-rubocop", []string{"v1"}, "v2", yamlExtYML},
+	{"reviewdog/action-shellcheck", []string{"v1"}, "v2", yamlExtYML},
+	{"reviewdog/action-tflint", []string{"v1"}, "v2", yamlExtYML},
+	{"rhysd/action-setup-vim", []string{"v1"}, "v2", yamlExtYML},
+	{"ridedott/merge-me-action", []string{"v1", "v2"}, "v3", yamlExtYML},
+	{"rtCamp/action-slack-notify", []string{"v2"}, "v3", yamlExtYML},
+	{"ruby/setup-ruby", []string{"v1"}, "v2", yamlExtYML},
+	{"shivammathur/setup-php", []string{"v1", "v2"}, "v3", yamlExtYML},
+	{"softprops/action-gh-release", []string{"v1"}, "v2", yamlExtYML},
+	{"subosito/flutter-action", []string{"v1"}, "v2", yamlExtYML},
+	{"treosh/lighthouse-ci-action", []string{"v1", "v2", "v3", "v7", "v8"}, "v9", yamlExtYML},
+	{"wearerequired/lint-action", []string{"v1"}, "v2", yamlExtYML},
 }
 
-func fetchRemote(actions []action) (map[string]*actionlint.ActionMetadata, error) {
+func buildURL(slug, tag string, ext yamlExt) string {
+	path := ""
+	if ss := strings.Split(slug, "/"); len(ss) > 2 {
+		slug = ss[0] + "/" + ss[1]
+		path = strings.Join(ss[2:], "/") + "/"
+	}
+	return fmt.Sprintf("https://raw.githubusercontent.com/%s/%s/%saction.%s", slug, tag, path, ext.String())
+}
+
+func fetchRemote(actions []*action) (map[string]*actionlint.ActionMetadata, error) {
 	type request struct {
 		slug string
 		tag  string
@@ -151,13 +166,7 @@ func fetchRemote(actions []action) (map[string]*actionlint.ActionMetadata, error
 			for {
 				select {
 				case req := <-reqs:
-					slug := req.slug
-					path := ""
-					if ss := strings.Split(slug, "/"); len(ss) > 2 {
-						slug = ss[0] + "/" + ss[1]
-						path = strings.Join(ss[2:], "/") + "/"
-					}
-					url := fmt.Sprintf("https://raw.githubusercontent.com/%s/%s/%saction.%s", slug, req.tag, path, req.ext.String())
+					url := buildURL(req.slug, req.tag, req.ext)
 					log.Println("Start fetching", url)
 					res, err := c.Get(url)
 					if err != nil {
@@ -353,14 +362,85 @@ func readJSONL(file string) (map[string]*actionlint.ActionMetadata, error) {
 	}
 }
 
-func run(args []string, stdout, stderr io.Writer, knownActions []action) int {
+func detectNewReleaseURLs(actions []*action) ([]string, error) {
+	urls := make(chan string)
+	done := make(chan struct{})
+	errs := make(chan error)
+	reqs := make(chan *action)
+
+	for i := 0; i < 4; i++ {
+		go func(ret chan<- string, errs chan<- error, reqs <-chan *action, done <-chan struct{}) {
+			var c http.Client
+			for {
+				select {
+				case a := <-reqs:
+					if a.next == "" {
+						ret <- ""
+						break
+					}
+					url := buildURL(a.slug, a.next, a.ext)
+					log.Println("Checking", url)
+					res, err := c.Head(url)
+					if err != nil {
+						errs <- fmt.Errorf("could not send head request to %s: %w", url, err)
+						break
+					}
+					if res.StatusCode == 404 {
+						log.Println("Not found:", url)
+						ret <- ""
+						break
+					}
+					if res.StatusCode < 200 || 300 <= res.StatusCode {
+						errs <- fmt.Errorf("head request for %s was not successful: %s", url, res.Status)
+						break
+					}
+					log.Println("Found:", url)
+					ret <- fmt.Sprintf("https://github.com/%s/tree/%s", a.slug, a.next)
+				case <-done:
+					return
+				}
+			}
+		}(urls, errs, reqs, done)
+	}
+
+	go func(done <-chan struct{}) {
+		for _, a := range actions {
+			select {
+			case reqs <- a:
+			case <-done:
+				return
+			}
+		}
+	}(done)
+
+	us := []string{}
+	for i := 0; i < len(actions); i++ {
+		select {
+		case u := <-urls:
+			if u != "" {
+				us = append(us, u)
+			}
+		case err := <-errs:
+			close(done)
+			return nil, err
+		}
+	}
+	close(done)
+
+	sort.Strings(us)
+	return us, nil
+}
+
+func run(args []string, stdout, stderr io.Writer, knownActions []*action) int {
 	var source string
 	var format string
 	var quiet bool
+	var detect bool
 
 	flags := flag.NewFlagSet(args[0], flag.ContinueOnError)
 	flags.StringVar(&source, "s", "remote", "source of actions. \"remote\" or jsonl file path. \"remote\" fetches data from github.com")
 	flags.StringVar(&format, "f", "go", "format of generated code output to stdout. \"go\" or \"jsonl\"")
+	flags.BoolVar(&detect, "d", false, "detect new version of actions are released")
 	flags.BoolVar(&quiet, "q", false, "disable log output to stderr")
 	flags.SetOutput(stderr)
 	flags.Usage = func() {
@@ -368,9 +448,14 @@ func run(args []string, stdout, stderr io.Writer, knownActions []action) int {
 
   This tool fetches action.yml files of popular actions and generates code to
   given file. When no file path is given in arguments, this tool outputs
-  generated code to stdout. It can fetch data from remote GitHub repositories
-  and from local JSONL file (-s option). And it can output Go code or JSONL
-  serialized data (-f option).
+  generated code to stdout.
+
+  It can fetch data from remote GitHub repositories and from local JSONL file
+  (-s option). And it can output Go code or JSONL serialized data (-f option).
+
+  When -d flag is given, it tries to detect new release for popular actions.
+  When detecting some new releases, it shows their URLs to stdout and returns
+  non-zero exit status.
 
 Flags:`)
 		flags.PrintDefaults()
@@ -390,6 +475,22 @@ Flags:`)
 		log.SetOutput(ioutil.Discard)
 	} else {
 		log.SetOutput(stderr)
+	}
+
+	if detect {
+		urls, err := detectNewReleaseURLs(knownActions)
+		if err != nil {
+			fmt.Fprintln(stderr, err)
+			return 1
+		}
+		if len(urls) == 0 {
+			return 0
+		}
+		fmt.Fprintln(stdout, "Detected some new releases")
+		for _, u := range urls {
+			fmt.Fprintln(stdout, u)
+		}
+		return 1
 	}
 
 	if format != "go" && format != "jsonl" {
