@@ -11,7 +11,7 @@ sha="$(git rev-parse HEAD)"
 echo "Deploying playground from ${sha}"
 
 echo 'Ensuring to install dependencies and building wasm'
-(cd ./playground && make clean && make build)
+(cd ./playground && make clean && make build && make test)
 
 echo 'Creating ./playground-dist'
 rm -rf ./playground-dist
