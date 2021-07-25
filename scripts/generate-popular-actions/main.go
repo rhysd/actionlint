@@ -112,7 +112,7 @@ var popularActions = []*action{
 	{"preactjs/compressed-size-action", []string{"v1", "v2"}, "v3", yamlExtYML},
 	{"reviewdog/action-actionlint", []string{"v1"}, "v2", yamlExtYML},
 	{"reviewdog/action-eslint", []string{"v1"}, "v2", yamlExtYML},
-	{"reviewdog/action-golangci-lint", []string{"v1"}, "v2", yamlExtYML},
+	{"reviewdog/action-golangci-lint", []string{"v1", "v2"}, "v3", yamlExtYML},
 	{"reviewdog/action-hadolint", []string{"v1"}, "v2", yamlExtYML},
 	{"reviewdog/action-misspell", []string{"v1"}, "v2", yamlExtYML},
 	{"reviewdog/action-rubocop", []string{"v1"}, "v2", yamlExtYML},
