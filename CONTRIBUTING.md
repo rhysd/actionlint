@@ -15,8 +15,7 @@ or
 make build
 ```
 
-It generates data set for checking popular actions in `popular_actions.go`. To regenerate it, run `go generate`.
-The command runs [`generate-popular-actions`](./scripts/generate-popular-actions) script.
+It generates some sources with `go generate`.
 
 ## How to run tests
 
@@ -125,3 +124,13 @@ Please use [actionlint-workflow-ast](./scripts/actionlint-workflow-ast) script.
 ```sh
 go run ./scripts/actionlint-workflow-ast /path/to/workflow.yaml
 ```
+
+## Maintain `popular_actions.go`
+
+[`popular_actions.go`](./popular_actions.go) is generated automatically with `go generate`. The command runs
+[`generate-popular-actions`](./scripts/generate-popular-actions) script.
+
+The script also can detect new releases of popular actions on GitHub by giving `-d` flag.
+
+Detecting new release and updating `popular_actions.go` are run weekly on CI by [`generate`](.github/workflows/generate.yaml)
+workflow. Runs can be checked [here](https://github.com/rhysd/actionlint/actions/workflows/generate.yaml).

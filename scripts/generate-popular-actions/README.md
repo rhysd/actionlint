@@ -12,10 +12,18 @@ It does:
   - as Go source file
   - as JSONL file
 
-Usage:
+## Usage
+
+Generate Go source:
 
 ```sh
 go run ./scripts/generate-popular-actions ./popular_actions.go
+```
+
+Detect new releases on GitHub:
+
+```sh
+go run ./scripts/generate-popular-actions -d
 ```
 
 Please see output of `-help` flag for more details.
