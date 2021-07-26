@@ -1780,7 +1780,7 @@ cases.
 | `2`    | The command failed due to invalid command line option   |
 | `3`    | The command failed due to some fatal error              |
 
-# Use actionlint as library
+# Use actionlint as a library
 
 actionlint can be used from Go programs. See [the documentation][apidoc] to know the list of all APIs. It contains
 workflow file parser built on top of `go-yaml/yaml`, expression `${{ }}` lexer/parser/checker, etc.
