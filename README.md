@@ -1496,7 +1496,10 @@ actionlint checks inputs of many popular actions such as `actions/checkout@v2`. 
 this is done by checking `with:` section items with a small database collected at building `actionlint` binary. actionlint
 can check popular actions without fetching any `action.yml` of the actions from remote so that it can run efficiently.
 
-Currently actionlint supports more than 100 popular actions The data are put at [`popular_actions.go`](./popular_actions.go)
+Note that it only supports the case of specifying major version like `actions/checkout@v2`. Fixing version of action like
+`actions/checkout@v2.3.4` and using the HEAD of action like `actions/checkout@main` are not supported for now.
+
+So far, actionlint supports more than 100 popular actions The data set is embedded at [`popular_actions.go`](./popular_actions.go)
 and were automatically collected by [a script][generate-popular-actions]. If you want more checks for other actions, please
 make a request [as an issue][issue-form].
 
