@@ -57,8 +57,11 @@ func (rule *RuleEvents) checkCron(spec *String) {
 	next := sched.Next(start)
 	diff := next.Sub(start).Seconds()
 
-	if diff <= 60.0 {
-		rule.errorf(spec.Pos, "scheduled job runs too frequently. it runs once per %g seconds", diff)
+	// (#14) https://docs.github.com/en/actions/reference/events-that-trigger-workflows#scheduled-events
+	//
+	// > The shortest interval you can run scheduled workflows is once every 5 minutes.
+	if diff <= 60.0*5 {
+		rule.errorf(spec.Pos, "scheduled job runs too frequently. it runs once per %g seconds. the shortest interval is once every 5 minutes", diff)
 	}
 }
 

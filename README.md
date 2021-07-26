@@ -1264,7 +1264,7 @@ test.yaml:4:13: invalid CRON format "0 */3 * *" in schedule event: Expected exac
   |
 4 |     - cron: '0 */3 * *'
   |             ^~
-test.yaml:6:13: scheduled job runs too frequently. it runs once per 60 seconds [events]
+test.yaml:6:13: scheduled job runs too frequently. it runs once per 60 seconds. the shortest interval is once every 5 minutes [events]
   |
 6 |     - cron: '* */3 * * *'
   |             ^~
@@ -1274,8 +1274,11 @@ test.yaml:6:13: scheduled job runs too frequently. it runs once per 60 seconds [
 
 To trigger a workflow in specific interval, [scheduled event][schedule-event-doc] can be defined in [POSIX CRON syntax][cron-syntax].
 
-actionlint checks the CRON syntax and frequency of running the job. When a job is run more frequently than once per 1 minute,
-actionlint reports it as error.
+actionlint checks the CRON syntax and frequency of running a job. [The official document][schedule-event-doc] says:
+
+> The shortest interval you can run scheduled workflows is once every 5 minutes.
+
+When the job is run more frequently than once per every 5 minutes, actionlint reports it as an error.
 
 <a name="check-runner-labels"></a>
 ## Runner labels
