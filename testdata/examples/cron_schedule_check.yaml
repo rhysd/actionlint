@@ -5,6 +5,11 @@ on:
     # Interval of scheduled job is too small (job runs too frequently)
     - cron: '* */3 * * *'
 
+    # It's OK. The interval can be every 5 minutes.
+    - cron: '*/5 * * * *'
+    # It's bad. The interval can't be less than every 5 minutes.
+    - cron: '*/4 * * * *'
+
 jobs:
   test:
     runs-on: ubuntu-latest
