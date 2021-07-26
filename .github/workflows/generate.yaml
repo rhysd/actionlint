@@ -3,6 +3,8 @@ on:
   push:
     paths:
       - 'scripts/generate-popular-actions/main.go'
+    tags-ignore:
+      - '*'
   schedule:
     # Every Saturday 10:21 in JST
     - cron: '21 1 * * 6'
