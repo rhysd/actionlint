@@ -234,7 +234,7 @@ List of checks:
 - [Permissions](#permissions)
 
 Note that actionlint focuses on catching mistakes in workflow files. If you want some general code style checks, please consider
-to use a general YAML checker like [yamllint][].
+using a general YAML checker like [yamllint][].
 
 <a name="check-unexpected-keys"></a>
 ## Unexpected keys
@@ -839,7 +839,7 @@ jobs:
     runs-on: ubuntu-latest
     steps:
       - run: echo 'parepare something'
-      # ERROR: Outputs in other job is not accessble
+      # ERROR: Outputs in other job is not accessible
       - run: echo '${{ needs.prepare.outputs.prepared }}'
   build:
     needs: [install, prepare]
@@ -1780,7 +1780,7 @@ cases.
 | `2`    | The command failed due to invalid command line option   |
 | `3`    | The command failed due to some fatal error              |
 
-# Use actionlint as library
+# Use actionlint as a library
 
 actionlint can be used from Go programs. See [the documentation][apidoc] to know the list of all APIs. It contains
 workflow file parser built on top of `go-yaml/yaml`, expression `${{ }}` lexer/parser/checker, etc.
@@ -1825,8 +1825,8 @@ library, meant that patch version bump may introduce some breaking changes.
 
 # Bug reporting
 
-When you 're seeing some bugs or false positives, it is helpful to [file a new issue][issue-form] with a minimal example
-of input. Giving me some feedbacks like feature requests or idea of additional checks is also welcome.
+When you see some bugs or false positives, it is helpful to [file a new issue][issue-form] with a minimal example
+of input. Giving me some feedbacks like feature requests or ideas of additional checks is also welcome.
 
 # References
 
