@@ -1825,8 +1825,8 @@ library, meant that patch version bump may introduce some breaking changes.
 
 # Bug reporting
 
-When you 're seeing some bugs or false positives, it is helpful to [file a new issue][issue-form] with a minimal example
-of input. Giving me some feedbacks like feature requests or idea of additional checks is also welcome.
+When you see some bugs or false positives, it is helpful to [file a new issue][issue-form] with a minimal example
+of input. Giving me some feedbacks like feature requests or ideas of additional checks is also welcome.
 
 # References
 
