@@ -839,7 +839,7 @@ jobs:
     runs-on: ubuntu-latest
     steps:
       - run: echo 'parepare something'
-      # ERROR: Outputs in other job is not accessble
+      # ERROR: Outputs in other job is not accessible
       - run: echo '${{ needs.prepare.outputs.prepared }}'
   build:
     needs: [install, prepare]
