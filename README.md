@@ -74,14 +74,14 @@ possible and make false positives as minimal as possible.
 
 # Why?
 
-- **Running workflow is time consuming.** You need to push the changes and wait until the workflow runs on GitHub even if
+- **Running a workflow is time consuming.** You need to push the changes and wait until the workflow runs on GitHub even if
   it contains some trivial mistakes. [act][] is useful to run the workflow locally. But it is not suitable for CI and still
   time consuming when your workflow gets larger.
 - **Checks of workflow files by GitHub are very loose.** It reports no error even if unexpected keys are in mappings
   (meant that some typos in keys). And also it reports no error when accessing to property which is actually not existing.
   For example `matrix.foo` when no `foo` is defined in `matrix:` section, it is evaluated to `null` and causes no error.
 - **Some mistakes silently break a workflow.** Most common case I saw is specifying missing property to cache key. In the
-  case cache silently does not work properly but workflow itself runs without error. So you might not notice the mistake
+  case cache silently does not work properly but a workflow itself runs without error. So you might not notice the mistake
   forever.
 
 # Install
@@ -297,10 +297,10 @@ test.yaml:4:5: "runs-on" section is missing in job "test" [syntax-check]
 
 [Playground](https://rhysd.github.io/actionlint#eJzLz7NSKCgtzuDKyk8qtuJSUChJLS4B0QoKxSWpBcUQpoKCrkJRKVBpanJGvoJ6RmpOTr46UCbENTgEogIoW6ybD1RRmlSaV1Kqm5MIMoiAOUmVqeoAYX8k5Q==)
 
-Some mappings must include specific keys. For example, job mapping must include `runs-on:` and `steps:`.
+Some mappings must include specific keys. For example, job mappings must include `runs-on:` and `steps:`.
 
-And duplicate in keys is not allowed. In workflow syntax, comparing keys is **case insensitive**. For example, job ID
-`test` in lower case and job ID `TEST` in upper case are not able to exist in the same workflow.
+And duplicate in keys is not allowed. In workflow syntax, comparing keys is **case insensitive**. For example, the job ID
+`test` in lower case and the job ID `TEST` in upper case are not able to exist in the same workflow.
 
 actionlint checks these missing required keys and duplicate of keys while parsing, and reports an error.
 
@@ -924,12 +924,12 @@ test.yaml:14:9: shellcheck reported issue in this script: SC2086:info:1:6: Doubl
    |         ^~~~
 ```
 
-[shellcheck][] is a famous linter for ShellScript. actionlint runs shellcheck for scripts at `run:` step in workflow.
+[shellcheck][] is a famous linter for ShellScript. actionlint runs shellcheck for scripts at `run:` step in a workflow.
 For installing shellcheck, see [the official installation document][shellcheck-install].
 
 actionlint detects which shell is used to run the scripts following [the documentation][shell-doc]. On Linux or macOS,
-the default shell is `bash` and on Windows it is `pwsh`. Shell can be configured by `shell:` configuration at workflow level
-or job level. Each step can configure shell to run scripts by `shell:`.
+the default shell is `bash` and on Windows it is `pwsh`. Shell can be configured by `shell:` configuration at a workflow
+level or job level. Each step can configure shell to run scripts by `shell:`.
 
 actionlint remembers the default shell and checks what OS the job runs on. Only when the shell is `bash` or `sh`, actionlint
 applies shellcheck to scripts.
@@ -998,8 +998,8 @@ Python script can be written in `run:` when `shell: python` is configured.
 on finding mistakes (not a code style issue) and tries to make false positives as minimal as possible. Install pyflakes
 by `pip install pyflakes`.
 
-actionlint runs pyflakes for scripts at `run:` steps in workflow and reports errors found by pyflakes. actionlint detects
-Python scripts in workflow by checking `shell: python` at steps and `defaults:` configurations at workflows and jobs.
+actionlint runs pyflakes for scripts at `run:` steps in a workflow and reports errors found by pyflakes. actionlint detects
+Python scripts in a workflow by checking `shell: python` at each step and `defaults:` configurations at workflows and jobs.
 
 By default, actionlint checks if `pyflakes` command exists in your system and uses it when found. The `-pyflakes` option
 of `actionlint` command allows to specify the executable path of pyflakes. Setting empty string by `pyflakes=` disables
@@ -1278,7 +1278,7 @@ actionlint checks the CRON syntax and frequency of running a job. [The official 
 
 > The shortest interval you can run scheduled workflows is once every 5 minutes.
 
-When the job is run more frequently than once per every 5 minutes, actionlint reports it as an error.
+When the job is run more frequently than once every 5 minutes, actionlint reports it as an error.
 
 <a name="check-runner-labels"></a>
 ## Runner labels
@@ -1614,7 +1614,7 @@ test.yaml:12:3: key "test" is duplicate in "jobs" section. previously defined at
 
 [Playground](https://rhysd.github.io/actionlint#eJzLz7NSKCgtzuDKyk8qtuJSUChJLS4B0QoKRaV5xbr5QPnSpNK8klLdnESQHFiquCS1oBiiSkFBF6TSSiE1OSNfQT0jNScnXx0qo6CQmWIFVhyfmYJNdVJlKqra4BDXgHhPF6BYiGtwCE3cAQCKgUNq)
 
-Job IDs and step IDs in each job must be unique. IDs are compared in case insensitive. actionlint checks all job IDs
+Job IDs and step IDs in each jobs must be unique. IDs are compared in case insensitive. actionlint checks all job IDs
 and step IDs and reports errors when some IDs duplicate.
 
 <a name="check-hardcoded-credentials"></a>
@@ -1743,7 +1743,7 @@ test.yaml:13:15: "readable" is invalid for permission of scope "issues". availab
 [Playground](https://rhysd.github.io/actionlint#eJxNjd0NwyAMhN89xS3AAmwDxBK0FCOMlfUDiVr16aTv/qR5dNNM1Hl8imqRph7nKJOJXhLVEzBZ51ZgWFMnq2TR2jRXw/Zu63/gBkDKnN7ftQethPF6GByOEOuDdXL/ldw+8eCUBZlrlQvntjLp)
 
 Permissions of `GITHUB_TOKEN` token can be configured at workflow-level or job-level by [`permissions:` section][perm-config-doc].
-actionlint checks permission scopes and permission values in workflow are correct.
+actionlint checks permission scopes and permission values in a workflow are correct.
 
 <a name="config-file"></a>
 # Configuration file
@@ -1789,7 +1789,7 @@ cases.
 # Use actionlint as a library
 
 actionlint can be used from Go programs. See [the documentation][apidoc] to know the list of all APIs. It contains
-workflow file parser built on top of `go-yaml/yaml`, expression `${{ }}` lexer/parser/checker, etc.
+a workflow file parser built on top of `go-yaml/yaml`, expression `${{ }}` lexer/parser/checker, etc.
 Followings are unexhaustive list of interesting APIs.
 
 - `Command` struct represents entire `actionlint` command. `Command.Main` takes command line arguments and runs command
