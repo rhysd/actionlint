@@ -2,6 +2,7 @@ package actionlint
 
 import (
 	"fmt"
+	"io"
 	"io/ioutil"
 	"os"
 	"path/filepath"
@@ -47,14 +48,24 @@ type LocalActionsCache struct {
 	mu    sync.RWMutex
 	proj  *Project // might be nil
 	cache map[string]*ActionMetadata
+	dbg   io.Writer
 }
 
 // NewLocalActionsCache creates new LocalActionsCache instance.
-func NewLocalActionsCache(proj *Project) *LocalActionsCache {
+func NewLocalActionsCache(proj *Project, dbg io.Writer) *LocalActionsCache {
 	return &LocalActionsCache{
 		proj:  proj,
 		cache: map[string]*ActionMetadata{},
+		dbg:   dbg,
 	}
+}
+
+func (c *LocalActionsCache) debug(format string, args ...interface{}) {
+	if c.dbg == nil {
+		return
+	}
+	format = "[LocalActionsCache] " + format + "\n"
+	fmt.Fprintf(c.dbg, format, args...)
 }
 
 func (c *LocalActionsCache) readCache(key string) (*ActionMetadata, bool) {
@@ -82,6 +93,7 @@ func (c *LocalActionsCache) FindMetadata(spec string) (*ActionMetadata, error) {
 	}
 
 	if m, ok := c.readCache(spec); ok {
+		c.debug("Cache hit for %s: %v", spec, m)
 		return m, nil
 	}
 
@@ -98,6 +110,8 @@ func (c *LocalActionsCache) FindMetadata(spec string) (*ActionMetadata, error) {
 		msg := strings.ReplaceAll(err.Error(), "\n", " ")
 		return nil, fmt.Errorf("action.yml in %q is invalid: %s", dir, msg)
 	}
+
+	c.debug("New metadata parsed from action %s: %v", dir, &meta)
 
 	c.writeCache(spec, &meta)
 	return &meta, nil

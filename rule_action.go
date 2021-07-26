@@ -83,6 +83,7 @@ func (rule *RuleAction) checkRepoAction(spec string, exec *ExecAction) {
 
 	meta, ok := PopularActions[spec]
 	if !ok {
+		rule.debug("This action is not found in popular actions data set: %s", spec)
 		return
 	}
 

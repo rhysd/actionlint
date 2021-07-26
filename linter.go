@@ -168,6 +168,13 @@ func (l *Linter) debug(format string, args ...interface{}) {
 	fmt.Fprintf(l.logOut, format, args...)
 }
 
+func (l *Linter) debugWriter() io.Writer {
+	if l.logLevel < LogLevelDebug {
+		return nil
+	}
+	return l.logOut
+}
+
 // GenerateDefaultConfig generates default config file at ".github/actionlint.yaml" in project
 // which the given directory path belongs to.
 func (l *Linter) GenerateDefaultConfig(dir string) error {
@@ -252,7 +259,7 @@ func (l *Linter) LintFiles(filepaths []string, project *Project) ([]*Error, erro
 	}
 
 	proc := newConcurrentProcess(runtime.NumCPU())
-	localActions := NewLocalActionsCache(project)
+	localActions := NewLocalActionsCache(project, l.debugWriter())
 	sema := semaphore.NewWeighted(int64(runtime.NumCPU()))
 	ctx := context.Background()
 
@@ -345,7 +352,7 @@ func (l *Linter) LintFile(path string, project *Project) ([]*Error, error) {
 	}
 
 	proc := newConcurrentProcess(runtime.NumCPU())
-	localActions := NewLocalActionsCache(project)
+	localActions := NewLocalActionsCache(project, l.debugWriter())
 	errs, err := l.check(path, src, project, proc, localActions)
 	proc.wait()
 	if err != nil {
@@ -363,7 +370,7 @@ func (l *Linter) LintFile(path string, project *Project) ([]*Error, error) {
 // based on path parameter.
 func (l *Linter) Lint(path string, content []byte, project *Project) ([]*Error, error) {
 	proc := newConcurrentProcess(runtime.NumCPU())
-	localActions := NewLocalActionsCache(project)
+	localActions := NewLocalActionsCache(project, l.debugWriter())
 	errs, err := l.check(path, content, project, proc, localActions)
 	proc.wait()
 	if err != nil {
@@ -411,10 +418,7 @@ func (l *Linter) check(path string, content []byte, project *Project, proc *conc
 	}
 
 	if w != nil {
-		dbg := l.logOut
-		if l.logLevel < LogLevelDebug {
-			dbg = nil
-		}
+		dbg := l.debugWriter()
 
 		var labels []string
 		if cfg != nil {

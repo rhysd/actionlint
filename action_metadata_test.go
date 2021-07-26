@@ -1,6 +1,7 @@
 package actionlint
 
 import (
+	"bytes"
 	"path/filepath"
 	"strings"
 	"testing"
@@ -32,7 +33,7 @@ func testGetWantedActionMetadata() *ActionMetadata {
 
 func TestLocalActionsFindMetadata(t *testing.T) {
 	proj := &Project{filepath.Join("testdata", "action_metadata"), nil}
-	c := NewLocalActionsCache(proj)
+	c := NewLocalActionsCache(proj, nil)
 
 	want := testGetWantedActionMetadata()
 	for _, spec := range []string{"./action-yml", "./action-yaml"} {
@@ -83,7 +84,7 @@ func TestLocalActionsFindMetadata(t *testing.T) {
 func TestLocalActionsFindConcurrently(t *testing.T) {
 	n := 10
 	proj := &Project{filepath.Join("testdata", "action_metadata"), nil}
-	c := NewLocalActionsCache(proj)
+	c := NewLocalActionsCache(proj, nil)
 	ret := make(chan *ActionMetadata)
 	err := make(chan error)
 
@@ -130,7 +131,7 @@ func TestLocalActionsFindConcurrently(t *testing.T) {
 }
 
 func TestLocalActionsProjectIsNil(t *testing.T) {
-	c := NewLocalActionsCache(nil)
+	c := NewLocalActionsCache(nil, nil)
 	for _, spec := range []string{"./action-yml", "this-action-does-not-exit"} {
 		m, err := c.FindMetadata(spec)
 		if err != nil {
@@ -144,7 +145,7 @@ func TestLocalActionsProjectIsNil(t *testing.T) {
 
 func TestLocalActionsIgnoreRemoteActions(t *testing.T) {
 	proj := &Project{filepath.Join("testdata", "action_metadata"), nil}
-	c := NewLocalActionsCache(proj)
+	c := NewLocalActionsCache(proj, nil)
 	for _, spec := range []string{"actions/checkout@v2", "docker://example.com/foo/bar"} {
 		m, err := c.FindMetadata(spec)
 		if err != nil {
@@ -153,6 +154,34 @@ func TestLocalActionsIgnoreRemoteActions(t *testing.T) {
 		if m != nil {
 			t.Fatal(spec, "metadata was parsed", m)
 		}
+	}
+}
+
+func TestLocalActionsLogCacheHit(t *testing.T) {
+	dbg := &bytes.Buffer{}
+	proj := &Project{filepath.Join("testdata", "action_metadata"), nil}
+	c := NewLocalActionsCache(proj, dbg)
+
+	want := testGetWantedActionMetadata()
+	for i := 0; i < 2; i++ {
+		have, err := c.FindMetadata("./action-yml")
+		if err != nil {
+			t.Fatal(err)
+		}
+		if !cmp.Equal(want, have) {
+			t.Fatal(cmp.Diff(want, have))
+		}
+	}
+
+	logs := strings.Split(strings.TrimSpace(dbg.String()), "\n")
+	if len(logs) != 2 {
+		t.Fatalf("2 logs were expected but got %d logs: %#v", len(logs), logs)
+	}
+	if !strings.Contains(logs[0], "New metadata parsed from action "+filepath.Join("testdata", "action_metadata", "action-yml")) {
+		t.Fatalf("first log should be 'new metadata' but got %q", logs[0])
+	}
+	if !strings.Contains(logs[1], "Cache hit for ./action-yml") {
+		t.Fatalf("second log should be 'cache hit' but got %q", logs[1])
 	}
 }
 
@@ -180,7 +209,7 @@ func TestLocalActionsFailures(t *testing.T) {
 
 	for _, tc := range testCases {
 		t.Run(tc.what, func(t *testing.T) {
-			c := NewLocalActionsCache(proj)
+			c := NewLocalActionsCache(proj, nil)
 			m, err := c.FindMetadata(tc.spec)
 			if err == nil {
 				t.Fatal("error was not returned", m)
@@ -213,7 +242,7 @@ func TestLocalActionsFailures(t *testing.T) {
 func TestLocalActionsConcurrentFailures(t *testing.T) {
 	n := 10
 	proj := &Project{filepath.Join("testdata", "action_metadata"), nil}
-	c := NewLocalActionsCache(proj)
+	c := NewLocalActionsCache(proj, nil)
 	errC := make(chan error)
 
 	for i := 0; i < n; i++ {
@@ -247,7 +276,7 @@ func TestLocalActionsConcurrentFailures(t *testing.T) {
 
 func TestLocalActionsConcurrentMultipleMetadataAndFailures(t *testing.T) {
 	proj := &Project{filepath.Join("testdata", "action_metadata"), nil}
-	c := NewLocalActionsCache(proj)
+	c := NewLocalActionsCache(proj, nil)
 
 	inputs := []string{
 		"./action-yml",
