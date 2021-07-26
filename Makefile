@@ -1,8 +1,7 @@
 SRCS := $(filter-out %_test.go, $(wildcard *.go cmd/actionlint/*.go))
 TESTS := $(filter %_test.go, $(wildcard *.go))
-TOOL_SRCS := $(wildcard scripts/*/*.go)
+TOOL := $(wildcard scripts/*/*.go)
 TESTDATA := $(wildcard testdata/examples/*.yaml testdata/examples/*.out)
-TOOL := $(wildcard scripts/actionlint-workflow-ast/*.go)
 GOTEST := $(shell command -v gotest 2>/dev/null)
 
 all: clean build test
@@ -17,7 +16,7 @@ endif
 
 test: .testtimestamp
 
-.staticchecktimestamp: $(TESTS) $(SRCS) $(TOOL_SRCS)
+.staticchecktimestamp: $(TESTS) $(SRCS) $(TOOL)
 	staticcheck ./ ./cmd/... ./scripts/...
 	GOOS=js GOARCH=wasm staticcheck ./playground
 	touch .staticchecktimestamp
