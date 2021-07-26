@@ -234,7 +234,7 @@ List of checks:
 - [Permissions](#permissions)
 
 Note that actionlint focuses on catching mistakes in workflow files. If you want some general code style checks, please consider
-to use a general YAML checker like [yamllint][].
+using a general YAML checker like [yamllint][].
 
 <a name="check-unexpected-keys"></a>
 ## Unexpected keys
