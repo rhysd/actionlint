@@ -1,0 +1,281 @@
+<!DOCTYPE html>
+<html>
+<head>
+  <meta http-equiv='content-type' value='text/html;charset=utf8'>
+  <meta name='generator' value='Ronn/v0.7.3 (http://github.com/rtomayko/ronn/tree/0.7.3)'>
+  <title>actionlint(1) - static checker for GitHub Actions workflow files</title>
+  <style type='text/css' media='all'>
+  /* style: man */
+  body#manpage {margin:0}
+  .mp {max-width:100ex;padding:0 9ex 1ex 4ex}
+  .mp p,.mp pre,.mp ul,.mp ol,.mp dl {margin:0 0 20px 0}
+  .mp h2 {margin:10px 0 0 0}
+  .mp > p,.mp > pre,.mp > ul,.mp > ol,.mp > dl {margin-left:8ex}
+  .mp h3 {margin:0 0 0 4ex}
+  .mp dt {margin:0;clear:left}
+  .mp dt.flush {float:left;width:8ex}
+  .mp dd {margin:0 0 0 9ex}
+  .mp h1,.mp h2,.mp h3,.mp h4 {clear:left}
+  .mp pre {margin-bottom:20px}
+  .mp pre+h2,.mp pre+h3 {margin-top:22px}
+  .mp h2+pre,.mp h3+pre {margin-top:5px}
+  .mp img {display:block;margin:auto}
+  .mp h1.man-title {display:none}
+  .mp,.mp code,.mp pre,.mp tt,.mp kbd,.mp samp,.mp h3,.mp h4 {font-family:monospace;font-size:14px;line-height:1.42857142857143}
+  .mp h2 {font-size:16px;line-height:1.25}
+  .mp h1 {font-size:20px;line-height:2}
+  .mp {text-align:justify;background:#fff}
+  .mp,.mp code,.mp pre,.mp pre code,.mp tt,.mp kbd,.mp samp {color:#131211}
+  .mp h1,.mp h2,.mp h3,.mp h4 {color:#030201}
+  .mp u {text-decoration:underline}
+  .mp code,.mp strong,.mp b {font-weight:bold;color:#131211}
+  .mp em,.mp var {font-style:italic;color:#232221;text-decoration:none}
+  .mp a,.mp a:link,.mp a:hover,.mp a code,.mp a pre,.mp a tt,.mp a kbd,.mp a samp {color:#0000ff}
+  .mp b.man-ref {font-weight:normal;color:#434241}
+  .mp pre {padding:0 4ex}
+  .mp pre code {font-weight:normal;color:#434241}
+  .mp h2+pre,h3+pre {padding-left:0}
+  ol.man-decor,ol.man-decor li {margin:3px 0 10px 0;padding:0;float:left;width:33%;list-style-type:none;text-transform:uppercase;color:#999;letter-spacing:1px}
+  ol.man-decor {width:100%}
+  ol.man-decor li.tl {text-align:left}
+  ol.man-decor li.tc {text-align:center;letter-spacing:4px}
+  ol.man-decor li.tr {text-align:right;float:right}
+  </style>
+</head>
+<!--
+  The following styles are deprecated and will be removed at some point:
+  div#man, div#man ol.man, div#man ol.head, div#man ol.man.
+
+  The .man-page, .man-decor, .man-head, .man-foot, .man-title, and
+  .man-navigation should be used instead.
+-->
+<body id='manpage'>
+  <div class='mp' id='man'>
+
+  <div class='man-navigation' style='display:none'>
+    <a href="#NAME">NAME</a>
+    <a href="#SYNOPSIS">SYNOPSIS</a>
+    <a href="#DESCRIPTION">DESCRIPTION</a>
+    <a href="#USAGE">USAGE</a>
+    <a href="#FLAGS">FLAGS</a>
+    <a href="#CONFIGURATION">CONFIGURATION</a>
+    <a href="#USAGE-ON-CI-SERVICES">USAGE ON CI SERVICES</a>
+    <a href="#EXIT-STATUS">EXIT STATUS</a>
+    <a href="#PLAYGROUND">PLAYGROUND</a>
+    <a href="#REFERENCES">REFERENCES</a>
+    <a href="#BUGS">BUGS</a>
+    <a href="#COPYRIGHT">COPYRIGHT</a>
+  </div>
+
+  <ol class='man-decor man-head man head'>
+    <li class='tl'>actionlint(1)</li>
+    <li class='tc'></li>
+    <li class='tr'>actionlint(1)</li>
+  </ol>
+
+  <h2 id="NAME">NAME</h2>
+<p class="man-name">
+  <code>actionlint</code> - <span class="man-whatis">static checker for GitHub Actions workflow files</span>
+</p>
+
+<h2 id="SYNOPSIS">SYNOPSIS</h2>
+
+<p><code>actionlint</code> [<var>flags</var>] <br />
+<code>actionlint</code> [<var>flags</var>] <var>file</var>...<br />
+<code>actionlint</code> [<var>flags</var>] -<br /></p>
+
+<h2 id="DESCRIPTION">DESCRIPTION</h2>
+
+<p><strong>actionlint</strong> is a linter for GitHub Actions workflow files.</p>
+
+<p>Features:</p>
+
+<ul>
+<li><strong>Syntax check for workflow files</strong> to check unexpected or missing keys following workflow syntax</li>
+<li><strong>Strong type check for <code>${{ }}</code> expressions</strong> to catch several semantic errors like access to
+not existing property, type mismatches, ...</li>
+<li><strong>Actions usage check</strong> to check that inputs at <code>with:</code> and outputs in <code>steps.{id}.outputs</code> are
+correct</li>
+<li><strong>shellcheck and pyflakes integrations</strong> for scripts in <code>run:</code></li>
+<li><strong>Other several useful checks</strong>; glob syntax validation, dependencies check for <code>needs:</code>, runner
+label validation, cron syntax validation, ...</li>
+</ul>
+
+
+<h2 id="USAGE">USAGE</h2>
+
+<p>To check all workflow files in the current repository, just run <strong>actionlint</strong> without arguments.
+It automatically finds the nearest <code>.github/workflows</code> directory:</p>
+
+<pre><code>$ actionlint
+</code></pre>
+
+<p>To check specific workflow files, pass the file paths as arguments:</p>
+
+<pre><code>$ actionlint file1.yaml file2.yaml
+</code></pre>
+
+<p>To check a content which is not saved in file yet (e.g. output from some command), pass <strong>-</strong>
+argument. It reads stdin and checks it as workflow file:</p>
+
+<pre><code>$ actionlint -
+</code></pre>
+
+<h2 id="FLAGS">FLAGS</h2>
+
+<dl>
+<dt class="flush"><code>-color</code></dt><dd><p>Always enable colorful output. This is useful to force colorful outputs</p></dd>
+<dt><code>-config-file</code> <var>PATH</var></dt><dd><p>File path to config file</p></dd>
+<dt class="flush"><code>-debug</code></dt><dd><p>Enable debug output (for development)</p></dd>
+<dt><code>-ignore</code> <var>PATTERN</var></dt><dd><p>Regular expression matching to error messages you want to ignore. This flag is repeatable. For
+example, <code>-gnore A -ignore B</code> ignores errors whose message includes "A" OR "B".</p></dd>
+<dt><code>-init-config</code></dt><dd><p>Generate default config file at <code>.github/actionlint.yaml</code> in current project</p></dd>
+<dt><code>-no-color</code></dt><dd><p>Disable colorful output</p></dd>
+<dt><code>-oneline</code></dt><dd><p>Use one line per one error. Useful for reading error messages from programs</p></dd>
+<dt><code>-pyflakes</code> <var>EXECUTABLE</var></dt><dd><p>Command name or file path of "pyflakes" external command (default "pyflakes")</p></dd>
+<dt><code>-shellcheck</code> <var>EXECUTABLE</var></dt><dd><p>Command name or file path of "shellcheck" external command (default "shellcheck")</p></dd>
+<dt><code>-verbose</code></dt><dd><p>Enable verbose output</p></dd>
+<dt><code>-version</code></dt><dd><p>Show version and how this binary was installed</p></dd>
+<dt><code>-help</code>, <code>-h</code></dt><dd><p>Show help</p></dd>
+</dl>
+
+
+<h2 id="CONFIGURATION">CONFIGURATION</h2>
+
+<p>Configuration file can be put at <code>.github/actionlint.yaml</code> or <code>.github/actionlint.yml</code>.</p>
+
+<p>Note that configuration file is basically unnecessary. Please consider to make it only when it is
+necessary. Since the author tries to keep configuration file as minimal as possible, currently only
+custom runner labels can be configured.</p>
+
+<pre><code>self-hosted-runner:
+  # Labels of self-hosted runner in array of string
+  labels:
+    - linux.2xlarge
+    - windows-latest-xl
+    - linux-multi-gpu
+</code></pre>
+
+<p>You don't need to write the configuration file from scratch. <code>actionlint</code> can generate the default
+configuration file.</p>
+
+<pre><code>$ actionlint -init-config
+</code></pre>
+
+<h2 id="USAGE-ON-CI-SERVICES">USAGE ON CI SERVICES</h2>
+
+<p>Please try a download script.</p>
+
+<p>https://github.com/rhysd/actionlint/blob/main/scripts/download-actionlint.bash</p>
+
+<p>It downloads the latest version of actionlint executable to the current directory automatically.
+On GitHub Actions environment, it sets a file path to executable to<code>executable</code> output for using
+the executable in the following steps easily.</p>
+
+<p>Here is an example of simple workflow to run actionlint on GitHub Actions. Please ensure <code>shell: bash</code>
+since the default shell for Windows runners is <code>pwsh</code>.</p>
+
+<pre><code>name: Lint GitHub Actions workflows
+on: [push, pull_request]
+
+jobs:
+  actionlint:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v2
+      - name: Download actionlint
+        id: get_actionlint
+        run: bash &lt;(curl https://raw.githubusercontent.com/rhysd/actionlint/main/scripts/download-actionlint.bash)
+        shell: bash
+      - name: Check workflow files
+        run: ${{ steps.get_actionlint.outputs.executable }} -color
+        shell: bash
+</code></pre>
+
+<p>or simply run</p>
+
+<pre><code class="yaml">- name: Check workflow files
+  run: |
+    bash &lt;(curl https://raw.githubusercontent.com/rhysd/actionlint/main/scripts/download-actionlint.bash)
+    ./actionlint -color
+  shell: bash
+</code></pre>
+
+<h2 id="EXIT-STATUS">EXIT STATUS</h2>
+
+<p><code>actionlint</code> command exits with one of the following exit statuses.</p>
+
+<ul>
+<li><strong>0</strong>: It ran successfully and no problem was found.</li>
+<li><strong>1</strong>: It ran successfully and some problem was found.</li>
+<li><strong>2</strong>: It failed due to invalid command line option.</li>
+<li><strong>3</strong>: It failed due to some fatal error.</li>
+</ul>
+
+
+<h2 id="PLAYGROUND">PLAYGROUND</h2>
+
+<p>Thanks to WebAssembly, actionlint playground is available on your browser. It never sends any data
+to outside of the browser.</p>
+
+<p>https://rhysd.github.io/actionlint/</p>
+
+<p>Paste your workflow content to the code editor at left pane. It automatically shows the results at
+right pane. When editing the workflow content at the left pane, the results will be updated on the
+fly in the right pane. Clicking an error message in the results table moves a cursor to the
+position of the error in the code editor.</p>
+
+<h2 id="REFERENCES">REFERENCES</h2>
+
+<h3 id="List-of-all-checks">List of all checks</h3>
+
+<p>https://github.com/rhysd/actionlint/blob/main/README.md#checks</p>
+
+<h3 id="actionlint-Go-API-reference">actionlint Go API reference</h3>
+
+<p>https://pkg.go.dev/github.com/rhysd/actionlint</p>
+
+<h3 id="Workflow-syntax">Workflow syntax</h3>
+
+<p>https://docs.github.com/en/actions/reference/workflow-syntax-for-github-actions</p>
+
+<h3 id="Expression-syntax-in-">Expression syntax in ${{ }}</h3>
+
+<p>https://docs.github.com/en/actions/reference/context-and-expression-syntax-for-github-actions</p>
+
+<h3 id="shellcheck">shellcheck</h3>
+
+<p>https://github.com/koalaman/shellcheck</p>
+
+<h3 id="pyflakes">pyflakes</h3>
+
+<p>https://github.com/PyCQA/pyflakes</p>
+
+<h2 id="BUGS">BUGS</h2>
+
+<p>Please visit issues page to see known bugs. If you found a new bug or have some feature request,
+please report by making a new issue.</p>
+
+<p>https://github.com/rhysd/actionlint/issues</p>
+
+<h2 id="COPYRIGHT">COPYRIGHT</h2>
+
+<p><strong>actionlint</strong> is licensed under the MIT License: <code>Copyright (c) 2021 rhysd</code></p>
+
+<p>https://github.com/rhysd/actionlint/blob/main/LICENSE.txt</p>
+
+<!-- vim: set ft=markdown: -->
+
+
+
+
+
+  <ol class='man-decor man-foot man foot'>
+    <li class='tl'></li>
+    <li class='tc'>July 2021</li>
+    <li class='tr'>actionlint(1)</li>
+  </ol>
+
+  </div>
+</body>
+</html>
