@@ -36,6 +36,10 @@ echo 'Applying wasm-opt to ./playground-dist/main.wasm'
 wasm-opt -O -o ./playground-dist/opt.wasm ./playground-dist/main.wasm
 mv ./playground-dist/opt.wasm ./playground-dist/main.wasm
 
+echo 'Generating and copying manual'
+make ./man/actionlint.1.html
+cp ./man/actionlint.1.html ./playground-dist/usage.html
+
 echo 'Switching to gh-pages branch'
 git checkout gh-pages
 
@@ -50,6 +54,10 @@ for f in "${files[@]}"; do
     mv "./playground-dist/${f}" .
     git add "./${f}"
 done
+
+echo 'Adding manual'
+cp ./playground-dist/usage.html ./usage.html
+git add ./usage.html
 
 echo 'Making commit for new deploy'
 git commit -m "deploy from ${sha}"

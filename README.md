@@ -190,7 +190,7 @@ When paths to YAML workflow files are given as arguments, actionlint checks them
 actionlint path/to/workflow1.yaml path/to/workflow2.yaml
 ```
 
-See `actionlint -h` for all flags and options.
+For all flags and options, see an output of `actionlint -h` or [an online command manual][cmd-manual].
 
 # Tools integration
 
@@ -1786,7 +1786,7 @@ cases.
 | `2`    | The command failed due to invalid command line option   |
 | `3`    | The command failed due to some fatal error              |
 
-# Use actionlint as a library
+# Use actionlint as a Go library
 
 actionlint can be used from Go programs. See [the documentation][apidoc] to know the list of all APIs. It contains
 a workflow file parser built on top of `go-yaml/yaml`, expression `${{ }}` lexer/parser/checker, etc.
@@ -1894,3 +1894,4 @@ actionlint is distributed under [the MIT license](./LICENSE.txt).
 [actions-cache]: https://github.com/actions/cache
 [permissions-doc]: https://docs.github.com/en/actions/reference/authentication-in-a-workflow#permissions-for-the-github_token
 [perm-config-doc]: https://docs.github.com/en/actions/reference/workflow-syntax-for-github-actions#permissions
+[cmd-manual]: https://rhysd.github.io/actionlint/usage.html

@@ -37,7 +37,7 @@ actionlint_fuzz-fuzz.zip:
 fuzz: actionlint_fuzz-fuzz.zip
 	go-fuzz -bin ./actionlint_fuzz-fuzz.zip -func $(FUZZ_FUNC)
 
-man/actionlint.1: man/actionlint.1.ronn
+man/actionlint.1 man/actionlint.1.html: man/actionlint.1.ronn
 	ronn man/actionlint.1.ronn
 
 man: man/actionlint.1
