@@ -86,6 +86,10 @@ func (rule *RuleAction) checkRepoAction(spec string, exec *ExecAction) {
 		rule.debug("This action is not found in popular actions data set: %s", spec)
 		return
 	}
+	if meta.SkipInputs {
+		rule.debug("This action skips to check inputs: %s", spec)
+		return
+	}
 
 	rule.checkAction(meta, exec, func(m *ActionMetadata) string {
 		return strconv.Quote(spec)

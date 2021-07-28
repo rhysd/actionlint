@@ -129,6 +129,12 @@ var popularActions = []*action{
 	{"wearerequired/lint-action", []string{"v1"}, "v2", yamlExtYML},
 }
 
+// slugs not to check inputs. Some actions allow to specify inputs which are not defined in action.yml.
+// In such cases, actionlint no longer can check the inputs, but it can still check outputs.
+var doNotCheckInputs = map[string]struct{}{
+	"octokit/request-action": {},
+}
+
 func buildURL(slug, tag string, ext yamlExt) string {
 	path := ""
 	if ss := strings.Split(slug, "/"); len(ss) > 2 {
@@ -183,6 +189,9 @@ func fetchRemote(actions []*action) (map[string]*actionlint.ActionMetadata, erro
 					if err := yaml.Unmarshal(body, &meta); err != nil {
 						ret <- &fetched{err: fmt.Errorf("coult not parse metadata for %s: %w", url, err)}
 						break
+					}
+					if _, ok := doNotCheckInputs[req.slug]; ok {
+						meta.SkipInputs = true
 					}
 					ret <- &fetched{spec: spec, meta: &meta}
 				case <-done:
@@ -259,7 +268,13 @@ var PopularActions = map[string]*ActionMetadata{
 		fmt.Fprintf(b, "%q: {\n", spec)
 		fmt.Fprintf(b, "Name: %q,\n", meta.Name)
 
-		if len(meta.Inputs) > 0 {
+		slug := spec[:strings.IndexRune(spec, '@')]
+		_, skipInputs := doNotCheckInputs[slug]
+		if skipInputs {
+			fmt.Fprintf(b, "SkipInputs: true,\n")
+		}
+
+		if len(meta.Inputs) > 0 && !skipInputs {
 			names := make([]string, 0, len(meta.Inputs))
 			for n := range meta.Inputs {
 				names = append(names, n)
