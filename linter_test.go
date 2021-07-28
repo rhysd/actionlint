@@ -5,10 +5,67 @@ import (
 	"io/ioutil"
 	"os"
 	"path/filepath"
+	"strings"
 	"testing"
 
 	"golang.org/x/sys/execabs"
 )
+
+func TestLinterLintOK(t *testing.T) {
+	dir := filepath.Join("testdata", "ok")
+
+	es, err := ioutil.ReadDir(dir)
+	if err != nil {
+		panic(err)
+	}
+
+	fs := make([]string, 0, len(es))
+	for _, e := range es {
+		if e.IsDir() {
+			continue
+		}
+		n := e.Name()
+		if strings.HasSuffix(n, ".yaml") || strings.HasSuffix(n, ".yml") {
+			fs = append(fs, filepath.Join(dir, n))
+		}
+	}
+
+	proj := &Project{root: dir}
+	shellcheck, err := execabs.LookPath("shellcheck")
+	if err != nil {
+		t.Skip("skipped because \"shellcheck\" command does not exist in system")
+	}
+
+	pyflakes, err := execabs.LookPath("pyflakes")
+	if err != nil {
+		t.Skip("skipped because \"pyflakes\" command does not exist in system")
+	}
+
+	for _, f := range fs {
+		t.Run(filepath.Base(f), func(t *testing.T) {
+			opts := LinterOptions{
+				Shellcheck: shellcheck,
+				Pyflakes:   pyflakes,
+			}
+
+			linter, err := NewLinter(ioutil.Discard, &opts)
+			if err != nil {
+				t.Fatal(err)
+			}
+
+			config := Config{}
+			linter.defaultConfig = &config
+
+			errs, err := linter.LintFile(f, proj)
+			if err != nil {
+				t.Fatal(err)
+			}
+			if len(errs) > 0 {
+				t.Fatal(errs)
+			}
+		})
+	}
+}
 
 func BenchmarkLintWorkflowFiles(b *testing.B) {
 	dir, err := os.Getwd()
