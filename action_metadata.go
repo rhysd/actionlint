@@ -40,6 +40,9 @@ type ActionMetadata struct {
 	// Outputs is "outputs" field of action.yaml. Key is name of output. Description is omitted
 	// since actionlint does not use it.
 	Outputs map[string]struct{} `yaml:"outputs" json:"outputs"`
+	// SkipInputs is flag to specify behavior of inputs check. When it is true, inputs for this
+	// action will not be checked.
+	SkipInputs bool `json:"skip_inputs"`
 }
 
 // LocalActionsCache is cache for local actions' metadata. It avoids repeating to find/read/parse

@@ -2399,6 +2399,24 @@ var PopularActions = map[string]*ActionMetadata{
 			"deploy-url": {},
 		},
 	},
+	"octokit/request-action@v1.x": {
+		Name:       "GitHub API Request",
+		SkipInputs: true,
+		Outputs: map[string]struct{}{
+			"data":    {},
+			"headers": {},
+			"status":  {},
+		},
+	},
+	"octokit/request-action@v2.x": {
+		Name:       "GitHub API Request",
+		SkipInputs: true,
+		Outputs: map[string]struct{}{
+			"data":    {},
+			"headers": {},
+			"status":  {},
+		},
+	},
 	"peaceiris/actions-gh-pages@v2": {
 		Name: "GitHub Pages action",
 		Inputs: map[string]*ActionMetadataInput{
