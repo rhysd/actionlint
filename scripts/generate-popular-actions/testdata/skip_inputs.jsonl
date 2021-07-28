@@ -1,0 +1,1 @@
+{"spec":"rhysd/action-setup-vim@v1","metadata":{"name":"Setup Vim","inputs":{"neovim":{"required":false,"default":"false"},"token":{"required":false,"default":"${{ github.token }}"},"version":{"required":false,"default":"stable"}},"outputs":{"executable":{}},"skip_inputs":true}}
