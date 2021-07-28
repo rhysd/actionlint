@@ -1,1 +1,1 @@
-test.yaml:16:40: property "this_output_does_not_exist" is not defined in object type {data: any; headers: any; status: any} [expression]
+/test\.yaml:16:40: property "this_output_does_not_exist" is not defined in object type/
