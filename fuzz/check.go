@@ -16,6 +16,8 @@ func FuzzCheck(data []byte) int {
 		return 0
 	}
 
+	c := actionlint.NewLocalActionsCache(nil, nil)
+
 	rules := []actionlint.Rule{
 		actionlint.NewRuleMatrix(),
 		actionlint.NewRuleCredentials(),
@@ -24,10 +26,10 @@ func FuzzCheck(data []byte) int {
 		actionlint.NewRuleEvents(),
 		actionlint.NewRuleGlob(),
 		actionlint.NewRuleJobNeeds(),
-		actionlint.NewRuleAction("."),
+		actionlint.NewRuleAction(c),
 		actionlint.NewRuleEnvVar(),
 		actionlint.NewRuleStepID(),
-		actionlint.NewRuleExpression(),
+		actionlint.NewRuleExpression(c),
 	}
 
 	v := actionlint.NewVisitor()
