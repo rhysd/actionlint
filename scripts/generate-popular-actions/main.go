@@ -106,6 +106,7 @@ var popularActions = []*action{
 	{"msys2/setup-msys2", []string{"v1", "v2"}, "v3", yamlExtYML},
 	{"ncipollo/release-action", []string{"v1"}, "v2", yamlExtYML},
 	{"nwtgck/actions-netlify", []string{"v1"}, "v2", yamlExtYML},
+	{"octokit/request-action", []string{"v1.x", "v2.x"}, "v3.x", yamlExtYML},
 	{"peaceiris/actions-gh-pages", []string{"v2", "v3"}, "v4", yamlExtYML},
 	{"peter-evans/create-pull-request", []string{"v1", "v2", "v3"}, "v4", yamlExtYML},
 	{"preactjs/compressed-size-action", []string{"v1", "v2"}, "v3", yamlExtYML},
