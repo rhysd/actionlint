@@ -3,6 +3,8 @@ on:
   push:
     paths:
       - 'scripts/generate-popular-actions/main.go'
+    branches:
+      - main
     tags-ignore:
       - '*'
   schedule:
