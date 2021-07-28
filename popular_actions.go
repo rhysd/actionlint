@@ -2399,35 +2399,6 @@ var PopularActions = map[string]*ActionMetadata{
 			"deploy-url": {},
 		},
 	},
-	"octokit/request-action@v1.x": {
-		Name: "GitHub API Request",
-		Inputs: map[string]*ActionMetadataInput{
-			"route": {
-				Required: true,
-			},
-		},
-		Outputs: map[string]struct{}{
-			"data":    {},
-			"headers": {},
-			"status":  {},
-		},
-	},
-	"octokit/request-action@v2.x": {
-		Name: "GitHub API Request",
-		Inputs: map[string]*ActionMetadataInput{
-			"mediaType": {
-				Default: &popularActionDefaultValue77,
-			},
-			"route": {
-				Required: true,
-			},
-		},
-		Outputs: map[string]struct{}{
-			"data":    {},
-			"headers": {},
-			"status":  {},
-		},
-	},
 	"peaceiris/actions-gh-pages@v2": {
 		Name: "GitHub Pages action",
 		Inputs: map[string]*ActionMetadataInput{
@@ -2469,7 +2440,7 @@ var PopularActions = map[string]*ActionMetadata{
 				Default: &popularActionDefaultValue19,
 			},
 			"exclude_assets": {
-				Default: &popularActionDefaultValue78,
+				Default: &popularActionDefaultValue77,
 			},
 			"external_repository": {},
 			"force_orphan": {
@@ -2482,10 +2453,10 @@ var PopularActions = map[string]*ActionMetadata{
 			},
 			"personal_token": {},
 			"publish_branch": {
-				Default: &popularActionDefaultValue79,
+				Default: &popularActionDefaultValue78,
 			},
 			"publish_dir": {
-				Default: &popularActionDefaultValue80,
+				Default: &popularActionDefaultValue79,
 			},
 			"tag_message": {},
 			"tag_name":    {},
@@ -2557,21 +2528,21 @@ var PopularActions = map[string]*ActionMetadata{
 		Inputs: map[string]*ActionMetadataInput{
 			"assignees": {},
 			"author": {
-				Default: &popularActionDefaultValue81,
+				Default: &popularActionDefaultValue80,
 			},
 			"base": {},
 			"body": {
-				Default: &popularActionDefaultValue82,
+				Default: &popularActionDefaultValue81,
 			},
 			"branch": {
-				Default: &popularActionDefaultValue83,
+				Default: &popularActionDefaultValue82,
 			},
 			"branch-suffix": {},
 			"commit-message": {
-				Default: &popularActionDefaultValue84,
+				Default: &popularActionDefaultValue83,
 			},
 			"committer": {
-				Default: &popularActionDefaultValue85,
+				Default: &popularActionDefaultValue84,
 			},
 			"delete-branch": {
 				Default: &popularActionDefaultValue19,
@@ -2589,7 +2560,7 @@ var PopularActions = map[string]*ActionMetadata{
 			},
 			"team-reviewers": {},
 			"title": {
-				Default: &popularActionDefaultValue86,
+				Default: &popularActionDefaultValue85,
 			},
 			"token": {
 				Default: &popularActionDefaultValue3,
@@ -2603,7 +2574,7 @@ var PopularActions = map[string]*ActionMetadata{
 		Name: "compressed-size-action",
 		Inputs: map[string]*ActionMetadataInput{
 			"build-script": {
-				Default: &popularActionDefaultValue87,
+				Default: &popularActionDefaultValue86,
 			},
 			"collapse-unchanged": {
 				Default: &popularActionDefaultValue4,
@@ -2622,7 +2593,7 @@ var PopularActions = map[string]*ActionMetadata{
 		Name: "compressed-size-action",
 		Inputs: map[string]*ActionMetadataInput{
 			"build-script": {
-				Default: &popularActionDefaultValue87,
+				Default: &popularActionDefaultValue86,
 			},
 			"clean-script": {},
 			"collapse-unchanged": {
@@ -2631,14 +2602,14 @@ var PopularActions = map[string]*ActionMetadata{
 			"compression": {},
 			"cwd":         {},
 			"exclude": {
-				Default: &popularActionDefaultValue88,
+				Default: &popularActionDefaultValue87,
 			},
 			"minimum-change-threshold": {
 				Default: &popularActionDefaultValue22,
 			},
 			"omit-unchanged": {},
 			"pattern": {
-				Default: &popularActionDefaultValue89,
+				Default: &popularActionDefaultValue88,
 			},
 			"repo-token": {
 				Default: &popularActionDefaultValue3,
@@ -2662,7 +2633,7 @@ var PopularActions = map[string]*ActionMetadata{
 			},
 			"filter_mode": {
 				Required: true,
-				Default:  &popularActionDefaultValue90,
+				Default:  &popularActionDefaultValue89,
 			},
 			"github_token": {
 				Required: true,
@@ -2670,18 +2641,18 @@ var PopularActions = map[string]*ActionMetadata{
 			},
 			"level": {
 				Required: true,
-				Default:  &popularActionDefaultValue91,
+				Default:  &popularActionDefaultValue90,
 			},
 			"reporter": {
 				Required: true,
-				Default:  &popularActionDefaultValue92,
+				Default:  &popularActionDefaultValue91,
 			},
 			"reviewdog_flags": {
 				Default: &popularActionDefaultValue2,
 			},
 			"tool_name": {
 				Required: true,
-				Default:  &popularActionDefaultValue93,
+				Default:  &popularActionDefaultValue92,
 			},
 		},
 	},
@@ -2695,23 +2666,23 @@ var PopularActions = map[string]*ActionMetadata{
 				Default: &popularActionDefaultValue19,
 			},
 			"filter_mode": {
-				Default: &popularActionDefaultValue90,
+				Default: &popularActionDefaultValue89,
 			},
 			"github_token": {
 				Required: true,
 				Default:  &popularActionDefaultValue3,
 			},
 			"level": {
-				Default: &popularActionDefaultValue91,
+				Default: &popularActionDefaultValue90,
 			},
 			"reporter": {
-				Default: &popularActionDefaultValue94,
+				Default: &popularActionDefaultValue93,
 			},
 			"reviewdog_flags": {
 				Default: &popularActionDefaultValue2,
 			},
 			"tool_name": {
-				Default: &popularActionDefaultValue95,
+				Default: &popularActionDefaultValue94,
 			},
 			"workdir": {
 				Default: &popularActionDefaultValue49,
@@ -2725,7 +2696,7 @@ var PopularActions = map[string]*ActionMetadata{
 				Default: &popularActionDefaultValue19,
 			},
 			"filter_mode": {
-				Default: &popularActionDefaultValue90,
+				Default: &popularActionDefaultValue89,
 			},
 			"github_token": {
 				Required: true,
@@ -2735,16 +2706,16 @@ var PopularActions = map[string]*ActionMetadata{
 				Default: &popularActionDefaultValue2,
 			},
 			"level": {
-				Default: &popularActionDefaultValue91,
+				Default: &popularActionDefaultValue90,
 			},
 			"reporter": {
-				Default: &popularActionDefaultValue92,
+				Default: &popularActionDefaultValue91,
 			},
 			"reviewdog_flags": {
 				Default: &popularActionDefaultValue2,
 			},
 			"tool_name": {
-				Default: &popularActionDefaultValue96,
+				Default: &popularActionDefaultValue95,
 			},
 			"workdir": {
 				Default: &popularActionDefaultValue49,
@@ -2761,14 +2732,14 @@ var PopularActions = map[string]*ActionMetadata{
 				Default: &popularActionDefaultValue19,
 			},
 			"filter_mode": {
-				Default: &popularActionDefaultValue90,
+				Default: &popularActionDefaultValue89,
 			},
 			"github_token": {
 				Required: true,
 				Default:  &popularActionDefaultValue3,
 			},
 			"go_version": {
-				Default: &popularActionDefaultValue97,
+				Default: &popularActionDefaultValue96,
 			},
 			"golangci_lint_flags": {
 				Default: &popularActionDefaultValue2,
@@ -2777,10 +2748,10 @@ var PopularActions = map[string]*ActionMetadata{
 				Default: &popularActionDefaultValue72,
 			},
 			"level": {
-				Default: &popularActionDefaultValue91,
+				Default: &popularActionDefaultValue90,
 			},
 			"reporter": {
-				Default: &popularActionDefaultValue92,
+				Default: &popularActionDefaultValue91,
 			},
 			"reviewdog_flags": {
 				Default: &popularActionDefaultValue2,
@@ -2789,7 +2760,7 @@ var PopularActions = map[string]*ActionMetadata{
 				Default: &popularActionDefaultValue72,
 			},
 			"tool_name": {
-				Default: &popularActionDefaultValue96,
+				Default: &popularActionDefaultValue95,
 			},
 			"workdir": {
 				Default: &popularActionDefaultValue49,
@@ -2806,7 +2777,7 @@ var PopularActions = map[string]*ActionMetadata{
 				Default: &popularActionDefaultValue19,
 			},
 			"filter_mode": {
-				Default: &popularActionDefaultValue90,
+				Default: &popularActionDefaultValue89,
 			},
 			"github_token": {
 				Default: &popularActionDefaultValue3,
@@ -2818,16 +2789,16 @@ var PopularActions = map[string]*ActionMetadata{
 				Default: &popularActionDefaultValue2,
 			},
 			"level": {
-				Default: &popularActionDefaultValue91,
+				Default: &popularActionDefaultValue90,
 			},
 			"reporter": {
-				Default: &popularActionDefaultValue92,
+				Default: &popularActionDefaultValue91,
 			},
 			"reviewdog_flags": {
 				Default: &popularActionDefaultValue2,
 			},
 			"tool_name": {
-				Default: &popularActionDefaultValue98,
+				Default: &popularActionDefaultValue97,
 			},
 		},
 	},
@@ -2841,7 +2812,7 @@ var PopularActions = map[string]*ActionMetadata{
 				Default: &popularActionDefaultValue19,
 			},
 			"filter_mode": {
-				Default: &popularActionDefaultValue90,
+				Default: &popularActionDefaultValue89,
 			},
 			"github_token": {
 				Default: &popularActionDefaultValue3,
@@ -2850,7 +2821,7 @@ var PopularActions = map[string]*ActionMetadata{
 				Default: &popularActionDefaultValue2,
 			},
 			"level": {
-				Default: &popularActionDefaultValue91,
+				Default: &popularActionDefaultValue90,
 			},
 			"locale": {
 				Default: &popularActionDefaultValue2,
@@ -2859,10 +2830,10 @@ var PopularActions = map[string]*ActionMetadata{
 				Default: &popularActionDefaultValue49,
 			},
 			"pattern": {
-				Default: &popularActionDefaultValue99,
+				Default: &popularActionDefaultValue98,
 			},
 			"reporter": {
-				Default: &popularActionDefaultValue92,
+				Default: &popularActionDefaultValue91,
 			},
 		},
 	},
@@ -2873,29 +2844,29 @@ var PopularActions = map[string]*ActionMetadata{
 				Default: &popularActionDefaultValue19,
 			},
 			"filter_mode": {
-				Default: &popularActionDefaultValue90,
+				Default: &popularActionDefaultValue89,
 			},
 			"github_token": {
 				Required: true,
 			},
 			"level": {
-				Default: &popularActionDefaultValue91,
+				Default: &popularActionDefaultValue90,
 			},
 			"reporter": {
-				Default: &popularActionDefaultValue92,
+				Default: &popularActionDefaultValue91,
 			},
 			"reviewdog_flags": {
 				Default: &popularActionDefaultValue2,
 			},
 			"rubocop_extensions": {
-				Default: &popularActionDefaultValue100,
+				Default: &popularActionDefaultValue99,
 			},
 			"rubocop_flags": {
 				Default: &popularActionDefaultValue2,
 			},
 			"rubocop_version": {},
 			"tool_name": {
-				Default: &popularActionDefaultValue101,
+				Default: &popularActionDefaultValue100,
 			},
 			"workdir": {
 				Default: &popularActionDefaultValue49,
@@ -2910,28 +2881,28 @@ var PopularActions = map[string]*ActionMetadata{
 				Default: &popularActionDefaultValue19,
 			},
 			"filter_mode": {
-				Default: &popularActionDefaultValue90,
+				Default: &popularActionDefaultValue89,
 			},
 			"github_token": {
 				Default: &popularActionDefaultValue3,
 			},
 			"level": {
-				Default: &popularActionDefaultValue91,
+				Default: &popularActionDefaultValue90,
 			},
 			"path": {
 				Default: &popularActionDefaultValue49,
 			},
 			"pattern": {
-				Default: &popularActionDefaultValue102,
+				Default: &popularActionDefaultValue101,
 			},
 			"reporter": {
-				Default: &popularActionDefaultValue92,
+				Default: &popularActionDefaultValue91,
 			},
 			"reviewdog_flags": {
 				Default: &popularActionDefaultValue2,
 			},
 			"shellcheck_flags": {
-				Default: &popularActionDefaultValue103,
+				Default: &popularActionDefaultValue102,
 			},
 		},
 	},
@@ -2942,19 +2913,19 @@ var PopularActions = map[string]*ActionMetadata{
 				Default: &popularActionDefaultValue19,
 			},
 			"filter_mode": {
-				Default: &popularActionDefaultValue90,
+				Default: &popularActionDefaultValue89,
 			},
 			"flags": {
-				Default: &popularActionDefaultValue104,
+				Default: &popularActionDefaultValue103,
 			},
 			"github_token": {
 				Required: true,
 			},
 			"level": {
-				Default: &popularActionDefaultValue91,
+				Default: &popularActionDefaultValue90,
 			},
 			"reporter": {
-				Default: &popularActionDefaultValue92,
+				Default: &popularActionDefaultValue91,
 			},
 			"tflint_rulesets": {
 				Default: &popularActionDefaultValue2,
@@ -2981,7 +2952,7 @@ var PopularActions = map[string]*ActionMetadata{
 				Default: &popularActionDefaultValue3,
 			},
 			"version": {
-				Default: &popularActionDefaultValue105,
+				Default: &popularActionDefaultValue104,
 			},
 		},
 		Outputs: map[string]struct{}{
@@ -2992,13 +2963,13 @@ var PopularActions = map[string]*ActionMetadata{
 		Name: "Merge me!",
 		Inputs: map[string]*ActionMetadataInput{
 			"GITHUB_LOGIN": {
-				Default: &popularActionDefaultValue106,
+				Default: &popularActionDefaultValue105,
 			},
 			"GITHUB_TOKEN": {
 				Required: true,
 			},
 			"MERGE_METHOD": {
-				Default: &popularActionDefaultValue107,
+				Default: &popularActionDefaultValue106,
 			},
 			"PRESET": {},
 		},
@@ -3013,16 +2984,16 @@ var PopularActions = map[string]*ActionMetadata{
 				Default: &popularActionDefaultValue19,
 			},
 			"GITHUB_LOGIN": {
-				Default: &popularActionDefaultValue108,
+				Default: &popularActionDefaultValue107,
 			},
 			"GITHUB_TOKEN": {
 				Required: true,
 			},
 			"MAXIMUM_RETRIES": {
-				Default: &popularActionDefaultValue109,
+				Default: &popularActionDefaultValue108,
 			},
 			"MERGE_METHOD": {
-				Default: &popularActionDefaultValue107,
+				Default: &popularActionDefaultValue106,
 			},
 			"PRESET": {},
 		},
@@ -3064,7 +3035,7 @@ var PopularActions = map[string]*ActionMetadata{
 			"pecl":           {},
 			"php-version": {
 				Required: true,
-				Default:  &popularActionDefaultValue110,
+				Default:  &popularActionDefaultValue109,
 			},
 			"tools": {},
 		},
@@ -3077,7 +3048,7 @@ var PopularActions = map[string]*ActionMetadata{
 			"ini-values": {},
 			"php-version": {
 				Required: true,
-				Default:  &popularActionDefaultValue111,
+				Default:  &popularActionDefaultValue110,
 			},
 			"tools": {},
 		},
@@ -3088,23 +3059,31 @@ var PopularActions = map[string]*ActionMetadata{
 	"softprops/action-gh-release@v1": {
 		Name: "GH Release",
 		Inputs: map[string]*ActionMetadataInput{
-			"body":       {},
-			"body_path":  {},
-			"draft":      {},
-			"files":      {},
-			"name":       {},
-			"prerelease": {},
-			"tag_name":   {},
+			"body":                    {},
+			"body_path":               {},
+			"draft":                   {},
+			"fail_on_unmatched_files": {},
+			"files":                   {},
+			"name":                    {},
+			"prerelease":              {},
+			"repository":              {},
+			"tag_name":                {},
+			"target_commitish":        {},
+			"token": {
+				Default: &popularActionDefaultValue3,
+			},
 		},
 		Outputs: map[string]struct{}{
-			"url": {},
+			"id":         {},
+			"upload_url": {},
+			"url":        {},
 		},
 	},
 	"subosito/flutter-action@v1": {
 		Name: "Flutter action",
 		Inputs: map[string]*ActionMetadataInput{
 			"channel": {
-				Default: &popularActionDefaultValue105,
+				Default: &popularActionDefaultValue104,
 			},
 			"flutter-version": {},
 		},
@@ -3181,7 +3160,7 @@ var PopularActions = map[string]*ActionMetadata{
 		Name: "Lighthouse CI Action",
 		Inputs: map[string]*ActionMetadataInput{
 			"artifactName": {
-				Default: &popularActionDefaultValue112,
+				Default: &popularActionDefaultValue111,
 			},
 			"basicAuthPassword":      {},
 			"basicAuthUsername":      {},
@@ -3217,13 +3196,13 @@ var PopularActions = map[string]*ActionMetadata{
 			},
 			"black_dir": {},
 			"black_extensions": {
-				Default: &popularActionDefaultValue113,
+				Default: &popularActionDefaultValue112,
 			},
 			"check_name": {
-				Default: &popularActionDefaultValue114,
+				Default: &popularActionDefaultValue113,
 			},
 			"commit_message": {
-				Default: &popularActionDefaultValue115,
+				Default: &popularActionDefaultValue114,
 			},
 			"continue_on_error": {
 				Default: &popularActionDefaultValue4,
@@ -3239,7 +3218,7 @@ var PopularActions = map[string]*ActionMetadata{
 			},
 			"eslint_dir": {},
 			"eslint_extensions": {
-				Default: &popularActionDefaultValue116,
+				Default: &popularActionDefaultValue115,
 			},
 			"flake8": {
 				Default: &popularActionDefaultValue19,
@@ -3252,13 +3231,13 @@ var PopularActions = map[string]*ActionMetadata{
 			},
 			"flake8_dir": {},
 			"flake8_extensions": {
-				Default: &popularActionDefaultValue113,
+				Default: &popularActionDefaultValue112,
 			},
 			"git_email": {
-				Default: &popularActionDefaultValue117,
+				Default: &popularActionDefaultValue116,
 			},
 			"git_name": {
-				Default: &popularActionDefaultValue118,
+				Default: &popularActionDefaultValue117,
 			},
 			"github_token": {
 				Default: &popularActionDefaultValue3,
@@ -3274,7 +3253,7 @@ var PopularActions = map[string]*ActionMetadata{
 			},
 			"gofmt_dir": {},
 			"gofmt_extensions": {
-				Default: &popularActionDefaultValue119,
+				Default: &popularActionDefaultValue118,
 			},
 			"golint": {
 				Default: &popularActionDefaultValue19,
@@ -3287,7 +3266,7 @@ var PopularActions = map[string]*ActionMetadata{
 			},
 			"golint_dir": {},
 			"golint_extensions": {
-				Default: &popularActionDefaultValue119,
+				Default: &popularActionDefaultValue118,
 			},
 			"mypy": {
 				Default: &popularActionDefaultValue19,
@@ -3300,7 +3279,7 @@ var PopularActions = map[string]*ActionMetadata{
 			},
 			"mypy_dir": {},
 			"mypy_extensions": {
-				Default: &popularActionDefaultValue113,
+				Default: &popularActionDefaultValue112,
 			},
 			"neutral_check_on_warning": {
 				Default: &popularActionDefaultValue19,
@@ -3316,7 +3295,7 @@ var PopularActions = map[string]*ActionMetadata{
 			},
 			"oitnb_dir": {},
 			"oitnb_extensions": {
-				Default: &popularActionDefaultValue113,
+				Default: &popularActionDefaultValue112,
 			},
 			"php_codesniffer": {
 				Default: &popularActionDefaultValue19,
@@ -3329,7 +3308,7 @@ var PopularActions = map[string]*ActionMetadata{
 			},
 			"php_codesniffer_dir": {},
 			"php_codesniffer_extensions": {
-				Default: &popularActionDefaultValue120,
+				Default: &popularActionDefaultValue119,
 			},
 			"prettier": {
 				Default: &popularActionDefaultValue19,
@@ -3342,7 +3321,7 @@ var PopularActions = map[string]*ActionMetadata{
 			},
 			"prettier_dir": {},
 			"prettier_extensions": {
-				Default: &popularActionDefaultValue121,
+				Default: &popularActionDefaultValue120,
 			},
 			"rubocop": {
 				Default: &popularActionDefaultValue19,
@@ -3355,7 +3334,7 @@ var PopularActions = map[string]*ActionMetadata{
 			},
 			"rubocop_dir": {},
 			"rubocop_extensions": {
-				Default: &popularActionDefaultValue122,
+				Default: &popularActionDefaultValue121,
 			},
 			"stylelint": {
 				Default: &popularActionDefaultValue19,
@@ -3368,7 +3347,7 @@ var PopularActions = map[string]*ActionMetadata{
 			},
 			"stylelint_dir": {},
 			"stylelint_extensions": {
-				Default: &popularActionDefaultValue123,
+				Default: &popularActionDefaultValue122,
 			},
 			"swift_format_lockwood": {
 				Default: &popularActionDefaultValue19,
@@ -3381,7 +3360,7 @@ var PopularActions = map[string]*ActionMetadata{
 			},
 			"swift_format_lockwood_dir": {},
 			"swift_format_lockwood_extensions": {
-				Default: &popularActionDefaultValue124,
+				Default: &popularActionDefaultValue123,
 			},
 			"swift_format_official": {
 				Default: &popularActionDefaultValue19,
@@ -3394,7 +3373,7 @@ var PopularActions = map[string]*ActionMetadata{
 			},
 			"swift_format_official_dir": {},
 			"swift_format_official_extensions": {
-				Default: &popularActionDefaultValue124,
+				Default: &popularActionDefaultValue123,
 			},
 			"swiftformat": {
 				Default: &popularActionDefaultValue19,
@@ -3407,7 +3386,7 @@ var PopularActions = map[string]*ActionMetadata{
 			},
 			"swiftformat_dir": {},
 			"swiftformat_extensions": {
-				Default: &popularActionDefaultValue124,
+				Default: &popularActionDefaultValue123,
 			},
 			"swiftlint": {
 				Default: &popularActionDefaultValue19,
@@ -3420,7 +3399,7 @@ var PopularActions = map[string]*ActionMetadata{
 			},
 			"swiftlint_dir": {},
 			"swiftlint_extensions": {
-				Default: &popularActionDefaultValue124,
+				Default: &popularActionDefaultValue123,
 			},
 			"xo": {
 				Default: &popularActionDefaultValue19,
@@ -3433,7 +3412,7 @@ var PopularActions = map[string]*ActionMetadata{
 			},
 			"xo_dir": {},
 			"xo_extensions": {
-				Default: &popularActionDefaultValue116,
+				Default: &popularActionDefaultValue115,
 			},
 		},
 	},
@@ -3515,51 +3494,50 @@ var popularActionDefaultValue73 = "goreleaser"
 var popularActionDefaultValue74 = "MINGW64"
 var popularActionDefaultValue75 = "strict"
 var popularActionDefaultValue76 = "minimal"
-var popularActionDefaultValue77 = "{}"
-var popularActionDefaultValue78 = ".github"
-var popularActionDefaultValue79 = "gh-pages"
-var popularActionDefaultValue80 = "public"
-var popularActionDefaultValue81 = "${{ github.actor }} <${{ github.actor }}@users.noreply.github.com>"
-var popularActionDefaultValue82 = "Automated changes by [create-pull-request](https://github.com/peter-evans/create-pull-request) GitHub action"
-var popularActionDefaultValue83 = "create-pull-request/patch"
-var popularActionDefaultValue84 = "[create-pull-request] automated change"
-var popularActionDefaultValue85 = "GitHub <noreply@github.com>"
-var popularActionDefaultValue86 = "Changes by create-pull-request action"
-var popularActionDefaultValue87 = "build"
-var popularActionDefaultValue88 = "{**/*.map,**/node_modules/**}"
-var popularActionDefaultValue89 = "**/dist/**/*.js"
-var popularActionDefaultValue90 = "added"
-var popularActionDefaultValue91 = "error"
-var popularActionDefaultValue92 = "github-pr-check"
-var popularActionDefaultValue93 = "actionlint"
-var popularActionDefaultValue94 = "github-pr-review"
-var popularActionDefaultValue95 = "eslint"
-var popularActionDefaultValue96 = "golangci"
-var popularActionDefaultValue97 = "1.x"
-var popularActionDefaultValue98 = "hadolint"
-var popularActionDefaultValue99 = "*"
-var popularActionDefaultValue100 = "rubocop-rails rubocop-performance rubocop-rspec rubocop-i18n rubocop-rake"
-var popularActionDefaultValue101 = "rubocop"
-var popularActionDefaultValue102 = "*.sh"
-var popularActionDefaultValue103 = "--external-sources"
-var popularActionDefaultValue104 = "--module"
-var popularActionDefaultValue105 = "stable"
-var popularActionDefaultValue106 = "dependabot-preview[bot]"
-var popularActionDefaultValue107 = "SQUASH"
-var popularActionDefaultValue108 = "dependabot"
-var popularActionDefaultValue109 = "3"
-var popularActionDefaultValue110 = "7.4"
-var popularActionDefaultValue111 = "8.0"
-var popularActionDefaultValue112 = "lighthouse-results"
-var popularActionDefaultValue113 = "py"
-var popularActionDefaultValue114 = "${linter}"
-var popularActionDefaultValue115 = "Fix code style issues with ${linter}"
-var popularActionDefaultValue116 = "js"
-var popularActionDefaultValue117 = "lint-action@samuelmeuli.com"
-var popularActionDefaultValue118 = "Lint Action"
-var popularActionDefaultValue119 = "go"
-var popularActionDefaultValue120 = "php"
-var popularActionDefaultValue121 = "css,html,js,json,jsx,md,sass,scss,ts,tsx,vue,yaml,yml"
-var popularActionDefaultValue122 = "rb"
-var popularActionDefaultValue123 = "css,sass,scss"
-var popularActionDefaultValue124 = "swift"
+var popularActionDefaultValue77 = ".github"
+var popularActionDefaultValue78 = "gh-pages"
+var popularActionDefaultValue79 = "public"
+var popularActionDefaultValue80 = "${{ github.actor }} <${{ github.actor }}@users.noreply.github.com>"
+var popularActionDefaultValue81 = "Automated changes by [create-pull-request](https://github.com/peter-evans/create-pull-request) GitHub action"
+var popularActionDefaultValue82 = "create-pull-request/patch"
+var popularActionDefaultValue83 = "[create-pull-request] automated change"
+var popularActionDefaultValue84 = "GitHub <noreply@github.com>"
+var popularActionDefaultValue85 = "Changes by create-pull-request action"
+var popularActionDefaultValue86 = "build"
+var popularActionDefaultValue87 = "{**/*.map,**/node_modules/**}"
+var popularActionDefaultValue88 = "**/dist/**/*.js"
+var popularActionDefaultValue89 = "added"
+var popularActionDefaultValue90 = "error"
+var popularActionDefaultValue91 = "github-pr-check"
+var popularActionDefaultValue92 = "actionlint"
+var popularActionDefaultValue93 = "github-pr-review"
+var popularActionDefaultValue94 = "eslint"
+var popularActionDefaultValue95 = "golangci"
+var popularActionDefaultValue96 = "1.x"
+var popularActionDefaultValue97 = "hadolint"
+var popularActionDefaultValue98 = "*"
+var popularActionDefaultValue99 = "rubocop-rails rubocop-performance rubocop-rspec rubocop-i18n rubocop-rake"
+var popularActionDefaultValue100 = "rubocop"
+var popularActionDefaultValue101 = "*.sh"
+var popularActionDefaultValue102 = "--external-sources"
+var popularActionDefaultValue103 = "--module"
+var popularActionDefaultValue104 = "stable"
+var popularActionDefaultValue105 = "dependabot-preview[bot]"
+var popularActionDefaultValue106 = "SQUASH"
+var popularActionDefaultValue107 = "dependabot"
+var popularActionDefaultValue108 = "3"
+var popularActionDefaultValue109 = "7.4"
+var popularActionDefaultValue110 = "8.0"
+var popularActionDefaultValue111 = "lighthouse-results"
+var popularActionDefaultValue112 = "py"
+var popularActionDefaultValue113 = "${linter}"
+var popularActionDefaultValue114 = "Fix code style issues with ${linter}"
+var popularActionDefaultValue115 = "js"
+var popularActionDefaultValue116 = "lint-action@samuelmeuli.com"
+var popularActionDefaultValue117 = "Lint Action"
+var popularActionDefaultValue118 = "go"
+var popularActionDefaultValue119 = "php"
+var popularActionDefaultValue120 = "css,html,js,json,jsx,md,sass,scss,ts,tsx,vue,yaml,yml"
+var popularActionDefaultValue121 = "rb"
+var popularActionDefaultValue122 = "css,sass,scss"
+var popularActionDefaultValue123 = "swift"
