@@ -10,6 +10,7 @@ require (
 	github.com/mattn/go-colorable v0.1.8
 	github.com/mattn/go-runewidth v0.0.13
 	github.com/robfig/cron v1.2.0
+	github.com/yuin/goldmark v1.4.0 // indirect
 	golang.org/x/sync v0.0.0-20210220032951-036812b2e83c
 	golang.org/x/sys v0.0.0-20210630005230-0f9fa26af87c
 	gopkg.in/yaml.v3 v3.0.0-20210107192922-496545a6307b
