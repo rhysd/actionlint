@@ -69,139 +69,24 @@ func (rule *RuleEvents) checkCron(spec *String) {
 
 // https://docs.github.com/en/actions/reference/events-that-trigger-workflows#webhook-events
 func (rule *RuleEvents) checkWebhookEvent(event *WebhookEvent) {
-	types := []string{}
+	hook := event.Hook.Value
 
-	switch event.Hook.Value {
-	case "check_run":
-		types = []string{"created", "rerequested", "completed"}
-	case "check_suite":
-		types = []string{"completed", "requested", "rerequested"}
-	case "create":
-	case "delete":
-	case "deployment":
-	case "deployment_status":
-	case "discussion":
-		types = []string{
-			"opened",
-			"edited",
-			"deleted",
-			"transferred",
-			"pinned",
-			"unpinned",
-			"labeled",
-			"unlabeled",
-			"locked",
-			"unlocked",
-			"category_changed",
-			"answered",
-			"unanswered",
-		}
-	case "discussion_comment":
-		types = []string{"created", "edited", "deleted"}
-	case "fork":
-	case "gollum":
-	case "issue_comment":
-		types = []string{"created", "edited", "deleted"}
-	case "issues":
-		types = []string{
-			"opened",
-			"edited",
-			"deleted",
-			"transferred",
-			"pinned",
-			"unpinned",
-			"closed",
-			"reopened",
-			"assigned",
-			"unassigned",
-			"labeled",
-			"unlabeled",
-			"locked",
-			"unlocked",
-			"milestoned",
-			"demilestoned",
-		}
-	case "label":
-		types = []string{"created", "edited", "deleted"}
-	case "milestone":
-		types = []string{"created", "closed", "opened", "edited", "deleted"}
-	case "page_build":
-	case "project":
-		types = []string{"created", "updated", "closed", "reopened", "edited", "deleted"}
-	case "project_card":
-		types = []string{"created", "moved", "converted", "edited", "deleted"}
-	case "project_column":
-		types = []string{"created", "updated", "moved", "deleted"}
-	case "public":
-	case "pull_request":
-		types = []string{
-			"assigned",
-			"unassigned",
-			"labeled",
-			"unlabeled",
-			"opened",
-			"edited",
-			"closed",
-			"reopened",
-			"synchronize",
-			"ready_for_review",
-			"locked",
-			"unlocked",
-			"review_requested",
-			"review_request_removed",
-		}
-	case "pull_request_review":
-		types = []string{"submitted", "edited", "dismissed"}
-	case "pull_request_review_comment":
-		types = []string{"created", "edited", "deleted"}
-	case "pull_request_target":
-		types = []string{
-			"assigned",
-			"unassigned",
-			"labeled",
-			"unlabeled",
-			"opened",
-			"edited",
-			"closed",
-			"reopened",
-			"synchronize",
-			"ready_for_review",
-			"locked",
-			"unlocked",
-			"review_requested",
-			"review_request_removed",
-		}
-	case "push":
-	case "registry_package":
-		types = []string{"published", "updated"}
-	case "release":
-		types = []string{
-			"published",
-			"unpublished",
-			"created",
-			"edited",
-			"deleted",
-			"prereleased",
-			"released",
-		}
-	case "status":
-	case "watch":
-		types = []string{"started"}
-	case "workflow_run":
-		types = []string{"completed", "requested"}
-		// TODO: Check "workflows" configuration looking at other workflow files
-		if len(event.Workflows) == 0 {
-			rule.error(event.Pos, "no workflow is configured for \"workflow_run\" event")
-		}
-	default:
-		rule.errorf(event.Pos, "unknown Webhook event %q. see https://docs.github.com/en/actions/reference/events-that-trigger-workflows#webhook-events for list of all Webhook event names", event.Hook.Value)
+	types, ok := AllWebhookTypes[hook]
+	if !ok {
+		rule.errorf(event.Pos, "unknown Webhook event %q. see https://docs.github.com/en/actions/reference/events-that-trigger-workflows#webhook-events for list of all Webhook event names", hook)
 		return
 	}
 
 	rule.checkTypes(event.Hook, event.Types, types)
 
-	if event.Hook.Value != "workflow_run" && len(event.Workflows) != 0 {
-		rule.errorf(event.Pos, "\"workflows\" cannot be configured for %q event. it is only for workflow_run event", event.Hook.Value)
+	if hook == "workflow_run" {
+		if len(event.Workflows) == 0 {
+			rule.error(event.Pos, "no workflow is configured for \"workflow_run\" event")
+		}
+	} else {
+		if len(event.Workflows) != 0 {
+			rule.errorf(event.Pos, "\"workflows\" cannot be configured for %q event. it is only for workflow_run event", hook)
+		}
 	}
 }
 
