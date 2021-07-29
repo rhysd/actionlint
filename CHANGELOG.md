@@ -1,8 +1,20 @@
+<a name="v1.5.1"></a>
+# [v1.5.1](https://github.com/rhysd/actionlint/releases/tag/v1.5.1) - 29 Jul 2021
+
+- Improve checking the intervals of scheduled events (#14, #15). Since GitHub Actions [limits the interval to once every 5 minutes](https://github.blog/changelog/2019-11-01-github-actions-scheduled-jobs-maximum-frequency-is-changing/), actionlint now reports an error when a workflow is configured to be run once per less than 5 minutes.
+- Skip checking inputs of [octokit/request-action](https://github.com/octokit/request-action) since it allows to specify arbitrary inputs though they are not defined in its `action.yml` (#16).
+  - Outputs of the action are still be typed strictly. Only its inputs are not checked.
+- The help text of `actionlint` is now hosted online: https://rhysd.github.io/actionlint/usage.html
+- Add new fuzzing target for parsing glob patterns.
+
+[Changes][v1.5.1]
+
+
 <a name="v1.5.0"></a>
 # [v1.5.0](https://github.com/rhysd/actionlint/releases/tag/v1.5.0) - 26 Jul 2021
 
 - `action` rule now validates inputs of popular actions at `with:`. When a required input is not specified or an undefined input is specified, actionlint will report it.
-  - Popular actions are updated automatically once a week and embedded to executable directly. The check does not need any network request and does not affect performance of actionlint. Sources of the actions are listed [here](https://github.com/rhysd/actionlint/blob/main/scripts/generate-popular-actions/main.go#L51). If you have some request to support new action, please report it at [the issue form](https://github.com/rhysd/actionlint/issues/new).
+  - Popular actions are updated automatically once a week and the data set is embedded to executable directly. The check does not need any network request and does not affect performance of actionlint. Sources of the actions are listed [here](https://github.com/rhysd/actionlint/blob/main/scripts/generate-popular-actions/main.go#L51). If you have some request to support new action, please report it at [the issue form](https://github.com/rhysd/actionlint/issues/new).
   - Please see [the document](https://github.com/rhysd/actionlint#check-popular-action-inputs) for example ([Playground](https://rhysd.github.io/actionlint#eJyFj0EKwjAQRfc9xV8I1UJbcJmVK+8xDYOpqUlwEkVq725apYgbV8PMe/Dne6cQkpiiOPtOVAFEljhP4Jqc1D4LqUsupnqgmS1IIgd5W0CNJCwKpGPvnbSatOHDbf/BwL2PRq0bYPmR9efXBdiMIwyJOfYDy7asqrZqBq9tucM0/TWXyF81UI5F0wbSlk4s67u5mMKFLL8A+h9EEw==)).
 - `expression` rule now types outputs of popular actions (type of `steps.{id}.outputs` object) more strictly.
   - For example, `actions/cache@v2` sets `cache-hit` output. The outputs object is typed as `{ cache-hit: any }`. Previously it was typed as `any` which means no further type check was performed.
@@ -218,6 +230,7 @@ See documentation for more details:
 [Changes][v1.0.0]
 
 
+[v1.5.1]: https://github.com/rhysd/actionlint/compare/v1.5.0...v1.5.1
 [v1.5.0]: https://github.com/rhysd/actionlint/compare/v1.4.3...v1.5.0
 [v1.4.3]: https://github.com/rhysd/actionlint/compare/v1.4.2...v1.4.3
 [v1.4.2]: https://github.com/rhysd/actionlint/compare/v1.4.1...v1.4.2
