@@ -67,7 +67,7 @@ func collectCodeSpans(n ast.Node, src []byte) []string {
 	return spans
 }
 
-func getWebhookInTable(table ast.Node, src []byte) (*webhook, bool) {
+func getWebhookInTable(table ast.Node, src []byte) (*webhook, bool, error) {
 	dbg.Printf("Table: %s", table.Text(src))
 
 	sawHeader := false
@@ -80,7 +80,7 @@ func getWebhookInTable(table ast.Node, src []byte) (*webhook, bool) {
 			cell := c.FirstChild()
 			if string(cell.Text(src)) != "Webhook event payload" {
 				dbg.Println("  Skip this table because it is not for Webhook event payload")
-				return nil, false
+				return nil, false, nil
 			}
 
 			dbg.Println("  Found table header for Webhook event payload")
@@ -89,9 +89,8 @@ func getWebhookInTable(table ast.Node, src []byte) (*webhook, bool) {
 
 		if kind == extast.KindTableRow {
 			if !sawHeader {
-				// Without header or on second row
 				dbg.Println("  Skip this table because it does not have a header")
-				return nil, false
+				return nil, false, nil // Unreachable because table without header cannot be written in GFM
 			}
 
 			dbg.Println("  Found the first table row")
@@ -100,8 +99,7 @@ func getWebhookInTable(table ast.Node, src []byte) (*webhook, bool) {
 			cell := c.FirstChild()
 			name, ok := getFirstLinkText(cell, src)
 			if !ok {
-				dbg.Printf("  Skip this table because it does not have a link at the first cell of the first row: %s", cell.Text(src))
-				return nil, false
+				return nil, false, fmt.Errorf("\"Webhook event payload\" table was found, but first cell did not contain hook name: %q", cell.Text(src))
 			}
 
 			// Second cell
@@ -110,12 +108,12 @@ func getWebhookInTable(table ast.Node, src []byte) (*webhook, bool) {
 
 			dbg.Printf("  Found Webhook table: %q %v", name, types)
 			w := &webhook{name, types}
-			return w, true
+			return w, true, nil
 		}
 	}
 
 	dbg.Printf("  Table row was not found (sawHeader=%v)", sawHeader)
-	return nil, false
+	return nil, false, nil
 }
 
 func generate(src []byte, out io.Writer) error {
@@ -138,7 +136,7 @@ var AllWebhookTypes = map[string][]string {`)
 		k := n.Kind()
 		if !sawHeading {
 			// When '## Webhook events'
-			if h, ok := n.(*ast.Heading); ok && h.Level == 2 && "Webhook events" == string(h.Text(src)) {
+			if h, ok := n.(*ast.Heading); ok && h.Level == 2 && string(h.Text(src)) == "Webhook events" {
 				sawHeading = true
 				dbg.Println("Found \"Webhook events\" heading")
 			}
@@ -149,7 +147,10 @@ var AllWebhookTypes = map[string][]string {`)
 			continue
 		}
 
-		w, ok := getWebhookInTable(n, src)
+		w, ok, err := getWebhookInTable(n, src)
+		if err != nil {
+			return err
+		}
 		if !ok {
 			continue
 		}
@@ -187,29 +188,29 @@ var AllWebhookTypes = map[string][]string {`)
 	return nil
 }
 
-var srcURL = "https://raw.githubusercontent.com/github/docs/main/content/actions/reference/events-that-trigger-workflows.md"
-
-func fetchMarkdownSource() ([]byte, error) {
+func fetch(url string) ([]byte, error) {
 	var c http.Client
 
-	dbg.Println("Fetching", srcURL)
+	dbg.Println("Fetching", url)
 
-	res, err := c.Get(srcURL)
+	res, err := c.Get(url)
 	if err != nil {
-		return nil, fmt.Errorf("could not fetch %s: %w", srcURL, err)
+		return nil, fmt.Errorf("could not fetch %s: %w", url, err)
 	}
 	if res.StatusCode < 200 || 300 <= res.StatusCode {
-		return nil, fmt.Errorf("request was not successful for %s: %s", srcURL, res.Status)
+		return nil, fmt.Errorf("request was not successful for %s: %s", url, res.Status)
 	}
 	body, err := ioutil.ReadAll(res.Body)
 	if err != nil {
-		return nil, fmt.Errorf("could not fetch body for %s: %w", srcURL, err)
+		return nil, fmt.Errorf("could not fetch body for %s: %w", url, err)
 	}
 	res.Body.Close()
 
-	dbg.Printf("Fetched %d bytes from %s", len(body), srcURL)
+	dbg.Printf("Fetched %d bytes from %s", len(body), url)
 	return body, nil
 }
+
+var srcURL = "https://raw.githubusercontent.com/github/docs/main/content/actions/reference/events-that-trigger-workflows.md"
 
 func run(args []string, stdout, stderr, dbgout io.Writer) int {
 	dbg.SetOutput(dbgout)
@@ -224,7 +225,7 @@ func run(args []string, stdout, stderr, dbgout io.Writer) int {
 	if len(args) == 2 {
 		src, err = ioutil.ReadFile(args[0])
 	} else {
-		src, err = fetchMarkdownSource()
+		src, err = fetch(srcURL)
 	}
 	if err != nil {
 		fmt.Fprintln(stderr, err)
