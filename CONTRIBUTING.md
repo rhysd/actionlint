@@ -134,3 +134,14 @@ The script also can detect new releases of popular actions on GitHub by giving `
 
 Detecting new release and updating `popular_actions.go` are run weekly on CI by [`generate`](.github/workflows/generate.yaml)
 workflow. Runs can be checked [here](https://github.com/rhysd/actionlint/actions/workflows/generate.yaml).
+
+## Maintain `all_webhooks.go`
+
+[`all_webhooks.go`(./all_webhooks.go) is a table all webhooks supported by GitHub Actions to trigger workflows. Note that
+not all webhooks are supported by GitHub Actions.
+
+It is generated automatically with `go generate`. The command runs [`generate-webhook-events`](./scripts/generate-webhook-events)
+script.
+
+It fetches [`events-that-trigger-workflows.md`](https://github.com/github/docs/blob/main/content/actions/reference/events-that-trigger-workflows.md)
+, parse the markdown document and extract webhook names and their types.
