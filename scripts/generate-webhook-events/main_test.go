@@ -15,7 +15,7 @@ import (
 func testRunMain(args []string) (string, string, int) {
 	stdout := &bytes.Buffer{}
 	stderr := &bytes.Buffer{}
-	status := run(args, stdout, stderr, ioutil.Discard)
+	status := run(args, stdout, stderr, ioutil.Discard, "")
 	return stdout.String(), stderr.String(), status
 }
 
@@ -112,7 +112,7 @@ func (w testErrorWriter) Write(b []byte) (int, error) {
 func TestErrorWriteResult(t *testing.T) {
 	f := filepath.Join("testdata", "ok.md")
 	stderr := &bytes.Buffer{}
-	status := run([]string{f, "-"}, testErrorWriter{}, stderr, ioutil.Discard)
+	status := run([]string{f, "-"}, testErrorWriter{}, stderr, ioutil.Discard, "")
 	if status == 0 {
 		t.Fatal("status was zero")
 	}
@@ -134,12 +134,14 @@ func TestFetchError(t *testing.T) {
 
 	for _, tc := range testCases {
 		t.Run(tc.what, func(t *testing.T) {
-			_, err := fetch(tc.url)
-			if err == nil {
-				t.Fatal("error did not occur", tc.url)
+			stderr := &bytes.Buffer{}
+			status := run([]string{"-"}, ioutil.Discard, stderr, ioutil.Discard, tc.url)
+			if status == 0 {
+				t.Fatal("status was zero")
 			}
-			if !strings.Contains(err.Error(), tc.want) {
-				t.Fatalf("unexpected error: %v: %s", err, tc.url)
+			msg := stderr.String()
+			if !strings.Contains(msg, tc.want) {
+				t.Fatalf("unexpected error: %v: %s", msg, tc.url)
 			}
 		})
 	}

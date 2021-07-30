@@ -210,9 +210,7 @@ func fetch(url string) ([]byte, error) {
 	return body, nil
 }
 
-var srcURL = "https://raw.githubusercontent.com/github/docs/main/content/actions/reference/events-that-trigger-workflows.md"
-
-func run(args []string, stdout, stderr, dbgout io.Writer) int {
+func run(args []string, stdout, stderr, dbgout io.Writer, srcURL string) int {
 	dbg.SetOutput(dbgout)
 
 	if len(args) > 2 {
@@ -259,5 +257,5 @@ func run(args []string, stdout, stderr, dbgout io.Writer) int {
 }
 
 func main() {
-	os.Exit(run(os.Args[1:], os.Stdout, os.Stderr, os.Stderr))
+	os.Exit(run(os.Args[1:], os.Stdout, os.Stderr, os.Stderr, "https://raw.githubusercontent.com/github/docs/main/content/actions/reference/events-that-trigger-workflows.md"))
 }
