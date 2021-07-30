@@ -1138,11 +1138,12 @@ Example input:
 ```yaml
 on:
   push:
-    # Unexpected filter. 'branches' is correct
+    # ERROR: Incorrect filter. 'branches' is correct
     branch: foo
   issues:
-    # Unexpected type. 'opened' is correct
+    # ERROR: Incorrect type. 'opened' is correct
     types: created
+  # ERROR: Unknown event name
   pullreq:
 
 jobs:
@@ -1163,7 +1164,7 @@ test.yaml:7:12: invalid activity type "created" for "issues" Webhook event. avai
   |
 7 |     types: created
   |            ^~~~~~~
-test.yaml:8:3: unknown Webhook event "pullreq". see https://docs.github.com/en/actions/reference/events-that-trigger-workflows#webhook-events for list of all Webhook event names [events]
+test.yaml:9:3: unknown Webhook event "pullreq". see https://docs.github.com/en/actions/reference/events-that-trigger-workflows#webhook-events for list of all Webhook event names [events]
   |
 8 |   pullreq:
   |   ^~~~~~~~
@@ -1179,6 +1180,9 @@ actionlint validates the Webhook configurations:
 - unknown Webhook event name
 - unknown type for Webhook event
 - invalid filter names
+
+The table of available Webhooks and their types are defined in [`all_webhooks.go`](./all_webhooks.go). It is generated
+by [a script][generate-webhook-events] and kept to the latest by CI workflow triggered weekly.
 
 <a name="check-glob-pattern"></a>
 ## Glob filter pattern syntax validation
@@ -1895,3 +1899,4 @@ actionlint is distributed under [the MIT license](./LICENSE.txt).
 [permissions-doc]: https://docs.github.com/en/actions/reference/authentication-in-a-workflow#permissions-for-the-github_token
 [perm-config-doc]: https://docs.github.com/en/actions/reference/workflow-syntax-for-github-actions#permissions
 [cmd-manual]: https://rhysd.github.io/actionlint/usage.html
+[generate-webhook-events]: https://github.com/rhysd/actionlint/tree/main/scripts/generate-webhook-events

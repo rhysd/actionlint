@@ -1,10 +1,11 @@
 on:
   push:
-    # Unexpected filter. 'branches' is correct
+    # ERROR: Incorrect filter. 'branches' is correct
     branch: foo
   issues:
-    # Unexpected type. 'opened' is correct
+    # ERROR: Incorrect type. 'opened' is correct
     types: created
+  # ERROR: Unknown event name
   pullreq:
 
 jobs:
