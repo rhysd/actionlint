@@ -1707,6 +1707,7 @@ var PopularActions = map[string]*ActionMetadata{
 				Default: &popularActionDefaultValue3,
 			},
 		},
+		SkipOutputs: true,
 	},
 	"dorny/paths-filter@v2": {
 		Name: "Paths Changes Filter",
@@ -1728,9 +1729,7 @@ var PopularActions = map[string]*ActionMetadata{
 			},
 			"working-directory": {},
 		},
-		Outputs: map[string]struct{}{
-			"changes": {},
-		},
+		SkipOutputs: true,
 	},
 	"enriikke/gatsby-gh-pages-action@v2": {
 		Name: "Gatsby Publish",
