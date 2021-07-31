@@ -218,6 +218,8 @@ func run(args []string, stdout, stderr, dbgout io.Writer, srcURL string) int {
 		return 1
 	}
 
+	dbg.Println("Start generate-webhook-events script")
+
 	var src []byte
 	var err error
 	if len(args) == 2 {
@@ -252,7 +254,9 @@ func run(args []string, stdout, stderr, dbgout io.Writer, srcURL string) int {
 		return 1
 	}
 
-	dbg.Println("Successfully wrote output to", dst)
+	dbg.Println("Wrote output to", dst)
+	dbg.Println("Done generate-webhook-events script successfully")
+
 	return 0
 }
 

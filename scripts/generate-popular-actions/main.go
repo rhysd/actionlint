@@ -487,6 +487,8 @@ Flags:`)
 		log.SetOutput(stderr)
 	}
 
+	log.Println("Start generate-popular-actions script")
+
 	if detect {
 		urls, err := detectNewReleaseURLs(knownActions)
 		if err != nil {
@@ -555,7 +557,7 @@ Flags:`)
 		}
 	}
 
-	log.Println("Done")
+	log.Println("Done generate-popular-actions script successfully")
 	return 0
 }
 
