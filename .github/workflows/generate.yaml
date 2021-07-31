@@ -3,6 +3,7 @@ on:
   push:
     paths:
       - 'scripts/generate-popular-actions/main.go'
+      - 'scripts/generate-webhook-events/main.go'
     branches:
       - main
     tags-ignore:
