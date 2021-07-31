@@ -43,6 +43,9 @@ type ActionMetadata struct {
 	// SkipInputs is flag to specify behavior of inputs check. When it is true, inputs for this
 	// action will not be checked.
 	SkipInputs bool `json:"skip_inputs"`
+	// AllowAnyOutputs is flag to specify a bit loose typing to outputs object. If it is set to
+	// true, the outputs object accepts any properties along with strictly typed props.
+	AllowAnyOutputs bool `json:"allow_any_outputs"`
 }
 
 // LocalActionsCache is cache for local actions' metadata. It avoids repeating to find/read/parse

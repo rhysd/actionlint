@@ -75,7 +75,7 @@ func TestReadJSONL(t *testing.T) {
 	stdout := &bytes.Buffer{}
 	stderr := ioutil.Discard
 
-	status := newApp(stdout, stderr, ioutil.Discard, testDummyPopularActions, nil).run([]string{"test", "-s", f, "-f", "jsonl"})
+	status := newApp(stdout, stderr, ioutil.Discard, testDummyPopularActions, nil, nil).run([]string{"test", "-s", f, "-f", "jsonl"})
 	if status != 0 {
 		t.Fatal("exit status is non-zero:", status)
 	}
@@ -104,7 +104,36 @@ func TestReadWriteSkipInputsJSONL(t *testing.T) {
 	}
 	skip := map[string]struct{}{slug: {}}
 
-	status := newApp(stdout, stderr, ioutil.Discard, actions, skip).run([]string{"test", "-s", f, "-f", "jsonl"})
+	status := newApp(stdout, stderr, ioutil.Discard, actions, skip, nil).run([]string{"test", "-s", f, "-f", "jsonl"})
+	if status != 0 {
+		t.Fatal("exit status is non-zero:", status)
+	}
+
+	want := string(b)
+	have := stdout.String()
+
+	if want != have {
+		t.Fatalf("read content and output content differ\n%s", cmp.Diff(want, have))
+	}
+}
+
+func TestReadWriteAllowAnyOutputsJSONL(t *testing.T) {
+	f := filepath.Join("testdata", "allow_any_outputs.jsonl")
+	b, err := ioutil.ReadFile(f)
+	if err != nil {
+		panic(err)
+	}
+
+	stdout := &bytes.Buffer{}
+	stderr := ioutil.Discard
+
+	slug := "rhysd/action-setup-vim"
+	actions := []*action{
+		{slug, []string{"v1"}, "v2", yamlExtYML},
+	}
+	allow := map[string]struct{}{slug: {}}
+
+	status := newApp(stdout, stderr, ioutil.Discard, actions, nil, allow).run([]string{"test", "-s", f, "-f", "jsonl"})
 	if status != 0 {
 		t.Fatal("exit status is non-zero:", status)
 	}
@@ -127,7 +156,7 @@ func TestWriteGoToStdout(t *testing.T) {
 
 	stdout := &bytes.Buffer{}
 	stderr := ioutil.Discard
-	status := newApp(stdout, stderr, ioutil.Discard, testDummyPopularActions, nil).run([]string{"test", "-s", f})
+	status := newApp(stdout, stderr, ioutil.Discard, testDummyPopularActions, nil, nil).run([]string{"test", "-s", f})
 	if status != 0 {
 		t.Fatal("exit status is non-zero:", status)
 	}
@@ -157,7 +186,37 @@ func TestWriteSkipInputsGo(t *testing.T) {
 	}
 	skip := map[string]struct{}{slug: {}}
 
-	status := newApp(stdout, stderr, ioutil.Discard, actions, skip).run([]string{"test", "-s", f})
+	status := newApp(stdout, stderr, ioutil.Discard, actions, skip, nil).run([]string{"test", "-s", f})
+	if status != 0 {
+		t.Fatal("exit status is non-zero:", status)
+	}
+
+	want := string(b)
+	have := stdout.String()
+
+	if want != have {
+		t.Fatalf("read content and output content differ\n%s", cmp.Diff(want, have))
+	}
+}
+
+func TestWriteAllowAnyOutputsGo(t *testing.T) {
+	f := filepath.Join("testdata", "allow_any_outputs.jsonl")
+	out := filepath.Join("testdata", "allow_any_outputs.go")
+	b, err := ioutil.ReadFile(out)
+	if err != nil {
+		panic(err)
+	}
+
+	stdout := &bytes.Buffer{}
+	stderr := ioutil.Discard
+
+	slug := "rhysd/action-setup-vim"
+	actions := []*action{
+		{slug, []string{"v1"}, "v2", yamlExtYML},
+	}
+	allow := map[string]struct{}{slug: {}}
+
+	status := newApp(stdout, stderr, ioutil.Discard, actions, nil, allow).run([]string{"test", "-s", f})
 	if status != 0 {
 		t.Fatal("exit status is non-zero:", status)
 	}
@@ -182,7 +241,7 @@ func TestWriteJSONLFile(t *testing.T) {
 
 	stdout := ioutil.Discard
 	stderr := ioutil.Discard
-	status := newApp(stdout, stderr, ioutil.Discard, testDummyPopularActions, nil).run([]string{"test", "-s", in, "-f", "jsonl", out})
+	status := newApp(stdout, stderr, ioutil.Discard, testDummyPopularActions, nil, nil).run([]string{"test", "-s", in, "-f", "jsonl", out})
 	if status != 0 {
 		t.Fatal("exit status is non-zero:", status)
 	}
@@ -206,7 +265,7 @@ func TestWriteGoFile(t *testing.T) {
 
 	stdout := ioutil.Discard
 	stderr := ioutil.Discard
-	status := newApp(stdout, stderr, ioutil.Discard, testDummyPopularActions, nil).run([]string{"test", "-s", in, out})
+	status := newApp(stdout, stderr, ioutil.Discard, testDummyPopularActions, nil, nil).run([]string{"test", "-s", in, out})
 	if status != 0 {
 		t.Fatal("exit status is non-zero:", status)
 	}
@@ -235,7 +294,7 @@ func TestFetchRemoteYAML(t *testing.T) {
 	}
 	stdout := &bytes.Buffer{}
 	stderr := ioutil.Discard
-	status := newApp(stdout, stderr, ioutil.Discard, data, nil).run([]string{"test"})
+	status := newApp(stdout, stderr, ioutil.Discard, data, nil, nil).run([]string{"test"})
 	if status != 0 {
 		t.Fatal("exit status is non-zero:", status)
 	}
@@ -256,7 +315,7 @@ func TestLogOutput(t *testing.T) {
 	f := filepath.Join("testdata", "test.jsonl")
 	stdout := &bytes.Buffer{}
 	logged := &bytes.Buffer{}
-	status := newApp(stdout, ioutil.Discard, logged, testDummyPopularActions, nil).run([]string{"test", "-s", f, "-f", "jsonl"})
+	status := newApp(stdout, ioutil.Discard, logged, testDummyPopularActions, nil, nil).run([]string{"test", "-s", f, "-f", "jsonl"})
 	if status != 0 {
 		t.Fatal("exit status is non-zero:", status)
 	}
@@ -272,7 +331,7 @@ func TestLogOutput(t *testing.T) {
 
 	stdout = &bytes.Buffer{}
 	logged = &bytes.Buffer{}
-	status = newApp(stdout, ioutil.Discard, logged, testDummyPopularActions, nil).run([]string{"test", "-s", f, "-f", "jsonl", "-q"})
+	status = newApp(stdout, ioutil.Discard, logged, testDummyPopularActions, nil, nil).run([]string{"test", "-s", f, "-f", "jsonl", "-q"})
 	if status != 0 {
 		t.Fatal("exit status is non-zero:", status)
 	}
@@ -290,7 +349,7 @@ func TestLogOutput(t *testing.T) {
 func TestHelpOutput(t *testing.T) {
 	stdout := ioutil.Discard
 	stderr := &bytes.Buffer{}
-	status := newApp(stdout, stderr, ioutil.Discard, testDummyPopularActions, nil).run([]string{"test", "-help"})
+	status := newApp(stdout, stderr, ioutil.Discard, testDummyPopularActions, nil, nil).run([]string{"test", "-help"})
 	if status != 0 {
 		t.Fatal("exit status is non-zero:", status)
 	}
@@ -306,7 +365,7 @@ func TestDetectNewRelease(t *testing.T) {
 	}
 	stdout := &bytes.Buffer{}
 	stderr := ioutil.Discard
-	status := newApp(stdout, stderr, ioutil.Discard, data, nil).run([]string{"test", "-d"})
+	status := newApp(stdout, stderr, ioutil.Discard, data, nil, nil).run([]string{"test", "-d"})
 	if status != 2 {
 		t.Fatal("exit status is not 2:", status)
 	}
@@ -333,7 +392,7 @@ func TestDetectNoRelease(t *testing.T) {
 			}
 			stdout := &bytes.Buffer{}
 			stderr := ioutil.Discard
-			status := newApp(stdout, stderr, ioutil.Discard, data, nil).run([]string{"test", "-d"})
+			status := newApp(stdout, stderr, ioutil.Discard, data, nil, nil).run([]string{"test", "-d"})
 			if status != 0 {
 				t.Fatal("exit status is non-zero:", status)
 			}
@@ -362,7 +421,7 @@ func TestCouldNotReadJSONLFile(t *testing.T) {
 			stdout := ioutil.Discard
 			stderr := &bytes.Buffer{}
 
-			status := newApp(stdout, stderr, ioutil.Discard, testDummyPopularActions, nil).run([]string{"test", "-s", f})
+			status := newApp(stdout, stderr, ioutil.Discard, testDummyPopularActions, nil, nil).run([]string{"test", "-s", f})
 			if status == 0 {
 				t.Fatal("exit status is unexpectedly zero")
 			}
@@ -381,7 +440,7 @@ func TestCouldNotCreateOutputFile(t *testing.T) {
 	stdout := ioutil.Discard
 	stderr := &bytes.Buffer{}
 
-	status := newApp(stdout, stderr, ioutil.Discard, testDummyPopularActions, nil).run([]string{"test", "-s", f, "-f", "jsonl", out})
+	status := newApp(stdout, stderr, ioutil.Discard, testDummyPopularActions, nil, nil).run([]string{"test", "-s", f, "-f", "jsonl", out})
 	if status == 0 {
 		t.Fatal("exit status is unexpectedly zero")
 	}
@@ -405,7 +464,7 @@ func TestWriteError(t *testing.T) {
 			stdout := testErrorWriter{}
 			stderr := &bytes.Buffer{}
 
-			status := newApp(stdout, stderr, ioutil.Discard, testDummyPopularActions, nil).run([]string{"test", "-s", f, "-f", format})
+			status := newApp(stdout, stderr, ioutil.Discard, testDummyPopularActions, nil, nil).run([]string{"test", "-s", f, "-f", format})
 			if status == 0 {
 				t.Fatal("exit status is unexpectedly zero")
 			}
@@ -426,7 +485,7 @@ func TestCouldNotFetch(t *testing.T) {
 	stdout := testErrorWriter{}
 	stderr := &bytes.Buffer{}
 
-	status := newApp(stdout, stderr, ioutil.Discard, data, nil).run([]string{"test"})
+	status := newApp(stdout, stderr, ioutil.Discard, data, nil, nil).run([]string{"test"})
 	if status == 0 {
 		t.Fatal("exit status is unexpectedly zero")
 	}
@@ -452,7 +511,7 @@ func TestInvalidCommandArgs(t *testing.T) {
 			stdout := testErrorWriter{}
 			stderr := &bytes.Buffer{}
 
-			status := newApp(stdout, stderr, ioutil.Discard, testDummyPopularActions, nil).run(tc.args)
+			status := newApp(stdout, stderr, ioutil.Discard, testDummyPopularActions, nil, nil).run(tc.args)
 			if status == 0 {
 				t.Fatal("exit status is unexpectedly zero")
 			}
@@ -472,7 +531,7 @@ func TestDetectErrorBadRequest(t *testing.T) {
 	}
 	stdout := ioutil.Discard
 	stderr := &bytes.Buffer{}
-	status := newApp(stdout, stderr, ioutil.Discard, data, nil).run([]string{"test", "-d"})
+	status := newApp(stdout, stderr, ioutil.Discard, data, nil, nil).run([]string{"test", "-d"})
 	if status != 1 {
 		t.Fatal("exit status is not 1:", status)
 	}

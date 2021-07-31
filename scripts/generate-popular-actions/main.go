@@ -137,17 +137,25 @@ var doNotCheckInputs = slugSet{
 	"octokit/request-action": {},
 }
 
-type app struct {
-	stdout     io.Writer
-	stderr     io.Writer
-	log        *log.Logger
-	actions    []*action
-	skipInputs slugSet
+// slugs which allows any outputs to be set. Some actions sets outputs 'dynamically'. Those outputs
+// may or may not exist. And they are not listed in action.yml metadata. actionlint cannot check
+// such outputs and fallback into allowing to set any outputs. (#18)
+var doNotTypeStrictly = slugSet{
+	"dorny/paths-filter": {},
 }
 
-func newApp(stdout, stderr, dbgout io.Writer, actions []*action, skipInputs slugSet) *app {
+type app struct {
+	stdout          io.Writer
+	stderr          io.Writer
+	log             *log.Logger
+	actions         []*action
+	skipInputs      slugSet
+	allowAnyOutputs slugSet
+}
+
+func newApp(stdout, stderr, dbgout io.Writer, actions []*action, skipInputs, allowAnyOutputs slugSet) *app {
 	l := log.New(dbgout, "", log.LstdFlags)
-	return &app{stdout, stderr, l, actions, skipInputs}
+	return &app{stdout, stderr, l, actions, skipInputs, allowAnyOutputs}
 }
 
 func buildURL(slug, tag string, ext yamlExt) string {
@@ -208,7 +216,7 @@ func (a *app) fetchRemote() (map[string]*actionlint.ActionMetadata, error) {
 					if _, ok := a.skipInputs[req.slug]; ok {
 						meta.SkipInputs = true
 					}
-					if _, ok := allowAnyOutputs[req.slug]; ok {
+					if _, ok := a.allowAnyOutputs[req.slug]; ok {
 						meta.AllowAnyOutputs = true
 					}
 					ret <- &fetched{spec: spec, meta: &meta}
@@ -321,6 +329,11 @@ var PopularActions = map[string]*ActionMetadata{
 				fmt.Fprintf(b, "},\n")
 			}
 			fmt.Fprintf(b, "},\n")
+		}
+
+		_, allow := a.allowAnyOutputs[slug]
+		if allow {
+			fmt.Fprintf(b, "AllowAnyOutputs: true,\n")
 		}
 
 		if len(meta.Outputs) > 0 {
@@ -584,5 +597,5 @@ Flags:`)
 }
 
 func main() {
-	os.Exit(newApp(os.Stdout, os.Stderr, os.Stderr, popularActions, doNotCheckInputs).run(os.Args))
+	os.Exit(newApp(os.Stdout, os.Stderr, os.Stderr, popularActions, doNotCheckInputs, doNotTypeStrictly).run(os.Args))
 }
