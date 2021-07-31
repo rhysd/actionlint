@@ -18,10 +18,7 @@ var PopularActions = map[string]*ActionMetadata{
 				Default: &popularActionDefaultValue2,
 			},
 		},
-		AllowAnyOutputs: true,
-		Outputs: map[string]struct{}{
-			"executable": {},
-		},
+		SkipOutputs: true,
 	},
 }
 var popularActionDefaultValue0 = "false"

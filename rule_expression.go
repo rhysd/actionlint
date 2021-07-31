@@ -771,7 +771,7 @@ func convertExprLineColToPos(line, col, lineBase, colBase int) *Pos {
 func typeOfActionOutputs(meta *ActionMetadata) *ObjectType {
 	// Some action sets outputs dynamically. Such outputs are not defined in action.yml. actionlint
 	// cannot check such outputs statically so it allows any props (#18)
-	if meta.AllowAnyOutputs {
+	if meta.SkipOutputs {
 		return NewObjectType()
 	}
 	ty := NewObjectType()

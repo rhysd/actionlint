@@ -140,22 +140,22 @@ var doNotCheckInputs = slugSet{
 // slugs which allows any outputs to be set. Some actions sets outputs 'dynamically'. Those outputs
 // may or may not exist. And they are not listed in action.yml metadata. actionlint cannot check
 // such outputs and fallback into allowing to set any outputs. (#18)
-var doNotTypeStrictly = slugSet{
+var doNotCheckOutputs = slugSet{
 	"dorny/paths-filter": {},
 }
 
 type app struct {
-	stdout          io.Writer
-	stderr          io.Writer
-	log             *log.Logger
-	actions         []*action
-	skipInputs      slugSet
-	allowAnyOutputs slugSet
+	stdout      io.Writer
+	stderr      io.Writer
+	log         *log.Logger
+	actions     []*action
+	skipInputs  slugSet
+	skipOutputs slugSet
 }
 
-func newApp(stdout, stderr, dbgout io.Writer, actions []*action, skipInputs, allowAnyOutputs slugSet) *app {
+func newApp(stdout, stderr, dbgout io.Writer, actions []*action, skipInputs, skipOutputs slugSet) *app {
 	l := log.New(dbgout, "", log.LstdFlags)
-	return &app{stdout, stderr, l, actions, skipInputs, allowAnyOutputs}
+	return &app{stdout, stderr, l, actions, skipInputs, skipOutputs}
 }
 
 func buildURL(slug, tag string, ext yamlExt) string {
@@ -216,8 +216,8 @@ func (a *app) fetchRemote() (map[string]*actionlint.ActionMetadata, error) {
 					if _, ok := a.skipInputs[req.slug]; ok {
 						meta.SkipInputs = true
 					}
-					if _, ok := a.allowAnyOutputs[req.slug]; ok {
-						meta.AllowAnyOutputs = true
+					if _, ok := a.skipOutputs[req.slug]; ok {
+						meta.SkipOutputs = true
 					}
 					ret <- &fetched{spec: spec, meta: &meta}
 				case <-done:
@@ -296,12 +296,12 @@ var PopularActions = map[string]*ActionMetadata{
 		fmt.Fprintf(b, "Name: %q,\n", meta.Name)
 
 		slug := spec[:strings.IndexRune(spec, '@')]
-		_, skip := a.skipInputs[slug]
-		if skip {
+		_, skipInputs := a.skipInputs[slug]
+		if skipInputs {
 			fmt.Fprintf(b, "SkipInputs: true,\n")
 		}
 
-		if len(meta.Inputs) > 0 && !skip {
+		if len(meta.Inputs) > 0 && !skipInputs {
 			names := make([]string, 0, len(meta.Inputs))
 			for n := range meta.Inputs {
 				names = append(names, n)
@@ -331,12 +331,12 @@ var PopularActions = map[string]*ActionMetadata{
 			fmt.Fprintf(b, "},\n")
 		}
 
-		_, allow := a.allowAnyOutputs[slug]
-		if allow {
-			fmt.Fprintf(b, "AllowAnyOutputs: true,\n")
+		_, skipOutputs := a.skipOutputs[slug]
+		if skipOutputs {
+			fmt.Fprintf(b, "SkipOutputs: true,\n")
 		}
 
-		if len(meta.Outputs) > 0 {
+		if len(meta.Outputs) > 0 && !skipOutputs {
 			names := make([]string, 0, len(meta.Outputs))
 			for n := range meta.Outputs {
 				names = append(names, n)
@@ -597,5 +597,5 @@ Flags:`)
 }
 
 func main() {
-	os.Exit(newApp(os.Stdout, os.Stderr, os.Stderr, popularActions, doNotCheckInputs, doNotTypeStrictly).run(os.Args))
+	os.Exit(newApp(os.Stdout, os.Stderr, os.Stderr, popularActions, doNotCheckInputs, doNotCheckOutputs).run(os.Args))
 }

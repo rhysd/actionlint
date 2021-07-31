@@ -68,20 +68,20 @@ func TestDataSource(t *testing.T) {
 
 func TestReadWriteJSONL(t *testing.T) {
 	testCases := []struct {
-		file  string
-		skip  slugSet
-		allow slugSet
+		file        string
+		skipInputs  slugSet
+		skipOutputs slugSet
 	}{
 		{
 			file: "test.jsonl",
 		},
 		{
-			file: "skip_inputs.jsonl",
-			skip: slugSet{"rhysd/action-setup-vim": {}},
+			file:       "skip_inputs.jsonl",
+			skipInputs: slugSet{"rhysd/action-setup-vim": {}},
 		},
 		{
-			file:  "allow_any_outputs.jsonl",
-			allow: slugSet{"rhysd/action-setup-vim": {}},
+			file:        "skip_outputs.jsonl",
+			skipOutputs: slugSet{"rhysd/action-setup-vim": {}},
 		},
 	}
 
@@ -91,7 +91,7 @@ func TestReadWriteJSONL(t *testing.T) {
 			stdout := &bytes.Buffer{}
 			stderr := ioutil.Discard
 
-			status := newApp(stdout, stderr, ioutil.Discard, testDummyPopularActions, tc.skip, tc.allow).run([]string{"test", "-s", f, "-f", "jsonl"})
+			status := newApp(stdout, stderr, ioutil.Discard, testDummyPopularActions, tc.skipInputs, tc.skipOutputs).run([]string{"test", "-s", f, "-f", "jsonl"})
 			if status != 0 {
 				t.Fatal("exit status is non-zero:", status)
 			}
@@ -112,24 +112,24 @@ func TestReadWriteJSONL(t *testing.T) {
 
 func TestWriteGoToStdout(t *testing.T) {
 	testCases := []struct {
-		in    string
-		want  string
-		skip  slugSet
-		allow slugSet
+		in          string
+		want        string
+		skipInputs  slugSet
+		skipOutputs slugSet
 	}{
 		{
 			in:   "test.jsonl",
 			want: "want.go",
 		},
 		{
-			in:   "skip_inputs.jsonl",
-			want: "skip_inputs_want.go",
-			skip: slugSet{"rhysd/action-setup-vim": {}},
+			in:         "skip_inputs.jsonl",
+			want:       "skip_inputs_want.go",
+			skipInputs: slugSet{"rhysd/action-setup-vim": {}},
 		},
 		{
-			in:    "allow_any_outputs.jsonl",
-			want:  "allow_any_outputs_want.go",
-			allow: slugSet{"rhysd/action-setup-vim": {}},
+			in:          "skip_outputs.jsonl",
+			want:        "skip_outputs_want.go",
+			skipOutputs: slugSet{"rhysd/action-setup-vim": {}},
 		},
 	}
 
@@ -137,7 +137,7 @@ func TestWriteGoToStdout(t *testing.T) {
 		t.Run(tc.in, func(t *testing.T) {
 			stdout := &bytes.Buffer{}
 			stderr := ioutil.Discard
-			a := newApp(stdout, stderr, ioutil.Discard, testDummyPopularActions, tc.skip, tc.allow)
+			a := newApp(stdout, stderr, ioutil.Discard, testDummyPopularActions, tc.skipInputs, tc.skipOutputs)
 			status := a.run([]string{"test", "-s", filepath.Join("testdata", tc.in)})
 			if status != 0 {
 				t.Fatal("exit status is non-zero:", status)
