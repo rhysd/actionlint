@@ -66,166 +66,94 @@ func TestDataSource(t *testing.T) {
 	}
 }
 
-func TestReadJSONL(t *testing.T) {
-	f := filepath.Join("testdata", "test.jsonl")
-	b, err := ioutil.ReadFile(f)
-	if err != nil {
-		panic(err)
-	}
-	stdout := &bytes.Buffer{}
-	stderr := ioutil.Discard
-
-	status := newApp(stdout, stderr, ioutil.Discard, testDummyPopularActions, nil, nil).run([]string{"test", "-s", f, "-f", "jsonl"})
-	if status != 0 {
-		t.Fatal("exit status is non-zero:", status)
-	}
-
-	want := string(b)
-	have := stdout.String()
-
-	if want != have {
-		t.Fatalf("read content and output content differ\n%s", cmp.Diff(want, have))
-	}
-}
-
-func TestReadWriteSkipInputsJSONL(t *testing.T) {
-	f := filepath.Join("testdata", "skip_inputs.jsonl")
-	b, err := ioutil.ReadFile(f)
-	if err != nil {
-		panic(err)
+func TestReadWriteJSONL(t *testing.T) {
+	testCases := []struct {
+		file  string
+		skip  slugSet
+		allow slugSet
+	}{
+		{
+			file: "test.jsonl",
+		},
+		{
+			file: "skip_inputs.jsonl",
+			skip: slugSet{"rhysd/action-setup-vim": {}},
+		},
+		{
+			file:  "allow_any_outputs.jsonl",
+			allow: slugSet{"rhysd/action-setup-vim": {}},
+		},
 	}
 
-	stdout := &bytes.Buffer{}
-	stderr := ioutil.Discard
+	for _, tc := range testCases {
+		t.Run(tc.file, func(t *testing.T) {
+			f := filepath.Join("testdata", tc.file)
+			stdout := &bytes.Buffer{}
+			stderr := ioutil.Discard
 
-	slug := "rhysd/action-setup-vim"
-	actions := []*action{
-		{slug, []string{"v1"}, "v2", yamlExtYML},
-	}
-	skip := map[string]struct{}{slug: {}}
+			status := newApp(stdout, stderr, ioutil.Discard, testDummyPopularActions, tc.skip, tc.allow).run([]string{"test", "-s", f, "-f", "jsonl"})
+			if status != 0 {
+				t.Fatal("exit status is non-zero:", status)
+			}
 
-	status := newApp(stdout, stderr, ioutil.Discard, actions, skip, nil).run([]string{"test", "-s", f, "-f", "jsonl"})
-	if status != 0 {
-		t.Fatal("exit status is non-zero:", status)
-	}
+			b, err := ioutil.ReadFile(f)
+			if err != nil {
+				panic(err)
+			}
+			want := string(b)
+			have := stdout.String()
 
-	want := string(b)
-	have := stdout.String()
-
-	if want != have {
-		t.Fatalf("read content and output content differ\n%s", cmp.Diff(want, have))
-	}
-}
-
-func TestReadWriteAllowAnyOutputsJSONL(t *testing.T) {
-	f := filepath.Join("testdata", "allow_any_outputs.jsonl")
-	b, err := ioutil.ReadFile(f)
-	if err != nil {
-		panic(err)
-	}
-
-	stdout := &bytes.Buffer{}
-	stderr := ioutil.Discard
-
-	slug := "rhysd/action-setup-vim"
-	actions := []*action{
-		{slug, []string{"v1"}, "v2", yamlExtYML},
-	}
-	allow := map[string]struct{}{slug: {}}
-
-	status := newApp(stdout, stderr, ioutil.Discard, actions, nil, allow).run([]string{"test", "-s", f, "-f", "jsonl"})
-	if status != 0 {
-		t.Fatal("exit status is non-zero:", status)
-	}
-
-	want := string(b)
-	have := stdout.String()
-
-	if want != have {
-		t.Fatalf("read content and output content differ\n%s", cmp.Diff(want, have))
+			if want != have {
+				t.Fatalf("read content and output content differ\n%s", cmp.Diff(want, have))
+			}
+		})
 	}
 }
 
 func TestWriteGoToStdout(t *testing.T) {
-	f := filepath.Join("testdata", "test.jsonl")
-	out := filepath.Join("testdata", "want.go")
-	b, err := ioutil.ReadFile(out)
-	if err != nil {
-		panic(err)
+	testCases := []struct {
+		in    string
+		want  string
+		skip  slugSet
+		allow slugSet
+	}{
+		{
+			in:   "test.jsonl",
+			want: "want.go",
+		},
+		{
+			in:   "skip_inputs.jsonl",
+			want: "skip_inputs_want.go",
+			skip: slugSet{"rhysd/action-setup-vim": {}},
+		},
+		{
+			in:    "allow_any_outputs.jsonl",
+			want:  "allow_any_outputs_want.go",
+			allow: slugSet{"rhysd/action-setup-vim": {}},
+		},
 	}
 
-	stdout := &bytes.Buffer{}
-	stderr := ioutil.Discard
-	status := newApp(stdout, stderr, ioutil.Discard, testDummyPopularActions, nil, nil).run([]string{"test", "-s", f})
-	if status != 0 {
-		t.Fatal("exit status is non-zero:", status)
-	}
+	for _, tc := range testCases {
+		t.Run(tc.in, func(t *testing.T) {
+			stdout := &bytes.Buffer{}
+			stderr := ioutil.Discard
+			a := newApp(stdout, stderr, ioutil.Discard, testDummyPopularActions, tc.skip, tc.allow)
+			status := a.run([]string{"test", "-s", filepath.Join("testdata", tc.in)})
+			if status != 0 {
+				t.Fatal("exit status is non-zero:", status)
+			}
 
-	want := string(b)
-	have := stdout.String()
+			b, err := ioutil.ReadFile(filepath.Join("testdata", tc.want))
+			if err != nil {
+				panic(err)
+			}
+			want := string(b)
+			have := stdout.String()
 
-	if want != have {
-		t.Fatalf("read content and output content differ\n%s", cmp.Diff(want, have))
-	}
-}
-
-func TestWriteSkipInputsGo(t *testing.T) {
-	f := filepath.Join("testdata", "skip_inputs.jsonl")
-	out := filepath.Join("testdata", "skip_inputs_want.go")
-	b, err := ioutil.ReadFile(out)
-	if err != nil {
-		panic(err)
-	}
-
-	stdout := &bytes.Buffer{}
-	stderr := ioutil.Discard
-
-	slug := "rhysd/action-setup-vim"
-	actions := []*action{
-		{slug, []string{"v1"}, "v2", yamlExtYML},
-	}
-	skip := map[string]struct{}{slug: {}}
-
-	status := newApp(stdout, stderr, ioutil.Discard, actions, skip, nil).run([]string{"test", "-s", f})
-	if status != 0 {
-		t.Fatal("exit status is non-zero:", status)
-	}
-
-	want := string(b)
-	have := stdout.String()
-
-	if want != have {
-		t.Fatalf("read content and output content differ\n%s", cmp.Diff(want, have))
-	}
-}
-
-func TestWriteAllowAnyOutputsGo(t *testing.T) {
-	f := filepath.Join("testdata", "allow_any_outputs.jsonl")
-	out := filepath.Join("testdata", "allow_any_outputs.go")
-	b, err := ioutil.ReadFile(out)
-	if err != nil {
-		panic(err)
-	}
-
-	stdout := &bytes.Buffer{}
-	stderr := ioutil.Discard
-
-	slug := "rhysd/action-setup-vim"
-	actions := []*action{
-		{slug, []string{"v1"}, "v2", yamlExtYML},
-	}
-	allow := map[string]struct{}{slug: {}}
-
-	status := newApp(stdout, stderr, ioutil.Discard, actions, nil, allow).run([]string{"test", "-s", f})
-	if status != 0 {
-		t.Fatal("exit status is non-zero:", status)
-	}
-
-	want := string(b)
-	have := stdout.String()
-
-	if want != have {
-		t.Fatalf("read content and output content differ\n%s", cmp.Diff(want, have))
+			if want != have {
+				t.Fatalf("read content and output content differ\n%s", cmp.Diff(want, have))
+			}
+		})
 	}
 }
 
