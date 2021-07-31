@@ -415,15 +415,8 @@ func (rule *RuleExpression) checkIfCondition(str *String) {
 		src := str.Value + "}}" // }} is necessary since lexer lexes it as end of tokens
 		line, col := str.Pos.Line, str.Pos.Col
 
-		l := NewExprLexer()
-		tok, _, err := l.Lex(src)
-		if err != nil {
-			rule.exprError(err, line, col)
-			return
-		}
-
 		p := NewExprParser()
-		expr, err := p.Parse(tok)
+		expr, err := p.Parse(NewExprLexer(src))
 		if err != nil {
 			rule.exprError(err, line, col)
 			return
@@ -556,21 +549,14 @@ func (rule *RuleExpression) checkSemanticsOfExprNode(expr ExprNode, line, col in
 }
 
 func (rule *RuleExpression) checkSemantics(src string, line, col int) (ExprType, int) {
-	l := NewExprLexer()
-	tok, offset, err := l.Lex(src)
-	if err != nil {
-		rule.exprError(err, line, col)
-		return nil, offset
-	}
-
+	l := NewExprLexer(src)
 	p := NewExprParser()
-	expr, err := p.Parse(tok)
+	expr, err := p.Parse(l)
 	if err != nil {
 		rule.exprError(err, line, col)
-		return nil, offset
+		return nil, l.Offset()
 	}
-
-	return rule.checkSemanticsOfExprNode(expr, line, col), offset
+	return rule.checkSemanticsOfExprNode(expr, line, col), l.Offset()
 }
 
 func (rule *RuleExpression) calcNeedsType(job *Job) *ObjectType {

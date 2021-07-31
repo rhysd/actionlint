@@ -574,14 +574,8 @@ func TestParseExpressionSyntaxOK(t *testing.T) {
 
 	for _, tc := range testCases {
 		t.Run(tc.what, func(t *testing.T) {
-			l := NewExprLexer()
-			tok, _, err := l.Lex(tc.input + "}}")
-			if err != nil {
-				t.Fatal(err)
-			}
-
 			p := NewExprParser()
-			n, err := p.Parse(tok)
+			n, err := p.Parse(NewExprLexer(tc.input + "}}"))
 			if err != nil {
 				t.Fatal("Parse error:", err)
 			}
@@ -728,13 +722,8 @@ func TestParseExpressionSyntaxError(t *testing.T) {
 
 	for _, tc := range testCases {
 		t.Run(tc.what, func(t *testing.T) {
-			l := NewExprLexer()
-			tok, _, err := l.Lex(tc.input + "}}")
-			if err != nil {
-				t.Fatal(err)
-			}
 			p := NewExprParser()
-			_, err = p.Parse(tok)
+			_, err := p.Parse(NewExprLexer(tc.input + "}}"))
 			if err == nil {
 				t.Fatal("Parse error did not occur:", tc.input)
 			}
@@ -748,14 +737,18 @@ func TestParseExpressionSyntaxError(t *testing.T) {
 
 func TestParseExpressionNumberLiteralsError(t *testing.T) {
 	testCases := []struct {
-		what string
-		tok  *Token
+		what  string
+		tok   *Token
+		parse func(*ExprParser) ExprNode
 	}{
 		{
 			what: "integer literal",
 			tok: &Token{
 				Kind:  TokenKindInt,
 				Value: "abc",
+			},
+			parse: func(p *ExprParser) ExprNode {
+				return p.parseInt()
 			},
 		},
 		{
@@ -764,17 +757,22 @@ func TestParseExpressionNumberLiteralsError(t *testing.T) {
 				Kind:  TokenKindFloat,
 				Value: "abc",
 			},
+			parse: func(p *ExprParser) ExprNode {
+				return p.parseFloat()
+			},
 		},
 	}
 
 	for _, tc := range testCases {
 		t.Run(tc.what, func(t *testing.T) {
-			ts := []*Token{
-				tc.tok,
-				{Kind: TokenKindEnd},
-			}
+			// This is really hacky depending on internal structure of parser. It is necessary
+			// because parsing int/float token never fails. To check the error handling, we need to
+			// inject an invalid token.
 			p := NewExprParser()
-			_, err := p.Parse(ts)
+			p.cur = tc.tok
+			tc.parse(p)
+			err := p.err
+
 			if err == nil {
 				t.Fatal("Parse error did not occur:", tc.tok.Value)
 			}
@@ -869,15 +867,9 @@ func TestParseExpressionTokenPosition(t *testing.T) {
 
 	for _, tc := range testCases {
 		t.Run(tc.what, func(t *testing.T) {
-			l := NewExprLexer()
-			// Add 3 spaces so start position of token must be offset 2
-			tok, _, err := l.Lex("  " + tc.input + "}}")
-			if err != nil {
-				t.Fatal("Lex error:", err)
-			}
-
+			// Add 2 spaces so start position of token must be offset 2
 			p := NewExprParser()
-			e, err := p.Parse(tok)
+			e, err := p.Parse(NewExprLexer("  " + tc.input + "}}"))
 			if err != nil {
 				t.Fatal("Parse error:", err)
 			}
@@ -991,14 +983,9 @@ func TestParseExpressionOperatorDetection(t *testing.T) {
 
 	for _, tc := range testCases {
 		t.Run(tc.what, func(t *testing.T) {
-			l := NewExprLexer()
-			tok, _, err := l.Lex(tc.input + "}}")
-			if err != nil {
-				panic(err)
-			}
-
+			l := NewExprLexer(tc.input + "}}")
 			p := NewExprParser()
-			if _, err := p.Parse(tok); err != nil {
+			if _, err := p.Parse(l); err != nil {
 				t.Fatal("Parse error:", err)
 			}
 
@@ -1017,5 +1004,18 @@ func TestParseExpressionOperatorDetection(t *testing.T) {
 				}
 			}
 		})
+	}
+}
+
+func TestParseReturnFirstErrorOnMultipleErrors(t *testing.T) {
+	p := NewExprParser()
+	_, want := p.Parse(NewExprLexer(".}}"))
+	if want == nil {
+		t.Fatal("error did not occur")
+	}
+	p.unexpected("foo", nil)
+	have := p.Err()
+	if want != have {
+		t.Fatalf("first error %q was expected but got %q", want, have)
 	}
 }

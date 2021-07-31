@@ -257,8 +257,7 @@ func TestLexOneToken(t *testing.T) {
 
 	for _, tc := range testCases {
 		t.Run(tc.what, func(t *testing.T) {
-			l := NewExprLexer()
-			tokens, offset, err := l.Lex(tc.input + "}}")
+			tokens, offset, err := LexExpression(tc.input + "}}")
 			if err != nil {
 				t.Fatal("error while lexing:", err)
 			}
@@ -536,8 +535,7 @@ func TestLexExpression(t *testing.T) {
 			panic(tc)
 		}
 		t.Run(tc.what, func(t *testing.T) {
-			l := NewExprLexer()
-			tokens, offset, err := l.Lex(tc.input + "}}")
+			tokens, offset, err := LexExpression(tc.input + "}}")
 			if err != nil {
 				t.Fatal("error while lexing:", err)
 			}
@@ -712,8 +710,7 @@ func TestLexExprError(t *testing.T) {
 
 	for _, tc := range testCases {
 		t.Run(tc.what, func(t *testing.T) {
-			l := NewExprLexer()
-			_, _, err := l.Lex(tc.input)
+			_, _, err := LexExpression(tc.input)
 			if err == nil {
 				t.Fatal("error did not occur")
 			}
@@ -728,8 +725,7 @@ func TestLexTokenPos(t *testing.T) {
 	input := "foo( true && 0.1234, github.issue )"
 	want := []int{0, 3, 5, 10, 13, 19, 21, 27, 28, 34, 35}
 
-	l := NewExprLexer()
-	ts, _, err := l.Lex(input + "}}")
+	ts, _, err := LexExpression(input + "}}")
 	if err != nil {
 		t.Fatal("error while lexing:", err)
 	}

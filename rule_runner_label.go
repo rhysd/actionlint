@@ -125,14 +125,8 @@ func (rule *RuleRunnerLabel) tryToGetLabelsInMatrix(l string, m *Matrix) []*Stri
 		return nil
 	}
 
-	lex := NewExprLexer()
-	tok, _, err := lex.Lex(l[3:]) // 3 means omit first "${{"
-	if err != nil {
-		return nil
-	}
-
 	p := NewExprParser()
-	expr, err := p.Parse(tok)
+	expr, err := p.Parse(NewExprLexer(l[3:])) // 3 means omit first "${{"
 	if err != nil {
 		return nil
 	}

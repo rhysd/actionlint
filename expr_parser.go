@@ -18,7 +18,9 @@ func errorAtToken(t *Token, msg string) *ExprError {
 // ExprParser is a parser for expression syntax. To know the details, see
 // https://docs.github.com/en/actions/reference/context-and-expression-syntax-for-github-actions
 type ExprParser struct {
-	input       []*Token
+	cur         *Token
+	lexer       *ExprLexer
+	err         *ExprError
 	sawOperator *Token
 }
 
@@ -27,42 +29,42 @@ func NewExprParser() *ExprParser {
 	return &ExprParser{}
 }
 
-func (p *ExprParser) error(msg string) *ExprError {
-	return errorAtToken(p.input[0], msg)
+func (p *ExprParser) error(msg string) {
+	if p.err == nil {
+		p.err = errorAtToken(p.cur, msg)
+	}
 }
 
-func (p *ExprParser) errorf(format string, args ...interface{}) *ExprError {
-	msg := fmt.Sprintf(format, args...)
-	return errorAtToken(p.input[0], msg)
+func (p *ExprParser) errorf(format string, args ...interface{}) {
+	p.error(fmt.Sprintf(format, args...))
 }
 
-func (p *ExprParser) unexpected(where string, expected []TokenKind) *ExprError {
+func (p *ExprParser) unexpected(where string, expected []TokenKind) {
+	if p.err != nil {
+		return
+	}
 	qb := quotesBuilder{}
 	for _, e := range expected {
 		qb.append(e.String())
 	}
 	var what string
-	if p.input[0].Kind == TokenKindEnd {
+	if p.cur.Kind == TokenKindEnd {
 		what = "end of input"
 	} else {
-		what = fmt.Sprintf("token %q", p.input[0].Kind.String())
+		what = fmt.Sprintf("token %q", p.cur.Kind.String())
 	}
 	msg := fmt.Sprintf("unexpected %s while parsing %s. expecting %s", what, where, qb.build())
-	return p.error(msg)
+	p.error(msg)
 }
 
 func (p *ExprParser) next() *Token {
-	// Do not consume final token to remember position of the end
-	if p.input[0].Kind == TokenKindEnd {
-		return p.input[0]
-	}
-	t := p.input[0]
-	p.input = p.input[1:]
-	return t
+	ret := p.cur
+	p.cur = p.lexer.Next()
+	return ret
 }
 
 func (p *ExprParser) peek() *Token {
-	return p.input[0]
+	return p.cur
 }
 
 // Note: List of operators: https://docs.github.com/en/actions/reference/context-and-expression-syntax-for-github-actions#operators
@@ -72,7 +74,7 @@ func (p *ExprParser) seeingOperator(tok *Token) {
 	}
 }
 
-func (p *ExprParser) parseIdent() (ExprNode, *ExprError) {
+func (p *ExprParser) parseIdent() ExprNode {
 	ident := p.next() // eat ident
 	switch p.peek().Kind {
 	case TokenKindLeftParen:
@@ -88,9 +90,9 @@ func (p *ExprParser) parseIdent() (ExprNode, *ExprError) {
 		} else {
 		LoopArgs:
 			for {
-				arg, err := p.parseLogicalOr()
-				if err != nil {
-					return nil, err
+				arg := p.parseLogicalOr()
+				if arg == nil {
+					return nil
 				}
 
 				args = append(args, arg)
@@ -103,67 +105,71 @@ func (p *ExprParser) parseIdent() (ExprNode, *ExprError) {
 					p.next() // eat ')'
 					break LoopArgs
 				default:
-					return nil, p.unexpected("arguments of function call", []TokenKind{TokenKindComma, TokenKindRightParen})
+					p.unexpected("arguments of function call", []TokenKind{TokenKindComma, TokenKindRightParen})
+					return nil
 				}
 			}
 		}
-		return &FuncCallNode{ident.Value, args, ident}, nil
+		return &FuncCallNode{ident.Value, args, ident}
 	default:
 		// Handle keywords. Note that keywords are case sensitive. TRUE, FALSE, NULL are invalid named value.
 		switch ident.Value {
 		case "null":
-			return &NullNode{ident}, nil
+			return &NullNode{ident}
 		case "true":
-			return &BoolNode{true, ident}, nil
+			return &BoolNode{true, ident}
 		case "false":
-			return &BoolNode{false, ident}, nil
+			return &BoolNode{false, ident}
 		default:
 			// Variable name access is case insensitive. github.event and GITHUB.event are the same.
-			return &VariableNode{strings.ToLower(ident.Value), ident}, nil
+			return &VariableNode{strings.ToLower(ident.Value), ident}
 		}
 	}
 }
 
-func (p *ExprParser) parseNestedExpr() (ExprNode, *ExprError) {
+func (p *ExprParser) parseNestedExpr() ExprNode {
 	lparen := p.next() // eat '('
 
-	nested, err := p.parseLogicalOr()
-	if err != nil {
-		return nil, err
+	nested := p.parseLogicalOr()
+	if nested == nil {
+		return nil
 	}
 
 	if p.peek().Kind == TokenKindRightParen {
 		p.next() // eat ')'
 	} else {
-		return nil, p.unexpected("closing ')' of nexted expression (...)", []TokenKind{TokenKindRightParen})
+		p.unexpected("closing ')' of nexted expression (...)", []TokenKind{TokenKindRightParen})
+		return nil
 	}
 
 	p.seeingOperator(lparen)
-	return nested, nil
+	return nested
 }
 
-func (p *ExprParser) parseInt() (ExprNode, *ExprError) {
+func (p *ExprParser) parseInt() ExprNode {
 	t := p.peek()
 	i, err := strconv.ParseInt(t.Value, 0, 32)
 	if err != nil {
-		return nil, p.errorf("parsing invalid integer literal %q: %s", t.Value, err)
+		p.errorf("parsing invalid integer literal %q: %s", t.Value, err)
+		return nil
 	}
 
 	p.next() // eat int
 
-	return &IntNode{int(i), t}, nil
+	return &IntNode{int(i), t}
 }
 
-func (p *ExprParser) parseFloat() (ExprNode, *ExprError) {
+func (p *ExprParser) parseFloat() ExprNode {
 	t := p.peek()
 	f, err := strconv.ParseFloat(t.Value, 64)
 	if err != nil {
-		return nil, p.errorf("parsing invalid float literal %q: %s", t.Value, err)
+		p.errorf("parsing invalid float literal %q: %s", t.Value, err)
+		return nil
 	}
 
 	p.next() // eat float
 
-	return &FloatNode{f, t}, nil
+	return &FloatNode{f, t}
 }
 
 func (p *ExprParser) parseString() ExprNode {
@@ -174,7 +180,7 @@ func (p *ExprParser) parseString() ExprNode {
 	return &StringNode{s, t}
 }
 
-func (p *ExprParser) parsePrimaryExpr() (ExprNode, *ExprError) {
+func (p *ExprParser) parsePrimaryExpr() ExprNode {
 	switch p.peek().Kind {
 	case TokenKindIdent:
 		return p.parseIdent()
@@ -185,9 +191,9 @@ func (p *ExprParser) parsePrimaryExpr() (ExprNode, *ExprError) {
 	case TokenKindFloat:
 		return p.parseFloat()
 	case TokenKindString:
-		return p.parseString(), nil
+		return p.parseString()
 	default:
-		return nil, p.unexpected(
+		p.unexpected(
 			"variable access, function call, null, bool, int, float or string",
 			[]TokenKind{
 				TokenKindIdent,
@@ -197,13 +203,14 @@ func (p *ExprParser) parsePrimaryExpr() (ExprNode, *ExprError) {
 				TokenKindString,
 			},
 		)
+		return nil
 	}
 }
 
-func (p *ExprParser) parsePostfixOp() (ExprNode, *ExprError) {
-	ret, err := p.parsePrimaryExpr()
-	if err != nil {
-		return nil, err
+func (p *ExprParser) parsePostfixOp() ExprNode {
+	ret := p.parsePrimaryExpr()
+	if ret == nil {
+		return nil
 	}
 
 	for {
@@ -219,50 +226,52 @@ func (p *ExprParser) parsePostfixOp() (ExprNode, *ExprError) {
 				// Property name is case insensitive. github.event and github.EVENT are the same
 				ret = &ObjectDerefNode{ret, strings.ToLower(t.Value)}
 			default:
-				return nil, p.unexpected(
+				p.unexpected(
 					"object property dereference like 'a.b' or array element dereference like 'a.*'",
 					[]TokenKind{TokenKindIdent, TokenKindStar},
 				)
+				return nil
 			}
 			p.seeingOperator(dot)
 		case TokenKindLeftBracket:
 			lbra := p.next() // eat '['
-			idx, err := p.parseLogicalOr()
-			if err != nil {
-				return nil, err
+			idx := p.parseLogicalOr()
+			if idx == nil {
+				return nil
 			}
 			ret = &IndexAccessNode{ret, idx}
 			if p.peek().Kind != TokenKindRightBracket {
-				return nil, p.unexpected("closing bracket ']' for index access", []TokenKind{TokenKindRightBracket})
+				p.unexpected("closing bracket ']' for index access", []TokenKind{TokenKindRightBracket})
+				return nil
 			}
 			p.next() // eat ']'
 			p.seeingOperator(lbra)
 		default:
-			return ret, nil
+			return ret
 		}
 	}
 }
 
-func (p *ExprParser) parsePrefixOp() (ExprNode, *ExprError) {
+func (p *ExprParser) parsePrefixOp() ExprNode {
 	t := p.peek()
 	if t.Kind != TokenKindNot {
 		return p.parsePostfixOp()
 	}
 	not := p.next() // eat '!' token
 
-	o, err := p.parsePostfixOp()
-	if err != nil {
-		return nil, err
+	o := p.parsePostfixOp()
+	if o == nil {
+		return nil
 	}
 	p.seeingOperator(not)
 
-	return &NotOpNode{o, t}, nil
+	return &NotOpNode{o, t}
 }
 
-func (p *ExprParser) parseCompareBinOp() (ExprNode, *ExprError) {
-	l, err := p.parsePrefixOp()
-	if err != nil {
-		return nil, err
+func (p *ExprParser) parseCompareBinOp() ExprNode {
+	l := p.parsePrefixOp()
+	if l == nil {
+		return nil
 	}
 
 	k := CompareOpNodeKindInvalid
@@ -280,79 +289,87 @@ func (p *ExprParser) parseCompareBinOp() (ExprNode, *ExprError) {
 	case TokenKindNotEq:
 		k = CompareOpNodeKindNotEq
 	default:
-		return l, nil
+		return l
 	}
 	op := p.next() // eat the operator token
 
-	r, err := p.parseCompareBinOp()
-	if err != nil {
-		return nil, err
+	r := p.parseCompareBinOp()
+	if r == nil {
+		return nil
 	}
 
 	p.seeingOperator(op)
 
-	return &CompareOpNode{k, l, r}, nil
+	return &CompareOpNode{k, l, r}
 }
 
-func (p *ExprParser) parseLogicalAnd() (ExprNode, *ExprError) {
-	l, err := p.parseCompareBinOp()
-	if err != nil {
-		return nil, err
+func (p *ExprParser) parseLogicalAnd() ExprNode {
+	l := p.parseCompareBinOp()
+	if l == nil {
+		return nil
 	}
 	if p.peek().Kind != TokenKindAnd {
-		return l, nil
+		return l
 	}
 	and := p.next() // eat &&
-	r, err := p.parseLogicalAnd()
-	if err != nil {
-		return nil, err
+	r := p.parseLogicalAnd()
+	if r == nil {
+		return nil
 	}
 	p.seeingOperator(and)
-	return &LogicalOpNode{LogicalOpNodeKindAnd, l, r}, nil
+	return &LogicalOpNode{LogicalOpNodeKindAnd, l, r}
 }
 
-func (p *ExprParser) parseLogicalOr() (ExprNode, *ExprError) {
-	l, err := p.parseLogicalAnd()
-	if err != nil {
-		return nil, err
+func (p *ExprParser) parseLogicalOr() ExprNode {
+	l := p.parseLogicalAnd()
+	if l == nil {
+		return nil
 	}
 	if p.peek().Kind != TokenKindOr {
-		return l, nil
+		return l
 	}
 	or := p.next() // eat ||
-	r, err := p.parseLogicalOr()
-	if err != nil {
-		return nil, err
+	r := p.parseLogicalOr()
+	if r == nil {
+		return nil
 	}
 	p.seeingOperator(or)
-	return &LogicalOpNode{LogicalOpNodeKindOr, l, r}, nil
+	return &LogicalOpNode{LogicalOpNodeKindOr, l, r}
 }
 
-// Parse parses given token sequence into syntax tree.
-// Token sequence t must end with TokenKindEnd token and it cannot be empty.
-func (p *ExprParser) Parse(t []*Token) (ExprNode, *ExprError) {
-	// Init
-	if len(t) == 0 {
-		panic("tokens must not be empty")
+// Err returns an error which was caused while previous parsing.
+func (p *ExprParser) Err() *ExprError {
+	if err := p.lexer.Err(); err != nil {
+		return err
 	}
-	p.input = t
+	return p.err
+}
+
+// Parse parses token sequence lexed by a given lexer into syntax tree.
+func (p *ExprParser) Parse(l *ExprLexer) (ExprNode, *ExprError) {
+	// Init
+	p.err = nil
+	p.lexer = l
+	p.cur = l.Next()
 	p.sawOperator = nil
 
-	root, err := p.parseLogicalOr()
-	if err != nil {
+	root := p.parseLogicalOr()
+	if err := p.Err(); err != nil {
 		return nil, err
 	}
 
 	if p.peek().Kind != TokenKindEnd {
 		// It did not reach the end of sequence
 		qb := quotesBuilder{}
-		for _, t := range p.input {
+		for {
+			t := l.Next()
 			if t.Kind == TokenKindEnd {
 				break
 			}
 			qb.append(t.Kind.String())
 		}
-		return nil, p.errorf("parser did not reach end of input after parsing expression. remaining tokens are %s", qb.build())
+		p.errorf("parser did not reach end of input after parsing expression. remaining tokens are %s", qb.build())
+		return nil, p.err
 	}
 
 	return root, nil

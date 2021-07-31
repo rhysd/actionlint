@@ -172,15 +172,39 @@ func appendAlphas(rs []rune) []rune {
 // ExprLexer is a struct to lex expression syntax. To know the syntax, see
 // https://docs.github.com/en/actions/reference/context-and-expression-syntax-for-github-actions
 type ExprLexer struct {
-	src     string
-	scan    scanner.Scanner
-	scanErr *ExprError
-	start   scanner.Position
+	src    string
+	scan   scanner.Scanner
+	lexErr *ExprError
+	start  scanner.Position
 }
 
 // NewExprLexer makes new ExprLexer instance.
-func NewExprLexer() *ExprLexer {
-	return &ExprLexer{}
+func NewExprLexer(src string) *ExprLexer {
+	l := &ExprLexer{
+		src: src,
+		start: scanner.Position{
+			Offset: 0,
+			Line:   1,
+			Column: 1,
+		},
+	}
+	l.scan.Init(strings.NewReader(src))
+	l.scan.Error = func(_ *scanner.Scanner, m string) {
+		l.error(fmt.Sprintf("scan error while lexing expression: %s", m))
+	}
+	return l
+}
+
+func (lex *ExprLexer) error(msg string) {
+	if lex.lexErr == nil {
+		p := lex.scan.Pos()
+		lex.lexErr = &ExprError{
+			Message: msg,
+			Offset:  p.Offset,
+			Line:    p.Line,
+			Column:  p.Column,
+		}
+	}
 }
 
 func (lex *ExprLexer) token(kind TokenKind) *Token {
@@ -197,6 +221,16 @@ func (lex *ExprLexer) token(kind TokenKind) *Token {
 	return t
 }
 
+func (lex *ExprLexer) eof() *Token {
+	return &Token{
+		Kind:   TokenKindEnd,
+		Value:  "",
+		Offset: lex.start.Offset,
+		Line:   lex.start.Line,
+		Column: lex.start.Column,
+	}
+}
+
 func (lex *ExprLexer) skipWhite() {
 	for {
 		if r := lex.scan.Peek(); !isWhitespace(r) {
@@ -207,7 +241,7 @@ func (lex *ExprLexer) skipWhite() {
 	}
 }
 
-func (lex *ExprLexer) unexpected(r rune, where string, expected []rune) *ExprError {
+func (lex *ExprLexer) unexpected(r rune, where string, expected []rune) *Token {
 	qb := quotesBuilder{}
 	for _, r := range expected {
 		qb.appendRune(r)
@@ -232,43 +266,34 @@ func (lex *ExprLexer) unexpected(r rune, where string, expected []rune) *ExprErr
 		qb.build(),
 		note,
 	)
-	p := lex.scan.Pos()
-	return &ExprError{
-		Message: msg,
-		Offset:  p.Offset,
-		Line:    p.Line,
-		Column:  p.Column,
-	}
+
+	lex.error(msg)
+	return lex.eof()
 }
 
-func (lex *ExprLexer) unexpectedEOF() *ExprError {
-	p := lex.scan.Pos()
-	return &ExprError{
-		Message: "unexpected EOF while lexing expression",
-		Offset:  p.Offset,
-		Line:    p.Line,
-		Column:  p.Column,
-	}
+func (lex *ExprLexer) unexpectedEOF() *Token {
+	lex.error("unexpected EOF while lexing expression")
+	return lex.eof()
 }
 
-func (lex *ExprLexer) lexIdent() (*Token, *ExprError) {
+func (lex *ExprLexer) lexIdent() *Token {
 	for {
 		lex.scan.Next()
 		// a-Z, 0-9, - or _
 		// https://docs.github.com/en/actions/reference/context-and-expression-syntax-for-github-actions#contexts
 		if r := lex.scan.Peek(); !isAlnum(r) && r != '_' && r != '-' {
-			return lex.token(TokenKindIdent), lex.scanErr
+			return lex.token(TokenKindIdent)
 		}
 	}
 }
 
-func (lex *ExprLexer) lexNum() (*Token, *ExprError) {
+func (lex *ExprLexer) lexNum() *Token {
 	r := lex.scan.Next() // precond: r is digit or '-'
 
 	if r == '-' {
 		r = lex.scan.Next()
 		if !isNum(r) {
-			return nil, lex.unexpected(r, "number after -", appendDigits([]rune{}))
+			return lex.unexpected(r, "number after -", appendDigits([]rune{}))
 		}
 	}
 
@@ -282,7 +307,7 @@ func (lex *ExprLexer) lexNum() (*Token, *ExprError) {
 			e := []rune{}
 			e = appendPuncts(e)
 			e = append(e, 'e', 'E')
-			return nil, lex.unexpected(r, "number after 0", e)
+			return lex.unexpected(r, "number after 0", e)
 		}
 	} else {
 		// r is 1..9
@@ -301,7 +326,7 @@ func (lex *ExprLexer) lexNum() (*Token, *ExprError) {
 		lex.scan.Next() // eat '.'
 		r = lex.scan.Next()
 		if !isNum(r) {
-			return nil, lex.unexpected(r, "fraction part of float number", appendDigits([]rune{}))
+			return lex.unexpected(r, "fraction part of float number", appendDigits([]rune{}))
 		}
 
 		for {
@@ -322,7 +347,7 @@ func (lex *ExprLexer) lexNum() (*Token, *ExprError) {
 			r = lex.scan.Next()
 		}
 		if !isNum(r) {
-			return nil, lex.unexpected(r, "exponent part of float number", appendDigits([]rune{}))
+			return lex.unexpected(r, "exponent part of float number", appendDigits([]rune{}))
 		}
 
 		for {
@@ -336,10 +361,10 @@ func (lex *ExprLexer) lexNum() (*Token, *ExprError) {
 		k = TokenKindFloat
 	}
 
-	return lex.token(k), lex.scanErr
+	return lex.token(k)
 }
 
-func (lex *ExprLexer) lexHexInt() (*Token, *ExprError) {
+func (lex *ExprLexer) lexHexInt() *Token {
 	r := lex.scan.Next()
 	if !isHexNum(r) {
 		e := appendDigits([]rune{})
@@ -349,7 +374,7 @@ func (lex *ExprLexer) lexHexInt() (*Token, *ExprError) {
 		for r := 'A'; r <= 'F'; r++ {
 			e = append(e, r)
 		}
-		return nil, lex.unexpected(r, "hex integer", e)
+		return lex.unexpected(r, "hex integer", e)
 	}
 
 	for {
@@ -360,10 +385,10 @@ func (lex *ExprLexer) lexHexInt() (*Token, *ExprError) {
 		lex.scan.Next()
 	}
 
-	return lex.token(TokenKindInt), lex.scanErr
+	return lex.token(TokenKindInt)
 }
 
-func (lex *ExprLexer) lexString() (*Token, *ExprError) {
+func (lex *ExprLexer) lexString() *Token {
 	lex.scan.Next() // eat '
 	for {
 		switch r := lex.scan.Next(); r {
@@ -371,83 +396,86 @@ func (lex *ExprLexer) lexString() (*Token, *ExprError) {
 			if lex.scan.Peek() == '\'' {
 				lex.scan.Next() // eat second ' in ''
 			} else {
-				return lex.token(TokenKindString), lex.scanErr
+				return lex.token(TokenKindString)
 			}
 		case scanner.EOF:
-			return nil, lex.unexpected(r, "end of string literal", []rune{'\''})
+			return lex.unexpected(r, "end of string literal", []rune{'\''})
 		}
 	}
 }
 
-func (lex *ExprLexer) lexEnd() (*Token, *ExprError) {
+func (lex *ExprLexer) lexEnd() *Token {
 	lex.scan.Next() // eat '}'
 	if r := lex.scan.Next(); r != '}' {
-		return nil, lex.unexpected(r, "end marker }}", []rune{'}'})
+		return lex.unexpected(r, "end marker }}", []rune{'}'})
 	}
 	// }} is an end marker of interpolation
-	return lex.token(TokenKindEnd), lex.scanErr
+	return lex.token(TokenKindEnd)
 }
 
-func (lex *ExprLexer) lexLess() (*Token, *ExprError) {
+func (lex *ExprLexer) lexLess() *Token {
 	lex.scan.Next() // eat '<'
 	k := TokenKindLess
 	if lex.scan.Peek() == '=' {
 		k = TokenKindLessEq
 		lex.scan.Next()
 	}
-	return lex.token(k), lex.scanErr
+	return lex.token(k)
 }
 
-func (lex *ExprLexer) lexGreater() (*Token, *ExprError) {
+func (lex *ExprLexer) lexGreater() *Token {
 	lex.scan.Next() // eat '>'
 	k := TokenKindGreater
 	if lex.scan.Peek() == '=' {
 		k = TokenKindGreaterEq
 		lex.scan.Next()
 	}
-	return lex.token(k), lex.scanErr
+	return lex.token(k)
 }
 
-func (lex *ExprLexer) lexEq() (*Token, *ExprError) {
+func (lex *ExprLexer) lexEq() *Token {
 	lex.scan.Next() // eat '='
 	if r := lex.scan.Next(); r != '=' {
-		return nil, lex.unexpected(r, "== operator", []rune{'='})
+		return lex.unexpected(r, "== operator", []rune{'='})
 	}
-	return lex.token(TokenKindEq), lex.scanErr
+	return lex.token(TokenKindEq)
 }
 
-func (lex *ExprLexer) lexBang() (*Token, *ExprError) {
+func (lex *ExprLexer) lexBang() *Token {
 	lex.scan.Next() // eat '!'
 	k := TokenKindNot
 	if lex.scan.Peek() == '=' {
 		lex.scan.Next() // eat '='
 		k = TokenKindNotEq
 	}
-	return lex.token(k), lex.scanErr
+	return lex.token(k)
 }
 
-func (lex *ExprLexer) lexAnd() (*Token, *ExprError) {
+func (lex *ExprLexer) lexAnd() *Token {
 	lex.scan.Next() // eat '&'
 	if r := lex.scan.Next(); r != '&' {
-		return nil, lex.unexpected(r, "&& operator", []rune{'&'})
+		return lex.unexpected(r, "&& operator", []rune{'&'})
 	}
-	return lex.token(TokenKindAnd), lex.scanErr
+	return lex.token(TokenKindAnd)
 }
 
-func (lex *ExprLexer) lexOr() (*Token, *ExprError) {
+func (lex *ExprLexer) lexOr() *Token {
 	lex.scan.Next() // eat '|'
 	if r := lex.scan.Next(); r != '|' {
-		return nil, lex.unexpected(r, "|| operator", []rune{'|'})
+		return lex.unexpected(r, "|| operator", []rune{'|'})
 	}
-	return lex.token(TokenKindOr), lex.scanErr
+	return lex.token(TokenKindOr)
 }
 
-func (lex *ExprLexer) lexToken() (*Token, *ExprError) {
+// Next lexes next token to lex input incrementally. Lexer must be initialized with Init() method
+// before the first call of this method. This method is stateful. Lexer advances offset by lexing
+// token. To get the offset, use Offset() method.
+func (lex *ExprLexer) Next() *Token {
 	lex.skipWhite()
 
 	r := lex.scan.Peek()
 	if r == scanner.EOF {
-		return nil, lex.unexpectedEOF()
+		return lex.unexpectedEOF()
 	}
 
 	// Ident starts with a-Z or _
@@ -485,61 +513,52 @@ func (lex *ExprLexer) lexToken() (*Token, *ExprError) {
 	lex.scan.Next()
 	switch r {
 	case '(':
-		return lex.token(TokenKindLeftParen), lex.scanErr
+		return lex.token(TokenKindLeftParen)
 	case ')':
-		return lex.token(TokenKindRightParen), lex.scanErr
+		return lex.token(TokenKindRightParen)
 	case '[':
-		return lex.token(TokenKindLeftBracket), lex.scanErr
+		return lex.token(TokenKindLeftBracket)
 	case ']':
-		return lex.token(TokenKindRightBracket), lex.scanErr
+		return lex.token(TokenKindRightBracket)
 	case '.':
-		return lex.token(TokenKindDot), lex.scanErr
+		return lex.token(TokenKindDot)
 	case '*':
-		return lex.token(TokenKindStar), lex.scanErr
+		return lex.token(TokenKindStar)
 	case ',':
-		return lex.token(TokenKindComma), lex.scanErr
+		return lex.token(TokenKindComma)
 	}
 
 	e := []rune{'_'} // Ident can start with _
 	e = appendPuncts(e)
 	e = appendDigits(e)
 	e = appendAlphas(e)
-	return nil, lex.unexpected(r, "expression", e)
+	return lex.unexpected(r, "expression", e)
 }
 
-func (lex *ExprLexer) init(src string) {
-	lex.src = src
-	lex.start = scanner.Position{
-		Offset: 0,
-		Line:   1,
-		Column: 1,
-	}
-	lex.scanErr = nil
-	lex.scan.Init(strings.NewReader(src))
-	lex.scan.Error = func(s *scanner.Scanner, m string) {
-		lex.scanErr = &ExprError{
-			Message: fmt.Sprintf("error while lexing expression: %s", m),
-			Offset:  s.Offset,
-			Line:    s.Line,
-			Column:  s.Column,
-		}
-	}
+// Offset returns the current offset (scanning position).
+func (lex *ExprLexer) Offset() int {
+	return lex.scan.Pos().Offset
 }
 
-// Lex lexes the given string as expression syntax. The parameter must contain '}}' which represents
-// end of expression. Otherwise this function will report an error that it encountered unexpected
-// EOF.
-func (lex *ExprLexer) Lex(src string) ([]*Token, int, *ExprError) {
-	lex.init(src)
+// Err returns an error while lexing. When multiple errors occur, the first one is returned.
+func (lex *ExprLexer) Err() *ExprError {
+	return lex.lexErr
+}
+
+// LexExpression lexes the given string as expression syntax. The parameter must contain '}}' which
+// represents end of expression. Otherwise this function will report an error that it encountered
+// unexpected EOF.
+func LexExpression(src string) ([]*Token, int, *ExprError) {
+	l := NewExprLexer(src)
 	ts := []*Token{}
 	for {
-		t, err := lex.lexToken()
-		if err != nil {
-			return nil, lex.scan.Pos().Offset, err
+		t := l.Next()
+		if l.lexErr != nil {
+			return nil, l.scan.Pos().Offset, l.lexErr
 		}
 		ts = append(ts, t)
 		if t.Kind == TokenKindEnd {
-			return ts, lex.scan.Pos().Offset, nil
+			return ts, l.scan.Pos().Offset, nil
 		}
 	}
 }

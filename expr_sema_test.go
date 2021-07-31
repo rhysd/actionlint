@@ -495,14 +495,8 @@ func TestExprSemanticsCheckOK(t *testing.T) {
 
 	for _, tc := range testCases {
 		t.Run(tc.what, func(t *testing.T) {
-			l := NewExprLexer()
-			tok, _, err := l.Lex(tc.input + "}}")
-			if err != nil {
-				t.Fatal("Lex error:", err)
-			}
-
 			p := NewExprParser()
-			e, err := p.Parse(tok)
+			e, err := p.Parse(NewExprLexer(tc.input + "}}"))
 			if err != nil {
 				t.Fatal("Parse error:", tc.input)
 			}
@@ -1001,14 +995,8 @@ func TestExprSemanticsCheckError(t *testing.T) {
 
 	for _, tc := range testCases {
 		t.Run(tc.what, func(t *testing.T) {
-			l := NewExprLexer()
-			tok, _, err := l.Lex(tc.input + "}}")
-			if err != nil {
-				t.Fatal("Lex error:", err)
-			}
-
 			p := NewExprParser()
-			e, err := p.Parse(tok)
+			e, err := p.Parse(NewExprLexer(tc.input + "}}"))
 			if err != nil {
 				t.Fatal("Parse error:", tc.input)
 			}

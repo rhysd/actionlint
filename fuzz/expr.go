@@ -12,14 +12,9 @@ func FuzzExprParse(data []byte) int {
 		return 0
 	}
 
-	l := actionlint.NewExprLexer()
-	t, _, err := l.Lex(string(data))
-	if err != nil {
-		return 0
-	}
-
+	l := actionlint.NewExprLexer(string(data))
 	p := actionlint.NewExprParser()
-	e, err := p.Parse(t)
+	e, err := p.Parse(l)
 	if err != nil {
 		return 0
 	}
