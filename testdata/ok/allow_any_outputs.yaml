@@ -1,0 +1,12 @@
+on: push
+
+jobs:
+  test:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: dorny/paths-filter@v2
+        id: filter
+        with:
+          filters: ...
+      - run: npm run lint:md
+        if: ${{ steps.filter.outputs.md == 'true' }}

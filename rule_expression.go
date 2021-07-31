@@ -210,23 +210,13 @@ func (rule *RuleExpression) getActionOutputsType(spec *String) *ObjectType {
 			return NewObjectType()
 		}
 
-		ty := NewObjectType()
-		for n := range meta.Outputs {
-			ty.Props[n] = AnyType{}
-		}
-		ty.StrictProps = true
-		return ty
+		return typeOfActionOutputs(meta)
 	}
 
 	// When the action run at this step is a popular action, we know what outputs are set by it.
 	// Set the output names to `steps.{step_id}.outputs.{name}`.
 	if meta, ok := PopularActions[spec.Value]; ok {
-		ty := NewObjectType()
-		for n := range meta.Outputs {
-			ty.Props[n] = AnyType{}
-		}
-		ty.StrictProps = true
-		return ty
+		return typeOfActionOutputs(meta)
 	}
 
 	return NewObjectType()
@@ -776,4 +766,18 @@ func convertExprLineColToPos(line, col, lineBase, colBase int) *Pos {
 		Line: line - 1 + lineBase,
 		Col:  col - 1 + colBase,
 	}
+}
+
+func typeOfActionOutputs(meta *ActionMetadata) *ObjectType {
+	// Some action sets outputs dynamically. Such outputs are not defined in action.yml. actionlint
+	// cannot check such outputs statically so it allows any props (#18)
+	if meta.AllowAnyOutputs {
+		return NewObjectType()
+	}
+	ty := NewObjectType()
+	for n := range meta.Outputs {
+		ty.Props[n] = AnyType{}
+	}
+	ty.StrictProps = true
+	return ty
 }
