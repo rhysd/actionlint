@@ -148,26 +148,10 @@ func isAlnum(r rune) bool {
 	return isAlpha(r) || isNum(r)
 }
 
-func appendPuncts(rs []rune) []rune {
-	return append(rs, '\'', '}', '(', ')', '[', ']', '.', '!', '<', '>', '=', '&', '|', '*', ',')
-}
-
-func appendDigits(rs []rune) []rune {
-	for r := '0'; r <= '9'; r++ {
-		rs = append(rs, r)
-	}
-	return rs
-}
-
-func appendAlphas(rs []rune) []rune {
-	for r := 'a'; r <= 'z'; r++ {
-		rs = append(rs, r)
-	}
-	for r := 'A'; r <= 'Z'; r++ {
-		rs = append(rs, r)
-	}
-	return rs
-}
+const expectedPunctChars = "''', '}', '(', ')', '[', ']', '.', '!', '<', '>', '=', '&', '|', '*', ','"
+const expectedDigitChars = "'0'..'9'"
+const expectedAlphaChars = "'a'..'z', 'A'..'Z'"
+const expectedAllChars = expectedAlphaChars + ", " + expectedDigitChars + ", " + expectedPunctChars + ", '_'"
 
 // ExprLexer is a struct to lex expression syntax. To know the syntax, see
 // https://docs.github.com/en/actions/reference/context-and-expression-syntax-for-github-actions
@@ -241,12 +225,7 @@ func (lex *ExprLexer) skipWhite() {
 	}
 }
 
-func (lex *ExprLexer) unexpected(r rune, where string, expected []rune) *Token {
-	qb := quotesBuilder{}
-	for _, r := range expected {
-		qb.appendRune(r)
-	}
-
+func (lex *ExprLexer) unexpected(r rune, where string, expected string) *Token {
 	var what string
 	if r == scanner.EOF {
 		what = "EOF"
@@ -263,7 +242,7 @@ func (lex *ExprLexer) unexpected(r rune, where string, expected []rune) *Token {
 		"got unexpected %s while lexing %s, expecting %s%s",
 		what,
 		where,
-		qb.build(),
+		expected,
 		note,
 	)
 
@@ -293,7 +272,7 @@ func (lex *ExprLexer) lexNum() *Token {
 	if r == '-' {
 		r = lex.scan.Peek()
 		if !isNum(r) {
-			return lex.unexpected(r, "number after -", appendDigits([]rune{}))
+			return lex.unexpected(r, "number after -", expectedDigitChars)
 		}
 		lex.scan.Next()
 	}
@@ -305,9 +284,7 @@ func (lex *ExprLexer) lexNum() *Token {
 			return lex.lexHexInt()
 		}
 		if isAlnum(r) && r != 'e' && r != 'E' {
-			e := []rune{}
-			e = appendPuncts(e)
-			e = append(e, 'e', 'E')
+			e := "'e', 'E', " + expectedPunctChars
 			return lex.unexpected(r, "number after 0", e)
 		}
 	} else {
@@ -327,7 +304,7 @@ func (lex *ExprLexer) lexNum() *Token {
 		lex.scan.Next() // eat '.'
 		r = lex.scan.Peek()
 		if !isNum(r) {
-			return lex.unexpected(r, "fraction part of float number", appendDigits([]rune{}))
+			return lex.unexpected(r, "fraction part of float number", expectedDigitChars)
 		}
 		lex.scan.Next()
 
@@ -350,7 +327,7 @@ func (lex *ExprLexer) lexNum() *Token {
 			r = lex.scan.Peek()
 		}
 		if !isNum(r) {
-			return lex.unexpected(r, "exponent part of float number", appendDigits([]rune{}))
+			return lex.unexpected(r, "exponent part of float number", expectedDigitChars)
 		}
 		lex.scan.Next()
 
@@ -371,13 +348,7 @@ func (lex *ExprLexer) lexNum() *Token {
 func (lex *ExprLexer) lexHexInt() *Token {
 	r := lex.scan.Peek()
 	if !isHexNum(r) {
-		e := appendDigits([]rune{})
-		for r := 'a'; r <= 'f'; r++ {
-			e = append(e, r)
-		}
-		for r := 'A'; r <= 'F'; r++ {
-			e = append(e, r)
-		}
+		e := expectedDigitChars + ", 'a'..'f', 'A'..'F'"
 		return lex.unexpected(r, "hex integer", e)
 	}
 	lex.scan.Next()
@@ -403,7 +374,7 @@ func (lex *ExprLexer) lexString() *Token {
 				return lex.token(TokenKindString)
 			}
 		case scanner.EOF:
-			return lex.unexpected(scanner.EOF, "end of string literal", []rune{'\''})
+			return lex.unexpected(scanner.EOF, "end of string literal", "'''")
 		}
 		lex.scan.Next()
 	}
@@ -412,7 +383,7 @@ func (lex *ExprLexer) lexString() *Token {
 func (lex *ExprLexer) lexEnd() *Token {
 	lex.scan.Next() // eat '}'
 	if r := lex.scan.Peek(); r != '}' {
-		return lex.unexpected(r, "end marker }}", []rune{'}'})
+		return lex.unexpected(r, "end marker }}", "'}'")
 	}
 	lex.scan.Next()
 	// }} is an end marker of interpolation
@@ -442,7 +413,7 @@ func (lex *ExprLexer) lexGreater() *Token {
 func (lex *ExprLexer) lexEq() *Token {
 	lex.scan.Next() // eat '='
 	if r := lex.scan.Peek(); r != '=' {
-		return lex.unexpected(r, "== operator", []rune{'='})
+		return lex.unexpected(r, "== operator", "'='")
 	}
 	lex.scan.Next()
 	return lex.token(TokenKindEq)
@@ -461,7 +432,7 @@ func (lex *ExprLexer) lexBang() *Token {
 func (lex *ExprLexer) lexAnd() *Token {
 	lex.scan.Next() // eat '&'
 	if r := lex.scan.Peek(); r != '&' {
-		return lex.unexpected(r, "&& operator", []rune{'&'})
+		return lex.unexpected(r, "&& operator", "'&'")
 	}
 	lex.scan.Next()
 	return lex.token(TokenKindAnd)
@@ -470,7 +441,7 @@ func (lex *ExprLexer) lexAnd() *Token {
 func (lex *ExprLexer) lexOr() *Token {
 	lex.scan.Next() // eat '|'
 	if r := lex.scan.Peek(); r != '|' {
-		return lex.unexpected(r, "|| operator", []rune{'|'})
+		return lex.unexpected(r, "|| operator", "'|'")
 	}
 	lex.scan.Next()
 	return lex.token(TokenKindOr)
@@ -536,11 +507,7 @@ func (lex *ExprLexer) Next() *Token {
 	case ',':
 		return lex.lexChar(TokenKindComma)
 	default:
-		e := []rune{'_'} // Ident can start with _
-		e = appendPuncts(e)
-		e = appendDigits(e)
-		e = appendAlphas(e)
-		return lex.unexpected(r, "expression", e)
+		return lex.unexpected(r, "expression", expectedAllChars)
 	}
 }
 

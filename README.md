@@ -399,11 +399,11 @@ jobs:
 Output:
 
 ```
-test.yaml:7:24: got unexpected character '"' while lexing expression, expecting '_', '\'', '}', '(', ')', '[', ']', '.', '!', ..., 'Z'. do you mean string literals? only single quotes are available for string delimiter [expression]
+test.yaml:7:24: got unexpected character '"' while lexing expression, expecting 'a'..'z', 'A'..'Z', '0'..'9', ''', '}', '(', ')', '[', ']', '.', '!', '<', '>', '=', '&', '|', '*', ',', '_'. do you mean string literals? only single quotes are available for string delimiter [expression]
   |
 7 |       - run: echo '${{ "hello" }}'
   |                        ^~~~~~~
-test.yaml:9:26: got unexpected character '+' while lexing expression, expecting '_', '\'', '}', '(', ')', '[', ']', '.', '!', ..., 'Z' [expression]
+test.yaml:9:26: got unexpected character '+' while lexing expression, expecting 'a'..'z', 'A'..'Z', '0'..'9', ''', '}', '(', ')', '[', ']', '.', '!', '<', '>', '=', '&', '|', '*', ',', '_' [expression]
   |
 9 |       - run: echo '${{ 1 + 1 }}'
   |                          ^
