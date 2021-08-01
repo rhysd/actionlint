@@ -575,136 +575,163 @@ func TestLexExprError(t *testing.T) {
 		what  string
 		input string
 		want  string
+		col   int
 	}{
 		{
 			what:  "unknown char",
 			input: "?",
 			want:  "unexpected character '?' while lexing expression",
+			col:   1,
 		},
 		{
 			what:  "unexpected EOF",
 			input: "42",
 			want:  "unexpected EOF while lexing expression",
+			col:   3,
 		},
 		{
 			what:  "empty string",
 			input: "",
 			want:  "unexpected EOF while lexing expression",
+			col:   1,
 		},
 		{
 			what:  "broken string literal",
 			input: "'foo bar",
 			want:  "unexpected EOF while lexing end of string literal",
+			col:   9,
 		},
 		{
 			what:  "broken string literal with escape",
 			input: "'foo bar''",
 			want:  "unexpected EOF while lexing end of string literal",
+			col:   11,
 		},
 		{
 			what:  "invalid char after -",
 			input: "-a",
 			want:  "unexpected character 'a' while lexing number after -",
+			col:   2,
 		},
 		{
 			what:  "EOF after -",
 			input: "-",
 			want:  "unexpected EOF while lexing number after -",
+			col:   2,
 		},
 		{
 			what:  "invalid char after 0",
 			input: "0d",
 			want:  "unexpected character 'd' while lexing number after 0",
+			col:   2,
 		},
 		{
 			what:  "invalid char in fraction part of float",
 			input: "1.e1",
 			want:  "unexpected character 'e' while lexing fraction part of float number",
+			col:   3,
 		},
 		{
 			what:  "invalid char in exponent part of float",
 			input: "1.0e_",
 			want:  "unexpected character '_' while lexing exponent part of float number",
+			col:   5,
 		},
 		{
 			what:  "no number after - in exponent part",
 			input: "1.0e-",
 			want:  "unexpected EOF while lexing exponent part of float number",
+			col:   6,
 		},
 		{
 			what:  "invalid char in hex int",
 			input: "0xg",
 			want:  "unexpected character 'g' while lexing hex integer",
+			col:   3,
 		},
 		{
 			what:  "unexpected EOF after 0x",
 			input: "0x",
 			want:  "unexpected EOF while lexing hex integer",
+			col:   3,
 		},
 		{
 			what:  "invalid char at end of input",
 			input: "'in {string} it {{is}} ok'}_",
 			want:  "unexpected character '_' while lexing end marker",
+			col:   28,
 		},
 		{
 			what:  "invalid char after =",
 			input: "=3",
 			want:  "unexpected character '3' while lexing == operator",
+			col:   2,
 		},
 		{
 			what:  "invalid char after &",
 			input: "&3",
 			want:  "unexpected character '3' while lexing && operator",
+			col:   2,
 		},
 		{
 			what:  "invalid char after |",
 			input: "|3",
 			want:  "unexpected character '3' while lexing || operator",
+			col:   2,
 		},
 		{
 			what:  "unexpected EOF while lexing int",
 			input: "0x",
 			want:  "unexpected EOF while lexing hex integer",
+			col:   3,
 		},
 		{
 			what:  "unexpected EOF while lexing fraction of float",
 			input: "0.",
 			want:  "unexpected EOF while lexing fraction part of float number",
+			col:   3,
 		},
 		{
 			what:  "unexpected EOF while lexing exponent of float",
 			input: "0.1e",
 			want:  "unexpected EOF while lexing exponent part of float number",
+			col:   5,
 		},
 		{
 			what:  "unexpected EOF while lexing end marker",
 			input: "}",
 			want:  "unexpected EOF while lexing end marker }}",
+			col:   2,
 		},
 		{
 			what:  "unexpected EOF while lexing == operator",
 			input: "=",
 			want:  "unexpected EOF while lexing == operator",
+			col:   2,
 		},
 		{
 			what:  "unexpected EOF while lexing && operator",
 			input: "&",
 			want:  "unexpected EOF while lexing && operator",
+			col:   2,
 		},
 		{
 			what:  "unexpected EOF while lexing || operator",
 			input: "|",
 			want:  "unexpected EOF while lexing || operator",
+			col:   2,
 		},
 		{
 			what:  "empty string",
 			input: "",
 			want:  "unexpected EOF while lexing expression",
+			col:   1,
 		},
 		{
 			what:  "special note for string literals with double quotes",
 			input: "\"hello\"",
 			want:  "do you mean string literals? only single quotes are available for string delimiter",
+			col:   1,
 		},
 	}
 
@@ -716,6 +743,9 @@ func TestLexExprError(t *testing.T) {
 			}
 			if !strings.Contains(err.Error(), tc.want) {
 				t.Fatalf("Error message %q does not contain %q", err.Error(), tc.want)
+			}
+			if err.Column != tc.col {
+				t.Fatalf("Error occurred at column %d expecting %d", err.Column, tc.col)
 			}
 		})
 	}

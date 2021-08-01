@@ -441,9 +441,10 @@ func (lex *ExprLexer) lexGreater() *Token {
 
 func (lex *ExprLexer) lexEq() *Token {
 	lex.scan.Next() // eat '='
-	if r := lex.scan.Next(); r != '=' {
+	if r := lex.scan.Peek(); r != '=' {
 		return lex.unexpected(r, "== operator", []rune{'='})
 	}
+	lex.scan.Next()
 	return lex.token(TokenKindEq)
 }
 
