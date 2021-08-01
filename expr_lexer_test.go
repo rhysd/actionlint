@@ -164,6 +164,11 @@ func TestLexOneToken(t *testing.T) {
 			kind:  TokenKindFloat,
 		},
 		{
+			what:  "float zero exp part",
+			input: "1.0e0",
+			kind:  TokenKindFloat,
+		},
+		{
 			what:  "int with exp part",
 			input: "3e42",
 			kind:  TokenKindFloat,
@@ -171,6 +176,11 @@ func TestLexOneToken(t *testing.T) {
 		{
 			what:  "int zero with exp part",
 			input: "0e42",
+			kind:  TokenKindFloat,
+		},
+		{
+			what:  "int with zero exp part",
+			input: "3e0",
 			kind:  TokenKindFloat,
 		},
 		{
@@ -732,6 +742,36 @@ func TestLexExprError(t *testing.T) {
 			input: "\"hello\"",
 			want:  "do you mean string literals? only single quotes are available for string delimiter",
 			col:   1,
+		},
+		{
+			what:  "integer starts with zero",
+			input: "0123",
+			want:  "unexpected character '1' while lexing number after 0",
+			col:   2,
+		},
+		{
+			what:  "hex integer starts with zero",
+			input: "0x0123",
+			want:  "unexpected character '1' while lexing number after 0x0",
+			col:   4,
+		},
+		{
+			what:  "hex integer starts with zero and followed by e",
+			input: "0x0e1",
+			want:  "unexpected character 'e' while lexing number after 0x0",
+			col:   4,
+		},
+		{
+			what:  "integer exponent part starts with zero",
+			input: "1e01",
+			want:  "unexpected character '1' while lexing number after 0 in exponent part",
+			col:   4,
+		},
+		{
+			what:  "float number exponent part starts with zero",
+			input: "1.0e01",
+			want:  "unexpected character '1' while lexing number after 0 in exponent part",
+			col:   6,
 		},
 	}
 

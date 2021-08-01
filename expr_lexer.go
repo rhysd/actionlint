@@ -148,7 +148,7 @@ func isAlnum(r rune) bool {
 	return isAlpha(r) || isNum(r)
 }
 
-const expectedPunctChars = "''', '}', '(', ')', '[', ']', '.', '!', '<', '>', '=', '&', '|', '*', ','"
+const expectedPunctChars = "''', '}', '(', ')', '[', ']', '.', '!', '<', '>', '=', '&', '|', '*', ',', ' '"
 const expectedDigitChars = "'0'..'9'"
 const expectedAlphaChars = "'a'..'z', 'A'..'Z'"
 const expectedAllChars = expectedAlphaChars + ", " + expectedDigitChars + ", " + expectedPunctChars + ", '_'"
@@ -331,12 +331,19 @@ func (lex *ExprLexer) lexNum() *Token {
 		}
 		lex.scan.Next()
 
-		for {
+		if r == '0' {
 			r = lex.scan.Peek()
-			if !isNum(r) {
-				break
+			if isNum(r) {
+				return lex.unexpected(r, "number after 0 in exponent part", expectedPunctChars)
 			}
-			lex.scan.Next()
+		} else {
+			for {
+				r = lex.scan.Peek()
+				if !isNum(r) {
+					break
+				}
+				lex.scan.Next()
+			}
 		}
 
 		k = TokenKindFloat
@@ -353,13 +360,22 @@ func (lex *ExprLexer) lexHexInt() *Token {
 	}
 	lex.scan.Next()
 
-	for {
+	if r == '0' {
 		r = lex.scan.Peek()
-		if !isHexNum(r) {
-			break
+		if isHexNum(r) {
+			return lex.unexpected(r, "number after 0x0", expectedPunctChars)
 		}
-		lex.scan.Next()
+	} else {
+		for {
+			r = lex.scan.Peek()
+			if !isHexNum(r) {
+				break
+			}
+			lex.scan.Next()
+		}
 	}
+
+	// Note: GitHub Actions does not support exponent part like 0x1f2p-a8
 
 	return lex.token(TokenKindInt)
 }
