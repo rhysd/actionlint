@@ -291,10 +291,11 @@ func (lex *ExprLexer) lexNum() *Token {
 	r := lex.scan.Next() // precond: r is digit or '-'
 
 	if r == '-' {
-		r = lex.scan.Next()
+		r = lex.scan.Peek()
 		if !isNum(r) {
 			return lex.unexpected(r, "number after -", appendDigits([]rune{}))
 		}
+		lex.scan.Next()
 	}
 
 	if r == '0' {
@@ -324,10 +325,11 @@ func (lex *ExprLexer) lexNum() *Token {
 
 	if r == '.' {
 		lex.scan.Next() // eat '.'
-		r = lex.scan.Next()
+		r = lex.scan.Peek()
 		if !isNum(r) {
 			return lex.unexpected(r, "fraction part of float number", appendDigits([]rune{}))
 		}
+		lex.scan.Next()
 
 		for {
 			r = lex.scan.Peek()
@@ -342,13 +344,15 @@ func (lex *ExprLexer) lexNum() *Token {
 
 	if r == 'e' || r == 'E' {
 		lex.scan.Next() // eat 'e' or 'E'
-		r = lex.scan.Next()
+		r = lex.scan.Peek()
 		if r == '-' {
-			r = lex.scan.Next()
+			lex.scan.Next()
+			r = lex.scan.Peek()
 		}
 		if !isNum(r) {
 			return lex.unexpected(r, "exponent part of float number", appendDigits([]rune{}))
 		}
+		lex.scan.Next()
 
 		for {
 			r = lex.scan.Peek()
@@ -365,7 +369,7 @@ func (lex *ExprLexer) lexNum() *Token {
 }
 
 func (lex *ExprLexer) lexHexInt() *Token {
-	r := lex.scan.Next()
+	r := lex.scan.Peek()
 	if !isHexNum(r) {
 		e := appendDigits([]rune{})
 		for r := 'a'; r <= 'f'; r++ {
@@ -376,6 +380,7 @@ func (lex *ExprLexer) lexHexInt() *Token {
 		}
 		return lex.unexpected(r, "hex integer", e)
 	}
+	lex.scan.Next()
 
 	for {
 		r = lex.scan.Peek()
@@ -391,24 +396,25 @@ func (lex *ExprLexer) lexHexInt() *Token {
 func (lex *ExprLexer) lexString() *Token {
 	lex.scan.Next() // eat '
 	for {
-		switch r := lex.scan.Next(); r {
+		switch lex.scan.Peek() {
 		case '\'':
-			if lex.scan.Peek() == '\'' {
-				lex.scan.Next() // eat second ' in ''
-			} else {
+			lex.scan.Next()
+			if lex.scan.Peek() != '\'' { // when not escaped single quote ''
 				return lex.token(TokenKindString)
 			}
 		case scanner.EOF:
-			return lex.unexpected(r, "end of string literal", []rune{'\''})
+			return lex.unexpected(scanner.EOF, "end of string literal", []rune{'\''})
 		}
+		lex.scan.Next()
 	}
 }
 
 func (lex *ExprLexer) lexEnd() *Token {
 	lex.scan.Next() // eat '}'
-	if r := lex.scan.Next(); r != '}' {
+	if r := lex.scan.Peek(); r != '}' {
 		return lex.unexpected(r, "end marker }}", []rune{'}'})
 	}
+	lex.scan.Next()
 	// }} is an end marker of interpolation
 	return lex.token(TokenKindEnd)
 }
@@ -453,18 +459,25 @@ func (lex *ExprLexer) lexBang() *Token {
 
 func (lex *ExprLexer) lexAnd() *Token {
 	lex.scan.Next() // eat '&'
-	if r := lex.scan.Next(); r != '&' {
+	if r := lex.scan.Peek(); r != '&' {
 		return lex.unexpected(r, "&& operator", []rune{'&'})
 	}
+	lex.scan.Next()
 	return lex.token(TokenKindAnd)
 }
 
 func (lex *ExprLexer) lexOr() *Token {
 	lex.scan.Next() // eat '|'
-	if r := lex.scan.Next(); r != '|' {
+	if r := lex.scan.Peek(); r != '|' {
 		return lex.unexpected(r, "|| operator", []rune{'|'})
 	}
+	lex.scan.Next()
 	return lex.token(TokenKindOr)
+}
+
+func (lex *ExprLexer) lexChar(k TokenKind) *Token {
+	lex.scan.Next()
+	return lex.token(k)
 }
 
 // Next lexes next token to lex input incrementally. Lexer must be initialized with Init() method
@@ -478,7 +491,7 @@ func (lex *ExprLexer) Next() *Token {
 		return lex.unexpectedEOF()
 	}
 
-	// Ident starts with a-Z or _
+	// Ident starts with a-z or A-Z or _
 	// https://docs.github.com/en/actions/reference/context-and-expression-syntax-for-github-actions#contexts
 	if isAlpha(r) || r == '_' {
 		return lex.lexIdent()
@@ -507,32 +520,27 @@ func (lex *ExprLexer) Next() *Token {
 		return lex.lexAnd()
 	case '|':
 		return lex.lexOr()
-	}
-
-	// Single character tokens
-	lex.scan.Next()
-	switch r {
 	case '(':
-		return lex.token(TokenKindLeftParen)
+		return lex.lexChar(TokenKindLeftParen)
 	case ')':
-		return lex.token(TokenKindRightParen)
+		return lex.lexChar(TokenKindRightParen)
 	case '[':
-		return lex.token(TokenKindLeftBracket)
+		return lex.lexChar(TokenKindLeftBracket)
 	case ']':
-		return lex.token(TokenKindRightBracket)
+		return lex.lexChar(TokenKindRightBracket)
 	case '.':
-		return lex.token(TokenKindDot)
+		return lex.lexChar(TokenKindDot)
 	case '*':
-		return lex.token(TokenKindStar)
+		return lex.lexChar(TokenKindStar)
 	case ',':
-		return lex.token(TokenKindComma)
+		return lex.lexChar(TokenKindComma)
+	default:
+		e := []rune{'_'} // Ident can start with _
+		e = appendPuncts(e)
+		e = appendDigits(e)
+		e = appendAlphas(e)
+		return lex.unexpected(r, "expression", e)
 	}
-
-	e := []rune{'_'} // Ident can start with _
-	e = appendPuncts(e)
-	e = appendDigits(e)
-	e = appendAlphas(e)
-	return lex.unexpected(r, "expression", e)
 }
 
 // Offset returns the current offset (scanning position).

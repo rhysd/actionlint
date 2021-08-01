@@ -399,14 +399,14 @@ jobs:
 Output:
 
 ```
-test.yaml:7:25: got unexpected character '"' while lexing expression, expecting '_', '\'', '}', '(', ')', '[', ']', '.', '!', '<', '>', '=', '&', ... [expression]
+test.yaml:7:24: got unexpected character '"' while lexing expression, expecting '_', '\'', '}', '(', ')', '[', ']', '.', '!', ..., 'Z'. do you mean string literals? only single quotes are available for string delimiter [expression]
   |
 7 |       - run: echo '${{ "hello" }}'
-  |                         ^~~~~~
-test.yaml:9:27: got unexpected character '+' while lexing expression, expecting '_', '\'', '}', '(', ')', '[', ']', '.', '!', '<', '>', '=', '&', ... [expression]
+  |                        ^~~~~~~
+test.yaml:9:26: got unexpected character '+' while lexing expression, expecting '_', '\'', '}', '(', ')', '[', ']', '.', '!', ..., 'Z' [expression]
   |
 9 |       - run: echo '${{ 1 + 1 }}'
-  |                           ^
+  |                          ^
 test.yaml:11:65: unexpected end of input while parsing arguments of function call. expecting ",", ")" [expression]
    |
 11 |       - run: echo "${{ toJson(hashFiles('**/lock', '**/cache/') }}"
