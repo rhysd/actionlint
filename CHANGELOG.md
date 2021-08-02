@@ -1,3 +1,25 @@
+<a name="v1.5.2"></a>
+# [v1.5.2](https://github.com/rhysd/actionlint/releases/tag/v1.5.2) - 02 Aug 2021
+
+- Outputs of [dorny/paths-filter](https://github.com/dorny/paths-filter) are now not typed strictly because the action dynamically sets outputs which are not defined in its `action.yml`. actionlint cannot check such outputs statically (#18).
+- [The table](https://github.com/rhysd/actionlint/blob/main/all_webhooks.go) for [Webhooks supported by GitHub Actions](https://docs.github.com/en/actions/reference/events-that-trigger-workflows#webhook-events) is now generated from the official document automatically with [script](https://github.com/rhysd/actionlint/tree/main/scripts/generate-webhook-events). The table continues to be updated weekly by [the CI workflow](https://github.com/rhysd/actionlint/actions/workflows/generate.yaml).
+- Improve error messages while lexing expressions as follows.
+- Fix column numbers are off-by-one on some lexer errors.
+- Fix checking invalid numbers where some digit follows zero in a hex number (e.g. `0x01`) or an exponent part of number (e.g. `1e0123`).
+- Fix a parse error message when some tokens still remain after parsing finishes.
+- Refactor the expression lexer to lex an input incrementally. It slightly reduces memory consumption.
+
+Lex error until v1.5.1:
+
+```test.yaml:9:26: got unexpected character '+' while lexing expression, expecting '_', '\'', '}', '(', ')', '[', ']', '.', '!', '<', '>', '=', '&', '|', '*', ',', '0', '1', '2', '3', '4', '5', '6', '7', '8', '9', 'a', 'b', 'c', 'd', 'e', 'f', 'g', 'h', 'i', 'j', 'k', 'l', 'm', 'n', 'o', 'p', 'q', 'r', 's', 't', 'u', 'v', 'w', 'x', 'y', 'z', 'A', 'B', 'C', 'D', 'E', 'F', 'G', 'H', 'I', 'J', 'K', 'L', 'M', 'N', 'O', 'P', 'Q', 'R', 'S', 'T', 'U', 'V', 'W', 'X', 'Y', 'Z' [expression]```
+
+Lex error from v1.5.2:
+
+```test.yaml:9:26: got unexpected character '+' while lexing expression, expecting 'a'..'z', 'A'..'Z', '0'..'9', ''', '}', '(', ')', '[', ']', '.', '!', '<', '>', '=', '&', '|', '*', ',', '_' [expression]```
+
+[Changes][v1.5.2]
+
+
 <a name="v1.5.1"></a>
 # [v1.5.1](https://github.com/rhysd/actionlint/releases/tag/v1.5.1) - 29 Jul 2021
 
@@ -230,6 +252,7 @@ See documentation for more details:
 [Changes][v1.0.0]
 
 
+[v1.5.2]: https://github.com/rhysd/actionlint/compare/v1.5.1...v1.5.2
 [v1.5.1]: https://github.com/rhysd/actionlint/compare/v1.5.0...v1.5.1
 [v1.5.0]: https://github.com/rhysd/actionlint/compare/v1.4.3...v1.5.0
 [v1.4.3]: https://github.com/rhysd/actionlint/compare/v1.4.2...v1.4.3
