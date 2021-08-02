@@ -109,6 +109,11 @@ func TestLexOneToken(t *testing.T) {
 			kind:  TokenKindInt,
 		},
 		{
+			what:  "hex int with upper case",
+			input: "0x1E",
+			kind:  TokenKindInt,
+		},
+		{
 			what:  "hex int part3",
 			input: "0xa",
 			kind:  TokenKindInt,
@@ -171,6 +176,11 @@ func TestLexOneToken(t *testing.T) {
 		{
 			what:  "int with exp part",
 			input: "3e42",
+			kind:  TokenKindFloat,
+		},
+		{
+			what:  "int with exp part with big E",
+			input: "3E42",
 			kind:  TokenKindFloat,
 		},
 		{

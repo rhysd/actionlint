@@ -258,7 +258,7 @@ func (lex *ExprLexer) unexpectedEOF() *Token {
 func (lex *ExprLexer) lexIdent() *Token {
 	for {
 		lex.scan.Next()
-		// a-Z, 0-9, - or _
+		// a-z, A-Z, 0-9, - or _
 		// https://docs.github.com/en/actions/reference/context-and-expression-syntax-for-github-actions#contexts
 		if r := lex.scan.Peek(); !isAlnum(r) && r != '_' && r != '-' {
 			return lex.token(TokenKindIdent)
@@ -267,6 +267,9 @@ func (lex *ExprLexer) lexIdent() *Token {
 }
 
 func (lex *ExprLexer) lexNum() *Token {
+	// The official document says number literals are 'Any number format supported by JSON' but actually
+	// hex numbers starting with 0x are supported.
+
 	r := lex.scan.Next() // precond: r is digit or '-'
 
 	if r == '-' {
@@ -485,13 +488,11 @@ func (lex *ExprLexer) Next() *Token {
 		return lex.lexIdent()
 	}
 
-	if isNum(r) {
+	if isNum(r) || r == '-' {
 		return lex.lexNum()
 	}
 
 	switch r {
-	case '-':
-		return lex.lexNum()
 	case '\'':
 		return lex.lexString()
 	case '}':
