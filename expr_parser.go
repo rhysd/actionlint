@@ -358,17 +358,20 @@ func (p *ExprParser) Parse(l *ExprLexer) (ExprNode, *ExprError) {
 		return nil, err
 	}
 
-	if p.peek().Kind != TokenKindEnd {
+	if t := p.peek(); t.Kind != TokenKindEnd {
 		// It did not reach the end of sequence
 		qb := quotesBuilder{}
+		qb.append(t.Kind.String())
+		c := 1
 		for {
 			t := l.Next()
 			if t.Kind == TokenKindEnd {
 				break
 			}
 			qb.append(t.Kind.String())
+			c++
 		}
-		p.errorf("parser did not reach end of input after parsing expression. remaining tokens are %s", qb.build())
+		p.errorf("parser did not reach end of input after parsing the expression. %d remaining token(s) in the input: %s", c, qb.build())
 		return nil, p.err
 	}
 

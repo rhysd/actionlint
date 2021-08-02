@@ -596,7 +596,7 @@ func TestParseExpressionSyntaxError(t *testing.T) {
 		{
 			what:     "remaining inputs",
 			input:    "42 foo bar",
-			expected: "parser did not reach end of input after parsing expression",
+			expected: "2 remaining token(s) in the input: \"IDENT\", \"IDENT\"",
 		},
 		{
 			what:     "missing operand in || operator",
