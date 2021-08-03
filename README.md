@@ -68,7 +68,7 @@ jobs:
    |                 ^~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 -->
 
-Basically all you need to do is running `acitonlint` command in your repository. actionlint automatically detects workflows in
+Basically all you need to do is run the `actionlint` command in your repository. actionlint automatically detects workflows in
 your repository and reports errors in them. actionlint focuses on finding out mistakes. It tries to catch errors as much as
 possible and make false positives as minimal as possible.
 
