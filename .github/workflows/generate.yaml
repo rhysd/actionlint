@@ -38,12 +38,12 @@ jobs:
       - uses: peter-evans/create-pull-request@v3
         with:
           branch: 'ci/${{ github.run_id }}'
-          commit-message: 'update popular_actions.go by `go generate` on CI'
+          commit-message: 'update generated files by `go generate` on CI'
           committer: 'github-actions[bot] <41898282+github-actions[bot]@users.noreply.github.com>'
           author: 'github-actions[bot] <41898282+github-actions[bot]@users.noreply.github.com>'
-          title: 'Update popular_actions.go by CI'
+          title: 'Update generated files by CI'
           body: |
-            This PR updates `popular_actions.go` to the latest by running `go generate`.
+            This PR updates some generated files to the latest by running `go generate`.
             This PR was created by [this workflow run](https://github.com/rhysd/actionlint/actions/runs/${{ github.run_id }}) automatically.
             List of workflow runs is [here](https://github.com/rhysd/actionlint/actions/workflows/generate.yaml).
           assignees: rhysd
