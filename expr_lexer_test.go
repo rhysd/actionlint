@@ -642,13 +642,13 @@ func TestLexExprError(t *testing.T) {
 		{
 			what:  "invalid char after 0",
 			input: "0d",
-			want:  "got unexpected character 'd' while lexing character following number",
+			want:  "got unexpected character 'd' while lexing character following number 0",
 			col:   2,
 		},
 		{
 			what:  "invalid char after number",
 			input: "123d",
-			want:  "got unexpected character 'd' while lexing character following number",
+			want:  "got unexpected character 'd' while lexing character following number 123",
 			col:   4,
 		},
 		{
@@ -762,31 +762,31 @@ func TestLexExprError(t *testing.T) {
 		{
 			what:  "integer starts with zero",
 			input: "0123",
-			want:  "unexpected character '1' while lexing character following number",
+			want:  "unexpected character '1' while lexing character following number 0",
 			col:   2,
 		},
 		{
 			what:  "hex integer starts with zero",
 			input: "0x0123",
-			want:  "unexpected character '1' while lexing character following 0x0",
+			want:  "unexpected character '1' while lexing character following hex integer 0x0",
 			col:   4,
 		},
 		{
 			what:  "hex integer starts with zero and followed by e",
 			input: "0x0e1",
-			want:  "unexpected character 'e' while lexing character following 0x0",
+			want:  "unexpected character 'e' while lexing character following hex integer 0x0",
 			col:   4,
 		},
 		{
 			what:  "integer exponent part starts with zero",
 			input: "1e01",
-			want:  "unexpected character '1' while lexing character following number",
+			want:  "unexpected character '1' while lexing character following number 1e0",
 			col:   4,
 		},
 		{
 			what:  "float number exponent part starts with zero",
 			input: "1.0e01",
-			want:  "unexpected character '1' while lexing character following number",
+			want:  "unexpected character '1' while lexing character following number 1.0e0",
 			col:   6,
 		},
 		{
@@ -804,7 +804,7 @@ func TestLexExprError(t *testing.T) {
 		{
 			what:  "invalid char after hex number",
 			input: "0x1fz",
-			want:  "unexpected character 'z' while lexing character following hex integer",
+			want:  "unexpected character 'z' while lexing character following hex integer 0x1",
 			col:   5,
 		},
 	}

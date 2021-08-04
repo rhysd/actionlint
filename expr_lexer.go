@@ -342,7 +342,8 @@ func (lex *ExprLexer) lexNum() *Token {
 	}
 
 	if isAlnum(r) {
-		return lex.unexpected(r, "character following number", expectedPunctChars)
+		s := lex.src[lex.start.Offset:lex.scan.Pos().Offset]
+		return lex.unexpected(r, "character following number "+s, expectedPunctChars)
 	}
 
 	return lex.token(k)
@@ -351,10 +352,8 @@ func (lex *ExprLexer) lexNum() *Token {
 func (lex *ExprLexer) lexHexInt() *Token {
 	r := lex.scan.Peek()
 
-	var what string
 	if r == '0' {
 		r = lex.eat()
-		what = "character following 0x0"
 	} else {
 		if !isHexNum(r) {
 			e := expectedDigitChars + ", 'a'..'f', 'A'..'F'"
@@ -366,13 +365,13 @@ func (lex *ExprLexer) lexHexInt() *Token {
 				break
 			}
 		}
-		what = "character following hex integer"
 	}
 
 	// Note: GitHub Actions does not support exponent part like 0x1f2p-a8
 
 	if isAlnum(r) {
-		return lex.unexpected(r, what, expectedPunctChars)
+		s := lex.src[lex.start.Offset:lex.scan.Pos().Offset]
+		return lex.unexpected(r, "character following hex integer "+s, expectedPunctChars)
 	}
 
 	return lex.token(TokenKindInt)
