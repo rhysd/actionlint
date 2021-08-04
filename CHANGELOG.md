@@ -1,8 +1,16 @@
+<a name="v1.5.3"></a>
+# [v1.5.3](https://github.com/rhysd/actionlint/releases/tag/v1.5.3) - 04 Aug 2021
+
+- Now actionlint allows to use any operators outside `${{ }}` on `if:` condition like `if: github.repository_owner == 'rhysd'`. [The official document](https://docs.github.com/en/actions/reference/workflow-syntax-for-github-actions#jobsjob_idif) said that using any operator outside `${{ }}` was invalid even if it was on `if:` condition. However, [github/docs#8786](https://github.com/github/docs/pull/8786) clarified that the document was not correct.
+
+[Changes][v1.5.3]
+
+
 <a name="v1.5.2"></a>
 # [v1.5.2](https://github.com/rhysd/actionlint/releases/tag/v1.5.2) - 02 Aug 2021
 
 - Outputs of [dorny/paths-filter](https://github.com/dorny/paths-filter) are now not typed strictly because the action dynamically sets outputs which are not defined in its `action.yml`. actionlint cannot check such outputs statically (#18).
-- [The table](https://github.com/rhysd/actionlint/blob/main/all_webhooks.go) for [Webhooks supported by GitHub Actions](https://docs.github.com/en/actions/reference/events-that-trigger-workflows#webhook-events) is now generated from the official document automatically with [script](https://github.com/rhysd/actionlint/tree/main/scripts/generate-webhook-events). The table continues to be updated weekly by [the CI workflow](https://github.com/rhysd/actionlint/actions/workflows/generate.yaml).
+- [The table](https://github.com/rhysd/actionlint/blob/main/all_webhooks.go) for checking [Webhooks supported by GitHub Actions](https://docs.github.com/en/actions/reference/events-that-trigger-workflows#webhook-events) is now generated from the official document automatically with [script](https://github.com/rhysd/actionlint/tree/main/scripts/generate-webhook-events). The table continues to be updated weekly by [the CI workflow](https://github.com/rhysd/actionlint/actions/workflows/generate.yaml).
 - Improve error messages while lexing expressions as follows.
 - Fix column numbers are off-by-one on some lexer errors.
 - Fix checking invalid numbers where some digit follows zero in a hex number (e.g. `0x01`) or an exponent part of number (e.g. `1e0123`).
@@ -252,6 +260,7 @@ See documentation for more details:
 [Changes][v1.0.0]
 
 
+[v1.5.3]: https://github.com/rhysd/actionlint/compare/v1.5.2...v1.5.3
 [v1.5.2]: https://github.com/rhysd/actionlint/compare/v1.5.1...v1.5.2
 [v1.5.1]: https://github.com/rhysd/actionlint/compare/v1.5.0...v1.5.1
 [v1.5.0]: https://github.com/rhysd/actionlint/compare/v1.4.3...v1.5.0
