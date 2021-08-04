@@ -1,0 +1,14 @@
+on: push
+jobs:
+  test:
+    strategy:
+      matrix:
+        ver: [0, 1]
+    runs-on: ubuntu-latest
+    steps:
+      - run: echo 'my repo'
+        # This was not ok until https://github.com/github/docs/pull/8786
+        if: contains(github.repository, 'rhysd')
+      - run: echo 'my repo'
+        # This was not ok until https://github.com/github/docs/pull/8786
+        if: github.repository != 'rhysd/foo' && matrix.ver > 0 || !(github.token == '')

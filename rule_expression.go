@@ -422,16 +422,6 @@ func (rule *RuleExpression) checkIfCondition(str *String) {
 			return
 		}
 
-		if p.sawOperator != nil {
-			op := p.sawOperator
-			pos := convertExprLineColToPos(op.Line, op.Column, str.Pos.Line, str.Pos.Col)
-			rule.errorf(
-				pos,
-				"this expression must be contained within ${{ }} like `if: ${{ ... }}` since it contains operator %q. see https://docs.github.com/en/actions/reference/workflow-syntax-for-github-actions#jobsjob_idif for more details",
-				p.sawOperator.Kind.String(),
-			)
-		}
-
 		condTy = rule.checkSemanticsOfExprNode(expr, line, col)
 	}
 
