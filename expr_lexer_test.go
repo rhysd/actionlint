@@ -630,20 +630,26 @@ func TestLexExprError(t *testing.T) {
 		{
 			what:  "invalid char after -",
 			input: "-a",
-			want:  "unexpected character 'a' while lexing number after -",
+			want:  "got unexpected character 'a' while lexing integer part of number",
 			col:   2,
 		},
 		{
 			what:  "EOF after -",
 			input: "-",
-			want:  "unexpected EOF while lexing number after -",
+			want:  "got unexpected EOF while lexing integer part of number",
 			col:   2,
 		},
 		{
 			what:  "invalid char after 0",
 			input: "0d",
-			want:  "unexpected character 'd' while lexing number after 0",
+			want:  "got unexpected character 'd' while lexing character following number",
 			col:   2,
+		},
+		{
+			what:  "invalid char after number",
+			input: "123d",
+			want:  "got unexpected character 'd' while lexing character following number",
+			col:   4,
 		},
 		{
 			what:  "invalid char in fraction part of float",
@@ -756,32 +762,50 @@ func TestLexExprError(t *testing.T) {
 		{
 			what:  "integer starts with zero",
 			input: "0123",
-			want:  "unexpected character '1' while lexing number after 0",
+			want:  "unexpected character '1' while lexing character following number",
 			col:   2,
 		},
 		{
 			what:  "hex integer starts with zero",
 			input: "0x0123",
-			want:  "unexpected character '1' while lexing number after 0x0",
+			want:  "unexpected character '1' while lexing character following 0x0",
 			col:   4,
 		},
 		{
 			what:  "hex integer starts with zero and followed by e",
 			input: "0x0e1",
-			want:  "unexpected character 'e' while lexing number after 0x0",
+			want:  "unexpected character 'e' while lexing character following 0x0",
 			col:   4,
 		},
 		{
 			what:  "integer exponent part starts with zero",
 			input: "1e01",
-			want:  "unexpected character '1' while lexing number after 0 in exponent part",
+			want:  "unexpected character '1' while lexing character following number",
 			col:   4,
 		},
 		{
 			what:  "float number exponent part starts with zero",
 			input: "1.0e01",
-			want:  "unexpected character '1' while lexing number after 0 in exponent part",
+			want:  "unexpected character '1' while lexing character following number",
 			col:   6,
+		},
+		{
+			what:  "integer part lacks in float number",
+			input: "-.0",
+			want:  "got unexpected character '.'",
+			col:   2,
+		},
+		{
+			what:  "fraction part lacks in float number",
+			input: "0.e1",
+			want:  "got unexpected character 'e' while lexing fraction part",
+			col:   3,
+		},
+		{
+			what:  "invalid char after hex number",
+			input: "0x1fz",
+			want:  "unexpected character 'z' while lexing character following hex integer",
+			col:   5,
 		},
 	}
 
