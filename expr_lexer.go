@@ -215,6 +215,11 @@ func (lex *ExprLexer) eof() *Token {
 	}
 }
 
+func (lex *ExprLexer) eat() rune {
+	lex.scan.Next()
+	return lex.scan.Peek() // unlike lex.scan.Next(), return top char *after* eating
+}
+
 func (lex *ExprLexer) skipWhite() {
 	for {
 		if r := lex.scan.Peek(); !isWhitespace(r) {
@@ -257,10 +262,9 @@ func (lex *ExprLexer) unexpectedEOF() *Token {
 
 func (lex *ExprLexer) lexIdent() *Token {
 	for {
-		lex.scan.Next()
 		// a-z, A-Z, 0-9, - or _
 		// https://docs.github.com/en/actions/reference/context-and-expression-syntax-for-github-actions#contexts
-		if r := lex.scan.Peek(); !isAlnum(r) && r != '_' && r != '-' {
+		if r := lex.eat(); !isAlnum(r) && r != '_' && r != '-' {
 			return lex.token(TokenKindIdent)
 		}
 	}
@@ -273,13 +277,11 @@ func (lex *ExprLexer) lexNum() *Token {
 	r := lex.scan.Peek() // precond: r is digit or '-'
 
 	if r == '-' {
-		lex.scan.Next()
-		r = lex.scan.Peek()
+		r = lex.eat()
 	}
 
 	if r == '0' {
-		lex.scan.Next()
-		r = lex.scan.Peek()
+		r = lex.eat()
 		if r == 'x' {
 			lex.scan.Next()
 			return lex.lexHexInt()
@@ -290,8 +292,7 @@ func (lex *ExprLexer) lexNum() *Token {
 			return lex.unexpected(r, "integer part of number", expectedDigitChars)
 		}
 		for {
-			lex.scan.Next()
-			r = lex.scan.Peek()
+			r = lex.eat()
 			if !isNum(r) {
 				break
 			}
@@ -301,15 +302,13 @@ func (lex *ExprLexer) lexNum() *Token {
 	k := TokenKindInt
 
 	if r == '.' {
-		lex.scan.Next() // eat '.'
-		r = lex.scan.Peek()
+		r = lex.eat() // eat '.'
 		if !isNum(r) {
 			return lex.unexpected(r, "fraction part of float number", expectedDigitChars)
 		}
 
 		for {
-			lex.scan.Next()
-			r = lex.scan.Peek()
+			r = lex.eat()
 			if !isNum(r) {
 				break
 			}
@@ -319,24 +318,20 @@ func (lex *ExprLexer) lexNum() *Token {
 	}
 
 	if r == 'e' || r == 'E' {
-		lex.scan.Next() // eat 'e' or 'E'
-		r = lex.scan.Peek()
+		r = lex.eat() // eat 'e' or 'E'
 		if r == '-' {
-			lex.scan.Next()
-			r = lex.scan.Peek()
+			r = lex.eat()
 		}
 
 		if r == '0' {
-			lex.scan.Next() // eat the '0'
-			r = lex.scan.Peek()
+			r = lex.eat() // eat the '0'
 		} else {
 			// r is 1..9
 			if !isNum(r) {
 				return lex.unexpected(r, "exponent part of float number", expectedDigitChars)
 			}
 			for {
-				lex.scan.Next()
-				r = lex.scan.Peek()
+				r = lex.eat()
 				if !isNum(r) {
 					break
 				}
@@ -358,8 +353,7 @@ func (lex *ExprLexer) lexHexInt() *Token {
 
 	var what string
 	if r == '0' {
-		lex.scan.Next()
-		r = lex.scan.Peek()
+		r = lex.eat()
 		what = "character following 0x0"
 	} else {
 		if !isHexNum(r) {
@@ -367,8 +361,7 @@ func (lex *ExprLexer) lexHexInt() *Token {
 			return lex.unexpected(r, "hex integer", e)
 		}
 		for {
-			lex.scan.Next()
-			r = lex.scan.Peek()
+			r = lex.eat()
 			if !isHexNum(r) {
 				break
 			}
@@ -386,24 +379,22 @@ func (lex *ExprLexer) lexHexInt() *Token {
 }
 
 func (lex *ExprLexer) lexString() *Token {
-	lex.scan.Next() // eat '
+	// precond: current char is '
 	for {
-		switch lex.scan.Peek() {
+		switch lex.eat() {
 		case '\'':
-			lex.scan.Next()
-			if lex.scan.Peek() != '\'' { // when not escaped single quote ''
+			if lex.eat() != '\'' { // when not escaped single quote ''
 				return lex.token(TokenKindString)
 			}
 		case scanner.EOF:
 			return lex.unexpected(scanner.EOF, "end of string literal", "'''")
 		}
-		lex.scan.Next()
 	}
 }
 
 func (lex *ExprLexer) lexEnd() *Token {
-	lex.scan.Next() // eat '}'
-	if r := lex.scan.Peek(); r != '}' {
+	r := lex.eat() // eat the first '}'
+	if r != '}' {
 		return lex.unexpected(r, "end marker }}", "'}'")
 	}
 	lex.scan.Next()
@@ -412,9 +403,8 @@ func (lex *ExprLexer) lexEnd() *Token {
 }
 
 func (lex *ExprLexer) lexLess() *Token {
-	lex.scan.Next() // eat '<'
 	k := TokenKindLess
-	if lex.scan.Peek() == '=' {
+	if lex.eat() == '=' { // eat '<'
 		k = TokenKindLessEq
 		lex.scan.Next()
 	}
@@ -422,9 +412,8 @@ func (lex *ExprLexer) lexLess() *Token {
 }
 
 func (lex *ExprLexer) lexGreater() *Token {
-	lex.scan.Next() // eat '>'
 	k := TokenKindGreater
-	if lex.scan.Peek() == '=' {
+	if lex.eat() == '=' { // eat '>'
 		k = TokenKindGreaterEq
 		lex.scan.Next()
 	}
@@ -432,8 +421,7 @@ func (lex *ExprLexer) lexGreater() *Token {
 }
 
 func (lex *ExprLexer) lexEq() *Token {
-	lex.scan.Next() // eat '='
-	if r := lex.scan.Peek(); r != '=' {
+	if r := lex.eat(); r != '=' { // eat '='
 		return lex.unexpected(r, "== operator", "'='")
 	}
 	lex.scan.Next()
@@ -441,9 +429,8 @@ func (lex *ExprLexer) lexEq() *Token {
 }
 
 func (lex *ExprLexer) lexBang() *Token {
-	lex.scan.Next() // eat '!'
 	k := TokenKindNot
-	if lex.scan.Peek() == '=' {
+	if lex.eat() == '=' { // eat '!'
 		lex.scan.Next() // eat '='
 		k = TokenKindNotEq
 	}
@@ -451,20 +438,18 @@ func (lex *ExprLexer) lexBang() *Token {
 }
 
 func (lex *ExprLexer) lexAnd() *Token {
-	lex.scan.Next() // eat '&'
-	if r := lex.scan.Peek(); r != '&' {
+	if r := lex.eat(); r != '&' { // eat the first '&'
 		return lex.unexpected(r, "&& operator", "'&'")
 	}
-	lex.scan.Next()
+	lex.scan.Next() // eat the second '&'
 	return lex.token(TokenKindAnd)
 }
 
 func (lex *ExprLexer) lexOr() *Token {
-	lex.scan.Next() // eat '|'
-	if r := lex.scan.Peek(); r != '|' {
+	if r := lex.eat(); r != '|' { // eat the first '|'
 		return lex.unexpected(r, "|| operator", "'|'")
 	}
-	lex.scan.Next()
+	lex.scan.Next() // eat the second '|'
 	return lex.token(TokenKindOr)
 }
 
