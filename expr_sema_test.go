@@ -501,7 +501,7 @@ func TestExprSemanticsCheckOK(t *testing.T) {
 				t.Fatal("Parse error:", tc.input)
 			}
 
-			c := NewExprSemanticsChecker()
+			c := NewExprSemanticsChecker(false)
 			if tc.funcs != nil {
 				c.funcs = tc.funcs
 			}
@@ -1001,7 +1001,7 @@ func TestExprSemanticsCheckError(t *testing.T) {
 				t.Fatal("Parse error:", tc.input)
 			}
 
-			c := NewExprSemanticsChecker()
+			c := NewExprSemanticsChecker(false)
 			if tc.funcs != nil {
 				c.funcs = tc.funcs // Set functions for testing
 			}
@@ -1032,7 +1032,7 @@ func TestExprSemanticsCheckError(t *testing.T) {
 }
 
 func TestExprSemanticsCheckerUpdateMatrix(t *testing.T) {
-	c := NewExprSemanticsChecker()
+	c := NewExprSemanticsChecker(false)
 	ty := NewObjectType()
 	prev := c.vars["matrix"]
 	c.UpdateMatrix(ty)
@@ -1047,7 +1047,7 @@ func TestExprSemanticsCheckerUpdateMatrix(t *testing.T) {
 }
 
 func TestExprSemanticsCheckerUpdateSteps(t *testing.T) {
-	c := NewExprSemanticsChecker()
+	c := NewExprSemanticsChecker(false)
 	ty := NewObjectType()
 	prev := c.vars["steps"]
 	c.UpdateSteps(ty)
