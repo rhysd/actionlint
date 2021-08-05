@@ -74,25 +74,21 @@ var BuiltinUntrustedInputs = untrustedInputMap{
 
 // UntrustedInputChecker is a checker to detect untrusted inputs in an expression syntax tree.
 type UntrustedInputChecker struct {
-	root    untrustedInputMap
-	cur     untrustedInputMap
-	varNode *VariableNode
-	path    []string
-	errs    []*ExprError
+	root untrustedInputMap
+	cur  untrustedInputMap
+	errs []*ExprError
 }
 
 // NewUntrustedInputChecker creates new UntrustedInputChecker instance.
 func NewUntrustedInputChecker(m untrustedInputMap) *UntrustedInputChecker {
 	return &UntrustedInputChecker{
-		root:    m,
-		cur:     nil,
-		varNode: nil,
-		path:    nil,
+		root: m,
+		cur:  nil,
 	}
 }
 
-func (u *UntrustedInputChecker) found() {
-	err := errorfAtExpr(u.varNode, "%q is possibly untrusted. please avoid using it directly in script by passing it through environment variable. see https://securitylab.github.com/research/github-actions-untrusted-input for more details.", strings.Join(u.path, "."))
+func (u *UntrustedInputChecker) found(v *VariableNode, path string) {
+	err := errorfAtExpr(v, "%q is possibly untrusted. please avoid using it directly in script by passing it through environment variable. see https://securitylab.github.com/research/github-actions-untrusted-input for more details.", path)
 	u.errs = append(u.errs, err)
 	u.done()
 }
@@ -102,42 +98,52 @@ func (u *UntrustedInputChecker) done() {
 		return
 	}
 	u.cur = nil
-	u.varNode = nil
-	u.path = u.path[:0]
 }
 
-func (u *UntrustedInputChecker) checkVar(name string) {
+func (u *UntrustedInputChecker) checkVar(name string) bool {
 	m, ok := u.root[name]
 	if !ok {
 		u.done()
-		return
+		return true
 	}
 
-	u.path = append(u.path, name)
-
 	if m == nil {
-		u.found()
-		return
+		return false
 	}
 
 	u.cur = m
+	return true
 }
 
-func (u *UntrustedInputChecker) checkProp(name string) {
+func (u *UntrustedInputChecker) checkProp(name string) bool {
 	c, ok := u.cur.findChild(name)
 	if !ok {
 		u.done()
-		return
+		return true
 	}
 
-	u.path = append(u.path, name)
-
 	if c == nil {
-		u.found()
-		return
+		return false
 	}
 
 	u.cur = c
+	return true
+}
+
+func buildPathOfObjectDeref(b *strings.Builder, n *ObjectDerefNode) *VariableNode {
+	var v *VariableNode
+	switch n := n.Receiver.(type) {
+	case *VariableNode:
+		b.WriteString(n.Name)
+		v = n
+	case *ObjectDerefNode:
+		v = buildPathOfObjectDeref(b, n)
+	default:
+		panic("unreachable")
+	}
+	b.WriteByte('.')
+	b.WriteString(n.Property)
+	return v
 }
 
 // OnNode is a callback which should be called on visiting node. This method assumes to be called
@@ -145,10 +151,15 @@ func (u *UntrustedInputChecker) checkProp(name string) {
 func (u *UntrustedInputChecker) OnNode(n ExprNode) {
 	switch n := n.(type) {
 	case *VariableNode:
-		u.varNode = n
-		u.checkVar(n.Name)
+		if !u.checkVar(n.Name) {
+			u.found(n, n.Name)
+		}
 	case *ObjectDerefNode:
-		u.checkProp(n.Property)
+		if !u.checkProp(n.Property) {
+			var b strings.Builder
+			v := buildPathOfObjectDeref(&b, n)
+			u.found(v, b.String())
+		}
 	default:
 		u.done()
 	}
