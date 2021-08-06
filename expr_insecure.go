@@ -4,9 +4,11 @@ import (
 	"strings"
 )
 
-type untrustedInputMap map[string]untrustedInputMap
+// UntrustedInputMap is a recursive map to match context object property dereferences.
+// Root of this map represents each context names and their ancestors represent recursive properties.
+type UntrustedInputMap map[string]UntrustedInputMap
 
-func (m untrustedInputMap) findChild(name string) (untrustedInputMap, bool) {
+func (m UntrustedInputMap) findChild(name string) (UntrustedInputMap, bool) {
 	if m == nil {
 		return nil, false
 	}
@@ -22,7 +24,7 @@ func (m untrustedInputMap) findChild(name string) (untrustedInputMap, bool) {
 // BuiltinUntrustedInputs is list of untrusted inputs. These inputs are detected as untrusted in
 // `run:` scripts. See the URL for more details.
 // https://securitylab.github.com/research/github-actions-untrusted-input/
-var BuiltinUntrustedInputs = untrustedInputMap{
+var BuiltinUntrustedInputs = UntrustedInputMap{
 	"github": {
 		"event": {
 			"issue": {
@@ -74,29 +76,20 @@ var BuiltinUntrustedInputs = untrustedInputMap{
 
 // UntrustedInputChecker is a checker to detect untrusted inputs in an expression syntax tree.
 type UntrustedInputChecker struct {
-	root untrustedInputMap
-	cur  untrustedInputMap
+	root UntrustedInputMap
+	cur  UntrustedInputMap
 	errs []*ExprError
 }
 
 // NewUntrustedInputChecker creates new UntrustedInputChecker instance.
-func NewUntrustedInputChecker(m untrustedInputMap) *UntrustedInputChecker {
+func NewUntrustedInputChecker(m UntrustedInputMap) *UntrustedInputChecker {
 	return &UntrustedInputChecker{
 		root: m,
 		cur:  nil,
 	}
 }
 
-func (u *UntrustedInputChecker) found(v *VariableNode, path string) {
-	err := errorfAtExpr(v, "%q is possibly untrusted. please avoid using it directly in script by passing it through environment variable. see https://securitylab.github.com/research/github-actions-untrusted-input for more details.", path)
-	u.errs = append(u.errs, err)
-	u.done()
-}
-
 func (u *UntrustedInputChecker) done() {
-	if u.cur == nil {
-		return
-	}
 	u.cur = nil
 }
 
@@ -130,20 +123,35 @@ func (u *UntrustedInputChecker) checkProp(name string) bool {
 	return true
 }
 
-func buildPathOfObjectDeref(b *strings.Builder, n *ObjectDerefNode) *VariableNode {
-	var v *VariableNode
-	switch n := n.Receiver.(type) {
+func buildPathOfObjectDereference(b *strings.Builder, n ExprNode) *VariableNode {
+	switch n := n.(type) {
 	case *VariableNode:
 		b.WriteString(n.Name)
-		v = n
+		return n
 	case *ObjectDerefNode:
-		v = buildPathOfObjectDeref(b, n)
-	default:
-		panic("unreachable")
+		v := buildPathOfObjectDereference(b, n.Receiver)
+		b.WriteByte('.')
+		b.WriteString(n.Property)
+		return v
+	case *IndexAccessNode:
+		if lit, ok := n.Index.(*StringNode); ok {
+			v := buildPathOfObjectDereference(b, n.Operand)
+			b.WriteByte('.')
+			b.WriteString(lit.Value)
+			return v
+		}
 	}
-	b.WriteByte('.')
-	b.WriteString(n.Property)
-	return v
+	panic("unreachable")
+}
+
+func (u *UntrustedInputChecker) error(n ExprNode) {
+	var b strings.Builder
+	b.WriteByte('"')
+	v := buildPathOfObjectDereference(&b, n)
+	b.WriteString(`" is possibly untrusted. avoid using it directly in inline scripts. instead, pass it through an environment variable. see https://securitylab.github.com/research/github-actions-untrusted-input for more details`)
+	err := errorAtExpr(v, b.String())
+	u.errs = append(u.errs, err)
+	u.done()
 }
 
 // OnNode is a callback which should be called on visiting node. This method assumes to be called
@@ -152,13 +160,19 @@ func (u *UntrustedInputChecker) OnNode(n ExprNode) {
 	switch n := n.(type) {
 	case *VariableNode:
 		if !u.checkVar(n.Name) {
-			u.found(n, n.Name)
+			u.error(n)
 		}
 	case *ObjectDerefNode:
 		if !u.checkProp(n.Property) {
-			var b strings.Builder
-			v := buildPathOfObjectDeref(&b, n)
-			u.found(v, b.String())
+			u.error(n)
+		}
+	case *IndexAccessNode:
+		if lit, ok := n.Index.(*StringNode); ok {
+			if !u.checkProp(lit.Value) {
+				u.error(n)
+			}
+		} else {
+			u.done()
 		}
 	default:
 		u.done()
