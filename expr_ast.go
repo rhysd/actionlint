@@ -224,3 +224,35 @@ type FuncCallNode struct {
 func (n *FuncCallNode) Token() *Token {
 	return n.tok
 }
+
+// VisitExprNodeFunc is a visitor function for VisitExprNode(). The entering argument is set to
+// true when it is called before visiting children. It is set to false when it is called after
+// visiting children. It means that this function is called twice for the same node.
+type VisitExprNodeFunc func(node ExprNode, entering bool)
+
+// VisitExprNode visits the given expression syntax tree with given function f.
+func VisitExprNode(n ExprNode, f VisitExprNodeFunc) {
+	f(n, true)
+	switch n := n.(type) {
+	case *ObjectDerefNode:
+		VisitExprNode(n.Receiver, f)
+	case *ArrayDerefNode:
+		VisitExprNode(n.Receiver, f)
+	case *IndexAccessNode:
+		VisitExprNode(n.Operand, f)
+		VisitExprNode(n.Index, f)
+	case *NotOpNode:
+		VisitExprNode(n.Operand, f)
+	case *CompareOpNode:
+		VisitExprNode(n.Left, f)
+		VisitExprNode(n.Right, f)
+	case *LogicalOpNode:
+		VisitExprNode(n.Left, f)
+		VisitExprNode(n.Right, f)
+	case *FuncCallNode:
+		for _, a := range n.Args {
+			VisitExprNode(a, f)
+		}
+	}
+	f(n, false)
+}

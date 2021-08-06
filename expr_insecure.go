@@ -48,6 +48,9 @@ var BuiltinUntrustedInputs = UntrustedInputMap{
 			"review": {
 				"body": nil,
 			},
+			"review_comment": {
+				"body": nil,
+			},
 			"pages": {
 				"*": {
 					"page_name": nil,
@@ -148,7 +151,7 @@ func (u *UntrustedInputChecker) error(n ExprNode) {
 	var b strings.Builder
 	b.WriteByte('"')
 	v := buildPathOfObjectDereference(&b, n)
-	b.WriteString(`" is possibly untrusted. avoid using it directly in inline scripts. instead, pass it through an environment variable. see https://securitylab.github.com/research/github-actions-untrusted-input for more details`)
+	b.WriteString(`" is potentially untrusted. avoid using it directly in inline scripts. instead, pass it through an environment variable. see https://securitylab.github.com/research/github-actions-untrusted-input for more details`)
 	err := errorAtExpr(v, b.String())
 	u.errs = append(u.errs, err)
 	u.done()
