@@ -61,21 +61,22 @@ func (rule *RuleShellName) VisitWorkflowPre(n *Workflow) error {
 	return nil
 }
 
-func (rule *RuleShellName) checkShellName(name *String) {
-	if name == nil {
+func (rule *RuleShellName) checkShellName(node *String) {
+	if node == nil {
 		return
 	}
 
 	// Ignore custom shell
 	// https://docs.github.com/en/actions/reference/workflow-syntax-for-github-actions#custom-shell
-	if strings.Contains(name.Value, "{0}") {
+	if strings.Contains(node.Value, "{0}") {
 		return
 	}
 
+	name := strings.ToLower(node.Value)
 	available := getAvailableShellNames(rule.platform)
 
 	for _, s := range available {
-		if name.Value == s {
+		if name == s {
 			return // ok
 		}
 	}
@@ -84,22 +85,22 @@ func (rule *RuleShellName) checkShellName(name *String) {
 	switch rule.platform {
 	case platformKindWindows:
 		for _, p := range getAvailableShellNames(platformKindAny) {
-			if name.Value == p {
+			if name == p {
 				onPlatform = " on Windows" // only when the shell is unavailable on Windows
 			}
 		}
 	case platformKindMacOrLinux:
 		for _, p := range getAvailableShellNames(platformKindAny) {
-			if name.Value == p {
+			if name == p {
 				onPlatform = " on macOS or Linux" // only when the shell is unavailable on macOS or Linux
 			}
 		}
 	}
 
 	rule.errorf(
-		name.Pos,
+		node.Pos,
 		"shell name %q is invalid%s. available names are %s",
-		name.Value,
+		node.Value,
 		onPlatform,
 		sortedQuotes(available),
 	)

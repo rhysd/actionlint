@@ -1,0 +1,13 @@
+name: Test
+on: push
+
+jobs:
+  test:
+    runs-on: windows-latest
+    steps:
+      - run: echo hi
+        shell: powershell
+      - run: echo hi
+        shell: PowerShell
+      - run: echo hi
+        shell: POWERSHELL
