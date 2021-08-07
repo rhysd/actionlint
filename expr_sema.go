@@ -662,6 +662,9 @@ func (sema *ExprSemanticsChecker) check(expr ExprNode) ExprType {
 // while checking the expression as the second return value.
 func (sema *ExprSemanticsChecker) Check(expr ExprNode) (ExprType, []*ExprError) {
 	sema.errs = []*ExprError{}
+	if sema.untrusted != nil {
+		sema.untrusted.Init()
+	}
 	ty := sema.check(expr)
 	errs := sema.errs
 	if sema.untrusted != nil {

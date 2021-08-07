@@ -92,7 +92,10 @@ type UntrustedInputChecker struct {
 
 // NewUntrustedInputChecker creates new UntrustedInputChecker instance.
 func NewUntrustedInputChecker(m UntrustedInputMap) *UntrustedInputChecker {
-	return &UntrustedInputChecker{root: m}
+	return &UntrustedInputChecker{
+		root: m,
+		errs: []*ExprError{},
+	}
 }
 
 func (u *UntrustedInputChecker) done() {
@@ -243,4 +246,11 @@ func (u *UntrustedInputChecker) OnNodeLeave(n ExprNode) {
 // nodes in a syntax tree.
 func (u *UntrustedInputChecker) Errs() []*ExprError {
 	return u.errs
+}
+
+// Init initializes a state of checker.
+func (u *UntrustedInputChecker) Init() {
+	u.errs = []*ExprError{}
+	u.stack = nil
+	u.done()
 }

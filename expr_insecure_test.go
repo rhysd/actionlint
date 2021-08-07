@@ -71,13 +71,12 @@ func TestExprInsecureBuiltinUntrustedInputs(t *testing.T) {
 	rec(BuiltinUntrustedInputs, []string{})
 }
 
-func testCheckUntrustedInput(t *testing.T, input string) []*ExprError {
-	expr, err := NewExprParser().Parse(NewExprLexer(input + "}}"))
+func testRunTrustedInputsCheckerForNode(t *testing.T, c *UntrustedInputChecker, input string) {
+	n, err := NewExprParser().Parse(NewExprLexer(input + "}}"))
 	if err != nil {
 		t.Fatal(err)
 	}
-	c := NewUntrustedInputChecker(BuiltinUntrustedInputs)
-	VisitExprNode(expr, func(n, p ExprNode, entering bool) {
+	VisitExprNode(n, func(n, p ExprNode, entering bool) {
 		if entering {
 			if i, ok := p.(*IndexAccessNode); ok && i.Index == n {
 				c.OnIndexNodeEnter()
@@ -89,7 +88,6 @@ func testCheckUntrustedInput(t *testing.T, input string) []*ExprError {
 			}
 		}
 	})
-	return c.Errs()
 }
 
 func TestExprInsecureDetectUntrustedValue(t *testing.T) {
@@ -219,7 +217,9 @@ func TestExprInsecureDetectUntrustedValue(t *testing.T) {
 
 	for _, tc := range tests {
 		t.Run(tc.input, func(t *testing.T) {
-			errs := testCheckUntrustedInput(t, tc.input)
+			c := NewUntrustedInputChecker(BuiltinUntrustedInputs)
+			testRunTrustedInputsCheckerForNode(t, c, tc.input)
+			errs := c.Errs()
 			if len(tc.want) != len(errs) {
 				t.Fatalf("wanted %d error(s) but got %v", len(tc.want), errs)
 			}
@@ -231,6 +231,9 @@ func TestExprInsecureDetectUntrustedValue(t *testing.T) {
 				if err.Line != 1 {
 					t.Error("line should be 1 but got", err.Line)
 				}
+			}
+			if len(c.stack) != 0 {
+				t.Error("invariant error. stack is not empty:", c.stack)
 			}
 		})
 	}
@@ -246,11 +249,16 @@ func TestExprInsecureAllUntrustedValuesAtOnce(t *testing.T) {
 	}
 	// Generate function call with all untrusted inputs as its arguments
 	expr := "someFunc(" + strings.Join(args, ", ") + ")"
-	errs := testCheckUntrustedInput(t, expr)
+
+	c := NewUntrustedInputChecker(BuiltinUntrustedInputs)
+	testRunTrustedInputsCheckerForNode(t, c, expr)
+	errs := c.Errs()
+
 	if len(errs) != len(args) {
 		t.Fatalf("# of args %d v.s. # of errs %d. errs: %v", len(args), len(errs), errs)
 	}
-	c := 0
+
+	col := 0
 	for i, err := range errs {
 		arg := args[i]
 		if !strings.Contains(arg, "[0]") && !strings.Contains(err.Message, arg) {
@@ -259,10 +267,35 @@ func TestExprInsecureAllUntrustedValuesAtOnce(t *testing.T) {
 		if err.Line != 1 {
 			t.Error("line should be 1 but got", err.Line)
 		}
-		if err.Column <= c {
-			t.Errorf("column should be greater than %d but got %d", c, err.Column)
+		if err.Column <= col {
+			t.Errorf("column should be greater than %d but got %d", col, err.Column)
 		}
-		c = err.Column
+		col = err.Column
+	}
+
+	if len(c.stack) != 0 {
+		t.Error("invariant error. stack is not empty:", c.stack)
+	}
+}
+
+func TestExprInsecureInitState(t *testing.T) {
+	c := NewUntrustedInputChecker(BuiltinUntrustedInputs)
+	testRunTrustedInputsCheckerForNode(t, c, "github.event.issue.title")
+	if len(c.Errs()) == 0 {
+		t.Fatal("no error occurred")
+	}
+
+	c.Init()
+	if len(c.Errs()) != 0 {
+		t.Fatal(c.Errs())
+	}
+	if c.cur != nil || len(c.stack) > 0 {
+		t.Fatal("internal state was not cleared:", c.cur, c.stack)
+	}
+
+	testRunTrustedInputsCheckerForNode(t, c, "github.event.issue.title")
+	if len(c.Errs()) == 0 {
+		t.Fatal("no error occurred")
 	}
 }
 
@@ -295,9 +328,13 @@ func TestExprInsecureNoUntrustedValue(t *testing.T) {
 
 	for _, input := range inputs {
 		t.Run(input, func(t *testing.T) {
-			errs := testCheckUntrustedInput(t, input)
-			if len(errs) > 0 {
+			c := NewUntrustedInputChecker(BuiltinUntrustedInputs)
+			testRunTrustedInputsCheckerForNode(t, c, input)
+			if errs := c.Errs(); len(errs) > 0 {
 				t.Fatalf("%d error(s) occurred: %v", len(errs), errs)
+			}
+			if len(c.stack) != 0 {
+				t.Error("invariant error. stack is not empty:", c.stack)
 			}
 		})
 	}
