@@ -33,7 +33,11 @@ jobs:
         os: [macos-latest, linux-latest]
     runs-on: ${{ matrix.os }}
     steps:
+      - run: echo "Checking commit '${{ github.event.head_commit.message }}'"
       - uses: actions/checkout@v2
+      - uses: actions/setup-node@v2
+        with:
+          node_version: 16.x
       - uses: actions/cache@v2
         with:
           path: ~/.npm
@@ -46,26 +50,33 @@ jobs:
 
 <img src="https://github.com/rhysd/ss/blob/master/actionlint/main.png?raw=true" alt="output example" width="850" height="621"/>
 <!-- content of screenshot:
-> actionlint
-.github/workflows/test.yaml:3:5: unexpected key "branch" for "push" section. expected one of "branches", "branches-ignore", "paths", "paths-ignore", "tags", "tags-ignore", "types", "workflows" [syntax-check]
+test.yaml:3:5: unexpected key "branch" for "push" section. expected one of "branches", "branches-ignore", "paths", "paths-ignore", "tags", "tags-ignore", "types", "workflows" [syntax-check]
   |
 3 |     branch: main
   |     ^~~~~~~
-.github/workflows/test.yaml:5:11: character '\' is invalid for branch and tag names. only special characters [, ?, +, *, \ ! can be escaped with \. see `man git-check-ref-format` for more details. note that regular expression is unavailable. note: filter pattern syntax is explained at https://docs.github.com/en/actions/reference/workflow-syntax-for-github-actions#filter-pattern-cheat-sheet [glob]
+test.yaml:5:11: character '\' is invalid for branch and tag names. only special characters [, ?, +, *, \ ! can be escaped with \. see `man git-check-ref-format` for more details. note that regular expression is unavailable. note: filter pattern syntax is explained at https://docs.github.com/en/actions/reference/workflow-syntax-for-github-actions#filter-pattern-cheat-sheet [glob]
   |
 5 |       - 'v\d+'
   |           ^~~~
-.github/workflows/test.yaml:10:28: label "linux-latest" is unknown. available labels are "windows-latest", "windows-2019", "windows-2016", "ubuntu-latest", "ubuntu-20.04", "ubuntu-18.04", "ubuntu-16.04", "macos-latest", "macos-11", "macos-11.0", "macos-10.15", "self-hosted", "linux", "macos", "windows", "x64", "arm", "arm64". if it is a custom label for self-hosted runner, set list of labels in actionlint.yaml config file [runner-label]
+test.yaml:10:28: label "linux-latest" is unknown. available labels are "windows-latest", "windows-2019", "windows-2016", "ubuntu-latest", "ubuntu-20.04", "ubuntu-18.04", "ubuntu-16.04", "macos-latest", "macos-11", "macos-11.0", "macos-10.15", "self-hosted", "linux", "macos", "windows", "x64", "arm", "arm64". if it is a custom label for self-hosted runner, set list of labels in actionlint.yaml config file [runner-label]
    |
 10 |         os: [macos-latest, linux-latest]
    |                            ^~~~~~~~~~~~~
-.github/workflows/test.yaml:17:20: property "platform" is not defined in object type {os: string} [expression]
+test.yaml:13:41: "github.event.head_commit.message" is potentially untrusted. avoid using it directly in inline scripts. instead, pass it through an environment variable. see https://securitylab.github.com/research/github-actions-untrusted-input for more details [expression]
    |
-17 |           key: ${{ matrix.platform }}-node-${{ hashFiles('**/package-lock.json') }}
+13 |       - run: echo "Checking commit '${{ github.event.head_commit.message }}'"
+   |                                         ^~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+test.yaml:17:11: input "node_version" is not defined in action "actions/setup-node@v2". available inputs are "always-auth", "architecture", "cache", "check-latest", "node-version", "registry-url", "scope", "token", "version" [action]
+   |
+17 |           node_version: 16.x
+   |           ^~~~~~~~~~~~~
+test.yaml:21:20: property "platform" is not defined in object type {os: string} [expression]
+   |
+21 |           key: ${{ matrix.platform }}-node-${{ hashFiles('**/package-lock.json') }}
    |                    ^~~~~~~~~~~~~~~
-.github/workflows/test.yaml:18:17: receiver of object dereference "permissions" must be type of object but got "string" [expression]
+test.yaml:22:17: receiver of object dereference "permissions" must be type of object but got "string" [expression]
    |
-18 |         if: ${{ github.repository.permissions.admin == true }}
+22 |         if: ${{ github.repository.permissions.admin == true }}
    |                 ^~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 -->
 
@@ -1820,7 +1831,9 @@ test.yaml:13:15: "readable" is invalid for permission of scope "issues". availab
 [Playground](https://rhysd.github.io/actionlint#eJxNjd0NwyAMhN89xS3AAmwDxBK0FCOMlfUDiVr16aTv/qR5dNNM1Hl8imqRph7nKJOJXhLVEzBZ51ZgWFMnq2TR2jRXw/Zu63/gBkDKnN7ftQethPF6GByOEOuDdXL/ldw+8eCUBZlrlQvntjLp)
 
 Permissions of `GITHUB_TOKEN` token can be configured at workflow-level or job-level by [`permissions:` section][perm-config-doc].
-actionlint checks permission scopes and permission values in a workflow are correct.
+Each permission scopes have their access levels. The default levels are described in [the document][permissions-doc].
+
+actionlint checks permission scopes and access levels in a workflow are correct.
 
 <a name="config-file"></a>
 # Configuration file
@@ -1948,7 +1961,6 @@ actionlint is distributed under [the MIT license](./LICENSE.txt).
 [expr-doc]: https://docs.github.com/en/actions/reference/context-and-expression-syntax-for-github-actions
 [contexts-doc]: https://docs.github.com/en/actions/reference/context-and-expression-syntax-for-github-actions#contexts
 [funcs-doc]: https://docs.github.com/en/actions/reference/context-and-expression-syntax-for-github-actions#functions
-[steps-doc]: https://docs.github.com/en/actions/reference/context-and-expression-syntax-for-github-actions#steps-context
 [needs-doc]: https://docs.github.com/en/actions/reference/workflow-syntax-for-github-actions#jobsjob_idneeds
 [needs-context-doc]: https://docs.github.com/en/actions/reference/context-and-expression-syntax-for-github-actions#needs-context
 [shell-doc]: https://docs.github.com/en/actions/reference/workflow-syntax-for-github-actions#using-a-specific-shell
@@ -1960,10 +1972,8 @@ actionlint is distributed under [the MIT license](./LICENSE.txt).
 [gh-hosted-runner]: https://docs.github.com/en/actions/using-github-hosted-runners/about-github-hosted-runners
 [self-hosted-runner]: https://docs.github.com/en/actions/hosting-your-own-runners/about-self-hosted-runners
 [action-uses-doc]: https://docs.github.com/en/actions/reference/workflow-syntax-for-github-actions#jobsjob_idstepsuses
-[action-metadata-doc]: https://docs.github.com/en/actions/creating-actions/metadata-syntax-for-github-actions
 [go-yaml]: https://github.com/go-yaml/yaml
 [credentials-doc]: https://docs.github.com/en/actions/reference/workflow-syntax-for-github-actions#jobsjob_idcontainercredentials
-[opengroup-env-vars]: https://pubs.opengroup.org/onlinepubs/007904875/basedefs/xbd_chap08.html
 [issue-form]: https://github.com/rhysd/actionlint/issues/new
 [reviewdog-actionlint]: https://github.com/reviewdog/action-actionlint
 [reviewdog]: https://github.com/reviewdog/reviewdog
