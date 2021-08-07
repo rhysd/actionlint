@@ -284,15 +284,21 @@ type ExprSemanticsChecker struct {
 	vars       map[string]ExprType
 	errs       []*ExprError
 	varsCopied bool
+	untrusted  *UntrustedInputChecker
 }
 
-// NewExprSemanticsChecker creates new ExprSemanticsChecker instance.
-func NewExprSemanticsChecker() *ExprSemanticsChecker {
-	return &ExprSemanticsChecker{
+// NewExprSemanticsChecker creates new ExprSemanticsChecker instance. When checkUntrustedInput is
+// set to true, the checker will make use of possibly untrusted inputs error.
+func NewExprSemanticsChecker(checkUntrustedInput bool) *ExprSemanticsChecker {
+	c := &ExprSemanticsChecker{
 		funcs:      BuiltinFuncSignatures,
 		vars:       BuiltinGlobalVariableTypes,
 		varsCopied: false,
 	}
+	if checkUntrustedInput {
+		c.untrusted = NewUntrustedInputChecker(BuiltinUntrustedInputs)
+	}
+	return c
 }
 
 func errorAtExpr(e ExprNode, msg string) *ExprError {
@@ -344,6 +350,12 @@ func (sema *ExprSemanticsChecker) UpdateSteps(ty *ObjectType) {
 func (sema *ExprSemanticsChecker) UpdateNeeds(ty *ObjectType) {
 	sema.ensureVarsCopied()
 	sema.vars["needs"] = ty
+}
+
+func (sema *ExprSemanticsChecker) visitUntrustedCheckerOnLeaveNode(n ExprNode) {
+	if sema.untrusted != nil {
+		sema.untrusted.OnNodeLeave(n)
+	}
 }
 
 func (sema *ExprSemanticsChecker) checkVariable(n *VariableNode) ExprType {
@@ -419,7 +431,14 @@ func (sema *ExprSemanticsChecker) checkArrayDeref(n *ArrayDerefNode) ExprType {
 }
 
 func (sema *ExprSemanticsChecker) checkIndexAccess(n *IndexAccessNode) ExprType {
+	if sema.untrusted != nil {
+		sema.untrusted.OnIndexNodeEnter()
+	}
 	idx := sema.check(n.Index)
+	if sema.untrusted != nil {
+		sema.untrusted.OnIndexNodeLeave()
+	}
+
 	switch ty := sema.check(n.Operand).(type) {
 	case AnyType:
 		return AnyType{}
@@ -606,6 +625,8 @@ func (sema *ExprSemanticsChecker) checkLogicalOp(n *LogicalOpNode) ExprType {
 }
 
 func (sema *ExprSemanticsChecker) check(expr ExprNode) ExprType {
+	defer sema.visitUntrustedCheckerOnLeaveNode(expr) // Call this method in bottom-up order
+
 	switch e := expr.(type) {
 	case *VariableNode:
 		return sema.checkVariable(e)
@@ -641,6 +662,13 @@ func (sema *ExprSemanticsChecker) check(expr ExprNode) ExprType {
 // while checking the expression as the second return value.
 func (sema *ExprSemanticsChecker) Check(expr ExprNode) (ExprType, []*ExprError) {
 	sema.errs = []*ExprError{}
+	if sema.untrusted != nil {
+		sema.untrusted.Init()
+	}
 	ty := sema.check(expr)
-	return ty, sema.errs
+	errs := sema.errs
+	if sema.untrusted != nil {
+		errs = append(errs, sema.untrusted.Errs()...)
+	}
+	return ty, errs
 }

@@ -162,7 +162,7 @@ func (rule *RuleExpression) VisitStep(n *Step) error {
 	var spec *String
 	switch e := n.Exec.(type) {
 	case *ExecRun:
-		rule.checkString(e.Run)
+		rule.checkScriptString(e.Run)
 		rule.checkString(e.Shell)
 		rule.checkString(e.WorkingDirectory)
 	case *ExecAction:
@@ -422,7 +422,7 @@ func (rule *RuleExpression) checkIfCondition(str *String) {
 			return
 		}
 
-		condTy = rule.checkSemanticsOfExprNode(expr, line, col)
+		condTy = rule.checkSemanticsOfExprNode(expr, line, col, false)
 	}
 
 	if condTy != nil && !(BoolType{}).Assignable(condTy) {
@@ -434,7 +434,14 @@ func (rule *RuleExpression) checkString(str *String) []ExprType {
 	if str == nil {
 		return nil
 	}
-	return rule.checkExprsIn(str.Value, str.Pos, str.Quoted)
+	return rule.checkExprsIn(str.Value, str.Pos, str.Quoted, false)
+}
+
+func (rule *RuleExpression) checkScriptString(str *String) []ExprType {
+	if str == nil {
+		return nil
+	}
+	return rule.checkExprsIn(str.Value, str.Pos, str.Quoted, true)
 }
 
 func (rule *RuleExpression) checkBool(b *Bool) {
@@ -464,7 +471,7 @@ func (rule *RuleExpression) checkFloat(f *Float) {
 	rule.checkNumberExpression(f.Expression, "float number value")
 }
 
-func (rule *RuleExpression) checkExprsIn(s string, pos *Pos, quoted bool) []ExprType {
+func (rule *RuleExpression) checkExprsIn(s string, pos *Pos, quoted bool, checkUntrusted bool) []ExprType {
 	// TODO: Line number is not correct when the string contains newlines.
 
 	line, col := pos.Line, pos.Col
@@ -483,7 +490,7 @@ func (rule *RuleExpression) checkExprsIn(s string, pos *Pos, quoted bool) []Expr
 		s = s[start:]
 		offset += start
 
-		ty, offsetAfter := rule.checkSemantics(s, line, col+offset)
+		ty, offsetAfter := rule.checkSemantics(s, line, col+offset, checkUntrusted)
 		if ty == nil || offsetAfter == 0 {
 			return nil
 		}
@@ -507,7 +514,7 @@ func (rule *RuleExpression) checkRawYAMLValue(v RawYAMLValue) {
 			rule.checkRawYAMLValue(v)
 		}
 	case *RawYAMLString:
-		rule.checkExprsIn(v.Value, v.Pos(), false)
+		rule.checkExprsIn(v.Value, v.Pos(), false, false)
 	default:
 		panic("unreachable")
 	}
@@ -518,8 +525,8 @@ func (rule *RuleExpression) exprError(err *ExprError, lineBase, colBase int) {
 	rule.error(pos, err.Message)
 }
 
-func (rule *RuleExpression) checkSemanticsOfExprNode(expr ExprNode, line, col int) ExprType {
-	c := NewExprSemanticsChecker()
+func (rule *RuleExpression) checkSemanticsOfExprNode(expr ExprNode, line, col int, checkUntrusted bool) ExprType {
+	c := NewExprSemanticsChecker(checkUntrusted)
 	if rule.matrixTy != nil {
 		c.UpdateMatrix(rule.matrixTy)
 	}
@@ -538,7 +545,7 @@ func (rule *RuleExpression) checkSemanticsOfExprNode(expr ExprNode, line, col in
 	return ty
 }
 
-func (rule *RuleExpression) checkSemantics(src string, line, col int) (ExprType, int) {
+func (rule *RuleExpression) checkSemantics(src string, line, col int, checkUntrusted bool) (ExprType, int) {
 	l := NewExprLexer(src)
 	p := NewExprParser()
 	expr, err := p.Parse(l)
@@ -546,7 +553,7 @@ func (rule *RuleExpression) checkSemantics(src string, line, col int) (ExprType,
 		rule.exprError(err, line, col)
 		return nil, l.Offset()
 	}
-	return rule.checkSemanticsOfExprNode(expr, line, col), l.Offset()
+	return rule.checkSemanticsOfExprNode(expr, line, col, checkUntrusted), l.Offset()
 }
 
 func (rule *RuleExpression) calcNeedsType(job *Job) *ObjectType {

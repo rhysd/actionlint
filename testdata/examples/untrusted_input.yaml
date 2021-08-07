@@ -1,0 +1,15 @@
+name: Test
+on: pull_request
+
+jobs:
+  test:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Print pull request title
+        # ERROR: Using the potentially untrusted input can cause script injection
+        run: echo '${{ github.event.pull_request.title }}'
+      - uses: actions/stale@v4
+        with:
+          repo-token: ${{ secrets.TOKEN }}
+          # This is OK because action input is not evaluated by shell
+          stale-pr-message: ${{ github.event.pull_request.title }} was closed
