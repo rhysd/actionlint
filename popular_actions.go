@@ -796,8 +796,9 @@ var PopularActions = map[string]*ActionMetadata{
 			"always-auth": {
 				Default: &popularActionDefaultValue19,
 			},
-			"architecture": {},
-			"cache":        {},
+			"architecture":          {},
+			"cache":                 {},
+			"cache-dependency-path": {},
 			"check-latest": {
 				Default: &popularActionDefaultValue19,
 			},
@@ -2347,6 +2348,9 @@ var PopularActions = map[string]*ActionMetadata{
 			"omitNameDuringUpdate": {
 				Default: &popularActionDefaultValue19,
 			},
+			"omitPrereleaseDuringUpdate": {
+				Default: &popularActionDefaultValue19,
+			},
 			"owner": {
 				Default: &popularActionDefaultValue2,
 			},
@@ -2364,7 +2368,7 @@ var PopularActions = map[string]*ActionMetadata{
 			},
 			"token": {
 				Required: true,
-				Default:  &popularActionDefaultValue2,
+				Default:  &popularActionDefaultValue3,
 			},
 		},
 		Outputs: map[string]struct{}{
@@ -3479,7 +3483,7 @@ var popularActionDefaultValue41 = "azurecloud"
 var popularActionDefaultValue42 = "${{github.token}}"
 var popularActionDefaultValue43 = "./"
 var popularActionDefaultValue44 = "${{github.repository}}"
-var popularActionDefaultValue45 = "completed,success"
+var popularActionDefaultValue45 = "success"
 var popularActionDefaultValue46 = "text/plain"
 var popularActionDefaultValue47 = "365"
 var popularActionDefaultValue48 = "resolved"
