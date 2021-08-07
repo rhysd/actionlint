@@ -352,9 +352,9 @@ func (sema *ExprSemanticsChecker) UpdateNeeds(ty *ObjectType) {
 	sema.vars["needs"] = ty
 }
 
-func (sema *ExprSemanticsChecker) checkUntrustedInput(n ExprNode) {
+func (sema *ExprSemanticsChecker) visitUntrustedCheckerOnLeaveNode(n ExprNode) {
 	if sema.untrusted != nil {
-		sema.untrusted.OnNode(n)
+		sema.untrusted.OnNodeLeave(n)
 	}
 }
 
@@ -431,7 +431,14 @@ func (sema *ExprSemanticsChecker) checkArrayDeref(n *ArrayDerefNode) ExprType {
 }
 
 func (sema *ExprSemanticsChecker) checkIndexAccess(n *IndexAccessNode) ExprType {
+	if sema.untrusted != nil {
+		sema.untrusted.OnIndexNodeEnter()
+	}
 	idx := sema.check(n.Index)
+	if sema.untrusted != nil {
+		sema.untrusted.OnIndexNodeLeave()
+	}
+
 	switch ty := sema.check(n.Operand).(type) {
 	case AnyType:
 		return AnyType{}
@@ -618,7 +625,7 @@ func (sema *ExprSemanticsChecker) checkLogicalOp(n *LogicalOpNode) ExprType {
 }
 
 func (sema *ExprSemanticsChecker) check(expr ExprNode) ExprType {
-	defer sema.checkUntrustedInput(expr) // Call this method in bottom-up order
+	defer sema.visitUntrustedCheckerOnLeaveNode(expr) // Call this method in bottom-up order
 
 	switch e := expr.(type) {
 	case *VariableNode:

@@ -8,15 +8,20 @@ import (
 // Root of this map represents each context names and their ancestors represent recursive properties.
 type UntrustedInputMap map[string]UntrustedInputMap
 
-func (m UntrustedInputMap) findChild(name string) (UntrustedInputMap, bool) {
-	if m == nil {
-		return nil, false
+func (m UntrustedInputMap) findPropChild(name string) (UntrustedInputMap, bool) {
+	if m != nil {
+		if c, ok := m[name]; ok {
+			return c, true
+		}
 	}
-	if c, ok := m[name]; ok {
-		return c, true
-	}
-	if c, ok := m["*"]; ok {
-		return c, true
+	return nil, false
+}
+
+func (m UntrustedInputMap) findElemChild() (UntrustedInputMap, bool) {
+	if m != nil {
+		if c, ok := m["*"]; ok {
+			return c, true
+		}
 	}
 	return nil, false
 }
@@ -79,21 +84,33 @@ var BuiltinUntrustedInputs = UntrustedInputMap{
 
 // UntrustedInputChecker is a checker to detect untrusted inputs in an expression syntax tree.
 type UntrustedInputChecker struct {
-	root UntrustedInputMap
-	cur  UntrustedInputMap
-	errs []*ExprError
+	root  UntrustedInputMap
+	cur   UntrustedInputMap
+	stack []UntrustedInputMap
+	errs  []*ExprError
 }
 
 // NewUntrustedInputChecker creates new UntrustedInputChecker instance.
 func NewUntrustedInputChecker(m UntrustedInputMap) *UntrustedInputChecker {
-	return &UntrustedInputChecker{
-		root: m,
-		cur:  nil,
-	}
+	return &UntrustedInputChecker{root: m}
 }
 
 func (u *UntrustedInputChecker) done() {
 	u.cur = nil
+}
+
+func (u *UntrustedInputChecker) push() {
+	if u.cur != nil {
+		u.stack = append(u.stack, u.cur)
+		u.cur = nil
+	}
+}
+
+func (u *UntrustedInputChecker) pop() {
+	if l := len(u.stack); l > 0 {
+		u.cur = u.stack[l-1]
+		u.stack = u.stack[:l-1]
+	}
 }
 
 func (u *UntrustedInputChecker) checkVar(name string) bool {
@@ -112,12 +129,26 @@ func (u *UntrustedInputChecker) checkVar(name string) bool {
 }
 
 func (u *UntrustedInputChecker) checkProp(name string) bool {
-	c, ok := u.cur.findChild(name)
+	c, ok := u.cur.findPropChild(name)
 	if !ok {
 		u.done()
 		return true
 	}
 
+	if c == nil {
+		return false
+	}
+
+	u.cur = c
+	return true
+}
+
+func (u *UntrustedInputChecker) checkElem() bool {
+	c, ok := u.cur.findElemChild()
+	if !ok {
+		u.done()
+		return true
+	}
 	if c == nil {
 		return false
 	}
@@ -137,12 +168,18 @@ func buildPathOfObjectDereference(b *strings.Builder, n ExprNode) *VariableNode 
 		b.WriteString(n.Property)
 		return v
 	case *IndexAccessNode:
+		v := buildPathOfObjectDereference(b, n.Operand)
 		if lit, ok := n.Index.(*StringNode); ok {
-			v := buildPathOfObjectDereference(b, n.Operand)
 			b.WriteByte('.')
 			b.WriteString(lit.Value)
 			return v
 		}
+		b.WriteString(".*")
+		return v
+	case *ArrayDerefNode:
+		v := buildPathOfObjectDereference(b, n.Receiver)
+		b.WriteString(".*")
+		return v
 	}
 	panic("unreachable")
 }
@@ -157,9 +194,22 @@ func (u *UntrustedInputChecker) error(n ExprNode) {
 	u.done()
 }
 
-// OnNode is a callback which should be called on visiting node. This method assumes to be called
-// in depth-first, bottom-up order.
-func (u *UntrustedInputChecker) OnNode(n ExprNode) {
+// OnIndexNodeEnter is a callback which should be called just before visiting index node of
+// IndexAccessNode. This method is necessary to consider nested object property access like
+// github.event.pages[matrix.num].page_name.
+func (u *UntrustedInputChecker) OnIndexNodeEnter() {
+	u.push()
+}
+
+// OnIndexNodeLeave is a callback which should be called just after visiting index node of
+// IndexAccessNode. This method is necessary to consider nested object property access like
+// github.event.pages[matrix.num].page_name.
+func (u *UntrustedInputChecker) OnIndexNodeLeave() {
+	u.pop()
+}
+
+// OnNodeLeave is a callback which should be called on visiting node after visiting its children.
+func (u *UntrustedInputChecker) OnNodeLeave(n ExprNode) {
 	switch n := n.(type) {
 	case *VariableNode:
 		if !u.checkVar(n.Name) {
@@ -171,11 +221,18 @@ func (u *UntrustedInputChecker) OnNode(n ExprNode) {
 		}
 	case *IndexAccessNode:
 		if lit, ok := n.Index.(*StringNode); ok {
+			// Special case like github['event']['issue']['title']
 			if !u.checkProp(lit.Value) {
 				u.error(n)
 			}
-		} else {
-			u.done()
+			break
+		}
+		if !u.checkElem() {
+			u.error(n)
+		}
+	case *ArrayDerefNode:
+		if !u.checkElem() {
+			u.error(n)
 		}
 	default:
 		u.done()

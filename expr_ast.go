@@ -227,32 +227,37 @@ func (n *FuncCallNode) Token() *Token {
 
 // VisitExprNodeFunc is a visitor function for VisitExprNode(). The entering argument is set to
 // true when it is called before visiting children. It is set to false when it is called after
-// visiting children. It means that this function is called twice for the same node.
-type VisitExprNodeFunc func(node ExprNode, entering bool)
+// visiting children. It means that this function is called twice for the same node. The parent
+// argument is the parent of the node. When the node is root, its parent is nil.
+type VisitExprNodeFunc func(node, parent ExprNode, entering bool)
+
+func visitExprNode(n, p ExprNode, f VisitExprNodeFunc) {
+	f(n, p, true)
+	switch n := n.(type) {
+	case *ObjectDerefNode:
+		visitExprNode(n.Receiver, n, f)
+	case *ArrayDerefNode:
+		visitExprNode(n.Receiver, n, f)
+	case *IndexAccessNode:
+		visitExprNode(n.Index, n, f)
+		visitExprNode(n.Operand, n, f)
+	case *NotOpNode:
+		visitExprNode(n.Operand, n, f)
+	case *CompareOpNode:
+		visitExprNode(n.Left, n, f)
+		visitExprNode(n.Right, n, f)
+	case *LogicalOpNode:
+		visitExprNode(n.Left, n, f)
+		visitExprNode(n.Right, n, f)
+	case *FuncCallNode:
+		for _, a := range n.Args {
+			visitExprNode(a, n, f)
+		}
+	}
+	f(n, p, false)
+}
 
 // VisitExprNode visits the given expression syntax tree with given function f.
 func VisitExprNode(n ExprNode, f VisitExprNodeFunc) {
-	f(n, true)
-	switch n := n.(type) {
-	case *ObjectDerefNode:
-		VisitExprNode(n.Receiver, f)
-	case *ArrayDerefNode:
-		VisitExprNode(n.Receiver, f)
-	case *IndexAccessNode:
-		VisitExprNode(n.Operand, f)
-		VisitExprNode(n.Index, f)
-	case *NotOpNode:
-		VisitExprNode(n.Operand, f)
-	case *CompareOpNode:
-		VisitExprNode(n.Left, f)
-		VisitExprNode(n.Right, f)
-	case *LogicalOpNode:
-		VisitExprNode(n.Left, f)
-		VisitExprNode(n.Right, f)
-	case *FuncCallNode:
-		for _, a := range n.Args {
-			VisitExprNode(a, f)
-		}
-	}
-	f(n, false)
+	visitExprNode(n, nil, f)
 }
