@@ -12,6 +12,7 @@ Features:
   type mismatches, ...
 - **Actions usage check** to check that inputs at `with:` and outputs in `steps.{id}.outputs` are correct
 - **[shellcheck][] and [pyflakes][] integrations** for scripts in `run:`
+- **Security checks**; script injection by untrusted inputs, hard-coded credentials
 - **Other several useful checks**; [glob syntax][filter-pattern-doc] validation, dependencies check for `needs:`,
   runner label validation, cron syntax validation, ...
 
@@ -218,6 +219,7 @@ List of checks:
 - [Contextual typing for `needs` object](#check-contextual-needs-object)
 - [shellcheck integration for `run:`](#check-shellcheck-integ)
 - [pyflakes integration for `run:`](#check-pyflakes-integ)
+- [Script injection by potentially untrusted inputs](#untrusted-inputs)
 - [Job dependencies validation](#check-job-deps)
 - [Matrix values](#check-matrix-values)
 - [Webhook events validation](#check-webhook-events)
@@ -1008,6 +1010,77 @@ pyflakes integration explicitly.
 Since both `${{ }}` expression syntax is invalid as Python, remaining `${{ }}` might confuse pyflakes. To avoid it,
 actionlint replaces `${{ }}` with underscores. For example `print('${{ matrix.os }}')` is replaced with
 `print('________________')`.
+
+<a name="untrusted-inputs"></a>
+## Script injection by potentially untrusted inputs
+
+Example input:
+
+```yaml
+name: Test
+on: pull_request
+
+jobs:
+  test:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Print pull request title
+        # ERROR: Using the potentially untrusted input can cause script injection
+        run: echo '${{ github.event.pull_request.title }}'
+      - uses: actions/stale@v4
+        with:
+          repo-token: ${{ secrets.TOKEN }}
+          # This is OK because action input is not evaluated by shell
+          stale-pr-message: ${{ github.event.pull_request.title }} was closed
+```
+
+Output:
+
+```
+test.yaml:10:24: "github.event.pull_request.title" is potentially untrusted. avoid using it directly in inline scripts. instead, pass it through an environment variable. see https://securitylab.github.com/research/github-actions-untrusted-input for more details [expression]
+   |
+10 |         run: echo '${{ github.event.pull_request.title }}'
+   |                        ^~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+```
+
+Since `${{ }}` placeholders are evaluated and replaced directly by GitHub Actions runtime, you need to use them carefully in
+inline scripts at `run:`. For example, if we have step as follows,
+
+```yaml
+- run: echo 'issue ${{github.event.issue.title}}'
+```
+
+an attacker can create a new issue with title `'; malicious_command ...`, and the inline script will run
+`echo 'issue'; malicious_command ...` in your workflow. The remediation of such script injection is passing potentially untrusted
+inputs via environment variables.
+
+```yaml
+- run: echo "issue ${TITLE}"
+  env:
+    TITLE: ${{github.event.issue.title}}
+```
+
+actionlint recognizes the following inputs as potentially untrusted and checks your inline scripts at `run:`. When they are used
+directly in a script, actionlint will report it as error.
+
+- `github.event.issue.title`
+- `github.event.issue.body`
+- `github.event.pull_request.title`
+- `github.event.pull_request.body`
+- `github.event.comment.body`
+- `github.event.review.body`
+- `github.event.review_comment.body`
+- `github.event.pages.*.page_name`
+- `github.event.commits.*.message`
+- `github.event.head_commit.message`
+- `github.event.head_commit.author.email`
+- `github.event.head_commit.author.name`
+- `github.event.commits.*.author.email`
+- `github.event.commits.*.author.name`
+- `github.event.pull_request.head.ref`
+- `github.event.pull_request.head.label`
+- `github.event.pull_request.head.repo.default_branch`
+- `github.head_ref`
 
 <a name="check-job-deps"></a>
 ## Job dependencies validation

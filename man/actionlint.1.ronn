@@ -20,6 +20,7 @@ Features:
 - **Actions usage check** to check that inputs at `with:` and outputs in `steps.{id}.outputs` are
   correct
 - **shellcheck and pyflakes integrations** for scripts in `run:`
+- **Security checks**; script injection by untrusted inputs, hard-coded credentials
 - **Other several useful checks**; glob syntax validation, dependencies check for `needs:`, runner
   label validation, cron syntax validation, ...
 
