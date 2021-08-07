@@ -92,15 +92,15 @@ func testCheckUntrustedInput(t *testing.T, input string) []*ExprError {
 	return c.Errs()
 }
 
-func TestExprInsecureDetectUntrustedValueAccess(t *testing.T) {
+func TestExprInsecureDetectUntrustedValue(t *testing.T) {
 	type testCase struct {
 		input string
-		want  string
+		want  []string
 	}
 
 	tests := []testCase{}
 	for _, input := range testAllUntrustedInputs {
-		tests = append(tests, testCase{input, input})
+		tests = append(tests, testCase{input, []string{input}})
 		props := strings.Split(input, ".")
 		{
 			// github.foo.*.bar -> github['foo'].*['bar']
@@ -115,12 +115,12 @@ func TestExprInsecureDetectUntrustedValueAccess(t *testing.T) {
 					b.WriteString("']")
 				}
 			}
-			tests = append(tests, testCase{b.String(), input})
+			tests = append(tests, testCase{b.String(), []string{input}})
 		}
 
 		if strings.Contains(input, ".*") {
 			// Add both array dereference version and array index access version
-			tests = append(tests, testCase{strings.ReplaceAll(input, ".*", "[0]"), input})
+			tests = append(tests, testCase{strings.ReplaceAll(input, ".*", "[0]"), []string{input}})
 			{
 				// github.foo.*.bar -> github['foo'][0]['bar']
 				var b strings.Builder
@@ -134,29 +134,109 @@ func TestExprInsecureDetectUntrustedValueAccess(t *testing.T) {
 						b.WriteString("']")
 					}
 				}
-				tests = append(tests, testCase{b.String(), input})
+				tests = append(tests, testCase{b.String(), []string{input}})
 			}
 		}
 	}
 
+	tests = append(tests,
+		testCase{
+			"github.event.issue.body || github.event.issue.title",
+			[]string{
+				"github.event.issue.body",
+				"github.event.issue.title",
+			},
+		},
+		testCase{
+			"github.event.issue.body.foo.bar",
+			[]string{
+				"github.event.issue.body",
+			},
+		},
+		testCase{
+			"github.event.issue.body[0]",
+			[]string{
+				"github.event.issue.body",
+			},
+		},
+		testCase{
+			"matrix.foo[github.event.issue.title].bar[github.event.issue.body]",
+			[]string{
+				"github.event.issue.body",
+				"github.event.issue.title",
+			},
+		},
+		testCase{
+			"github.event.pages[github.event.issue.title].page_name",
+			[]string{
+				"github.event.issue.title",
+				"github.event.pages.*.page_name",
+			},
+		},
+		testCase{
+			"github.event.issue.body[github.event.issue.title][github.head_ref]",
+			[]string{
+				"github.head_ref",
+				"github.event.issue.title",
+				"github.event.issue.body",
+			},
+		},
+		testCase{
+			"github.event.pages[format('0')].page_name",
+			[]string{
+				"github.event.pages.*.page_name",
+			},
+		},
+		testCase{
+			"github.event.pages[matrix.page_num].page_name",
+			[]string{
+				"github.event.pages.*.page_name",
+			},
+		},
+		testCase{
+			"github.event.pages[github.event.commits[github.event.issue.title].author.name].page_name",
+			[]string{
+				"github.event.issue.title",
+				"github.event.commits.*.author.name",
+				"github.event.pages.*.page_name",
+			},
+		},
+		testCase{
+			"github.event.pages[format('{0}', github.event.issue.title)].page_name",
+			[]string{
+				"github.event.issue.title",
+				"github.event.pages.*.page_name",
+			},
+		},
+		testCase{
+			"contains(github.event.pages.*.page_name.*.foo, github.event.issue.title)",
+			[]string{
+				"github.event.pages.*.page_name",
+				"github.event.issue.title",
+			},
+		},
+	)
+
 	for _, tc := range tests {
 		t.Run(tc.input, func(t *testing.T) {
 			errs := testCheckUntrustedInput(t, tc.input)
-			if len(errs) != 1 {
-				t.Fatalf("wanted exactly one error but got %v", errs)
+			if len(tc.want) != len(errs) {
+				t.Fatalf("wanted %d error(s) but got %v", len(tc.want), errs)
 			}
-			e := errs[0]
-			if !strings.Contains(e.Message, tc.want) {
-				t.Errorf("%q is not contained in error message: %v", tc.want, e)
-			}
-			if e.Line != 1 || e.Column != 1 {
-				t.Errorf("position is unexpected. wanted (1, 1) but got (%d, %d)", e.Line, e.Column)
+			for i, err := range errs {
+				want := tc.want[i]
+				if !strings.Contains(err.Message, want) {
+					t.Errorf("%q is not contained in error message: %v", want, err)
+				}
+				if err.Line != 1 {
+					t.Error("line should be 1 but got", err.Line)
+				}
 			}
 		})
 	}
 }
 
-func TestExprInsecureDetectMultipleUntrustedValues(t *testing.T) {
+func TestExprInsecureAllUntrustedValuesAtOnce(t *testing.T) {
 	args := make([]string, 0, len(testAllUntrustedInputs))
 	for _, i := range testAllUntrustedInputs {
 		args = append(args, i)
@@ -164,22 +244,33 @@ func TestExprInsecureDetectMultipleUntrustedValues(t *testing.T) {
 			args = append(args, strings.ReplaceAll(i, ".*", "[0]")) // also add index access version
 		}
 	}
+	// Generate function call with all untrusted inputs as its arguments
 	expr := "someFunc(" + strings.Join(args, ", ") + ")"
 	errs := testCheckUntrustedInput(t, expr)
 	if len(errs) != len(args) {
 		t.Fatalf("# of args %d v.s. # of errs %d. errs: %v", len(args), len(errs), errs)
 	}
+	c := 0
 	for i, err := range errs {
 		arg := args[i]
 		if !strings.Contains(arg, "[0]") && !strings.Contains(err.Message, arg) {
 			t.Errorf("%q is not contained in error: %v", arg, err)
 		}
+		if err.Line != 1 {
+			t.Error("line should be 1 but got", err.Line)
+		}
+		if err.Column <= c {
+			t.Errorf("column should be greater than %d but got %d", c, err.Column)
+		}
+		c = err.Column
 	}
 }
 
-func TestExprInsecureDetectNoUntrustedValue(t *testing.T) {
+func TestExprInsecureNoUntrustedValue(t *testing.T) {
 	inputs := []string{
 		"0",
+		"true",
+		"null",
 		"'github.event.issue.title'",
 		"matrix.foo",
 		"matrix.github.event.issue.title",
@@ -192,9 +283,14 @@ func TestExprInsecureDetectNoUntrustedValue(t *testing.T) {
 		"github.event.commits.*.foo",
 		"github.event.foo.body",
 		"github[x].issue.title",
+		"github.event[foo].title",
+		"github.event.issue[0].title",
 		"foo(github.event, pull_request.body)",
 		"foo(github.event, github.pull_request.body)",
-		// TODO: More tests
+		"github.event[pull_request.body]",
+		"github[event.pull_request].body",
+		"github[github.event.pull_request].body",
+		"github.event.*.body",
 	}
 
 	for _, input := range inputs {
@@ -206,5 +302,3 @@ func TestExprInsecureDetectNoUntrustedValue(t *testing.T) {
 		})
 	}
 }
-
-// TODO: TestExprInsecureDetectUntrustedValueInExpr
