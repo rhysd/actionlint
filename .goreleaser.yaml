@@ -36,6 +36,7 @@ archives:
       files:
         - README.md
         - LICENSE.txt
+        - docs
         - man/actionlint.1
     id: nix
     builds: [macos, linux, freebsd]

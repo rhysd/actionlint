@@ -82,32 +82,52 @@ argument. It reads stdin and checks it as workflow file:
     Show help
 
 
-## CONFIGURATION
+## DOCUMENTS
 
-Configuration file can be put at `.github/actionlint.yaml` or `.github/actionlint.yml`.
+Documents for more details are available online.
 
-Note that configuration file is basically unnecessary. Please consider to make it only when it is
-necessary. Since the author tries to keep configuration file as minimal as possible, currently only
-custom runner labels can be configured.
+### Checks
 
-```
-self-hosted-runner:
-  # Labels of self-hosted runner in array of string
-  labels:
-    - linux.2xlarge
-    - windows-latest-xl
-    - linux-multi-gpu
-```
+https://github.com/rhysd/actionlint/tree/main/docs/checks.md
 
-You don't need to write the configuration file from scratch. `actionlint` can generate the default
-configuration file.
+Full list of all checks done by actionlint with example inputs, outputs, and playground links.
 
-    $ actionlint -init-config
+### Installation
 
+https://github.com/rhysd/actionlint/tree/main/docs/install.md
 
-## USAGE ON CI SERVICES
+Installation instructions. Prebuilt binaries, Homebrew package, building from source, a download
+script (for CI) are available.
 
-Please try a download script.
+### Usage
+
+https://github.com/rhysd/actionlint/tree/main/docs/usage.md
+
+How to use `actionlint` command locally and on GitHub Actions, the online playground, and
+integrations with other tools.
+
+### Configuration
+
+https://github.com/rhysd/actionlint/tree/main/docs/config.md
+
+How to configure actionlint behavior. Currently only labels of self-hosted runners can be
+configured.
+
+### Go API
+
+https://github.com/rhysd/actionlint/tree/main/docs/api.md
+
+How to use actionlint as Go library.
+
+### References
+
+https://github.com/rhysd/actionlint/tree/main/docs/reference.md
+
+Links to resources.
+
+## USAGE ON GITHUB ACTIONS
+
+Please try the download script.
 
 https://github.com/rhysd/actionlint/blob/main/scripts/download-actionlint.bash
 
@@ -168,33 +188,6 @@ Paste your workflow content to the code editor at left pane. It automatically sh
 right pane. When editing the workflow content at the left pane, the results will be updated on the
 fly in the right pane. Clicking an error message in the results table moves a cursor to the
 position of the error in the code editor.
-
-
-## REFERENCES
-
-### List of all checks
-
-https://github.com/rhysd/actionlint/blob/main/README.md#checks
-
-### actionlint Go API reference
-
-https://pkg.go.dev/github.com/rhysd/actionlint
-
-### Workflow syntax
-
-https://docs.github.com/en/actions/reference/workflow-syntax-for-github-actions
-
-### Expression syntax in ${{ }}
-
-https://docs.github.com/en/actions/reference/context-and-expression-syntax-for-github-actions
-
-### shellcheck
-
-https://github.com/koalaman/shellcheck
-
-### pyflakes
-
-https://github.com/PyCQA/pyflakes
 
 
 ## BUGS

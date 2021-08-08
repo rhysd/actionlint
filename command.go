@@ -44,17 +44,9 @@ const commandUsageHeader = `Usage: actionlint [FLAGS] [FILES...] [-]
 
     $ actionlint -
 
-Configuration:
+Documents:
 
-  Configuration file can be put at:
-
-    .github/actionlint.yaml
-    .github/actionlint.yml
-
-  Please generate default configuration file and check comments in the file for
-  more details.
-
-    $ actionlint -init-config
+  https://github.com/rhysd/actionlint/tree/main/docs
 
 Flags:`
 

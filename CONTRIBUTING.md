@@ -148,3 +148,10 @@ parses the markdown document, and extracts webhook names and their types. For mo
 [README.md at the script](./scripts/generate-webhook-events/README.md).
 
 Updating `all_webhooks.go` is run weekly on CI by [`generate`](.github/workflows/generate.yaml) workflow.
+
+## Testing
+
+- All examples in ['Checks' section](docs/checks.md) are tested in [`example_test.go`](./example_test.go)
+- I cloned GitHub top 1000 repositories and extracted 1400+ workflow files. And I tried actionlint with the collected workflow
+  files. All bugs found while the trial were fixed and I confirmed no more false positives.
+
