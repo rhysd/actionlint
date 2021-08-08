@@ -81,11 +81,7 @@ test.yaml:22:17: receiver of object dereference "permissions" must be type of ob
    |                 ^~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 ```
 
-Basically all you need to do is run the `actionlint` command in your repository. actionlint automatically detects workflows in
-your repository and reports errors in them. actionlint focuses on finding out mistakes. It tries to catch errors as much as
-possible and make false positives as minimal as possible.
-
-# Why?
+## Why?
 
 - **Running a workflow is time consuming.** You need to push the changes and wait until the workflow runs on GitHub even if
   it contains some trivial mistakes. [act][] is useful to run the workflow locally. But it is not suitable for CI and still
@@ -97,7 +93,28 @@ possible and make false positives as minimal as possible.
   case cache silently does not work properly but a workflow itself runs without error. So you might not notice the mistake
   forever.
 
-# Documents
+## Quick start
+
+Install `actionlint` command by downloading [the released binary][releases] or using Homebrew or running `go install`.
+See [the installation document](docs/install.md) for more details like how to manage the command with Homebrew.
+
+```sh
+go install github.com/rhysd/actionlint/cmd/actionlint@latest
+```
+
+Basically all you need to do is run the `actionlint` command in your repository. actionlint automatically detects workflows and
+checks errors. actionlint focuses on finding out mistakes. It tries to catch errors as much as possible and make false positives
+as minimal as possible.
+
+```sh
+actionlint
+```
+
+Another option to try actionlint is [the online playground][playground]. Your browser can run actionlint through WebAssembly.
+
+See [the usage document](docs/usage.md) for more details.
+
+## Documents
 
 - [Checks](docs/checks.md): Full list of all checks done by actionlint with example inputs, outputs, and playground links.
 - [Installation](docs/install.md): Installation instructions. Prebuilt binaries, Homebrew package, building from source,
@@ -108,12 +125,12 @@ possible and make false positives as minimal as possible.
 - [Go API](docs/api.md): How to use actionlint as Go library.
 - [References](docs/reference.md): Links to resources.
 
-# Bug reporting
+## Bug reporting
 
 When you see some bugs or false positives, it is helpful to [file a new issue][issue-form] with a minimal example
 of input. Giving me some feedbacks like feature requests or ideas of additional checks is also welcome.
 
-# License
+## License
 
 actionlint is distributed under [the MIT license](./LICENSE.txt).
 
@@ -129,3 +146,4 @@ actionlint is distributed under [the MIT license](./LICENSE.txt).
 [syntax-doc]: https://docs.github.com/en/actions/reference/workflow-syntax-for-github-actions
 [filter-pattern-doc]: https://docs.github.com/en/actions/reference/workflow-syntax-for-github-actions#filter-pattern-cheat-sheet
 [issue-form]: https://github.com/rhysd/actionlint/issues/new
+[releases]: https://github.com/rhysd/actionlint/releases

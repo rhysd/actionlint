@@ -14,7 +14,7 @@ brew install actionlint
 
 ## Prebuilt binaries
 
-Download an archive file from [releases page][releases] for your platform, unarchive it and put the executable file to a
+Download an archive file from [the releases page][releases] for your platform, unarchive it and put the executable file to a
 directory in `$PATH`.
 
 Prebuilt binaries are built at each release by CI for the following OS and arch:
@@ -64,7 +64,7 @@ or simply run
   shell: bash
 ```
 
-If you want to enable [shellcheck integration](#check-shellcheck-integ), install `shellcheck` command as follows:
+If you want to enable [shellcheck integration](checks.md#check-shellcheck-integ), install `shellcheck` command as follows:
 
 ```yaml
 - name: Install shellcheck to enable shellcheck integration
