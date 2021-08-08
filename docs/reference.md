@@ -16,3 +16,6 @@ This document describes links to resources.
 - pyflakes: https://github.com/PyCQA/pyflakes
 - Japanese blog post for this project: https://rhysd.hatenablog.com/entry/2021/07/11/214313
 
+---
+
+[Checks](checks.md) | [Installation](install.md) | [Usage](usage.md) | [Configuration](config.md) | [Go API](api.md)

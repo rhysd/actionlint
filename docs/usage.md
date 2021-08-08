@@ -54,6 +54,10 @@ These tools have integration with actionlint:
 - **[reviewdog/action-actionlint][reviewdog-actionlint]**: [reviewdog][] is an automated review tool for various code hosting
   services. It officially supports actionlint. You can check errors from actionlint easily in inline comments on code review.
 
+---
+
+[Checks](checks.md) | [Installation](install.md) | [Configuration](config.md) | [Go API](api.md) | [References](reference.md)
+
 [yamllint]: https://github.com/adrienverge/yamllint
 [reviewdog-actionlint]: https://github.com/reviewdog/action-actionlint
 [reviewdog]: https://github.com/reviewdog/reviewdog

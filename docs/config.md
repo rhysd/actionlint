@@ -33,4 +33,6 @@ self-hosted-runner:
 - `self-hosted-runner`: Configuration for your self-hosted runner environment
   - `labels`: Label names added to your self-hosted runners as list of string
 
+---
 
+[Checks](checks.md) | [Installation](install.md) | [Usage](usage.md) | [Go API](api.md) | [References](reference.md)

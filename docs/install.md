@@ -83,6 +83,10 @@ go install github.com/rhysd/actionlint/cmd/actionlint@latest
 go install github.com/rhysd/actionlint/cmd/actionlint
 ```
 
+---
+
+[Checks](checks.md) | [Usage](usage.md) | [Configuration](config.md) | [Go API](api.md) | [References](reference.md)
+
 [homebrew]: https://brew.sh/
 [releases]: https://github.com/rhysd/actionlint/releases
 [Go]: https://golang.org/

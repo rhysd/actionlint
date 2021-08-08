@@ -1618,6 +1618,10 @@ Each permission scopes have their access levels. The default levels are describe
 
 actionlint checks permission scopes and access levels in a workflow are correct.
 
+---
+
+[Installation](install.md) | [Usage](usage.md) | [Configuration](config.md) | [Go API](api.md) | [References](reference.md)
+
 [issue-form]: https://github.com/rhysd/actionlint/issues/new
 [syntax-doc]: https://docs.github.com/en/actions/reference/workflow-syntax-for-github-actions
 [filter-pattern-doc]: https://docs.github.com/en/actions/reference/workflow-syntax-for-github-actions#filter-pattern-cheat-sheet

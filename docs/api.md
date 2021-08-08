@@ -39,6 +39,10 @@ Followings are unexhaustive list of interesting APIs.
 Note that the version of this repository is for command line tool `actionlint`. So it does not represent version of the
 library, meant that patch version bump may introduce some breaking changes.
 
+---
+
+[Checks](checks.md) | [Installation](install.md) | [Usage](usage.md) | [Configuration](config.md) | [References](reference.md)
+
 [api-badge]: https://pkg.go.dev/badge/github.com/rhysd/actionlint.svg
 [apidoc]: https://pkg.go.dev/github.com/rhysd/actionlint
 [go-yaml]: https://github.com/go-yaml/yaml
