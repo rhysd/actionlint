@@ -48,6 +48,10 @@ Documents:
 
   https://github.com/rhysd/actionlint/tree/main/docs
 
+Format:
+
+  TODO
+
 Flags:`
 
 func getCommandVersion() string {
@@ -125,6 +129,7 @@ func (cmd *Command) Main(args []string) int {
 	flags.StringVar(&opts.Shellcheck, "shellcheck", "shellcheck", "Command name or file path of \"shellcheck\" external command")
 	flags.StringVar(&opts.Pyflakes, "pyflakes", "pyflakes", "Command name or file path of \"pyflakes\" external command")
 	flags.BoolVar(&opts.Oneline, "oneline", false, "Use one line per one error. Useful for reading error messages from programs")
+	flags.StringVar(&opts.Format, "format", "", "Custom template to format error messages. See the following section for more details")
 	flags.StringVar(&opts.ConfigFile, "config-file", "", "File path to config file")
 	flags.BoolVar(&initConfig, "init-config", false, "Generate default config file at .github/actionlint.yaml in current project")
 	flags.BoolVar(&noColor, "no-color", false, "Disable colorful output")

@@ -6,6 +6,7 @@ import (
 	"fmt"
 	"io"
 	"strings"
+	"text/template"
 
 	"github.com/fatih/color"
 	"github.com/mattn/go-runewidth"
@@ -32,6 +33,15 @@ type Error struct {
 	Kind string
 }
 
+type errorTemplateFields struct {
+	Message  string
+	Filepath string
+	Line     int
+	Column   int
+	Kind     string
+	Snippet  string
+}
+
 // Error returns summary of the error as string.
 func (e *Error) Error() string {
 	return fmt.Sprintf("%s:%d:%d: %s [%s]", e.Filepath, e.Line, e.Column, e.Message, e.Kind)
@@ -53,6 +63,36 @@ func errorfAt(pos *Pos, kind string, format string, args ...interface{}) *Error 
 		Column:  pos.Col,
 		Kind:    kind,
 	}
+}
+
+// PrintTemplate prints this error with given Go template. Available fields are:
+// - Message: Error message body.
+// - Snippet: Code snippet and indicator to indicate where the error occurred.
+// - Filepath: Canonical relative file path. This is empty when input was read from stdin.
+// - Line: Line number of error position.
+// - Column: Column number of error position.
+// - Kind: Rule name the error belongs to.
+func (e *Error) PrintTemplate(t *template.Template, w io.Writer, source []byte) error {
+	var snippet string
+	if len(source) > 0 && e.Line > 0 {
+		if l, ok := e.getLine(source); ok {
+			snippet = l
+			if i := e.getIndicator(l); i != "" {
+				snippet += "\n" + i
+			}
+		}
+	}
+
+	fields := errorTemplateFields{
+		Message:  e.Message,
+		Filepath: e.Filepath,
+		Line:     e.Line,
+		Column:   e.Column,
+		Kind:     e.Kind,
+		Snippet:  snippet,
+	}
+
+	return t.Execute(w, &fields)
 }
 
 // PrettyPrint prints the error with user-friendly way. It prints file name, source position, error
