@@ -841,6 +841,8 @@ test.yaml:10:24: "github.event.pull_request.title" is potentially untrusted. avo
    |                        ^~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 ```
 
+[Playground](https://rhysd.github.io/actionlint#eJyFjrFuAjEQRPv7iikiUfnSpHKVhioSSUEf+S4juGDsi3cNBeLfYxt0oqNa7e7MmwnuSIstRbsYLObs/XfiX66H7jcOYjtAy1YnkHIQU4V5yEGz8a7+2kuUs9xUgEFo4K80BW1U3KnQST3vsga04LiPWL1cLthNus9DzxOD9o9l+mbD9bpaErJQLNyoUwzyKuo8309vC/lcUHbZShLnaDQeWAJrlHBMVOm3nx/rTQE/SBvLzMkcKeJ2vBmed8PZCUYfhT//JQRt5A==)
+
 Since `${{ }}` placeholders are evaluated and replaced directly by GitHub Actions runtime, you need to use them carefully in
 inline scripts at `run:`. For example, if we have step as follows,
 
