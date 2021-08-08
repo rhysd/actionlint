@@ -17,14 +17,29 @@ When paths to YAML workflow files are given as arguments, actionlint checks them
 actionlint path/to/workflow1.yaml path/to/workflow2.yaml
 ```
 
-For all flags and options, see an output of `actionlint -h` or [an online command manual][cmd-manual].
+When `-` argument is given, actionlint reads inputs from stdin and checks it as workflow source.
 
-Note that actionlint focuses on catching mistakes in workflow files. If you want some general code style checks, please consider
-using a general YAML checker like [yamllint][].
+```sh
+cat path/to/workflow.yaml | actionlint -
+```
+
+To know all flags and options, see an output of `actionlint -h` or [the online command manual][cmd-manual].
 
 ### Ignore some errors
 
-TODO
+To ignore some errors, `-ignore` option offers to filter errors by messages using regular expression. The option is repeatable.
+
+```sh
+actionlint -ignore 'label ".+" is unknown' -ignore '".+" is potentially untrusted'
+```
+
+`-shellcheck` and `-pyflakes` specifies file paths of executables. Setting empty string to them disables `shellcheck` and
+`pyflakes` rules. As a bonus, disabling them makes actionlint much faster Since these external linter integrations spawn many
+processes.
+
+```sh
+actionlint -shellcheck= -pyflakes=
+```
 
 ### Exit status
 
@@ -37,6 +52,51 @@ TODO
 | `2`    | The command failed due to invalid command line option   |
 | `3`    | The command failed due to some fatal error              |
 
+<a name="on-github-actions"></a>
+## Use actionlint on GitHub Actions
+
+Preparing `actionlint` executable with the download script is recommended. See [the instruction](install.md#download-script) for
+more details. It sets an absolute file path of downloaded executable to `executable` output in order to use the executable in the
+following steps easily.
+
+Here is an example of simple workflow to run actionlint on GitHub Actions. Please ensure `shell: bash` since the default
+shell for Windows runners is `pwsh`.
+
+```yaml
+name: Lint GitHub Actions workflows
+on: [push, pull_request]
+
+jobs:
+  actionlint:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v2
+      - name: Download actionlint
+        id: get_actionlint
+        run: bash <(curl https://raw.githubusercontent.com/rhysd/actionlint/main/scripts/download-actionlint.bash)
+        shell: bash
+      - name: Check workflow files
+        run: ${{ steps.get_actionlint.outputs.executable }} -color
+        shell: bash
+```
+
+Or simply download the executable and run it in one step:
+
+```yaml
+- name: Check workflow files
+  run: |
+    bash <(curl https://raw.githubusercontent.com/rhysd/actionlint/main/scripts/download-actionlint.bash)
+    ./actionlint -color
+  shell: bash
+```
+
+If you want to enable [shellcheck integration](checks.md#check-shellcheck-integ), install `shellcheck` command as follows:
+
+```yaml
+- name: Install shellcheck to enable shellcheck integration
+  run: sudo apt install shellcheck
+```
+
 ## Online playground
 
 Thanks to WebAssembly, actionlint playground is available on your browser. It never sends any data to outside of your browser.
@@ -46,6 +106,10 @@ https://rhysd.github.io/actionlint/
 Paste your workflow content to the code editor at left pane. It automatically shows the results at right pane. When editing
 the workflow content in the code editor, the results will be updated on the fly. Clicking an error message in the results
 table moves a cursor to position of the error in the code editor.
+
+## Using actionlint from Go program
+
+Go APIs are available. See [the Go API document](api.md) for more details.
 
 ## Tools integration
 
@@ -58,7 +122,6 @@ These tools have integration with actionlint:
 
 [Checks](checks.md) | [Installation](install.md) | [Configuration](config.md) | [Go API](api.md) | [References](reference.md)
 
-[yamllint]: https://github.com/adrienverge/yamllint
 [reviewdog-actionlint]: https://github.com/reviewdog/action-actionlint
 [reviewdog]: https://github.com/reviewdog/reviewdog
 [cmd-manual]: https://rhysd.github.io/actionlint/usage.html

@@ -26,54 +26,22 @@ Prebuilt binaries are built at each release by CI for the following OS and arch:
 
 Note: The author doesn't have Apple M1 environment so `darwin/arm64` target binary is not tested.
 
-## CI services
+<a name="download-script"></a>
+## Download script
 
-Please try [the download script](../scripts/download-actionlint.bash). It downloads the latest version of actionlint
-(`actionlint.exe` on Windows and `actionlint` on other OSes) to the current directory automatically. On GitHub Actions
-environment, it sets a file path of downloaded executable to `executable` output in order to use the executable in the
-following steps easily.
+To install `actionlint` executable with one command, [the download script](../scripts/download-actionlint.bash) is available.
+It downloads the latest version of actionlint (`actionlint.exe` on Windows and `actionlint` on other OSes) to the current
+directory automatically. This is a recommended way if you install actionlint in some shell script.
 
-Here is an example of simple workflow to run actionlint on GitHub Actions. Please ensure `shell: bash` since the default
-shell for Windows runners is `pwsh`.
-
-```yaml
-name: Lint GitHub Actions workflows
-on: [push, pull_request]
-
-jobs:
-  actionlint:
-    runs-on: ubuntu-latest
-    steps:
-      - uses: actions/checkout@v2
-      - name: Download actionlint
-        id: get_actionlint
-        run: bash <(curl https://raw.githubusercontent.com/rhysd/actionlint/main/scripts/download-actionlint.bash)
-        shell: bash
-      - name: Check workflow files
-        run: ${{ steps.get_actionlint.outputs.executable }} -color
-        shell: bash
+```sh
+bash <(curl https://raw.githubusercontent.com/rhysd/actionlint/main/scripts/download-actionlint.bash)
 ```
 
-or simply run
-
-```yaml
-- name: Check workflow files
-  run: |
-    bash <(curl https://raw.githubusercontent.com/rhysd/actionlint/main/scripts/download-actionlint.bash)
-    ./actionlint -color
-  shell: bash
-```
-
-If you want to enable [shellcheck integration](checks.md#check-shellcheck-integ), install `shellcheck` command as follows:
-
-```yaml
-- name: Install shellcheck to enable shellcheck integration
-  run: sudo apt install shellcheck
-```
+For the usage of actionlint on GitHub Actions, see [the usage document](usage.md#on-github-actions).
 
 ## Build from source
 
-[Go][] toolchain is necessary.
+Recent [Go][] toolchain is necessary to build actionlint from source.
 
 ```sh
 # Install the latest stable version

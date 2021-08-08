@@ -6,6 +6,7 @@ This document describes how to use [actionlint](..) as Go library.
 
 actionlint can be used from Go programs. See [the documentation][apidoc] to know the list of all APIs. It contains
 a workflow file parser built on top of `go-yaml/yaml`, expression `${{ }}` lexer/parser/checker, etc.
+
 Followings are unexhaustive list of interesting APIs.
 
 - `Command` struct represents entire `actionlint` command. `Command.Main` takes command line arguments and runs command
@@ -37,7 +38,7 @@ Followings are unexhaustive list of interesting APIs.
 - `PopularActions` global variable is data set of popular actions' metadata collected by [the script](../scripts/generate-popular-actions).
 
 Note that the version of this repository is for command line tool `actionlint`. So it does not represent version of the
-library, meant that patch version bump may introduce some breaking changes.
+library. It means that patch version bump may introduce some breaking changes.
 
 ---
 

@@ -33,6 +33,9 @@ List of checks:
 - [Environment variable names](#check-env-var-names)
 - [Permissions](#permissions)
 
+Note that actionlint focuses on catching mistakes in workflow files. If you want some general code style checks, please consider
+using a general YAML checker like [yamllint][].
+
 <a name="check-unexpected-keys"></a>
 ## Unexpected keys
 
@@ -1622,6 +1625,7 @@ actionlint checks permission scopes and access levels in a workflow are correct.
 
 [Installation](install.md) | [Usage](usage.md) | [Configuration](config.md) | [Go API](api.md) | [References](reference.md)
 
+[yamllint]: https://github.com/adrienverge/yamllint
 [issue-form]: https://github.com/rhysd/actionlint/issues/new
 [syntax-doc]: https://docs.github.com/en/actions/reference/workflow-syntax-for-github-actions
 [filter-pattern-doc]: https://docs.github.com/en/actions/reference/workflow-syntax-for-github-actions#filter-pattern-cheat-sheet
