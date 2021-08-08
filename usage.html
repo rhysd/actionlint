@@ -58,11 +58,10 @@
     <a href="#DESCRIPTION">DESCRIPTION</a>
     <a href="#USAGE">USAGE</a>
     <a href="#FLAGS">FLAGS</a>
-    <a href="#CONFIGURATION">CONFIGURATION</a>
-    <a href="#USAGE-ON-CI-SERVICES">USAGE ON CI SERVICES</a>
+    <a href="#DOCUMENTS">DOCUMENTS</a>
+    <a href="#USAGE-ON-GITHUB-ACTIONS">USAGE ON GITHUB ACTIONS</a>
     <a href="#EXIT-STATUS">EXIT STATUS</a>
     <a href="#PLAYGROUND">PLAYGROUND</a>
-    <a href="#REFERENCES">REFERENCES</a>
     <a href="#BUGS">BUGS</a>
     <a href="#COPYRIGHT">COPYRIGHT</a>
   </div>
@@ -141,31 +140,52 @@ example, <code>-gnore A -ignore B</code> ignores errors whose message includes "
 </dl>
 
 
-<h2 id="CONFIGURATION">CONFIGURATION</h2>
+<h2 id="DOCUMENTS">DOCUMENTS</h2>
 
-<p>Configuration file can be put at <code>.github/actionlint.yaml</code> or <code>.github/actionlint.yml</code>.</p>
+<p>Documents for more details are available online.</p>
 
-<p>Note that configuration file is basically unnecessary. Please consider to make it only when it is
-necessary. Since the author tries to keep configuration file as minimal as possible, currently only
-custom runner labels can be configured.</p>
+<h3 id="Checks">Checks</h3>
 
-<pre><code>self-hosted-runner:
-  # Labels of self-hosted runner in array of string
-  labels:
-    - linux.2xlarge
-    - windows-latest-xl
-    - linux-multi-gpu
-</code></pre>
+<p>https://github.com/rhysd/actionlint/tree/main/docs/checks.md</p>
 
-<p>You don't need to write the configuration file from scratch. <code>actionlint</code> can generate the default
-configuration file.</p>
+<p>Full list of all checks done by actionlint with example inputs, outputs, and playground links.</p>
 
-<pre><code>$ actionlint -init-config
-</code></pre>
+<h3 id="Installation">Installation</h3>
 
-<h2 id="USAGE-ON-CI-SERVICES">USAGE ON CI SERVICES</h2>
+<p>https://github.com/rhysd/actionlint/tree/main/docs/install.md</p>
 
-<p>Please try a download script.</p>
+<p>Installation instructions. Prebuilt binaries, Homebrew package, building from source, a download
+script (for CI) are available.</p>
+
+<h3 id="Usage">Usage</h3>
+
+<p>https://github.com/rhysd/actionlint/tree/main/docs/usage.md</p>
+
+<p>How to use <code>actionlint</code> command locally and on GitHub Actions, the online playground, and
+integrations with other tools.</p>
+
+<h3 id="Configuration">Configuration</h3>
+
+<p>https://github.com/rhysd/actionlint/tree/main/docs/config.md</p>
+
+<p>How to configure actionlint behavior. Currently only labels of self-hosted runners can be
+configured.</p>
+
+<h3 id="Go-API">Go API</h3>
+
+<p>https://github.com/rhysd/actionlint/tree/main/docs/api.md</p>
+
+<p>How to use actionlint as Go library.</p>
+
+<h3 id="References">References</h3>
+
+<p>https://github.com/rhysd/actionlint/tree/main/docs/reference.md</p>
+
+<p>Links to resources.</p>
+
+<h2 id="USAGE-ON-GITHUB-ACTIONS">USAGE ON GITHUB ACTIONS</h2>
+
+<p>Please try the download script.</p>
 
 <p>https://github.com/rhysd/actionlint/blob/main/scripts/download-actionlint.bash</p>
 
@@ -225,32 +245,6 @@ to outside of the browser.</p>
 right pane. When editing the workflow content at the left pane, the results will be updated on the
 fly in the right pane. Clicking an error message in the results table moves a cursor to the
 position of the error in the code editor.</p>
-
-<h2 id="REFERENCES">REFERENCES</h2>
-
-<h3 id="List-of-all-checks">List of all checks</h3>
-
-<p>https://github.com/rhysd/actionlint/blob/main/README.md#checks</p>
-
-<h3 id="actionlint-Go-API-reference">actionlint Go API reference</h3>
-
-<p>https://pkg.go.dev/github.com/rhysd/actionlint</p>
-
-<h3 id="Workflow-syntax">Workflow syntax</h3>
-
-<p>https://docs.github.com/en/actions/reference/workflow-syntax-for-github-actions</p>
-
-<h3 id="Expression-syntax-in-">Expression syntax in ${{ }}</h3>
-
-<p>https://docs.github.com/en/actions/reference/context-and-expression-syntax-for-github-actions</p>
-
-<h3 id="shellcheck">shellcheck</h3>
-
-<p>https://github.com/koalaman/shellcheck</p>
-
-<h3 id="pyflakes">pyflakes</h3>
-
-<p>https://github.com/PyCQA/pyflakes</p>
 
 <h2 id="BUGS">BUGS</h2>
 

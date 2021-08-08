@@ -62,7 +62,6 @@ on:
     branch: main
     tags:
       - 'v\\d+'
-
 jobs:
   test:
     strategy:
@@ -70,7 +69,11 @@ jobs:
         os: [macos-latest, linux-latest]
     runs-on: \${{ matrix.os }}
     steps:
+      - run: echo "Checking commit '\${{ github.event.head_commit.message }}'"
       - uses: actions/checkout@v2
+      - uses: actions/setup-node@v2
+        with:
+          node_version: 16.x
       - uses: actions/cache@v2
         with:
           path: ~/.npm
