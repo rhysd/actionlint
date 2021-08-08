@@ -18,6 +18,8 @@ Features:
 
 See ['Checks' section](#checks) for full list of checks done by actionlint.
 
+<img src="https://github.com/rhysd/ss/blob/master/actionlint/main.gif?raw=true" alt="actionlint reports 7 errors" width="806" height="492"/>
+
 **Example of broken workflow:**
 
 ```yaml
@@ -46,10 +48,9 @@ jobs:
       - run: npm install && npm test
 ```
 
-**Output from actionlint:**
+**actionlint reports 7 errors:**
 
-<img src="https://github.com/rhysd/ss/blob/master/actionlint/main.png?raw=true" alt="output example" width="850" height="621"/>
-<!-- content of screenshot:
+```
 test.yaml:3:5: unexpected key "branch" for "push" section. expected one of "branches", "branches-ignore", "paths", "paths-ignore", "tags", "tags-ignore", "types", "workflows" [syntax-check]
   |
 3 |     branch: main
@@ -66,7 +67,7 @@ test.yaml:13:41: "github.event.head_commit.message" is potentially untrusted. av
    |
 13 |       - run: echo "Checking commit '${{ github.event.head_commit.message }}'"
    |                                         ^~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
-test.yaml:17:11: input "node_version" is not defined in action "actions/setup-node@v2". available inputs are "always-auth", "architecture", "cache", "check-latest", "node-version", "registry-url", "scope", "token", "version" [action]
+test.yaml:17:11: input "node_version" is not defined in action "actions/setup-node@v2". available inputs are "always-auth", "architecture", "cache", "cache-dependency-path", "check-latest", "node-version", "registry-url", "scope", "token", "version" [action]
    |
 17 |           node_version: 16.x
    |           ^~~~~~~~~~~~~
@@ -78,7 +79,7 @@ test.yaml:22:17: receiver of object dereference "permissions" must be type of ob
    |
 22 |         if: ${{ github.repository.permissions.admin == true }}
    |                 ^~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
--->
+```
 
 Basically all you need to do is run the `actionlint` command in your repository. actionlint automatically detects workflows in
 your repository and reports errors in them. actionlint focuses on finding out mistakes. It tries to catch errors as much as
