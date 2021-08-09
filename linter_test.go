@@ -1,6 +1,7 @@
 package actionlint
 
 import (
+	"bytes"
 	"fmt"
 	"io/ioutil"
 	"os"
@@ -8,6 +9,7 @@ import (
 	"strings"
 	"testing"
 
+	"github.com/google/go-cmp/cmp"
 	"golang.org/x/sys/execabs"
 )
 
@@ -62,6 +64,65 @@ func TestLinterLintOK(t *testing.T) {
 			}
 			if len(errs) > 0 {
 				t.Fatal(errs)
+			}
+		})
+	}
+}
+
+func TestLinterFormatErrorMessageOK(t *testing.T) {
+	tests := []struct {
+		file   string
+		format string
+	}{
+		{
+			file:   "test.json",
+			format: "{{json .}}",
+		},
+		{
+			file:   "test.jsonl",
+			format: "{{range $err := .}}{{json $err}}{{end}}",
+		},
+		{
+			file:   "test.jsonl",
+			format: "{{range $err := .}}{{json $err}}{{end}}",
+		},
+		{
+			file:   "test.md",
+			format: "{{range $ := .}}### Error at line {{$.Line}}, col {{$.Column}} of `{{$.Filepath}}`\\n\\n{{$.Message}}\\n\\n```\\n{{$.Snippet}}\\n```\\n\\n{{end}}",
+		},
+	}
+
+	dir := filepath.Join("testdata", "format")
+	proj := &Project{root: dir}
+	infile := filepath.Join(dir, "test.yaml")
+	for _, tc := range tests {
+		t.Run(tc.file, func(t *testing.T) {
+			opts := LinterOptions{Format: tc.format}
+
+			var b bytes.Buffer
+			l, err := NewLinter(&b, &opts)
+			if err != nil {
+				t.Fatal(err)
+			}
+
+			config := Config{}
+			l.defaultConfig = &config
+			errs, err := l.LintFile(infile, proj)
+			if err != nil {
+				t.Fatal(err)
+			}
+			if len(errs) == 0 {
+				t.Fatal("no error")
+			}
+
+			want, err := ioutil.ReadFile(filepath.Join(dir, tc.file))
+			if err != nil {
+				panic(err)
+			}
+
+			have := b.Bytes()
+			if !cmp.Equal(want, have) {
+				t.Fatal(cmp.Diff(want, have))
 			}
 		})
 	}

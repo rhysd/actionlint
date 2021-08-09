@@ -93,7 +93,7 @@ type Linter struct {
 	pyflakes      string
 	ignorePats    []*regexp.Regexp
 	defaultConfig *Config
-	errFormatter  *ErrorFormatter
+	errFmt        *ErrorFormatter
 }
 
 // NewLinter creates a new Linter instance.
@@ -334,7 +334,7 @@ func (l *Linter) LintFiles(filepaths []string, project *Project) ([]*Error, erro
 	}
 
 	all := make([]*Error, 0, total)
-	if l.errFormatter != nil {
+	if l.errFmt != nil {
 		temp := make([]*ErrorTemplateFields, 0, total)
 		for i := range ws {
 			w := &ws[i]
@@ -343,7 +343,7 @@ func (l *Linter) LintFiles(filepaths []string, project *Project) ([]*Error, erro
 			}
 			all = append(all, w.errs...)
 		}
-		if err := l.errFormatter.Print(l.out, temp); err != nil {
+		if err := l.errFmt.Print(l.out, temp); err != nil {
 			return nil, err
 		}
 	} else {
@@ -387,8 +387,8 @@ func (l *Linter) LintFile(path string, project *Project) ([]*Error, error) {
 		return nil, err
 	}
 
-	if l.errFormatter != nil {
-		l.errFormatter.PrintErrors(l.out, errs, src)
+	if l.errFmt != nil {
+		l.errFmt.PrintErrors(l.out, errs, src)
 	} else {
 		l.printErrors(errs, src)
 	}
@@ -408,8 +408,8 @@ func (l *Linter) Lint(path string, content []byte, project *Project) ([]*Error, 
 	if err != nil {
 		return nil, err
 	}
-	if l.errFormatter != nil {
-		l.errFormatter.PrintErrors(l.out, errs, content)
+	if l.errFmt != nil {
+		l.errFmt.PrintErrors(l.out, errs, content)
 	} else {
 		l.printErrors(errs, content)
 	}
