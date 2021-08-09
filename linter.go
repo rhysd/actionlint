@@ -12,7 +12,6 @@ import (
 	"runtime"
 	"sort"
 	"strings"
-	"text/template"
 	"time"
 
 	"github.com/fatih/color"
@@ -33,21 +32,6 @@ const (
 	// LogLevelDebug shows all log output including debug information.
 	LogLevelDebug = 2
 )
-
-func unescapeBackslash(s string) string {
-	// https://golang.org/ref/spec#Rune_literals
-	r := strings.NewReplacer(
-		`\a`, "\a",
-		`\b`, "\b",
-		`\f`, "\f",
-		`\n`, "\n",
-		`\r`, "\r",
-		`\t`, "\t",
-		`\v`, "\v",
-		`\\`, "\\",
-	)
-	return r.Replace(s)
-}
 
 // ColorOptionKind is kind of colorful output behavior.
 type ColorOptionKind int
@@ -109,7 +93,7 @@ type Linter struct {
 	pyflakes      string
 	ignorePats    []*regexp.Regexp
 	defaultConfig *Config
-	errorTemplate *template.Template
+	errFormatter  *ErrorFormatter
 }
 
 // NewLinter creates a new Linter instance.
@@ -159,16 +143,13 @@ func NewLinter(out io.Writer, opts *LinterOptions) (*Linter, error) {
 		ignore = append(ignore, r)
 	}
 
-	var temp *template.Template
+	var formatter *ErrorFormatter
 	if opts.Format != "" {
-		if !strings.Contains(opts.Format, "{{") {
-			return nil, fmt.Errorf("template to format error message must contain at least one {{ }} placeholder: %s", opts.Format)
-		}
-		t, err := template.New("error formatter").Parse(unescapeBackslash(opts.Format))
+		f, err := NewErrorFormatter(opts.Format)
 		if err != nil {
-			return nil, fmt.Errorf("template to format error message could not be parsed: %w", err)
+			return nil, err
 		}
-		temp = t
+		formatter = f
 	}
 
 	return &Linter{
@@ -181,7 +162,7 @@ func NewLinter(out io.Writer, opts *LinterOptions) (*Linter, error) {
 		opts.Pyflakes,
 		ignore,
 		cfg,
-		temp,
+		formatter,
 	}, nil
 }
 
@@ -353,12 +334,24 @@ func (l *Linter) LintFiles(filepaths []string, project *Project) ([]*Error, erro
 	}
 
 	all := make([]*Error, 0, total)
-	for i := range ws {
-		w := &ws[i]
-		if err := l.printErrors(w.errs, w.src); err != nil {
+	if l.errFormatter != nil {
+		temp := make([]*ErrorTemplateFields, 0, total)
+		for i := range ws {
+			w := &ws[i]
+			for _, err := range w.errs {
+				temp = append(temp, err.GetTemplateFields(w.src))
+			}
+			all = append(all, w.errs...)
+		}
+		if err := l.errFormatter.Print(l.out, temp); err != nil {
 			return nil, err
 		}
-		all = append(all, w.errs...)
+	} else {
+		for i := range ws {
+			w := &ws[i]
+			l.printErrors(w.errs, w.src)
+			all = append(all, w.errs...)
+		}
 	}
 
 	l.log("Found", total, "errors in", n, "files")
@@ -394,10 +387,11 @@ func (l *Linter) LintFile(path string, project *Project) ([]*Error, error) {
 		return nil, err
 	}
 
-	if err := l.printErrors(errs, src); err != nil {
-		return nil, err
+	if l.errFormatter != nil {
+		l.errFormatter.PrintErrors(l.out, errs, src)
+	} else {
+		l.printErrors(errs, src)
 	}
-
 	return errs, err
 }
 
@@ -414,8 +408,10 @@ func (l *Linter) Lint(path string, content []byte, project *Project) ([]*Error, 
 	if err != nil {
 		return nil, err
 	}
-	if err := l.printErrors(errs, content); err != nil {
-		return nil, err
+	if l.errFormatter != nil {
+		l.errFormatter.PrintErrors(l.out, errs, content)
+	} else {
+		l.printErrors(errs, content)
 	}
 	return errs, nil
 }
@@ -551,21 +547,11 @@ func (l *Linter) check(path string, content []byte, project *Project, proc *conc
 	return all, nil
 }
 
-func (l *Linter) printErrors(errs []*Error, src []byte) error {
-	if l.errorTemplate != nil {
-		for _, err := range errs {
-			if err := err.PrintTemplate(l.errorTemplate, l.out, src); err != nil {
-				return fmt.Errorf("could not format error message: %w", err)
-			}
-		}
-		return nil
-	}
-
+func (l *Linter) printErrors(errs []*Error, src []byte) {
 	if l.oneline {
 		src = nil
 	}
 	for _, err := range errs {
 		err.PrettyPrint(l.out, src)
 	}
-	return nil
 }
