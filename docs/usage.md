@@ -41,6 +41,113 @@ processes.
 actionlint -shellcheck= -pyflakes=
 ```
 
+<a name="format"></a>
+### Format error messages
+
+`-format` option can flexibly format error messages with [Go template syntax][go-template].
+
+Before explaning the formatting details, let's see some examples.
+
+#### Example: Serialized into JSON
+
+```sh
+actionlint -format '{{json .}}'
+```
+
+Output:
+
+```
+[{"message":"unexpected key \"branch\" for ...
+```
+
+#### Example: Error annotation on GitHub Actions
+
+````sh
+actionlint -format '{{range $err := .}}::error file={{$err.Filepath}},line={{$err.Line}},col={{$err.Column}}::{{$err.Message}}\n```\n{{$err.Snippet}}\n```\n{{end}}'
+````
+
+Output:
+
+````
+::error file=test.yaml,line=21,col=20::property "platform" is not defined in object type {os: string}
+```
+          key: ${{ matrix.platform }}-node-${{ hashFiles('**/package-lock.json') }}
+                   ^~~~~~~~~~~~~~~
+```
+````
+
+TODO: Add screenshot
+
+#### Example: Markdown
+
+````sh
+actionlint -format '{{range $err := .}}### Error at line {{$err.Line}}, col {{$err.Column}} of `{{$err.Filepath}}`\n\n{{$err.Message}}\n\n```\n{{$err.Snippet}}\n```\n\n{{end}}'
+````
+
+Output:
+
+````
+### Error at line 21, col 20 of `test.yaml`
+
+property "platform" is not defined in object type {os: string}
+
+```
+          key: ${{ matrix.platform }}-node-${{ hashFiles('**/package-lock.json') }}
+                   ^~~~~~~~~~~~~~~
+```
+````
+
+#### Example: Serialized in [JSON Lines][jsonl]
+
+```sh
+actionlint -format '{{range $err := .}}{{json $err}}{{end}}'
+```
+
+Output:
+
+```
+{"message":"unexpected key \"branch\" for ...
+{"message":"character '\\' is invalid for branch ...
+{"message":"label \"linux-latest\" is unknown. ...
+```
+
+#### Formatting syntax
+
+In [Go template syntax][go-template], `.` within `{{ }}` means the target object. Here, the target object is a sequence of error objects.
+
+The sequence can be traversed with `range` statement, which is like `for ... = range ... {}` in Go.
+
+```
+{{range $err = .}} this part iterates error objects with the iteration variable $err {{end}}
+```
+
+The error object has the following fields.
+
+| Field               | Description                                        | Example                                                          |
+|---------------------|----------------------------------------------------|------------------------------------------------------------------|
+| `{{$err.Message}}`  | Body of error message                              | `property "platform" is not defined in object type {os: string}` |
+| `{{$err.Snippet}}`  | Code snippet to indicate error position            | `          node_version: 16.x\n          ^~~~~~~~~~~~~`          |
+| `{{$err.Kind}}`     | Name of rule the error belongs to                  | `expression`                                                     |
+| `{{$err.Filepath}}` | Canonical relative file path of the error position | `.github/workflows/ci.yaml`                                      |
+| `{{$err.Line}}`     | Line number of the error position (1-based)        | `21`                                                             |
+| `{{$err.Column}}`   | Column number of the error position (1-based)      | `20`                                                             |
+
+For example, the following simple iteration body
+
+```
+line is {{$err.Line}}, col is {{$err.Column}}, message is {{$err.Message | printf "%q"}}
+```
+
+will produce output like below.
+
+```
+line is 21, col is 20, message is "property \"platform\" is not defined in object type {os: string}"
+```
+
+In `{{ }}` placeholder, input can be piped and action can be used to transform texts. In above example, the message is piped with
+`|` and transformed with `printf "%q"`. Most useful action would be `json` as we already used it in the above JSON example. It
+serializes the given object into JSON string followed by newline character.
+
 ### Exit status
 
 `actionlint` command exits with one of the following exit statuses.
@@ -125,3 +232,5 @@ These tools have integration with actionlint:
 [reviewdog-actionlint]: https://github.com/reviewdog/action-actionlint
 [reviewdog]: https://github.com/reviewdog/reviewdog
 [cmd-manual]: https://rhysd.github.io/actionlint/usage.html
+[go-template]: https://pkg.go.dev/text/template
+[jsonl]: https://jsonlines.org/
