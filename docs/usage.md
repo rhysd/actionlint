@@ -60,24 +60,6 @@ Output:
 [{"message":"unexpected key \"branch\" for ...
 ```
 
-#### Example: Error annotation on GitHub Actions
-
-````sh
-actionlint -format '{{range $err := .}}::error file={{$err.Filepath}},line={{$err.Line}},col={{$err.Column}}::{{$err.Message}}\n```\n{{$err.Snippet}}\n```\n{{end}}'
-````
-
-Output:
-
-````
-::error file=test.yaml,line=21,col=20::property "platform" is not defined in object type {os: string}
-```
-          key: ${{ matrix.platform }}-node-${{ hashFiles('**/package-lock.json') }}
-                   ^~~~~~~~~~~~~~~
-```
-````
-
-TODO: Add screenshot
-
 #### Example: Markdown
 
 ````sh
@@ -110,6 +92,21 @@ Output:
 {"message":"character '\\' is invalid for branch ...
 {"message":"label \"linux-latest\" is unknown. ...
 ```
+
+#### Example: [Error annotation][ga-annotate-error] on GitHub Actions
+
+````sh
+actionlint -format '{{range $err := .}}::error file={{$err.Filepath}},line={{$err.Line}},col={{$err.Column}}::{{$err.Message}}%0A```%0A{{replace $err.Snippet "\\n" "%0A"}}%0A```\n{{end}}' -ignore 'SC2016:'
+````
+
+Output:
+
+<img src="https://github.com/rhysd/ss/blob/master/actionlint/ga-annotate.png?raw=true" alt="annotations on GitHub Actions" width="731" height="522"/>
+
+To include newlines in the annotation body, it prints `%0A`. (ref [actions/toolkit#193](https://github.com/actions/toolkit/issues/193)).
+And it suppresses `SC2016` shellcheck rule error since it complains about the template argument.
+
+Basically it is more recommended to use reviewdog as explained in [the 'Tools integration' section](#tools-integ) below.
 
 #### Formatting syntax
 
@@ -218,12 +215,14 @@ table moves a cursor to position of the error in the code editor.
 
 Go APIs are available. See [the Go API document](api.md) for more details.
 
+
+<a name="tools-integ"></a>
 ## Tools integration
 
-These tools have integration with actionlint:
+### [reviewdog/action-actionlint][reviewdog-actionlint]
 
-- **[reviewdog/action-actionlint][reviewdog-actionlint]**: [reviewdog][] is an automated review tool for various code hosting
-  services. It officially supports actionlint. You can check errors from actionlint easily in inline comments on code review.
+[reviewdog][] is an automated review tool for various code hosting services. It officially supports actionlint. You can check
+errors from actionlint easily with inline review comments at pull request review.
 
 ---
 
@@ -233,4 +232,5 @@ These tools have integration with actionlint:
 [reviewdog]: https://github.com/reviewdog/reviewdog
 [cmd-manual]: https://rhysd.github.io/actionlint/usage.html
 [go-template]: https://pkg.go.dev/text/template
+[ga-annotate-error]: https://docs.github.com/en/actions/reference/workflow-commands-for-github-actions#setting-an-error-message
 [jsonl]: https://jsonlines.org/

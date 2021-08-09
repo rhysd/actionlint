@@ -219,6 +219,9 @@ func NewErrorFormatter(format string) (*ErrorFormatter, error) {
 			}
 			return b.String(), nil
 		},
+		"replace": func(s string, oldnew ...string) string {
+			return strings.NewReplacer(oldnew...).Replace(s)
+		},
 	}
 	t, err := template.New("error formatter").Funcs(funcs).Parse(unescapeBackslash(format))
 	if err != nil {
