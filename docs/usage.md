@@ -147,6 +147,8 @@ In `{{ }}` placeholder, input can be piped and action can be used to transform t
 `|` and transformed with `printf "%q"`. Most useful action would be `json` as we already used it in the above JSON example. It
 serializes the given object into JSON string followed by newline character.
 
+Note that special characters escaped with back slash like `\n` in the format string are automatically unespcaed.
+
 ### Exit status
 
 `actionlint` command exits with one of the following exit statuses.
