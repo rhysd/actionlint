@@ -106,11 +106,13 @@ Output:
 To include newlines in the annotation body, it prints `%0A`. (ref [actions/toolkit#193](https://github.com/actions/toolkit/issues/193)).
 And it suppresses `SC2016` shellcheck rule error since it complains about the template argument.
 
-Basically it is more recommended to use reviewdog as explained in [the 'Tools integration' section](#tools-integ) below.
+Basically it is more recommended to use reviewdog or Problem Matchers as explained in ['Tools integration' section](#tools-integ)
+below.
 
 #### Formatting syntax
 
-In [Go template syntax][go-template], `.` within `{{ }}` means the target object. Here, the target object is a sequence of error objects.
+In [Go template syntax][go-template], `.` within `{{ }}` means the target object. Here, the target object is a sequence of error
+objects.
 
 The sequence can be traversed with `range` statement, which is like `for ... = range ... {}` in Go.
 
@@ -224,6 +226,62 @@ Go APIs are available. See [the Go API document](api.md) for more details.
 [reviewdog][] is an automated review tool for various code hosting services. It officially supports actionlint. You can check
 errors from actionlint easily with inline review comments at pull request review.
 
+The usage is easy. Run `reviewdog/action-actionlint` in your workflow as follows.
+
+```yaml
+name: reviewdog
+on: [pull_request]
+jobs:
+  actionlint:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v2
+      - uses: reviewdog/action-actionlint@v1
+```
+
+### Problem Matchers
+
+[Problem Matchers][problem-matchers] is a feature to extract GitHub Actions annotations from terminal outputs of linters.
+
+Put `.github/actionlint-matcher.json` in your repository with the following contents:
+
+```json
+{
+  "problemMatcher": [
+    {
+      "owner": "actionlint",
+      "pattern": [
+        {
+          "regexp": "^(.+):(\\d+):(\\d+): (.+)\\[(.+)\\]$",
+          "file": 1,
+          "line": 2,
+          "column": 3,
+          "message": 4,
+          "code": 5
+        }
+      ]
+    }
+  ]
+}
+```
+
+Then enable the matcher using `add-matcher` command before running `actionlint` in the step of your workflow.
+
+```yaml
+- name: Check workflow files
+  run: |
+    echo "::add-matcher::.github/actionlint-matcher.json"
+    bash <(curl https://raw.githubusercontent.com/rhysd/actionlint/main/scripts/download-actionlint.bash)
+    ./actionlint
+  shell: bash
+```
+
+Note that `-color` option is not available because ANSI color sequences prevent the matcher from matching the error messages.
+
+When you change your workflow and the changed line causes a new error, CI will annotate the diff with the extracted error message.
+
+<img src="https://github.com/rhysd/ss/blob/master/actionlint/problem-matcher.png?raw=true" alt="annotation by Problem Matchers" width="715" height="221"/>
+
 ---
 
 [Checks](checks.md) | [Installation](install.md) | [Configuration](config.md) | [Go API](api.md) | [References](reference.md)
@@ -234,3 +292,4 @@ errors from actionlint easily with inline review comments at pull request review
 [go-template]: https://pkg.go.dev/text/template
 [ga-annotate-error]: https://docs.github.com/en/actions/reference/workflow-commands-for-github-actions#setting-an-error-message
 [jsonl]: https://jsonlines.org/
+[problem-matchers]: https://github.com/actions/toolkit/blob/master/docs/problem-matchers.md
