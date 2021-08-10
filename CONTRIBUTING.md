@@ -151,7 +151,8 @@ Updating `all_webhooks.go` is run weekly on CI by [`generate`](.github/workflows
 
 ## Testing
 
-- All examples in ['Checks' section](docs/checks.md) are tested in [`example_test.go`](./example_test.go)
+- All examples in ['Checks' section](docs/checks.md) are put in [the examples directory](testdata/examples) and tested in
+  [`linter_test.go`](linter_test.go).
 - I cloned GitHub top 1000 repositories and extracted 1400+ workflow files. And I tried actionlint with the collected workflow
   files. All bugs found while the trial were fixed and I confirmed no more false positives.
 
