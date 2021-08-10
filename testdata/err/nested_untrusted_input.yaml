@@ -1,0 +1,7 @@
+name: Test
+on: pull_request
+jobs:
+  test:
+    runs-on: ubuntu-latest
+    steps:
+      - run: echo ${{ github.event.pages[github.event.commits[github.event.issue.title].author.name].page_name }}
