@@ -830,6 +830,10 @@ jobs:
           repo-token: ${{ secrets.TOKEN }}
           # This is OK because action input is not evaluated by shell
           stale-pr-message: ${{ github.event.pull_request.title }} was closed
+      - uses: actions/github-script@v4
+        with:
+          # ERROR: Using the potentially untrusted input can cause script injection
+          script: console.log('${{ github.event.head_commit.author.name }}')
 ```
 
 Output:
@@ -839,9 +843,13 @@ test.yaml:10:24: "github.event.pull_request.title" is potentially untrusted. avo
    |
 10 |         run: echo '${{ github.event.pull_request.title }}'
    |                        ^~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+test.yaml:19:36: "github.event.head_commit.author.name" is potentially untrusted. avoid using it directly in inline scripts. instead, pass it through an environment variable. see https://securitylab.github.com/research/github-actions-untrusted-input for more details [expression]
+   |
+19 |           script: console.log('${{ github.event.head_commit.author.name }}')
+   |                                    ^~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 ```
 
-[Playground](https://rhysd.github.io/actionlint#eJyFjrFuAjEQRPv7iikiUfnSpHKVhioSSUEf+S4juGDsi3cNBeLfYxt0oqNa7e7MmwnuSIstRbsYLObs/XfiX66H7jcOYjtAy1YnkHIQU4V5yEGz8a7+2kuUs9xUgEFo4K80BW1U3KnQST3vsga04LiPWL1cLthNus9DzxOD9o9l+mbD9bpaErJQLNyoUwzyKuo8309vC/lcUHbZShLnaDQeWAJrlHBMVOm3nx/rTQE/SBvLzMkcKeJ2vBmed8PZCUYfhT//JQRt5A==)
+[Playground](https://rhysd.github.io/actionlint#eJyFkDFPAzEMhff7FR6QCkPCwpSJhQmJMnSvcql1F8jFR+y0Q9X/TpKrTpUQMEWOn7/39KKd0MAOWTqKBuYcwj7hV64f3Qf1bDoAKVN9AVKOrKow9zlKVsHWXVux4MyLCkBBbOD35KM0KlypIF4CXmUNaADdSLC5O59h8DLmXuMRo+jbMLqdweWyWR0yIxuwTjxFfmSxAZ+PTyv5VFBmnYoTzqSEPrEYVitGl1BY77avL28FfCNtLDUnNSGzHXA5+D8bnCyDC8R4+CXlwlDskp/lr7SLwoArVxRQBxrufzY0oj3sHU2TF22zjJR07b3W9PANx/eW/g==)
 
 Since `${{ }}` placeholders are evaluated and replaced directly by GitHub Actions runtime, you need to use them carefully in
 inline scripts at `run:`. For example, if we have step as follows,
@@ -881,6 +889,8 @@ directly in a script, actionlint will report it as error.
 - `github.event.pull_request.head.label`
 - `github.event.pull_request.head.repo.default_branch`
 - `github.head_ref`
+
+Popular action [actions/github-script]() has the same issue in its `script` input. actionlint also checks the input.
 
 <a name="check-job-deps"></a>
 ## Job dependencies validation
