@@ -83,11 +83,12 @@ var BuiltinUntrustedInputs = UntrustedInputMap{
 }
 
 // UntrustedInputChecker is a checker to detect untrusted inputs in an expression syntax tree.
+// Note: To avoid breaking the state of checking property accesses on nested property accesses like
+// foo[aaa.bbb].bar, IndexAccessNode.Index must be visited before IndexAccessNode.Operand.
 type UntrustedInputChecker struct {
-	root  UntrustedInputMap
-	cur   UntrustedInputMap
-	stack []UntrustedInputMap
-	errs  []*ExprError
+	root UntrustedInputMap
+	cur  UntrustedInputMap
+	errs []*ExprError
 }
 
 // NewUntrustedInputChecker creates new UntrustedInputChecker instance.
@@ -100,17 +101,6 @@ func NewUntrustedInputChecker(m UntrustedInputMap) *UntrustedInputChecker {
 
 func (u *UntrustedInputChecker) done() {
 	u.cur = nil
-}
-
-func (u *UntrustedInputChecker) push() {
-	u.stack = append(u.stack, u.cur)
-	u.cur = nil
-}
-
-func (u *UntrustedInputChecker) pop() {
-	i := len(u.stack) - 1
-	u.cur = u.stack[i]
-	u.stack = u.stack[:i]
 }
 
 func (u *UntrustedInputChecker) checkVar(name string) bool {
@@ -194,20 +184,6 @@ func (u *UntrustedInputChecker) error(n ExprNode) {
 	u.done()
 }
 
-// OnIndexNodeEnter is a callback which should be called just before visiting index node of
-// IndexAccessNode. This method is necessary to consider nested object property access like
-// github.event.pages[matrix.num].page_name.
-func (u *UntrustedInputChecker) OnIndexNodeEnter() {
-	u.push()
-}
-
-// OnIndexNodeLeave is a callback which should be called just after visiting index node of
-// IndexAccessNode. This method is necessary to consider nested object property access like
-// github.event.pages[matrix.num].page_name.
-func (u *UntrustedInputChecker) OnIndexNodeLeave() {
-	u.pop()
-}
-
 // OnNodeLeave is a callback which should be called on visiting node after visiting its children.
 func (u *UntrustedInputChecker) OnNodeLeave(n ExprNode) {
 	switch n := n.(type) {
@@ -248,6 +224,5 @@ func (u *UntrustedInputChecker) Errs() []*ExprError {
 // Init initializes a state of checker.
 func (u *UntrustedInputChecker) Init() {
 	u.errs = []*ExprError{}
-	u.stack = nil
 	u.done()
 }

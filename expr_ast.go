@@ -239,6 +239,7 @@ func visitExprNode(n, p ExprNode, f VisitExprNodeFunc) {
 	case *ArrayDerefNode:
 		visitExprNode(n.Receiver, n, f)
 	case *IndexAccessNode:
+		// Index must be visited before Operand to make UntrustedInputChecker work correctly.
 		visitExprNode(n.Index, n, f)
 		visitExprNode(n.Operand, n, f)
 	case *NotOpNode:

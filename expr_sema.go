@@ -431,13 +431,11 @@ func (sema *ExprSemanticsChecker) checkArrayDeref(n *ArrayDerefNode) ExprType {
 }
 
 func (sema *ExprSemanticsChecker) checkIndexAccess(n *IndexAccessNode) ExprType {
-	if sema.untrusted != nil {
-		sema.untrusted.OnIndexNodeEnter()
-	}
+	// Note: Index must be visted before Index to make UntrustedInputChecker work correctly even if
+	// the expression has some nest like foo[aaa.bbb].bar. Nest happens in top-down order and
+	// properties/indices access check is done in bottom-up order. So, as far as we visit nested
+	// index nodes before visiting operand, the index is recursively checked first.
 	idx := sema.check(n.Index)
-	if sema.untrusted != nil {
-		sema.untrusted.OnIndexNodeLeave()
-	}
 
 	switch ty := sema.check(n.Operand).(type) {
 	case AnyType:

@@ -77,15 +77,8 @@ func testRunTrustedInputsCheckerForNode(t *testing.T, c *UntrustedInputChecker, 
 		t.Fatal(err)
 	}
 	VisitExprNode(n, func(n, p ExprNode, entering bool) {
-		if entering {
-			if i, ok := p.(*IndexAccessNode); ok && i.Index == n {
-				c.OnIndexNodeEnter()
-			}
-		} else {
+		if !entering {
 			c.OnNodeLeave(n)
-			if i, ok := p.(*IndexAccessNode); ok && i.Index == n {
-				c.OnIndexNodeLeave()
-			}
 		}
 	})
 }
@@ -172,6 +165,13 @@ func TestExprInsecureDetectUntrustedValue(t *testing.T) {
 			},
 		},
 		testCase{
+			"github.event.pages[foo[github.event.issue.title]].page_name",
+			[]string{
+				"github.event.issue.title",
+				"github.event.pages.*.page_name",
+			},
+		},
+		testCase{
 			"github.event.issue.body[github.event.issue.title][github.head_ref]",
 			[]string{
 				"github.head_ref",
@@ -232,9 +232,6 @@ func TestExprInsecureDetectUntrustedValue(t *testing.T) {
 					t.Error("line should be 1 but got", err.Line)
 				}
 			}
-			if len(c.stack) != 0 {
-				t.Error("invariant error. stack is not empty:", c.stack)
-			}
 		})
 	}
 }
@@ -272,10 +269,6 @@ func TestExprInsecureAllUntrustedValuesAtOnce(t *testing.T) {
 		}
 		col = err.Column
 	}
-
-	if len(c.stack) != 0 {
-		t.Error("invariant error. stack is not empty:", c.stack)
-	}
 }
 
 func TestExprInsecureInitState(t *testing.T) {
@@ -288,9 +281,6 @@ func TestExprInsecureInitState(t *testing.T) {
 	c.Init()
 	if len(c.Errs()) != 0 {
 		t.Fatal(c.Errs())
-	}
-	if c.cur != nil || len(c.stack) > 0 {
-		t.Fatal("internal state was not cleared:", c.cur, c.stack)
 	}
 
 	testRunTrustedInputsCheckerForNode(t, c, "github.event.issue.title")
@@ -324,6 +314,7 @@ func TestExprInsecureNoUntrustedValue(t *testing.T) {
 		"github[event.pull_request].body",
 		"github[github.event.pull_request].body",
 		"github.event.*.body",
+		"matrix.foo[github.event.pages].page_name",
 	}
 
 	for _, input := range inputs {
@@ -333,8 +324,58 @@ func TestExprInsecureNoUntrustedValue(t *testing.T) {
 			if errs := c.Errs(); len(errs) > 0 {
 				t.Fatalf("%d error(s) occurred: %v", len(errs), errs)
 			}
-			if len(c.stack) != 0 {
-				t.Error("invariant error. stack is not empty:", c.stack)
+		})
+	}
+}
+
+func TestExprInsecureCustomizedUntrustedInputMapping(t *testing.T) {
+	testCases := []struct {
+		mapping UntrustedInputMap
+		input   string
+		want    string
+	}{
+		{
+			mapping: UntrustedInputMap{
+				"github": nil,
+			},
+			input: "github.event.issue.title",
+			want:  `"github"`,
+		},
+		{
+			mapping: UntrustedInputMap{
+				"github": {
+					"foo": {
+						"*": nil,
+					},
+				},
+			},
+			input: "github.foo[0]",
+			want:  `"github.foo.*"`,
+		},
+		{
+			mapping: UntrustedInputMap{
+				"github": {
+					"foo": {
+						"*": nil,
+					},
+				},
+			},
+			input: "github.foo.*",
+			want:  `"github.foo.*"`,
+		},
+	}
+
+	for _, tc := range testCases {
+		t.Run(tc.input, func(t *testing.T) {
+			c := NewUntrustedInputChecker(tc.mapping)
+			testRunTrustedInputsCheckerForNode(t, c, tc.input)
+			errs := c.Errs()
+			if len(errs) != 1 {
+				t.Fatalf("1 error was wanted but got %d error(s)", len(errs))
+			}
+			err := errs[0]
+			if !strings.Contains(err.Error(), tc.want) {
+				t.Fatalf("%q was wanted to be contained in error message %q", tc.want, err.Error())
 			}
 		})
 	}
