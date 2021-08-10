@@ -53,6 +53,10 @@ argument. It reads stdin and checks it as workflow file:
   * `-debug`:
     Enable debug output (for development)
 
+  * `-format` <FORMAT>:
+    Custom template to format error messages in Go template syntax. See
+    https://github.com/rhysd/actionlint/tree/main/docs/usage.md#format
+
   * `-ignore` <PATTERN>:
     Regular expression matching to error messages you want to ignore. This flag is repeatable. For
     example, `-gnore A -ignore B` ignores errors whose message includes "A" OR "B".

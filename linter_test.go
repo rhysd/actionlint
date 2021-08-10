@@ -1,13 +1,16 @@
 package actionlint
 
 import (
+	"bytes"
 	"fmt"
 	"io/ioutil"
 	"os"
 	"path/filepath"
+	"runtime"
 	"strings"
 	"testing"
 
+	"github.com/google/go-cmp/cmp"
 	"golang.org/x/sys/execabs"
 )
 
@@ -67,25 +70,89 @@ func TestLinterLintOK(t *testing.T) {
 	}
 }
 
-func BenchmarkLintWorkflowFiles(b *testing.B) {
-	dir, err := os.Getwd()
-	if err != nil {
-		panic(err)
+func TestLinterFormatErrorMessageOK(t *testing.T) {
+	tests := []struct {
+		file   string
+		format string
+	}{
+		{
+			file:   "test.json",
+			format: "{{json .}}",
+		},
+		{
+			file:   "test.jsonl",
+			format: "{{range $err := .}}{{json $err}}{{end}}",
+		},
+		{
+			file:   "test.jsonl",
+			format: "{{range $err := .}}{{json $err}}{{end}}",
+		},
+		{
+			file:   "test.md",
+			format: "{{range $ := .}}### Error at line {{$.Line}}, col {{$.Column}} of `{{$.Filepath}}`\\n\\n{{$.Message}}\\n\\n```\\n{{$.Snippet}}\\n```\\n\\n{{end}}",
+		},
 	}
 
-	large := filepath.Join(dir, "testdata", "bench", "many_scripts.yaml")
-	small := filepath.Join(dir, "testdata", "bench", "small.yaml")
-	min := filepath.Join(dir, "testdata", "bench", "minimal.yaml")
+	dir := filepath.Join("testdata", "format")
 	proj := &Project{root: dir}
+	infile := filepath.Join(dir, "test.yaml")
+	for _, tc := range tests {
+		t.Run(tc.file, func(t *testing.T) {
+			opts := LinterOptions{Format: tc.format}
+
+			var b bytes.Buffer
+			l, err := NewLinter(&b, &opts)
+			if err != nil {
+				t.Fatal(err)
+			}
+
+			config := Config{}
+			l.defaultConfig = &config
+			errs, err := l.LintFile(infile, proj)
+			if err != nil {
+				t.Fatal(err)
+			}
+			if len(errs) == 0 {
+				t.Fatal("no error")
+			}
+
+			want, err := ioutil.ReadFile(filepath.Join(dir, tc.file))
+			if err != nil {
+				panic(err)
+			}
+
+			have := b.Bytes()
+			// Fix path separators on Windows
+			if runtime.GOOS == "windows" {
+				slash := []byte(filepath.ToSlash(infile))
+				have = bytes.ReplaceAll(have, []byte(infile), slash)
+				escaped := bytes.ReplaceAll(slash, []byte{'/'}, []byte{'\\', '\\'})
+				have = bytes.ReplaceAll(have, escaped, slash)
+			}
+
+			if !cmp.Equal(want, have) {
+				t.Fatal(cmp.Diff(want, have))
+			}
+		})
+	}
+}
+
+func BenchmarkLintWorkflowFiles(b *testing.B) {
+	large := filepath.Join("testdata", "bench", "many_scripts.yaml")
+	small := filepath.Join("testdata", "bench", "small.yaml")
+	min := filepath.Join("testdata", "bench", "minimal.yaml")
+	proj := &Project{root: "."}
 	shellcheck, err := execabs.LookPath("shellcheck")
 	if err != nil {
 		b.Skipf("shellcheck is not found: %s", err)
 	}
+	format := "{{range $ := .}}### Error at line {{$.Line}}, col {{$.Column}} of `{{$.Filepath}}`\\n\\n{{$.Message}}\\n\\n```\\n{{$.Snippet}}\\n```\\n\\n{{end}}"
 
 	bms := []struct {
 		what       string
 		files      []string
 		shellcheck string
+		format     string
 	}{
 		{
 			what:  "minimal",
@@ -148,6 +215,11 @@ func BenchmarkLintWorkflowFiles(b *testing.B) {
 			files:      []string{large, large, large, large, large, large, large, large, large, large},
 			shellcheck: shellcheck,
 		},
+		{
+			what:   "small",
+			files:  []string{small, small, small, small, small, small, small, small, small, small},
+			format: format,
+		},
 	}
 
 	for _, bm := range bms {
@@ -155,10 +227,15 @@ func BenchmarkLintWorkflowFiles(b *testing.B) {
 		if bm.shellcheck != "" {
 			sc = "-shellcheck"
 		}
-		b.Run(fmt.Sprintf("%s%s-%d", bm.what, sc, len(bm.files)), func(b *testing.B) {
+		fm := ""
+		if bm.format != "" {
+			fm = "-format"
+		}
+		b.Run(fmt.Sprintf("%s%s%s-%d", bm.what, sc, fm, len(bm.files)), func(b *testing.B) {
 			for i := 0; i < b.N; i++ {
 				opts := LinterOptions{
 					Shellcheck: bm.shellcheck,
+					Format:     bm.format,
 				}
 
 				l, err := NewLinter(ioutil.Discard, &opts)

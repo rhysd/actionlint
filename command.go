@@ -44,6 +44,11 @@ const commandUsageHeader = `Usage: actionlint [FLAGS] [FILES...] [-]
 
     $ actionlint -
 
+  To serialize errors into JSON, use -format option. It allows to format error
+  messages flexibly with Go template syntax.
+
+    $ actionlint -format '{{json .}}'
+
 Documents:
 
   https://github.com/rhysd/actionlint/tree/main/docs
@@ -125,6 +130,7 @@ func (cmd *Command) Main(args []string) int {
 	flags.StringVar(&opts.Shellcheck, "shellcheck", "shellcheck", "Command name or file path of \"shellcheck\" external command")
 	flags.StringVar(&opts.Pyflakes, "pyflakes", "pyflakes", "Command name or file path of \"pyflakes\" external command")
 	flags.BoolVar(&opts.Oneline, "oneline", false, "Use one line per one error. Useful for reading error messages from programs")
+	flags.StringVar(&opts.Format, "format", "", "Custom template to format error messages in Go template syntax. See https://github.com/rhysd/actionlint/tree/main/docs/usage.md#format")
 	flags.StringVar(&opts.ConfigFile, "config-file", "", "File path to config file")
 	flags.BoolVar(&initConfig, "init-config", false, "Generate default config file at .github/actionlint.yaml in current project")
 	flags.BoolVar(&noColor, "no-color", false, "Disable colorful output")

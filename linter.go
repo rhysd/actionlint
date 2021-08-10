@@ -76,6 +76,9 @@ type LinterOptions struct {
 	// ConfigFile is a path to config file. Empty string means no config file path is given. In
 	// the case, actionlint will try to read config from .github/actionlint.yaml.
 	ConfigFile string
+	// Format is a custom template to format error messages. It must follow Go Template format and
+	// contain at least one {{ }} placeholder. https://pkg.go.dev/text/template
+	Format string
 	// More options will come here
 }
 
@@ -90,6 +93,7 @@ type Linter struct {
 	pyflakes      string
 	ignorePats    []*regexp.Regexp
 	defaultConfig *Config
+	errFmt        *ErrorFormatter
 }
 
 // NewLinter creates a new Linter instance.
@@ -139,6 +143,15 @@ func NewLinter(out io.Writer, opts *LinterOptions) (*Linter, error) {
 		ignore = append(ignore, r)
 	}
 
+	var formatter *ErrorFormatter
+	if opts.Format != "" {
+		f, err := NewErrorFormatter(opts.Format)
+		if err != nil {
+			return nil, err
+		}
+		formatter = f
+	}
+
 	return &Linter{
 		NewProjects(),
 		out,
@@ -149,6 +162,7 @@ func NewLinter(out io.Writer, opts *LinterOptions) (*Linter, error) {
 		opts.Pyflakes,
 		ignore,
 		cfg,
+		formatter,
 	}, nil
 }
 
@@ -320,10 +334,24 @@ func (l *Linter) LintFiles(filepaths []string, project *Project) ([]*Error, erro
 	}
 
 	all := make([]*Error, 0, total)
-	for i := range ws {
-		w := &ws[i]
-		l.printErrors(w.errs, w.src)
-		all = append(all, w.errs...)
+	if l.errFmt != nil {
+		temp := make([]*ErrorTemplateFields, 0, total)
+		for i := range ws {
+			w := &ws[i]
+			for _, err := range w.errs {
+				temp = append(temp, err.GetTemplateFields(w.src))
+			}
+			all = append(all, w.errs...)
+		}
+		if err := l.errFmt.Print(l.out, temp); err != nil {
+			return nil, err
+		}
+	} else {
+		for i := range ws {
+			w := &ws[i]
+			l.printErrors(w.errs, w.src)
+			all = append(all, w.errs...)
+		}
 	}
 
 	l.log("Found", total, "errors in", n, "files")
@@ -359,7 +387,11 @@ func (l *Linter) LintFile(path string, project *Project) ([]*Error, error) {
 		return nil, err
 	}
 
-	l.printErrors(errs, src)
+	if l.errFmt != nil {
+		l.errFmt.PrintErrors(l.out, errs, src)
+	} else {
+		l.printErrors(errs, src)
+	}
 	return errs, err
 }
 
@@ -376,7 +408,11 @@ func (l *Linter) Lint(path string, content []byte, project *Project) ([]*Error, 
 	if err != nil {
 		return nil, err
 	}
-	l.printErrors(errs, content)
+	if l.errFmt != nil {
+		l.errFmt.PrintErrors(l.out, errs, content)
+	} else {
+		l.printErrors(errs, content)
+	}
 	return errs, nil
 }
 

@@ -41,6 +41,114 @@ processes.
 actionlint -shellcheck= -pyflakes=
 ```
 
+<a name="format"></a>
+### Format error messages
+
+`-format` option can flexibly format error messages with [Go template syntax][go-template].
+
+Before explaning the formatting details, let's see some examples.
+
+#### Example: Serialized into JSON
+
+```sh
+actionlint -format '{{json .}}'
+```
+
+Output:
+
+```
+[{"message":"unexpected key \"branch\" for ...
+```
+
+#### Example: Markdown
+
+````sh
+actionlint -format '{{range $err := .}}### Error at line {{$err.Line}}, col {{$err.Column}} of `{{$err.Filepath}}`\n\n{{$err.Message}}\n\n```\n{{$err.Snippet}}\n```\n\n{{end}}'
+````
+
+Output:
+
+````
+### Error at line 21, col 20 of `test.yaml`
+
+property "platform" is not defined in object type {os: string}
+
+```
+          key: ${{ matrix.platform }}-node-${{ hashFiles('**/package-lock.json') }}
+                   ^~~~~~~~~~~~~~~
+```
+````
+
+#### Example: Serialized in [JSON Lines][jsonl]
+
+```sh
+actionlint -format '{{range $err := .}}{{json $err}}{{end}}'
+```
+
+Output:
+
+```
+{"message":"unexpected key \"branch\" for ...
+{"message":"character '\\' is invalid for branch ...
+{"message":"label \"linux-latest\" is unknown. ...
+```
+
+#### Example: [Error annotation][ga-annotate-error] on GitHub Actions
+
+````sh
+actionlint -format '{{range $err := .}}::error file={{$err.Filepath}},line={{$err.Line}},col={{$err.Column}}::{{$err.Message}}%0A```%0A{{replace $err.Snippet "\\n" "%0A"}}%0A```\n{{end}}' -ignore 'SC2016:'
+````
+
+Output:
+
+<img src="https://github.com/rhysd/ss/blob/master/actionlint/ga-annotate.png?raw=true" alt="annotations on GitHub Actions" width="731" height="522"/>
+
+To include newlines in the annotation body, it prints `%0A`. (ref [actions/toolkit#193](https://github.com/actions/toolkit/issues/193)).
+And it suppresses `SC2016` shellcheck rule error since it complains about the template argument.
+
+Basically it is more recommended to use reviewdog or Problem Matchers as explained in ['Tools integration' section](#tools-integ)
+below.
+
+#### Formatting syntax
+
+In [Go template syntax][go-template], `.` within `{{ }}` means the target object. Here, the target object is a sequence of error
+objects.
+
+The sequence can be traversed with `range` statement, which is like `for ... = range ... {}` in Go.
+
+```
+{{range $err = .}} this part iterates error objects with the iteration variable $err {{end}}
+```
+
+The error object has the following fields.
+
+| Field               | Description                                        | Example                                                          |
+|---------------------|----------------------------------------------------|------------------------------------------------------------------|
+| `{{$err.Message}}`  | Body of error message                              | `property "platform" is not defined in object type {os: string}` |
+| `{{$err.Snippet}}`  | Code snippet to indicate error position            | `          node_version: 16.x\n          ^~~~~~~~~~~~~`          |
+| `{{$err.Kind}}`     | Name of rule the error belongs to                  | `expression`                                                     |
+| `{{$err.Filepath}}` | Canonical relative file path of the error position | `.github/workflows/ci.yaml`                                      |
+| `{{$err.Line}}`     | Line number of the error position (1-based)        | `21`                                                             |
+| `{{$err.Column}}`   | Column number of the error position (1-based)      | `20`                                                             |
+
+For example, the following simple iteration body
+
+```
+line is {{$err.Line}}, col is {{$err.Column}}, message is {{$err.Message | printf "%q"}}
+```
+
+will produce output like below.
+
+```
+line is 21, col is 20, message is "property \"platform\" is not defined in object type {os: string}"
+```
+
+In `{{ }}` placeholder, input can be piped and action can be used to transform texts. In above example, the message is piped with
+`|` and transformed with `printf "%q"`. Most useful action would be `json` as we already used it in the above JSON example. It
+serializes the given object into JSON string followed by newline character.
+
+Note that special characters escaped with back slash like `\n` in the format string are automatically unespcaed.
+
 ### Exit status
 
 `actionlint` command exits with one of the following exit statuses.
@@ -111,12 +219,70 @@ table moves a cursor to position of the error in the code editor.
 
 Go APIs are available. See [the Go API document](api.md) for more details.
 
+
+<a name="tools-integ"></a>
 ## Tools integration
 
-These tools have integration with actionlint:
+### [reviewdog/action-actionlint][reviewdog-actionlint]
 
-- **[reviewdog/action-actionlint][reviewdog-actionlint]**: [reviewdog][] is an automated review tool for various code hosting
-  services. It officially supports actionlint. You can check errors from actionlint easily in inline comments on code review.
+[reviewdog][] is an automated review tool for various code hosting services. It officially supports actionlint. You can check
+errors from actionlint easily with inline review comments at pull request review.
+
+The usage is easy. Run `reviewdog/action-actionlint` in your workflow as follows.
+
+```yaml
+name: reviewdog
+on: [pull_request]
+jobs:
+  actionlint:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v2
+      - uses: reviewdog/action-actionlint@v1
+```
+
+### Problem Matchers
+
+[Problem Matchers][problem-matchers] is a feature to extract GitHub Actions annotations from terminal outputs of linters.
+
+Put `.github/actionlint-matcher.json` in your repository with the following contents:
+
+```json
+{
+  "problemMatcher": [
+    {
+      "owner": "actionlint",
+      "pattern": [
+        {
+          "regexp": "^(.+):(\\d+):(\\d+): (.+)\\[(.+)\\]$",
+          "file": 1,
+          "line": 2,
+          "column": 3,
+          "message": 4,
+          "code": 5
+        }
+      ]
+    }
+  ]
+}
+```
+
+Then enable the matcher using `add-matcher` command before running `actionlint` in the step of your workflow.
+
+```yaml
+- name: Check workflow files
+  run: |
+    echo "::add-matcher::.github/actionlint-matcher.json"
+    bash <(curl https://raw.githubusercontent.com/rhysd/actionlint/main/scripts/download-actionlint.bash)
+    ./actionlint
+  shell: bash
+```
+
+Note that `-color` option is not available because ANSI color sequences prevent the matcher from matching the error messages.
+
+When you change your workflow and the changed line causes a new error, CI will annotate the diff with the extracted error message.
+
+<img src="https://github.com/rhysd/ss/blob/master/actionlint/problem-matcher.png?raw=true" alt="annotation by Problem Matchers" width="715" height="221"/>
 
 ---
 
@@ -125,3 +291,7 @@ These tools have integration with actionlint:
 [reviewdog-actionlint]: https://github.com/reviewdog/action-actionlint
 [reviewdog]: https://github.com/reviewdog/reviewdog
 [cmd-manual]: https://rhysd.github.io/actionlint/usage.html
+[go-template]: https://pkg.go.dev/text/template
+[ga-annotate-error]: https://docs.github.com/en/actions/reference/workflow-commands-for-github-actions#setting-an-error-message
+[jsonl]: https://jsonlines.org/
+[problem-matchers]: https://github.com/actions/toolkit/blob/master/docs/problem-matchers.md

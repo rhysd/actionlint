@@ -1,0 +1,8 @@
+on:
+  push:
+    branch: main
+jobs:
+  test:
+    runs-on: linux-latest
+    steps:
+      - uses: actions/checkout@v2

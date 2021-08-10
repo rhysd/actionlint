@@ -2,15 +2,28 @@ package actionlint
 
 import (
 	"bytes"
+	"encoding/json"
+	"errors"
+	"io"
+	"io/ioutil"
+	"math"
 	"sort"
 	"strconv"
+	"strings"
 	"testing"
 
 	"github.com/fatih/color"
+	"github.com/google/go-cmp/cmp"
 )
 
 func init() {
 	color.NoColor = true
+}
+
+type testErrorWriter struct{}
+
+func (w testErrorWriter) Write(b []byte) (int, error) {
+	return 0, errors.New("dummy write error")
 }
 
 func TestErrorErrorAt(t *testing.T) {
@@ -255,5 +268,223 @@ func TestErrorSortByErrorPosition(t *testing.T) {
 				}
 			}
 		})
+	}
+}
+
+func TestErrorGetTemplateFields(t *testing.T) {
+	testCases := []struct {
+		message string
+		column  int
+		source  string
+		snippet string
+	}{
+		{
+			message: "simple message with source",
+			column:  1,
+			source:  "this is source",
+			snippet: "this is source\n^~~~",
+		},
+		{
+			message: "simple message",
+			column:  1,
+			snippet: "",
+		},
+		{
+			message: "error at zero column",
+			column:  0,
+			source:  "this is source",
+			snippet: "this is source",
+		},
+	}
+
+	for i, tc := range testCases {
+		t.Run(strconv.Itoa(i), func(t *testing.T) {
+			err := errorAt(&Pos{1, tc.column}, "kind", tc.message)
+			err.Filepath = "filename.txt"
+			f := err.GetTemplateFields([]byte(tc.source))
+			if f.Message != tc.message {
+				t.Fatalf("wanted %q but have %q", tc.message, f.Message)
+			}
+			if f.Line != err.Line {
+				t.Fatalf("wanted %d but have %d", err.Line, f.Line)
+			}
+			if f.Column != tc.column {
+				t.Fatalf("wanted %d but have %d", tc.column, f.Column)
+			}
+			if f.Filepath != err.Filepath {
+				t.Fatalf("wanted %q but have %q", err.Filepath, f.Filepath)
+			}
+			if f.Kind != err.Kind {
+				t.Fatalf("wanted %q but have %q", err.Kind, f.Kind)
+			}
+			if f.Snippet != tc.snippet {
+				t.Fatalf("wanted %q but have %q", tc.snippet, f.Snippet)
+			}
+		})
+	}
+}
+
+var testErrorTemplateFields = []*ErrorTemplateFields{
+	{
+		Message:  "message 1",
+		Filepath: "file1",
+		Line:     1,
+		Column:   2,
+		Snippet:  "snippet 1",
+		Kind:     "kind1",
+	},
+	{
+		Message:  "message 2",
+		Filepath: "file2",
+		Line:     3,
+		Column:   4,
+		Snippet:  "snippet 2",
+		Kind:     "kind2",
+	},
+}
+
+func TestErrorPrintFormattedWithTemplateFields(t *testing.T) {
+	testCases := []struct {
+		temp string
+		want string
+	}{
+		{
+			temp: "{{(index . 0).Message}} {{(index . 1).Message}}",
+			want: "message 1 message 2",
+		},
+		{
+			temp: "{{range $ = .}}({{$.Line}}, {{$.Column}}){{end}}",
+			want: "(1, 2)(3, 4)",
+		},
+		{
+			temp: "{{range $ = .}}{{json $.Snippet}}{{end}}",
+			want: "\"snippet 1\"\n\"snippet 2\"\n",
+		},
+		{
+			temp: "{{range $ = .}}{{replace $.Kind \"kind\" \"king\"}}{{end}}",
+			want: "king1king2",
+		},
+	}
+
+	for _, tc := range testCases {
+		t.Run(tc.temp, func(t *testing.T) {
+			f, err := NewErrorFormatter(tc.temp)
+			if err != nil {
+				t.Fatal(err)
+			}
+			var b strings.Builder
+			if err := f.Print(&b, testErrorTemplateFields); err != nil {
+				t.Fatal(err)
+			}
+			have := b.String()
+			if tc.want != have {
+				t.Fatalf("wanted %q but have %q", tc.want, have)
+			}
+		})
+	}
+}
+
+func TestErrorPrintFormattedErrors(t *testing.T) {
+	errs := []*Error{
+		errorAt(&Pos{1, 1}, "kind1", "error1"),
+		errorAt(&Pos{1, 0}, "kind2", "error2"),
+	}
+
+	f, err := NewErrorFormatter("{{range $ = .}}({{$.Message | printf \"%q\"}},{{$.Snippet | printf \"%q\"}}){{end}}")
+	if err != nil {
+		t.Fatal(err)
+	}
+	var b strings.Builder
+	if err := f.PrintErrors(&b, errs, []byte("this is source")); err != nil {
+		t.Fatal(err)
+	}
+	have := b.String()
+	want := `("error1","this is source\n^~~~")("error2","this is source")`
+	if want != have {
+		t.Fatalf("wanted %q but have %q", want, have)
+	}
+}
+
+func TestErrorPrintSerializedIntoJSON(t *testing.T) {
+	f, err := NewErrorFormatter("{{json .}}")
+	if err != nil {
+		t.Fatal(err)
+	}
+	var b bytes.Buffer
+	if err := f.Print(&b, testErrorTemplateFields); err != nil {
+		t.Fatal(err)
+	}
+
+	decoded := []*ErrorTemplateFields{}
+	if err := json.Unmarshal(b.Bytes(), &decoded); err != nil {
+		t.Fatal(err)
+	}
+	if !cmp.Equal(testErrorTemplateFields, decoded) {
+		t.Fatal(cmp.Diff(testErrorTemplateFields, decoded))
+	}
+}
+
+func TestErrorNewErrorFormatterError(t *testing.T) {
+	testCases := []struct {
+		temp string
+		want string
+	}{
+		{"hello", "template to format error messages must contain at least one {{ }} placeholder"},
+		{"{{xxx", "template \"{{xxx\" to format error messages could not be parsed"},
+	}
+
+	for _, tc := range testCases {
+		t.Run(tc.temp, func(t *testing.T) {
+			_, err := NewErrorFormatter(tc.temp)
+			if err == nil {
+				t.Fatal("error did not occur")
+			}
+			if !strings.Contains(err.Error(), tc.want) {
+				t.Fatalf("%q is not contained in error message %q", tc.want, err.Error())
+			}
+		})
+	}
+}
+
+func TestErrorFormatterPrintError(t *testing.T) {
+	testCases := []struct {
+		out  io.Writer
+		temp string
+		want string
+	}{
+		{ioutil.Discard, "{{.Foo}}", "can't evaluate field Foo in type"},
+		{testErrorWriter{}, "{{(index . 0).Message}}", "dummy write error"},
+	}
+
+	for _, tc := range testCases {
+		t.Run(tc.temp, func(t *testing.T) {
+			f, err := NewErrorFormatter(tc.temp)
+			if err != nil {
+				t.Fatal(err)
+			}
+			err = f.Print(tc.out, testErrorTemplateFields)
+			if err == nil {
+				t.Fatal("error did not occur")
+			}
+			if !strings.Contains(err.Error(), tc.want) {
+				t.Fatalf("%q is not contained in error message %q", tc.want, err.Error())
+			}
+		})
+	}
+}
+
+func TestErrorFormatterPrintJSONEncodeError(t *testing.T) {
+	f, err := NewErrorFormatter("{{json .}}")
+	if err != nil {
+		t.Fatal(err)
+	}
+	var b strings.Builder
+	err = f.temp.Execute(&b, math.NaN())
+	if err == nil {
+		t.Fatal("error did not occur", b.String())
+	}
+	want := "could not encode template value into JSON"
+	if !strings.Contains(err.Error(), want) {
+		t.Fatalf("%q is not contained in error message %q", want, err.Error())
 	}
 }
