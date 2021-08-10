@@ -167,8 +167,12 @@ func (rule *RuleExpression) VisitStep(n *Step) error {
 		rule.checkString(e.WorkingDirectory)
 	case *ExecAction:
 		rule.checkString(e.Uses)
-		for _, i := range e.Inputs {
-			rule.checkString(i.Value)
+		for n, i := range e.Inputs {
+			if strings.HasPrefix(e.Uses.Value, "actions/github-script@") && n == "script" {
+				rule.checkScriptString(i.Value)
+			} else {
+				rule.checkString(i.Value)
+			}
 		}
 		rule.checkString(e.Entrypoint)
 		rule.checkString(e.Args)
