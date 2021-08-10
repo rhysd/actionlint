@@ -103,17 +103,14 @@ func (u *UntrustedInputChecker) done() {
 }
 
 func (u *UntrustedInputChecker) push() {
-	if u.cur != nil {
-		u.stack = append(u.stack, u.cur)
-		u.cur = nil
-	}
+	u.stack = append(u.stack, u.cur)
+	u.cur = nil
 }
 
 func (u *UntrustedInputChecker) pop() {
-	if l := len(u.stack); l > 0 {
-		u.cur = u.stack[l-1]
-		u.stack = u.stack[:l-1]
-	}
+	i := len(u.stack) - 1
+	u.cur = u.stack[i]
+	u.stack = u.stack[:i]
 }
 
 func (u *UntrustedInputChecker) checkVar(name string) bool {
