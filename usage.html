@@ -127,6 +127,8 @@ argument. It reads stdin and checks it as workflow file:</p>
 <dt class="flush"><code>-color</code></dt><dd><p>Always enable colorful output. This is useful to force colorful outputs</p></dd>
 <dt><code>-config-file</code> <var>PATH</var></dt><dd><p>File path to config file</p></dd>
 <dt class="flush"><code>-debug</code></dt><dd><p>Enable debug output (for development)</p></dd>
+<dt><code>-format</code> <var>FORMAT</var></dt><dd><p>Custom template to format error messages in Go template syntax. See
+https://github.com/rhysd/actionlint/tree/main/docs/usage.md#format</p></dd>
 <dt><code>-ignore</code> <var>PATTERN</var></dt><dd><p>Regular expression matching to error messages you want to ignore. This flag is repeatable. For
 example, <code>-gnore A -ignore B</code> ignores errors whose message includes "A" OR "B".</p></dd>
 <dt><code>-init-config</code></dt><dd><p>Generate default config file at <code>.github/actionlint.yaml</code> in current project</p></dd>
