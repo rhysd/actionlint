@@ -6,6 +6,7 @@ import (
 	"io/ioutil"
 	"os"
 	"path/filepath"
+	"runtime"
 	"strings"
 	"testing"
 
@@ -121,6 +122,14 @@ func TestLinterFormatErrorMessageOK(t *testing.T) {
 			}
 
 			have := b.Bytes()
+			// Fix path separators on Windows
+			if runtime.GOOS == "windows" {
+				slash := []byte(filepath.ToSlash(infile))
+				have = bytes.ReplaceAll(have, []byte(infile), slash)
+				escaped := bytes.ReplaceAll(slash, []byte{'/'}, []byte{'\\', '\\'})
+				have = bytes.ReplaceAll(have, escaped, slash)
+			}
+
 			if !cmp.Equal(want, have) {
 				t.Fatal(cmp.Diff(want, have))
 			}
