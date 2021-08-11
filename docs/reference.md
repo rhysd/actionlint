@@ -14,7 +14,8 @@ This document describes links to resources.
 - CRON syntax: https://pubs.opengroup.org/onlinepubs/9699919799/utilities/crontab.html#tag_20_25_07
 - shellcheck: https://github.com/koalaman/shellcheck
 - pyflakes: https://github.com/PyCQA/pyflakes
-- Japanese blog post for this project: https://rhysd.hatenablog.com/entry/2021/07/11/214313
+- GitHub Actions のワークフローをチェックする actionlint をつくった (Japanese blog post): https://rhysd.hatenablog.com/entry/2021/07/11/214313
+- actionlint v1.4 → v1.6 で実装した新機能の紹介 (Japanese blog post): https://rhysd.hatenablog.com/entry/2021/08/11/221044
 
 ---
 
