@@ -73,8 +73,6 @@ jobs:
         run: cd ./playground && npm run lint
       - name: Run tests for wasm
         run: cd ./playground && npm test
-      - name: Test actionlint-matcher.json
-        run: node ./scripts/generate-actionlint-matcher/test.js
   lint:
     name: Lint
     runs-on: ubuntu-latest
