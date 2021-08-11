@@ -241,6 +241,7 @@ jobs:
       - uses: reviewdog/action-actionlint@v1
 ```
 
+<a name="problem-matchers"></a>
 ### Problem Matchers
 
 [Problem Matchers][problem-matchers] is a feature to extract GitHub Actions annotations from terminal outputs of linters.
