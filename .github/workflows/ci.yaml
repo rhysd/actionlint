@@ -43,7 +43,9 @@ jobs:
       - run: go test -v -race -coverprofile coverage.txt -covermode=atomic ./ ./scripts/...
       - run: go tool cover -func ./coverage.txt
       # Dog fooding 🐶
-      - run: ./actionlint -color
+      - run: |
+          echo "::add-matcher::.github/actionlint-matcher.json"
+          ./actionlint -color
       - uses: codecov/codecov-action@v2
         with:
           env_vars: OS
