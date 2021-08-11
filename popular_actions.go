@@ -1889,6 +1889,7 @@ var PopularActions = map[string]*ActionMetadata{
 				Default: &popularActionDefaultValue3,
 			},
 		},
+		SkipOutputs: true,
 	},
 	"getsentry/paths-filter@v2": {
 		Name: "Paths Changes Filter",
@@ -1910,9 +1911,7 @@ var PopularActions = map[string]*ActionMetadata{
 			},
 			"working-directory": {},
 		},
-		Outputs: map[string]struct{}{
-			"changes": {},
-		},
+		SkipOutputs: true,
 	},
 	"github/codeql-action/analyze@v1": {
 		Name: "CodeQL: Finish",
@@ -3080,16 +3079,17 @@ var PopularActions = map[string]*ActionMetadata{
 	"softprops/action-gh-release@v1": {
 		Name: "GH Release",
 		Inputs: map[string]*ActionMetadataInput{
-			"body":                    {},
-			"body_path":               {},
-			"draft":                   {},
-			"fail_on_unmatched_files": {},
-			"files":                   {},
-			"name":                    {},
-			"prerelease":              {},
-			"repository":              {},
-			"tag_name":                {},
-			"target_commitish":        {},
+			"body":                     {},
+			"body_path":                {},
+			"discussion_category_name": {},
+			"draft":                    {},
+			"fail_on_unmatched_files":  {},
+			"files":                    {},
+			"name":                     {},
+			"prerelease":               {},
+			"repository":               {},
+			"tag_name":                 {},
+			"target_commitish":         {},
 			"token": {
 				Default: &popularActionDefaultValue3,
 			},
