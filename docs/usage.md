@@ -245,27 +245,7 @@ jobs:
 
 [Problem Matchers][problem-matchers] is a feature to extract GitHub Actions annotations from terminal outputs of linters.
 
-Put `.github/actionlint-matcher.json` in your repository with the following contents:
-
-```json
-{
-  "problemMatcher": [
-    {
-      "owner": "actionlint",
-      "pattern": [
-        {
-          "regexp": "^(.+):(\\d+):(\\d+): (.+)\\[(.+)\\]$",
-          "file": 1,
-          "line": 2,
-          "column": 3,
-          "message": 4,
-          "code": 5
-        }
-      ]
-    }
-  ]
-}
-```
+Copy [actionlint-matcher.json][actionlint-matcher] to `.github/actionlint-matcher.json` in your repository.
 
 Then enable the matcher using `add-matcher` command before running `actionlint` in the step of your workflow.
 
@@ -274,7 +254,7 @@ Then enable the matcher using `add-matcher` command before running `actionlint` 
   run: |
     echo "::add-matcher::.github/actionlint-matcher.json"
     bash <(curl https://raw.githubusercontent.com/rhysd/actionlint/main/scripts/download-actionlint.bash)
-    ./actionlint
+    ./actionlint -color
   shell: bash
 ```
 
@@ -305,3 +285,4 @@ errors by `-ignore` option with super-linter. See [github/super-linter#1853](htt
 [jsonl]: https://jsonlines.org/
 [problem-matchers]: https://github.com/actions/toolkit/blob/master/docs/problem-matchers.md
 [super-linter]: https://github.com/github/super-linter
+[actionlint-matcher]: https://raw.githubusercontent.com/rhysd/actionlint/main/.github/actionlint-matcher.json
