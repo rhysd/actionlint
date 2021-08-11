@@ -1,7 +1,55 @@
+<a name="v1.6.0"></a>
+# [v1.6.0](https://github.com/rhysd/actionlint/releases/tag/v1.6.0) - 11 Aug 2021
+
+- Check potentially untrusted inputs to prevent [a script injection vulnerability](https://securitylab.github.com/research/github-actions-untrusted-input/) at `run:` and `script` input of [actions/github-script](https://github.com/actions/github-script). See [the rule document](https://github.com/rhysd/actionlint/blob/main/docs/checks.md#untrusted-inputs) for more explanations and workflow example. (thanks @azu for the feature request at #19)
+
+Incorrect code
+
+```yaml
+- run: echo '${{ github.event.pull_request.title }}'
+```
+
+should be replaced with
+
+```yaml
+- run: echo "issue ${TITLE}"
+  env:
+    TITLE: ${{github.event.issue.title}}
+```
+
+- Add `-format` option to `actionlint` command. It allows to flexibly format error messages as you like with [Go template syntax](https://pkg.go.dev/text/template). See [the usage document](https://github.com/rhysd/actionlint/blob/main/docs/usage.md#format) for more details. (thanks @ybiquitous for the feature request at #20)
+
+Simple example to output error messages as JSON:
+
+```sh
+actionlint -format '{{json .}}'
+```
+
+More compliated example to output error messages as markdown:
+
+```sh
+actionlint -format '{{range $ := .}}### Error at line {{$.Line}}, col {{$.Column}} of `{{$.Filepath}}`\n\n{{$.Message}}\n\n```\n{{$.Snippet}}\n```\n\n{{end}}'
+```
+
+- Documents are reorganized. Long `README.md` is separated into several document files (#28)
+  - [`README.md`](https://github.com/rhysd/actionlint/blob/main/README.md): Introduction, Quick start, Document links
+  - [`docs/checks.md`](https://github.com/rhysd/actionlint/tree/main/docs/checks.md): Full list of all checks done by actionlint with example inputs, outputs, and playground links
+  - [`docs/install.md`](https://github.com/rhysd/actionlint/tree/main/docs/install.md): Installation instruction
+  - [`docs/usage.md`](https://github.com/rhysd/actionlint/tree/main/docs/usage.md): Advanced usage of `actionlint` command, usage of playground, integration with [reviewdog](https://github.com/reviewdog/reviewdog), [Problem Matchers](https://github.com/actions/toolkit/blob/master/docs/problem-matchers.md), [super-linter](https://github.com/github/super-linter)
+  - [`docs/config.md`](https://github.com/rhysd/actionlint/tree/main/docs/config.md): About configuration file
+  - [`doc/api.md`](https://github.com/rhysd/actionlint/tree/main/docs/api.md): Using actionlint as Go library
+  - [`doc/reference.md`](https://github.com/rhysd/actionlint/tree/main/docs/reference.md): Links to resources
+- Fix checking shell names was not case-insensitive, for example `PowerShell` was detected as invalid shell name
+- Update popular actions data set to the latest
+- Make lexer errors on checking `${{ }}` expressions more meaningful
+
+[Changes][v1.6.0]
+
+
 <a name="v1.5.3"></a>
 # [v1.5.3](https://github.com/rhysd/actionlint/releases/tag/v1.5.3) - 04 Aug 2021
 
-- Now actionlint allows to use any operators outside `${{ }}` on `if:` condition like `if: github.repository_owner == 'rhysd'`. [The official document](https://docs.github.com/en/actions/reference/workflow-syntax-for-github-actions#jobsjob_idif) said that using any operator outside `${{ }}` was invalid even if it was on `if:` condition. However, [github/docs#8786](https://github.com/github/docs/pull/8786) clarified that the document was not correct.
+- Now actionlint allows to use any operators outside `${{ }}` on `if:` condition like `if: github.repository_owner == 'rhysd'` (#22). [The official document](https://docs.github.com/en/actions/reference/workflow-syntax-for-github-actions#jobsjob_idif) said that using any operator outside `${{ }}` was invalid even if it was on `if:` condition. However, [github/docs#8786](https://github.com/github/docs/pull/8786) clarified that the document was not correct.
 
 [Changes][v1.5.3]
 
@@ -260,6 +308,7 @@ See documentation for more details:
 [Changes][v1.0.0]
 
 
+[v1.6.0]: https://github.com/rhysd/actionlint/compare/v1.5.3...v1.6.0
 [v1.5.3]: https://github.com/rhysd/actionlint/compare/v1.5.2...v1.5.3
 [v1.5.2]: https://github.com/rhysd/actionlint/compare/v1.5.1...v1.5.2
 [v1.5.1]: https://github.com/rhysd/actionlint/compare/v1.5.0...v1.5.1
