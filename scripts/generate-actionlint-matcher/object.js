@@ -1,11 +1,11 @@
 const E = '(?:\\x1b\\[\\d+m)'; // Matching to ANSI color escape sequence
-const FILEPATH = '(.+)';
+const FILEPATH = '(.+?)';
 const LINE = '(\\d+)';
 const COL = '(\\d+)';
-const MESSAGE = '(.+)';
+const MESSAGE = '(.+?)';
 const KIND = '\\[(.+)\\]';
 
-const regexp = `^${E}?${FILEPATH}${E}*:${E}*${LINE}${E}*:${E}*${COL}${E}*: ${E}*${MESSAGE}${E}*${KIND}$`;
+const regexp = `^${E}?${FILEPATH}${E}*:${E}*${LINE}${E}*:${E}*${COL}${E}*: ${E}*${MESSAGE}${E}* ${KIND}$`;
 const object = {
     problemMatcher: [
         {
