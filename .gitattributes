@@ -1,3 +1,4 @@
 /testdata/** -text
 /scripts/generate-popular-actions/testdata/** -text
 /scripts/generate-webhook-events/testdata/** -text
+/scripts/generate-actionlint-matcher/test/** -text
