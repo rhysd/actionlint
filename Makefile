@@ -45,11 +45,16 @@ man: man/actionlint.1
 bench:
 	go test -bench Lint -benchmem
 
-actionlint-workflow-ast: ./scripts/actionlint-workflow-ast/main.go
+actionlint-workflow-ast: scripts/actionlint-workflow-ast/main.go
 	go build ./scripts/actionlint-workflow-ast/
 
-.github/actionlint-matcher.json: ./scripts/generate-actionlint-matcher/object.js
+.github/actionlint-matcher.json: scripts/generate-actionlint-matcher/object.js
 	node ./scripts/generate-actionlint-matcher/main.js .github/actionlint-matcher.json
+
+scripts/generate-actionlint-matcher/test/escape.txt: actionlint
+	./actionlint -color ./testdata/err/one_error.yaml > ./scripts/generate-actionlint-matcher/test/escape.txt || true 
+scripts/generate-actionlint-matcher/test/no_escape.txt: actionlint
+	./actionlint -no-color ./testdata/err/one_error.yaml > ./scripts/generate-actionlint-matcher/test/no_escape.txt || true
 
 clean:
 	rm -f ./actionlint ./.testtimestamp ./.staticchecktimestamp ./actionlint_fuzz-fuzz.zip ./man/actionlint.1 ./man/actionlint.1.html ./actionlint-workflow-ast
