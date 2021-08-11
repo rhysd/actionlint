@@ -42,8 +42,8 @@ jobs:
           CGO_ENABLED: 0
       - run: go test -v -race -coverprofile coverage.txt -covermode=atomic ./ ./scripts/...
       - run: go tool cover -func ./coverage.txt
-      # Dog fooding 🐶
-      - run: |
+      - name: Dog fooding 🐶
+        run: |
           echo "::add-matcher::.github/actionlint-matcher.json"
           ./actionlint -color
       - uses: codecov/codecov-action@v2
@@ -73,6 +73,8 @@ jobs:
         run: cd ./playground && npm run lint
       - name: Run tests for wasm
         run: cd ./playground && npm test
+      - name: Test actionlint-matcher.json
+        run: node ./scripts/generate-actionlint-matcher/test.js
   lint:
     name: Lint
     runs-on: ubuntu-latest
