@@ -48,6 +48,9 @@ bench:
 actionlint-workflow-ast: ./scripts/actionlint-workflow-ast/main.go
 	go build ./scripts/actionlint-workflow-ast/
 
+.github/actionlint-matcher.json: ./scripts/generate-actionlint-matcher/object.js
+	node ./scripts/generate-actionlint-matcher/main.js .github/actionlint-matcher.json
+
 clean:
 	rm -f ./actionlint ./.testtimestamp ./.staticchecktimestamp ./actionlint_fuzz-fuzz.zip ./man/actionlint.1 ./man/actionlint.1.html ./actionlint-workflow-ast
 	rm -rf ./corpus ./crashers
