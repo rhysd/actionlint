@@ -141,7 +141,8 @@ var doNotCheckInputs = slugSet{
 // may or may not exist. And they are not listed in action.yml metadata. actionlint cannot check
 // such outputs and fallback into allowing to set any outputs. (#18)
 var doNotCheckOutputs = slugSet{
-	"dorny/paths-filter": {},
+	"dorny/paths-filter":     {},
+	"getsentry/paths-filter": {},
 }
 
 type app struct {
