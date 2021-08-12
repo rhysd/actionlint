@@ -10,17 +10,12 @@ import (
 )
 
 func testGetWantedActionMetadata() *ActionMetadata {
-	def := "anonymous"
 	want := &ActionMetadata{
 		Name: "My action",
-		Inputs: map[string]*ActionMetadataInput{
-			"name": {
-				Default: &def,
-			},
-			"message": {
-				Required: true,
-			},
-			"addition": {},
+		Inputs: ActionMetadataInputs{
+			"name":     false,
+			"message":  true,
+			"addition": false,
 		},
 		Outputs: map[string]struct{}{
 			"user_id": {},

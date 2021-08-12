@@ -289,9 +289,6 @@ var PopularActions = map[string]*ActionMetadata{
 	}
 	sort.Strings(specs)
 
-	defs := map[string]int{}
-	defID := 0
-
 	for _, spec := range specs {
 		meta := actions[spec]
 		fmt.Fprintf(b, "%q: {\n", spec)
@@ -310,25 +307,10 @@ var PopularActions = map[string]*ActionMetadata{
 			}
 			sort.Strings(names)
 
-			fmt.Fprintf(b, "Inputs: map[string]*ActionMetadataInput{\n")
+			fmt.Fprintf(b, "Inputs: ActionMetadataInputs{\n")
 			for _, name := range names {
-				input := meta.Inputs[name]
-				fmt.Fprintf(b, "%q: {\n", name)
-				if input.Required {
-					fmt.Fprintf(b, "Required: true,\n")
-				}
-				if input.Default != nil {
-					var id int
-					if i, ok := defs[*input.Default]; ok {
-						id = i
-					} else {
-						defs[*input.Default] = defID
-						id = defID
-						defID++
-					}
-					fmt.Fprintf(b, "Default: &popularActionDefaultValue%d,\n", id)
-				}
-				fmt.Fprintf(b, "},\n")
+				required := meta.Inputs[name]
+				fmt.Fprintf(b, "%q: %v,\n", name, required)
 			}
 			fmt.Fprintf(b, "},\n")
 		}
@@ -356,14 +338,6 @@ var PopularActions = map[string]*ActionMetadata{
 	}
 
 	fmt.Fprintln(b, "}")
-
-	sortedDefs := make([]string, len(defs))
-	for s, i := range defs {
-		sortedDefs[i] = s
-	}
-	for i, s := range sortedDefs {
-		fmt.Fprintf(b, "var popularActionDefaultValue%d = %q\n", i, s)
-	}
 
 	// Format the generated source with checking Go syntax
 	gen := b.Bytes()
