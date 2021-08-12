@@ -1,1 +1,1 @@
-{"spec":"rhysd/action-setup-vim@v1","metadata":{"name":"Setup Vim","inputs":{"neovim":{"required":false,"default":
+{"spec":"rhysd/action-setup-vim@v1","metadata":{"name":"Setup Vim","inputs":{"neovim":false,
