@@ -163,12 +163,12 @@ func (rule *RuleAction) checkAction(meta *ActionMetadata, exec *ExecAction, desc
 	}
 
 	// Check mandatory inputs are specified
-	for name, input := range meta.Inputs {
-		if input.IsRequired() {
+	for name, required := range meta.Inputs {
+		if required {
 			if _, ok := exec.Inputs[name]; !ok {
 				ns := make([]string, 0, len(meta.Inputs))
-				for n, i := range meta.Inputs {
-					if i.IsRequired() {
+				for n, req := range meta.Inputs {
+					if req {
 						ns = append(ns, n)
 					}
 				}

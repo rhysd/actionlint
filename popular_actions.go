@@ -7,109 +7,56 @@ package actionlint
 var PopularActions = map[string]*ActionMetadata{
 	"8398a7/action-slack@v1": {
 		Name: "action-slack",
-		Inputs: map[string]*ActionMetadataInput{
-			"failedMention": {
-				Default: &popularActionDefaultValue0,
-			},
-			"payload": {},
-			"text":    {},
-			"type":    {},
+		Inputs: map[string]ActionMetadataInputRequired{
+			"failedMention": false,
+			"payload":       false,
+			"text":          false,
+			"type":          false,
 		},
 	},
 	"8398a7/action-slack@v2": {
 		Name: "action-slack",
-		Inputs: map[string]*ActionMetadataInput{
-			"author_name": {
-				Default: &popularActionDefaultValue1,
-			},
-			"channel": {
-				Default: &popularActionDefaultValue2,
-			},
-			"icon_emoji": {
-				Default: &popularActionDefaultValue2,
-			},
-			"icon_url": {
-				Default: &popularActionDefaultValue2,
-			},
-			"mention": {
-				Default: &popularActionDefaultValue2,
-			},
-			"only_mention_fail": {
-				Default: &popularActionDefaultValue2,
-			},
-			"payload": {},
-			"status":  {},
-			"text": {
-				Default: &popularActionDefaultValue2,
-			},
-			"username": {
-				Default: &popularActionDefaultValue2,
-			},
+		Inputs: map[string]ActionMetadataInputRequired{
+			"author_name":       false,
+			"channel":           false,
+			"icon_emoji":        false,
+			"icon_url":          false,
+			"mention":           false,
+			"only_mention_fail": false,
+			"payload":           false,
+			"status":            false,
+			"text":              false,
+			"username":          false,
 		},
 	},
 	"8398a7/action-slack@v3": {
 		Name: "action-slack",
-		Inputs: map[string]*ActionMetadataInput{
-			"author_name": {
-				Default: &popularActionDefaultValue1,
-			},
-			"channel": {
-				Default: &popularActionDefaultValue2,
-			},
-			"custom_payload": {},
-			"fields": {
-				Default: &popularActionDefaultValue2,
-			},
-			"github_base_url": {
-				Default: &popularActionDefaultValue2,
-			},
-			"github_token": {
-				Default: &popularActionDefaultValue3,
-			},
-			"icon_emoji": {
-				Default: &popularActionDefaultValue2,
-			},
-			"icon_url": {
-				Default: &popularActionDefaultValue2,
-			},
-			"if_mention": {
-				Default: &popularActionDefaultValue2,
-			},
-			"job_name": {
-				Default: &popularActionDefaultValue2,
-			},
-			"mention": {
-				Default: &popularActionDefaultValue2,
-			},
-			"status": {
-				Required: true,
-			},
-			"text": {
-				Default: &popularActionDefaultValue2,
-			},
-			"username": {
-				Default: &popularActionDefaultValue2,
-			},
+		Inputs: map[string]ActionMetadataInputRequired{
+			"author_name":     false,
+			"channel":         false,
+			"custom_payload":  false,
+			"fields":          false,
+			"github_base_url": false,
+			"github_token":    false,
+			"icon_emoji":      false,
+			"icon_url":        false,
+			"if_mention":      false,
+			"job_name":        false,
+			"mention":         false,
+			"status":          true,
+			"text":            false,
+			"username":        false,
 		},
 	},
 	"Azure/container-scan@v0": {
 		Name: "Container image scan",
-		Inputs: map[string]*ActionMetadataInput{
-			"image-name": {
-				Required: true,
-			},
-			"password": {},
-			"run-quality-checks": {
-				Default: &popularActionDefaultValue4,
-			},
-			"severity-threshold": {
-				Default: &popularActionDefaultValue5,
-			},
-			"token": {
-				Required: true,
-				Default:  &popularActionDefaultValue3,
-			},
-			"username": {},
+		Inputs: map[string]ActionMetadataInputRequired{
+			"image-name":         true,
+			"password":           false,
+			"run-quality-checks": false,
+			"severity-threshold": false,
+			"token":              false,
+			"username":           false,
 		},
 		Outputs: map[string]struct{}{
 			"check-run-url":    {},
@@ -118,27 +65,15 @@ var PopularActions = map[string]*ActionMetadata{
 	},
 	"Azure/functions-action@v1": {
 		Name: "Azure Functions Action",
-		Inputs: map[string]*ActionMetadataInput{
-			"app-name": {
-				Required: true,
-			},
-			"enable-oryx-build": {
-				Default: &popularActionDefaultValue6,
-			},
-			"package": {
-				Default: &popularActionDefaultValue7,
-			},
-			"publish-profile": {},
-			"respect-funcignore": {
-				Default: &popularActionDefaultValue6,
-			},
-			"respect-pom-xml": {
-				Default: &popularActionDefaultValue6,
-			},
-			"scm-do-build-during-deployment": {
-				Default: &popularActionDefaultValue6,
-			},
-			"slot-name": {},
+		Inputs: map[string]ActionMetadataInputRequired{
+			"app-name":                       true,
+			"enable-oryx-build":              false,
+			"package":                        false,
+			"publish-profile":                false,
+			"respect-funcignore":             false,
+			"respect-pom-xml":                false,
+			"scm-do-build-during-deployment": false,
+			"slot-name":                      false,
 		},
 		Outputs: map[string]struct{}{
 			"app-url": {},
@@ -146,80 +81,49 @@ var PopularActions = map[string]*ActionMetadata{
 	},
 	"EnricoMi/publish-unit-test-result-action@v1": {
 		Name: "Publish Unit Test Results",
-		Inputs: map[string]*ActionMetadataInput{
-			"check_name": {
-				Default: &popularActionDefaultValue8,
-			},
-			"check_run_annotations": {
-				Default: &popularActionDefaultValue9,
-			},
-			"check_run_annotations_branch": {},
-			"comment_mode": {
-				Default: &popularActionDefaultValue10,
-			},
-			"comment_on_pr": {},
-			"comment_title": {},
-			"commit":        {},
-			"compare_to_earlier_commit": {
-				Default: &popularActionDefaultValue4,
-			},
-			"deduplicate_classes_by_file_name": {},
-			"fail_on": {
-				Default: &popularActionDefaultValue11,
-			},
-			"files": {
-				Required: true,
-			},
-			"github_retries": {
-				Default: &popularActionDefaultValue12,
-			},
-			"github_token": {
-				Required: true,
-				Default:  &popularActionDefaultValue3,
-			},
-			"hide_comments": {
-				Default: &popularActionDefaultValue13,
-			},
-			"pull_request_build": {
-				Default: &popularActionDefaultValue14,
-			},
-			"report_individual_runs": {},
-			"seconds_between_github_reads": {
-				Default: &popularActionDefaultValue15,
-			},
-			"seconds_between_github_writes": {
-				Default: &popularActionDefaultValue16,
-			},
-			"test_changes_limit": {},
+		Inputs: map[string]ActionMetadataInputRequired{
+			"check_name":                       false,
+			"check_run_annotations":            false,
+			"check_run_annotations_branch":     false,
+			"comment_mode":                     false,
+			"comment_on_pr":                    false,
+			"comment_title":                    false,
+			"commit":                           false,
+			"compare_to_earlier_commit":        false,
+			"deduplicate_classes_by_file_name": false,
+			"fail_on":                          false,
+			"files":                            true,
+			"github_retries":                   false,
+			"github_token":                     false,
+			"hide_comments":                    false,
+			"pull_request_build":               false,
+			"report_individual_runs":           false,
+			"seconds_between_github_reads":     false,
+			"seconds_between_github_writes":    false,
+			"test_changes_limit":               false,
 		},
 	},
 	"JamesIves/github-pages-deploy-action@releases/v3": {
 		Name: "Deploy to GitHub Pages",
-		Inputs: map[string]*ActionMetadataInput{
-			"ACCESS_TOKEN": {},
-			"BASE_BRANCH":  {},
-			"BRANCH": {
-				Required: true,
-			},
-			"CLEAN": {
-				Default: &popularActionDefaultValue4,
-			},
-			"CLEAN_EXCLUDE":  {},
-			"COMMIT_MESSAGE": {},
-			"FOLDER": {
-				Required: true,
-			},
-			"GITHUB_TOKEN":     {},
-			"GIT_CONFIG_EMAIL": {},
-			"GIT_CONFIG_NAME":  {},
-			"LFS":              {},
-			"PRESERVE":         {},
-			"REPOSITORY_NAME":  {},
-			"SILENT":           {},
-			"SINGLE_COMMIT":    {},
-			"SSH":              {},
-			"TARGET_FOLDER":    {},
-			"WORKSPACE":        {},
+		Inputs: map[string]ActionMetadataInputRequired{
+			"ACCESS_TOKEN":     false,
+			"BASE_BRANCH":      false,
+			"BRANCH":           true,
+			"CLEAN":            false,
+			"CLEAN_EXCLUDE":    false,
+			"COMMIT_MESSAGE":   false,
+			"FOLDER":           true,
+			"GITHUB_TOKEN":     false,
+			"GIT_CONFIG_EMAIL": false,
+			"GIT_CONFIG_NAME":  false,
+			"LFS":              false,
+			"PRESERVE":         false,
+			"REPOSITORY_NAME":  false,
+			"SILENT":           false,
+			"SINGLE_COMMIT":    false,
+			"SSH":              false,
+			"TARGET_FOLDER":    false,
+			"WORKSPACE":        false,
 		},
 		Outputs: map[string]struct{}{
 			"DEPLOYMENT_STATUS": {},
@@ -227,30 +131,22 @@ var PopularActions = map[string]*ActionMetadata{
 	},
 	"JamesIves/github-pages-deploy-action@releases/v4": {
 		Name: "Deploy to GitHub Pages",
-		Inputs: map[string]*ActionMetadataInput{
-			"branch": {
-				Required: true,
-			},
-			"clean": {
-				Default: &popularActionDefaultValue4,
-			},
-			"clean-exclude":  {},
-			"commit-message": {},
-			"dry-run":        {},
-			"folder": {
-				Required: true,
-			},
-			"git-config-email": {},
-			"git-config-name":  {},
-			"repository-name":  {},
-			"silent":           {},
-			"single-commit":    {},
-			"ssh-key":          {},
-			"target-folder":    {},
-			"token": {
-				Default: &popularActionDefaultValue3,
-			},
-			"workspace": {},
+		Inputs: map[string]ActionMetadataInputRequired{
+			"branch":           true,
+			"clean":            false,
+			"clean-exclude":    false,
+			"commit-message":   false,
+			"dry-run":          false,
+			"folder":           true,
+			"git-config-email": false,
+			"git-config-name":  false,
+			"repository-name":  false,
+			"silent":           false,
+			"single-commit":    false,
+			"ssh-key":          false,
+			"target-folder":    false,
+			"token":            false,
+			"workspace":        false,
 		},
 		Outputs: map[string]struct{}{
 			"deployment-status": {},
@@ -258,99 +154,63 @@ var PopularActions = map[string]*ActionMetadata{
 	},
 	"ReactiveCircus/android-emulator-runner@v1": {
 		Name: "Android Emulator Runner",
-		Inputs: map[string]*ActionMetadataInput{
-			"api-level": {
-				Required: true,
-			},
-			"arch": {
-				Default: &popularActionDefaultValue17,
-			},
-			"disable-animations": {
-				Default: &popularActionDefaultValue4,
-			},
-			"headless": {
-				Default: &popularActionDefaultValue4,
-			},
-			"profile": {},
-			"script": {
-				Required: true,
-			},
-			"target": {
-				Default: &popularActionDefaultValue18,
-			},
+		Inputs: map[string]ActionMetadataInputRequired{
+			"api-level":          true,
+			"arch":               false,
+			"disable-animations": false,
+			"headless":           false,
+			"profile":            false,
+			"script":             true,
+			"target":             false,
 		},
 	},
 	"ReactiveCircus/android-emulator-runner@v2": {
 		Name: "Android Emulator Runner",
-		Inputs: map[string]*ActionMetadataInput{
-			"api-level": {
-				Required: true,
-			},
-			"arch": {
-				Default: &popularActionDefaultValue17,
-			},
-			"avd-name": {
-				Default: &popularActionDefaultValue19,
-			},
-			"cmake": {},
-			"cores": {
-				Default: &popularActionDefaultValue20,
-			},
-			"disable-animations": {
-				Default: &popularActionDefaultValue4,
-			},
-			"disable-linux-hw-accel": {
-				Default: &popularActionDefaultValue4,
-			},
-			"disable-spellchecker": {
-				Default: &popularActionDefaultValue6,
-			},
-			"emulator-build": {},
-			"emulator-options": {
-				Default: &popularActionDefaultValue21,
-			},
-			"force-avd-creation": {
-				Default: &popularActionDefaultValue4,
-			},
-			"ndk":      {},
-			"profile":  {},
-			"ram-size": {},
-			"script": {
-				Required: true,
-			},
-			"sdcard-path-or-size": {},
-			"target": {
-				Default: &popularActionDefaultValue18,
-			},
-			"working-directory": {},
+		Inputs: map[string]ActionMetadataInputRequired{
+			"api-level":              true,
+			"arch":                   false,
+			"avd-name":               false,
+			"cmake":                  false,
+			"cores":                  false,
+			"disable-animations":     false,
+			"disable-linux-hw-accel": false,
+			"disable-spellchecker":   false,
+			"emulator-build":         false,
+			"emulator-options":       false,
+			"force-avd-creation":     false,
+			"ndk":                    false,
+			"profile":                false,
+			"ram-size":               false,
+			"script":                 true,
+			"sdcard-path-or-size":    false,
+			"target":                 false,
+			"working-directory":      false,
 		},
 	},
 	"actions-cool/issues-helper@v1": {
 		Name: "Issues Helper",
-		Inputs: map[string]*ActionMetadataInput{
-			"actions":         {},
-			"assignees":       {},
-			"body":            {},
-			"body-includes":   {},
-			"comment-auth":    {},
-			"comment-id":      {},
-			"contents":        {},
-			"direction":       {},
-			"inactive-day":    {},
-			"inactive-label":  {},
-			"issue-assignee":  {},
-			"issue-creator":   {},
-			"issue-mentioned": {},
-			"issue-number":    {},
-			"issue-state":     {},
-			"labels":          {},
-			"state":           {},
-			"title":           {},
-			"title-includes":  {},
-			"token": {
-				Default: &popularActionDefaultValue3,
-			},
-			"update-mode": {},
+		Inputs: map[string]ActionMetadataInputRequired{
+			"actions":         false,
+			"assignees":       false,
+			"body":            false,
+			"body-includes":   false,
+			"comment-auth":    false,
+			"comment-id":      false,
+			"contents":        false,
+			"direction":       false,
+			"inactive-day":    false,
+			"inactive-label":  false,
+			"issue-assignee":  false,
+			"issue-creator":   false,
+			"issue-mentioned": false,
+			"issue-number":    false,
+			"issue-state":     false,
+			"labels":          false,
+			"state":           false,
+			"title":           false,
+			"title-includes":  false,
+			"token":           false,
+			"update-mode":     false,
 		},
 		Outputs: map[string]struct{}{
 			"comment-id":   {},
@@ -360,41 +220,39 @@ var PopularActions = map[string]*ActionMetadata{
 	},
 	"actions-cool/issues-helper@v2": {
 		Name: "Issues Helper",
-		Inputs: map[string]*ActionMetadataInput{
-			"actions":            {},
-			"assignee-includes":  {},
-			"assignees":          {},
-			"body":               {},
-			"body-includes":      {},
-			"close-issue":        {},
-			"comment-auth":       {},
-			"comment-id":         {},
-			"contents":           {},
-			"count-comments":     {},
-			"count-lables":       {},
-			"direction":          {},
-			"duplicate-command":  {},
-			"duplicate-labels":   {},
-			"inactive-day":       {},
-			"inactive-label":     {},
-			"issue-assignee":     {},
-			"issue-contents":     {},
-			"issue-creator":      {},
-			"issue-mentioned":    {},
-			"issue-number":       {},
-			"issue-state":        {},
-			"labels":             {},
-			"lock-reason":        {},
-			"random-to":          {},
-			"remove-labels":      {},
-			"require-permission": {},
-			"state":              {},
-			"title":              {},
-			"title-includes":     {},
-			"token": {
-				Default: &popularActionDefaultValue3,
-			},
-			"update-mode": {},
+		Inputs: map[string]ActionMetadataInputRequired{
+			"actions":            false,
+			"assignee-includes":  false,
+			"assignees":          false,
+			"body":               false,
+			"body-includes":      false,
+			"close-issue":        false,
+			"comment-auth":       false,
+			"comment-id":         false,
+			"contents":           false,
+			"count-comments":     false,
+			"count-lables":       false,
+			"direction":          false,
+			"duplicate-command":  false,
+			"duplicate-labels":   false,
+			"inactive-day":       false,
+			"inactive-label":     false,
+			"issue-assignee":     false,
+			"issue-contents":     false,
+			"issue-creator":      false,
+			"issue-mentioned":    false,
+			"issue-number":       false,
+			"issue-state":        false,
+			"labels":             false,
+			"lock-reason":        false,
+			"random-to":          false,
+			"remove-labels":      false,
+			"require-permission": false,
+			"state":              false,
+			"title":              false,
+			"title-includes":     false,
+			"token":              false,
+			"update-mode":        false,
 		},
 		Outputs: map[string]struct{}{
 			"check-result": {},
@@ -405,54 +263,38 @@ var PopularActions = map[string]*ActionMetadata{
 	},
 	"actions-rs/audit-check@v1": {
 		Name: "rust-audit-check",
-		Inputs: map[string]*ActionMetadataInput{
-			"token": {
-				Required: true,
-			},
+		Inputs: map[string]ActionMetadataInputRequired{
+			"token": true,
 		},
 	},
 	"actions-rs/cargo@v1": {
 		Name: "rust-cargo",
-		Inputs: map[string]*ActionMetadataInput{
-			"args": {},
-			"command": {
-				Required: true,
-			},
-			"toolchain": {},
-			"use-cross": {
-				Default: &popularActionDefaultValue6,
-			},
+		Inputs: map[string]ActionMetadataInputRequired{
+			"args":      false,
+			"command":   true,
+			"toolchain": false,
+			"use-cross": false,
 		},
 	},
 	"actions-rs/clippy-check@v1": {
 		Name: "rust-clippy-check",
-		Inputs: map[string]*ActionMetadataInput{
-			"args": {},
-			"name": {
-				Default: &popularActionDefaultValue22,
-			},
-			"token": {
-				Required: true,
-			},
-			"toolchain": {},
-			"use-cross": {
-				Default: &popularActionDefaultValue6,
-			},
+		Inputs: map[string]ActionMetadataInputRequired{
+			"args":      false,
+			"name":      false,
+			"token":     true,
+			"toolchain": false,
+			"use-cross": false,
 		},
 	},
 	"actions-rs/toolchain@v1": {
 		Name: "rust-toolchain",
-		Inputs: map[string]*ActionMetadataInput{
-			"components": {},
-			"default": {
-				Default: &popularActionDefaultValue6,
-			},
-			"override": {
-				Default: &popularActionDefaultValue6,
-			},
-			"profile":   {},
-			"target":    {},
-			"toolchain": {},
+		Inputs: map[string]ActionMetadataInputRequired{
+			"components": false,
+			"default":    false,
+			"override":   false,
+			"profile":    false,
+			"target":     false,
+			"toolchain":  false,
 		},
 		Outputs: map[string]struct{}{
 			"cargo":      {},
@@ -463,14 +305,10 @@ var PopularActions = map[string]*ActionMetadata{
 	},
 	"actions/cache@v1": {
 		Name: "Cache",
-		Inputs: map[string]*ActionMetadataInput{
-			"key": {
-				Required: true,
-			},
-			"path": {
-				Required: true,
-			},
-			"restore-keys": {},
+		Inputs: map[string]ActionMetadataInputRequired{
+			"key":          true,
+			"path":         true,
+			"restore-keys": false,
 		},
 		Outputs: map[string]struct{}{
 			"cache-hit": {},
@@ -478,15 +316,11 @@ var PopularActions = map[string]*ActionMetadata{
 	},
 	"actions/cache@v2": {
 		Name: "Cache",
-		Inputs: map[string]*ActionMetadataInput{
-			"key": {
-				Required: true,
-			},
-			"path": {
-				Required: true,
-			},
-			"restore-keys":      {},
-			"upload-chunk-size": {},
+		Inputs: map[string]ActionMetadataInputRequired{
+			"key":               true,
+			"path":              true,
+			"restore-keys":      false,
+			"upload-chunk-size": false,
 		},
 		Outputs: map[string]struct{}{
 			"cache-hit": {},
@@ -494,112 +328,76 @@ var PopularActions = map[string]*ActionMetadata{
 	},
 	"actions/checkout@v1": {
 		Name: "Checkout",
-		Inputs: map[string]*ActionMetadataInput{
-			"clean": {
-				Default: &popularActionDefaultValue4,
-			},
-			"fetch-depth": {},
-			"lfs":         {},
-			"path":        {},
-			"ref":         {},
-			"repository":  {},
-			"submodules":  {},
-			"token":       {},
+		Inputs: map[string]ActionMetadataInputRequired{
+			"clean":       false,
+			"fetch-depth": false,
+			"lfs":         false,
+			"path":        false,
+			"ref":         false,
+			"repository":  false,
+			"submodules":  false,
+			"token":       false,
 		},
 	},
 	"actions/checkout@v2": {
 		Name: "Checkout",
-		Inputs: map[string]*ActionMetadataInput{
-			"clean": {
-				Default: &popularActionDefaultValue4,
-			},
-			"fetch-depth": {
-				Default: &popularActionDefaultValue23,
-			},
-			"lfs": {
-				Default: &popularActionDefaultValue6,
-			},
-			"path": {},
-			"persist-credentials": {
-				Default: &popularActionDefaultValue4,
-			},
-			"ref": {},
-			"repository": {
-				Default: &popularActionDefaultValue24,
-			},
-			"ssh-key":         {},
-			"ssh-known-hosts": {},
-			"ssh-strict": {
-				Default: &popularActionDefaultValue4,
-			},
-			"submodules": {
-				Default: &popularActionDefaultValue6,
-			},
-			"token": {
-				Default: &popularActionDefaultValue3,
-			},
+		Inputs: map[string]ActionMetadataInputRequired{
+			"clean":               false,
+			"fetch-depth":         false,
+			"lfs":                 false,
+			"path":                false,
+			"persist-credentials": false,
+			"ref":                 false,
+			"repository":          false,
+			"ssh-key":             false,
+			"ssh-known-hosts":     false,
+			"ssh-strict":          false,
+			"submodules":          false,
+			"token":               false,
 		},
 	},
 	"actions/delete-package-versions@v1": {
 		Name: "Delete Package Versions",
-		Inputs: map[string]*ActionMetadataInput{
-			"num-old-versions-to-delete": {
-				Default: &popularActionDefaultValue23,
-			},
-			"owner":               {},
-			"package-name":        {},
-			"package-version-ids": {},
-			"repo":                {},
-			"token": {
-				Default: &popularActionDefaultValue3,
-			},
+		Inputs: map[string]ActionMetadataInputRequired{
+			"num-old-versions-to-delete": false,
+			"owner":                      false,
+			"package-name":               false,
+			"package-version-ids":        false,
+			"repo":                       false,
+			"token":                      false,
 		},
 	},
 	"actions/download-artifact@v1": {
 		Name: "Download a Build Artifact",
-		Inputs: map[string]*ActionMetadataInput{
-			"name": {
-				Required: true,
-			},
-			"path": {},
+		Inputs: map[string]ActionMetadataInputRequired{
+			"name": true,
+			"path": false,
 		},
 	},
 	"actions/download-artifact@v2": {
 		Name: "Download a Build Artifact",
-		Inputs: map[string]*ActionMetadataInput{
-			"name": {},
-			"path": {},
+		Inputs: map[string]ActionMetadataInputRequired{
+			"name": false,
+			"path": false,
 		},
 	},
 	"actions/first-interaction@v1": {
 		Name: "First interaction",
-		Inputs: map[string]*ActionMetadataInput{
-			"issue-message": {},
-			"pr-message":    {},
-			"repo-token": {
-				Required: true,
-			},
+		Inputs: map[string]ActionMetadataInputRequired{
+			"issue-message": false,
+			"pr-message":    false,
+			"repo-token":    true,
 		},
 	},
 	"actions/github-script@v1": {
 		Name: "GitHub Script",
-		Inputs: map[string]*ActionMetadataInput{
-			"debug": {
-				Default: &popularActionDefaultValue6,
-			},
-			"github-token": {
-				Default: &popularActionDefaultValue3,
-			},
-			"previews": {},
-			"result-encoding": {
-				Default: &popularActionDefaultValue25,
-			},
-			"script": {
-				Required: true,
-			},
-			"user-agent": {
-				Default: &popularActionDefaultValue26,
-			},
+		Inputs: map[string]ActionMetadataInputRequired{
+			"debug":           false,
+			"github-token":    false,
+			"previews":        false,
+			"result-encoding": false,
+			"script":          true,
+			"user-agent":      false,
 		},
 		Outputs: map[string]struct{}{
 			"result": {},
@@ -607,23 +405,13 @@ var PopularActions = map[string]*ActionMetadata{
 	},
 	"actions/github-script@v2": {
 		Name: "GitHub Script",
-		Inputs: map[string]*ActionMetadataInput{
-			"debug": {
-				Default: &popularActionDefaultValue6,
-			},
-			"github-token": {
-				Default: &popularActionDefaultValue3,
-			},
-			"previews": {},
-			"result-encoding": {
-				Default: &popularActionDefaultValue25,
-			},
-			"script": {
-				Required: true,
-			},
-			"user-agent": {
-				Default: &popularActionDefaultValue26,
-			},
+		Inputs: map[string]ActionMetadataInputRequired{
+			"debug":           false,
+			"github-token":    false,
+			"previews":        false,
+			"result-encoding": false,
+			"script":          true,
+			"user-agent":      false,
 		},
 		Outputs: map[string]struct{}{
 			"result": {},
@@ -631,23 +419,13 @@ var PopularActions = map[string]*ActionMetadata{
 	},
 	"actions/github-script@v3": {
 		Name: "GitHub Script",
-		Inputs: map[string]*ActionMetadataInput{
-			"debug": {
-				Default: &popularActionDefaultValue6,
-			},
-			"github-token": {
-				Default: &popularActionDefaultValue3,
-			},
-			"previews": {},
-			"result-encoding": {
-				Default: &popularActionDefaultValue25,
-			},
-			"script": {
-				Required: true,
-			},
-			"user-agent": {
-				Default: &popularActionDefaultValue26,
-			},
+		Inputs: map[string]ActionMetadataInputRequired{
+			"debug":           false,
+			"github-token":    false,
+			"previews":        false,
+			"result-encoding": false,
+			"script":          true,
+			"user-agent":      false,
 		},
 		Outputs: map[string]struct{}{
 			"result": {},
@@ -655,23 +433,13 @@ var PopularActions = map[string]*ActionMetadata{
 	},
 	"actions/github-script@v4": {
 		Name: "GitHub Script",
-		Inputs: map[string]*ActionMetadataInput{
-			"debug": {
-				Default: &popularActionDefaultValue6,
-			},
-			"github-token": {
-				Default: &popularActionDefaultValue3,
-			},
-			"previews": {},
-			"result-encoding": {
-				Default: &popularActionDefaultValue25,
-			},
-			"script": {
-				Required: true,
-			},
-			"user-agent": {
-				Default: &popularActionDefaultValue26,
-			},
+		Inputs: map[string]ActionMetadataInputRequired{
+			"debug":           false,
+			"github-token":    false,
+			"previews":        false,
+			"result-encoding": false,
+			"script":          true,
+			"user-agent":      false,
 		},
 		Outputs: map[string]struct{}{
 			"result": {},
@@ -679,84 +447,58 @@ var PopularActions = map[string]*ActionMetadata{
 	},
 	"actions/labeler@v2": {
 		Name: "Pull Request Labeler",
-		Inputs: map[string]*ActionMetadataInput{
-			"configuration-path": {
-				Default: &popularActionDefaultValue27,
-			},
-			"repo-token": {},
-			"sync-labels": {
-				Default: &popularActionDefaultValue6,
-			},
+		Inputs: map[string]ActionMetadataInputRequired{
+			"configuration-path": false,
+			"repo-token":         false,
+			"sync-labels":        false,
 		},
 	},
 	"actions/labeler@v3": {
 		Name: "Labeler",
-		Inputs: map[string]*ActionMetadataInput{
-			"configuration-path": {
-				Default: &popularActionDefaultValue27,
-			},
-			"repo-token": {},
-			"sync-labels": {
-				Default: &popularActionDefaultValue6,
-			},
+		Inputs: map[string]ActionMetadataInputRequired{
+			"configuration-path": false,
+			"repo-token":         false,
+			"sync-labels":        false,
 		},
 	},
 	"actions/setup-dotnet@v1": {
 		Name: "Setup .NET Core SDK",
-		Inputs: map[string]*ActionMetadataInput{
-			"config-file":        {},
-			"dotnet-version":     {},
-			"include-prerelease": {},
-			"owner":              {},
-			"source-url":         {},
+		Inputs: map[string]ActionMetadataInputRequired{
+			"config-file":        false,
+			"dotnet-version":     false,
+			"include-prerelease": false,
+			"owner":              false,
+			"source-url":         false,
 		},
 	},
 	"actions/setup-go@v1": {
 		Name: "Setup Go environment",
-		Inputs: map[string]*ActionMetadataInput{
-			"go-version": {
-				Default: &popularActionDefaultValue28,
-			},
-			"version": {},
+		Inputs: map[string]ActionMetadataInputRequired{
+			"go-version": false,
+			"version":    false,
 		},
 	},
 	"actions/setup-go@v2": {
 		Name: "Setup Go environment",
-		Inputs: map[string]*ActionMetadataInput{
-			"go-version": {},
-			"stable": {
-				Default: &popularActionDefaultValue4,
-			},
-			"token": {
-				Default: &popularActionDefaultValue3,
-			},
+		Inputs: map[string]ActionMetadataInputRequired{
+			"go-version": false,
+			"stable":     false,
+			"token":      false,
 		},
 	},
 	"actions/setup-java@v1": {
 		Name: "Setup Java JDK",
-		Inputs: map[string]*ActionMetadataInput{
-			"architecture": {
-				Default: &popularActionDefaultValue29,
-			},
-			"gpg-passphrase":  {},
-			"gpg-private-key": {},
-			"java-package": {
-				Default: &popularActionDefaultValue30,
-			},
-			"java-version": {
-				Required: true,
-			},
-			"jdkFile": {},
-			"server-id": {
-				Default: &popularActionDefaultValue31,
-			},
-			"server-password": {
-				Default: &popularActionDefaultValue32,
-			},
-			"server-username": {
-				Default: &popularActionDefaultValue33,
-			},
-			"settings-path": {},
+		Inputs: map[string]ActionMetadataInputRequired{
+			"architecture":    false,
+			"gpg-passphrase":  false,
+			"gpg-private-key": false,
+			"java-package":    false,
+			"java-version":    true,
+			"jdkFile":         false,
+			"server-id":       false,
+			"server-password": false,
+			"server-username": false,
+			"settings-path":   false,
 		},
 		Outputs: map[string]struct{}{
 			"path":    {},
@@ -765,38 +507,20 @@ var PopularActions = map[string]*ActionMetadata{
 	},
 	"actions/setup-java@v2": {
 		Name: "Setup Java JDK",
-		Inputs: map[string]*ActionMetadataInput{
-			"architecture": {
-				Default: &popularActionDefaultValue29,
-			},
-			"check-latest": {
-				Default: &popularActionDefaultValue6,
-			},
-			"distribution": {
-				Required: true,
-			},
-			"gpg-passphrase":  {},
-			"gpg-private-key": {},
-			"java-package": {
-				Default: &popularActionDefaultValue30,
-			},
-			"java-version": {
-				Required: true,
-			},
-			"jdkFile": {},
-			"overwrite-settings": {
-				Default: &popularActionDefaultValue4,
-			},
-			"server-id": {
-				Default: &popularActionDefaultValue31,
-			},
-			"server-password": {
-				Default: &popularActionDefaultValue32,
-			},
-			"server-username": {
-				Default: &popularActionDefaultValue33,
-			},
-			"settings-path": {},
+		Inputs: map[string]ActionMetadataInputRequired{
+			"architecture":       false,
+			"check-latest":       false,
+			"distribution":       true,
+			"gpg-passphrase":     false,
+			"gpg-private-key":    false,
+			"java-package":       false,
+			"java-version":       true,
+			"jdkFile":            false,
+			"overwrite-settings": false,
+			"server-id":          false,
+			"server-password":    false,
+			"server-username":    false,
+			"settings-path":      false,
 		},
 		Outputs: map[string]struct{}{
 			"distribution": {},
@@ -806,48 +530,34 @@ var PopularActions = map[string]*ActionMetadata{
 	},
 	"actions/setup-node@v1": {
 		Name: "Setup Node.js environment",
-		Inputs: map[string]*ActionMetadataInput{
-			"always-auth": {
-				Default: &popularActionDefaultValue6,
-			},
-			"node-version": {
-				Default: &popularActionDefaultValue34,
-			},
-			"registry-url": {},
-			"scope":        {},
-			"version":      {},
+		Inputs: map[string]ActionMetadataInputRequired{
+			"always-auth":  false,
+			"node-version": false,
+			"registry-url": false,
+			"scope":        false,
+			"version":      false,
 		},
 	},
 	"actions/setup-node@v2": {
 		Name: "Setup Node.js environment",
-		Inputs: map[string]*ActionMetadataInput{
-			"always-auth": {
-				Default: &popularActionDefaultValue6,
-			},
-			"architecture":          {},
-			"cache":                 {},
-			"cache-dependency-path": {},
-			"check-latest": {
-				Default: &popularActionDefaultValue6,
-			},
-			"node-version": {},
-			"registry-url": {},
-			"scope":        {},
-			"token": {
-				Default: &popularActionDefaultValue3,
-			},
-			"version": {},
+		Inputs: map[string]ActionMetadataInputRequired{
+			"always-auth":           false,
+			"architecture":          false,
+			"cache":                 false,
+			"cache-dependency-path": false,
+			"check-latest":          false,
+			"node-version":          false,
+			"registry-url":          false,
+			"scope":                 false,
+			"token":                 false,
+			"version":               false,
 		},
 	},
 	"actions/setup-python@v1": {
 		Name: "Setup Python",
-		Inputs: map[string]*ActionMetadataInput{
-			"architecture": {
-				Default: &popularActionDefaultValue29,
-			},
-			"python-version": {
-				Default: &popularActionDefaultValue35,
-			},
+		Inputs: map[string]ActionMetadataInputRequired{
+			"architecture":   false,
+			"python-version": false,
 		},
 		Outputs: map[string]struct{}{
 			"python-version": {},
@@ -855,14 +565,10 @@ var PopularActions = map[string]*ActionMetadata{
 	},
 	"actions/setup-python@v2": {
 		Name: "Setup Python",
-		Inputs: map[string]*ActionMetadataInput{
-			"architecture": {},
-			"python-version": {
-				Default: &popularActionDefaultValue35,
-			},
-			"token": {
-				Default: &popularActionDefaultValue3,
-			},
+		Inputs: map[string]ActionMetadataInputRequired{
+			"architecture":   false,
+			"python-version": false,
+			"token":          false,
 		},
 		Outputs: map[string]struct{}{
 			"python-version": {},
@@ -870,306 +576,134 @@ var PopularActions = map[string]*ActionMetadata{
 	},
 	"actions/stale@v1": {
 		Name: "Close Stale Issues",
-		Inputs: map[string]*ActionMetadataInput{
-			"days-before-close": {
-				Default: &popularActionDefaultValue36,
-			},
-			"days-before-stale": {
-				Default: &popularActionDefaultValue37,
-			},
-			"exempt-issue-label": {},
-			"exempt-pr-label":    {},
-			"operations-per-run": {
-				Default: &popularActionDefaultValue38,
-			},
-			"repo-token": {
-				Required: true,
-			},
-			"stale-issue-label": {
-				Default: &popularActionDefaultValue39,
-			},
-			"stale-issue-message": {},
-			"stale-pr-label": {
-				Default: &popularActionDefaultValue39,
-			},
-			"stale-pr-message": {},
+		Inputs: map[string]ActionMetadataInputRequired{
+			"days-before-close":   false,
+			"days-before-stale":   false,
+			"exempt-issue-label":  false,
+			"exempt-pr-label":     false,
+			"operations-per-run":  false,
+			"repo-token":          true,
+			"stale-issue-label":   false,
+			"stale-issue-message": false,
+			"stale-pr-label":      false,
+			"stale-pr-message":    false,
 		},
 	},
 	"actions/stale@v2": {
 		Name: "Close Stale Issues",
-		Inputs: map[string]*ActionMetadataInput{
-			"days-before-close": {
-				Default: &popularActionDefaultValue36,
-			},
-			"days-before-stale": {
-				Default: &popularActionDefaultValue37,
-			},
-			"debug-only": {
-				Default: &popularActionDefaultValue6,
-			},
-			"exempt-issue-labels": {
-				Default: &popularActionDefaultValue2,
-			},
-			"exempt-pr-labels": {
-				Default: &popularActionDefaultValue2,
-			},
-			"only-labels": {
-				Default: &popularActionDefaultValue2,
-			},
-			"operations-per-run": {
-				Default: &popularActionDefaultValue38,
-			},
-			"repo-token": {
-				Required: true,
-			},
-			"stale-issue-label": {
-				Default: &popularActionDefaultValue39,
-			},
-			"stale-issue-message": {},
-			"stale-pr-label": {
-				Default: &popularActionDefaultValue39,
-			},
-			"stale-pr-message": {},
+		Inputs: map[string]ActionMetadataInputRequired{
+			"days-before-close":   false,
+			"days-before-stale":   false,
+			"debug-only":          false,
+			"exempt-issue-labels": false,
+			"exempt-pr-labels":    false,
+			"only-labels":         false,
+			"operations-per-run":  false,
+			"repo-token":          true,
+			"stale-issue-label":   false,
+			"stale-issue-message": false,
+			"stale-pr-label":      false,
+			"stale-pr-message":    false,
 		},
 	},
 	"actions/stale@v3": {
 		Name: "Close Stale Issues",
-		Inputs: map[string]*ActionMetadataInput{
-			"any-of-issue-labels": {
-				Default: &popularActionDefaultValue2,
-			},
-			"any-of-labels": {
-				Default: &popularActionDefaultValue2,
-			},
-			"any-of-pr-labels": {
-				Default: &popularActionDefaultValue2,
-			},
-			"ascending": {
-				Default: &popularActionDefaultValue6,
-			},
-			"close-issue-label":   {},
-			"close-issue-message": {},
-			"close-pr-label":      {},
-			"close-pr-message":    {},
-			"days-before-close": {
-				Default: &popularActionDefaultValue36,
-			},
-			"days-before-issue-close": {},
-			"days-before-issue-stale": {},
-			"days-before-pr-close":    {},
-			"days-before-pr-stale":    {},
-			"days-before-stale": {
-				Default: &popularActionDefaultValue37,
-			},
-			"debug-only": {
-				Default: &popularActionDefaultValue6,
-			},
-			"delete-branch": {
-				Default: &popularActionDefaultValue6,
-			},
-			"enable-statistics": {
-				Default: &popularActionDefaultValue4,
-			},
-			"exempt-all-assignees": {
-				Default: &popularActionDefaultValue6,
-			},
-			"exempt-all-issue-assignees": {
-				Default: &popularActionDefaultValue2,
-			},
-			"exempt-all-issue-milestones": {
-				Default: &popularActionDefaultValue2,
-			},
-			"exempt-all-milestones": {
-				Default: &popularActionDefaultValue6,
-			},
-			"exempt-all-pr-assignees": {
-				Default: &popularActionDefaultValue2,
-			},
-			"exempt-all-pr-milestones": {
-				Default: &popularActionDefaultValue2,
-			},
-			"exempt-assignees": {
-				Default: &popularActionDefaultValue2,
-			},
-			"exempt-issue-assignees": {
-				Default: &popularActionDefaultValue2,
-			},
-			"exempt-issue-labels": {
-				Default: &popularActionDefaultValue2,
-			},
-			"exempt-issue-milestones": {
-				Default: &popularActionDefaultValue2,
-			},
-			"exempt-milestones": {
-				Default: &popularActionDefaultValue2,
-			},
-			"exempt-pr-assignees": {
-				Default: &popularActionDefaultValue2,
-			},
-			"exempt-pr-labels": {
-				Default: &popularActionDefaultValue2,
-			},
-			"exempt-pr-milestones": {
-				Default: &popularActionDefaultValue2,
-			},
-			"only-issue-labels": {
-				Default: &popularActionDefaultValue2,
-			},
-			"only-labels": {
-				Default: &popularActionDefaultValue2,
-			},
-			"only-pr-labels": {
-				Default: &popularActionDefaultValue2,
-			},
-			"operations-per-run": {
-				Default: &popularActionDefaultValue38,
-			},
-			"remove-issue-stale-when-updated": {
-				Default: &popularActionDefaultValue4,
-			},
-			"remove-pr-stale-when-updated": {
-				Default: &popularActionDefaultValue4,
-			},
-			"remove-stale-when-updated": {
-				Default: &popularActionDefaultValue4,
-			},
-			"repo-token": {
-				Default: &popularActionDefaultValue3,
-			},
-			"skip-stale-issue-message": {
-				Default: &popularActionDefaultValue6,
-			},
-			"skip-stale-pr-message": {
-				Default: &popularActionDefaultValue6,
-			},
-			"stale-issue-label": {
-				Default: &popularActionDefaultValue39,
-			},
-			"stale-issue-message": {},
-			"stale-pr-label": {
-				Default: &popularActionDefaultValue39,
-			},
-			"stale-pr-message": {},
-			"start-date": {
-				Default: &popularActionDefaultValue2,
-			},
+		Inputs: map[string]ActionMetadataInputRequired{
+			"any-of-issue-labels":             false,
+			"any-of-labels":                   false,
+			"any-of-pr-labels":                false,
+			"ascending":                       false,
+			"close-issue-label":               false,
+			"close-issue-message":             false,
+			"close-pr-label":                  false,
+			"close-pr-message":                false,
+			"days-before-close":               false,
+			"days-before-issue-close":         false,
+			"days-before-issue-stale":         false,
+			"days-before-pr-close":            false,
+			"days-before-pr-stale":            false,
+			"days-before-stale":               false,
+			"debug-only":                      false,
+			"delete-branch":                   false,
+			"enable-statistics":               false,
+			"exempt-all-assignees":            false,
+			"exempt-all-issue-assignees":      false,
+			"exempt-all-issue-milestones":     false,
+			"exempt-all-milestones":           false,
+			"exempt-all-pr-assignees":         false,
+			"exempt-all-pr-milestones":        false,
+			"exempt-assignees":                false,
+			"exempt-issue-assignees":          false,
+			"exempt-issue-labels":             false,
+			"exempt-issue-milestones":         false,
+			"exempt-milestones":               false,
+			"exempt-pr-assignees":             false,
+			"exempt-pr-labels":                false,
+			"exempt-pr-milestones":            false,
+			"only-issue-labels":               false,
+			"only-labels":                     false,
+			"only-pr-labels":                  false,
+			"operations-per-run":              false,
+			"remove-issue-stale-when-updated": false,
+			"remove-pr-stale-when-updated":    false,
+			"remove-stale-when-updated":       false,
+			"repo-token":                      false,
+			"skip-stale-issue-message":        false,
+			"skip-stale-pr-message":           false,
+			"stale-issue-label":               false,
+			"stale-issue-message":             false,
+			"stale-pr-label":                  false,
+			"stale-pr-message":                false,
+			"start-date":                      false,
 		},
 	},
 	"actions/stale@v4": {
 		Name: "Close Stale Issues",
-		Inputs: map[string]*ActionMetadataInput{
-			"any-of-issue-labels": {
-				Default: &popularActionDefaultValue2,
-			},
-			"any-of-labels": {
-				Default: &popularActionDefaultValue2,
-			},
-			"any-of-pr-labels": {
-				Default: &popularActionDefaultValue2,
-			},
-			"ascending": {
-				Default: &popularActionDefaultValue6,
-			},
-			"close-issue-label":   {},
-			"close-issue-message": {},
-			"close-pr-label":      {},
-			"close-pr-message":    {},
-			"days-before-close": {
-				Default: &popularActionDefaultValue36,
-			},
-			"days-before-issue-close": {},
-			"days-before-issue-stale": {},
-			"days-before-pr-close":    {},
-			"days-before-pr-stale":    {},
-			"days-before-stale": {
-				Default: &popularActionDefaultValue37,
-			},
-			"debug-only": {
-				Default: &popularActionDefaultValue6,
-			},
-			"delete-branch": {
-				Default: &popularActionDefaultValue6,
-			},
-			"enable-statistics": {
-				Default: &popularActionDefaultValue4,
-			},
-			"exempt-all-assignees": {
-				Default: &popularActionDefaultValue6,
-			},
-			"exempt-all-issue-assignees": {
-				Default: &popularActionDefaultValue2,
-			},
-			"exempt-all-issue-milestones": {
-				Default: &popularActionDefaultValue2,
-			},
-			"exempt-all-milestones": {
-				Default: &popularActionDefaultValue6,
-			},
-			"exempt-all-pr-assignees": {
-				Default: &popularActionDefaultValue2,
-			},
-			"exempt-all-pr-milestones": {
-				Default: &popularActionDefaultValue2,
-			},
-			"exempt-assignees": {
-				Default: &popularActionDefaultValue2,
-			},
-			"exempt-issue-assignees": {
-				Default: &popularActionDefaultValue2,
-			},
-			"exempt-issue-labels": {
-				Default: &popularActionDefaultValue2,
-			},
-			"exempt-issue-milestones": {
-				Default: &popularActionDefaultValue2,
-			},
-			"exempt-milestones": {
-				Default: &popularActionDefaultValue2,
-			},
-			"exempt-pr-assignees": {
-				Default: &popularActionDefaultValue2,
-			},
-			"exempt-pr-labels": {
-				Default: &popularActionDefaultValue2,
-			},
-			"exempt-pr-milestones": {
-				Default: &popularActionDefaultValue2,
-			},
-			"only-issue-labels": {
-				Default: &popularActionDefaultValue2,
-			},
-			"only-labels": {
-				Default: &popularActionDefaultValue2,
-			},
-			"only-pr-labels": {
-				Default: &popularActionDefaultValue2,
-			},
-			"operations-per-run": {
-				Default: &popularActionDefaultValue38,
-			},
-			"remove-issue-stale-when-updated": {
-				Default: &popularActionDefaultValue2,
-			},
-			"remove-pr-stale-when-updated": {
-				Default: &popularActionDefaultValue2,
-			},
-			"remove-stale-when-updated": {
-				Default: &popularActionDefaultValue4,
-			},
-			"repo-token": {
-				Default: &popularActionDefaultValue3,
-			},
-			"stale-issue-label": {
-				Default: &popularActionDefaultValue39,
-			},
-			"stale-issue-message": {},
-			"stale-pr-label": {
-				Default: &popularActionDefaultValue39,
-			},
-			"stale-pr-message": {},
-			"start-date": {
-				Default: &popularActionDefaultValue2,
-			},
+		Inputs: map[string]ActionMetadataInputRequired{
+			"any-of-issue-labels":             false,
+			"any-of-labels":                   false,
+			"any-of-pr-labels":                false,
+			"ascending":                       false,
+			"close-issue-label":               false,
+			"close-issue-message":             false,
+			"close-pr-label":                  false,
+			"close-pr-message":                false,
+			"days-before-close":               false,
+			"days-before-issue-close":         false,
+			"days-before-issue-stale":         false,
+			"days-before-pr-close":            false,
+			"days-before-pr-stale":            false,
+			"days-before-stale":               false,
+			"debug-only":                      false,
+			"delete-branch":                   false,
+			"enable-statistics":               false,
+			"exempt-all-assignees":            false,
+			"exempt-all-issue-assignees":      false,
+			"exempt-all-issue-milestones":     false,
+			"exempt-all-milestones":           false,
+			"exempt-all-pr-assignees":         false,
+			"exempt-all-pr-milestones":        false,
+			"exempt-assignees":                false,
+			"exempt-issue-assignees":          false,
+			"exempt-issue-labels":             false,
+			"exempt-issue-milestones":         false,
+			"exempt-milestones":               false,
+			"exempt-pr-assignees":             false,
+			"exempt-pr-labels":                false,
+			"exempt-pr-milestones":            false,
+			"only-issue-labels":               false,
+			"only-labels":                     false,
+			"only-pr-labels":                  false,
+			"operations-per-run":              false,
+			"remove-issue-stale-when-updated": false,
+			"remove-pr-stale-when-updated":    false,
+			"remove-stale-when-updated":       false,
+			"repo-token":                      false,
+			"stale-issue-label":               false,
+			"stale-issue-message":             false,
+			"stale-pr-label":                  false,
+			"stale-pr-message":                false,
+			"start-date":                      false,
 		},
 		Outputs: map[string]struct{}{
 			"closed-issues-prs": {},
@@ -1178,45 +712,33 @@ var PopularActions = map[string]*ActionMetadata{
 	},
 	"actions/upload-artifact@v1": {
 		Name: "Upload a Build Artifact",
-		Inputs: map[string]*ActionMetadataInput{
-			"name": {
-				Required: true,
-			},
-			"path": {
-				Required: true,
-			},
+		Inputs: map[string]ActionMetadataInputRequired{
+			"name": true,
+			"path": true,
 		},
 	},
 	"actions/upload-artifact@v2": {
 		Name: "Upload a Build Artifact",
-		Inputs: map[string]*ActionMetadataInput{
-			"if-no-files-found": {
-				Default: &popularActionDefaultValue40,
-			},
-			"name": {
-				Default: &popularActionDefaultValue41,
-			},
-			"path": {
-				Required: true,
-			},
-			"retention-days": {},
+		Inputs: map[string]ActionMetadataInputRequired{
+			"if-no-files-found": false,
+			"name":              false,
+			"path":              true,
+			"retention-days":    false,
 		},
 	},
 	"aws-actions/configure-aws-credentials@v1": {
 		Name: "\"Configure AWS Credentials\" Action For GitHub Actions",
-		Inputs: map[string]*ActionMetadataInput{
-			"aws-access-key-id": {},
-			"aws-region": {
-				Required: true,
-			},
-			"aws-secret-access-key":     {},
-			"aws-session-token":         {},
-			"mask-aws-account-id":       {},
-			"role-duration-seconds":     {},
-			"role-external-id":          {},
-			"role-session-name":         {},
-			"role-skip-session-tagging": {},
-			"role-to-assume":            {},
+		Inputs: map[string]ActionMetadataInputRequired{
+			"aws-access-key-id":         false,
+			"aws-region":                true,
+			"aws-secret-access-key":     false,
+			"aws-session-token":         false,
+			"mask-aws-account-id":       false,
+			"role-duration-seconds":     false,
+			"role-external-id":          false,
+			"role-session-name":         false,
+			"role-skip-session-tagging": false,
+			"role-to-assume":            false,
 		},
 		Outputs: map[string]struct{}{
 			"aws-account-id": {},
@@ -1224,282 +746,183 @@ var PopularActions = map[string]*ActionMetadata{
 	},
 	"azure/aks-set-context@v1": {
 		Name: "Azure Kubernetes set context",
-		Inputs: map[string]*ActionMetadataInput{
-			"cluster-name": {
-				Default: &popularActionDefaultValue2,
-			},
-			"creds": {
-				Required: true,
-				Default:  &popularActionDefaultValue2,
-			},
-			"resource-group": {
-				Default: &popularActionDefaultValue2,
-			},
+		Inputs: map[string]ActionMetadataInputRequired{
+			"cluster-name":   false,
+			"creds":          false,
+			"resource-group": false,
 		},
 	},
 	"azure/login@v1": {
 		Name: "Azure Login",
-		Inputs: map[string]*ActionMetadataInput{
-			"allow-no-subscriptions": {
-				Default: &popularActionDefaultValue6,
-			},
-			"creds": {
-				Required: true,
-			},
-			"enable-AzPSSession": {
-				Default: &popularActionDefaultValue6,
-			},
-			"environment": {
-				Default: &popularActionDefaultValue42,
-			},
+		Inputs: map[string]ActionMetadataInputRequired{
+			"allow-no-subscriptions": false,
+			"creds":                  true,
+			"enable-AzPSSession":     false,
+			"environment":            false,
 		},
 	},
 	"bahmutov/npm-install@v1": {
 		Name: "NPM or Yarn install with caching",
-		Inputs: map[string]*ActionMetadataInput{
-			"install-command":   {},
-			"useLockFile":       {},
-			"useRollingCache":   {},
-			"working-directory": {},
+		Inputs: map[string]ActionMetadataInputRequired{
+			"install-command":   false,
+			"useLockFile":       false,
+			"useRollingCache":   false,
+			"working-directory": false,
 		},
 	},
 	"codecov/codecov-action@v1": {
 		Name: "Codecov",
-		Inputs: map[string]*ActionMetadataInput{
-			"aws_curl_args":          {},
-			"codecov_curl_args":      {},
-			"commit_parent":          {},
-			"directory":              {},
-			"env_vars":               {},
-			"fail_ci_if_error":       {},
-			"file":                   {},
-			"files":                  {},
-			"flags":                  {},
-			"functionalities":        {},
-			"gcov_args":              {},
-			"gcov_executable":        {},
-			"gcov_path_exclude":      {},
-			"gcov_path_include":      {},
-			"gcov_prefix":            {},
-			"gcov_root_dir":          {},
-			"move_coverage_to_trash": {},
-			"name":                   {},
-			"network_filter":         {},
-			"override_branch":        {},
-			"override_build":         {},
-			"override_commit":        {},
-			"override_pr":            {},
-			"override_tag":           {},
-			"path_to_write_report":   {},
-			"root_dir":               {},
-			"token":                  {},
-			"verbose":                {},
-			"working-directory":      {},
-			"xcode_derived_data":     {},
-			"xcode_package":          {},
+		Inputs: map[string]ActionMetadataInputRequired{
+			"aws_curl_args":          false,
+			"codecov_curl_args":      false,
+			"commit_parent":          false,
+			"directory":              false,
+			"env_vars":               false,
+			"fail_ci_if_error":       false,
+			"file":                   false,
+			"files":                  false,
+			"flags":                  false,
+			"functionalities":        false,
+			"gcov_args":              false,
+			"gcov_executable":        false,
+			"gcov_path_exclude":      false,
+			"gcov_path_include":      false,
+			"gcov_prefix":            false,
+			"gcov_root_dir":          false,
+			"move_coverage_to_trash": false,
+			"name":                   false,
+			"network_filter":         false,
+			"override_branch":        false,
+			"override_build":         false,
+			"override_commit":        false,
+			"override_pr":            false,
+			"override_tag":           false,
+			"path_to_write_report":   false,
+			"root_dir":               false,
+			"token":                  false,
+			"verbose":                false,
+			"working-directory":      false,
+			"xcode_derived_data":     false,
+			"xcode_package":          false,
 		},
 	},
 	"codecov/codecov-action@v2": {
 		Name: "Codecov",
-		Inputs: map[string]*ActionMetadataInput{
-			"commit_parent":          {},
-			"directory":              {},
-			"dry_run":                {},
-			"env_vars":               {},
-			"fail_ci_if_error":       {},
-			"file":                   {},
-			"files":                  {},
-			"flags":                  {},
-			"functionalities":        {},
-			"move_coverage_to_trash": {},
-			"name":                   {},
-			"override_branch":        {},
-			"override_build":         {},
-			"override_commit":        {},
-			"override_pr":            {},
-			"override_tag":           {},
-			"root_dir":               {},
-			"slug":                   {},
-			"token":                  {},
-			"url":                    {},
-			"verbose":                {},
-			"working-directory":      {},
+		Inputs: map[string]ActionMetadataInputRequired{
+			"commit_parent":          false,
+			"directory":              false,
+			"dry_run":                false,
+			"env_vars":               false,
+			"fail_ci_if_error":       false,
+			"file":                   false,
+			"files":                  false,
+			"flags":                  false,
+			"functionalities":        false,
+			"move_coverage_to_trash": false,
+			"name":                   false,
+			"override_branch":        false,
+			"override_build":         false,
+			"override_commit":        false,
+			"override_pr":            false,
+			"override_tag":           false,
+			"root_dir":               false,
+			"slug":                   false,
+			"token":                  false,
+			"url":                    false,
+			"verbose":                false,
+			"working-directory":      false,
 		},
 	},
 	"dawidd6/action-download-artifact@v2": {
 		Name: "Download workflow artifact",
-		Inputs: map[string]*ActionMetadataInput{
-			"branch": {},
-			"commit": {},
-			"event":  {},
-			"github_token": {
-				Default: &popularActionDefaultValue43,
-			},
-			"name": {},
-			"path": {
-				Default: &popularActionDefaultValue44,
-			},
-			"pr": {},
-			"repo": {
-				Default: &popularActionDefaultValue45,
-			},
-			"run_id":     {},
-			"run_number": {},
-			"workflow": {
-				Required: true,
-			},
-			"workflow_conclusion": {
-				Default: &popularActionDefaultValue46,
-			},
+		Inputs: map[string]ActionMetadataInputRequired{
+			"branch":              false,
+			"commit":              false,
+			"event":               false,
+			"github_token":        false,
+			"name":                false,
+			"path":                false,
+			"pr":                  false,
+			"repo":                false,
+			"run_id":              false,
+			"run_number":          false,
+			"workflow":            true,
+			"workflow_conclusion": false,
 		},
 	},
 	"dawidd6/action-send-mail@v1": {
 		Name: "Send email",
-		Inputs: map[string]*ActionMetadataInput{
-			"body": {
-				Required: true,
-			},
-			"content_type": {
-				Default: &popularActionDefaultValue47,
-			},
-			"from": {
-				Required: true,
-			},
-			"password": {
-				Required: true,
-			},
-			"server_address": {
-				Required: true,
-			},
-			"server_port": {
-				Required: true,
-			},
-			"subject": {
-				Required: true,
-			},
-			"to": {
-				Required: true,
-			},
-			"username": {
-				Required: true,
-			},
+		Inputs: map[string]ActionMetadataInputRequired{
+			"body":           true,
+			"content_type":   false,
+			"from":           true,
+			"password":       true,
+			"server_address": true,
+			"server_port":    true,
+			"subject":        true,
+			"to":             true,
+			"username":       true,
 		},
 	},
 	"dawidd6/action-send-mail@v2": {
 		Name: "Send email",
-		Inputs: map[string]*ActionMetadataInput{
-			"attachments": {},
-			"bcc":         {},
-			"body": {
-				Required: true,
-			},
-			"cc": {},
-			"content_type": {
-				Default: &popularActionDefaultValue47,
-			},
-			"convert_markdown": {},
-			"from": {
-				Required: true,
-			},
-			"ignore_cert": {},
-			"password": {
-				Required: true,
-			},
-			"reply_to": {},
-			"server_address": {
-				Required: true,
-			},
-			"server_port": {
-				Required: true,
-			},
-			"subject": {
-				Required: true,
-			},
-			"to": {
-				Required: true,
-			},
-			"username": {
-				Required: true,
-			},
+		Inputs: map[string]ActionMetadataInputRequired{
+			"attachments":      false,
+			"bcc":              false,
+			"body":             true,
+			"cc":               false,
+			"content_type":     false,
+			"convert_markdown": false,
+			"from":             true,
+			"ignore_cert":      false,
+			"password":         true,
+			"reply_to":         false,
+			"server_address":   true,
+			"server_port":      true,
+			"subject":          true,
+			"to":               true,
+			"username":         true,
 		},
 	},
 	"dawidd6/action-send-mail@v3": {
 		Name: "Send email",
-		Inputs: map[string]*ActionMetadataInput{
-			"attachments":      {},
-			"bcc":              {},
-			"body":             {},
-			"cc":               {},
-			"convert_markdown": {},
-			"from": {
-				Required: true,
-			},
-			"html_body":   {},
-			"ignore_cert": {},
-			"password":    {},
-			"priority":    {},
-			"reply_to":    {},
-			"secure":      {},
-			"server_address": {
-				Required: true,
-			},
-			"server_port": {
-				Required: true,
-			},
-			"subject": {
-				Required: true,
-			},
-			"to": {
-				Required: true,
-			},
-			"username": {},
+		Inputs: map[string]ActionMetadataInputRequired{
+			"attachments":      false,
+			"bcc":              false,
+			"body":             false,
+			"cc":               false,
+			"convert_markdown": false,
+			"from":             true,
+			"html_body":        false,
+			"ignore_cert":      false,
+			"password":         false,
+			"priority":         false,
+			"reply_to":         false,
+			"secure":           false,
+			"server_address":   true,
+			"server_port":      true,
+			"subject":          true,
+			"to":               true,
+			"username":         false,
 		},
 	},
 	"dessant/lock-threads@v2": {
 		Name: "Lock Threads",
-		Inputs: map[string]*ActionMetadataInput{
-			"github-token": {
-				Default: &popularActionDefaultValue3,
-			},
-			"issue-exclude-created-before": {
-				Default: &popularActionDefaultValue2,
-			},
-			"issue-exclude-labels": {
-				Default: &popularActionDefaultValue2,
-			},
-			"issue-lock-comment": {
-				Default: &popularActionDefaultValue2,
-			},
-			"issue-lock-inactive-days": {
-				Default: &popularActionDefaultValue48,
-			},
-			"issue-lock-labels": {
-				Default: &popularActionDefaultValue2,
-			},
-			"issue-lock-reason": {
-				Default: &popularActionDefaultValue49,
-			},
-			"pr-exclude-created-before": {
-				Default: &popularActionDefaultValue2,
-			},
-			"pr-exclude-labels": {
-				Default: &popularActionDefaultValue2,
-			},
-			"pr-lock-comment": {
-				Default: &popularActionDefaultValue2,
-			},
-			"pr-lock-inactive-days": {
-				Default: &popularActionDefaultValue48,
-			},
-			"pr-lock-labels": {
-				Default: &popularActionDefaultValue2,
-			},
-			"pr-lock-reason": {
-				Default: &popularActionDefaultValue49,
-			},
-			"process-only": {
-				Default: &popularActionDefaultValue2,
-			},
+		Inputs: map[string]ActionMetadataInputRequired{
+			"github-token":                 false,
+			"issue-exclude-created-before": false,
+			"issue-exclude-labels":         false,
+			"issue-lock-comment":           false,
+			"issue-lock-inactive-days":     false,
+			"issue-lock-labels":            false,
+			"issue-lock-reason":            false,
+			"pr-exclude-created-before":    false,
+			"pr-exclude-labels":            false,
+			"pr-lock-comment":              false,
+			"pr-lock-inactive-days":        false,
+			"pr-lock-labels":               false,
+			"pr-lock-reason":               false,
+			"process-only":                 false,
 		},
 		Outputs: map[string]struct{}{
 			"issues": {},
@@ -1508,73 +931,49 @@ var PopularActions = map[string]*ActionMetadata{
 	},
 	"docker/build-push-action@v1": {
 		Name: "Build and push Docker images",
-		Inputs: map[string]*ActionMetadataInput{
-			"add_git_labels": {
-				Default: &popularActionDefaultValue6,
-			},
-			"always_pull": {
-				Default: &popularActionDefaultValue6,
-			},
-			"build_args":  {},
-			"cache_froms": {},
-			"dockerfile":  {},
-			"labels":      {},
-			"password":    {},
-			"path": {
-				Default: &popularActionDefaultValue7,
-			},
-			"push": {
-				Default: &popularActionDefaultValue4,
-			},
-			"registry": {},
-			"repository": {
-				Required: true,
-			},
-			"tag_with_ref": {
-				Default: &popularActionDefaultValue6,
-			},
-			"tag_with_sha": {
-				Default: &popularActionDefaultValue6,
-			},
-			"tags":     {},
-			"target":   {},
-			"username": {},
+		Inputs: map[string]ActionMetadataInputRequired{
+			"add_git_labels": false,
+			"always_pull":    false,
+			"build_args":     false,
+			"cache_froms":    false,
+			"dockerfile":     false,
+			"labels":         false,
+			"password":       false,
+			"path":           false,
+			"push":           false,
+			"registry":       false,
+			"repository":     true,
+			"tag_with_ref":   false,
+			"tag_with_sha":   false,
+			"tags":           false,
+			"target":         false,
+			"username":       false,
 		},
 	},
 	"docker/build-push-action@v2": {
 		Name: "Build and push Docker images",
-		Inputs: map[string]*ActionMetadataInput{
-			"allow":      {},
-			"build-args": {},
-			"builder":    {},
-			"cache-from": {},
-			"cache-to":   {},
-			"context":    {},
-			"file":       {},
-			"github-token": {
-				Default: &popularActionDefaultValue3,
-			},
-			"labels": {},
-			"load": {
-				Default: &popularActionDefaultValue6,
-			},
-			"network": {},
-			"no-cache": {
-				Default: &popularActionDefaultValue6,
-			},
-			"outputs":   {},
-			"platforms": {},
-			"pull": {
-				Default: &popularActionDefaultValue6,
-			},
-			"push": {
-				Default: &popularActionDefaultValue6,
-			},
-			"secret-files": {},
-			"secrets":      {},
-			"ssh":          {},
-			"tags":         {},
-			"target":       {},
+		Inputs: map[string]ActionMetadataInputRequired{
+			"allow":        false,
+			"build-args":   false,
+			"builder":      false,
+			"cache-from":   false,
+			"cache-to":     false,
+			"context":      false,
+			"file":         false,
+			"github-token": false,
+			"labels":       false,
+			"load":         false,
+			"network":      false,
+			"no-cache":     false,
+			"outputs":      false,
+			"platforms":    false,
+			"pull":         false,
+			"push":         false,
+			"secret-files": false,
+			"secrets":      false,
+			"ssh":          false,
+			"tags":         false,
+			"target":       false,
 		},
 		Outputs: map[string]struct{}{
 			"digest": {},
@@ -1582,51 +981,32 @@ var PopularActions = map[string]*ActionMetadata{
 	},
 	"docker/login-action@v1": {
 		Name: "Docker Login",
-		Inputs: map[string]*ActionMetadataInput{
-			"logout": {
-				Default: &popularActionDefaultValue4,
-			},
-			"password": {},
-			"registry": {},
-			"username": {},
+		Inputs: map[string]ActionMetadataInputRequired{
+			"logout":   false,
+			"password": false,
+			"registry": false,
+			"username": false,
 		},
 	},
 	"docker/metadata-action@v1": {
 		Name: "Docker Meta",
-		Inputs: map[string]*ActionMetadataInput{
-			"github-token": {
-				Required: true,
-				Default:  &popularActionDefaultValue3,
-			},
-			"images": {
-				Required: true,
-			},
-			"label-custom":    {},
-			"sep-labels":      {},
-			"sep-tags":        {},
-			"tag-custom":      {},
-			"tag-custom-only": {},
-			"tag-edge": {
-				Default: &popularActionDefaultValue6,
-			},
-			"tag-edge-branch": {},
-			"tag-latest": {
-				Default: &popularActionDefaultValue4,
-			},
-			"tag-match": {},
-			"tag-match-group": {
-				Default: &popularActionDefaultValue50,
-			},
-			"tag-match-latest": {
-				Default: &popularActionDefaultValue4,
-			},
-			"tag-schedule": {
-				Default: &popularActionDefaultValue51,
-			},
-			"tag-semver": {},
-			"tag-sha": {
-				Default: &popularActionDefaultValue6,
-			},
+		Inputs: map[string]ActionMetadataInputRequired{
+			"github-token":     false,
+			"images":           true,
+			"label-custom":     false,
+			"sep-labels":       false,
+			"sep-tags":         false,
+			"tag-custom":       false,
+			"tag-custom-only":  false,
+			"tag-edge":         false,
+			"tag-edge-branch":  false,
+			"tag-latest":       false,
+			"tag-match":        false,
+			"tag-match-group":  false,
+			"tag-match-latest": false,
+			"tag-schedule":     false,
+			"tag-semver":       false,
+			"tag-sha":          false,
 		},
 		Outputs: map[string]struct{}{
 			"bake-file": {},
@@ -1637,20 +1017,15 @@ var PopularActions = map[string]*ActionMetadata{
 	},
 	"docker/metadata-action@v2": {
 		Name: "Docker Meta",
-		Inputs: map[string]*ActionMetadataInput{
-			"bake-target": {},
-			"flavor":      {},
-			"github-token": {
-				Required: true,
-				Default:  &popularActionDefaultValue3,
-			},
-			"images": {
-				Required: true,
-			},
-			"labels":     {},
-			"sep-labels": {},
-			"sep-tags":   {},
-			"tags":       {},
+		Inputs: map[string]ActionMetadataInputRequired{
+			"bake-target":  false,
+			"flavor":       false,
+			"github-token": false,
+			"images":       true,
+			"labels":       false,
+			"sep-labels":   false,
+			"sep-tags":     false,
+			"tags":         false,
 		},
 		Outputs: map[string]struct{}{
 			"bake-file": {},
@@ -1661,20 +1036,15 @@ var PopularActions = map[string]*ActionMetadata{
 	},
 	"docker/metadata-action@v3": {
 		Name: "Docker Metadata action",
-		Inputs: map[string]*ActionMetadataInput{
-			"bake-target": {},
-			"flavor":      {},
-			"github-token": {
-				Required: true,
-				Default:  &popularActionDefaultValue3,
-			},
-			"images": {
-				Required: true,
-			},
-			"labels":     {},
-			"sep-labels": {},
-			"sep-tags":   {},
-			"tags":       {},
+		Inputs: map[string]ActionMetadataInputRequired{
+			"bake-target":  false,
+			"flavor":       false,
+			"github-token": false,
+			"images":       true,
+			"labels":       false,
+			"sep-labels":   false,
+			"sep-tags":     false,
+			"tags":         false,
 		},
 		Outputs: map[string]struct{}{
 			"bake-file": {},
@@ -1685,23 +1055,15 @@ var PopularActions = map[string]*ActionMetadata{
 	},
 	"docker/setup-buildx-action@v1": {
 		Name: "Docker Setup Buildx",
-		Inputs: map[string]*ActionMetadataInput{
-			"buildkitd-flags": {
-				Default: &popularActionDefaultValue52,
-			},
-			"config": {},
-			"driver": {
-				Default: &popularActionDefaultValue53,
-			},
-			"driver-opts": {},
-			"endpoint":    {},
-			"install": {
-				Default: &popularActionDefaultValue6,
-			},
-			"use": {
-				Default: &popularActionDefaultValue4,
-			},
-			"version": {},
+		Inputs: map[string]ActionMetadataInputRequired{
+			"buildkitd-flags": false,
+			"config":          false,
+			"driver":          false,
+			"driver-opts":     false,
+			"endpoint":        false,
+			"install":         false,
+			"use":             false,
+			"version":         false,
 		},
 		Outputs: map[string]struct{}{
 			"driver":    {},
@@ -1714,13 +1076,9 @@ var PopularActions = map[string]*ActionMetadata{
 	},
 	"docker/setup-qemu-action@v1": {
 		Name: "Docker Setup QEMU",
-		Inputs: map[string]*ActionMetadataInput{
-			"image": {
-				Default: &popularActionDefaultValue54,
-			},
-			"platforms": {
-				Default: &popularActionDefaultValue55,
-			},
+		Inputs: map[string]ActionMetadataInputRequired{
+			"image":     false,
+			"platforms": false,
 		},
 		Outputs: map[string]struct{}{
 			"platforms": {},
@@ -1728,85 +1086,48 @@ var PopularActions = map[string]*ActionMetadata{
 	},
 	"dorny/paths-filter@v1": {
 		Name: "Pull request changed files filter",
-		Inputs: map[string]*ActionMetadataInput{
-			"filters": {
-				Required: true,
-			},
-			"token": {
-				Default: &popularActionDefaultValue3,
-			},
+		Inputs: map[string]ActionMetadataInputRequired{
+			"filters": true,
+			"token":   false,
 		},
 		SkipOutputs: true,
 	},
 	"dorny/paths-filter@v2": {
 		Name: "Paths Changes Filter",
-		Inputs: map[string]*ActionMetadataInput{
-			"base": {},
-			"filters": {
-				Required: true,
-			},
-			"initial-fetch-depth": {
-				Default: &popularActionDefaultValue56,
-			},
-			"list-files": {
-				Required: true,
-				Default:  &popularActionDefaultValue57,
-			},
-			"ref": {},
-			"token": {
-				Default: &popularActionDefaultValue3,
-			},
-			"working-directory": {},
+		Inputs: map[string]ActionMetadataInputRequired{
+			"base":                false,
+			"filters":             true,
+			"initial-fetch-depth": false,
+			"list-files":          false,
+			"ref":                 false,
+			"token":               false,
+			"working-directory":   false,
 		},
 		SkipOutputs: true,
 	},
 	"enriikke/gatsby-gh-pages-action@v2": {
 		Name: "Gatsby Publish",
-		Inputs: map[string]*ActionMetadataInput{
-			"access-token": {
-				Required: true,
-			},
-			"commit-message": {
-				Default: &popularActionDefaultValue2,
-			},
-			"deploy-branch": {
-				Default: &popularActionDefaultValue58,
-			},
-			"deploy-repo": {
-				Default: &popularActionDefaultValue2,
-			},
-			"gatsby-args": {
-				Default: &popularActionDefaultValue2,
-			},
-			"git-config-email": {
-				Default: &popularActionDefaultValue2,
-			},
-			"git-config-name": {
-				Default: &popularActionDefaultValue2,
-			},
-			"skip-publish": {
-				Default: &popularActionDefaultValue6,
-			},
-			"working-dir": {
-				Default: &popularActionDefaultValue7,
-			},
+		Inputs: map[string]ActionMetadataInputRequired{
+			"access-token":     true,
+			"commit-message":   false,
+			"deploy-branch":    false,
+			"deploy-repo":      false,
+			"gatsby-args":      false,
+			"git-config-email": false,
+			"git-config-name":  false,
+			"skip-publish":     false,
+			"working-dir":      false,
 		},
 	},
 	"erlef/setup-beam@v1": {
 		Name: "Setup Erlang/OTP with optional Elixir (and mix) and/or rebar3",
-		Inputs: map[string]*ActionMetadataInput{
-			"elixir-version": {},
-			"install-hex": {
-				Default: &popularActionDefaultValue4,
-			},
-			"install-rebar": {
-				Default: &popularActionDefaultValue4,
-			},
-			"otp-version":    {},
-			"rebar3-version": {},
-			"version-type": {
-				Default: &popularActionDefaultValue59,
-			},
+		Inputs: map[string]ActionMetadataInputRequired{
+			"elixir-version": false,
+			"install-hex":    false,
+			"install-rebar":  false,
+			"otp-version":    false,
+			"rebar3-version": false,
+			"version-type":   false,
 		},
 		Outputs: map[string]struct{}{
 			"elixir-version": {},
@@ -1816,91 +1137,35 @@ var PopularActions = map[string]*ActionMetadata{
 	},
 	"game-ci/unity-builder@v2": {
 		Name: "Unity - Builder",
-		Inputs: map[string]*ActionMetadataInput{
-			"allowDirtyBuild": {
-				Default: &popularActionDefaultValue2,
-			},
-			"androidAppBundle": {
-				Default: &popularActionDefaultValue6,
-			},
-			"androidKeyaliasName": {
-				Default: &popularActionDefaultValue2,
-			},
-			"androidKeyaliasPass": {
-				Default: &popularActionDefaultValue2,
-			},
-			"androidKeystoreBase64": {
-				Default: &popularActionDefaultValue2,
-			},
-			"androidKeystoreName": {
-				Default: &popularActionDefaultValue2,
-			},
-			"androidKeystorePass": {
-				Default: &popularActionDefaultValue2,
-			},
-			"androidVersionCode": {
-				Default: &popularActionDefaultValue2,
-			},
-			"awsStackName": {
-				Default: &popularActionDefaultValue60,
-			},
-			"buildMethod": {
-				Default: &popularActionDefaultValue2,
-			},
-			"buildName": {
-				Default: &popularActionDefaultValue2,
-			},
-			"buildsPath": {
-				Default: &popularActionDefaultValue2,
-			},
-			"chownFilesTo": {
-				Default: &popularActionDefaultValue2,
-			},
-			"customImage": {
-				Default: &popularActionDefaultValue2,
-			},
-			"customParameters": {
-				Default: &popularActionDefaultValue2,
-			},
-			"githubToken": {
-				Default: &popularActionDefaultValue2,
-			},
-			"kubeConfig": {
-				Default: &popularActionDefaultValue2,
-			},
-			"kubeVolume": {
-				Default: &popularActionDefaultValue2,
-			},
-			"kubeVolumeSize": {
-				Default: &popularActionDefaultValue61,
-			},
-			"projectPath": {
-				Default: &popularActionDefaultValue2,
-			},
-			"remoteBuildCluster": {
-				Default: &popularActionDefaultValue62,
-			},
-			"remoteBuildCpu": {
-				Default: &popularActionDefaultValue15,
-			},
-			"remoteBuildMemory": {
-				Default: &popularActionDefaultValue63,
-			},
-			"sshAgent": {
-				Default: &popularActionDefaultValue2,
-			},
-			"targetPlatform": {
-				Default: &popularActionDefaultValue2,
-			},
-			"unityVersion": {
-				Default: &popularActionDefaultValue64,
-			},
-			"version": {
-				Default: &popularActionDefaultValue2,
-			},
-			"versioning": {
-				Default: &popularActionDefaultValue65,
-			},
+		Inputs: map[string]ActionMetadataInputRequired{
+			"allowDirtyBuild":       false,
+			"androidAppBundle":      false,
+			"androidKeyaliasName":   false,
+			"androidKeyaliasPass":   false,
+			"androidKeystoreBase64": false,
+			"androidKeystoreName":   false,
+			"androidKeystorePass":   false,
+			"androidVersionCode":    false,
+			"awsStackName":          false,
+			"buildMethod":           false,
+			"buildName":             false,
+			"buildsPath":            false,
+			"chownFilesTo":          false,
+			"customImage":           false,
+			"customParameters":      false,
+			"githubToken":           false,
+			"kubeConfig":            false,
+			"kubeVolume":            false,
+			"kubeVolumeSize":        false,
+			"projectPath":           false,
+			"remoteBuildCluster":    false,
+			"remoteBuildCpu":        false,
+			"remoteBuildMemory":     false,
+			"sshAgent":              false,
+			"targetPlatform":        false,
+			"unityVersion":          false,
+			"version":               false,
+			"versioning":            false,
 		},
 		Outputs: map[string]struct{}{
 			"buildVersion": {},
@@ -1909,72 +1174,41 @@ var PopularActions = map[string]*ActionMetadata{
 	},
 	"getsentry/paths-filter@v1": {
 		Name: "Pull request changed files filter",
-		Inputs: map[string]*ActionMetadataInput{
-			"filters": {
-				Required: true,
-			},
-			"token": {
-				Default: &popularActionDefaultValue3,
-			},
+		Inputs: map[string]ActionMetadataInputRequired{
+			"filters": true,
+			"token":   false,
 		},
 		SkipOutputs: true,
 	},
 	"getsentry/paths-filter@v2": {
 		Name: "Paths Changes Filter",
-		Inputs: map[string]*ActionMetadataInput{
-			"base": {},
-			"filters": {
-				Required: true,
-			},
-			"initial-fetch-depth": {
-				Default: &popularActionDefaultValue56,
-			},
-			"list-files": {
-				Required: true,
-				Default:  &popularActionDefaultValue57,
-			},
-			"ref": {},
-			"token": {
-				Default: &popularActionDefaultValue3,
-			},
-			"working-directory": {},
+		Inputs: map[string]ActionMetadataInputRequired{
+			"base":                false,
+			"filters":             true,
+			"initial-fetch-depth": false,
+			"list-files":          false,
+			"ref":                 false,
+			"token":               false,
+			"working-directory":   false,
 		},
 		SkipOutputs: true,
 	},
 	"github/codeql-action/analyze@v1": {
 		Name: "CodeQL: Finish",
-		Inputs: map[string]*ActionMetadataInput{
-			"add-snippets": {
-				Default: &popularActionDefaultValue6,
-			},
-			"category":   {},
-			"check_name": {},
-			"checkout_path": {
-				Default: &popularActionDefaultValue66,
-			},
-			"cleanup-level": {
-				Default: &popularActionDefaultValue67,
-			},
-			"matrix": {
-				Default: &popularActionDefaultValue68,
-			},
-			"output": {
-				Default: &popularActionDefaultValue69,
-			},
-			"ram": {},
-			"skip-queries": {
-				Default: &popularActionDefaultValue6,
-			},
-			"threads": {},
-			"token": {
-				Default: &popularActionDefaultValue3,
-			},
-			"upload": {
-				Default: &popularActionDefaultValue4,
-			},
-			"upload-database": {
-				Default: &popularActionDefaultValue4,
-			},
+		Inputs: map[string]ActionMetadataInputRequired{
+			"add-snippets":    false,
+			"category":        false,
+			"check_name":      false,
+			"checkout_path":   false,
+			"cleanup-level":   false,
+			"matrix":          false,
+			"output":          false,
+			"ram":             false,
+			"skip-queries":    false,
+			"threads":         false,
+			"token":           false,
+			"upload":          false,
+			"upload-database": false,
 		},
 		Outputs: map[string]struct{}{
 			"db-locations": {},
@@ -1982,36 +1216,25 @@ var PopularActions = map[string]*ActionMetadata{
 	},
 	"github/codeql-action/autobuild@v1": {
 		Name: "CodeQL: Autobuild",
-		Inputs: map[string]*ActionMetadataInput{
-			"matrix": {
-				Default: &popularActionDefaultValue68,
-			},
-			"token": {
-				Default: &popularActionDefaultValue3,
-			},
+		Inputs: map[string]ActionMetadataInputRequired{
+			"matrix": false,
+			"token":  false,
 		},
 	},
 	"github/codeql-action/init@v1": {
 		Name: "CodeQL: Init",
-		Inputs: map[string]*ActionMetadataInput{
-			"config-file":               {},
-			"db-location":               {},
-			"external-repository-token": {},
-			"languages":                 {},
-			"matrix": {
-				Default: &popularActionDefaultValue68,
-			},
-			"packs":   {},
-			"queries": {},
-			"setup-python-dependencies": {
-				Required: true,
-				Default:  &popularActionDefaultValue4,
-			},
-			"source-root": {},
-			"token": {
-				Default: &popularActionDefaultValue3,
-			},
-			"tools": {},
+		Inputs: map[string]ActionMetadataInputRequired{
+			"config-file":               false,
+			"db-location":               false,
+			"external-repository-token": false,
+			"languages":                 false,
+			"matrix":                    false,
+			"packs":                     false,
+			"queries":                   false,
+			"setup-python-dependencies": false,
+			"source-root":               false,
+			"token":                     false,
+			"tools":                     false,
 		},
 		Outputs: map[string]struct{}{
 			"codeql-path": {},
@@ -2025,19 +1248,13 @@ var PopularActions = map[string]*ActionMetadata{
 	},
 	"githubocto/flat@v1": {
 		Name: "Flat Data",
-		Inputs: map[string]*ActionMetadataInput{
-			"http_url": {},
-			"outfile_basename": {
-				Default: &popularActionDefaultValue70,
-			},
-			"postprocess":    {},
-			"sql_connstring": {},
-			"sql_format": {
-				Default: &popularActionDefaultValue25,
-			},
-			"sql_queryfile": {
-				Default: &popularActionDefaultValue71,
-			},
+		Inputs: map[string]ActionMetadataInputRequired{
+			"http_url":         false,
+			"outfile_basename": false,
+			"postprocess":      false,
+			"sql_connstring":   false,
+			"sql_format":       false,
+			"sql_queryfile":    false,
 		},
 		Outputs: map[string]struct{}{
 			"delta_bytes": {},
@@ -2045,14 +1262,12 @@ var PopularActions = map[string]*ActionMetadata{
 	},
 	"githubocto/flat@v2": {
 		Name: "Flat Data",
-		Inputs: map[string]*ActionMetadataInput{
-			"downloaded_filename": {},
-			"http_url":            {},
-			"postprocess":         {},
-			"sql_connstring":      {},
-			"sql_queryfile": {
-				Default: &popularActionDefaultValue71,
-			},
+		Inputs: map[string]ActionMetadataInputRequired{
+			"downloaded_filename": false,
+			"http_url":            false,
+			"postprocess":         false,
+			"sql_connstring":      false,
+			"sql_queryfile":       false,
 		},
 		Outputs: map[string]struct{}{
 			"delta_bytes": {},
@@ -2060,18 +1275,16 @@ var PopularActions = map[string]*ActionMetadata{
 	},
 	"githubocto/flat@v3": {
 		Name: "Flat Data",
-		Inputs: map[string]*ActionMetadataInput{
-			"authorization":       {},
-			"axios_config":        {},
-			"downloaded_filename": {},
-			"http_url":            {},
-			"mask":                {},
-			"postprocess":         {},
-			"sql_connstring":      {},
-			"sql_queryfile": {
-				Default: &popularActionDefaultValue71,
-			},
-			"typeorm_config": {},
+		Inputs: map[string]ActionMetadataInputRequired{
+			"authorization":       false,
+			"axios_config":        false,
+			"downloaded_filename": false,
+			"http_url":            false,
+			"mask":                false,
+			"postprocess":         false,
+			"sql_connstring":      false,
+			"sql_queryfile":       false,
+			"typeorm_config":      false,
 		},
 		Outputs: map[string]struct{}{
 			"delta_bytes": {},
@@ -2079,115 +1292,64 @@ var PopularActions = map[string]*ActionMetadata{
 	},
 	"golangci/golangci-lint-action@v1": {
 		Name: "Run golangci-lint",
-		Inputs: map[string]*ActionMetadataInput{
-			"args": {
-				Default: &popularActionDefaultValue2,
-			},
-			"github-token": {
-				Required: true,
-				Default:  &popularActionDefaultValue3,
-			},
-			"only-new-issues": {
-				Required: true,
-				Default:  &popularActionDefaultValue6,
-			},
-			"version": {
-				Required: true,
-			},
-			"working-directory": {},
+		Inputs: map[string]ActionMetadataInputRequired{
+			"args":              false,
+			"github-token":      false,
+			"only-new-issues":   false,
+			"version":           true,
+			"working-directory": false,
 		},
 	},
 	"golangci/golangci-lint-action@v2": {
 		Name: "Run golangci-lint",
-		Inputs: map[string]*ActionMetadataInput{
-			"args": {
-				Default: &popularActionDefaultValue2,
-			},
-			"github-token": {
-				Required: true,
-				Default:  &popularActionDefaultValue3,
-			},
-			"only-new-issues": {
-				Required: true,
-				Default:  &popularActionDefaultValue6,
-			},
-			"skip-build-cache": {
-				Required: true,
-				Default:  &popularActionDefaultValue6,
-			},
-			"skip-go-installation": {
-				Required: true,
-				Default:  &popularActionDefaultValue6,
-			},
-			"skip-pkg-cache": {
-				Required: true,
-				Default:  &popularActionDefaultValue6,
-			},
-			"version":           {},
-			"working-directory": {},
+		Inputs: map[string]ActionMetadataInputRequired{
+			"args":                 false,
+			"github-token":         false,
+			"only-new-issues":      false,
+			"skip-build-cache":     false,
+			"skip-go-installation": false,
+			"skip-pkg-cache":       false,
+			"version":              false,
+			"working-directory":    false,
 		},
 	},
 	"goreleaser/goreleaser-action@v1": {
 		Name: "GoReleaser Action",
-		Inputs: map[string]*ActionMetadataInput{
-			"args": {},
-			"key":  {},
-			"version": {
-				Default: &popularActionDefaultValue72,
-			},
-			"workdir": {
-				Default: &popularActionDefaultValue7,
-			},
+		Inputs: map[string]ActionMetadataInputRequired{
+			"args":    false,
+			"key":     false,
+			"version": false,
+			"workdir": false,
 		},
 	},
 	"goreleaser/goreleaser-action@v2": {
 		Name: "GoReleaser Action",
-		Inputs: map[string]*ActionMetadataInput{
-			"args": {},
-			"distribution": {
-				Default: &popularActionDefaultValue73,
-			},
-			"install-only": {
-				Default: &popularActionDefaultValue6,
-			},
-			"version": {
-				Default: &popularActionDefaultValue72,
-			},
-			"workdir": {
-				Default: &popularActionDefaultValue7,
-			},
+		Inputs: map[string]ActionMetadataInputRequired{
+			"args":         false,
+			"distribution": false,
+			"install-only": false,
+			"version":      false,
+			"workdir":      false,
 		},
 	},
 	"gradle/wrapper-validation-action@v1": {
 		Name: "Gradle Wrapper Validation",
-		Inputs: map[string]*ActionMetadataInput{
-			"allow-checksums": {
-				Default: &popularActionDefaultValue2,
-			},
-			"allow-snapshots": {
-				Default: &popularActionDefaultValue6,
-			},
-			"min-wrapper-count": {
-				Default: &popularActionDefaultValue23,
-			},
+		Inputs: map[string]ActionMetadataInputRequired{
+			"allow-checksums":   false,
+			"allow-snapshots":   false,
+			"min-wrapper-count": false,
 		},
 	},
 	"haskell/actions/setup@v1": {
 		Name: "Setup Haskell",
-		Inputs: map[string]*ActionMetadataInput{
-			"cabal-version": {
-				Default: &popularActionDefaultValue72,
-			},
-			"disable-matcher": {},
-			"enable-stack":    {},
-			"ghc-version": {
-				Default: &popularActionDefaultValue72,
-			},
-			"stack-no-global": {},
-			"stack-setup-ghc": {},
-			"stack-version": {
-				Default: &popularActionDefaultValue72,
-			},
+		Inputs: map[string]ActionMetadataInputRequired{
+			"cabal-version":   false,
+			"disable-matcher": false,
+			"enable-stack":    false,
+			"ghc-version":     false,
+			"stack-no-global": false,
+			"stack-setup-ghc": false,
+			"stack-version":   false,
 		},
 		Outputs: map[string]struct{}{
 			"cabal-exe":   {},
@@ -2202,19 +1364,13 @@ var PopularActions = map[string]*ActionMetadata{
 	},
 	"marvinpinto/action-automatic-releases@latest": {
 		Name: "Automatic Releases",
-		Inputs: map[string]*ActionMetadataInput{
-			"automatic_release_tag": {},
-			"draft": {
-				Default: &popularActionDefaultValue6,
-			},
-			"files": {},
-			"prerelease": {
-				Default: &popularActionDefaultValue4,
-			},
-			"repo_token": {
-				Required: true,
-			},
-			"title": {},
+		Inputs: map[string]ActionMetadataInputRequired{
+			"automatic_release_tag": false,
+			"draft":                 false,
+			"files":                 false,
+			"prerelease":            false,
+			"repo_token":            true,
+			"title":                 false,
 		},
 		Outputs: map[string]struct{}{
 			"automatic_releases_tag": {},
@@ -2226,24 +1382,18 @@ var PopularActions = map[string]*ActionMetadata{
 	},
 	"mikepenz/release-changelog-builder-action@v1": {
 		Name: "Release Changelog Builder",
-		Inputs: map[string]*ActionMetadataInput{
-			"commitMode": {
-				Default: &popularActionDefaultValue6,
-			},
-			"configuration": {},
-			"failOnError": {
-				Default: &popularActionDefaultValue6,
-			},
-			"fromTag": {},
-			"ignorePreReleases": {
-				Default: &popularActionDefaultValue6,
-			},
-			"outputFile": {},
-			"owner":      {},
-			"path":       {},
-			"repo":       {},
-			"toTag":      {},
-			"token":      {},
+		Inputs: map[string]ActionMetadataInputRequired{
+			"commitMode":        false,
+			"configuration":     false,
+			"failOnError":       false,
+			"fromTag":           false,
+			"ignorePreReleases": false,
+			"outputFile":        false,
+			"owner":             false,
+			"path":              false,
+			"repo":              false,
+			"toTag":             false,
+			"token":             false,
 		},
 		Outputs: map[string]struct{}{
 			"changelog": {},
@@ -2256,24 +1406,18 @@ var PopularActions = map[string]*ActionMetadata{
 	},
 	"mikepenz/release-changelog-builder-action@v2": {
 		Name: "Release Changelog Builder",
-		Inputs: map[string]*ActionMetadataInput{
-			"commitMode": {
-				Default: &popularActionDefaultValue6,
-			},
-			"configuration": {},
-			"failOnError": {
-				Default: &popularActionDefaultValue6,
-			},
-			"fromTag": {},
-			"ignorePreReleases": {
-				Default: &popularActionDefaultValue6,
-			},
-			"outputFile": {},
-			"owner":      {},
-			"path":       {},
-			"repo":       {},
-			"toTag":      {},
-			"token":      {},
+		Inputs: map[string]ActionMetadataInputRequired{
+			"commitMode":        false,
+			"configuration":     false,
+			"failOnError":       false,
+			"fromTag":           false,
+			"ignorePreReleases": false,
+			"outputFile":        false,
+			"owner":             false,
+			"path":              false,
+			"repo":              false,
+			"toTag":             false,
+			"token":             false,
 		},
 		Outputs: map[string]struct{}{
 			"changelog": {},
@@ -2286,117 +1430,50 @@ var PopularActions = map[string]*ActionMetadata{
 	},
 	"msys2/setup-msys2@v1": {
 		Name: "Setup MSYS2 environment",
-		Inputs: map[string]*ActionMetadataInput{
-			"cache": {
-				Default: &popularActionDefaultValue6,
-			},
-			"install": {
-				Default: &popularActionDefaultValue6,
-			},
-			"msystem": {
-				Default: &popularActionDefaultValue74,
-			},
-			"path-type": {
-				Default: &popularActionDefaultValue75,
-			},
-			"release": {
-				Default: &popularActionDefaultValue4,
-			},
-			"update": {
-				Default: &popularActionDefaultValue6,
-			},
+		Inputs: map[string]ActionMetadataInputRequired{
+			"cache":     false,
+			"install":   false,
+			"msystem":   false,
+			"path-type": false,
+			"release":   false,
+			"update":    false,
 		},
 	},
 	"msys2/setup-msys2@v2": {
 		Name: "Setup MSYS2",
-		Inputs: map[string]*ActionMetadataInput{
-			"install": {
-				Default: &popularActionDefaultValue6,
-			},
-			"msystem": {
-				Default: &popularActionDefaultValue74,
-			},
-			"path-type": {
-				Default: &popularActionDefaultValue76,
-			},
-			"release": {
-				Default: &popularActionDefaultValue4,
-			},
-			"update": {
-				Default: &popularActionDefaultValue6,
-			},
+		Inputs: map[string]ActionMetadataInputRequired{
+			"install":   false,
+			"msystem":   false,
+			"path-type": false,
+			"release":   false,
+			"update":    false,
 		},
 	},
 	"ncipollo/release-action@v1": {
 		Name: "Create Release",
-		Inputs: map[string]*ActionMetadataInput{
-			"allowUpdates": {
-				Default: &popularActionDefaultValue2,
-			},
-			"artifact": {
-				Default: &popularActionDefaultValue2,
-			},
-			"artifactContentType": {
-				Default: &popularActionDefaultValue2,
-			},
-			"artifactErrorsFailBuild": {
-				Default: &popularActionDefaultValue2,
-			},
-			"artifacts": {
-				Default: &popularActionDefaultValue2,
-			},
-			"body": {
-				Default: &popularActionDefaultValue2,
-			},
-			"bodyFile": {
-				Default: &popularActionDefaultValue2,
-			},
-			"commit": {
-				Default: &popularActionDefaultValue2,
-			},
-			"discussionCategory": {
-				Default: &popularActionDefaultValue2,
-			},
-			"draft": {
-				Default: &popularActionDefaultValue2,
-			},
-			"name": {
-				Default: &popularActionDefaultValue2,
-			},
-			"omitBody": {
-				Default: &popularActionDefaultValue6,
-			},
-			"omitBodyDuringUpdate": {
-				Default: &popularActionDefaultValue6,
-			},
-			"omitName": {
-				Default: &popularActionDefaultValue6,
-			},
-			"omitNameDuringUpdate": {
-				Default: &popularActionDefaultValue6,
-			},
-			"omitPrereleaseDuringUpdate": {
-				Default: &popularActionDefaultValue6,
-			},
-			"owner": {
-				Default: &popularActionDefaultValue2,
-			},
-			"prerelease": {
-				Default: &popularActionDefaultValue2,
-			},
-			"replacesArtifacts": {
-				Default: &popularActionDefaultValue4,
-			},
-			"repo": {
-				Default: &popularActionDefaultValue2,
-			},
-			"tag": {
-				Default: &popularActionDefaultValue2,
-			},
-			"token": {
-				Required: true,
-				Default:  &popularActionDefaultValue3,
-			},
+		Inputs: map[string]ActionMetadataInputRequired{
+			"allowUpdates":               false,
+			"artifact":                   false,
+			"artifactContentType":        false,
+			"artifactErrorsFailBuild":    false,
+			"artifacts":                  false,
+			"body":                       false,
+			"bodyFile":                   false,
+			"commit":                     false,
+			"discussionCategory":         false,
+			"draft":                      false,
+			"name":                       false,
+			"omitBody":                   false,
+			"omitBodyDuringUpdate":       false,
+			"omitName":                   false,
+			"omitNameDuringUpdate":       false,
+			"omitPrereleaseDuringUpdate": false,
+			"owner":                      false,
+			"prerelease":                 false,
+			"replacesArtifacts":          false,
+			"repo":                       false,
+			"tag":                        false,
+			"token":                      false,
 		},
 		Outputs: map[string]struct{}{
 			"html_url":   {},
@@ -2406,24 +1483,22 @@ var PopularActions = map[string]*ActionMetadata{
 	},
 	"nwtgck/actions-netlify@v1": {
 		Name: "Netlify Actions",
-		Inputs: map[string]*ActionMetadataInput{
-			"alias":                           {},
-			"deploy-message":                  {},
-			"enable-commit-comment":           {},
-			"enable-commit-status":            {},
-			"enable-pull-request-comment":     {},
-			"fails-without-credentials":       {},
-			"functions-dir":                   {},
-			"github-deployment-description":   {},
-			"github-deployment-environment":   {},
-			"github-token":                    {},
-			"netlify-config-path":             {},
-			"overwrites-pull-request-comment": {},
-			"production-branch":               {},
-			"production-deploy":               {},
-			"publish-dir": {
-				Required: true,
-			},
+		Inputs: map[string]ActionMetadataInputRequired{
+			"alias":                           false,
+			"deploy-message":                  false,
+			"enable-commit-comment":           false,
+			"enable-commit-status":            false,
+			"enable-pull-request-comment":     false,
+			"fails-without-credentials":       false,
+			"functions-dir":                   false,
+			"github-deployment-description":   false,
+			"github-deployment-environment":   false,
+			"github-token":                    false,
+			"netlify-config-path":             false,
+			"overwrites-pull-request-comment": false,
+			"production-branch":               false,
+			"production-deploy":               false,
+			"publish-dir":                     true,
 		},
 		Outputs: map[string]struct{}{
 			"deploy-url": {},
@@ -2449,92 +1524,64 @@ var PopularActions = map[string]*ActionMetadata{
 	},
 	"peaceiris/actions-gh-pages@v2": {
 		Name: "GitHub Pages action",
-		Inputs: map[string]*ActionMetadataInput{
-			"commitMessage": {},
-			"emptyCommits": {
-				Default: &popularActionDefaultValue4,
-			},
-			"forceOrphan": {
-				Default: &popularActionDefaultValue6,
-			},
-			"keepFiles": {
-				Default: &popularActionDefaultValue6,
-			},
-			"tagMessage": {},
-			"tagName":    {},
-			"tagOverwrite": {
-				Default: &popularActionDefaultValue6,
-			},
-			"useremail": {},
-			"username":  {},
+		Inputs: map[string]ActionMetadataInputRequired{
+			"commitMessage": false,
+			"emptyCommits":  false,
+			"forceOrphan":   false,
+			"keepFiles":     false,
+			"tagMessage":    false,
+			"tagName":       false,
+			"tagOverwrite":  false,
+			"useremail":     false,
+			"username":      false,
 		},
 	},
 	"peaceiris/actions-gh-pages@v3": {
 		Name: "GitHub Pages action",
-		Inputs: map[string]*ActionMetadataInput{
-			"allow_empty_commit": {
-				Default: &popularActionDefaultValue6,
-			},
-			"cname":          {},
-			"commit_message": {},
-			"deploy_key":     {},
-			"destination_dir": {
-				Default: &popularActionDefaultValue2,
-			},
-			"disable_nojekyll": {
-				Default: &popularActionDefaultValue6,
-			},
-			"enable_jekyll": {
-				Default: &popularActionDefaultValue6,
-			},
-			"exclude_assets": {
-				Default: &popularActionDefaultValue77,
-			},
-			"external_repository": {},
-			"force_orphan": {
-				Default: &popularActionDefaultValue6,
-			},
-			"full_commit_message": {},
-			"github_token":        {},
-			"keep_files": {
-				Default: &popularActionDefaultValue6,
-			},
-			"personal_token": {},
-			"publish_branch": {
-				Default: &popularActionDefaultValue78,
-			},
-			"publish_dir": {
-				Default: &popularActionDefaultValue79,
-			},
-			"tag_message": {},
-			"tag_name":    {},
-			"user_email":  {},
-			"user_name":   {},
+		Inputs: map[string]ActionMetadataInputRequired{
+			"allow_empty_commit":  false,
+			"cname":               false,
+			"commit_message":      false,
+			"deploy_key":          false,
+			"destination_dir":     false,
+			"disable_nojekyll":    false,
+			"enable_jekyll":       false,
+			"exclude_assets":      false,
+			"external_repository": false,
+			"force_orphan":        false,
+			"full_commit_message": false,
+			"github_token":        false,
+			"keep_files":          false,
+			"personal_token":      false,
+			"publish_branch":      false,
+			"publish_dir":         false,
+			"tag_message":         false,
+			"tag_name":            false,
+			"user_email":          false,
+			"user_name":           false,
 		},
 	},
 	"peter-evans/create-pull-request@v1": {
 		Name: "Create Pull Request",
-		Inputs: map[string]*ActionMetadataInput{
-			"assignees":       {},
-			"author-email":    {},
-			"author-name":     {},
-			"base":            {},
-			"body":            {},
-			"branch":          {},
-			"branch-suffix":   {},
-			"commit-message":  {},
-			"committer-email": {},
-			"committer-name":  {},
-			"labels":          {},
-			"milestone":       {},
-			"project":         {},
-			"project-column":  {},
-			"reviewers":       {},
-			"team-reviewers":  {},
-			"title":           {},
-			"token": {
-				Required: true,
-			},
+		Inputs: map[string]ActionMetadataInputRequired{
+			"assignees":       false,
+			"author-email":    false,
+			"author-name":     false,
+			"base":            false,
+			"body":            false,
+			"branch":          false,
+			"branch-suffix":   false,
+			"commit-message":  false,
+			"committer-email": false,
+			"committer-name":  false,
+			"labels":          false,
+			"milestone":       false,
+			"project":         false,
+			"project-column":  false,
+			"reviewers":       false,
+			"team-reviewers":  false,
+			"title":           false,
+			"token":           true,
 		},
 		Outputs: map[string]struct{}{
 			"pr_number": {},
@@ -2542,30 +1589,26 @@ var PopularActions = map[string]*ActionMetadata{
 	},
 	"peter-evans/create-pull-request@v2": {
 		Name: "Create Pull Request",
-		Inputs: map[string]*ActionMetadataInput{
-			"assignees":      {},
-			"author":         {},
-			"base":           {},
-			"body":           {},
-			"branch":         {},
-			"branch-suffix":  {},
-			"commit-message": {},
-			"committer":      {},
-			"draft":          {},
-			"labels":         {},
-			"milestone":      {},
-			"path":           {},
-			"project":        {},
-			"project-column": {},
-			"request-to-parent": {
-				Default: &popularActionDefaultValue6,
-			},
-			"reviewers":      {},
-			"team-reviewers": {},
-			"title":          {},
-			"token": {
-				Default: &popularActionDefaultValue3,
-			},
+		Inputs: map[string]ActionMetadataInputRequired{
+			"assignees":         false,
+			"author":            false,
+			"base":              false,
+			"body":              false,
+			"branch":            false,
+			"branch-suffix":     false,
+			"commit-message":    false,
+			"committer":         false,
+			"draft":             false,
+			"labels":            false,
+			"milestone":         false,
+			"path":              false,
+			"project":           false,
+			"project-column":    false,
+			"request-to-parent": false,
+			"reviewers":         false,
+			"team-reviewers":    false,
+			"title":             false,
+			"token":             false,
 		},
 		Outputs: map[string]struct{}{
 			"pull-request-number": {},
@@ -2573,46 +1616,26 @@ var PopularActions = map[string]*ActionMetadata{
 	},
 	"peter-evans/create-pull-request@v3": {
 		Name: "Create Pull Request",
-		Inputs: map[string]*ActionMetadataInput{
-			"assignees": {},
-			"author": {
-				Default: &popularActionDefaultValue80,
-			},
-			"base": {},
-			"body": {
-				Default: &popularActionDefaultValue81,
-			},
-			"branch": {
-				Default: &popularActionDefaultValue82,
-			},
-			"branch-suffix": {},
-			"commit-message": {
-				Default: &popularActionDefaultValue83,
-			},
-			"committer": {
-				Default: &popularActionDefaultValue84,
-			},
-			"delete-branch": {
-				Default: &popularActionDefaultValue6,
-			},
-			"draft": {
-				Default: &popularActionDefaultValue6,
-			},
-			"labels":       {},
-			"milestone":    {},
-			"path":         {},
-			"push-to-fork": {},
-			"reviewers":    {},
-			"signoff": {
-				Default: &popularActionDefaultValue6,
-			},
-			"team-reviewers": {},
-			"title": {
-				Default: &popularActionDefaultValue85,
-			},
-			"token": {
-				Default: &popularActionDefaultValue3,
-			},
+		Inputs: map[string]ActionMetadataInputRequired{
+			"assignees":      false,
+			"author":         false,
+			"base":           false,
+			"body":           false,
+			"branch":         false,
+			"branch-suffix":  false,
+			"commit-message": false,
+			"committer":      false,
+			"delete-branch":  false,
+			"draft":          false,
+			"labels":         false,
+			"milestone":      false,
+			"path":           false,
+			"push-to-fork":   false,
+			"reviewers":      false,
+			"signoff":        false,
+			"team-reviewers": false,
+			"title":          false,
+			"token":          false,
 		},
 		Outputs: map[string]struct{}{
 			"pull-request-number": {},
@@ -2620,370 +1643,165 @@ var PopularActions = map[string]*ActionMetadata{
 	},
 	"preactjs/compressed-size-action@v1": {
 		Name: "compressed-size-action",
-		Inputs: map[string]*ActionMetadataInput{
-			"build-script": {
-				Default: &popularActionDefaultValue86,
-			},
-			"collapse-unchanged": {
-				Default: &popularActionDefaultValue4,
-			},
-			"compression":    {},
-			"omit-unchanged": {},
-			"repo-token": {
-				Required: true,
-			},
-			"show-total": {
-				Default: &popularActionDefaultValue4,
-			},
+		Inputs: map[string]ActionMetadataInputRequired{
+			"build-script":       false,
+			"collapse-unchanged": false,
+			"compression":        false,
+			"omit-unchanged":     false,
+			"repo-token":         true,
+			"show-total":         false,
 		},
 	},
 	"preactjs/compressed-size-action@v2": {
 		Name: "compressed-size-action",
-		Inputs: map[string]*ActionMetadataInput{
-			"build-script": {
-				Default: &popularActionDefaultValue86,
-			},
-			"clean-script": {},
-			"collapse-unchanged": {
-				Default: &popularActionDefaultValue4,
-			},
-			"compression": {},
-			"cwd":         {},
-			"exclude": {
-				Default: &popularActionDefaultValue87,
-			},
-			"minimum-change-threshold": {
-				Default: &popularActionDefaultValue23,
-			},
-			"omit-unchanged": {},
-			"pattern": {
-				Default: &popularActionDefaultValue88,
-			},
-			"repo-token": {
-				Default: &popularActionDefaultValue3,
-			},
-			"show-total": {
-				Default: &popularActionDefaultValue4,
-			},
-			"strip-hash": {},
-			"use-check":  {},
+		Inputs: map[string]ActionMetadataInputRequired{
+			"build-script":             false,
+			"clean-script":             false,
+			"collapse-unchanged":       false,
+			"compression":              false,
+			"cwd":                      false,
+			"exclude":                  false,
+			"minimum-change-threshold": false,
+			"omit-unchanged":           false,
+			"pattern":                  false,
+			"repo-token":               false,
+			"show-total":               false,
+			"strip-hash":               false,
+			"use-check":                false,
 		},
 	},
 	"reviewdog/action-actionlint@v1": {
 		Name: "actionlint with reviewdog",
-		Inputs: map[string]*ActionMetadataInput{
-			"actionlint_flags": {
-				Default: &popularActionDefaultValue2,
-			},
-			"fail_on_error": {
-				Required: true,
-				Default:  &popularActionDefaultValue6,
-			},
-			"filter_mode": {
-				Required: true,
-				Default:  &popularActionDefaultValue89,
-			},
-			"github_token": {
-				Required: true,
-				Default:  &popularActionDefaultValue3,
-			},
-			"level": {
-				Required: true,
-				Default:  &popularActionDefaultValue90,
-			},
-			"reporter": {
-				Required: true,
-				Default:  &popularActionDefaultValue91,
-			},
-			"reviewdog_flags": {
-				Default: &popularActionDefaultValue2,
-			},
-			"tool_name": {
-				Required: true,
-				Default:  &popularActionDefaultValue92,
-			},
+		Inputs: map[string]ActionMetadataInputRequired{
+			"actionlint_flags": false,
+			"fail_on_error":    false,
+			"filter_mode":      false,
+			"github_token":     false,
+			"level":            false,
+			"reporter":         false,
+			"reviewdog_flags":  false,
+			"tool_name":        false,
 		},
 	},
 	"reviewdog/action-eslint@v1": {
 		Name: "Run eslint with reviewdog",
-		Inputs: map[string]*ActionMetadataInput{
-			"eslint_flags": {
-				Default: &popularActionDefaultValue7,
-			},
-			"fail_on_error": {
-				Default: &popularActionDefaultValue6,
-			},
-			"filter_mode": {
-				Default: &popularActionDefaultValue89,
-			},
-			"github_token": {
-				Required: true,
-				Default:  &popularActionDefaultValue3,
-			},
-			"level": {
-				Default: &popularActionDefaultValue90,
-			},
-			"reporter": {
-				Default: &popularActionDefaultValue93,
-			},
-			"reviewdog_flags": {
-				Default: &popularActionDefaultValue2,
-			},
-			"tool_name": {
-				Default: &popularActionDefaultValue94,
-			},
-			"workdir": {
-				Default: &popularActionDefaultValue7,
-			},
+		Inputs: map[string]ActionMetadataInputRequired{
+			"eslint_flags":    false,
+			"fail_on_error":   false,
+			"filter_mode":     false,
+			"github_token":    false,
+			"level":           false,
+			"reporter":        false,
+			"reviewdog_flags": false,
+			"tool_name":       false,
+			"workdir":         false,
 		},
 	},
 	"reviewdog/action-golangci-lint@v1": {
 		Name: "Run golangci-lint with reviewdog",
-		Inputs: map[string]*ActionMetadataInput{
-			"fail_on_error": {
-				Default: &popularActionDefaultValue6,
-			},
-			"filter_mode": {
-				Default: &popularActionDefaultValue89,
-			},
-			"github_token": {
-				Required: true,
-				Default:  &popularActionDefaultValue3,
-			},
-			"golangci_lint_flags": {
-				Default: &popularActionDefaultValue2,
-			},
-			"level": {
-				Default: &popularActionDefaultValue90,
-			},
-			"reporter": {
-				Default: &popularActionDefaultValue91,
-			},
-			"reviewdog_flags": {
-				Default: &popularActionDefaultValue2,
-			},
-			"tool_name": {
-				Default: &popularActionDefaultValue95,
-			},
-			"workdir": {
-				Default: &popularActionDefaultValue7,
-			},
+		Inputs: map[string]ActionMetadataInputRequired{
+			"fail_on_error":       false,
+			"filter_mode":         false,
+			"github_token":        false,
+			"golangci_lint_flags": false,
+			"level":               false,
+			"reporter":            false,
+			"reviewdog_flags":     false,
+			"tool_name":           false,
+			"workdir":             false,
 		},
 	},
 	"reviewdog/action-golangci-lint@v2": {
 		Name: "Run golangci-lint with reviewdog",
-		Inputs: map[string]*ActionMetadataInput{
-			"cache": {
-				Default: &popularActionDefaultValue4,
-			},
-			"fail_on_error": {
-				Default: &popularActionDefaultValue6,
-			},
-			"filter_mode": {
-				Default: &popularActionDefaultValue89,
-			},
-			"github_token": {
-				Required: true,
-				Default:  &popularActionDefaultValue3,
-			},
-			"go_version": {
-				Default: &popularActionDefaultValue96,
-			},
-			"golangci_lint_flags": {
-				Default: &popularActionDefaultValue2,
-			},
-			"golangci_lint_version": {
-				Default: &popularActionDefaultValue72,
-			},
-			"level": {
-				Default: &popularActionDefaultValue90,
-			},
-			"reporter": {
-				Default: &popularActionDefaultValue91,
-			},
-			"reviewdog_flags": {
-				Default: &popularActionDefaultValue2,
-			},
-			"reviewdog_version": {
-				Default: &popularActionDefaultValue72,
-			},
-			"tool_name": {
-				Default: &popularActionDefaultValue95,
-			},
-			"workdir": {
-				Default: &popularActionDefaultValue7,
-			},
+		Inputs: map[string]ActionMetadataInputRequired{
+			"cache":                 false,
+			"fail_on_error":         false,
+			"filter_mode":           false,
+			"github_token":          false,
+			"go_version":            false,
+			"golangci_lint_flags":   false,
+			"golangci_lint_version": false,
+			"level":                 false,
+			"reporter":              false,
+			"reviewdog_flags":       false,
+			"reviewdog_version":     false,
+			"tool_name":             false,
+			"workdir":               false,
 		},
 	},
 	"reviewdog/action-hadolint@v1": {
 		Name: "Run hadolint with reviewdog",
-		Inputs: map[string]*ActionMetadataInput{
-			"exclude": {
-				Default: &popularActionDefaultValue2,
-			},
-			"fail_on_error": {
-				Default: &popularActionDefaultValue6,
-			},
-			"filter_mode": {
-				Default: &popularActionDefaultValue89,
-			},
-			"github_token": {
-				Default: &popularActionDefaultValue3,
-			},
-			"hadolint_flags": {
-				Default: &popularActionDefaultValue2,
-			},
-			"hadolint_ignore": {
-				Default: &popularActionDefaultValue2,
-			},
-			"level": {
-				Default: &popularActionDefaultValue90,
-			},
-			"reporter": {
-				Default: &popularActionDefaultValue91,
-			},
-			"reviewdog_flags": {
-				Default: &popularActionDefaultValue2,
-			},
-			"tool_name": {
-				Default: &popularActionDefaultValue97,
-			},
+		Inputs: map[string]ActionMetadataInputRequired{
+			"exclude":         false,
+			"fail_on_error":   false,
+			"filter_mode":     false,
+			"github_token":    false,
+			"hadolint_flags":  false,
+			"hadolint_ignore": false,
+			"level":           false,
+			"reporter":        false,
+			"reviewdog_flags": false,
+			"tool_name":       false,
 		},
 	},
 	"reviewdog/action-misspell@v1": {
 		Name: "Run misspell with reviewdog",
-		Inputs: map[string]*ActionMetadataInput{
-			"exclude": {
-				Default: &popularActionDefaultValue2,
-			},
-			"fail_on_error": {
-				Default: &popularActionDefaultValue6,
-			},
-			"filter_mode": {
-				Default: &popularActionDefaultValue89,
-			},
-			"github_token": {
-				Default: &popularActionDefaultValue3,
-			},
-			"ignore": {
-				Default: &popularActionDefaultValue2,
-			},
-			"level": {
-				Default: &popularActionDefaultValue90,
-			},
-			"locale": {
-				Default: &popularActionDefaultValue2,
-			},
-			"path": {
-				Default: &popularActionDefaultValue7,
-			},
-			"pattern": {
-				Default: &popularActionDefaultValue98,
-			},
-			"reporter": {
-				Default: &popularActionDefaultValue91,
-			},
+		Inputs: map[string]ActionMetadataInputRequired{
+			"exclude":       false,
+			"fail_on_error": false,
+			"filter_mode":   false,
+			"github_token":  false,
+			"ignore":        false,
+			"level":         false,
+			"locale":        false,
+			"path":          false,
+			"pattern":       false,
+			"reporter":      false,
 		},
 	},
 	"reviewdog/action-rubocop@v1": {
 		Name: "Run rubocop with reviewdog",
-		Inputs: map[string]*ActionMetadataInput{
-			"fail_on_error": {
-				Default: &popularActionDefaultValue6,
-			},
-			"filter_mode": {
-				Default: &popularActionDefaultValue89,
-			},
-			"github_token": {
-				Required: true,
-			},
-			"level": {
-				Default: &popularActionDefaultValue90,
-			},
-			"reporter": {
-				Default: &popularActionDefaultValue91,
-			},
-			"reviewdog_flags": {
-				Default: &popularActionDefaultValue2,
-			},
-			"rubocop_extensions": {
-				Default: &popularActionDefaultValue99,
-			},
-			"rubocop_flags": {
-				Default: &popularActionDefaultValue2,
-			},
-			"rubocop_version": {},
-			"tool_name": {
-				Default: &popularActionDefaultValue100,
-			},
-			"workdir": {
-				Default: &popularActionDefaultValue7,
-			},
+		Inputs: map[string]ActionMetadataInputRequired{
+			"fail_on_error":      false,
+			"filter_mode":        false,
+			"github_token":       true,
+			"level":              false,
+			"reporter":           false,
+			"reviewdog_flags":    false,
+			"rubocop_extensions": false,
+			"rubocop_flags":      false,
+			"rubocop_version":    false,
+			"tool_name":          false,
+			"workdir":            false,
 		},
 	},
 	"reviewdog/action-shellcheck@v1": {
 		Name: "Run shellcheck with reviewdog",
-		Inputs: map[string]*ActionMetadataInput{
-			"exclude": {},
-			"fail_on_error": {
-				Default: &popularActionDefaultValue6,
-			},
-			"filter_mode": {
-				Default: &popularActionDefaultValue89,
-			},
-			"github_token": {
-				Default: &popularActionDefaultValue3,
-			},
-			"level": {
-				Default: &popularActionDefaultValue90,
-			},
-			"path": {
-				Default: &popularActionDefaultValue7,
-			},
-			"pattern": {
-				Default: &popularActionDefaultValue101,
-			},
-			"reporter": {
-				Default: &popularActionDefaultValue91,
-			},
-			"reviewdog_flags": {
-				Default: &popularActionDefaultValue2,
-			},
-			"shellcheck_flags": {
-				Default: &popularActionDefaultValue102,
-			},
+		Inputs: map[string]ActionMetadataInputRequired{
+			"exclude":          false,
+			"fail_on_error":    false,
+			"filter_mode":      false,
+			"github_token":     false,
+			"level":            false,
+			"path":             false,
+			"pattern":          false,
+			"reporter":         false,
+			"reviewdog_flags":  false,
+			"shellcheck_flags": false,
 		},
 	},
 	"reviewdog/action-tflint@v1": {
 		Name: "Run tflint with reviewdog",
-		Inputs: map[string]*ActionMetadataInput{
-			"fail_on_error": {
-				Default: &popularActionDefaultValue6,
-			},
-			"filter_mode": {
-				Default: &popularActionDefaultValue89,
-			},
-			"flags": {
-				Default: &popularActionDefaultValue103,
-			},
-			"github_token": {
-				Required: true,
-			},
-			"level": {
-				Default: &popularActionDefaultValue90,
-			},
-			"reporter": {
-				Default: &popularActionDefaultValue91,
-			},
-			"tflint_rulesets": {
-				Default: &popularActionDefaultValue2,
-			},
-			"tflint_version": {
-				Default: &popularActionDefaultValue72,
-			},
-			"working_directory": {
-				Default: &popularActionDefaultValue7,
-			},
+		Inputs: map[string]ActionMetadataInputRequired{
+			"fail_on_error":     false,
+			"filter_mode":       false,
+			"flags":             false,
+			"github_token":      true,
+			"level":             false,
+			"reporter":          false,
+			"tflint_rulesets":   false,
+			"tflint_version":    false,
+			"working_directory": false,
 		},
 		Outputs: map[string]struct{}{
 			"reviewdog-return-code": {},
@@ -2992,16 +1810,10 @@ var PopularActions = map[string]*ActionMetadata{
 	},
 	"rhysd/action-setup-vim@v1": {
 		Name: "Setup Vim",
-		Inputs: map[string]*ActionMetadataInput{
-			"neovim": {
-				Default: &popularActionDefaultValue6,
-			},
-			"token": {
-				Default: &popularActionDefaultValue3,
-			},
-			"version": {
-				Default: &popularActionDefaultValue104,
-			},
+		Inputs: map[string]ActionMetadataInputRequired{
+			"neovim":  false,
+			"token":   false,
+			"version": false,
 		},
 		Outputs: map[string]struct{}{
 			"executable": {},
@@ -3009,41 +1821,23 @@ var PopularActions = map[string]*ActionMetadata{
 	},
 	"ridedott/merge-me-action@v1": {
 		Name: "Merge me!",
-		Inputs: map[string]*ActionMetadataInput{
-			"GITHUB_LOGIN": {
-				Default: &popularActionDefaultValue105,
-			},
-			"GITHUB_TOKEN": {
-				Required: true,
-			},
-			"MERGE_METHOD": {
-				Default: &popularActionDefaultValue106,
-			},
-			"PRESET": {},
+		Inputs: map[string]ActionMetadataInputRequired{
+			"GITHUB_LOGIN": false,
+			"GITHUB_TOKEN": true,
+			"MERGE_METHOD": false,
+			"PRESET":       false,
 		},
 	},
 	"ridedott/merge-me-action@v2": {
 		Name: "Merge me!",
-		Inputs: map[string]*ActionMetadataInput{
-			"ENABLED_FOR_MANUAL_CHANGES": {
-				Default: &popularActionDefaultValue6,
-			},
-			"ENABLE_GITHUB_API_PREVIEW": {
-				Default: &popularActionDefaultValue6,
-			},
-			"GITHUB_LOGIN": {
-				Default: &popularActionDefaultValue107,
-			},
-			"GITHUB_TOKEN": {
-				Required: true,
-			},
-			"MAXIMUM_RETRIES": {
-				Default: &popularActionDefaultValue108,
-			},
-			"MERGE_METHOD": {
-				Default: &popularActionDefaultValue106,
-			},
-			"PRESET": {},
+		Inputs: map[string]ActionMetadataInputRequired{
+			"ENABLED_FOR_MANUAL_CHANGES": false,
+			"ENABLE_GITHUB_API_PREVIEW":  false,
+			"GITHUB_LOGIN":               false,
+			"GITHUB_TOKEN":               true,
+			"MAXIMUM_RETRIES":            false,
+			"MERGE_METHOD":               false,
+			"PRESET":                     false,
 		},
 	},
 	"rtCamp/action-slack-notify@v2": {
@@ -3051,22 +1845,12 @@ var PopularActions = map[string]*ActionMetadata{
 	},
 	"ruby/setup-ruby@v1": {
 		Name: "Setup Ruby, JRuby and TruffleRuby",
-		Inputs: map[string]*ActionMetadataInput{
-			"bundler": {
-				Default: &popularActionDefaultValue18,
-			},
-			"bundler-cache": {
-				Default: &popularActionDefaultValue6,
-			},
-			"cache-version": {
-				Default: &popularActionDefaultValue50,
-			},
-			"ruby-version": {
-				Default: &popularActionDefaultValue18,
-			},
-			"working-directory": {
-				Default: &popularActionDefaultValue7,
-			},
+		Inputs: map[string]ActionMetadataInputRequired{
+			"bundler":           false,
+			"bundler-cache":     false,
+			"cache-version":     false,
+			"ruby-version":      false,
+			"working-directory": false,
 		},
 		Outputs: map[string]struct{}{
 			"ruby-prefix": {},
@@ -3074,31 +1858,25 @@ var PopularActions = map[string]*ActionMetadata{
 	},
 	"shivammathur/setup-php@v1": {
 		Name: "Setup PHP Action",
-		Inputs: map[string]*ActionMetadataInput{
-			"coverage":       {},
-			"extension-csv":  {},
-			"extensions":     {},
-			"ini-values":     {},
-			"ini-values-csv": {},
-			"pecl":           {},
-			"php-version": {
-				Required: true,
-				Default:  &popularActionDefaultValue109,
-			},
-			"tools": {},
+		Inputs: map[string]ActionMetadataInputRequired{
+			"coverage":       false,
+			"extension-csv":  false,
+			"extensions":     false,
+			"ini-values":     false,
+			"ini-values-csv": false,
+			"pecl":           false,
+			"php-version":    false,
+			"tools":          false,
 		},
 	},
 	"shivammathur/setup-php@v2": {
 		Name: "Setup PHP Action",
-		Inputs: map[string]*ActionMetadataInput{
-			"coverage":   {},
-			"extensions": {},
-			"ini-values": {},
-			"php-version": {
-				Required: true,
-				Default:  &popularActionDefaultValue110,
-			},
-			"tools": {},
+		Inputs: map[string]ActionMetadataInputRequired{
+			"coverage":    false,
+			"extensions":  false,
+			"ini-values":  false,
+			"php-version": false,
+			"tools":       false,
 		},
 		Outputs: map[string]struct{}{
 			"php-version": {},
@@ -3106,21 +1884,19 @@ var PopularActions = map[string]*ActionMetadata{
 	},
 	"softprops/action-gh-release@v1": {
 		Name: "GH Release",
-		Inputs: map[string]*ActionMetadataInput{
-			"body":                     {},
-			"body_path":                {},
-			"discussion_category_name": {},
-			"draft":                    {},
-			"fail_on_unmatched_files":  {},
-			"files":                    {},
-			"name":                     {},
-			"prerelease":               {},
-			"repository":               {},
-			"tag_name":                 {},
-			"target_commitish":         {},
-			"token": {
-				Default: &popularActionDefaultValue3,
-			},
+		Inputs: map[string]ActionMetadataInputRequired{
+			"body":                     false,
+			"body_path":                false,
+			"discussion_category_name": false,
+			"draft":                    false,
+			"fail_on_unmatched_files":  false,
+			"files":                    false,
+			"name":                     false,
+			"prerelease":               false,
+			"repository":               false,
+			"tag_name":                 false,
+			"target_commitish":         false,
+			"token":                    false,
 		},
 		Outputs: map[string]struct{}{
 			"id":         {},
@@ -3130,18 +1906,16 @@ var PopularActions = map[string]*ActionMetadata{
 	},
 	"subosito/flutter-action@v1": {
 		Name: "Flutter action",
-		Inputs: map[string]*ActionMetadataInput{
-			"channel": {
-				Default: &popularActionDefaultValue104,
-			},
-			"flutter-version": {},
+		Inputs: map[string]ActionMetadataInputRequired{
+			"channel":         false,
+			"flutter-version": false,
 		},
 	},
 	"treosh/lighthouse-ci-action@v1": {
 		Name: "Lighthouse CI Action",
-		Inputs: map[string]*ActionMetadataInput{
-			"url":  {},
-			"urls": {},
+		Inputs: map[string]ActionMetadataInputRequired{
+			"url":  false,
+			"urls": false,
 		},
 		Outputs: map[string]struct{}{
 			"resultsPath": {},
@@ -3149,17 +1923,15 @@ var PopularActions = map[string]*ActionMetadata{
 	},
 	"treosh/lighthouse-ci-action@v2": {
 		Name: "Lighthouse CI Action",
-		Inputs: map[string]*ActionMetadataInput{
-			"budgetPath": {},
-			"configPath": {},
-			"runs": {
-				Default: &popularActionDefaultValue23,
-			},
-			"serverBaseUrl":          {},
-			"serverToken":            {},
-			"temporaryPublicStorage": {},
-			"uploadArtifacts":        {},
-			"urls":                   {},
+		Inputs: map[string]ActionMetadataInputRequired{
+			"budgetPath":             false,
+			"configPath":             false,
+			"runs":                   false,
+			"serverBaseUrl":          false,
+			"serverToken":            false,
+			"temporaryPublicStorage": false,
+			"uploadArtifacts":        false,
+			"urls":                   false,
 		},
 		Outputs: map[string]struct{}{
 			"resultsPath": {},
@@ -3167,17 +1939,17 @@ var PopularActions = map[string]*ActionMetadata{
 	},
 	"treosh/lighthouse-ci-action@v3": {
 		Name: "Lighthouse CI Action",
-		Inputs: map[string]*ActionMetadataInput{
-			"basicAuthPassword":      {},
-			"basicAuthUsername":      {},
-			"budgetPath":             {},
-			"configPath":             {},
-			"runs":                   {},
-			"serverBaseUrl":          {},
-			"serverToken":            {},
-			"temporaryPublicStorage": {},
-			"uploadArtifacts":        {},
-			"urls":                   {},
+		Inputs: map[string]ActionMetadataInputRequired{
+			"basicAuthPassword":      false,
+			"basicAuthUsername":      false,
+			"budgetPath":             false,
+			"configPath":             false,
+			"runs":                   false,
+			"serverBaseUrl":          false,
+			"serverToken":            false,
+			"temporaryPublicStorage": false,
+			"uploadArtifacts":        false,
+			"urls":                   false,
 		},
 		Outputs: map[string]struct{}{
 			"assertionResults": {},
@@ -3187,17 +1959,17 @@ var PopularActions = map[string]*ActionMetadata{
 	},
 	"treosh/lighthouse-ci-action@v7": {
 		Name: "Lighthouse CI Action",
-		Inputs: map[string]*ActionMetadataInput{
-			"basicAuthPassword":      {},
-			"basicAuthUsername":      {},
-			"budgetPath":             {},
-			"configPath":             {},
-			"runs":                   {},
-			"serverBaseUrl":          {},
-			"serverToken":            {},
-			"temporaryPublicStorage": {},
-			"uploadArtifacts":        {},
-			"urls":                   {},
+		Inputs: map[string]ActionMetadataInputRequired{
+			"basicAuthPassword":      false,
+			"basicAuthUsername":      false,
+			"budgetPath":             false,
+			"configPath":             false,
+			"runs":                   false,
+			"serverBaseUrl":          false,
+			"serverToken":            false,
+			"temporaryPublicStorage": false,
+			"uploadArtifacts":        false,
+			"urls":                   false,
 		},
 		Outputs: map[string]struct{}{
 			"assertionResults": {},
@@ -3207,20 +1979,18 @@ var PopularActions = map[string]*ActionMetadata{
 	},
 	"treosh/lighthouse-ci-action@v8": {
 		Name: "Lighthouse CI Action",
-		Inputs: map[string]*ActionMetadataInput{
-			"artifactName": {
-				Default: &popularActionDefaultValue111,
-			},
-			"basicAuthPassword":      {},
-			"basicAuthUsername":      {},
-			"budgetPath":             {},
-			"configPath":             {},
-			"runs":                   {},
-			"serverBaseUrl":          {},
-			"serverToken":            {},
-			"temporaryPublicStorage": {},
-			"uploadArtifacts":        {},
-			"urls":                   {},
+		Inputs: map[string]ActionMetadataInputRequired{
+			"artifactName":           false,
+			"basicAuthPassword":      false,
+			"basicAuthUsername":      false,
+			"budgetPath":             false,
+			"configPath":             false,
+			"runs":                   false,
+			"serverBaseUrl":          false,
+			"serverToken":            false,
+			"temporaryPublicStorage": false,
+			"uploadArtifacts":        false,
+			"urls":                   false,
 		},
 		Outputs: map[string]struct{}{
 			"assertionResults": {},
@@ -3230,363 +2000,95 @@ var PopularActions = map[string]*ActionMetadata{
 	},
 	"wearerequired/lint-action@v1": {
 		Name: "Lint Action",
-		Inputs: map[string]*ActionMetadataInput{
-			"auto_fix": {
-				Default: &popularActionDefaultValue6,
-			},
-			"black": {
-				Default: &popularActionDefaultValue6,
-			},
-			"black_args": {
-				Default: &popularActionDefaultValue2,
-			},
-			"black_command_prefix": {
-				Default: &popularActionDefaultValue2,
-			},
-			"black_dir": {},
-			"black_extensions": {
-				Default: &popularActionDefaultValue112,
-			},
-			"check_name": {
-				Default: &popularActionDefaultValue113,
-			},
-			"commit_message": {
-				Default: &popularActionDefaultValue114,
-			},
-			"continue_on_error": {
-				Default: &popularActionDefaultValue4,
-			},
-			"eslint": {
-				Default: &popularActionDefaultValue6,
-			},
-			"eslint_args": {
-				Default: &popularActionDefaultValue2,
-			},
-			"eslint_command_prefix": {
-				Default: &popularActionDefaultValue2,
-			},
-			"eslint_dir": {},
-			"eslint_extensions": {
-				Default: &popularActionDefaultValue115,
-			},
-			"flake8": {
-				Default: &popularActionDefaultValue6,
-			},
-			"flake8_args": {
-				Default: &popularActionDefaultValue2,
-			},
-			"flake8_command_prefix": {
-				Default: &popularActionDefaultValue2,
-			},
-			"flake8_dir": {},
-			"flake8_extensions": {
-				Default: &popularActionDefaultValue112,
-			},
-			"git_email": {
-				Default: &popularActionDefaultValue116,
-			},
-			"git_name": {
-				Default: &popularActionDefaultValue117,
-			},
-			"github_token": {
-				Default: &popularActionDefaultValue3,
-			},
-			"gofmt": {
-				Default: &popularActionDefaultValue6,
-			},
-			"gofmt_args": {
-				Default: &popularActionDefaultValue2,
-			},
-			"gofmt_command_prefix": {
-				Default: &popularActionDefaultValue2,
-			},
-			"gofmt_dir": {},
-			"gofmt_extensions": {
-				Default: &popularActionDefaultValue118,
-			},
-			"golint": {
-				Default: &popularActionDefaultValue6,
-			},
-			"golint_args": {
-				Default: &popularActionDefaultValue2,
-			},
-			"golint_command_prefix": {
-				Default: &popularActionDefaultValue2,
-			},
-			"golint_dir": {},
-			"golint_extensions": {
-				Default: &popularActionDefaultValue118,
-			},
-			"mypy": {
-				Default: &popularActionDefaultValue6,
-			},
-			"mypy_args": {
-				Default: &popularActionDefaultValue2,
-			},
-			"mypy_command_prefix": {
-				Default: &popularActionDefaultValue2,
-			},
-			"mypy_dir": {},
-			"mypy_extensions": {
-				Default: &popularActionDefaultValue112,
-			},
-			"neutral_check_on_warning": {
-				Default: &popularActionDefaultValue6,
-			},
-			"oitnb": {
-				Default: &popularActionDefaultValue6,
-			},
-			"oitnb_args": {
-				Default: &popularActionDefaultValue2,
-			},
-			"oitnb_command_prefix": {
-				Default: &popularActionDefaultValue2,
-			},
-			"oitnb_dir": {},
-			"oitnb_extensions": {
-				Default: &popularActionDefaultValue112,
-			},
-			"php_codesniffer": {
-				Default: &popularActionDefaultValue6,
-			},
-			"php_codesniffer_args": {
-				Default: &popularActionDefaultValue2,
-			},
-			"php_codesniffer_command_prefix": {
-				Default: &popularActionDefaultValue2,
-			},
-			"php_codesniffer_dir": {},
-			"php_codesniffer_extensions": {
-				Default: &popularActionDefaultValue119,
-			},
-			"prettier": {
-				Default: &popularActionDefaultValue6,
-			},
-			"prettier_args": {
-				Default: &popularActionDefaultValue2,
-			},
-			"prettier_command_prefix": {
-				Default: &popularActionDefaultValue2,
-			},
-			"prettier_dir": {},
-			"prettier_extensions": {
-				Default: &popularActionDefaultValue120,
-			},
-			"rubocop": {
-				Default: &popularActionDefaultValue6,
-			},
-			"rubocop_args": {
-				Default: &popularActionDefaultValue2,
-			},
-			"rubocop_command_prefix": {
-				Default: &popularActionDefaultValue2,
-			},
-			"rubocop_dir": {},
-			"rubocop_extensions": {
-				Default: &popularActionDefaultValue121,
-			},
-			"stylelint": {
-				Default: &popularActionDefaultValue6,
-			},
-			"stylelint_args": {
-				Default: &popularActionDefaultValue2,
-			},
-			"stylelint_command_prefix": {
-				Default: &popularActionDefaultValue2,
-			},
-			"stylelint_dir": {},
-			"stylelint_extensions": {
-				Default: &popularActionDefaultValue122,
-			},
-			"swift_format_lockwood": {
-				Default: &popularActionDefaultValue6,
-			},
-			"swift_format_lockwood_args": {
-				Default: &popularActionDefaultValue2,
-			},
-			"swift_format_lockwood_command_prefix": {
-				Default: &popularActionDefaultValue2,
-			},
-			"swift_format_lockwood_dir": {},
-			"swift_format_lockwood_extensions": {
-				Default: &popularActionDefaultValue123,
-			},
-			"swift_format_official": {
-				Default: &popularActionDefaultValue6,
-			},
-			"swift_format_official_args": {
-				Default: &popularActionDefaultValue2,
-			},
-			"swift_format_official_command_prefix": {
-				Default: &popularActionDefaultValue2,
-			},
-			"swift_format_official_dir": {},
-			"swift_format_official_extensions": {
-				Default: &popularActionDefaultValue123,
-			},
-			"swiftformat": {
-				Default: &popularActionDefaultValue6,
-			},
-			"swiftformat_args": {
-				Default: &popularActionDefaultValue2,
-			},
-			"swiftformat_command_prefix": {
-				Default: &popularActionDefaultValue2,
-			},
-			"swiftformat_dir": {},
-			"swiftformat_extensions": {
-				Default: &popularActionDefaultValue123,
-			},
-			"swiftlint": {
-				Default: &popularActionDefaultValue6,
-			},
-			"swiftlint_args": {
-				Default: &popularActionDefaultValue2,
-			},
-			"swiftlint_command_prefix": {
-				Default: &popularActionDefaultValue2,
-			},
-			"swiftlint_dir": {},
-			"swiftlint_extensions": {
-				Default: &popularActionDefaultValue123,
-			},
-			"xo": {
-				Default: &popularActionDefaultValue6,
-			},
-			"xo_args": {
-				Default: &popularActionDefaultValue2,
-			},
-			"xo_command_prefix": {
-				Default: &popularActionDefaultValue2,
-			},
-			"xo_dir": {},
-			"xo_extensions": {
-				Default: &popularActionDefaultValue115,
-			},
+		Inputs: map[string]ActionMetadataInputRequired{
+			"auto_fix":                             false,
+			"black":                                false,
+			"black_args":                           false,
+			"black_command_prefix":                 false,
+			"black_dir":                            false,
+			"black_extensions":                     false,
+			"check_name":                           false,
+			"commit_message":                       false,
+			"continue_on_error":                    false,
+			"eslint":                               false,
+			"eslint_args":                          false,
+			"eslint_command_prefix":                false,
+			"eslint_dir":                           false,
+			"eslint_extensions":                    false,
+			"flake8":                               false,
+			"flake8_args":                          false,
+			"flake8_command_prefix":                false,
+			"flake8_dir":                           false,
+			"flake8_extensions":                    false,
+			"git_email":                            false,
+			"git_name":                             false,
+			"github_token":                         false,
+			"gofmt":                                false,
+			"gofmt_args":                           false,
+			"gofmt_command_prefix":                 false,
+			"gofmt_dir":                            false,
+			"gofmt_extensions":                     false,
+			"golint":                               false,
+			"golint_args":                          false,
+			"golint_command_prefix":                false,
+			"golint_dir":                           false,
+			"golint_extensions":                    false,
+			"mypy":                                 false,
+			"mypy_args":                            false,
+			"mypy_command_prefix":                  false,
+			"mypy_dir":                             false,
+			"mypy_extensions":                      false,
+			"neutral_check_on_warning":             false,
+			"oitnb":                                false,
+			"oitnb_args":                           false,
+			"oitnb_command_prefix":                 false,
+			"oitnb_dir":                            false,
+			"oitnb_extensions":                     false,
+			"php_codesniffer":                      false,
+			"php_codesniffer_args":                 false,
+			"php_codesniffer_command_prefix":       false,
+			"php_codesniffer_dir":                  false,
+			"php_codesniffer_extensions":           false,
+			"prettier":                             false,
+			"prettier_args":                        false,
+			"prettier_command_prefix":              false,
+			"prettier_dir":                         false,
+			"prettier_extensions":                  false,
+			"rubocop":                              false,
+			"rubocop_args":                         false,
+			"rubocop_command_prefix":               false,
+			"rubocop_dir":                          false,
+			"rubocop_extensions":                   false,
+			"stylelint":                            false,
+			"stylelint_args":                       false,
+			"stylelint_command_prefix":             false,
+			"stylelint_dir":                        false,
+			"stylelint_extensions":                 false,
+			"swift_format_lockwood":                false,
+			"swift_format_lockwood_args":           false,
+			"swift_format_lockwood_command_prefix": false,
+			"swift_format_lockwood_dir":            false,
+			"swift_format_lockwood_extensions":     false,
+			"swift_format_official":                false,
+			"swift_format_official_args":           false,
+			"swift_format_official_command_prefix": false,
+			"swift_format_official_dir":            false,
+			"swift_format_official_extensions":     false,
+			"swiftformat":                          false,
+			"swiftformat_args":                     false,
+			"swiftformat_command_prefix":           false,
+			"swiftformat_dir":                      false,
+			"swiftformat_extensions":               false,
+			"swiftlint":                            false,
+			"swiftlint_args":                       false,
+			"swiftlint_command_prefix":             false,
+			"swiftlint_dir":                        false,
+			"swiftlint_extensions":                 false,
+			"xo":                                   false,
+			"xo_args":                              false,
+			"xo_command_prefix":                    false,
+			"xo_dir":                               false,
+			"xo_extensions":                        false,
 		},
 	},
 }
-var popularActionDefaultValue0 = "here"
-var popularActionDefaultValue1 = "8398a7@action-slack"
-var popularActionDefaultValue2 = ""
-var popularActionDefaultValue3 = "${{ github.token }}"
-var popularActionDefaultValue4 = "true"
-var popularActionDefaultValue5 = "HIGH"
-var popularActionDefaultValue6 = "false"
-var popularActionDefaultValue7 = "."
-var popularActionDefaultValue8 = "Unit Test Results"
-var popularActionDefaultValue9 = "all tests, skipped tests"
-var popularActionDefaultValue10 = "update last"
-var popularActionDefaultValue11 = "test failures"
-var popularActionDefaultValue12 = "10"
-var popularActionDefaultValue13 = "all but latest"
-var popularActionDefaultValue14 = "merge"
-var popularActionDefaultValue15 = "0.25"
-var popularActionDefaultValue16 = "2.0"
-var popularActionDefaultValue17 = "x86"
-var popularActionDefaultValue18 = "default"
-var popularActionDefaultValue19 = "test"
-var popularActionDefaultValue20 = "2"
-var popularActionDefaultValue21 = "-no-window -gpu swiftshader_indirect -no-snapshot -noaudio -no-boot-anim"
-var popularActionDefaultValue22 = "clippy"
-var popularActionDefaultValue23 = "1"
-var popularActionDefaultValue24 = "${{ github.repository }}"
-var popularActionDefaultValue25 = "json"
-var popularActionDefaultValue26 = "actions/github-script"
-var popularActionDefaultValue27 = ".github/labeler.yml"
-var popularActionDefaultValue28 = "1.10"
-var popularActionDefaultValue29 = "x64"
-var popularActionDefaultValue30 = "jdk"
-var popularActionDefaultValue31 = "github"
-var popularActionDefaultValue32 = "GITHUB_TOKEN"
-var popularActionDefaultValue33 = "GITHUB_ACTOR"
-var popularActionDefaultValue34 = "10.x"
-var popularActionDefaultValue35 = "3.x"
-var popularActionDefaultValue36 = "7"
-var popularActionDefaultValue37 = "60"
-var popularActionDefaultValue38 = "30"
-var popularActionDefaultValue39 = "Stale"
-var popularActionDefaultValue40 = "warn"
-var popularActionDefaultValue41 = "artifact"
-var popularActionDefaultValue42 = "azurecloud"
-var popularActionDefaultValue43 = "${{github.token}}"
-var popularActionDefaultValue44 = "./"
-var popularActionDefaultValue45 = "${{github.repository}}"
-var popularActionDefaultValue46 = "success"
-var popularActionDefaultValue47 = "text/plain"
-var popularActionDefaultValue48 = "365"
-var popularActionDefaultValue49 = "resolved"
-var popularActionDefaultValue50 = "0"
-var popularActionDefaultValue51 = "nightly"
-var popularActionDefaultValue52 = "--allow-insecure-entitlement security.insecure --allow-insecure-entitlement network.host"
-var popularActionDefaultValue53 = "docker-container"
-var popularActionDefaultValue54 = "tonistiigi/binfmt:latest"
-var popularActionDefaultValue55 = "all"
-var popularActionDefaultValue56 = "100"
-var popularActionDefaultValue57 = "none"
-var popularActionDefaultValue58 = "master"
-var popularActionDefaultValue59 = "loose"
-var popularActionDefaultValue60 = "game-ci"
-var popularActionDefaultValue61 = "5Gi"
-var popularActionDefaultValue62 = "local"
-var popularActionDefaultValue63 = "800M"
-var popularActionDefaultValue64 = "auto"
-var popularActionDefaultValue65 = "Semantic"
-var popularActionDefaultValue66 = "${{ github.workspace }}"
-var popularActionDefaultValue67 = "brutal"
-var popularActionDefaultValue68 = "${{ toJson(matrix) }}"
-var popularActionDefaultValue69 = "../results"
-var popularActionDefaultValue70 = "data"
-var popularActionDefaultValue71 = ".github/workflows/query.sql"
-var popularActionDefaultValue72 = "latest"
-var popularActionDefaultValue73 = "goreleaser"
-var popularActionDefaultValue74 = "MINGW64"
-var popularActionDefaultValue75 = "strict"
-var popularActionDefaultValue76 = "minimal"
-var popularActionDefaultValue77 = ".github"
-var popularActionDefaultValue78 = "gh-pages"
-var popularActionDefaultValue79 = "public"
-var popularActionDefaultValue80 = "${{ github.actor }} <${{ github.actor }}@users.noreply.github.com>"
-var popularActionDefaultValue81 = "Automated changes by [create-pull-request](https://github.com/peter-evans/create-pull-request) GitHub action"
-var popularActionDefaultValue82 = "create-pull-request/patch"
-var popularActionDefaultValue83 = "[create-pull-request] automated change"
-var popularActionDefaultValue84 = "GitHub <noreply@github.com>"
-var popularActionDefaultValue85 = "Changes by create-pull-request action"
-var popularActionDefaultValue86 = "build"
-var popularActionDefaultValue87 = "{**/*.map,**/node_modules/**}"
-var popularActionDefaultValue88 = "**/dist/**/*.js"
-var popularActionDefaultValue89 = "added"
-var popularActionDefaultValue90 = "error"
-var popularActionDefaultValue91 = "github-pr-check"
-var popularActionDefaultValue92 = "actionlint"
-var popularActionDefaultValue93 = "github-pr-review"
-var popularActionDefaultValue94 = "eslint"
-var popularActionDefaultValue95 = "golangci"
-var popularActionDefaultValue96 = "1.x"
-var popularActionDefaultValue97 = "hadolint"
-var popularActionDefaultValue98 = "*"
-var popularActionDefaultValue99 = "rubocop-rails rubocop-performance rubocop-rspec rubocop-i18n rubocop-rake"
-var popularActionDefaultValue100 = "rubocop"
-var popularActionDefaultValue101 = "*.sh"
-var popularActionDefaultValue102 = "--external-sources"
-var popularActionDefaultValue103 = "--module"
-var popularActionDefaultValue104 = "stable"
-var popularActionDefaultValue105 = "dependabot-preview[bot]"
-var popularActionDefaultValue106 = "SQUASH"
-var popularActionDefaultValue107 = "dependabot"
-var popularActionDefaultValue108 = "3"
-var popularActionDefaultValue109 = "7.4"
-var popularActionDefaultValue110 = "8.0"
-var popularActionDefaultValue111 = "lighthouse-results"
-var popularActionDefaultValue112 = "py"
-var popularActionDefaultValue113 = "${linter}"
-var popularActionDefaultValue114 = "Fix code style issues with ${linter}"
-var popularActionDefaultValue115 = "js"
-var popularActionDefaultValue116 = "lint-action@samuelmeuli.com"
-var popularActionDefaultValue117 = "Lint Action"
-var popularActionDefaultValue118 = "go"
-var popularActionDefaultValue119 = "php"
-var popularActionDefaultValue120 = "css,html,js,json,jsx,md,sass,scss,ts,tsx,vue,yaml,yml"
-var popularActionDefaultValue121 = "rb"
-var popularActionDefaultValue122 = "css,sass,scss"
-var popularActionDefaultValue123 = "swift"

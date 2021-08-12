@@ -7,16 +7,10 @@ package actionlint
 var PopularActions = map[string]*ActionMetadata{
 	"rhysd/action-setup-vim@v1.2.7": {
 		Name: "Setup Vim",
-		Inputs: map[string]*ActionMetadataInput{
-			"neovim": {
-				Default: &popularActionDefaultValue0,
-			},
-			"token": {
-				Default: &popularActionDefaultValue1,
-			},
-			"version": {
-				Default: &popularActionDefaultValue2,
-			},
+		Inputs: map[string]ActionMetadataInputRequired{
+			"neovim":  false,
+			"token":   false,
+			"version": false,
 		},
 		Outputs: map[string]struct{}{
 			"executable": {},
@@ -24,24 +18,12 @@ var PopularActions = map[string]*ActionMetadata{
 	},
 	"rhysd/changelog-from-release/action@v2.2.2": {
 		Name: "Run changelog-from-release",
-		Inputs: map[string]*ActionMetadataInput{
-			"commit": {
-				Default: &popularActionDefaultValue3,
-			},
-			"file": {
-				Required: true,
-			},
-			"github_token": {
-				Required: true,
-			},
-			"push": {
-				Default: &popularActionDefaultValue3,
-			},
-			"version": {},
+		Inputs: map[string]ActionMetadataInputRequired{
+			"commit":       false,
+			"file":         true,
+			"github_token": true,
+			"push":         false,
+			"version":      false,
 		},
 	},
 }
-var popularActionDefaultValue0 = "false"
-var popularActionDefaultValue1 = "${{ github.token }}"
-var popularActionDefaultValue2 = "stable"
-var popularActionDefaultValue3 = "true"

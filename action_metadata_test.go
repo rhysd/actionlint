@@ -7,20 +7,16 @@ import (
 	"testing"
 
 	"github.com/google/go-cmp/cmp"
+	"gopkg.in/yaml.v3"
 )
 
 func testGetWantedActionMetadata() *ActionMetadata {
-	def := "anonymous"
 	want := &ActionMetadata{
 		Name: "My action",
-		Inputs: map[string]*ActionMetadataInput{
-			"name": {
-				Default: &def,
-			},
-			"message": {
-				Required: true,
-			},
-			"addition": {},
+		Inputs: map[string]ActionMetadataInputRequired{
+			"name":     false,
+			"message":  true,
+			"addition": false,
 		},
 		Outputs: map[string]struct{}{
 			"user_id": {},
@@ -371,5 +367,123 @@ func TestLocalActionsConcurrentMultipleMetadataAndFailures(t *testing.T) {
 		if !cmp.Equal(want, have) {
 			t.Fatal("unexpected metadata:", cmp.Diff(want, have))
 		}
+	}
+}
+
+func TestActionMetadataYAMLUnmarshalOK(t *testing.T) {
+	testCases := []struct {
+		what  string
+		input string
+		want  ActionMetadata
+	}{
+		{
+			what:  "no input and no output",
+			input: `name: Test`,
+			want: ActionMetadata{
+				Name: "Test",
+			},
+		},
+		{
+			what: "inputs",
+			input: `name: Test
+inputs:
+  input1:
+    description: test
+  input2:
+    description: test
+    required: false
+  input3:
+    description: test
+    required: true
+    default: 'default'
+  input4:
+    description: test
+    required: false
+    default: 'default'
+  input5:
+    description: test
+    required: true`,
+			want: ActionMetadata{
+				Name: "Test",
+				Inputs: map[string]ActionMetadataInputRequired{
+					"input1": false,
+					"input2": false,
+					"input3": false,
+					"input4": false,
+					"input5": true,
+				},
+			},
+		},
+		{
+			what: "outputs",
+			input: `name: Test
+outputs:
+  output1:
+    description: test
+  output2:
+    description: test
+`,
+			want: ActionMetadata{
+				Name: "Test",
+				Outputs: map[string]struct{}{
+					"output1": {},
+					"output2": {},
+				},
+			},
+		},
+	}
+
+	for _, tc := range testCases {
+		t.Run(tc.what, func(t *testing.T) {
+			var have ActionMetadata
+			if err := yaml.Unmarshal([]byte(tc.input), &have); err != nil {
+				t.Fatal(err)
+			}
+			if !cmp.Equal(&tc.want, &have) {
+				t.Fatal(cmp.Diff(&tc.want, &have))
+			}
+		})
+	}
+}
+
+func TestActionMetadataYAMLUnmarshalError(t *testing.T) {
+	testCases := []struct {
+		what  string
+		input string
+		want  string
+	}{
+		{
+			what: "invalid inputs",
+			input: `name: Test
+inputs: "foo"`,
+			want: "into map[string]actionlint.ActionMetadataInputRequired",
+		},
+		{
+			what: "invalid inputs.*",
+			input: `name: Test
+inputs:
+  input1: "foo"`,
+			want: "into actionlint.actionInputMetadata",
+		},
+		{
+			what: "invalid outputs",
+			input: `name: Test
+outputs: "foo"`,
+			want: "into map[string]struct {}",
+		},
+	}
+
+	for _, tc := range testCases {
+		t.Run(tc.what, func(t *testing.T) {
+			var data ActionMetadata
+			err := yaml.Unmarshal([]byte(tc.input), &data)
+			if err == nil {
+				t.Fatal("error did not occur")
+			}
+			msg := err.Error()
+			if !strings.Contains(msg, tc.want) {
+				t.Fatalf("%q is not contained in error message %q", tc.want, msg)
+			}
+		})
 	}
 }

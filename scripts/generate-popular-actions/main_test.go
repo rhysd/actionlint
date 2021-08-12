@@ -89,11 +89,11 @@ func TestReadWriteJSONL(t *testing.T) {
 		t.Run(tc.file, func(t *testing.T) {
 			f := filepath.Join("testdata", tc.file)
 			stdout := &bytes.Buffer{}
-			stderr := ioutil.Discard
+			stderr := &bytes.Buffer{}
 
 			status := newApp(stdout, stderr, ioutil.Discard, testDummyPopularActions, tc.skipInputs, tc.skipOutputs).run([]string{"test", "-s", f, "-f", "jsonl"})
 			if status != 0 {
-				t.Fatal("exit status is non-zero:", status)
+				t.Fatalf("exit status is non-zero: %d: %s", status, stderr.Bytes())
 			}
 
 			b, err := ioutil.ReadFile(f)
@@ -136,11 +136,11 @@ func TestWriteGoToStdout(t *testing.T) {
 	for _, tc := range testCases {
 		t.Run(tc.in, func(t *testing.T) {
 			stdout := &bytes.Buffer{}
-			stderr := ioutil.Discard
+			stderr := &bytes.Buffer{}
 			a := newApp(stdout, stderr, ioutil.Discard, testDummyPopularActions, tc.skipInputs, tc.skipOutputs)
 			status := a.run([]string{"test", "-s", filepath.Join("testdata", tc.in)})
 			if status != 0 {
-				t.Fatal("exit status is non-zero:", status)
+				t.Fatalf("exit status is non-zero: %d: %s", status, stderr.Bytes())
 			}
 
 			b, err := ioutil.ReadFile(filepath.Join("testdata", tc.want))
