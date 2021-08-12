@@ -12,7 +12,7 @@ import (
 func testGetWantedActionMetadata() *ActionMetadata {
 	want := &ActionMetadata{
 		Name: "My action",
-		Inputs: ActionMetadataInputs{
+		Inputs: map[string]ActionMetadataInputRequired{
 			"name":     false,
 			"message":  true,
 			"addition": false,

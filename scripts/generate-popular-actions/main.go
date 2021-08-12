@@ -307,7 +307,7 @@ var PopularActions = map[string]*ActionMetadata{
 			}
 			sort.Strings(names)
 
-			fmt.Fprintf(b, "Inputs: ActionMetadataInputs{\n")
+			fmt.Fprintf(b, "Inputs: map[string]ActionMetadataInputRequired{\n")
 			for _, name := range names {
 				required := meta.Inputs[name]
 				fmt.Fprintf(b, "%q: %v,\n", name, required)

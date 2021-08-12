@@ -14,25 +14,19 @@ import (
 
 //go:generate go run ./scripts/generate-popular-actions -s remote -f go ./popular_actions.go
 
-// ActionMetadataInputs is a map of inputs. The key is name of input. The value is whether it is
-// required to be set or not.
+// ActionMetadataInputRequired represents if the action input is required to be set or not.
 // https://docs.github.com/en/actions/creating-actions/metadata-syntax-for-github-actions#inputs
-type ActionMetadataInputs map[string]bool
+type ActionMetadataInputRequired bool
 
-// UnmarshalYAML implements yaml.Unmarshaler.
-func (inputs *ActionMetadataInputs) UnmarshalYAML(n *yaml.Node) error {
-	var m map[string]struct {
+func (required *ActionMetadataInputRequired) UnmarshalYAML(n *yaml.Node) error {
+	var input struct {
 		Required bool    `yaml:"required"`
 		Default  *string `yaml:"default"`
 	}
-	if err := n.Decode(&m); err != nil {
+	if err := n.Decode(&input); err != nil {
 		return err
 	}
-	ret := make(ActionMetadataInputs, len(m))
-	for n, i := range m {
-		ret[n] = i.Required && i.Default == nil
-	}
-	*inputs = ret
+	*required = ActionMetadataInputRequired(input.Required && input.Default == nil)
 	return nil
 }
 
@@ -42,7 +36,7 @@ type ActionMetadata struct {
 	// Name is "name" field of action.yaml
 	Name string `yaml:"name" json:"name"`
 	// Inputs is "inputs" field of action.yaml
-	Inputs ActionMetadataInputs `yaml:"inputs" json:"inputs"`
+	Inputs map[string]ActionMetadataInputRequired `yaml:"inputs" json:"inputs"`
 	// Outputs is "outputs" field of action.yaml. Key is name of output. Description is omitted
 	// since actionlint does not use it.
 	Outputs map[string]struct{} `yaml:"outputs" json:"outputs"`
