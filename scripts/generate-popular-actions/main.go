@@ -521,19 +521,6 @@ Flags:`)
 		return 1
 	}
 
-	where := "stdout"
-	out := a.stdout
-	if flags.NArg() == 1 {
-		where = flags.Arg(0)
-		f, err := os.Create(where)
-		if err != nil {
-			fmt.Fprintf(a.stderr, "could not open file to output: %s\n", err)
-			return 1
-		}
-		defer f.Close()
-		out = f
-	}
-
 	var actions map[string]*actionlint.ActionMetadata
 	if source == "remote" {
 		a.log.Println("Fetching data from https://github.com")
@@ -551,6 +538,19 @@ Flags:`)
 			return 1
 		}
 		actions = m
+	}
+
+	where := "stdout"
+	out := a.stdout
+	if flags.NArg() == 1 {
+		where = flags.Arg(0)
+		f, err := os.Create(where)
+		if err != nil {
+			fmt.Fprintf(a.stderr, "could not open file to output: %s\n", err)
+			return 1
+		}
+		defer f.Close()
+		out = f
 	}
 
 	switch format {
