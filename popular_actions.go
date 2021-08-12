@@ -116,18 +116,46 @@ var PopularActions = map[string]*ActionMetadata{
 			"scan-report-path": {},
 		},
 	},
+	"Azure/functions-action@v1": {
+		Name: "Azure Functions Action",
+		Inputs: map[string]*ActionMetadataInput{
+			"app-name": {
+				Required: true,
+			},
+			"enable-oryx-build": {
+				Default: &popularActionDefaultValue6,
+			},
+			"package": {
+				Default: &popularActionDefaultValue7,
+			},
+			"publish-profile": {},
+			"respect-funcignore": {
+				Default: &popularActionDefaultValue6,
+			},
+			"respect-pom-xml": {
+				Default: &popularActionDefaultValue6,
+			},
+			"scm-do-build-during-deployment": {
+				Default: &popularActionDefaultValue6,
+			},
+			"slot-name": {},
+		},
+		Outputs: map[string]struct{}{
+			"app-url": {},
+		},
+	},
 	"EnricoMi/publish-unit-test-result-action@v1": {
 		Name: "Publish Unit Test Results",
 		Inputs: map[string]*ActionMetadataInput{
 			"check_name": {
-				Default: &popularActionDefaultValue6,
+				Default: &popularActionDefaultValue8,
 			},
 			"check_run_annotations": {
-				Default: &popularActionDefaultValue7,
+				Default: &popularActionDefaultValue9,
 			},
 			"check_run_annotations_branch": {},
 			"comment_mode": {
-				Default: &popularActionDefaultValue8,
+				Default: &popularActionDefaultValue10,
 			},
 			"comment_on_pr": {},
 			"comment_title": {},
@@ -137,30 +165,30 @@ var PopularActions = map[string]*ActionMetadata{
 			},
 			"deduplicate_classes_by_file_name": {},
 			"fail_on": {
-				Default: &popularActionDefaultValue9,
+				Default: &popularActionDefaultValue11,
 			},
 			"files": {
 				Required: true,
 			},
 			"github_retries": {
-				Default: &popularActionDefaultValue10,
+				Default: &popularActionDefaultValue12,
 			},
 			"github_token": {
 				Required: true,
 				Default:  &popularActionDefaultValue3,
 			},
 			"hide_comments": {
-				Default: &popularActionDefaultValue11,
+				Default: &popularActionDefaultValue13,
 			},
 			"pull_request_build": {
-				Default: &popularActionDefaultValue12,
+				Default: &popularActionDefaultValue14,
 			},
 			"report_individual_runs": {},
 			"seconds_between_github_reads": {
-				Default: &popularActionDefaultValue13,
+				Default: &popularActionDefaultValue15,
 			},
 			"seconds_between_github_writes": {
-				Default: &popularActionDefaultValue14,
+				Default: &popularActionDefaultValue16,
 			},
 			"test_changes_limit": {},
 		},
@@ -235,7 +263,7 @@ var PopularActions = map[string]*ActionMetadata{
 				Required: true,
 			},
 			"arch": {
-				Default: &popularActionDefaultValue15,
+				Default: &popularActionDefaultValue17,
 			},
 			"disable-animations": {
 				Default: &popularActionDefaultValue4,
@@ -248,7 +276,7 @@ var PopularActions = map[string]*ActionMetadata{
 				Required: true,
 			},
 			"target": {
-				Default: &popularActionDefaultValue16,
+				Default: &popularActionDefaultValue18,
 			},
 		},
 	},
@@ -259,14 +287,14 @@ var PopularActions = map[string]*ActionMetadata{
 				Required: true,
 			},
 			"arch": {
-				Default: &popularActionDefaultValue15,
+				Default: &popularActionDefaultValue17,
 			},
 			"avd-name": {
-				Default: &popularActionDefaultValue17,
+				Default: &popularActionDefaultValue19,
 			},
 			"cmake": {},
 			"cores": {
-				Default: &popularActionDefaultValue18,
+				Default: &popularActionDefaultValue20,
 			},
 			"disable-animations": {
 				Default: &popularActionDefaultValue4,
@@ -275,11 +303,11 @@ var PopularActions = map[string]*ActionMetadata{
 				Default: &popularActionDefaultValue4,
 			},
 			"disable-spellchecker": {
-				Default: &popularActionDefaultValue19,
+				Default: &popularActionDefaultValue6,
 			},
 			"emulator-build": {},
 			"emulator-options": {
-				Default: &popularActionDefaultValue20,
+				Default: &popularActionDefaultValue21,
 			},
 			"force-avd-creation": {
 				Default: &popularActionDefaultValue4,
@@ -292,7 +320,7 @@ var PopularActions = map[string]*ActionMetadata{
 			},
 			"sdcard-path-or-size": {},
 			"target": {
-				Default: &popularActionDefaultValue16,
+				Default: &popularActionDefaultValue18,
 			},
 			"working-directory": {},
 		},
@@ -392,7 +420,7 @@ var PopularActions = map[string]*ActionMetadata{
 			},
 			"toolchain": {},
 			"use-cross": {
-				Default: &popularActionDefaultValue19,
+				Default: &popularActionDefaultValue6,
 			},
 		},
 	},
@@ -401,14 +429,14 @@ var PopularActions = map[string]*ActionMetadata{
 		Inputs: map[string]*ActionMetadataInput{
 			"args": {},
 			"name": {
-				Default: &popularActionDefaultValue21,
+				Default: &popularActionDefaultValue22,
 			},
 			"token": {
 				Required: true,
 			},
 			"toolchain": {},
 			"use-cross": {
-				Default: &popularActionDefaultValue19,
+				Default: &popularActionDefaultValue6,
 			},
 		},
 	},
@@ -417,10 +445,10 @@ var PopularActions = map[string]*ActionMetadata{
 		Inputs: map[string]*ActionMetadataInput{
 			"components": {},
 			"default": {
-				Default: &popularActionDefaultValue19,
+				Default: &popularActionDefaultValue6,
 			},
 			"override": {
-				Default: &popularActionDefaultValue19,
+				Default: &popularActionDefaultValue6,
 			},
 			"profile":   {},
 			"target":    {},
@@ -486,10 +514,10 @@ var PopularActions = map[string]*ActionMetadata{
 				Default: &popularActionDefaultValue4,
 			},
 			"fetch-depth": {
-				Default: &popularActionDefaultValue22,
+				Default: &popularActionDefaultValue23,
 			},
 			"lfs": {
-				Default: &popularActionDefaultValue19,
+				Default: &popularActionDefaultValue6,
 			},
 			"path": {},
 			"persist-credentials": {
@@ -497,7 +525,7 @@ var PopularActions = map[string]*ActionMetadata{
 			},
 			"ref": {},
 			"repository": {
-				Default: &popularActionDefaultValue23,
+				Default: &popularActionDefaultValue24,
 			},
 			"ssh-key":         {},
 			"ssh-known-hosts": {},
@@ -505,7 +533,7 @@ var PopularActions = map[string]*ActionMetadata{
 				Default: &popularActionDefaultValue4,
 			},
 			"submodules": {
-				Default: &popularActionDefaultValue19,
+				Default: &popularActionDefaultValue6,
 			},
 			"token": {
 				Default: &popularActionDefaultValue3,
@@ -516,7 +544,7 @@ var PopularActions = map[string]*ActionMetadata{
 		Name: "Delete Package Versions",
 		Inputs: map[string]*ActionMetadataInput{
 			"num-old-versions-to-delete": {
-				Default: &popularActionDefaultValue22,
+				Default: &popularActionDefaultValue23,
 			},
 			"owner":               {},
 			"package-name":        {},
@@ -557,20 +585,20 @@ var PopularActions = map[string]*ActionMetadata{
 		Name: "GitHub Script",
 		Inputs: map[string]*ActionMetadataInput{
 			"debug": {
-				Default: &popularActionDefaultValue19,
+				Default: &popularActionDefaultValue6,
 			},
 			"github-token": {
 				Default: &popularActionDefaultValue3,
 			},
 			"previews": {},
 			"result-encoding": {
-				Default: &popularActionDefaultValue24,
+				Default: &popularActionDefaultValue25,
 			},
 			"script": {
 				Required: true,
 			},
 			"user-agent": {
-				Default: &popularActionDefaultValue25,
+				Default: &popularActionDefaultValue26,
 			},
 		},
 		Outputs: map[string]struct{}{
@@ -581,20 +609,20 @@ var PopularActions = map[string]*ActionMetadata{
 		Name: "GitHub Script",
 		Inputs: map[string]*ActionMetadataInput{
 			"debug": {
-				Default: &popularActionDefaultValue19,
+				Default: &popularActionDefaultValue6,
 			},
 			"github-token": {
 				Default: &popularActionDefaultValue3,
 			},
 			"previews": {},
 			"result-encoding": {
-				Default: &popularActionDefaultValue24,
+				Default: &popularActionDefaultValue25,
 			},
 			"script": {
 				Required: true,
 			},
 			"user-agent": {
-				Default: &popularActionDefaultValue25,
+				Default: &popularActionDefaultValue26,
 			},
 		},
 		Outputs: map[string]struct{}{
@@ -605,20 +633,20 @@ var PopularActions = map[string]*ActionMetadata{
 		Name: "GitHub Script",
 		Inputs: map[string]*ActionMetadataInput{
 			"debug": {
-				Default: &popularActionDefaultValue19,
+				Default: &popularActionDefaultValue6,
 			},
 			"github-token": {
 				Default: &popularActionDefaultValue3,
 			},
 			"previews": {},
 			"result-encoding": {
-				Default: &popularActionDefaultValue24,
+				Default: &popularActionDefaultValue25,
 			},
 			"script": {
 				Required: true,
 			},
 			"user-agent": {
-				Default: &popularActionDefaultValue25,
+				Default: &popularActionDefaultValue26,
 			},
 		},
 		Outputs: map[string]struct{}{
@@ -629,20 +657,20 @@ var PopularActions = map[string]*ActionMetadata{
 		Name: "GitHub Script",
 		Inputs: map[string]*ActionMetadataInput{
 			"debug": {
-				Default: &popularActionDefaultValue19,
+				Default: &popularActionDefaultValue6,
 			},
 			"github-token": {
 				Default: &popularActionDefaultValue3,
 			},
 			"previews": {},
 			"result-encoding": {
-				Default: &popularActionDefaultValue24,
+				Default: &popularActionDefaultValue25,
 			},
 			"script": {
 				Required: true,
 			},
 			"user-agent": {
-				Default: &popularActionDefaultValue25,
+				Default: &popularActionDefaultValue26,
 			},
 		},
 		Outputs: map[string]struct{}{
@@ -653,11 +681,11 @@ var PopularActions = map[string]*ActionMetadata{
 		Name: "Pull Request Labeler",
 		Inputs: map[string]*ActionMetadataInput{
 			"configuration-path": {
-				Default: &popularActionDefaultValue26,
+				Default: &popularActionDefaultValue27,
 			},
 			"repo-token": {},
 			"sync-labels": {
-				Default: &popularActionDefaultValue19,
+				Default: &popularActionDefaultValue6,
 			},
 		},
 	},
@@ -665,11 +693,11 @@ var PopularActions = map[string]*ActionMetadata{
 		Name: "Labeler",
 		Inputs: map[string]*ActionMetadataInput{
 			"configuration-path": {
-				Default: &popularActionDefaultValue26,
+				Default: &popularActionDefaultValue27,
 			},
 			"repo-token": {},
 			"sync-labels": {
-				Default: &popularActionDefaultValue19,
+				Default: &popularActionDefaultValue6,
 			},
 		},
 	},
@@ -687,7 +715,7 @@ var PopularActions = map[string]*ActionMetadata{
 		Name: "Setup Go environment",
 		Inputs: map[string]*ActionMetadataInput{
 			"go-version": {
-				Default: &popularActionDefaultValue27,
+				Default: &popularActionDefaultValue28,
 			},
 			"version": {},
 		},
@@ -708,25 +736,25 @@ var PopularActions = map[string]*ActionMetadata{
 		Name: "Setup Java JDK",
 		Inputs: map[string]*ActionMetadataInput{
 			"architecture": {
-				Default: &popularActionDefaultValue28,
+				Default: &popularActionDefaultValue29,
 			},
 			"gpg-passphrase":  {},
 			"gpg-private-key": {},
 			"java-package": {
-				Default: &popularActionDefaultValue29,
+				Default: &popularActionDefaultValue30,
 			},
 			"java-version": {
 				Required: true,
 			},
 			"jdkFile": {},
 			"server-id": {
-				Default: &popularActionDefaultValue30,
-			},
-			"server-password": {
 				Default: &popularActionDefaultValue31,
 			},
-			"server-username": {
+			"server-password": {
 				Default: &popularActionDefaultValue32,
+			},
+			"server-username": {
+				Default: &popularActionDefaultValue33,
 			},
 			"settings-path": {},
 		},
@@ -739,10 +767,10 @@ var PopularActions = map[string]*ActionMetadata{
 		Name: "Setup Java JDK",
 		Inputs: map[string]*ActionMetadataInput{
 			"architecture": {
-				Default: &popularActionDefaultValue28,
+				Default: &popularActionDefaultValue29,
 			},
 			"check-latest": {
-				Default: &popularActionDefaultValue19,
+				Default: &popularActionDefaultValue6,
 			},
 			"distribution": {
 				Required: true,
@@ -750,7 +778,7 @@ var PopularActions = map[string]*ActionMetadata{
 			"gpg-passphrase":  {},
 			"gpg-private-key": {},
 			"java-package": {
-				Default: &popularActionDefaultValue29,
+				Default: &popularActionDefaultValue30,
 			},
 			"java-version": {
 				Required: true,
@@ -760,13 +788,13 @@ var PopularActions = map[string]*ActionMetadata{
 				Default: &popularActionDefaultValue4,
 			},
 			"server-id": {
-				Default: &popularActionDefaultValue30,
-			},
-			"server-password": {
 				Default: &popularActionDefaultValue31,
 			},
-			"server-username": {
+			"server-password": {
 				Default: &popularActionDefaultValue32,
+			},
+			"server-username": {
+				Default: &popularActionDefaultValue33,
 			},
 			"settings-path": {},
 		},
@@ -780,10 +808,10 @@ var PopularActions = map[string]*ActionMetadata{
 		Name: "Setup Node.js environment",
 		Inputs: map[string]*ActionMetadataInput{
 			"always-auth": {
-				Default: &popularActionDefaultValue19,
+				Default: &popularActionDefaultValue6,
 			},
 			"node-version": {
-				Default: &popularActionDefaultValue33,
+				Default: &popularActionDefaultValue34,
 			},
 			"registry-url": {},
 			"scope":        {},
@@ -794,13 +822,13 @@ var PopularActions = map[string]*ActionMetadata{
 		Name: "Setup Node.js environment",
 		Inputs: map[string]*ActionMetadataInput{
 			"always-auth": {
-				Default: &popularActionDefaultValue19,
+				Default: &popularActionDefaultValue6,
 			},
 			"architecture":          {},
 			"cache":                 {},
 			"cache-dependency-path": {},
 			"check-latest": {
-				Default: &popularActionDefaultValue19,
+				Default: &popularActionDefaultValue6,
 			},
 			"node-version": {},
 			"registry-url": {},
@@ -815,10 +843,10 @@ var PopularActions = map[string]*ActionMetadata{
 		Name: "Setup Python",
 		Inputs: map[string]*ActionMetadataInput{
 			"architecture": {
-				Default: &popularActionDefaultValue28,
+				Default: &popularActionDefaultValue29,
 			},
 			"python-version": {
-				Default: &popularActionDefaultValue34,
+				Default: &popularActionDefaultValue35,
 			},
 		},
 		Outputs: map[string]struct{}{
@@ -830,7 +858,7 @@ var PopularActions = map[string]*ActionMetadata{
 		Inputs: map[string]*ActionMetadataInput{
 			"architecture": {},
 			"python-version": {
-				Default: &popularActionDefaultValue34,
+				Default: &popularActionDefaultValue35,
 			},
 			"token": {
 				Default: &popularActionDefaultValue3,
@@ -844,25 +872,25 @@ var PopularActions = map[string]*ActionMetadata{
 		Name: "Close Stale Issues",
 		Inputs: map[string]*ActionMetadataInput{
 			"days-before-close": {
-				Default: &popularActionDefaultValue35,
+				Default: &popularActionDefaultValue36,
 			},
 			"days-before-stale": {
-				Default: &popularActionDefaultValue36,
+				Default: &popularActionDefaultValue37,
 			},
 			"exempt-issue-label": {},
 			"exempt-pr-label":    {},
 			"operations-per-run": {
-				Default: &popularActionDefaultValue37,
+				Default: &popularActionDefaultValue38,
 			},
 			"repo-token": {
 				Required: true,
 			},
 			"stale-issue-label": {
-				Default: &popularActionDefaultValue38,
+				Default: &popularActionDefaultValue39,
 			},
 			"stale-issue-message": {},
 			"stale-pr-label": {
-				Default: &popularActionDefaultValue38,
+				Default: &popularActionDefaultValue39,
 			},
 			"stale-pr-message": {},
 		},
@@ -871,13 +899,13 @@ var PopularActions = map[string]*ActionMetadata{
 		Name: "Close Stale Issues",
 		Inputs: map[string]*ActionMetadataInput{
 			"days-before-close": {
-				Default: &popularActionDefaultValue35,
-			},
-			"days-before-stale": {
 				Default: &popularActionDefaultValue36,
 			},
+			"days-before-stale": {
+				Default: &popularActionDefaultValue37,
+			},
 			"debug-only": {
-				Default: &popularActionDefaultValue19,
+				Default: &popularActionDefaultValue6,
 			},
 			"exempt-issue-labels": {
 				Default: &popularActionDefaultValue2,
@@ -889,17 +917,17 @@ var PopularActions = map[string]*ActionMetadata{
 				Default: &popularActionDefaultValue2,
 			},
 			"operations-per-run": {
-				Default: &popularActionDefaultValue37,
+				Default: &popularActionDefaultValue38,
 			},
 			"repo-token": {
 				Required: true,
 			},
 			"stale-issue-label": {
-				Default: &popularActionDefaultValue38,
+				Default: &popularActionDefaultValue39,
 			},
 			"stale-issue-message": {},
 			"stale-pr-label": {
-				Default: &popularActionDefaultValue38,
+				Default: &popularActionDefaultValue39,
 			},
 			"stale-pr-message": {},
 		},
@@ -917,33 +945,33 @@ var PopularActions = map[string]*ActionMetadata{
 				Default: &popularActionDefaultValue2,
 			},
 			"ascending": {
-				Default: &popularActionDefaultValue19,
+				Default: &popularActionDefaultValue6,
 			},
 			"close-issue-label":   {},
 			"close-issue-message": {},
 			"close-pr-label":      {},
 			"close-pr-message":    {},
 			"days-before-close": {
-				Default: &popularActionDefaultValue35,
+				Default: &popularActionDefaultValue36,
 			},
 			"days-before-issue-close": {},
 			"days-before-issue-stale": {},
 			"days-before-pr-close":    {},
 			"days-before-pr-stale":    {},
 			"days-before-stale": {
-				Default: &popularActionDefaultValue36,
+				Default: &popularActionDefaultValue37,
 			},
 			"debug-only": {
-				Default: &popularActionDefaultValue19,
+				Default: &popularActionDefaultValue6,
 			},
 			"delete-branch": {
-				Default: &popularActionDefaultValue19,
+				Default: &popularActionDefaultValue6,
 			},
 			"enable-statistics": {
 				Default: &popularActionDefaultValue4,
 			},
 			"exempt-all-assignees": {
-				Default: &popularActionDefaultValue19,
+				Default: &popularActionDefaultValue6,
 			},
 			"exempt-all-issue-assignees": {
 				Default: &popularActionDefaultValue2,
@@ -952,7 +980,7 @@ var PopularActions = map[string]*ActionMetadata{
 				Default: &popularActionDefaultValue2,
 			},
 			"exempt-all-milestones": {
-				Default: &popularActionDefaultValue19,
+				Default: &popularActionDefaultValue6,
 			},
 			"exempt-all-pr-assignees": {
 				Default: &popularActionDefaultValue2,
@@ -994,7 +1022,7 @@ var PopularActions = map[string]*ActionMetadata{
 				Default: &popularActionDefaultValue2,
 			},
 			"operations-per-run": {
-				Default: &popularActionDefaultValue37,
+				Default: &popularActionDefaultValue38,
 			},
 			"remove-issue-stale-when-updated": {
 				Default: &popularActionDefaultValue4,
@@ -1009,17 +1037,17 @@ var PopularActions = map[string]*ActionMetadata{
 				Default: &popularActionDefaultValue3,
 			},
 			"skip-stale-issue-message": {
-				Default: &popularActionDefaultValue19,
+				Default: &popularActionDefaultValue6,
 			},
 			"skip-stale-pr-message": {
-				Default: &popularActionDefaultValue19,
+				Default: &popularActionDefaultValue6,
 			},
 			"stale-issue-label": {
-				Default: &popularActionDefaultValue38,
+				Default: &popularActionDefaultValue39,
 			},
 			"stale-issue-message": {},
 			"stale-pr-label": {
-				Default: &popularActionDefaultValue38,
+				Default: &popularActionDefaultValue39,
 			},
 			"stale-pr-message": {},
 			"start-date": {
@@ -1040,33 +1068,33 @@ var PopularActions = map[string]*ActionMetadata{
 				Default: &popularActionDefaultValue2,
 			},
 			"ascending": {
-				Default: &popularActionDefaultValue19,
+				Default: &popularActionDefaultValue6,
 			},
 			"close-issue-label":   {},
 			"close-issue-message": {},
 			"close-pr-label":      {},
 			"close-pr-message":    {},
 			"days-before-close": {
-				Default: &popularActionDefaultValue35,
+				Default: &popularActionDefaultValue36,
 			},
 			"days-before-issue-close": {},
 			"days-before-issue-stale": {},
 			"days-before-pr-close":    {},
 			"days-before-pr-stale":    {},
 			"days-before-stale": {
-				Default: &popularActionDefaultValue36,
+				Default: &popularActionDefaultValue37,
 			},
 			"debug-only": {
-				Default: &popularActionDefaultValue19,
+				Default: &popularActionDefaultValue6,
 			},
 			"delete-branch": {
-				Default: &popularActionDefaultValue19,
+				Default: &popularActionDefaultValue6,
 			},
 			"enable-statistics": {
 				Default: &popularActionDefaultValue4,
 			},
 			"exempt-all-assignees": {
-				Default: &popularActionDefaultValue19,
+				Default: &popularActionDefaultValue6,
 			},
 			"exempt-all-issue-assignees": {
 				Default: &popularActionDefaultValue2,
@@ -1075,7 +1103,7 @@ var PopularActions = map[string]*ActionMetadata{
 				Default: &popularActionDefaultValue2,
 			},
 			"exempt-all-milestones": {
-				Default: &popularActionDefaultValue19,
+				Default: &popularActionDefaultValue6,
 			},
 			"exempt-all-pr-assignees": {
 				Default: &popularActionDefaultValue2,
@@ -1117,7 +1145,7 @@ var PopularActions = map[string]*ActionMetadata{
 				Default: &popularActionDefaultValue2,
 			},
 			"operations-per-run": {
-				Default: &popularActionDefaultValue37,
+				Default: &popularActionDefaultValue38,
 			},
 			"remove-issue-stale-when-updated": {
 				Default: &popularActionDefaultValue2,
@@ -1132,11 +1160,11 @@ var PopularActions = map[string]*ActionMetadata{
 				Default: &popularActionDefaultValue3,
 			},
 			"stale-issue-label": {
-				Default: &popularActionDefaultValue38,
+				Default: &popularActionDefaultValue39,
 			},
 			"stale-issue-message": {},
 			"stale-pr-label": {
-				Default: &popularActionDefaultValue38,
+				Default: &popularActionDefaultValue39,
 			},
 			"stale-pr-message": {},
 			"start-date": {
@@ -1163,10 +1191,10 @@ var PopularActions = map[string]*ActionMetadata{
 		Name: "Upload a Build Artifact",
 		Inputs: map[string]*ActionMetadataInput{
 			"if-no-files-found": {
-				Default: &popularActionDefaultValue39,
+				Default: &popularActionDefaultValue40,
 			},
 			"name": {
-				Default: &popularActionDefaultValue40,
+				Default: &popularActionDefaultValue41,
 			},
 			"path": {
 				Required: true,
@@ -1213,16 +1241,16 @@ var PopularActions = map[string]*ActionMetadata{
 		Name: "Azure Login",
 		Inputs: map[string]*ActionMetadataInput{
 			"allow-no-subscriptions": {
-				Default: &popularActionDefaultValue19,
+				Default: &popularActionDefaultValue6,
 			},
 			"creds": {
 				Required: true,
 			},
 			"enable-AzPSSession": {
-				Default: &popularActionDefaultValue19,
+				Default: &popularActionDefaultValue6,
 			},
 			"environment": {
-				Default: &popularActionDefaultValue41,
+				Default: &popularActionDefaultValue42,
 			},
 		},
 	},
@@ -1305,15 +1333,15 @@ var PopularActions = map[string]*ActionMetadata{
 			"commit": {},
 			"event":  {},
 			"github_token": {
-				Default: &popularActionDefaultValue42,
+				Default: &popularActionDefaultValue43,
 			},
 			"name": {},
 			"path": {
-				Default: &popularActionDefaultValue43,
+				Default: &popularActionDefaultValue44,
 			},
 			"pr": {},
 			"repo": {
-				Default: &popularActionDefaultValue44,
+				Default: &popularActionDefaultValue45,
 			},
 			"run_id":     {},
 			"run_number": {},
@@ -1321,7 +1349,7 @@ var PopularActions = map[string]*ActionMetadata{
 				Required: true,
 			},
 			"workflow_conclusion": {
-				Default: &popularActionDefaultValue45,
+				Default: &popularActionDefaultValue46,
 			},
 		},
 	},
@@ -1332,7 +1360,7 @@ var PopularActions = map[string]*ActionMetadata{
 				Required: true,
 			},
 			"content_type": {
-				Default: &popularActionDefaultValue46,
+				Default: &popularActionDefaultValue47,
 			},
 			"from": {
 				Required: true,
@@ -1367,7 +1395,7 @@ var PopularActions = map[string]*ActionMetadata{
 			},
 			"cc": {},
 			"content_type": {
-				Default: &popularActionDefaultValue46,
+				Default: &popularActionDefaultValue47,
 			},
 			"convert_markdown": {},
 			"from": {
@@ -1443,13 +1471,13 @@ var PopularActions = map[string]*ActionMetadata{
 				Default: &popularActionDefaultValue2,
 			},
 			"issue-lock-inactive-days": {
-				Default: &popularActionDefaultValue47,
+				Default: &popularActionDefaultValue48,
 			},
 			"issue-lock-labels": {
 				Default: &popularActionDefaultValue2,
 			},
 			"issue-lock-reason": {
-				Default: &popularActionDefaultValue48,
+				Default: &popularActionDefaultValue49,
 			},
 			"pr-exclude-created-before": {
 				Default: &popularActionDefaultValue2,
@@ -1461,13 +1489,13 @@ var PopularActions = map[string]*ActionMetadata{
 				Default: &popularActionDefaultValue2,
 			},
 			"pr-lock-inactive-days": {
-				Default: &popularActionDefaultValue47,
+				Default: &popularActionDefaultValue48,
 			},
 			"pr-lock-labels": {
 				Default: &popularActionDefaultValue2,
 			},
 			"pr-lock-reason": {
-				Default: &popularActionDefaultValue48,
+				Default: &popularActionDefaultValue49,
 			},
 			"process-only": {
 				Default: &popularActionDefaultValue2,
@@ -1482,10 +1510,10 @@ var PopularActions = map[string]*ActionMetadata{
 		Name: "Build and push Docker images",
 		Inputs: map[string]*ActionMetadataInput{
 			"add_git_labels": {
-				Default: &popularActionDefaultValue19,
+				Default: &popularActionDefaultValue6,
 			},
 			"always_pull": {
-				Default: &popularActionDefaultValue19,
+				Default: &popularActionDefaultValue6,
 			},
 			"build_args":  {},
 			"cache_froms": {},
@@ -1493,7 +1521,7 @@ var PopularActions = map[string]*ActionMetadata{
 			"labels":      {},
 			"password":    {},
 			"path": {
-				Default: &popularActionDefaultValue49,
+				Default: &popularActionDefaultValue7,
 			},
 			"push": {
 				Default: &popularActionDefaultValue4,
@@ -1503,10 +1531,10 @@ var PopularActions = map[string]*ActionMetadata{
 				Required: true,
 			},
 			"tag_with_ref": {
-				Default: &popularActionDefaultValue19,
+				Default: &popularActionDefaultValue6,
 			},
 			"tag_with_sha": {
-				Default: &popularActionDefaultValue19,
+				Default: &popularActionDefaultValue6,
 			},
 			"tags":     {},
 			"target":   {},
@@ -1528,19 +1556,19 @@ var PopularActions = map[string]*ActionMetadata{
 			},
 			"labels": {},
 			"load": {
-				Default: &popularActionDefaultValue19,
+				Default: &popularActionDefaultValue6,
 			},
 			"network": {},
 			"no-cache": {
-				Default: &popularActionDefaultValue19,
+				Default: &popularActionDefaultValue6,
 			},
 			"outputs":   {},
 			"platforms": {},
 			"pull": {
-				Default: &popularActionDefaultValue19,
+				Default: &popularActionDefaultValue6,
 			},
 			"push": {
-				Default: &popularActionDefaultValue19,
+				Default: &popularActionDefaultValue6,
 			},
 			"secret-files": {},
 			"secrets":      {},
@@ -1579,7 +1607,7 @@ var PopularActions = map[string]*ActionMetadata{
 			"tag-custom":      {},
 			"tag-custom-only": {},
 			"tag-edge": {
-				Default: &popularActionDefaultValue19,
+				Default: &popularActionDefaultValue6,
 			},
 			"tag-edge-branch": {},
 			"tag-latest": {
@@ -1597,7 +1625,7 @@ var PopularActions = map[string]*ActionMetadata{
 			},
 			"tag-semver": {},
 			"tag-sha": {
-				Default: &popularActionDefaultValue19,
+				Default: &popularActionDefaultValue6,
 			},
 		},
 		Outputs: map[string]struct{}{
@@ -1668,7 +1696,7 @@ var PopularActions = map[string]*ActionMetadata{
 			"driver-opts": {},
 			"endpoint":    {},
 			"install": {
-				Default: &popularActionDefaultValue19,
+				Default: &popularActionDefaultValue6,
 			},
 			"use": {
 				Default: &popularActionDefaultValue4,
@@ -1757,10 +1785,10 @@ var PopularActions = map[string]*ActionMetadata{
 				Default: &popularActionDefaultValue2,
 			},
 			"skip-publish": {
-				Default: &popularActionDefaultValue19,
+				Default: &popularActionDefaultValue6,
 			},
 			"working-dir": {
-				Default: &popularActionDefaultValue49,
+				Default: &popularActionDefaultValue7,
 			},
 		},
 	},
@@ -1793,7 +1821,7 @@ var PopularActions = map[string]*ActionMetadata{
 				Default: &popularActionDefaultValue2,
 			},
 			"androidAppBundle": {
-				Default: &popularActionDefaultValue19,
+				Default: &popularActionDefaultValue6,
 			},
 			"androidKeyaliasName": {
 				Default: &popularActionDefaultValue2,
@@ -1853,7 +1881,7 @@ var PopularActions = map[string]*ActionMetadata{
 				Default: &popularActionDefaultValue62,
 			},
 			"remoteBuildCpu": {
-				Default: &popularActionDefaultValue13,
+				Default: &popularActionDefaultValue15,
 			},
 			"remoteBuildMemory": {
 				Default: &popularActionDefaultValue63,
@@ -1917,7 +1945,7 @@ var PopularActions = map[string]*ActionMetadata{
 		Name: "CodeQL: Finish",
 		Inputs: map[string]*ActionMetadataInput{
 			"add-snippets": {
-				Default: &popularActionDefaultValue19,
+				Default: &popularActionDefaultValue6,
 			},
 			"category":   {},
 			"check_name": {},
@@ -1935,7 +1963,7 @@ var PopularActions = map[string]*ActionMetadata{
 			},
 			"ram": {},
 			"skip-queries": {
-				Default: &popularActionDefaultValue19,
+				Default: &popularActionDefaultValue6,
 			},
 			"threads": {},
 			"token": {
@@ -2005,7 +2033,7 @@ var PopularActions = map[string]*ActionMetadata{
 			"postprocess":    {},
 			"sql_connstring": {},
 			"sql_format": {
-				Default: &popularActionDefaultValue24,
+				Default: &popularActionDefaultValue25,
 			},
 			"sql_queryfile": {
 				Default: &popularActionDefaultValue71,
@@ -2061,7 +2089,7 @@ var PopularActions = map[string]*ActionMetadata{
 			},
 			"only-new-issues": {
 				Required: true,
-				Default:  &popularActionDefaultValue19,
+				Default:  &popularActionDefaultValue6,
 			},
 			"version": {
 				Required: true,
@@ -2081,19 +2109,19 @@ var PopularActions = map[string]*ActionMetadata{
 			},
 			"only-new-issues": {
 				Required: true,
-				Default:  &popularActionDefaultValue19,
+				Default:  &popularActionDefaultValue6,
 			},
 			"skip-build-cache": {
 				Required: true,
-				Default:  &popularActionDefaultValue19,
+				Default:  &popularActionDefaultValue6,
 			},
 			"skip-go-installation": {
 				Required: true,
-				Default:  &popularActionDefaultValue19,
+				Default:  &popularActionDefaultValue6,
 			},
 			"skip-pkg-cache": {
 				Required: true,
-				Default:  &popularActionDefaultValue19,
+				Default:  &popularActionDefaultValue6,
 			},
 			"version":           {},
 			"working-directory": {},
@@ -2108,7 +2136,7 @@ var PopularActions = map[string]*ActionMetadata{
 				Default: &popularActionDefaultValue72,
 			},
 			"workdir": {
-				Default: &popularActionDefaultValue49,
+				Default: &popularActionDefaultValue7,
 			},
 		},
 	},
@@ -2120,13 +2148,13 @@ var PopularActions = map[string]*ActionMetadata{
 				Default: &popularActionDefaultValue73,
 			},
 			"install-only": {
-				Default: &popularActionDefaultValue19,
+				Default: &popularActionDefaultValue6,
 			},
 			"version": {
 				Default: &popularActionDefaultValue72,
 			},
 			"workdir": {
-				Default: &popularActionDefaultValue49,
+				Default: &popularActionDefaultValue7,
 			},
 		},
 	},
@@ -2137,10 +2165,10 @@ var PopularActions = map[string]*ActionMetadata{
 				Default: &popularActionDefaultValue2,
 			},
 			"allow-snapshots": {
-				Default: &popularActionDefaultValue19,
+				Default: &popularActionDefaultValue6,
 			},
 			"min-wrapper-count": {
-				Default: &popularActionDefaultValue22,
+				Default: &popularActionDefaultValue23,
 			},
 		},
 	},
@@ -2177,7 +2205,7 @@ var PopularActions = map[string]*ActionMetadata{
 		Inputs: map[string]*ActionMetadataInput{
 			"automatic_release_tag": {},
 			"draft": {
-				Default: &popularActionDefaultValue19,
+				Default: &popularActionDefaultValue6,
 			},
 			"files": {},
 			"prerelease": {
@@ -2200,15 +2228,15 @@ var PopularActions = map[string]*ActionMetadata{
 		Name: "Release Changelog Builder",
 		Inputs: map[string]*ActionMetadataInput{
 			"commitMode": {
-				Default: &popularActionDefaultValue19,
+				Default: &popularActionDefaultValue6,
 			},
 			"configuration": {},
 			"failOnError": {
-				Default: &popularActionDefaultValue19,
+				Default: &popularActionDefaultValue6,
 			},
 			"fromTag": {},
 			"ignorePreReleases": {
-				Default: &popularActionDefaultValue19,
+				Default: &popularActionDefaultValue6,
 			},
 			"outputFile": {},
 			"owner":      {},
@@ -2230,15 +2258,15 @@ var PopularActions = map[string]*ActionMetadata{
 		Name: "Release Changelog Builder",
 		Inputs: map[string]*ActionMetadataInput{
 			"commitMode": {
-				Default: &popularActionDefaultValue19,
+				Default: &popularActionDefaultValue6,
 			},
 			"configuration": {},
 			"failOnError": {
-				Default: &popularActionDefaultValue19,
+				Default: &popularActionDefaultValue6,
 			},
 			"fromTag": {},
 			"ignorePreReleases": {
-				Default: &popularActionDefaultValue19,
+				Default: &popularActionDefaultValue6,
 			},
 			"outputFile": {},
 			"owner":      {},
@@ -2260,10 +2288,10 @@ var PopularActions = map[string]*ActionMetadata{
 		Name: "Setup MSYS2 environment",
 		Inputs: map[string]*ActionMetadataInput{
 			"cache": {
-				Default: &popularActionDefaultValue19,
+				Default: &popularActionDefaultValue6,
 			},
 			"install": {
-				Default: &popularActionDefaultValue19,
+				Default: &popularActionDefaultValue6,
 			},
 			"msystem": {
 				Default: &popularActionDefaultValue74,
@@ -2275,7 +2303,7 @@ var PopularActions = map[string]*ActionMetadata{
 				Default: &popularActionDefaultValue4,
 			},
 			"update": {
-				Default: &popularActionDefaultValue19,
+				Default: &popularActionDefaultValue6,
 			},
 		},
 	},
@@ -2283,7 +2311,7 @@ var PopularActions = map[string]*ActionMetadata{
 		Name: "Setup MSYS2",
 		Inputs: map[string]*ActionMetadataInput{
 			"install": {
-				Default: &popularActionDefaultValue19,
+				Default: &popularActionDefaultValue6,
 			},
 			"msystem": {
 				Default: &popularActionDefaultValue74,
@@ -2295,7 +2323,7 @@ var PopularActions = map[string]*ActionMetadata{
 				Default: &popularActionDefaultValue4,
 			},
 			"update": {
-				Default: &popularActionDefaultValue19,
+				Default: &popularActionDefaultValue6,
 			},
 		},
 	},
@@ -2336,19 +2364,19 @@ var PopularActions = map[string]*ActionMetadata{
 				Default: &popularActionDefaultValue2,
 			},
 			"omitBody": {
-				Default: &popularActionDefaultValue19,
+				Default: &popularActionDefaultValue6,
 			},
 			"omitBodyDuringUpdate": {
-				Default: &popularActionDefaultValue19,
+				Default: &popularActionDefaultValue6,
 			},
 			"omitName": {
-				Default: &popularActionDefaultValue19,
+				Default: &popularActionDefaultValue6,
 			},
 			"omitNameDuringUpdate": {
-				Default: &popularActionDefaultValue19,
+				Default: &popularActionDefaultValue6,
 			},
 			"omitPrereleaseDuringUpdate": {
-				Default: &popularActionDefaultValue19,
+				Default: &popularActionDefaultValue6,
 			},
 			"owner": {
 				Default: &popularActionDefaultValue2,
@@ -2427,15 +2455,15 @@ var PopularActions = map[string]*ActionMetadata{
 				Default: &popularActionDefaultValue4,
 			},
 			"forceOrphan": {
-				Default: &popularActionDefaultValue19,
+				Default: &popularActionDefaultValue6,
 			},
 			"keepFiles": {
-				Default: &popularActionDefaultValue19,
+				Default: &popularActionDefaultValue6,
 			},
 			"tagMessage": {},
 			"tagName":    {},
 			"tagOverwrite": {
-				Default: &popularActionDefaultValue19,
+				Default: &popularActionDefaultValue6,
 			},
 			"useremail": {},
 			"username":  {},
@@ -2445,7 +2473,7 @@ var PopularActions = map[string]*ActionMetadata{
 		Name: "GitHub Pages action",
 		Inputs: map[string]*ActionMetadataInput{
 			"allow_empty_commit": {
-				Default: &popularActionDefaultValue19,
+				Default: &popularActionDefaultValue6,
 			},
 			"cname":          {},
 			"commit_message": {},
@@ -2454,22 +2482,22 @@ var PopularActions = map[string]*ActionMetadata{
 				Default: &popularActionDefaultValue2,
 			},
 			"disable_nojekyll": {
-				Default: &popularActionDefaultValue19,
+				Default: &popularActionDefaultValue6,
 			},
 			"enable_jekyll": {
-				Default: &popularActionDefaultValue19,
+				Default: &popularActionDefaultValue6,
 			},
 			"exclude_assets": {
 				Default: &popularActionDefaultValue77,
 			},
 			"external_repository": {},
 			"force_orphan": {
-				Default: &popularActionDefaultValue19,
+				Default: &popularActionDefaultValue6,
 			},
 			"full_commit_message": {},
 			"github_token":        {},
 			"keep_files": {
-				Default: &popularActionDefaultValue19,
+				Default: &popularActionDefaultValue6,
 			},
 			"personal_token": {},
 			"publish_branch": {
@@ -2530,7 +2558,7 @@ var PopularActions = map[string]*ActionMetadata{
 			"project":        {},
 			"project-column": {},
 			"request-to-parent": {
-				Default: &popularActionDefaultValue19,
+				Default: &popularActionDefaultValue6,
 			},
 			"reviewers":      {},
 			"team-reviewers": {},
@@ -2565,10 +2593,10 @@ var PopularActions = map[string]*ActionMetadata{
 				Default: &popularActionDefaultValue84,
 			},
 			"delete-branch": {
-				Default: &popularActionDefaultValue19,
+				Default: &popularActionDefaultValue6,
 			},
 			"draft": {
-				Default: &popularActionDefaultValue19,
+				Default: &popularActionDefaultValue6,
 			},
 			"labels":       {},
 			"milestone":    {},
@@ -2576,7 +2604,7 @@ var PopularActions = map[string]*ActionMetadata{
 			"push-to-fork": {},
 			"reviewers":    {},
 			"signoff": {
-				Default: &popularActionDefaultValue19,
+				Default: &popularActionDefaultValue6,
 			},
 			"team-reviewers": {},
 			"title": {
@@ -2625,7 +2653,7 @@ var PopularActions = map[string]*ActionMetadata{
 				Default: &popularActionDefaultValue87,
 			},
 			"minimum-change-threshold": {
-				Default: &popularActionDefaultValue22,
+				Default: &popularActionDefaultValue23,
 			},
 			"omit-unchanged": {},
 			"pattern": {
@@ -2649,7 +2677,7 @@ var PopularActions = map[string]*ActionMetadata{
 			},
 			"fail_on_error": {
 				Required: true,
-				Default:  &popularActionDefaultValue19,
+				Default:  &popularActionDefaultValue6,
 			},
 			"filter_mode": {
 				Required: true,
@@ -2680,10 +2708,10 @@ var PopularActions = map[string]*ActionMetadata{
 		Name: "Run eslint with reviewdog",
 		Inputs: map[string]*ActionMetadataInput{
 			"eslint_flags": {
-				Default: &popularActionDefaultValue49,
+				Default: &popularActionDefaultValue7,
 			},
 			"fail_on_error": {
-				Default: &popularActionDefaultValue19,
+				Default: &popularActionDefaultValue6,
 			},
 			"filter_mode": {
 				Default: &popularActionDefaultValue89,
@@ -2705,7 +2733,7 @@ var PopularActions = map[string]*ActionMetadata{
 				Default: &popularActionDefaultValue94,
 			},
 			"workdir": {
-				Default: &popularActionDefaultValue49,
+				Default: &popularActionDefaultValue7,
 			},
 		},
 	},
@@ -2713,7 +2741,7 @@ var PopularActions = map[string]*ActionMetadata{
 		Name: "Run golangci-lint with reviewdog",
 		Inputs: map[string]*ActionMetadataInput{
 			"fail_on_error": {
-				Default: &popularActionDefaultValue19,
+				Default: &popularActionDefaultValue6,
 			},
 			"filter_mode": {
 				Default: &popularActionDefaultValue89,
@@ -2738,7 +2766,7 @@ var PopularActions = map[string]*ActionMetadata{
 				Default: &popularActionDefaultValue95,
 			},
 			"workdir": {
-				Default: &popularActionDefaultValue49,
+				Default: &popularActionDefaultValue7,
 			},
 		},
 	},
@@ -2749,7 +2777,7 @@ var PopularActions = map[string]*ActionMetadata{
 				Default: &popularActionDefaultValue4,
 			},
 			"fail_on_error": {
-				Default: &popularActionDefaultValue19,
+				Default: &popularActionDefaultValue6,
 			},
 			"filter_mode": {
 				Default: &popularActionDefaultValue89,
@@ -2783,7 +2811,7 @@ var PopularActions = map[string]*ActionMetadata{
 				Default: &popularActionDefaultValue95,
 			},
 			"workdir": {
-				Default: &popularActionDefaultValue49,
+				Default: &popularActionDefaultValue7,
 			},
 		},
 	},
@@ -2794,7 +2822,7 @@ var PopularActions = map[string]*ActionMetadata{
 				Default: &popularActionDefaultValue2,
 			},
 			"fail_on_error": {
-				Default: &popularActionDefaultValue19,
+				Default: &popularActionDefaultValue6,
 			},
 			"filter_mode": {
 				Default: &popularActionDefaultValue89,
@@ -2829,7 +2857,7 @@ var PopularActions = map[string]*ActionMetadata{
 				Default: &popularActionDefaultValue2,
 			},
 			"fail_on_error": {
-				Default: &popularActionDefaultValue19,
+				Default: &popularActionDefaultValue6,
 			},
 			"filter_mode": {
 				Default: &popularActionDefaultValue89,
@@ -2847,7 +2875,7 @@ var PopularActions = map[string]*ActionMetadata{
 				Default: &popularActionDefaultValue2,
 			},
 			"path": {
-				Default: &popularActionDefaultValue49,
+				Default: &popularActionDefaultValue7,
 			},
 			"pattern": {
 				Default: &popularActionDefaultValue98,
@@ -2861,7 +2889,7 @@ var PopularActions = map[string]*ActionMetadata{
 		Name: "Run rubocop with reviewdog",
 		Inputs: map[string]*ActionMetadataInput{
 			"fail_on_error": {
-				Default: &popularActionDefaultValue19,
+				Default: &popularActionDefaultValue6,
 			},
 			"filter_mode": {
 				Default: &popularActionDefaultValue89,
@@ -2889,7 +2917,7 @@ var PopularActions = map[string]*ActionMetadata{
 				Default: &popularActionDefaultValue100,
 			},
 			"workdir": {
-				Default: &popularActionDefaultValue49,
+				Default: &popularActionDefaultValue7,
 			},
 		},
 	},
@@ -2898,7 +2926,7 @@ var PopularActions = map[string]*ActionMetadata{
 		Inputs: map[string]*ActionMetadataInput{
 			"exclude": {},
 			"fail_on_error": {
-				Default: &popularActionDefaultValue19,
+				Default: &popularActionDefaultValue6,
 			},
 			"filter_mode": {
 				Default: &popularActionDefaultValue89,
@@ -2910,7 +2938,7 @@ var PopularActions = map[string]*ActionMetadata{
 				Default: &popularActionDefaultValue90,
 			},
 			"path": {
-				Default: &popularActionDefaultValue49,
+				Default: &popularActionDefaultValue7,
 			},
 			"pattern": {
 				Default: &popularActionDefaultValue101,
@@ -2930,7 +2958,7 @@ var PopularActions = map[string]*ActionMetadata{
 		Name: "Run tflint with reviewdog",
 		Inputs: map[string]*ActionMetadataInput{
 			"fail_on_error": {
-				Default: &popularActionDefaultValue19,
+				Default: &popularActionDefaultValue6,
 			},
 			"filter_mode": {
 				Default: &popularActionDefaultValue89,
@@ -2954,7 +2982,7 @@ var PopularActions = map[string]*ActionMetadata{
 				Default: &popularActionDefaultValue72,
 			},
 			"working_directory": {
-				Default: &popularActionDefaultValue49,
+				Default: &popularActionDefaultValue7,
 			},
 		},
 		Outputs: map[string]struct{}{
@@ -2966,7 +2994,7 @@ var PopularActions = map[string]*ActionMetadata{
 		Name: "Setup Vim",
 		Inputs: map[string]*ActionMetadataInput{
 			"neovim": {
-				Default: &popularActionDefaultValue19,
+				Default: &popularActionDefaultValue6,
 			},
 			"token": {
 				Default: &popularActionDefaultValue3,
@@ -2998,10 +3026,10 @@ var PopularActions = map[string]*ActionMetadata{
 		Name: "Merge me!",
 		Inputs: map[string]*ActionMetadataInput{
 			"ENABLED_FOR_MANUAL_CHANGES": {
-				Default: &popularActionDefaultValue19,
+				Default: &popularActionDefaultValue6,
 			},
 			"ENABLE_GITHUB_API_PREVIEW": {
-				Default: &popularActionDefaultValue19,
+				Default: &popularActionDefaultValue6,
 			},
 			"GITHUB_LOGIN": {
 				Default: &popularActionDefaultValue107,
@@ -3025,19 +3053,19 @@ var PopularActions = map[string]*ActionMetadata{
 		Name: "Setup Ruby, JRuby and TruffleRuby",
 		Inputs: map[string]*ActionMetadataInput{
 			"bundler": {
-				Default: &popularActionDefaultValue16,
+				Default: &popularActionDefaultValue18,
 			},
 			"bundler-cache": {
-				Default: &popularActionDefaultValue19,
+				Default: &popularActionDefaultValue6,
 			},
 			"cache-version": {
 				Default: &popularActionDefaultValue50,
 			},
 			"ruby-version": {
-				Default: &popularActionDefaultValue16,
+				Default: &popularActionDefaultValue18,
 			},
 			"working-directory": {
-				Default: &popularActionDefaultValue49,
+				Default: &popularActionDefaultValue7,
 			},
 		},
 		Outputs: map[string]struct{}{
@@ -3125,7 +3153,7 @@ var PopularActions = map[string]*ActionMetadata{
 			"budgetPath": {},
 			"configPath": {},
 			"runs": {
-				Default: &popularActionDefaultValue22,
+				Default: &popularActionDefaultValue23,
 			},
 			"serverBaseUrl":          {},
 			"serverToken":            {},
@@ -3204,10 +3232,10 @@ var PopularActions = map[string]*ActionMetadata{
 		Name: "Lint Action",
 		Inputs: map[string]*ActionMetadataInput{
 			"auto_fix": {
-				Default: &popularActionDefaultValue19,
+				Default: &popularActionDefaultValue6,
 			},
 			"black": {
-				Default: &popularActionDefaultValue19,
+				Default: &popularActionDefaultValue6,
 			},
 			"black_args": {
 				Default: &popularActionDefaultValue2,
@@ -3229,7 +3257,7 @@ var PopularActions = map[string]*ActionMetadata{
 				Default: &popularActionDefaultValue4,
 			},
 			"eslint": {
-				Default: &popularActionDefaultValue19,
+				Default: &popularActionDefaultValue6,
 			},
 			"eslint_args": {
 				Default: &popularActionDefaultValue2,
@@ -3242,7 +3270,7 @@ var PopularActions = map[string]*ActionMetadata{
 				Default: &popularActionDefaultValue115,
 			},
 			"flake8": {
-				Default: &popularActionDefaultValue19,
+				Default: &popularActionDefaultValue6,
 			},
 			"flake8_args": {
 				Default: &popularActionDefaultValue2,
@@ -3264,7 +3292,7 @@ var PopularActions = map[string]*ActionMetadata{
 				Default: &popularActionDefaultValue3,
 			},
 			"gofmt": {
-				Default: &popularActionDefaultValue19,
+				Default: &popularActionDefaultValue6,
 			},
 			"gofmt_args": {
 				Default: &popularActionDefaultValue2,
@@ -3277,7 +3305,7 @@ var PopularActions = map[string]*ActionMetadata{
 				Default: &popularActionDefaultValue118,
 			},
 			"golint": {
-				Default: &popularActionDefaultValue19,
+				Default: &popularActionDefaultValue6,
 			},
 			"golint_args": {
 				Default: &popularActionDefaultValue2,
@@ -3290,7 +3318,7 @@ var PopularActions = map[string]*ActionMetadata{
 				Default: &popularActionDefaultValue118,
 			},
 			"mypy": {
-				Default: &popularActionDefaultValue19,
+				Default: &popularActionDefaultValue6,
 			},
 			"mypy_args": {
 				Default: &popularActionDefaultValue2,
@@ -3303,10 +3331,10 @@ var PopularActions = map[string]*ActionMetadata{
 				Default: &popularActionDefaultValue112,
 			},
 			"neutral_check_on_warning": {
-				Default: &popularActionDefaultValue19,
+				Default: &popularActionDefaultValue6,
 			},
 			"oitnb": {
-				Default: &popularActionDefaultValue19,
+				Default: &popularActionDefaultValue6,
 			},
 			"oitnb_args": {
 				Default: &popularActionDefaultValue2,
@@ -3319,7 +3347,7 @@ var PopularActions = map[string]*ActionMetadata{
 				Default: &popularActionDefaultValue112,
 			},
 			"php_codesniffer": {
-				Default: &popularActionDefaultValue19,
+				Default: &popularActionDefaultValue6,
 			},
 			"php_codesniffer_args": {
 				Default: &popularActionDefaultValue2,
@@ -3332,7 +3360,7 @@ var PopularActions = map[string]*ActionMetadata{
 				Default: &popularActionDefaultValue119,
 			},
 			"prettier": {
-				Default: &popularActionDefaultValue19,
+				Default: &popularActionDefaultValue6,
 			},
 			"prettier_args": {
 				Default: &popularActionDefaultValue2,
@@ -3345,7 +3373,7 @@ var PopularActions = map[string]*ActionMetadata{
 				Default: &popularActionDefaultValue120,
 			},
 			"rubocop": {
-				Default: &popularActionDefaultValue19,
+				Default: &popularActionDefaultValue6,
 			},
 			"rubocop_args": {
 				Default: &popularActionDefaultValue2,
@@ -3358,7 +3386,7 @@ var PopularActions = map[string]*ActionMetadata{
 				Default: &popularActionDefaultValue121,
 			},
 			"stylelint": {
-				Default: &popularActionDefaultValue19,
+				Default: &popularActionDefaultValue6,
 			},
 			"stylelint_args": {
 				Default: &popularActionDefaultValue2,
@@ -3371,7 +3399,7 @@ var PopularActions = map[string]*ActionMetadata{
 				Default: &popularActionDefaultValue122,
 			},
 			"swift_format_lockwood": {
-				Default: &popularActionDefaultValue19,
+				Default: &popularActionDefaultValue6,
 			},
 			"swift_format_lockwood_args": {
 				Default: &popularActionDefaultValue2,
@@ -3384,7 +3412,7 @@ var PopularActions = map[string]*ActionMetadata{
 				Default: &popularActionDefaultValue123,
 			},
 			"swift_format_official": {
-				Default: &popularActionDefaultValue19,
+				Default: &popularActionDefaultValue6,
 			},
 			"swift_format_official_args": {
 				Default: &popularActionDefaultValue2,
@@ -3397,7 +3425,7 @@ var PopularActions = map[string]*ActionMetadata{
 				Default: &popularActionDefaultValue123,
 			},
 			"swiftformat": {
-				Default: &popularActionDefaultValue19,
+				Default: &popularActionDefaultValue6,
 			},
 			"swiftformat_args": {
 				Default: &popularActionDefaultValue2,
@@ -3410,7 +3438,7 @@ var PopularActions = map[string]*ActionMetadata{
 				Default: &popularActionDefaultValue123,
 			},
 			"swiftlint": {
-				Default: &popularActionDefaultValue19,
+				Default: &popularActionDefaultValue6,
 			},
 			"swiftlint_args": {
 				Default: &popularActionDefaultValue2,
@@ -3423,7 +3451,7 @@ var PopularActions = map[string]*ActionMetadata{
 				Default: &popularActionDefaultValue123,
 			},
 			"xo": {
-				Default: &popularActionDefaultValue19,
+				Default: &popularActionDefaultValue6,
 			},
 			"xo_args": {
 				Default: &popularActionDefaultValue2,
@@ -3444,50 +3472,50 @@ var popularActionDefaultValue2 = ""
 var popularActionDefaultValue3 = "${{ github.token }}"
 var popularActionDefaultValue4 = "true"
 var popularActionDefaultValue5 = "HIGH"
-var popularActionDefaultValue6 = "Unit Test Results"
-var popularActionDefaultValue7 = "all tests, skipped tests"
-var popularActionDefaultValue8 = "update last"
-var popularActionDefaultValue9 = "test failures"
-var popularActionDefaultValue10 = "10"
-var popularActionDefaultValue11 = "all but latest"
-var popularActionDefaultValue12 = "merge"
-var popularActionDefaultValue13 = "0.25"
-var popularActionDefaultValue14 = "2.0"
-var popularActionDefaultValue15 = "x86"
-var popularActionDefaultValue16 = "default"
-var popularActionDefaultValue17 = "test"
-var popularActionDefaultValue18 = "2"
-var popularActionDefaultValue19 = "false"
-var popularActionDefaultValue20 = "-no-window -gpu swiftshader_indirect -no-snapshot -noaudio -no-boot-anim"
-var popularActionDefaultValue21 = "clippy"
-var popularActionDefaultValue22 = "1"
-var popularActionDefaultValue23 = "${{ github.repository }}"
-var popularActionDefaultValue24 = "json"
-var popularActionDefaultValue25 = "actions/github-script"
-var popularActionDefaultValue26 = ".github/labeler.yml"
-var popularActionDefaultValue27 = "1.10"
-var popularActionDefaultValue28 = "x64"
-var popularActionDefaultValue29 = "jdk"
-var popularActionDefaultValue30 = "github"
-var popularActionDefaultValue31 = "GITHUB_TOKEN"
-var popularActionDefaultValue32 = "GITHUB_ACTOR"
-var popularActionDefaultValue33 = "10.x"
-var popularActionDefaultValue34 = "3.x"
-var popularActionDefaultValue35 = "7"
-var popularActionDefaultValue36 = "60"
-var popularActionDefaultValue37 = "30"
-var popularActionDefaultValue38 = "Stale"
-var popularActionDefaultValue39 = "warn"
-var popularActionDefaultValue40 = "artifact"
-var popularActionDefaultValue41 = "azurecloud"
-var popularActionDefaultValue42 = "${{github.token}}"
-var popularActionDefaultValue43 = "./"
-var popularActionDefaultValue44 = "${{github.repository}}"
-var popularActionDefaultValue45 = "success"
-var popularActionDefaultValue46 = "text/plain"
-var popularActionDefaultValue47 = "365"
-var popularActionDefaultValue48 = "resolved"
-var popularActionDefaultValue49 = "."
+var popularActionDefaultValue6 = "false"
+var popularActionDefaultValue7 = "."
+var popularActionDefaultValue8 = "Unit Test Results"
+var popularActionDefaultValue9 = "all tests, skipped tests"
+var popularActionDefaultValue10 = "update last"
+var popularActionDefaultValue11 = "test failures"
+var popularActionDefaultValue12 = "10"
+var popularActionDefaultValue13 = "all but latest"
+var popularActionDefaultValue14 = "merge"
+var popularActionDefaultValue15 = "0.25"
+var popularActionDefaultValue16 = "2.0"
+var popularActionDefaultValue17 = "x86"
+var popularActionDefaultValue18 = "default"
+var popularActionDefaultValue19 = "test"
+var popularActionDefaultValue20 = "2"
+var popularActionDefaultValue21 = "-no-window -gpu swiftshader_indirect -no-snapshot -noaudio -no-boot-anim"
+var popularActionDefaultValue22 = "clippy"
+var popularActionDefaultValue23 = "1"
+var popularActionDefaultValue24 = "${{ github.repository }}"
+var popularActionDefaultValue25 = "json"
+var popularActionDefaultValue26 = "actions/github-script"
+var popularActionDefaultValue27 = ".github/labeler.yml"
+var popularActionDefaultValue28 = "1.10"
+var popularActionDefaultValue29 = "x64"
+var popularActionDefaultValue30 = "jdk"
+var popularActionDefaultValue31 = "github"
+var popularActionDefaultValue32 = "GITHUB_TOKEN"
+var popularActionDefaultValue33 = "GITHUB_ACTOR"
+var popularActionDefaultValue34 = "10.x"
+var popularActionDefaultValue35 = "3.x"
+var popularActionDefaultValue36 = "7"
+var popularActionDefaultValue37 = "60"
+var popularActionDefaultValue38 = "30"
+var popularActionDefaultValue39 = "Stale"
+var popularActionDefaultValue40 = "warn"
+var popularActionDefaultValue41 = "artifact"
+var popularActionDefaultValue42 = "azurecloud"
+var popularActionDefaultValue43 = "${{github.token}}"
+var popularActionDefaultValue44 = "./"
+var popularActionDefaultValue45 = "${{github.repository}}"
+var popularActionDefaultValue46 = "success"
+var popularActionDefaultValue47 = "text/plain"
+var popularActionDefaultValue48 = "365"
+var popularActionDefaultValue49 = "resolved"
 var popularActionDefaultValue50 = "0"
 var popularActionDefaultValue51 = "nightly"
 var popularActionDefaultValue52 = "--allow-insecure-entitlement security.insecure --allow-insecure-entitlement network.host"

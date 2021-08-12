@@ -53,6 +53,7 @@ type slugSet = map[string]struct{}
 var popularActions = []*action{
 	{"8398a7/action-slack", []string{"v1", "v2", "v3"}, "v4", yamlExtYML},
 	{"Azure/container-scan", []string{"v0"}, "v1", yamlExtYAML},
+	{"Azure/functions-action", []string{"v1"}, "v2", yamlExtYML},
 	{"EnricoMi/publish-unit-test-result-action", []string{"v1"}, "v2", yamlExtYML},
 	{"JamesIves/github-pages-deploy-action", []string{"releases/v3", "releases/v4"}, "release/v5", yamlExtYML},
 	{"ReactiveCircus/android-emulator-runner", []string{"v1", "v2"}, "v3", yamlExtYML},
