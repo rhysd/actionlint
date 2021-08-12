@@ -68,7 +68,7 @@ actionlint -format '{{range $err := .}}### Error at line {{$err.Line}}, col {{$e
 
 Output:
 
-````
+````markdown
 ### Error at line 21, col 20 of `test.yaml`
 
 property "platform" is not defined in object type {os: string}
@@ -106,8 +106,8 @@ Output:
 To include newlines in the annotation body, it prints `%0A`. (ref [actions/toolkit#193](https://github.com/actions/toolkit/issues/193)).
 And it suppresses `SC2016` shellcheck rule error since it complains about the template argument.
 
-Basically it is more recommended to use reviewdog or Problem Matchers as explained in ['Tools integration' section](#tools-integ)
-below.
+Basically it is more recommended to use [Problem Matchers](#problem-matchers) or reviewdog as explained in
+['Tools integration' section](#tools-integ) below.
 
 #### Formatting syntax
 
@@ -198,12 +198,11 @@ Or simply download the executable and run it in one step:
   shell: bash
 ```
 
-If you want to enable [shellcheck integration](checks.md#check-shellcheck-integ), install `shellcheck` command as follows:
+If you want to enable [shellcheck integration](checks.md#check-shellcheck-integ), install `shellcheck` command. Note that
+shellcheck is [pre-installed on Ubuntu worker][preinstall-ubuntu].
 
-```yaml
-- name: Install shellcheck to enable shellcheck integration
-  run: sudo apt install shellcheck
-```
+If you want to [annotate errors][ga-annotate-error] from actionlint on GitHub, consider to use
+[Problem Matchers](#problem-matchers).
 
 ## Online playground
 
@@ -287,3 +286,4 @@ errors by `-ignore` option with super-linter. See [github/super-linter#1853](htt
 [problem-matchers]: https://github.com/actions/toolkit/blob/master/docs/problem-matchers.md
 [super-linter]: https://github.com/github/super-linter
 [actionlint-matcher]: https://raw.githubusercontent.com/rhysd/actionlint/main/.github/actionlint-matcher.json
+[preinstall-ubuntu]: https://github.com/actions/virtual-environments/blob/main/images/linux/Ubuntu2004-README.md
