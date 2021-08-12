@@ -27,4 +27,11 @@ the default error message format. To update them:
 ```sh
 make ./scripts/generate-actionlint-matcher/test/escape.txt
 make ./scripts/generate-actionlint-matcher/test/no_escape.txt
+make ./scripts/generate-actionlint-matcher/test/want.json
+```
+
+or expand glob by your shell:
+
+```sh
+make ./scripts/generate-actionlint-matcher/test/*
 ```

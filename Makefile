@@ -55,6 +55,8 @@ scripts/generate-actionlint-matcher/test/escape.txt: actionlint
 	./actionlint -color ./testdata/err/one_error.yaml > ./scripts/generate-actionlint-matcher/test/escape.txt || true 
 scripts/generate-actionlint-matcher/test/no_escape.txt: actionlint
 	./actionlint -no-color ./testdata/err/one_error.yaml > ./scripts/generate-actionlint-matcher/test/no_escape.txt || true
+scripts/generate-actionlint-matcher/test/want.json: actionlint
+	./actionlint -format '{{json .}}' ./testdata/err/one_error.yaml > scripts/generate-actionlint-matcher/test/want.json || true
 
 clean:
 	rm -f ./actionlint ./.testtimestamp ./.staticchecktimestamp ./actionlint_fuzz-fuzz.zip ./man/actionlint.1 ./man/actionlint.1.html ./actionlint-workflow-ast
