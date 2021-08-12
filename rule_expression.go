@@ -101,11 +101,6 @@ func (rule *RuleExpression) VisitJobPre(n *Job) error {
 		}
 	}
 
-	if n.Environment != nil {
-		rule.checkString(n.Environment.Name)
-		rule.checkString(n.Environment.URL)
-	}
-
 	rule.checkConcurrency(n.Concurrency)
 
 	rule.checkEnv(n.Env)
@@ -142,7 +137,11 @@ func (rule *RuleExpression) VisitJobPre(n *Job) error {
 
 // VisitJobPost is callback when visiting Job node after visiting its children
 func (rule *RuleExpression) VisitJobPost(n *Job) error {
-	// outputs section is evaluated after all steps are run
+	// 'environment' and 'outputs' sections are evaluated after all steps are run
+	if n.Environment != nil {
+		rule.checkString(n.Environment.Name)
+		rule.checkString(n.Environment.URL)
+	}
 	for _, output := range n.Outputs {
 		rule.checkString(output.Value)
 	}
