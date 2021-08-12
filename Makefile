@@ -24,7 +24,11 @@ test: .testtimestamp
 lint: .staticchecktimestamp
 
 popular_actions.go all_webhooks.go: scripts/generate-popular-actions/main.go scripts/generate-webhook-events/main.go
+ifdef SKIP_GO_GENERATE
+	touch popular_actions.go all_webhooks.go
+else
 	go generate
+endif
 
 actionlint: $(SRCS) popular_actions.go all_webhooks.go
 	CGO_ENABLED=0 go build ./cmd/actionlint
