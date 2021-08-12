@@ -18,11 +18,14 @@ import (
 // https://docs.github.com/en/actions/creating-actions/metadata-syntax-for-github-actions#inputs
 type ActionMetadataInputRequired bool
 
+// UnmarshalYAML implements yaml.Unmarshaler.
 func (required *ActionMetadataInputRequired) UnmarshalYAML(n *yaml.Node) error {
-	var input struct {
+	// Name this local type for better error message on unmarshaling
+	type actionInputMetadata struct {
 		Required bool    `yaml:"required"`
 		Default  *string `yaml:"default"`
 	}
+	var input actionInputMetadata
 	if err := n.Decode(&input); err != nil {
 		return err
 	}
