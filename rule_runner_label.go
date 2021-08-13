@@ -1,21 +1,46 @@
 package actionlint
 
 import (
+	"sort"
 	"strings"
 )
 
-var allGitHubHostedRunnerLabels = []string{
-	"windows-latest",
-	"windows-2019",
-	"windows-2016",
-	"ubuntu-latest",
-	"ubuntu-20.04",
-	"ubuntu-18.04",
-	"ubuntu-16.04",
-	"macos-latest",
-	"macos-11",
-	"macos-11.0",
-	"macos-10.15",
+type runnerLabelCompat uint
+
+const (
+	compatInvalid                      = 0
+	compatUbuntu1604 runnerLabelCompat = 1 << iota
+	compatUbuntu1804
+	compatUbuntu2004
+	compatMacOS1015
+	compatMacOS110
+	compatWindows2016
+	compatWindows2019
+)
+
+type runnerLabelCompats map[string]runnerLabelCompat
+
+var githubHostedRunnerCompats = runnerLabelCompats{
+	"ubuntu-latest":  compatUbuntu2004,
+	"ubuntu-20.04":   compatUbuntu2004,
+	"ubuntu-18.04":   compatUbuntu1804,
+	"ubuntu-16.04":   compatUbuntu1604,
+	"macos-latest":   compatMacOS110,
+	"macos-11":       compatMacOS110,
+	"macos-11.0":     compatMacOS110,
+	"macos-10.15":    compatMacOS1015,
+	"windows-latest": compatWindows2019,
+	"windows-2019":   compatWindows2019,
+	"windows-2016":   compatWindows2016,
+}
+
+func (compat runnerLabelCompats) workerNames() []string {
+	ns := make([]string, 0, len(compat))
+	for n := range compat {
+		ns = append(ns, n)
+	}
+	sort.Strings(ns)
+	return ns
 }
 
 // https://docs.github.com/en/actions/hosting-your-own-runners/using-self-hosted-runners-in-a-workflow#using-default-labels-to-route-jobs
@@ -37,6 +62,10 @@ var allSelfHostedRunnerPresetLabels = []string{
 type RuleRunnerLabel struct {
 	RuleBase
 	knownLabels []string
+	// Note: Using only one compatibility integer is enough to check compatibility. But we remember
+	// all past compatibility values here for better error message. If accumulating all compatibility
+	// values into one integer, we can no longer know what labels are conflicting.
+	compats map[runnerLabelCompat]*String
 }
 
 // NewRuleRunnerLabel creates new RuleRunnerLabel instance.
@@ -44,6 +73,7 @@ func NewRuleRunnerLabel(labels []string) *RuleRunnerLabel {
 	return &RuleRunnerLabel{
 		RuleBase:    RuleBase{name: "runner-label"},
 		knownLabels: labels,
+		compats:     nil,
 	}
 }
 
@@ -58,21 +88,41 @@ func (rule *RuleRunnerLabel) VisitJobPre(n *Job) error {
 		m = n.Strategy.Matrix
 	}
 
-	// TODO: Check labels conflict
-	// runs-on: [linux, windows]
-
-	for _, label := range n.RunsOn.Labels {
-		rule.checkLabel(label, m)
+	if len(n.RunsOn.Labels) == 1 {
+		rule.checkLabel(n.RunsOn.Labels[0], m)
+		return nil
 	}
 
+	rule.compats = map[runnerLabelCompat]*String{}
+	for _, label := range n.RunsOn.Labels {
+		rule.checkLabelAndConflict(label, m)
+	}
+
+	rule.compats = nil // reset
 	return nil
 }
 
 // https://docs.github.com/en/actions/using-github-hosted-runners/about-github-hosted-runners
+func (rule *RuleRunnerLabel) checkLabelAndConflict(label *String, m *Matrix) {
+	if l := label.Value; strings.Contains(l, "${{") {
+		ls := rule.tryToGetLabelsInMatrix(l, m)
+		cs := make([]runnerLabelCompat, 0, len(ls))
+		for _, l := range ls {
+			comp := rule.verifyRunnerLabel(l)
+			cs = append(cs, comp)
+		}
+		rule.checkCombiCompat(cs, ls)
+		return
+	}
+
+	comp := rule.verifyRunnerLabel(label)
+	rule.checkCompat(comp, label)
+}
+
 func (rule *RuleRunnerLabel) checkLabel(label *String, m *Matrix) {
-	l := label.Value
-	if strings.Contains(l, "${{") && strings.Contains(l, "}}") {
-		for _, l := range rule.tryToGetLabelsInMatrix(l, m) {
+	if l := label.Value; strings.Contains(l, "${{") {
+		ls := rule.tryToGetLabelsInMatrix(l, m)
+		for _, l := range ls {
 			rule.verifyRunnerLabel(l)
 		}
 		return
@@ -81,22 +131,21 @@ func (rule *RuleRunnerLabel) checkLabel(label *String, m *Matrix) {
 	rule.verifyRunnerLabel(label)
 }
 
-func (rule *RuleRunnerLabel) verifyRunnerLabel(label *String) string {
-	l := strings.TrimSpace(label.Value)
-	for _, p := range allGitHubHostedRunnerLabels {
-		// use EqualFold for ignoring case e.g. both macos-latest and macOS-latest should be accepted
-		if strings.EqualFold(l, p) {
-			return p // ok
-		}
+func (rule *RuleRunnerLabel) verifyRunnerLabel(label *String) runnerLabelCompat {
+	l := label.Value
+	if c, ok := githubHostedRunnerCompats[strings.ToLower(l)]; ok {
+		return c
 	}
+
 	for _, p := range allSelfHostedRunnerPresetLabels {
 		if strings.EqualFold(l, p) {
-			return p // ok
+			return compatInvalid
 		}
 	}
+
 	for _, k := range rule.knownLabels {
 		if strings.EqualFold(l, k) {
-			return k // ok
+			return compatInvalid
 		}
 	}
 
@@ -105,13 +154,13 @@ func (rule *RuleRunnerLabel) verifyRunnerLabel(label *String) string {
 		"label %q is unknown. available labels are %s. if it is a custom label for self-hosted runner, set list of labels in actionlint.yaml config file",
 		label.Value,
 		quotesAll(
-			allGitHubHostedRunnerLabels,
+			githubHostedRunnerCompats.workerNames(),
 			allSelfHostedRunnerPresetLabels,
 			rule.knownLabels,
 		),
 	)
 
-	return ""
+	return compatInvalid
 }
 
 func (rule *RuleRunnerLabel) tryToGetLabelsInMatrix(l string, m *Matrix) []*String {
@@ -171,4 +220,40 @@ func (rule *RuleRunnerLabel) tryToGetLabelsInMatrix(l string, m *Matrix) []*Stri
 	}
 
 	return labels
+}
+
+func (rule *RuleRunnerLabel) checkConflict(comp runnerLabelCompat, label *String) bool {
+	for c, l := range rule.compats {
+		if c&comp == 0 {
+			rule.errorf(label.Pos, "label %q conflicts with label %q defined at %s. note: to run your job on each workers, use matrix", label.Value, l.Value, l.Pos)
+			return false
+		}
+	}
+	return true
+}
+
+func (rule *RuleRunnerLabel) checkCompat(comp runnerLabelCompat, label *String) {
+	if !rule.checkConflict(comp, label) {
+		return
+	}
+	if _, ok := rule.compats[comp]; !ok {
+		rule.compats[comp] = label
+	}
+}
+
+func (rule *RuleRunnerLabel) checkCombiCompat(comps []runnerLabelCompat, labels []*String) {
+	for i, c := range comps {
+		if c != compatInvalid && !rule.checkConflict(c, labels[i]) {
+			// Overwrite the compatibility value with compatInvalid at conflicted label not to
+			// register the label to `rule.compats`.
+			comps[i] = compatInvalid
+		}
+	}
+	for i, c := range comps {
+		if c != compatInvalid {
+			if _, ok := rule.compats[c]; !ok {
+				rule.compats[c] = labels[i]
+			}
+		}
+	}
 }
