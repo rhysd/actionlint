@@ -1229,6 +1229,35 @@ actionlint checks proper label is used at `runs-on:` configuration. Even if an e
 When you define some custom labels for your self-hosted runner, actionlint does not know the labels. Please set the label
 names in [`actionlint.yaml` configuration file](config.md) to let actionlint know them.
 
+In addition to checking label values, actionlint checks combinations of labels. `runs-on:` section can be an array which contains
+multiple labels. In the case, a runner which has all the labels will be selected. However, those labels combinations can have
+conflicts.
+
+Example input:
+
+```yaml
+on: push
+jobs:
+  test:
+    runs-on: [ubuntu-latest, windows-latest]
+    steps:
+      - run: echo ...
+```
+
+Output:
+
+```
+test.yaml:4:30: label "windows-latest" conflicts with label "ubuntu-latest" defined at line:4,col:15. note: to run your job on each worker, use matrix [runner-label]
+  |
+4 |     runs-on: [ubuntu-latest, windows-latest]
+  |                              ^~~~~~~~~~~~~~~
+```
+
+[Playground](https://rhysd.github.io/actionlint#eJwti0EOgCAMBO+8Yh8gPICvGA+iJEhMS2wbvq+op81mZpgimklxlZNEB2gWHQtcRuL54bMlIzV/rgNO6Aft3OX/yyuL5iZfB/jRRuStMEIIN17iHww=)
+
+In most cases this is a mistake that a matrix combination can be specified at `runs-on:` directly. It should use `matrix:` to
+define multiple runner labels and expand it with `${{ }}` at `runs-on:`.
+
 <a name="check-action-format"></a>
 ## Action format in `uses:`
 
