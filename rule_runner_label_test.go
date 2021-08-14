@@ -237,4 +237,21 @@ func TestRuleRunnerLabelDoNothingOnNoRunsOn(t *testing.T) {
 	if err := rule.VisitJobPre(&Job{}); err != nil {
 		t.Fatal(err)
 	}
+	if errs := rule.Errs(); len(errs) > 0 {
+		t.Fatalf("%d error(s) occurred: %v", len(errs), errs)
+	}
+}
+
+func TestRuleRunnerLabelAllGitHubHostedRunnerLabels(t *testing.T) {
+	if len(allGitHubHostedRunnerLabels) != len(githubHostedRunnerCompats) {
+		t.Errorf("%d elements in allGitHubHostedRunnerLabels but %d elements in githubHostedRunnerCompats", len(allGitHubHostedRunnerLabels), len(githubHostedRunnerCompats))
+	}
+	for _, l := range allGitHubHostedRunnerLabels {
+		if l != strings.ToLower(l) {
+			t.Errorf("label %q in allGitHubHostedRunnerLabels is not in lower-case", l)
+		}
+		if _, ok := githubHostedRunnerCompats[l]; !ok {
+			t.Errorf("%q is included in allGitHubHostedRunnerLabels but not included in githubHostedRunnerCompats", l)
+		}
+	}
 }

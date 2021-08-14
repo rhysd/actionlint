@@ -1,7 +1,6 @@
 package actionlint
 
 import (
-	"sort"
 	"strings"
 )
 
@@ -18,9 +17,21 @@ const (
 	compatWindows2019
 )
 
-type runnerLabelCompats map[string]runnerLabelCompat
+var allGitHubHostedRunnerLabels = []string{
+	"windows-latest",
+	"windows-2019",
+	"windows-2016",
+	"ubuntu-latest",
+	"ubuntu-20.04",
+	"ubuntu-18.04",
+	"ubuntu-16.04",
+	"macos-latest",
+	"macos-11",
+	"macos-11.0",
+	"macos-10.15",
+}
 
-var githubHostedRunnerCompats = runnerLabelCompats{
+var githubHostedRunnerCompats = map[string]runnerLabelCompat{
 	"ubuntu-latest":  compatUbuntu2004,
 	"ubuntu-20.04":   compatUbuntu2004,
 	"ubuntu-18.04":   compatUbuntu1804,
@@ -32,15 +43,6 @@ var githubHostedRunnerCompats = runnerLabelCompats{
 	"windows-latest": compatWindows2019,
 	"windows-2019":   compatWindows2019,
 	"windows-2016":   compatWindows2016,
-}
-
-func (compat runnerLabelCompats) workerNames() []string {
-	ns := make([]string, 0, len(compat))
-	for n := range compat {
-		ns = append(ns, n)
-	}
-	sort.Strings(ns)
-	return ns
 }
 
 // https://docs.github.com/en/actions/hosting-your-own-runners/using-self-hosted-runners-in-a-workflow#using-default-labels-to-route-jobs
@@ -154,7 +156,7 @@ func (rule *RuleRunnerLabel) verifyRunnerLabel(label *String) runnerLabelCompat 
 		"label %q is unknown. available labels are %s. if it is a custom label for self-hosted runner, set list of labels in actionlint.yaml config file",
 		label.Value,
 		quotesAll(
-			githubHostedRunnerCompats.workerNames(),
+			allGitHubHostedRunnerLabels,
 			allSelfHostedRunnerPresetLabels,
 			rule.knownLabels,
 		),
