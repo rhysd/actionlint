@@ -1,0 +1,2 @@
+test.yaml:6:14: label "windows-latest" conflicts with label "ubuntu-latest" defined at line:7,col:15. note: to run your job on each workers, use matrix [runner-label]
+test.yaml:6:30: label "macos-latest" conflicts with label "ubuntu-latest" defined at line:7,col:15. note: to run your job on each workers, use matrix [runner-label]

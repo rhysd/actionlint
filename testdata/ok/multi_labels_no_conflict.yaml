@@ -1,0 +1,9 @@
+on: push
+jobs:
+  test:
+    strategy:
+      matrix:
+        os: [ubuntu-20.04]
+    runs-on: [ubuntu-latest, '${{matrix.os}}']
+    steps:
+      - run: echo

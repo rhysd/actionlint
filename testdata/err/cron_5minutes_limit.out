@@ -1,0 +1,1 @@
+test.yaml:6:13: scheduled job runs too frequently. it runs once per 240 seconds. the shortest interval is once every 5 minutes [events]

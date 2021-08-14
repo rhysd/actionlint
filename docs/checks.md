@@ -1132,9 +1132,9 @@ Example input:
 ```yaml
 on:
   schedule:
-    # Cron syntax is not correct
+    # ERROR: Cron syntax is not correct
     - cron: '0 */3 * *'
-    # Interval of scheduled job is too small (job runs too frequently)
+    # ERROR: Interval of scheduled job is too small (job runs too frequently)
     - cron: '* */3 * * *'
 
 jobs:
