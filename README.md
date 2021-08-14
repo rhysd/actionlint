@@ -11,7 +11,7 @@ Features:
 - **Strong type check for `${{ }}` expressions** to catch several semantic errors like access to not existing property,
   type mismatches, ...
 - **Actions usage check** to check that inputs at `with:` and outputs in `steps.{id}.outputs` are correct
-- **[shellcheck][] and [pyflakes][] integrations** for scripts in `run:`
+- **[shellcheck][] and [pyflakes][] integrations** for scripts at `run:`
 - **Security checks**; script injection by untrusted inputs, hard-coded credentials
 - **Other several useful checks**; [glob syntax][filter-pattern-doc] validation, dependencies check for `needs:`,
   runner label validation, cron syntax validation, ...
@@ -84,7 +84,7 @@ test.yaml:22:17: receiver of object dereference "permissions" must be type of ob
 ## Why?
 
 - **Running a workflow is time consuming.** You need to push the changes and wait until the workflow runs on GitHub even if
-  it contains some trivial mistakes. [act][] is useful to run the workflow locally. But it is not suitable for CI and still
+  it contains some trivial mistakes. [act][] is useful to debug the workflow locally. But it is not suitable for CI and still
   time consuming when your workflow gets larger.
 - **Checks of workflow files by GitHub are very loose.** It reports no error even if unexpected keys are in mappings
   (meant that some typos in keys). And also it reports no error when accessing to property which is actually not existing.
@@ -95,7 +95,7 @@ test.yaml:22:17: receiver of object dereference "permissions" must be type of ob
 
 ## Quick start
 
-Install `actionlint` command by downloading [the released binary][releases] or using Homebrew or running `go install`.
+Install `actionlint` command by downloading [the released binary][releases] or by Homebrew or by `go install`.
 See [the installation document](docs/install.md) for more details like how to manage the command with Homebrew.
 
 ```sh

@@ -46,7 +46,7 @@ actionlint -shellcheck= -pyflakes=
 
 `-format` option can flexibly format error messages with [Go template syntax][go-template].
 
-Before explaning the formatting details, let's see some examples.
+Before explaining the formatting details, let's see some examples.
 
 #### Example: Serialized into JSON
 
