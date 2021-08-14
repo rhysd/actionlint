@@ -1255,8 +1255,8 @@ test.yaml:4:30: label "windows-latest" conflicts with label "ubuntu-latest" defi
 
 [Playground](https://rhysd.github.io/actionlint#eJwti0EOgCAMBO+8Yh8gPICvGA+iJEhMS2wbvq+op81mZpgimklxlZNEB2gWHQtcRuL54bMlIzV/rgNO6Aft3OX/yyuL5iZfB/jRRuStMEIIN17iHww=)
 
-In most cases this is a mistake that a matrix combination can be specified at `runs-on:` directly. It should use `matrix:` to
-define multiple runner labels and expand it with `${{ }}` at `runs-on:`.
+In most cases this is a misunderstanding that a matrix combination can be specified at `runs-on:` directly. It should use
+`matrix:` and expand it with `${{ }}` at `runs-on:` to run the workflow on multiple runners.
 
 <a name="check-action-format"></a>
 ## Action format in `uses:`
