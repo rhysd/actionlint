@@ -233,7 +233,7 @@ func (rule *RuleRunnerLabel) checkConflict(comp runnerLabelCompat, label *String
 }
 
 func (rule *RuleRunnerLabel) checkCompat(comp runnerLabelCompat, label *String) {
-	if !rule.checkConflict(comp, label) {
+	if comp == compatInvalid || !rule.checkConflict(comp, label) {
 		return
 	}
 	if _, ok := rule.compats[comp]; !ok {
