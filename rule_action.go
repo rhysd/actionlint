@@ -146,30 +146,27 @@ func (rule *RuleAction) checkLocalAction(path string, action *ExecAction) {
 
 func (rule *RuleAction) checkAction(meta *ActionMetadata, exec *ExecAction, describe func(*ActionMetadata) string) {
 	// Check specified inputs are defined in action's inputs spec
+Outer:
 	for name, val := range exec.Inputs {
-		found := false
 		// XXX: This is O(n) workaround for #31
 		for n := range meta.Inputs {
 			// Input name is in lower case because parser.go converts all keys into lower case.
 			// But keys of ActionMetadata.Inputs are as-is defined in action.yml.
-			if strings.ToLower(n) == name {
-				found = true
-				break
+			if strings.EqualFold(n, name) {
+				continue Outer // found
 			}
 		}
-		if !found {
-			ns := make([]string, 0, len(meta.Inputs))
-			for n := range meta.Inputs {
-				ns = append(ns, n)
-			}
-			rule.errorf(
-				val.Name.Pos,
-				"input %q is not defined in action %s. available inputs are %s",
-				name,
-				describe(meta),
-				sortedQuotes(ns),
-			)
+		ns := make([]string, 0, len(meta.Inputs))
+		for n := range meta.Inputs {
+			ns = append(ns, n)
 		}
+		rule.errorf(
+			val.Name.Pos,
+			"input %q is not defined in action %s. available inputs are %s",
+			name,
+			describe(meta),
+			sortedQuotes(ns),
+		)
 	}
 
 	// Check mandatory inputs are specified
