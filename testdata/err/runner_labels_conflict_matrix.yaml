@@ -3,7 +3,7 @@ jobs:
   test:
     strategy:
       matrix:
-        os: [windows-latest, macos-latest]
+        os: [windows-latest, macos-latest, windows]
     runs-on: [ubuntu-latest, '${{matrix.os}}']
     steps:
       - run: echo ...

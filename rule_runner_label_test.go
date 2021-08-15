@@ -35,6 +35,14 @@ func TestRuleRunnerLabelCheckLabels(t *testing.T) {
 			labels: []string{"self-hosted", "linux"},
 		},
 		{
+			what:   "self-hosted all Linux runner labels",
+			labels: []string{"self-hosted", "linux", "ubuntu-20.04", "ubuntu-latest"},
+		},
+		{
+			what:   "self-hosted all macOS runner labels",
+			labels: []string{"self-hosted", "macOS", "macOS-latest", "macOS-11.0", "macOS-11"},
+		},
+		{
 			what:   "self-hosted Linux runner in upper case",
 			labels: []string{"SELF-HOSTED", "LINUX"},
 		},
@@ -130,9 +138,19 @@ func TestRuleRunnerLabelCheckLabels(t *testing.T) {
 			errs:   []string{`"foo" is unknown`},
 		},
 		{
-			what:   "GH-hosted labels conflict",
+			what:   "GH-hosted runner labels conflict",
 			labels: []string{"ubuntu-latest", "windows-latest"},
 			errs:   []string{`label "windows-latest" conflicts with label "ubuntu-latest"`},
+		},
+		{
+			what:   "self-hosted runner labels conflict",
+			labels: []string{"self-hosted", "windows", "linux"},
+			errs:   []string{`label "linux" conflicts with label "windows"`},
+		},
+		{
+			what:   "self-hosted runner labels conflict with GH-hosted runner label",
+			labels: []string{"self-hosted", "windows", "macOS-latest"},
+			errs:   []string{`label "macOS-latest" conflicts with label "windows"`},
 		},
 		{
 			what:   "GH-hosted labels multiple conflicts",
@@ -243,14 +261,18 @@ func TestRuleRunnerLabelDoNothingOnNoRunsOn(t *testing.T) {
 }
 
 func TestRuleRunnerLabelAllGitHubHostedRunnerLabels(t *testing.T) {
-	if len(allGitHubHostedRunnerLabels) != len(githubHostedRunnerCompats) {
-		t.Errorf("%d elements in allGitHubHostedRunnerLabels but %d elements in githubHostedRunnerCompats", len(allGitHubHostedRunnerLabels), len(githubHostedRunnerCompats))
+	all := []string{}
+	all = append(all, allGitHubHostedRunnerLabels...)
+	all = append(all, selfHostedRunnerPresetOSLabels...)
+
+	if len(all) != len(defaultRunnerOSCompats) {
+		t.Errorf("%d elements in allGitHubHostedRunnerLabels but %d elements in githubHostedRunnerCompats", len(all), len(defaultRunnerOSCompats))
 	}
-	for _, l := range allGitHubHostedRunnerLabels {
+	for _, l := range all {
 		if l != strings.ToLower(l) {
 			t.Errorf("label %q in allGitHubHostedRunnerLabels is not in lower-case", l)
 		}
-		if _, ok := githubHostedRunnerCompats[l]; !ok {
+		if _, ok := defaultRunnerOSCompats[l]; !ok {
 			t.Errorf("%q is included in allGitHubHostedRunnerLabels but not included in githubHostedRunnerCompats", l)
 		}
 	}

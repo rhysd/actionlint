@@ -4,11 +4,11 @@ import (
 	"strings"
 )
 
-type runnerLabelCompat uint
+type runnerOSCompat uint
 
 const (
-	compatInvalid                      = 0
-	compatUbuntu1604 runnerLabelCompat = 1 << iota
+	compatInvalid                   = 0
+	compatUbuntu1604 runnerOSCompat = 1 << iota
 	compatUbuntu1804
 	compatUbuntu2004
 	compatMacOS1015
@@ -17,6 +17,7 @@ const (
 	compatWindows2019
 )
 
+// https://docs.github.com/en/actions/using-github-hosted-runners/about-github-hosted-runners
 var allGitHubHostedRunnerLabels = []string{
 	"windows-latest",
 	"windows-2019",
@@ -31,7 +32,22 @@ var allGitHubHostedRunnerLabels = []string{
 	"macos-10.15",
 }
 
-var githubHostedRunnerCompats = map[string]runnerLabelCompat{
+// https://docs.github.com/en/actions/hosting-your-own-runners/using-self-hosted-runners-in-a-workflow#using-default-labels-to-route-jobs
+var selfHostedRunnerPresetOSLabels = []string{
+	"linux",
+	"macos",
+	"windows",
+}
+
+// https://docs.github.com/en/actions/hosting-your-own-runners/using-self-hosted-runners-in-a-workflow#using-default-labels-to-route-jobs
+var selfHostedRunnerPresetOtherLabels = []string{
+	"self-hosted",
+	"x64",
+	"arm",
+	"arm64",
+}
+
+var defaultRunnerOSCompats = map[string]runnerOSCompat{
 	"ubuntu-latest":  compatUbuntu2004,
 	"ubuntu-20.04":   compatUbuntu2004,
 	"ubuntu-18.04":   compatUbuntu1804,
@@ -43,17 +59,9 @@ var githubHostedRunnerCompats = map[string]runnerLabelCompat{
 	"windows-latest": compatWindows2019,
 	"windows-2019":   compatWindows2019,
 	"windows-2016":   compatWindows2016,
-}
-
-// https://docs.github.com/en/actions/hosting-your-own-runners/using-self-hosted-runners-in-a-workflow#using-default-labels-to-route-jobs
-var allSelfHostedRunnerPresetLabels = []string{
-	"self-hosted",
-	"linux",
-	"macos",
-	"windows",
-	"x64",
-	"arm",
-	"arm64",
+	"linux":          compatUbuntu2004 | compatUbuntu1804 | compatUbuntu1604, // Note: "linux" does not always indicate Ubuntu. It might be Fedora or Arch or ...
+	"macos":          compatMacOS110 | compatMacOS1015,
+	"windows":        compatWindows2019 | compatWindows2016,
 }
 
 // RuleRunnerLabel is a rule to check runner label like "ubuntu-latest". There are two types of
@@ -67,7 +75,7 @@ type RuleRunnerLabel struct {
 	// Note: Using only one compatibility integer is enough to check compatibility. But we remember
 	// all past compatibility values here for better error message. If accumulating all compatibility
 	// values into one integer, we can no longer know what labels are conflicting.
-	compats map[runnerLabelCompat]*String
+	compats map[runnerOSCompat]*String
 }
 
 // NewRuleRunnerLabel creates new RuleRunnerLabel instance.
@@ -95,7 +103,7 @@ func (rule *RuleRunnerLabel) VisitJobPre(n *Job) error {
 		return nil
 	}
 
-	rule.compats = map[runnerLabelCompat]*String{}
+	rule.compats = map[runnerOSCompat]*String{}
 	for _, label := range n.RunsOn.Labels {
 		rule.checkLabelAndConflict(label, m)
 	}
@@ -108,7 +116,7 @@ func (rule *RuleRunnerLabel) VisitJobPre(n *Job) error {
 func (rule *RuleRunnerLabel) checkLabelAndConflict(label *String, m *Matrix) {
 	if l := label.Value; strings.Contains(l, "${{") {
 		ls := rule.tryToGetLabelsInMatrix(l, m)
-		cs := make([]runnerLabelCompat, 0, len(ls))
+		cs := make([]runnerOSCompat, 0, len(ls))
 		for _, l := range ls {
 			comp := rule.verifyRunnerLabel(l)
 			cs = append(cs, comp)
@@ -133,13 +141,13 @@ func (rule *RuleRunnerLabel) checkLabel(label *String, m *Matrix) {
 	rule.verifyRunnerLabel(label)
 }
 
-func (rule *RuleRunnerLabel) verifyRunnerLabel(label *String) runnerLabelCompat {
+func (rule *RuleRunnerLabel) verifyRunnerLabel(label *String) runnerOSCompat {
 	l := label.Value
-	if c, ok := githubHostedRunnerCompats[strings.ToLower(l)]; ok {
+	if c, ok := defaultRunnerOSCompats[strings.ToLower(l)]; ok {
 		return c
 	}
 
-	for _, p := range allSelfHostedRunnerPresetLabels {
+	for _, p := range selfHostedRunnerPresetOtherLabels {
 		if strings.EqualFold(l, p) {
 			return compatInvalid
 		}
@@ -157,7 +165,8 @@ func (rule *RuleRunnerLabel) verifyRunnerLabel(label *String) runnerLabelCompat 
 		label.Value,
 		quotesAll(
 			allGitHubHostedRunnerLabels,
-			allSelfHostedRunnerPresetLabels,
+			selfHostedRunnerPresetOtherLabels,
+			selfHostedRunnerPresetOSLabels,
 			rule.knownLabels,
 		),
 	)
@@ -224,7 +233,7 @@ func (rule *RuleRunnerLabel) tryToGetLabelsInMatrix(l string, m *Matrix) []*Stri
 	return labels
 }
 
-func (rule *RuleRunnerLabel) checkConflict(comp runnerLabelCompat, label *String) bool {
+func (rule *RuleRunnerLabel) checkConflict(comp runnerOSCompat, label *String) bool {
 	for c, l := range rule.compats {
 		if c&comp == 0 {
 			rule.errorf(label.Pos, "label %q conflicts with label %q defined at %s. note: to run your job on each workers, use matrix", label.Value, l.Value, l.Pos)
@@ -234,7 +243,7 @@ func (rule *RuleRunnerLabel) checkConflict(comp runnerLabelCompat, label *String
 	return true
 }
 
-func (rule *RuleRunnerLabel) checkCompat(comp runnerLabelCompat, label *String) {
+func (rule *RuleRunnerLabel) checkCompat(comp runnerOSCompat, label *String) {
 	if comp == compatInvalid || !rule.checkConflict(comp, label) {
 		return
 	}
@@ -243,7 +252,7 @@ func (rule *RuleRunnerLabel) checkCompat(comp runnerLabelCompat, label *String) 
 	}
 }
 
-func (rule *RuleRunnerLabel) checkCombiCompat(comps []runnerLabelCompat, labels []*String) {
+func (rule *RuleRunnerLabel) checkCombiCompat(comps []runnerOSCompat, labels []*String) {
 	for i, c := range comps {
 		if c != compatInvalid && !rule.checkConflict(c, labels[i]) {
 			// Overwrite the compatibility value with compatInvalid at conflicted label not to

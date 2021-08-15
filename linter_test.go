@@ -2,7 +2,6 @@ package actionlint
 
 import (
 	"bufio"
-	"bytes"
 	"fmt"
 	"io/ioutil"
 	"os"
@@ -214,7 +213,7 @@ func TestLinterFormatErrorMessageOK(t *testing.T) {
 		t.Run(tc.file, func(t *testing.T) {
 			opts := LinterOptions{Format: tc.format}
 
-			var b bytes.Buffer
+			var b strings.Builder
 			l, err := NewLinter(&b, &opts)
 			if err != nil {
 				t.Fatal(err)
@@ -230,18 +229,19 @@ func TestLinterFormatErrorMessageOK(t *testing.T) {
 				t.Fatal("no error")
 			}
 
-			want, err := ioutil.ReadFile(filepath.Join(dir, tc.file))
+			buf, err := ioutil.ReadFile(filepath.Join(dir, tc.file))
 			if err != nil {
 				panic(err)
 			}
+			want := string(buf)
 
-			have := b.Bytes()
+			have := b.String()
 			// Fix path separators on Windows
 			if runtime.GOOS == "windows" {
-				slash := []byte(filepath.ToSlash(infile))
-				have = bytes.ReplaceAll(have, []byte(infile), slash)
-				escaped := bytes.ReplaceAll(slash, []byte{'/'}, []byte{'\\', '\\'})
-				have = bytes.ReplaceAll(have, escaped, slash)
+				slash := filepath.ToSlash(infile)
+				have = strings.ReplaceAll(have, infile, slash)
+				escaped := strings.ReplaceAll(slash, "/", `\\`)
+				have = strings.ReplaceAll(have, escaped, slash)
 			}
 
 			if !cmp.Equal(want, have) {
