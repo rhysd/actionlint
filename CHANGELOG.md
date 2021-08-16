@@ -1,3 +1,32 @@
+<a name="v1.6.1"></a>
+# [v1.6.1](https://github.com/rhysd/actionlint/releases/tag/v1.6.1) - 16 Aug 2021
+
+- [Problem Matchers](https://github.com/actions/toolkit/blob/master/docs/problem-matchers.md) is now officially supported by actionlint, which annotates errors from actionlint on GitHub as follows. The matcher definition is maintained at [`.github/actionlint-matcher.json`](https://github.com/rhysd/actionlint/blob/main/.github/actionlint-matcher.json) by [script](https://github.com/rhysd/actionlint/tree/main/scripts/generate-actionlint-matcher). For the usage, see [the document](https://github.com/rhysd/actionlint/blob/main/docs/usage.md#problem-matchers).
+
+<img src="https://github.com/rhysd/ss/blob/master/actionlint/problem-matcher.png?raw=true" alt="annotation by Problem Matchers" width="715" height="221"/>
+
+- `runner_label` rule now checks conflicts in labels at `runs-on`. For example, there is no runner which meats both `ubuntu-latest` and `windows-latest`. This kind of misconfiguration sometimes happen when a beginner misunderstands the usage of `runs-on:`. To run a job on each runners, `matrix:` should be used. See [the document](https://github.com/rhysd/actionlint/blob/main/docs/checks.md#check-runner-labels) for more information.
+
+```yaml
+on: push
+jobs:
+  test:
+    # These labels match to no runner
+    runs-on: [ubuntu-latest, windows-latest]
+    steps:
+      - run: echo ...
+```
+
+- Reduce memory footprint (around 16%) on starting `actionlint` command by removing unnecessary data from `PopularActions` global variable. This also slightly reduces binary size (about 3.7% at `playground/main.wasm`).
+- Fix accessing `steps.*` objects in job's `environment:` configuration caused a type error (#30).
+- Fix checking that action's input names at `with:` were not in case insensitive (#31).
+- Ignore outputs of [getsentry/paths-filter](https://github.com/getsentry/paths-filter). It is a fork of [dorny/paths-filter](https://github.com/dorny/paths-filter). actionlint cannot check the outputs statically because it sets outputs dynamically.
+- Add [Azure/functions-action](https://github.com/Azure/functions-action) to popular actions.
+- Update popular actions data set (#29).
+
+[Changes][v1.6.1]
+
+
 <a name="v1.6.0"></a>
 # [v1.6.0](https://github.com/rhysd/actionlint/releases/tag/v1.6.0) - 11 Aug 2021
 
@@ -308,6 +337,7 @@ See documentation for more details:
 [Changes][v1.0.0]
 
 
+[v1.6.1]: https://github.com/rhysd/actionlint/compare/v1.6.0...v1.6.1
 [v1.6.0]: https://github.com/rhysd/actionlint/compare/v1.5.3...v1.6.0
 [v1.5.3]: https://github.com/rhysd/actionlint/compare/v1.5.2...v1.5.3
 [v1.5.2]: https://github.com/rhysd/actionlint/compare/v1.5.1...v1.5.2
