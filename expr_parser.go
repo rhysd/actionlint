@@ -248,7 +248,7 @@ func (p *ExprParser) parsePrefixOp() ExprNode {
 	}
 	p.next() // eat '!' token
 
-	o := p.parsePostfixOp()
+	o := p.parsePrefixOp()
 	if o == nil {
 		return nil
 	}
