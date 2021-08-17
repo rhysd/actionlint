@@ -22,13 +22,13 @@ const regexp = new RegExp(pattern.regexp);
     }
 }
 
-{
-    const dir = path.join(__dirname, '..', '..', 'testdata', 'examples');
+for (const parent of ['examples', 'err']) {
+    const dir = path.join(__dirname, '..', '..', 'testdata', parent);
     for (const name of fs.readdirSync(dir)) {
         if (!name.endsWith('.out')) {
             continue;
         }
-        console.log(`Testing testdata/examples/${name}`);
+        console.log(`Testing testdata/${parent}/${name}`);
         for (const line of fs.readFileSync(path.join(dir, name), 'utf8').split('\n')) {
             if (line.length === 0 || line.startsWith('/')) {
                 continue
@@ -42,6 +42,6 @@ const regexp = new RegExp(pattern.regexp);
             assert.ok(m[pattern.message].length > 0, msg);
             assert.ok(m[pattern.code].length > 0, msg);
         }
-        console.log(`Success testdata/examples/${name}`);
+        console.log(`Success testdata/${parent}/${name}`);
     }
 }

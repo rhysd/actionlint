@@ -2,8 +2,9 @@ name: Problem Matchers
 on:
   push:
     paths:
-      - 'scripts/generate-actionlint-matcher/object.js'
+      - 'scripts/generate-actionlint-matcher/*.js'
       - 'testdata/examples/*.out'
+      - 'testdata/err/*.out'
     branches:
       - main
     tags-ignore:
