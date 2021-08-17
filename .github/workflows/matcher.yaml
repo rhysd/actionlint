@@ -3,6 +3,7 @@ on:
   push:
     paths:
       - 'scripts/generate-actionlint-matcher/object.js'
+      - 'testdata/examples/*.out'
     branches:
       - main
     tags-ignore:
