@@ -16,7 +16,7 @@ Features:
 - **Other several useful checks**; [glob syntax][filter-pattern-doc] validation, dependencies check for `needs:`,
   runner label validation, cron syntax validation, ...
 
-See ['Checks' section](docs/checks.md) for full list of checks done by actionlint.
+See [the document](docs/checks.md) for full list of checks done by actionlint.
 
 <img src="https://github.com/rhysd/ss/blob/master/actionlint/main.gif?raw=true" alt="actionlint reports 7 errors" width="806" height="492"/>
 

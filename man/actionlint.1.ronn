@@ -19,7 +19,7 @@ Features:
   not existing property, type mismatches, ...
 - **Actions usage check** to check that inputs at `with:` and outputs in `steps.{id}.outputs` are
   correct
-- **shellcheck and pyflakes integrations** for scripts in `run:`
+- **shellcheck and pyflakes integrations** for scripts at `run:`
 - **Security checks**; script injection by untrusted inputs, hard-coded credentials
 - **Other several useful checks**; glob syntax validation, dependencies check for `needs:`, runner
   label validation, cron syntax validation, ...
@@ -40,6 +40,11 @@ To check a content which is not saved in file yet (e.g. output from some command
 argument. It reads stdin and checks it as workflow file:
 
     $ actionlint -
+
+To serialize errors into JSON, use **-format** option. It allows to format error messages flexibly
+with Go template syntax.
+
+    $ actionlint -format '{{json .}}'
 
 
 ## FLAGS
