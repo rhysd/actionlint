@@ -282,6 +282,11 @@ func TestExprSemanticsCheckOK(t *testing.T) {
 			expected: BoolType{},
 		},
 		{
+			what:     "! operator with non-bool operand",
+			input:    "!null",
+			expected: BoolType{},
+		},
+		{
 			what:     "< operator",
 			input:    "0 < 1",
 			expected: BoolType{},
@@ -319,6 +324,16 @@ func TestExprSemanticsCheckOK(t *testing.T) {
 		{
 			what:     "|| operator",
 			input:    "true || false",
+			expected: BoolType{},
+		},
+		{
+			what:     "&& operator with non-bool operands",
+			input:    "10 && 'foo'",
+			expected: BoolType{},
+		},
+		{
+			what:     "|| operator with non-bool operands",
+			input:    "env || github",
 			expected: BoolType{},
 		},
 		{
@@ -778,41 +793,6 @@ func TestExprSemanticsCheckError(t *testing.T) {
 			input: "format('hi')",
 			expected: []string{
 				"takes at least 2 parameters but 1 arguments are given",
-			},
-		},
-		{
-			what:  "operand of ! operator is not bool",
-			input: "!env",
-			expected: []string{
-				"type of operand of ! operator \"object\" is not assignable to type \"bool\"",
-			},
-		},
-		{
-			what:  "left operand of && operator is not bool",
-			input: "env && true",
-			expected: []string{
-				"type of left operand of && operator \"object\" is not assignable to type \"bool\"",
-			},
-		},
-		{
-			what:  "right operand of && operator is not bool",
-			input: "true && env",
-			expected: []string{
-				"type of right operand of && operator \"object\" is not assignable to type \"bool\"",
-			},
-		},
-		{
-			what:  "left operand of || operator is not bool",
-			input: "env || true",
-			expected: []string{
-				"type of left operand of || operator \"object\" is not assignable to type \"bool\"",
-			},
-		},
-		{
-			what:  "right operand of || operator is not bool",
-			input: "true || env",
-			expected: []string{
-				"type of right operand of || operator \"object\" is not assignable to type \"bool\"",
 			},
 		},
 		{
