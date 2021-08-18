@@ -273,6 +273,23 @@ Note that currently super-linter does not provide a way to pass additional comma
 errors by `-ignore` option with super-linter. See [github/super-linter#1853](https://github.com/github/super-linter/pull/1853) or
 [github/super-linter#1667](https://github.com/github/super-linter/pull/1667) for more details.
 
+### pre-commit
+
+[pre-commit][] is a framework for managing and maintaining multi-language Git pre-commit hooks.
+
+actionlint is available as a pre-commit hook.
+
+Once the `actionlint` binary is installed locally, add this to your `.pre-commit-config.yaml` in
+your repository:
+```yaml
+---
+repos:
+  - repo: https://github.com/rhysd/actionlint
+    rev: main
+    hooks:
+      - id: actionlint
+```
+
 ---
 
 [Checks](checks.md) | [Installation](install.md) | [Configuration](config.md) | [Go API](api.md) | [References](reference.md)
@@ -287,3 +304,4 @@ errors by `-ignore` option with super-linter. See [github/super-linter#1853](htt
 [super-linter]: https://github.com/github/super-linter
 [actionlint-matcher]: https://raw.githubusercontent.com/rhysd/actionlint/main/.github/actionlint-matcher.json
 [preinstall-ubuntu]: https://github.com/actions/virtual-environments/blob/main/images/linux/Ubuntu2004-README.md
+[pre-commit]: https://pre-commit.com
