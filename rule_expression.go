@@ -6,6 +6,11 @@ import (
 	"strings"
 )
 
+type typedExpr struct {
+	ty  ExprType
+	pos Pos
+}
+
 // RuleExpression is a rule checker to check expression syntax in string values of workflow syntax.
 // It checks syntax and semantics of the expressions including type checks and functions/contexts
 // definitions. For more details see
@@ -226,16 +231,17 @@ func (rule *RuleExpression) getActionOutputsType(spec *String) *ObjectType {
 }
 
 func (rule *RuleExpression) checkOneExpression(s *String, what string) ExprType {
+	// checkString is not available since it checks types for embedding values into a string
 	if s == nil {
 		return nil
 	}
-	tys := rule.checkString(s)
-	if len(tys) != 1 {
+	ts := rule.checkExprsIn(s.Value, s.Pos, s.Quoted, false)
+	if len(ts) != 1 {
 		// This case should be unreachable since only one ${{ }} is included is checked by parser
-		rule.errorf(s.Pos, "one ${{ }} expression should be included in %q value but got %d expressions", what, len(tys))
+		rule.errorf(s.Pos, "one ${{ }} expression should be included in %q value but got %d expressions", what, len(ts))
 		return nil
 	}
-	return tys[0]
+	return ts[0].ty
 }
 
 func (rule *RuleExpression) checkObjectTy(ty ExprType, pos *Pos, what string) ExprType {
@@ -408,10 +414,10 @@ func (rule *RuleExpression) checkIfCondition(str *String) {
 
 	var condTy ExprType
 	if strings.Contains(str.Value, "${{") && strings.Contains(str.Value, "}}") {
-		if tys := rule.checkString(str); len(tys) == 1 {
+		if ts := rule.checkString(str); len(ts) == 1 {
 			s := strings.TrimSpace(str.Value)
 			if strings.HasPrefix(s, "${{") && strings.HasSuffix(s, "}}") {
-				condTy = tys[0]
+				condTy = ts[0].ty
 			}
 		}
 	} else {
@@ -433,18 +439,31 @@ func (rule *RuleExpression) checkIfCondition(str *String) {
 	}
 }
 
-func (rule *RuleExpression) checkString(str *String) []ExprType {
-	if str == nil {
-		return nil
+func (rule *RuleExpression) checkTemplateEvaluatedType(ts []typedExpr) {
+	for _, t := range ts {
+		switch t.ty.(type) {
+		case *ObjectType, *ArrayType, NullType:
+			rule.errorf(&t.pos, "object, array, and null values cannot be evaluated in template with ${{ }} but evaluating the value of type %s", t.ty)
+		}
 	}
-	return rule.checkExprsIn(str.Value, str.Pos, str.Quoted, false)
 }
 
-func (rule *RuleExpression) checkScriptString(str *String) []ExprType {
+func (rule *RuleExpression) checkString(str *String) []typedExpr {
 	if str == nil {
 		return nil
 	}
-	return rule.checkExprsIn(str.Value, str.Pos, str.Quoted, true)
+	ts := rule.checkExprsIn(str.Value, str.Pos, str.Quoted, false)
+	rule.checkTemplateEvaluatedType(ts)
+	return ts
+}
+
+func (rule *RuleExpression) checkScriptString(str *String) []typedExpr {
+	if str == nil {
+		return nil
+	}
+	ts := rule.checkExprsIn(str.Value, str.Pos, str.Quoted, true)
+	rule.checkTemplateEvaluatedType(ts)
+	return ts
 }
 
 func (rule *RuleExpression) checkBool(b *Bool) {
@@ -474,7 +493,7 @@ func (rule *RuleExpression) checkFloat(f *Float) {
 	rule.checkNumberExpression(f.Expression, "float number value")
 }
 
-func (rule *RuleExpression) checkExprsIn(s string, pos *Pos, quoted bool, checkUntrusted bool) []ExprType {
+func (rule *RuleExpression) checkExprsIn(s string, pos *Pos, quoted bool, checkUntrusted bool) []typedExpr {
 	// TODO: Line number is not correct when the string contains newlines.
 
 	line, col := pos.Line, pos.Col
@@ -482,7 +501,7 @@ func (rule *RuleExpression) checkExprsIn(s string, pos *Pos, quoted bool, checkU
 		col++ // when the string is quoted like 'foo' or "foo", column should be incremented
 	}
 	offset := 0
-	tys := []ExprType{}
+	ts := []typedExpr{}
 	for {
 		idx := strings.Index(s, "${{")
 		if idx == -1 {
@@ -492,18 +511,19 @@ func (rule *RuleExpression) checkExprsIn(s string, pos *Pos, quoted bool, checkU
 		start := idx + 3 // 3 means removing "${{"
 		s = s[start:]
 		offset += start
+		col := col + offset
 
-		ty, offsetAfter := rule.checkSemantics(s, line, col+offset, checkUntrusted)
+		ty, offsetAfter := rule.checkSemantics(s, line, col, checkUntrusted)
 		if ty == nil || offsetAfter == 0 {
 			return nil
 		}
+		ts = append(ts, typedExpr{ty, Pos{line, col - 3}})
 
 		s = s[offsetAfter:]
 		offset += offsetAfter
-		tys = append(tys, ty)
 	}
 
-	return tys
+	return ts
 }
 
 func (rule *RuleExpression) checkRawYAMLValue(v RawYAMLValue) {
