@@ -535,3 +535,36 @@ func TestExprTypeFuseComplicated(t *testing.T) {
 		})
 	}
 }
+
+func TestExprTypeElemType(t *testing.T) {
+	testCases := []struct {
+		ty   ExprType
+		want ExprType
+	}{
+		{AnyType{}, AnyType{}},
+		{NullType{}, nil},
+		{NumberType{}, nil},
+		{BoolType{}, nil},
+		{StringType{}, nil},
+		{NewObjectType(), nil},
+		{NewStrictObjectType(), nil},
+		{&ObjectType{Props: map[string]ExprType{"foo": NumberType{}}}, nil},
+		{&ArrayType{Elem: NumberType{}}, NumberType{}},
+		{&ArrayType{Elem: &ArrayType{Elem: NumberType{}}}, &ArrayType{Elem: NumberType{}}},
+	}
+
+	for _, tc := range testCases {
+		t.Run(tc.ty.String(), func(t *testing.T) {
+			have, ok := tc.ty.ElemType()
+			if tc.want == nil {
+				if ok {
+					t.Fatalf("wanted no element type but got %s", have)
+				}
+				return
+			}
+			if !cmp.Equal(tc.want, have) {
+				t.Fatal(cmp.Diff(tc.want, have))
+			}
+		})
+	}
+}
