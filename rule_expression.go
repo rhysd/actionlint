@@ -645,7 +645,11 @@ func (rule *RuleExpression) guessTypeOfMatrix(m *Matrix) *ObjectType {
 	}
 
 	if m.Include.Expression != nil {
-		elem, ok := rule.checkOneExpression(m.Include.Expression, "include").ElemType()
+		ty := rule.checkOneExpression(m.Include.Expression, "include")
+		if ty == nil {
+			return NewObjectType()
+		}
+		elem, ok := ty.ElemType()
 		if !ok {
 			return NewObjectType()
 		}
@@ -659,6 +663,9 @@ func (rule *RuleExpression) guessTypeOfMatrix(m *Matrix) *ObjectType {
 	for _, combi := range m.Include.Combinations {
 		if combi.Expression != nil {
 			ty := rule.checkOneExpression(m.Include.Expression, "matrix combination at element of include section")
+			if ty == nil {
+				continue
+			}
 			if fused, ok := o.Fuse(ty).(*ObjectType); ok {
 				o = fused
 			} else {
