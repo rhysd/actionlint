@@ -42,3 +42,21 @@ jobs:
           git -c user.email='41898282+github-actions[bot]@users.noreply.github.com' -c user.name='github-actions[bot]' commit -m "update version to $ver in download-actionlint.bash"
           git log -n 1
           git push
+  docker:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v2
+      - name: Login to DockerHub
+        uses: docker/login-action@v1
+        with:
+          username: ${{ secrets.DOCKERHUB_USERNAME }}
+          password: ${{ secrets.DOCKERHUB_TOKEN }}
+      - name: Build and push
+        uses: docker/build-push-action@v2
+        with:
+          build-args: |
+            GOLANG_VER=1.16
+          push: true
+          tags: |
+            ${{ secrets.DOCKER_HUB_USERNAME }}/actionlint:${GITHUB_REF#refs/tags/}
+            ${{ secrets.DOCKER_HUB_USERNAME }}/actionlint:latest

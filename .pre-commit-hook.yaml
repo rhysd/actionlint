@@ -6,3 +6,10 @@
   types: ["yaml"]
   files: "^.github/workflows/"
   entry: actionlint
+- id: actionlint-docker
+  name: Lint GitHub Actions workflow file Docker
+  description: Runs actionlint Docker image to lint GitHub Actions workflow files
+  language: docker_image
+  types: ["yaml"]
+  files: "^.github/workflows/"
+  entry: rhysd/actionlint
