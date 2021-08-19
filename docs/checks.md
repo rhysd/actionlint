@@ -225,6 +225,26 @@ many syntax errors like invalid characters, missing parens, unexpected end of in
 <a name="check-type-check-expression"></a>
 ## Type checks for expression syntax in `${{ }}`
 
+actionlint checks types of expressions in `${{ }}` placeholders of templates. The following types are supported by the type
+checker.
+
+| Type          | Description                                                                                | Notation                 |
+|---------------|--------------------------------------------------------------------------------------------|--------------------------|
+| Any           | Any value like `any` type in TypeScript. Fallback type when a value can no longer be typed | `any`                    |
+| Number        | Number value (integer or float)                                                            | `number`                 |
+| Bool          | Boolean value                                                                              | `bool`                   |
+| String        | String value                                                                               | `string`                 |
+| Null          | Type of `null` value                                                                       | `null`                   |
+| Array         | Array of specific type elements                                                            | `array<T>`               |
+| Loose object  | Object which can contain any properties                                                    | `object`                 |
+| Strict object | Object whose properties are strictly typed                                                 | `{prop1: T1, prop2: T2}` |
+
+Type check by actionlint is more strict than GitHub Actions runtime.
+
+- Only `any` and `number` are allowed to be converted to string implicitly. Following conversions are not allowed
+- Implicit conversion to `number` is not allowed
+- Object, array, and null are not allowed to be an evaluated value at `${{ }}`
+
 Example input:
 
 ```yaml
