@@ -1,0 +1,24 @@
+on: push
+jobs:
+  test:
+    strategy:
+      # OK: Expanding object value
+      matrix: ${{ fromJSON(env.MATRIX_VALUES) }}
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/cache@v1
+        id: cache
+        with:
+          key: foo
+          path: bar
+      # OK
+      - run: echo "${{ 'hello' }} ${{ true }} ${{ 42 }}"
+      # OK: Any type
+      - run: echo "${{ env.FOO }}"
+      # OK: Expanding object value
+      - run: echo "$FOO"
+        env: ${{ matrix.env }}
+      # ERROR: loose object, strict object, and array
+      - run: echo "${{github.event}} ${{steps.cache.outputs}} ${{github.event.commits.*}}"
+      # ERROR: null
+      - run: echo "${{null}}"

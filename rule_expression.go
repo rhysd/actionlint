@@ -6,6 +6,11 @@ import (
 	"strings"
 )
 
+type typedExpr struct {
+	ty  ExprType
+	pos Pos
+}
+
 // RuleExpression is a rule checker to check expression syntax in string values of workflow syntax.
 // It checks syntax and semantics of the expressions including type checks and functions/contexts
 // definitions. For more details see
@@ -226,16 +231,17 @@ func (rule *RuleExpression) getActionOutputsType(spec *String) *ObjectType {
 }
 
 func (rule *RuleExpression) checkOneExpression(s *String, what string) ExprType {
+	// checkString is not available since it checks types for embedding values into a string
 	if s == nil {
 		return nil
 	}
-	tys := rule.checkString(s)
-	if len(tys) != 1 {
+	ts := rule.checkExprsIn(s.Value, s.Pos, s.Quoted, false)
+	if len(ts) != 1 {
 		// This case should be unreachable since only one ${{ }} is included is checked by parser
-		rule.errorf(s.Pos, "one ${{ }} expression should be included in %q value but got %d expressions", what, len(tys))
+		rule.errorf(s.Pos, "one ${{ }} expression should be included in %q value but got %d expressions", what, len(ts))
 		return nil
 	}
-	return tys[0]
+	return ts[0].ty
 }
 
 func (rule *RuleExpression) checkObjectTy(ty ExprType, pos *Pos, what string) ExprType {
@@ -307,9 +313,8 @@ func (rule *RuleExpression) checkMatrixCombinations(cs *MatrixCombinations, what
 	}
 
 	if cs.Expression != nil {
-		ty := rule.checkArrayExpression(cs.Expression, what)
-		if elem, ok := ElemTypeOf(ty); ok {
-			rule.checkObjectTy(elem, cs.Expression.Pos, what)
+		if ty, ok := rule.checkArrayExpression(cs.Expression, what).(*ArrayType); ok {
+			rule.checkObjectTy(ty.Elem, cs.Expression.Pos, what)
 		}
 		return
 	}
@@ -408,10 +413,10 @@ func (rule *RuleExpression) checkIfCondition(str *String) {
 
 	var condTy ExprType
 	if strings.Contains(str.Value, "${{") && strings.Contains(str.Value, "}}") {
-		if tys := rule.checkString(str); len(tys) == 1 {
+		if ts := rule.checkString(str); len(ts) == 1 {
 			s := strings.TrimSpace(str.Value)
 			if strings.HasPrefix(s, "${{") && strings.HasSuffix(s, "}}") {
-				condTy = tys[0]
+				condTy = ts[0].ty
 			}
 		}
 	} else {
@@ -433,18 +438,31 @@ func (rule *RuleExpression) checkIfCondition(str *String) {
 	}
 }
 
-func (rule *RuleExpression) checkString(str *String) []ExprType {
-	if str == nil {
-		return nil
+func (rule *RuleExpression) checkTemplateEvaluatedType(ts []typedExpr) {
+	for _, t := range ts {
+		switch t.ty.(type) {
+		case *ObjectType, *ArrayType, NullType:
+			rule.errorf(&t.pos, "object, array, and null values should not be evaluated in template with ${{ }} but evaluating the value of type %s", t.ty)
+		}
 	}
-	return rule.checkExprsIn(str.Value, str.Pos, str.Quoted, false)
 }
 
-func (rule *RuleExpression) checkScriptString(str *String) []ExprType {
+func (rule *RuleExpression) checkString(str *String) []typedExpr {
 	if str == nil {
 		return nil
 	}
-	return rule.checkExprsIn(str.Value, str.Pos, str.Quoted, true)
+	ts := rule.checkExprsIn(str.Value, str.Pos, str.Quoted, false)
+	rule.checkTemplateEvaluatedType(ts)
+	return ts
+}
+
+func (rule *RuleExpression) checkScriptString(str *String) []typedExpr {
+	if str == nil {
+		return nil
+	}
+	ts := rule.checkExprsIn(str.Value, str.Pos, str.Quoted, true)
+	rule.checkTemplateEvaluatedType(ts)
+	return ts
 }
 
 func (rule *RuleExpression) checkBool(b *Bool) {
@@ -474,7 +492,7 @@ func (rule *RuleExpression) checkFloat(f *Float) {
 	rule.checkNumberExpression(f.Expression, "float number value")
 }
 
-func (rule *RuleExpression) checkExprsIn(s string, pos *Pos, quoted bool, checkUntrusted bool) []ExprType {
+func (rule *RuleExpression) checkExprsIn(s string, pos *Pos, quoted bool, checkUntrusted bool) []typedExpr {
 	// TODO: Line number is not correct when the string contains newlines.
 
 	line, col := pos.Line, pos.Col
@@ -482,7 +500,7 @@ func (rule *RuleExpression) checkExprsIn(s string, pos *Pos, quoted bool, checkU
 		col++ // when the string is quoted like 'foo' or "foo", column should be incremented
 	}
 	offset := 0
-	tys := []ExprType{}
+	ts := []typedExpr{}
 	for {
 		idx := strings.Index(s, "${{")
 		if idx == -1 {
@@ -492,18 +510,19 @@ func (rule *RuleExpression) checkExprsIn(s string, pos *Pos, quoted bool, checkU
 		start := idx + 3 // 3 means removing "${{"
 		s = s[start:]
 		offset += start
+		col := col + offset
 
-		ty, offsetAfter := rule.checkSemantics(s, line, col+offset, checkUntrusted)
+		ty, offsetAfter := rule.checkSemantics(s, line, col, checkUntrusted)
 		if ty == nil || offsetAfter == 0 {
 			return nil
 		}
+		ts = append(ts, typedExpr{ty, Pos{line, col - 3}})
 
 		s = s[offsetAfter:]
 		offset += offsetAfter
-		tys = append(tys, ty)
 	}
 
-	return tys
+	return ts
 }
 
 func (rule *RuleExpression) checkRawYAMLValue(v RawYAMLValue) {
@@ -599,7 +618,11 @@ func (rule *RuleExpression) populateDependantNeedsTypes(out *ObjectType, job *Jo
 }
 
 func (rule *RuleExpression) guessTypeOfMatrixExpression(expr *String) *ObjectType {
-	matTy, ok := rule.checkObjectExpression(expr, "matrix").(*ObjectType)
+	ty := rule.checkObjectExpression(expr, "matrix")
+	if ty == nil {
+		return NewObjectType()
+	}
+	matTy, ok := ty.(*ObjectType)
 	if !ok {
 		return NewObjectType()
 	}
@@ -608,8 +631,8 @@ func (rule *RuleExpression) guessTypeOfMatrixExpression(expr *String) *ObjectTyp
 	incTy, ok := matTy.Props["include"]
 	if ok {
 		delete(matTy.Props, "include")
-		if elem, ok := ElemTypeOf(incTy); ok {
-			if o, ok := elem.(*ObjectType); ok {
+		if a, ok := incTy.(*ArrayType); ok {
+			if o, ok := a.Elem.(*ObjectType); ok {
 				for n, p := range o.Props {
 					t, ok := matTy.Props[n]
 					if !ok {
@@ -645,20 +668,20 @@ func (rule *RuleExpression) guessTypeOfMatrix(m *Matrix) *ObjectType {
 	}
 
 	if m.Include.Expression != nil {
-		elem, ok := ElemTypeOf(rule.checkOneExpression(m.Include.Expression, "include"))
-		if !ok {
-			return NewObjectType()
+		if ty, ok := rule.checkOneExpression(m.Include.Expression, "include").(*ArrayType); ok {
+			if ret, ok := o.Fuse(ty.Elem).(*ObjectType); ok {
+				return ret
+			}
 		}
-		ret, ok := o.Fuse(elem).(*ObjectType)
-		if !ok {
-			return NewObjectType()
-		}
-		return ret
+		return NewObjectType()
 	}
 
 	for _, combi := range m.Include.Combinations {
 		if combi.Expression != nil {
 			ty := rule.checkOneExpression(m.Include.Expression, "matrix combination at element of include section")
+			if ty == nil {
+				continue
+			}
 			if fused, ok := o.Fuse(ty).(*ObjectType); ok {
 				o = fused
 			} else {
@@ -684,11 +707,10 @@ func (rule *RuleExpression) guessTypeOfMatrix(m *Matrix) *ObjectType {
 
 func (rule *RuleExpression) guessTypeOfMatrixRow(r *MatrixRow) ExprType {
 	if r.Expression != nil {
-		ty, ok := ElemTypeOf(rule.checkArrayExpression(r.Expression, "matrix row"))
-		if !ok {
-			return AnyType{}
+		if a, ok := rule.checkArrayExpression(r.Expression, "matrix row").(*ArrayType); ok {
+			return a
 		}
-		return ty
+		return AnyType{}
 	}
 
 	var ty ExprType

@@ -194,6 +194,22 @@ func TestParseExpressionSyntaxOK(t *testing.T) {
 			},
 		},
 		{
+			what:  "! operator",
+			input: "!true",
+			expected: &NotOpNode{
+				Operand: &BoolNode{Value: true},
+			},
+		},
+		{
+			what:  "! operator twice",
+			input: "!!true",
+			expected: &NotOpNode{
+				Operand: &NotOpNode{
+					Operand: &BoolNode{Value: true},
+				},
+			},
+		},
+		{
 			what:  "<= operator",
 			input: "0 <= 1",
 			expected: &CompareOpNode{

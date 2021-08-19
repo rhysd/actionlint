@@ -225,6 +225,26 @@ many syntax errors like invalid characters, missing parens, unexpected end of in
 <a name="check-type-check-expression"></a>
 ## Type checks for expression syntax in `${{ }}`
 
+actionlint checks types of expressions in `${{ }}` placeholders of templates. The following types are supported by the type
+checker.
+
+| Type          | Description                                                                                | Notation                 |
+|---------------|--------------------------------------------------------------------------------------------|--------------------------|
+| Any           | Any value like `any` type in TypeScript. Fallback type when a value can no longer be typed | `any`                    |
+| Number        | Number value (integer or float)                                                            | `number`                 |
+| Bool          | Boolean value                                                                              | `bool`                   |
+| String        | String value                                                                               | `string`                 |
+| Null          | Type of `null` value                                                                       | `null`                   |
+| Array         | Array of specific type elements                                                            | `array<T>`               |
+| Loose object  | Object which can contain any properties                                                    | `object`                 |
+| Strict object | Object whose properties are strictly typed                                                 | `{prop1: T1, prop2: T2}` |
+
+Type check by actionlint is more strict than GitHub Actions runtime.
+
+- Only `any` and `number` are allowed to be converted to string implicitly. Following conversions are not allowed
+- Implicit conversion to `number` is not allowed
+- Object, array, and null are not allowed to be an evaluated value at `${{ }}`
+
 Example input:
 
 ```yaml
@@ -233,12 +253,14 @@ jobs:
   test:
     runs-on: ubuntu-latest
     steps:
-      # Basic type error like index access to object
+      # ERROR: `env` is object. Index access to object is invalid
       - run: echo '${{ env[0] }}'
-      # Properties in objects are strongly typed. So missing property can be caught
+      # ERROR: Properties in objects are strongly typed. Missing property can be caught
       - run: echo '${{ job.container.os }}'
-      # github.repository is string. So accessing .owner is invalid
+      # ERROR: `github.repository` is string. Trying to access .owner property is invalid
       - run: echo '${{ github.repository.owner }}'
+      # ERROR: Objects, arrays and null should not be evaluated at ${{ }} since the outputs are useless
+      - run: echo '${{ env }}'
 ```
 
 Output:
@@ -256,21 +278,29 @@ test.yaml:11:24: receiver of object dereference "owner" must be type of object b
    |
 11 |       - run: echo '${{ github.repository.owner }}'
    |                        ^~~~~~~~~~~~~~~~~~~~~~~
+test.yaml:13:20: object, array, and null values should not be evaluated in template with ${{ }} but evaluating the value of type object [expression]
+   |
+13 |       - run: echo '${{ env }}'
+   |                    ^~~
 ```
 
-[Playground](https://rhysd.github.io/actionlint#eJx9jTEOwjAQBPu8YgukVLao/RVEEUcWNkJ3lu8OhKL8PTbUUG0xM1qmgGqSpztHCROgSXQs0IzEcecWjdTcYxnsg0RTla8FuGEGpDUz5tO2IdHzcr5i3+dfRj/zK5MuhVLzLP/cW9Fs0bdUWYpye3t+9WokBx67OoA=)
+[Playground](https://rhysd.github.io/actionlint#eJx9jrEKAjEQRPv7iimEqxKs8yticTkWE5FsyO4qcty/m2jtVVO8N8xwCagmabpzlDABSqIjgWZFHHdu0YqaeyyDfZEoVflZgBtmAK2JMZ+2DVSel/MV+z7/M/qYX7nokgs1z3Lk3rImi75RZcnK7e351VtHlX5g4A+nCkLw)
 
 Type checks for expression syntax in `${{ }}` are done by semantics checker. Note that actual type checks by GitHub Actions
-runtime is loose. For example any object value can be assigned into string value as string `"Object"`. But such loose
-conversions are bugs in almost all cases. actionlint checks types more strictly.
+runtime is loose.
+
+Any object value can be assigned into string value as string `'Object'`. `echo '${{ env }}'` will be replaced with
+`echo 'Object'`. Such loose conversions are bugs in almost all cases. actionlint checks types more strictly. actionlint checks
+values evaluated at `${{ }}` are not object (replaced with string `'Object'`), array (replaced with string `'Array'`), nor null
+(replaced with string `''`).
 
 There are two types of object types internally. One is an object which is strict for properties, which causes a type error
 when trying to access to unknown properties. And another is an object which is not strict for properties, which allows to
 access to unknown properties. In the case, accessing to unknown property is typed as `any`.
 
-When the type check cannot be done statically, the type is deduced to `any` (e.g. return type from `toJSON()`).
+When the type check cannot be done statically, the type is deduced to `any` (e.g. return type of `toJSON()`).
 
-And `${{ }}` can be used for expanding values.
+As special case of `${{ }}`, it can be used for expanding object and array values.
 
 Example input:
 
@@ -288,10 +318,10 @@ jobs:
           - FOO: PIYO
     runs-on: ubuntu-latest
     steps:
-      # Expanding object at 'env:' section
+      # OK: Expanding object at 'env:' section
       - run: echo "$FOO"
         env: ${{ matrix.env_object }}
-      # String value cannot be expanded as object
+      # ERROR: String value cannot be expanded as object
       - run: echo "$FOO"
         env: ${{ matrix.env_string }}
 ```

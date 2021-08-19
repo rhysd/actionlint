@@ -126,12 +126,10 @@ func (ty BoolType) String() string {
 
 // Assignable returns if other type can be assignable to the type.
 func (ty BoolType) Assignable(other ExprType) bool {
-	switch other.(type) {
-	case BoolType, StringType, NullType, NumberType, AnyType:
-		return true
-	default:
-		return false
-	}
+	// Any type can be converted into bool..
+	// e.g.
+	//    if: ${{ steps.foo }}
+	return true
 }
 
 // Equals returns if the type is equal to the other type.
@@ -335,18 +333,5 @@ func (ty *ArrayType) Fuse(other ExprType) ExprType {
 		return ty
 	default:
 		return AnyType{}
-	}
-}
-
-// ElemTypeOf returns element type of given type when it is array type.
-// When it is any type, it returns any type. Otherwise ti returns nil.
-func ElemTypeOf(ty ExprType) (ExprType, bool) {
-	switch ty := ty.(type) {
-	case AnyType:
-		return AnyType{}, true
-	case *ArrayType:
-		return ty.Elem, true
-	default:
-		return nil, false
 	}
 }
