@@ -313,9 +313,8 @@ func (rule *RuleExpression) checkMatrixCombinations(cs *MatrixCombinations, what
 	}
 
 	if cs.Expression != nil {
-		ty := rule.checkArrayExpression(cs.Expression, what)
-		if elem, ok := ty.ElemType(); ok {
-			rule.checkObjectTy(elem, cs.Expression.Pos, what)
+		if ty, ok := rule.checkArrayExpression(cs.Expression, what).(*ArrayType); ok {
+			rule.checkObjectTy(ty.Elem, cs.Expression.Pos, what)
 		}
 		return
 	}
@@ -632,8 +631,8 @@ func (rule *RuleExpression) guessTypeOfMatrixExpression(expr *String) *ObjectTyp
 	incTy, ok := matTy.Props["include"]
 	if ok {
 		delete(matTy.Props, "include")
-		if elem, ok := incTy.ElemType(); ok {
-			if o, ok := elem.(*ObjectType); ok {
+		if a, ok := incTy.(*ArrayType); ok {
+			if o, ok := a.Elem.(*ObjectType); ok {
 				for n, p := range o.Props {
 					t, ok := matTy.Props[n]
 					if !ok {
@@ -669,19 +668,12 @@ func (rule *RuleExpression) guessTypeOfMatrix(m *Matrix) *ObjectType {
 	}
 
 	if m.Include.Expression != nil {
-		ty := rule.checkOneExpression(m.Include.Expression, "include")
-		if ty == nil {
-			return NewObjectType()
+		if ty, ok := rule.checkOneExpression(m.Include.Expression, "include").(*ArrayType); ok {
+			if ret, ok := o.Fuse(ty.Elem).(*ObjectType); ok {
+				return ret
+			}
 		}
-		elem, ok := ty.ElemType()
-		if !ok {
-			return NewObjectType()
-		}
-		ret, ok := o.Fuse(elem).(*ObjectType)
-		if !ok {
-			return NewObjectType()
-		}
-		return ret
+		return NewObjectType()
 	}
 
 	for _, combi := range m.Include.Combinations {
@@ -715,11 +707,10 @@ func (rule *RuleExpression) guessTypeOfMatrix(m *Matrix) *ObjectType {
 
 func (rule *RuleExpression) guessTypeOfMatrixRow(r *MatrixRow) ExprType {
 	if r.Expression != nil {
-		ty, ok := rule.checkArrayExpression(r.Expression, "matrix row").ElemType()
-		if !ok {
-			return AnyType{}
+		if a, ok := rule.checkArrayExpression(r.Expression, "matrix row").(*ArrayType); ok {
+			return a
 		}
-		return ty
+		return AnyType{}
 	}
 
 	var ty ExprType

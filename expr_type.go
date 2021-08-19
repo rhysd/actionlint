@@ -18,9 +18,6 @@ type ExprType interface {
 	// Fuse merges other type into this type. When other type conflicts with this type, fused
 	// result is any type as fallback.
 	Fuse(other ExprType) ExprType
-	// ElemType returns its element type if exists. If there is no element type, it returns false as
-	// the second return value.
-	ElemType() (ExprType, bool)
 }
 
 // AnyType represents type which can be any type. It also indicates that a value of the type cannot
@@ -45,11 +42,6 @@ func (ty AnyType) Equals(other ExprType) bool {
 // any type as fallback.
 func (ty AnyType) Fuse(other ExprType) ExprType {
 	return ty
-}
-
-// ElemType implements ExprType.ElemType.
-func (ty AnyType) ElemType() (ExprType, bool) {
-	return ty, true
 }
 
 // NullType is type for null value.
@@ -86,11 +78,6 @@ func (ty NullType) Fuse(other ExprType) ExprType {
 		return ty
 	}
 	return AnyType{}
-}
-
-// ElemType implements ExprType.ElemType.
-func (ty NullType) ElemType() (ExprType, bool) {
-	return nil, false
 }
 
 // NumberType is type for number values such as integer or float.
@@ -130,11 +117,6 @@ func (ty NumberType) Fuse(other ExprType) ExprType {
 	return AnyType{}
 }
 
-// ElemType implements ExprType.ElemType.
-func (ty NumberType) ElemType() (ExprType, bool) {
-	return nil, false
-}
-
 // BoolType is type for boolean values.
 type BoolType struct{}
 
@@ -158,11 +140,6 @@ func (ty BoolType) Equals(other ExprType) bool {
 	default:
 		return false
 	}
-}
-
-// ElemType implements ExprType.ElemType.
-func (ty BoolType) ElemType() (ExprType, bool) {
-	return nil, false
 }
 
 // Fuse merges other type into this type. When other type conflicts with this type, fused result is
@@ -201,11 +178,6 @@ func (ty StringType) Equals(other ExprType) bool {
 	default:
 		return false
 	}
-}
-
-// ElemType implements ExprType.ElemType.
-func (ty StringType) ElemType() (ExprType, bool) {
-	return nil, false
 }
 
 // Fuse merges other type into this type. When other type conflicts with this type, fused result is
@@ -314,11 +286,6 @@ func (ty *ObjectType) Fuse(other ExprType) ExprType {
 	}
 }
 
-// ElemType implements ExprType.ElemType.
-func (ty *ObjectType) ElemType() (ExprType, bool) {
-	return nil, false
-}
-
 // ArrayType is type for arrays.
 type ArrayType struct {
 	// Elem is type of element of the array.
@@ -367,9 +334,4 @@ func (ty *ArrayType) Fuse(other ExprType) ExprType {
 	default:
 		return AnyType{}
 	}
-}
-
-// ElemType implements ExprType.ElemType.
-func (ty *ArrayType) ElemType() (ExprType, bool) {
-	return ty.Elem, true
 }
