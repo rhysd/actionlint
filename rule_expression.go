@@ -443,7 +443,7 @@ func (rule *RuleExpression) checkTemplateEvaluatedType(ts []typedExpr) {
 	for _, t := range ts {
 		switch t.ty.(type) {
 		case *ObjectType, *ArrayType, NullType:
-			rule.errorf(&t.pos, "object, array, and null values cannot be evaluated in template with ${{ }} but evaluating the value of type %s", t.ty)
+			rule.errorf(&t.pos, "object, array, and null values should not be evaluated in template with ${{ }} but evaluating the value of type %s", t.ty)
 		}
 	}
 }

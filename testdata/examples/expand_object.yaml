@@ -11,9 +11,9 @@ jobs:
           - FOO: PIYO
     runs-on: ubuntu-latest
     steps:
-      # Expanding object at 'env:' section
+      # OK: Expanding object at 'env:' section
       - run: echo "$FOO"
         env: ${{ matrix.env_object }}
-      # String value cannot be expanded as object
+      # ERROR: String value cannot be expanded as object
       - run: echo "$FOO"
         env: ${{ matrix.env_string }}
