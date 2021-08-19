@@ -619,7 +619,11 @@ func (rule *RuleExpression) populateDependantNeedsTypes(out *ObjectType, job *Jo
 }
 
 func (rule *RuleExpression) guessTypeOfMatrixExpression(expr *String) *ObjectType {
-	matTy, ok := rule.checkObjectExpression(expr, "matrix").(*ObjectType)
+	ty := rule.checkObjectExpression(expr, "matrix")
+	if ty == nil {
+		return NewObjectType()
+	}
+	matTy, ok := ty.(*ObjectType)
 	if !ok {
 		return NewObjectType()
 	}
