@@ -41,7 +41,7 @@ For the usage of actionlint on GitHub Actions, see [the usage document](usage.md
 
 ## Build from source
 
-Recent [Go][] toolchain is necessary to build actionlint from source.
+Recent [Go][] toolchain is necessary to build actionlint from source. Use Go 1.16 or later.
 
 ```sh
 # Install the latest stable version
