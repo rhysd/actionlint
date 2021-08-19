@@ -454,3 +454,20 @@ func BenchmarkExamplesLintFiles(b *testing.B) {
 		}
 	}
 }
+
+func BenchmarkLintRepository(b *testing.B) {
+	for i := 0; i < b.N; i++ {
+		opts := LinterOptions{}
+		l, err := NewLinter(ioutil.Discard, &opts)
+		if err != nil {
+			b.Fatal(err)
+		}
+		errs, err := l.LintRepository(".")
+		if err != nil {
+			b.Fatal(err)
+		}
+		if len(errs) > 0 {
+			b.Fatal(errs)
+		}
+	}
+}
