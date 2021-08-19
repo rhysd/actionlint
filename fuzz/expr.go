@@ -19,7 +19,7 @@ func FuzzExprParse(data []byte) int {
 		return 0
 	}
 
-	c := actionlint.NewExprSemanticsChecker()
+	c := actionlint.NewExprSemanticsChecker(true)
 	c.Check(e)
 
 	return 1

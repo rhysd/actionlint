@@ -16,6 +16,7 @@ require (
 )
 
 require (
+	github.com/dvyukov/go-fuzz v0.0.0-20210602112143-b1f3d6f4ef4e // indirect
 	github.com/kr/text v0.1.0 // indirect
 	github.com/mattn/go-isatty v0.0.12 // indirect
 	github.com/rivo/uniseg v0.2.0 // indirect
