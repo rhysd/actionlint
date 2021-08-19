@@ -1,4 +1,4 @@
-SRCS := $(filter-out %_test.go, $(wildcard *.go cmd/actionlint/*.go))
+SRCS := $(filter-out %_test.go, $(wildcard *.go cmd/actionlint/*.go)) go.mod go.sum
 TESTS := $(filter %_test.go, $(wildcard *.go))
 TOOL := $(wildcard scripts/*/*.go)
 TESTDATA := $(wildcard testdata/examples/*.yaml testdata/examples/*.out)

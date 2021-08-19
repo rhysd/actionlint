@@ -1,3 +1,5 @@
+LIBSRCS := $(filter-out ../%_test.go, $(wildcard ../*.go)) ../go.mod ../go.sum
+
 serve: build
 	npm run serve
 
@@ -14,7 +16,7 @@ lib: node_modules index.js
 
 install: node_modules lib
 
-main.wasm: main.go
+main.wasm: main.go $(LIBSRCS)
 	GOOS=js GOARCH=wasm go build -o main.wasm
 
 .testtimestamp: node_modules lib test.js main.wasm
