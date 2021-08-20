@@ -95,8 +95,9 @@ test.yaml:22:17: receiver of object dereference "permissions" must be type of ob
 
 ## Quick start
 
-Install `actionlint` command by downloading [the released binary][releases] or by Homebrew or by `go install`.
-See [the installation document](docs/install.md) for more details like how to manage the command with Homebrew.
+Install `actionlint` command by downloading [the released binary][releases] or by Homebrew or by `go install`. See
+[the installation document](docs/install.md) for more details like how to manage the command with Homebrew or run via Docker
+container.
 
 ```sh
 go install github.com/rhysd/actionlint/cmd/actionlint@latest
@@ -117,10 +118,10 @@ See [the usage document](docs/usage.md) for more details.
 ## Documents
 
 - [Checks](docs/checks.md): Full list of all checks done by actionlint with example inputs, outputs, and playground links.
-- [Installation](docs/install.md): Installation instructions. Prebuilt binaries, Homebrew package, building from source,
-  a download script (for CI) are available.
-- [Usage](docs/usage.md): How to use `actionlint` command locally or on GitHub Actions, the online playground, and integrations
-  with other tools.
+- [Installation](docs/install.md): Installation instructions. Prebuilt binaries, Homebrew package, a Docker image, building from
+  source, a download script (for CI) are available.
+- [Usage](docs/usage.md): How to use `actionlint` command locally or on GitHub Actions, the online playground, an official Docker
+  image, and integrations with other tools.
 - [Configuration](docs/config.md): How to configure actionlint behavior. Currently only labels of self-hosted runners can be
   configured.
 - [Go API](docs/api.md): How to use actionlint as Go library.

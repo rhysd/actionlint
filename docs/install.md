@@ -39,6 +39,10 @@ bash <(curl https://raw.githubusercontent.com/rhysd/actionlint/main/scripts/down
 
 For the usage of actionlint on GitHub Actions, see [the usage document](usage.md#on-github-actions).
 
+## Docker image
+
+See [the usage document](./usage.md#docker) to know how to install and use an official actionlint Docker image.
+
 ## Build from source
 
 Recent [Go][] toolchain is necessary to build actionlint from source. Use Go 1.16 or later.

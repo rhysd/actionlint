@@ -105,15 +105,15 @@ Full list of all checks done by actionlint with example inputs, outputs, and pla
 
 https://github.com/rhysd/actionlint/tree/main/docs/install.md
 
-Installation instructions. Prebuilt binaries, Homebrew package, building from source, a download
-script (for CI) are available.
+Installation instructions. Prebuilt binaries, Homebrew package, building from source, a Docker
+image, a download script (for CI) are available.
 
 ### Usage
 
 https://github.com/rhysd/actionlint/tree/main/docs/usage.md
 
-How to use `actionlint` command locally and on GitHub Actions, the online playground, and
-integrations with other tools.
+How to use `actionlint` command locally and on GitHub Actions, the online playground, an official
+Docker image, and integrations with other tools.
 
 ### Configuration
 

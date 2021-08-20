@@ -214,6 +214,43 @@ Paste your workflow content to the code editor at left pane. It automatically sh
 the workflow content in the code editor, the results will be updated on the fly. Clicking an error message in the results
 table moves a cursor to position of the error in the code editor.
 
+<a name="docker"></a>
+## [Docker][docker] image
+
+[Official Docker image][docker-image] is available. The image contains `actionlint` executable and all dependencies (shellcheck
+and pyflakes).
+
+Available tags are:
+
+- `actionlint:latest`: Latest stable version of actionlint. This image is recommended.
+- `actionlint:{version}`: Specific version of actionlint. (e.g. `actionlint:1.6.1`)
+
+To install the image,
+
+```sh
+docker pull rhysd/actionlint:latest
+docker run --rm rhysd/actionlint:latest -version
+```
+
+To check all workflows in your repository, mount your repository's root directory as a volume and run actionlint in the mounted
+directory. When you are at a root directory of your repository:
+
+```sh
+docker run --rm -v $(pwd):/repo --workdir /repo rhysd/actionlint:latest -color
+```
+
+To check a file with actionlint in a Docker container, pass the file content via stdin and use `-` argument:
+
+```sh
+cat /path/to/workflow.yml | docker run --rm -i rhysd/actionlint:latest -color -
+```
+
+Or mount the workflows directory and pass the paths as arguments:
+
+```sh
+docker run --rm -v /path/to/workflows:/workflows rhysd/actionlint:latest -color /workflows/ci.yml
+```
+
 ## Using actionlint from Go program
 
 Go APIs are available. See [the Go API document](api.md) for more details.
@@ -281,6 +318,7 @@ actionlint is available as a pre-commit hook.
 
 Once the `actionlint` binary is installed locally, add this to your `.pre-commit-config.yaml` in
 your repository:
+
 ```yaml
 ---
 repos:
@@ -291,6 +329,7 @@ repos:
 ```
 
 or alternatively, run actionlint with Docker:
+
 ```yaml
 ---
 repos:
@@ -299,6 +338,7 @@ repos:
     hooks:
       - id: actionlint-docker
 ```
+
 ---
 
 [Checks](checks.md) | [Installation](install.md) | [Configuration](config.md) | [Go API](api.md) | [References](reference.md)
@@ -314,3 +354,5 @@ repos:
 [actionlint-matcher]: https://raw.githubusercontent.com/rhysd/actionlint/main/.github/actionlint-matcher.json
 [preinstall-ubuntu]: https://github.com/actions/virtual-environments/blob/main/images/linux/Ubuntu2004-README.md
 [pre-commit]: https://pre-commit.com
+[docker]: https://www.docker.com/
+[docker-image]: https://hub.docker.com/repository/docker/rhysd/actionlint
