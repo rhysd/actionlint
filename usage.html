@@ -95,7 +95,7 @@
 not existing property, type mismatches, ...</li>
 <li><strong>Actions usage check</strong> to check that inputs at <code>with:</code> and outputs in <code>steps.{id}.outputs</code> are
 correct</li>
-<li><strong>shellcheck and pyflakes integrations</strong> for scripts in <code>run:</code></li>
+<li><strong>shellcheck and pyflakes integrations</strong> for scripts at <code>run:</code></li>
 <li><strong>Security checks</strong>; script injection by untrusted inputs, hard-coded credentials</li>
 <li><strong>Other several useful checks</strong>; glob syntax validation, dependencies check for <code>needs:</code>, runner
 label validation, cron syntax validation, ...</li>
@@ -119,6 +119,12 @@ It automatically finds the nearest <code>.github/workflows</code> directory:</p>
 argument. It reads stdin and checks it as workflow file:</p>
 
 <pre><code>$ actionlint -
+</code></pre>
+
+<p>To serialize errors into JSON, use <strong>-format</strong> option. It allows to format error messages flexibly
+with Go template syntax.</p>
+
+<pre><code>$ actionlint -format '{{json .}}'
 </code></pre>
 
 <h2 id="FLAGS">FLAGS</h2>
@@ -156,15 +162,15 @@ example, <code>-gnore A -ignore B</code> ignores errors whose message includes "
 
 <p>https://github.com/rhysd/actionlint/tree/main/docs/install.md</p>
 
-<p>Installation instructions. Prebuilt binaries, Homebrew package, building from source, a download
-script (for CI) are available.</p>
+<p>Installation instructions. Prebuilt binaries, Homebrew package, building from source, a Docker
+image, a download script (for CI) are available.</p>
 
 <h3 id="Usage">Usage</h3>
 
 <p>https://github.com/rhysd/actionlint/tree/main/docs/usage.md</p>
 
-<p>How to use <code>actionlint</code> command locally and on GitHub Actions, the online playground, and
-integrations with other tools.</p>
+<p>How to use <code>actionlint</code> command locally and on GitHub Actions, the online playground, an official
+Docker image, and integrations with other tools.</p>
 
 <h3 id="Configuration">Configuration</h3>
 
