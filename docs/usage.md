@@ -290,6 +290,15 @@ repos:
       - id: actionlint
 ```
 
+or alternatively, run actionlint with Docker:
+```yaml
+---
+repos:
+  - repo: https://github.com/rhysd/actionlint
+    rev: main
+    hooks:
+      - id: actionlint-docker
+```
 ---
 
 [Checks](checks.md) | [Installation](install.md) | [Configuration](config.md) | [Go API](api.md) | [References](reference.md)

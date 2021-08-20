@@ -96,3 +96,20 @@ jobs:
       - run: make lint
       - name: Lint bash scripts
         run: shellcheck ./scripts/download-actionlint.bash ./playground/post-install.bash ./playground/deploy.bash
+  docker:
+    name: Test Dockerfile
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v2
+      - name: Build image
+        id: image
+        uses: docker/build-push-action@v2
+        with:
+          build-args: |
+            GOLANG_VER=1.16
+          push: false
+      - name: Test Docker image
+        run: docker container run
+          --mount type=bind,source="$(pwd)",target=/mnt/app
+          --workdir /mnt/app
+          -- ${{ steps.image.outputs.digest }} --verbose
