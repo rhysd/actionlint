@@ -5,10 +5,11 @@ FROM golang:${GOLANG_VER} as builder
 WORKDIR /go/src/app
 COPY go.* *.go ./
 COPY cmd cmd/
-RUN go build ./cmd/actionlint
+ARG ACTIONLINT_VER=
+RUN go build -ldflags "-s -w -X github.com/rhysd/actionlint.version=${ACTIONLINT_VER}" ./cmd/actionlint
 
 FROM alpine:${ALPINE_VER}
 COPY --from=builder /go/src/app/actionlint /usr/local/bin/
-RUN apk add shellcheck py3-pyflakes
+RUN apk add --no-cache shellcheck py3-pyflakes
 USER guest
 ENTRYPOINT ["/usr/local/bin/actionlint"]

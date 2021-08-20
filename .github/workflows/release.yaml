@@ -46,6 +46,10 @@ jobs:
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v2
+      - name: Get tag name
+        id: tag
+        run: |
+          echo "::set-output name=name::${GITHUB_REF#refs/tags/v}"
       - name: Login to DockerHub
         uses: docker/login-action@v1
         with:
@@ -55,8 +59,9 @@ jobs:
         uses: docker/build-push-action@v2
         with:
           build-args: |
-            GOLANG_VER=1.16
+            GOLANG_VER=1.17
+            ACTIONINT_VER=${{ steps.tag.outputs.name }}
           push: true
           tags: |
-            ${{ secrets.DOCKER_HUB_USERNAME }}/actionlint:${GITHUB_REF#refs/tags/}
+            ${{ secrets.DOCKER_HUB_USERNAME }}/actionlint:${{ steps.tag.outputs.name }}
             ${{ secrets.DOCKER_HUB_USERNAME }}/actionlint:latest
