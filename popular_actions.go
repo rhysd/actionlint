@@ -976,7 +976,8 @@ var PopularActions = map[string]*ActionMetadata{
 			"target":       false,
 		},
 		Outputs: map[string]struct{}{
-			"digest": {},
+			"digest":   {},
+			"metadata": {},
 		},
 	},
 	"docker/login-action@v1": {
@@ -1123,6 +1124,7 @@ var PopularActions = map[string]*ActionMetadata{
 		Name: "Setup Erlang/OTP with optional Elixir (and mix) and/or rebar3",
 		Inputs: map[string]ActionMetadataInputRequired{
 			"elixir-version": false,
+			"gleam-version":  false,
 			"install-hex":    false,
 			"install-rebar":  false,
 			"otp-version":    false,
@@ -1131,6 +1133,7 @@ var PopularActions = map[string]*ActionMetadata{
 		},
 		Outputs: map[string]struct{}{
 			"elixir-version": {},
+			"gleam-version":  {},
 			"otp-version":    {},
 			"rebar3-version": {},
 		},
