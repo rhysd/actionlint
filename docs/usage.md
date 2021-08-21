@@ -225,10 +225,9 @@ Available tags are:
 - `actionlint:latest`: Latest stable version of actionlint. This image is recommended.
 - `actionlint:{version}`: Specific version of actionlint. (e.g. `actionlint:1.6.1`)
 
-To install the image,
+Just run the image with `docker run`:
 
 ```sh
-docker pull rhysd/actionlint:latest
 docker run --rm rhysd/actionlint:latest -version
 ```
 

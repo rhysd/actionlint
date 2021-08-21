@@ -114,4 +114,4 @@ jobs:
           --workdir /mnt/app
           -- ${{ steps.image.outputs.digest }} -color -verbose
       - name: Lint Dockerfile with hadolint
-        run: docker run --rm -i hadolint/hadolint - --ignore DL3018 --strict-labels < Dockerfile
+        run: docker run --rm -i hadolint/hadolint hadolint --ignore DL3018 --strict-labels - < Dockerfile
