@@ -259,12 +259,12 @@ Go APIs are available. See [the Go API document](api.md) for more details.
 <a name="tools-integ"></a>
 ## Tools integration
 
-### [reviewdog/action-actionlint][reviewdog-actionlint]
+### reviewdog
 
-[reviewdog][] is an automated review tool for various code hosting services. It officially supports actionlint. You can check
-errors from actionlint easily with inline review comments at pull request review.
+[reviewdog][] is an automated review tool for various code hosting services. It officially [supports actionlint][reviewdog-actionlint].
+You can check errors from actionlint easily with inline review comments at pull request review.
 
-The usage is easy. Run `reviewdog/action-actionlint` in your workflow as follows.
+The usage is easy. Run `reviewdog/action-actionlint` action in your workflow as follows.
 
 ```yaml
 name: reviewdog

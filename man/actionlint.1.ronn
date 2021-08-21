@@ -112,8 +112,8 @@ image, a download script (for CI) are available.
 
 https://github.com/rhysd/actionlint/tree/main/docs/usage.md
 
-How to use `actionlint` command locally and on GitHub Actions, the online playground, an official
-Docker image, and integrations with other tools.
+How to use `actionlint` command locally or on GitHub Actions, the online playground, an official
+Docker image, and integrations with reviewdog, Problem Matchers, super-linter, pre-commit.
 
 ### Configuration
 
