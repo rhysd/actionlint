@@ -113,3 +113,5 @@ jobs:
           --mount type=bind,source="$(pwd)",target=/mnt/app
           --workdir /mnt/app
           -- ${{ steps.image.outputs.digest }} -color -verbose
+      - name: Lint Dockerfile with hadolint
+        run: docker run --rm -i hadolint/hadolint - --ignore DL3018 --strict-labels < Dockerfile
