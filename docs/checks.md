@@ -290,9 +290,14 @@ Type checks for expression syntax in `${{ }}` are done by semantics checker. Not
 runtime is loose.
 
 Any object value can be assigned into string value as string `'Object'`. `echo '${{ env }}'` will be replaced with
-`echo 'Object'`. Such loose conversions are bugs in almost all cases. actionlint checks types more strictly. actionlint checks
-values evaluated at `${{ }}` are not object (replaced with string `'Object'`), array (replaced with string `'Array'`), nor null
-(replaced with string `''`).
+`echo 'Object'`. And an array can also be converted into `'Array'` string. Such loose conversions are bugs in almost all cases.
+actionlint checks types more strictly. actionlint checks values evaluated at `${{ }}` are not object (replaced with string
+`'Object'`), array (replaced with string `'Array'`), nor null (replaced with string `''`). If you want to check a content of
+object or array, use `toJSON()` function.
+
+```
+echo '${{ toJSON(github.events) }}'
+```
 
 There are two types of object types internally. One is an object which is strict for properties, which causes a type error
 when trying to access to unknown properties. And another is an object which is not strict for properties, which allows to
