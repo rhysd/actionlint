@@ -1313,8 +1313,8 @@ jobs:
       - uses: checkout@v2
       # ERROR: tag is empty
       - uses: 'docker://image:'
-      # ERROR: local action does not exist
-      - uses: ./github/actions/my-action
+      # ERROR: local action must starts with './'
+      - uses: .github/my-actions/do-something
 ```
 
 Output:
@@ -1332,10 +1332,10 @@ test.yaml:11:15: tag of Docker action should not be empty: "docker://image" [act
    |
 11 |       - uses: 'docker://image:'
    |               ^~~~~~~~~~~~~~~~~
-test.yaml:13:15: neither action.yaml nor action.yml is found in directory "github/actions/my-action" [action]
+test.yaml:13:15: specifying action ".github/my-actions/do-something" in invalid format because ref is missing. available formats are "{owner}/{repo}@{ref}" or "{owner}/{repo}/{path}@{ref}" [action]
    |
-13 |       - uses: ./github/actions/my-action
-   |               ^~~~~~~~~~~~~~~~~~~~~~~~~~
+13 |       - uses: .github/my-actions/do-something
+   |               ^~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 ```
 
 [Playground](https://rhysd.github.io/actionlint#eJxdzTEOgzAMBdCdU3hjSi119NSrJKlFUkqMsF2pty8UsWTy139fsjSC1bUML0lKA4Cx2nEBNm8aZHdP3szDOx72JzVe9VwBBHBlJYjZqjTFXDjP4tbxVT8+907Gp+SZN0KsS5yYxs5vOFUrnvD6sHzDGX98DjoH)
@@ -1347,6 +1347,10 @@ Action needs to be specified in a format defined in [the document][action-uses-d
 - Docker action: `docker://image:tag`
 
 actionlint checks values at `uses:` sections follow one of these formats.
+
+Note that actionlint does not report any error when a direcotyr for a local action does not exist in the repository because it is
+a common case that the action is managed in a separate repository and the action directory is cloned at running the workflow.
+(See [#25][issue-25] and [#40][issue-40] for more details).
 
 <a name="check-local-action-inputs"></a>
 ## Local action inputs validation at `with:`
@@ -1730,3 +1734,5 @@ actionlint checks permission scopes and access levels in a workflow are correct.
 [perm-config-doc]: https://docs.github.com/en/actions/reference/workflow-syntax-for-github-actions#permissions
 [generate-webhook-events]: https://github.com/rhysd/actionlint/tree/main/scripts/generate-webhook-events
 [generate-popular-actions]: https://github.com/rhysd/actionlint/tree/main/scripts/generate-popular-actions
+[issue-25]: https://github.com/rhysd/actionlint/issues/25
+[issue-40]: https://github.com/rhysd/actionlint/issues/40

@@ -1,4 +1,4 @@
 test.yaml:7:15: specifying action "actions/checkout" in invalid format because ref is missing. available formats are "{owner}/{repo}@{ref}" or "{owner}/{repo}/{path}@{ref}" [action]
 test.yaml:9:15: specifying action "checkout@v2" in invalid format because owner is missing. available formats are "{owner}/{repo}@{ref}" or "{owner}/{repo}/{path}@{ref}" [action]
 test.yaml:11:15: tag of Docker action should not be empty: "docker://image" [action]
-/test\.yaml:13:15: neither action\.yaml nor action\.yml is found in directory "testdata[\\/]examples[\\/]github[\\/]actions[\\/]my-action" \[action\]/
+test.yaml:13:15: specifying action ".github/my-actions/do-something" in invalid format because ref is missing. available formats are "{owner}/{repo}@{ref}" or "{owner}/{repo}/{path}@{ref}" [action]

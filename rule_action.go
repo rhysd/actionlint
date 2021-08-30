@@ -132,7 +132,9 @@ func (rule *RuleAction) checkDockerAction(uri string, exec *ExecAction) {
 func (rule *RuleAction) checkLocalAction(path string, action *ExecAction) {
 	meta, err := rule.cache.FindMetadata(path)
 	if err != nil {
-		rule.error(action.Uses.Pos, err.Error())
+		// Do not complain about the action does not exist (#25, #40).
+		// It seems a common pattern that the local action does not exist in the repository
+		// (e.g. Git submodule) and it is cloned at running workflow (due to a private repository).
 		return
 	}
 	if meta == nil {

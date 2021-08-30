@@ -9,5 +9,5 @@ jobs:
       - uses: checkout@v2
       # ERROR: tag is empty
       - uses: 'docker://image:'
-      # ERROR: local action does not exist
-      - uses: ./github/actions/my-action
+      # ERROR: local action must starts with './'
+      - uses: .github/my-actions/do-something

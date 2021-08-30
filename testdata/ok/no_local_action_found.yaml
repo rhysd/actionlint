@@ -1,0 +1,9 @@
+on: push
+jobs:
+  test:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: ./.github/action-does-not-exist
+        with:
+          foo: aaa
+          bar: bbb
