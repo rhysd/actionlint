@@ -22,24 +22,24 @@
     "@types/mocha": "^9.0.0",
     "bulma": "^0.9.3",
     "bulmaswatch": "^0.8.1",
-    "codemirror": "^5.62.2",
-    "devicon": "^2.12.0",
+    "codemirror": "^5.62.3",
+    "devicon": "^2.13.0",
     "ismobilejs": "^1.1.1",
-    "jsdom": "^16.7.0",
-    "mocha": "^9.0.3",
+    "jsdom": "^17.0.0",
+    "mocha": "^9.1.1",
     "pako": "^2.0.4"
   },
   "devDependencies": {
     "@types/codemirror": "^5.60.2",
-    "@types/node": "^16.4.10",
+    "@types/node": "^16.7.6",
     "@types/pako": "^1.0.2",
-    "@typescript-eslint/eslint-plugin": "^4.28.5",
-    "@typescript-eslint/parser": "^4.28.5",
+    "@typescript-eslint/eslint-plugin": "^4.29.3",
+    "@typescript-eslint/parser": "^4.29.3",
     "eslint": "^7.32.0",
     "light-server": "^2.9.1",
     "prettier": "^2.3.2",
     "stylelint": "^13.13.1",
     "stylelint-config-standard": "^22.0.0",
-    "typescript": "^4.3.5"
+    "typescript": "^4.4.2"
   }
 }
