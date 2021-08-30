@@ -296,7 +296,7 @@ actionlint checks types more strictly. actionlint checks values evaluated at `${
 object or array, use `toJSON()` function.
 
 ```
-echo '${{ toJSON(github.events) }}'
+echo '${{ toJSON(github.event) }}'
 ```
 
 There are two types of object types internally. One is an object which is strict for properties, which causes a type error
@@ -765,6 +765,9 @@ For installing shellcheck, see [the official installation document][shellcheck-i
 actionlint detects which shell is used to run the scripts following [the documentation][shell-doc]. On Linux or macOS,
 the default shell is `bash` and on Windows it is `pwsh`. Shell can be configured by `shell:` configuration at a workflow
 level or job level. Each step can configure shell to run scripts by `shell:`.
+
+In the above example output, `SC2086:info:1:6:` means that shellcheck reported SC2086 rule violation and the location is at
+line 1, column 6. Note that the location is relative to the script of the `run:` section.
 
 actionlint remembers the default shell and checks what OS the job runs on. Only when the shell is `bash` or `sh`, actionlint
 applies shellcheck to scripts.
