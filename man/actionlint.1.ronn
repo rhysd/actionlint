@@ -64,7 +64,7 @@ with Go template syntax.
 
   * `-ignore` <PATTERN>:
     Regular expression matching to error messages you want to ignore. This flag is repeatable. For
-    example, `-gnore A -ignore B` ignores errors whose message includes "A" OR "B".
+    example, `-ignore A -ignore B` ignores errors whose message includes "A" OR "B".
 
   * `-init-config`:
     Generate default config file at `.github/actionlint.yaml` in current project
