@@ -354,4 +354,4 @@ repos:
 [preinstall-ubuntu]: https://github.com/actions/virtual-environments/blob/main/images/linux/Ubuntu2004-README.md
 [pre-commit]: https://pre-commit.com
 [docker]: https://www.docker.com/
-[docker-image]: https://hub.docker.com/repository/docker/rhysd/actionlint
+[docker-image]: https://hub.docker.com/r/rhysd/actionlint
