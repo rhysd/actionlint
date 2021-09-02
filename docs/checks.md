@@ -780,6 +780,9 @@ Since both `${{ }}` expression syntax and ShellScript's variable access `$FOO` u
 To avoid it, actionlint replaces `${{ }}` with underscores. For example `echo '${{ matrix.os }}'` is replaced with
 `echo '________________'`.
 
+Some shellcheck rules conflict with the `${{ }}` expression syntax. To avoid errors due to the syntax, [SC1091][sc1091],
+[SC2050][sc2050], [SC2194][sc2194] are disabled.
+
 <a name="check-pyflakes-integ"></a>
 ## [pyflakes][] integration for `run:`
 
@@ -1713,8 +1716,11 @@ actionlint checks permission scopes and access levels in a workflow are correct.
 [syntax-doc]: https://docs.github.com/en/actions/reference/workflow-syntax-for-github-actions
 [filter-pattern-doc]: https://docs.github.com/en/actions/reference/workflow-syntax-for-github-actions#filter-pattern-cheat-sheet
 [shellcheck]: https://github.com/koalaman/shellcheck
-[pyflakes]: https://github.com/PyCQA/pyflakes
 [shellcheck-install]: https://github.com/koalaman/shellcheck#installing
+[sc1091]: https://github.com/koalaman/shellcheck/wiki/SC1091
+[sc2050]: https://github.com/koalaman/shellcheck/wiki/SC2050
+[sc2194]: https://github.com/koalaman/shellcheck/wiki/SC2194
+[pyflakes]: https://github.com/PyCQA/pyflakes
 [expr-doc]: https://docs.github.com/en/actions/reference/context-and-expression-syntax-for-github-actions
 [contexts-doc]: https://docs.github.com/en/actions/reference/context-and-expression-syntax-for-github-actions#contexts
 [funcs-doc]: https://docs.github.com/en/actions/reference/context-and-expression-syntax-for-github-actions#functions
