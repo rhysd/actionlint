@@ -160,9 +160,11 @@ func (rule *RuleShellcheck) runShellcheck(src, sh string, pos *Pos) {
 	//
 	// - SC1091: File not found. Scripts are for CI environment. Not suitable for checking this in current local
 	//           environment
-	// - SC2194: The word is constant. This sometimes happens at constants by replacing ${{ }} with spaces.
+	// - SC2194: The word is constant. This sometimes happens at constants by replacing ${{ }} with underscores.
 	//           For example, `if ${{ matrix.foo }}; then ...` -> `if _________________; then ...`
-	args := []string{"--norc", "-f", "json", "-x", "--shell", sh, "-e", "SC1091,SC2194", "-"}
+	// - SC2050: The expression is constant. This sometimes happens at `if` condition by replacing ${{ }} with
+	//           underscores (#45). For example, `if [ "${{ matrix.foo }}" = "x" ]` -> `if [ "_________________" = "x" ]`
+	args := []string{"--norc", "-f", "json", "-x", "--shell", sh, "-e", "SC1091,SC2194,SC2050", "-"}
 	rule.debug("%s: Running %s command with %s", pos, rule.cmd.exe, args)
 
 	// Use same options to run shell process described at document
