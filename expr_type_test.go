@@ -404,6 +404,28 @@ func TestExprTypeFuseComplicated(t *testing.T) {
 			},
 		},
 		{
+			what: "strict object into strict object",
+			ty: &ObjectType{
+				Props: map[string]ExprType{
+					"foo": NumberType{},
+				},
+				StrictProps: true,
+			},
+			into: &ObjectType{
+				Props: map[string]ExprType{
+					"bar": StringType{},
+				},
+				StrictProps: true,
+			},
+			want: &ObjectType{
+				Props: map[string]ExprType{
+					"foo": NumberType{},
+					"bar": StringType{},
+				},
+				StrictProps: true,
+			},
+		},
+		{
 			what: "compatible prop",
 			ty: &ObjectType{
 				Props: map[string]ExprType{
@@ -533,6 +555,12 @@ func TestExprTypeFuseComplicated(t *testing.T) {
 			what: "array deref into array",
 			ty:   &ArrayType{StringType{}, true},
 			into: &ArrayType{StringType{}, false},
+			want: &ArrayType{StringType{}, false},
+		},
+		{
+			what: "array deref into array deref",
+			ty:   &ArrayType{StringType{}, true},
+			into: &ArrayType{StringType{}, true},
 			want: &ArrayType{StringType{}, false},
 		},
 		{
