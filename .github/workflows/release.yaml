@@ -60,7 +60,7 @@ jobs:
         with:
           build-args: |
             GOLANG_VER=1.17
-            ACTIONINT_VER=${{ steps.tag.outputs.name }}
+            ACTIONLINT_VER=${{ steps.tag.outputs.name }}
           push: true
           tags: |
             rhysd/actionlint:${{ steps.tag.outputs.name }}
