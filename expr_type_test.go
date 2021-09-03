@@ -509,13 +509,112 @@ func TestExprTypeFuseComplicated(t *testing.T) {
 			what: "array into array deref",
 			ty:   &ArrayType{StringType{}, false},
 			into: &ArrayType{StringType{}, true},
-			want: &ArrayType{StringType{}, true},
+			want: &ArrayType{StringType{}, false},
 		},
 		{
 			what: "array deref into array",
 			ty:   &ArrayType{StringType{}, true},
 			into: &ArrayType{StringType{}, false},
 			want: &ArrayType{StringType{}, false},
+		},
+		{
+			what: "object no prop at left hand side",
+			ty:   NewObjectType(),
+			into: &ObjectType{
+				Props: map[string]ExprType{
+					"foo": StringType{},
+				},
+			},
+			want: &ObjectType{
+				Props: map[string]ExprType{
+					"foo": StringType{},
+				},
+			},
+		},
+		{
+			what: "object no prop at right hand side",
+			ty: &ObjectType{
+				Props: map[string]ExprType{
+					"foo": StringType{},
+				},
+			},
+			into: NewObjectType(),
+			want: &ObjectType{
+				Props: map[string]ExprType{
+					"foo": StringType{},
+				},
+			},
+		},
+		{
+			what: "any elem array at left hand side",
+			ty:   &ArrayType{AnyType{}, false},
+			into: &ArrayType{StringType{}, false},
+			want: &ArrayType{AnyType{}, false},
+		},
+		{
+			what: "any elem array at right hand side",
+			ty:   &ArrayType{StringType{}, false},
+			into: &ArrayType{AnyType{}, false},
+			want: &ArrayType{AnyType{}, false},
+		},
+		{
+			what: "nested array",
+			ty: &ArrayType{
+				Elem: &ArrayType{
+					Elem: NumberType{},
+				},
+			},
+			into: &ArrayType{
+				Elem: &ArrayType{
+					Elem: StringType{},
+				},
+			},
+			want: &ArrayType{
+				Elem: &ArrayType{
+					Elem: StringType{},
+				},
+			},
+		},
+		{
+			what: "nested objects",
+			ty: &ObjectType{
+				Props: map[string]ExprType{
+					"foo": &ObjectType{
+						Props: map[string]ExprType{
+							"foo":  NumberType{},
+							"piyo": NumberType{},
+						},
+					},
+					"aaa": NumberType{},
+					"ccc": NumberType{},
+				},
+			},
+			into: &ObjectType{
+				Props: map[string]ExprType{
+					"foo": &ObjectType{
+						Props: map[string]ExprType{
+							"bar":  StringType{},
+							"piyo": StringType{},
+						},
+					},
+					"bbb": StringType{},
+					"ccc": StringType{},
+				},
+			},
+			want: &ObjectType{
+				Props: map[string]ExprType{
+					"foo": &ObjectType{
+						Props: map[string]ExprType{
+							"foo":  NumberType{},
+							"bar":  StringType{},
+							"piyo": StringType{},
+						},
+					},
+					"aaa": NumberType{},
+					"bbb": StringType{},
+					"ccc": StringType{},
+				},
+			},
 		},
 	}
 
@@ -533,5 +632,45 @@ func TestExprTypeFuseComplicated(t *testing.T) {
 				)
 			}
 		})
+	}
+}
+
+func TestExprTypeFuseCreateNewInstance(t *testing.T) {
+	{
+		ty := &ArrayType{
+			Elem: NumberType{},
+		}
+		ty2 := ty.Fuse(&ArrayType{
+			Elem: StringType{},
+		})
+		if ty == ty2 {
+			t.Fatalf("did not make a new instance (%v => %v)", ty, ty2)
+		}
+		if _, ok := ty.Elem.(NumberType); !ok {
+			t.Fatalf("original element type was modified: %v", ty)
+		}
+	}
+
+	{
+		ty := &ObjectType{
+			Props: map[string]ExprType{
+				"foo": NumberType{},
+			},
+		}
+		ty2 := ty.Fuse(&ObjectType{
+			Props: map[string]ExprType{
+				"foo": StringType{},
+				"bar": BoolType{},
+			},
+		})
+		if ty == ty2 {
+			t.Fatalf("did not make a new instance (%v => %v)", ty, ty2)
+		}
+		if len(ty.Props) != 1 {
+			t.Fatalf("new prop was added: %v", ty)
+		}
+		if _, ok := ty.Props["foo"].(NumberType); !ok {
+			t.Fatalf("prop type was modified: %v", ty)
+		}
 	}
 }

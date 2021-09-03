@@ -266,21 +266,31 @@ func (ty *ObjectType) Equals(other ExprType) bool {
 // Fuse merges two object types into one. When other object has unknown props, they are merged into
 // current object. When both have same property, when they are assignable, it remains as-is.
 // Otherwise, the property falls back to any type.
-// Note that this method modifies itself destructively for efficiency.
 func (ty *ObjectType) Fuse(other ExprType) ExprType {
 	switch other := other.(type) {
 	case *ObjectType:
-		for n, ot := range other.Props {
-			if t, ok := ty.Props[n]; ok {
-				ty.Props[n] = t.Fuse(ot)
+		if len(ty.Props) == 0 {
+			return other
+		}
+		if len(other.Props) == 0 {
+			return ty
+		}
+
+		ret := &ObjectType{
+			Props:       make(map[string]ExprType, len(ty.Props)),
+			StrictProps: ty.StrictProps && other.StrictProps,
+		}
+		for n, t := range ty.Props {
+			ret.Props[n] = t
+		}
+		for n, rhs := range other.Props {
+			if lhs, ok := ret.Props[n]; ok {
+				ret.Props[n] = lhs.Fuse(rhs)
 			} else {
-				ty.Props[n] = ot // New prop
+				ret.Props[n] = rhs // New prop
 			}
 		}
-		if !other.StrictProps {
-			ty.StrictProps = false
-		}
-		return ty
+		return ret
 	default:
 		return AnyType{}
 	}
@@ -325,12 +335,19 @@ func (ty *ArrayType) Assignable(other ExprType) bool {
 // Fuse merges two object types into one. When other object has unknown props, they are merged into
 // current object. When both have same property, when they are assignable, it remains as-is.
 // Otherwise, the property falls back to any type.
-// Note that this method modifies itself destructively for efficiency.
 func (ty *ArrayType) Fuse(other ExprType) ExprType {
 	switch other := other.(type) {
 	case *ArrayType:
-		ty.Elem = ty.Elem.Fuse(other.Elem)
-		return ty
+		if _, ok := ty.Elem.(AnyType); ok {
+			return ty
+		}
+		if _, ok := other.Elem.(AnyType); ok {
+			return other
+		}
+		return &ArrayType{
+			Elem:  ty.Elem.Fuse(other.Elem),
+			Deref: false, // When fusing array deref type, it means prop deref chain breaks
+		}
 	default:
 		return AnyType{}
 	}
