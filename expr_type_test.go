@@ -340,9 +340,27 @@ func TestExprTypeFuseComplicated(t *testing.T) {
 		want ExprType
 	}{
 		{
-			what: "number is compatible with string",
+			what: "number fuses into string",
 			ty:   NumberType{},
 			into: StringType{},
+			want: StringType{},
+		},
+		{
+			what: "string is fused by number",
+			ty:   StringType{},
+			into: NumberType{},
+			want: StringType{},
+		},
+		{
+			what: "bool fuses into string",
+			ty:   BoolType{},
+			into: StringType{},
+			want: StringType{},
+		},
+		{
+			what: "string is fused by bool",
+			ty:   StringType{},
+			into: BoolType{},
 			want: StringType{},
 		},
 		{

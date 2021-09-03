@@ -111,10 +111,14 @@ func (ty NumberType) Assignable(other ExprType) bool {
 // Fuse merges other type into this type. When other type conflicts with this type, fused result is
 // any type as fallback.
 func (ty NumberType) Fuse(other ExprType) ExprType {
-	if _, ok := other.(NumberType); ok {
+	switch other.(type) {
+	case NumberType:
 		return ty
+	case StringType:
+		return other
+	default:
+		return AnyType{}
 	}
-	return AnyType{}
 }
 
 // BoolType is type for boolean values.
@@ -145,10 +149,14 @@ func (ty BoolType) Equals(other ExprType) bool {
 // Fuse merges other type into this type. When other type conflicts with this type, fused result is
 // any type as fallback.
 func (ty BoolType) Fuse(other ExprType) ExprType {
-	if _, ok := other.(BoolType); ok {
+	switch other.(type) {
+	case BoolType:
 		return ty
+	case StringType:
+		return other
+	default:
+		return AnyType{}
 	}
-	return AnyType{}
 }
 
 // StringType is type for string values.
@@ -184,8 +192,8 @@ func (ty StringType) Equals(other ExprType) bool {
 // any type as fallback.
 func (ty StringType) Fuse(other ExprType) ExprType {
 	switch other.(type) {
-	case StringType, NumberType:
-		return ty // Consider assignability
+	case StringType, NumberType, BoolType:
+		return ty
 	default:
 		return AnyType{}
 	}
