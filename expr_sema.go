@@ -613,13 +613,7 @@ func (sema *ExprSemanticsChecker) checkCompareOp(n *CompareOpNode) ExprType {
 func (sema *ExprSemanticsChecker) checkLogicalOp(n *LogicalOpNode) ExprType {
 	lty := sema.check(n.Left)
 	rty := sema.check(n.Right)
-	if !(BoolType{}).Assignable(lty) {
-		sema.errorf(n, "type of left operand of %s operator %q is not assignable to type \"bool\"", n.Kind.String(), lty.String())
-	}
-	if !(BoolType{}).Assignable(rty) {
-		sema.errorf(n, "type of right operand of %s operator %q is not assignable to type \"bool\"", n.Kind.String(), rty.String())
-	}
-	return BoolType{}
+	return lty.Fuse(rty)
 }
 
 func (sema *ExprSemanticsChecker) check(expr ExprNode) ExprType {

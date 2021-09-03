@@ -241,9 +241,9 @@ checker.
 
 Type check by actionlint is more strict than GitHub Actions runtime.
 
-- Only `any` and `number` are allowed to be converted to string implicitly. Following conversions are not allowed
+- Only `any` and `number` are allowed to be converted to string implicitly
 - Implicit conversion to `number` is not allowed
-- Object, array, and null are not allowed to be an evaluated value at `${{ }}`
+- Object, array, and null are not allowed to be evaluated at `${{ }}`
 
 Example input:
 

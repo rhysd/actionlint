@@ -329,12 +329,74 @@ func TestExprSemanticsCheckOK(t *testing.T) {
 		{
 			what:     "&& operator with non-bool operands",
 			input:    "10 && 'foo'",
-			expected: BoolType{},
+			expected: StringType{},
 		},
 		{
 			what:     "|| operator with non-bool operands",
-			input:    "env || github",
-			expected: BoolType{},
+			input:    "'foo' || 42",
+			expected: StringType{},
+		},
+		{
+			what:  "coercing two objects on && operator",
+			input: "foo() && bar()",
+			expected: &ObjectType{
+				Props: map[string]ExprType{
+					"foo": NumberType{},
+					"bar": BoolType{},
+				},
+				StrictProps: true,
+			},
+			funcs: map[string][]*FuncSignature{
+				"foo": {
+					{
+						Name: "foo",
+						Ret: &ObjectType{
+							Props:       map[string]ExprType{"foo": NumberType{}},
+							StrictProps: true,
+						},
+					},
+				},
+				"bar": {
+					{
+						Name: "bar",
+						Ret: &ObjectType{
+							Props:       map[string]ExprType{"bar": BoolType{}},
+							StrictProps: true,
+						},
+					},
+				},
+			},
+		},
+		{
+			what:  "coercing two objects on || operator",
+			input: "foo() || bar()",
+			expected: &ObjectType{
+				Props: map[string]ExprType{
+					"foo": NumberType{},
+					"bar": BoolType{},
+				},
+				StrictProps: true,
+			},
+			funcs: map[string][]*FuncSignature{
+				"foo": {
+					{
+						Name: "foo",
+						Ret: &ObjectType{
+							Props:       map[string]ExprType{"foo": NumberType{}},
+							StrictProps: true,
+						},
+					},
+				},
+				"bar": {
+					{
+						Name: "bar",
+						Ret: &ObjectType{
+							Props:       map[string]ExprType{"bar": BoolType{}},
+							StrictProps: true,
+						},
+					},
+				},
+			},
 		},
 		{
 			what:     "== operator with loose equality check",
@@ -451,7 +513,7 @@ func TestExprSemanticsCheckOK(t *testing.T) {
 		},
 		{
 			what:     "string is coerced into bool",
-			input:    "!'hello' || ''",
+			input:    "!'hello'",
 			expected: BoolType{},
 		},
 		{
