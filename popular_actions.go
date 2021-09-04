@@ -170,6 +170,7 @@ var PopularActions = map[string]*ActionMetadata{
 			"api-level":              true,
 			"arch":                   false,
 			"avd-name":               false,
+			"channel":                false,
 			"cmake":                  false,
 			"cores":                  false,
 			"disable-animations":     false,
@@ -1062,6 +1063,7 @@ var PopularActions = map[string]*ActionMetadata{
 		Inputs: map[string]ActionMetadataInputRequired{
 			"buildkitd-flags": false,
 			"config":          false,
+			"config-inline":   false,
 			"driver":          false,
 			"driver-opts":     false,
 			"endpoint":        false,
@@ -1768,6 +1770,24 @@ var PopularActions = map[string]*ActionMetadata{
 		},
 	},
 	"reviewdog/action-rubocop@v1": {
+		Name: "Run rubocop with reviewdog",
+		Inputs: map[string]ActionMetadataInputRequired{
+			"fail_on_error":      false,
+			"filter_mode":        false,
+			"github_token":       true,
+			"level":              false,
+			"reporter":           false,
+			"reviewdog_flags":    false,
+			"rubocop_extensions": false,
+			"rubocop_flags":      false,
+			"rubocop_version":    false,
+			"skip_install":       false,
+			"tool_name":          false,
+			"use_bundler":        false,
+			"workdir":            false,
+		},
+	},
+	"reviewdog/action-rubocop@v2": {
 		Name: "Run rubocop with reviewdog",
 		Inputs: map[string]ActionMetadataInputRequired{
 			"fail_on_error":      false,
