@@ -1,3 +1,26 @@
+<a name="v1.6.3"></a>
+# [v1.6.3](https://github.com/rhysd/actionlint/releases/tag/v1.6.3) - 04 Sep 2021
+
+- Improve guessing a type of matrix value. When a matrix contains numbers and strings, previously the type fell back to `any`. Now it is deduced as string.
+  ```yaml
+  strategy:
+    matrix:
+      # matrix.node is now deduced as `string` instead of `any`
+      node: [14, 'latest']
+  ```
+- Fix types of `||` and `&&` expressions. Previously they were typed as `bool` but it was not correct. Corret type is sum of types of both sides of the operator like TypeScript. For example, type of `'foo' || 'bar'` is a string, and `github.event && matrix` is an object.
+- actionlint no longer reports an error when a local action does not exist in the repository. It is a popular pattern that a local action directory is cloned while a workflow running. (#25, #40)
+- Disable [SC2050](https://github.com/koalaman/shellcheck/wiki/SC2050) shellcheck rule since it causes some false positive. (#45)
+- Fix `-version` did not work when running actionlint via [the Docker image](https://github.com/rhysd/actionlint/blob/main/docs/usage.md#docker) (#47).
+- Fix pre-commit hook file name. (thanks @xsc27, #38)
+- [New `branch_protection_rule` event](https://docs.github.com/en/developers/webhooks-and-events/webhooks/webhook-events-and-payloads#branch_protection_rule) is supported. (#48)
+- Update popular actions data set. (#41, #48)
+- Update Go library dependencies.
+- Update a playground dependencies.
+
+[Changes][v1.6.3]
+
+
 <a name="v1.6.2"></a>
 # [v1.6.2](https://github.com/rhysd/actionlint/releases/tag/v1.6.2) - 23 Aug 2021
 
@@ -9,11 +32,11 @@
 - run: echo '${{ toJSON(runner) }}'
 ```
 - Add [pre-commit](https://pre-commit.com/) support. pre-commit is a framework for managing Git `pre-commit` hooks. See [the usage document](https://github.com/rhysd/actionlint/blob/main/docs/usage.md#pre-commit) for more details. (thanks @xsc27 for adding the integration at #33) (#23)
-- Add [an official Docker image](https://hub.docker.com/repository/docker/rhysd/actionlint). The Docker image contains shellcheck and pyflakes as dependencies. Now actionlint can be run with `docker run` command easily. See [the usage document](https://github.com/rhysd/actionlint/blob/main/docs/usage.md#docker) for more details. (thanks @xsc27 for your help at #34)
+- Add [an official Docker image](https://hub.docker.com/repository/docker/rhysd/actionlint). The Docker image contains shellcheck and pyflakes as dependencies. Now actionlint can be run with `docker run` command easily. See [the usage document](https://github.com/rhysd/actionlint/blob/main/docs/usage.md#docker) for more details. (thanks @xsc27 for the help at #34)
 ```sh
 docker run --rm -v $(pwd):/repo --workdir /repo rhysd/actionlint:latest -color
 ```
-- Go 1.17 is now a default compiler to build actionlint. Built binaries are faster than before by 2~7% when the process is CPU-bound. Sizes of built binaries are about 2% smaller. Note that Go 1.16 is still supported.
+- Go 1.17 is now a default compiler to build actionlint. Built binaries are faster than before by 2~7% when the process is CPU-bound. Sizes of built binaries are about 2% smaller. Note that Go 1.16 continues to be supported.
 - `windows/arm64` target is added to released binaries thanks to Go 1.17.
 - Now any value can be converted into bool implicitly. Previously this was not permitted as actionlint provides stricter type check. However it is not useful that a condition like `if: github.event.foo` causes a type error.
 - Fix a prefix operator cannot be applied repeatedly like `!!42`.
@@ -362,6 +385,7 @@ See documentation for more details:
 [Changes][v1.0.0]
 
 
+[v1.6.3]: https://github.com/rhysd/actionlint/compare/v1.6.2...v1.6.3
 [v1.6.2]: https://github.com/rhysd/actionlint/compare/v1.6.1...v1.6.2
 [v1.6.1]: https://github.com/rhysd/actionlint/compare/v1.6.0...v1.6.1
 [v1.6.0]: https://github.com/rhysd/actionlint/compare/v1.5.3...v1.6.0
