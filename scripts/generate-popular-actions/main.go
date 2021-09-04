@@ -118,7 +118,7 @@ var popularActions = []*action{
 	{"reviewdog/action-golangci-lint", []string{"v1", "v2"}, "v3", yamlExtYML},
 	{"reviewdog/action-hadolint", []string{"v1"}, "v2", yamlExtYML},
 	{"reviewdog/action-misspell", []string{"v1"}, "v2", yamlExtYML},
-	{"reviewdog/action-rubocop", []string{"v1"}, "v2", yamlExtYML},
+	{"reviewdog/action-rubocop", []string{"v1", "v2"}, "v3", yamlExtYML},
 	{"reviewdog/action-shellcheck", []string{"v1"}, "v2", yamlExtYML},
 	{"reviewdog/action-tflint", []string{"v1"}, "v2", yamlExtYML},
 	{"rhysd/action-setup-vim", []string{"v1"}, "v2", yamlExtYML},
