@@ -230,6 +230,9 @@ jobs:
             src = await getRemoteSource(input);
         }
         catch (err) {
+            if (!(err instanceof Error)) {
+                throw err;
+            }
             showError(`Incorrect input "${input}": ${err.message}`);
             return;
         }
