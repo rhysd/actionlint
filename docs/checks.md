@@ -880,11 +880,11 @@ jobs:
 Output:
 
 ```
-test.yaml:10:24: "github.event.pull_request.title" is potentially untrusted. avoid using it directly in inline scripts. instead, pass it through an environment variable. see https://securitylab.github.com/research/github-actions-untrusted-input for more details [expression]
+test.yaml:10:24: "github.event.pull_request.title" is potentially untrusted. avoid using it directly in inline scripts. instead, pass it through an environment variable. see https://docs.github.com/en/actions/learn-github-actions/security-hardening-for-github-actions for more details [expression]
    |
 10 |         run: echo '${{ github.event.pull_request.title }}'
    |                        ^~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
-test.yaml:19:36: "github.event.head_commit.author.name" is potentially untrusted. avoid using it directly in inline scripts. instead, pass it through an environment variable. see https://securitylab.github.com/research/github-actions-untrusted-input for more details [expression]
+test.yaml:19:36: "github.event.head_commit.author.name" is potentially untrusted. avoid using it directly in inline scripts. instead, pass it through an environment variable. see https://docs.github.com/en/actions/learn-github-actions/security-hardening-for-github-actions for more details [expression]
    |
 19 |           script: console.log('${{ github.event.head_commit.author.name }}')
    |                                    ^~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
@@ -901,7 +901,7 @@ inline scripts at `run:`. For example, if we have step as follows,
 
 an attacker can create a new issue with title `'; malicious_command ...`, and the inline script will run
 `echo 'issue'; malicious_command ...` in your workflow. The remediation of such script injection is passing potentially untrusted
-inputs via environment variables.
+inputs via environment variables. See [the official document][security-doc] for more details.
 
 ```yaml
 - run: echo "issue ${TITLE}"
@@ -1742,3 +1742,4 @@ actionlint checks permission scopes and access levels in a workflow are correct.
 [generate-popular-actions]: https://github.com/rhysd/actionlint/tree/main/scripts/generate-popular-actions
 [issue-25]: https://github.com/rhysd/actionlint/issues/25
 [issue-40]: https://github.com/rhysd/actionlint/issues/40
+[security-doc]: https://docs.github.com/en/actions/learn-github-actions/security-hardening-for-github-actions
