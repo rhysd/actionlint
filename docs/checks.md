@@ -783,6 +783,30 @@ To avoid it, actionlint replaces `${{ }}` with underscores. For example `echo '$
 Some shellcheck rules conflict with the `${{ }}` expression syntax. To avoid errors due to the syntax, [SC1091][sc1091],
 [SC2050][sc2050], [SC2194][sc2194] are disabled.
 
+When what shell is used cannot be determined statically, actionlint assumes `shell: bash` optimistically. For example,
+
+```yaml
+strategy:
+  matrix:
+    os: [ubuntu-latest, macos-latest, windows-latest]
+runs-on: ${{ matrix.os }}
+steps:
+  - name: Show file content
+    run: Get-Content -Path xxx\yyy.txt
+    if: ${{ matrix.os == 'windows-latest' }}
+```
+
+The 'Show file content' script is only run by `pwsh` due to `matrix.os == 'windows-latest'` guard. However actionlint does not
+know that. It checks the script with shellcheck and it'd probably cause a false-positive (due to file separator). This kind of
+false positives can be avoided by showing the shell name explicitly. It is also better in terms of maintenance of the workflow.
+
+```yaml
+- name: Show file content
+  run: Get-Content -Path xxx\yyy.txt
+  if: ${{ matrix.os == 'windows-latest' }}
+  shell: pwsh
+```
+
 <a name="check-pyflakes-integ"></a>
 ## [pyflakes][] integration for `run:`
 
