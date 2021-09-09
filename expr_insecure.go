@@ -81,6 +81,10 @@ var BuiltinUntrustedInputs = UntrustedInputMap{
 					"name":  nil,
 				},
 			},
+			"discussion": {
+				"title": nil,
+				"body":  nil,
+			},
 		},
 		"head_ref": nil,
 	},

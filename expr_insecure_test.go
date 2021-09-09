@@ -25,6 +25,8 @@ var testAllUntrustedInputs = []string{
 	"github.event.pull_request.head.ref",
 	"github.event.pull_request.head.label",
 	"github.event.pull_request.head.repo.default_branch",
+	"github.event.discussion.title",
+	"github.event.discussion.body",
 	"github.head_ref",
 }
 
