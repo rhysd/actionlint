@@ -12,7 +12,7 @@ Features:
   type mismatches, ...
 - **Actions usage check** to check that inputs at `with:` and outputs in `steps.{id}.outputs` are correct
 - **[shellcheck][] and [pyflakes][] integrations** for scripts at `run:`
-- **Security checks**; script injection by untrusted inputs, hard-coded credentials
+- **Security checks**; [script injection][script-injection-doc] by untrusted inputs, hard-coded credentials
 - **Other several useful checks**; [glob syntax][filter-pattern-doc] validation, dependencies check for `needs:`,
   runner label validation, cron syntax validation, ...
 
@@ -147,5 +147,6 @@ actionlint is distributed under [the MIT license](./LICENSE.txt).
 [act]: https://github.com/nektos/act
 [syntax-doc]: https://docs.github.com/en/actions/reference/workflow-syntax-for-github-actions
 [filter-pattern-doc]: https://docs.github.com/en/actions/reference/workflow-syntax-for-github-actions#filter-pattern-cheat-sheet
+[script-injection-doc]: https://docs.github.com/en/actions/learn-github-actions/security-hardening-for-github-actions#understanding-the-risk-of-script-injections
 [issue-form]: https://github.com/rhysd/actionlint/issues/new
 [releases]: https://github.com/rhysd/actionlint/releases

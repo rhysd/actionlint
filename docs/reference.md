@@ -11,11 +11,13 @@ This document describes links to resources.
   - Built-in functions: https://docs.github.com/en/actions/reference/context-and-expression-syntax-for-github-actions#functions
   - Webhook events: https://docs.github.com/en/actions/reference/events-that-trigger-workflows#webhook-events
   - Self-hosted runner: https://docs.github.com/en/actions/hosting-your-own-runners/about-self-hosted-runners
+  - Security: https://docs.github.com/en/actions/learn-github-actions/security-hardening-for-github-actions
 - CRON syntax: https://pubs.opengroup.org/onlinepubs/9699919799/utilities/crontab.html#tag_20_25_07
 - shellcheck: https://github.com/koalaman/shellcheck
 - pyflakes: https://github.com/PyCQA/pyflakes
-- GitHub Actions のワークフローをチェックする actionlint をつくった (Japanese blog post): https://rhysd.hatenablog.com/entry/2021/07/11/214313
-- actionlint v1.4 → v1.6 で実装した新機能の紹介 (Japanese blog post): https://rhysd.hatenablog.com/entry/2021/08/11/221044
+- Japanese blog posts
+  - GitHub Actions のワークフローをチェックする actionlint をつくった: https://rhysd.hatenablog.com/entry/2021/07/11/214313
+  - actionlint v1.4 → v1.6 で実装した新機能の紹介: https://rhysd.hatenablog.com/entry/2021/08/11/221044
 
 ---
 

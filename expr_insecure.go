@@ -26,10 +26,13 @@ func (m UntrustedInputMap) findElemChild() (UntrustedInputMap, bool) {
 	return nil, false
 }
 
+// TODO: Automatically generate BuitinUntrustedInputs from https://github.com/github/codeql/blob/main/javascript/ql/src/experimental/Security/CWE-094/ExpressionInjection.ql
+
 // BuiltinUntrustedInputs is list of untrusted inputs. These inputs are detected as untrusted in
 // `run:` scripts. See the URL for more details.
 // - https://securitylab.github.com/research/github-actions-untrusted-input/
 // - https://docs.github.com/en/actions/learn-github-actions/security-hardening-for-github-actions
+// - https://github.com/github/codeql/blob/main/javascript/ql/src/experimental/Security/CWE-094/ExpressionInjection.ql
 var BuiltinUntrustedInputs = UntrustedInputMap{
 	"github": {
 		"event": {
