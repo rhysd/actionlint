@@ -207,7 +207,7 @@ func TestExprSemanticsCheckOK(t *testing.T) {
 		},
 		{
 			what:     "object property index access with any type",
-			input:    "env['FOOO']",
+			input:    "github.event['FOOO']",
 			expected: AnyType{},
 		},
 		{

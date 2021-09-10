@@ -205,17 +205,17 @@ func (rule *RuleExpression) VisitStep(n *Step) error {
 
 func (rule *RuleExpression) getActionOutputsType(spec *String) *ObjectType {
 	if spec == nil {
-		return NewObjectType()
+		return NewMapObjectType(StringType{}) // outputs.<output name>
 	}
 
 	if strings.HasPrefix(spec.Value, "./") {
 		meta, err := rule.localActions.FindMetadata(spec.Value)
 		if err != nil {
 			rule.error(spec.Pos, err.Error())
-			return NewObjectType()
+			return NewMapObjectType(StringType{}) // outputs.<output name>
 		}
 		if meta == nil {
-			return NewObjectType()
+			return NewMapObjectType(StringType{}) // outputs.<output name>
 		}
 
 		return typeOfActionOutputs(meta)
@@ -227,7 +227,7 @@ func (rule *RuleExpression) getActionOutputsType(spec *String) *ObjectType {
 		return typeOfActionOutputs(meta)
 	}
 
-	return NewObjectType()
+	return NewMapObjectType(StringType{}) // outputs.<output name>
 }
 
 func (rule *RuleExpression) checkOneExpression(s *String, what string) ExprType {

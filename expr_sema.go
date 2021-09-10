@@ -213,7 +213,7 @@ var BuiltinGlobalVariableTypes = map[string]ExprType{
 			"token":            StringType{},
 			"workflow":         StringType{},
 			"workspace":        StringType{},
-			// These are not documented but actually exist
+			// Below props are not documented but actually exist
 			"action_ref":        StringType{},
 			"action_repository": StringType{},
 			"api_url":           StringType{},
@@ -227,7 +227,7 @@ var BuiltinGlobalVariableTypes = map[string]ExprType{
 		StrictProps: true,
 	},
 	// https://docs.github.com/en/actions/reference/context-and-expression-syntax-for-github-actions#env-context
-	"env": NewObjectType(),
+	"env": NewMapObjectType(StringType{}), // env.<env_name>
 	// https://docs.github.com/en/actions/reference/context-and-expression-syntax-for-github-actions#job-context
 	"job": &ObjectType{
 		Props: map[string]ExprType{
@@ -238,13 +238,22 @@ var BuiltinGlobalVariableTypes = map[string]ExprType{
 				},
 				StrictProps: true,
 			},
-			"services": NewObjectType(),
-			"status":   StringType{},
+			"services": NewMapObjectType(
+				&ObjectType{
+					Props: map[string]ExprType{
+						"id":      StringType{}, // job.services.<service id>.id
+						"network": StringType{},
+						"ports":   NewObjectType(),
+					},
+					StrictProps: true,
+				},
+			),
+			"status": StringType{},
 		},
 		StrictProps: true,
 	},
 	// https://docs.github.com/en/actions/reference/context-and-expression-syntax-for-github-actions#steps-context
-	"steps": NewStrictObjectType(),
+	"steps": NewStrictObjectType(), // This value will be updated contextually
 	// https://docs.github.com/en/actions/reference/context-and-expression-syntax-for-github-actions#runner-context
 	"runner": &ObjectType{
 		Props: map[string]ExprType{
@@ -268,9 +277,9 @@ var BuiltinGlobalVariableTypes = map[string]ExprType{
 		},
 	},
 	// https://docs.github.com/en/actions/reference/context-and-expression-syntax-for-github-actions#contexts
-	"matrix": NewStrictObjectType(),
+	"matrix": NewStrictObjectType(), // This value will be updated contextually
 	// https://docs.github.com/en/actions/reference/context-and-expression-syntax-for-github-actions#needs-context
-	"needs": NewStrictObjectType(),
+	"needs": NewStrictObjectType(), // This value will be updated contextually
 }
 
 // Semantics checker
@@ -380,6 +389,9 @@ func (sema *ExprSemanticsChecker) checkObjectDeref(n *ObjectDerefNode) ExprType 
 		if t, ok := ty.Props[n.Property]; ok {
 			return t
 		}
+		if ty.Mapped != nil {
+			return ty.Mapped
+		}
 		if ty.StrictProps {
 			sema.errorf(n, "property %q is not defined in object type %s", n.Property, ty.String())
 		}
@@ -398,6 +410,8 @@ func (sema *ExprSemanticsChecker) checkObjectDeref(n *ObjectDerefNode) ExprType 
 			var elem ExprType = AnyType{}
 			if t, ok := et.Props[n.Property]; ok {
 				elem = t
+			} else if et.Mapped != nil {
+				elem = et.Mapped
 			} else if et.StrictProps {
 				sema.errorf(n, "property %q is not defined in object type %s as element of filtered array", n.Property, et.String())
 			}
@@ -458,11 +472,17 @@ func (sema *ExprSemanticsChecker) checkIndexAccess(n *IndexAccessNode) ExprType 
 				if prop, ok := ty.Props[lit.Value]; ok {
 					return prop
 				}
+				if ty.Mapped != nil {
+					return ty.Mapped
+				}
 				if ty.StrictProps {
 					sema.errorf(n, "property %q is not defined in object type %s", lit.Value, ty.String())
 				}
 			}
-			return AnyType{}
+			if ty.Mapped != nil {
+				return ty.Mapped
+			}
+			return AnyType{} // Fallback
 		default:
 			sema.errorf(n.Index, "property access of object must be type of string but got %q", idx.String())
 			return AnyType{}

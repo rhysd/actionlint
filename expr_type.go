@@ -208,23 +208,39 @@ type ObjectType struct {
 	// and will cause type error. When this flag is set to false, accessing to unknown properties
 	// does not cause type error and will be deducted to any type.
 	StrictProps bool
+	// Mapped is a mapped value type of this object. For example, MappedType of env context is
+	// string. As invariant condition, when this value is non-nil, the Props field is nil.
+	Mapped ExprType
 }
 
 // NewObjectType creates new ObjectType instance which allows unknown props. When accessing to
 // unknown props, their values will fall back to any.
 func NewObjectType() *ObjectType {
-	return &ObjectType{map[string]ExprType{}, false}
+	return &ObjectType{map[string]ExprType{}, false, nil}
 }
 
 // NewStrictObjectType creates new ObjectType instance which does not allow unknown props.
 func NewStrictObjectType() *ObjectType {
-	return &ObjectType{map[string]ExprType{}, true}
+	return &ObjectType{map[string]ExprType{}, true, nil}
+}
+
+func NewMapObjectType(t ExprType) *ObjectType {
+	if _, ok := t.(AnyType); ok {
+		// {[]: any} is object
+		return NewObjectType()
+	}
+	return &ObjectType{nil, false, t}
 }
 
 func (ty *ObjectType) String() string {
 	len := len(ty.Props)
-	if len == 0 && !ty.StrictProps {
-		return "object"
+	if len == 0 {
+		if ty.Mapped != nil {
+			return fmt.Sprintf("{string => %s}", ty.Mapped.String())
+		}
+		if !ty.StrictProps {
+			return "object"
+		}
 	}
 	ps := make([]string, 0, len)
 	for n, t := range ty.Props {
@@ -239,6 +255,41 @@ func (ty *ObjectType) Assignable(other ExprType) bool {
 	case AnyType:
 		return true
 	case *ObjectType:
+		if ty.Mapped != nil {
+			if other.Mapped != nil {
+				// {[]: T} v.s. {[]: U}
+				return ty.Mapped.Assignable(other.Mapped)
+			}
+			if !other.StrictProps {
+				// {[]: T} v.s. object
+				return true
+			}
+			// {[]: T} v.s. {x: U}
+			for _, p := range other.Props {
+				if !ty.Mapped.Assignable(p) {
+					return false
+				}
+			}
+			return true
+		}
+		if !ty.StrictProps {
+			// object v.s. object
+			return true
+		}
+		if other.Mapped != nil {
+			// {x: T} v.s. {[]: U}
+			for _, p := range ty.Props {
+				if !p.Assignable(other.Mapped) {
+					return false
+				}
+			}
+			return true
+		}
+		if !other.StrictProps {
+			// {x: T} v.s. object
+			return true
+		}
+		// {x: T} v.s. {x: U}
 		for n, p1 := range ty.Props {
 			if p2, ok := other.Props[n]; ok && !p1.Assignable(p2) {
 				return false
@@ -256,9 +307,41 @@ func (ty *ObjectType) Equals(other ExprType) bool {
 	case AnyType:
 		return true
 	case *ObjectType:
-		if !ty.StrictProps || !other.StrictProps {
+		if ty.Mapped != nil {
+			if other.Mapped != nil {
+				// {[]: T} v.s. {[]: U}
+				return ty.Mapped.Equals(other.Mapped)
+			}
+			if !other.StrictProps {
+				// {[]: T} v.s. object
+				return true
+			}
+			// {[]: T} v.s. {x: U}
+			for _, p := range other.Props {
+				if !ty.Mapped.Equals(p) {
+					return false
+				}
+			}
 			return true
 		}
+		if !ty.StrictProps {
+			// object v.s. object
+			return true
+		}
+		if other.Mapped != nil {
+			// {x: T} v.s. {[]: U}
+			for _, p := range ty.Props {
+				if !p.Equals(other.Mapped) {
+					return false
+				}
+			}
+			return true
+		}
+		if !other.StrictProps {
+			// {x: T} v.s. object
+			return true
+		}
+		// {x: T} v.s. {x: U}
 		for n, t := range ty.Props {
 			o, ok := other.Props[n]
 			if !ok || !t.Equals(o) {
@@ -277,6 +360,24 @@ func (ty *ObjectType) Equals(other ExprType) bool {
 func (ty *ObjectType) Fuse(other ExprType) ExprType {
 	switch other := other.(type) {
 	case *ObjectType:
+		if ty.Mapped != nil {
+			if other.Mapped != nil {
+				return NewMapObjectType(ty.Mapped.Fuse(other.Mapped))
+			}
+			t := ty.Mapped
+			for _, p := range other.Props {
+				t = t.Fuse(p)
+			}
+			return NewMapObjectType(t)
+		}
+		if other.Mapped != nil {
+			t := other.Mapped
+			for _, p := range ty.Props {
+				t = p.Fuse(t)
+			}
+			return NewMapObjectType(t)
+		}
+
 		if len(ty.Props) == 0 {
 			return other
 		}
