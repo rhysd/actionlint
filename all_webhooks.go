@@ -6,7 +6,6 @@ package actionlint
 // script at ./scripts/generate-webhook-events based on
 // https://github.com/github/docs/blob/main/content/actions/reference/events-that-trigger-workflows.md .
 var AllWebhookTypes = map[string][]string{
-	"branch_protection_rule":      {"created", "edited", "deleted"},
 	"check_run":                   {"created", "rerequested", "completed"},
 	"check_suite":                 {"completed", "requested", "rerequested"},
 	"create":                      {},
