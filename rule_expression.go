@@ -784,7 +784,7 @@ func typeOfActionOutputs(meta *ActionMetadata) *ObjectType {
 	}
 	ty := NewObjectType()
 	for n := range meta.Outputs {
-		ty.Props[n] = AnyType{}
+		ty.Props[n] = StringType{}
 	}
 	ty.StrictProps = true
 	return ty

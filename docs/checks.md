@@ -503,7 +503,7 @@ test.yaml:8:23: property "cache" is not defined in object type {} [expression]
   |
 8 |       - run: echo ${{ steps.cache.outputs.cache-hit }}
   |                       ^~~~~~~~~~~~~~~~~~~~~~~~~~~~~
-test.yaml:18:23: property "cache_hit" is not defined in object type {cache-hit: any} [expression]
+test.yaml:18:23: property "cache_hit" is not defined in object type {cache-hit: string} [expression]
    |
 18 |       - run: echo ${{ steps.cache.outputs.cache_hit }}
    |                       ^~~~~~~~~~~~~~~~~~~~~~~~~~~~~
@@ -560,7 +560,7 @@ test.yaml:8:23: property "my_action" is not defined in object type {} [expressio
   |
 8 |       - run: echo ${{ steps.my_action.outputs.some_value }}
   |                       ^~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
-test.yaml:15:23: property "some-value" is not defined in object type {some_value: any} [expression]
+test.yaml:15:23: property "some-value" is not defined in object type {some_value: string} [expression]
    |
 15 |       - run: echo ${{ steps.my_action.outputs.some-value }}
    |                       ^~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~

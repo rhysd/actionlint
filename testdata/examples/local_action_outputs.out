@@ -1,2 +1,2 @@
 test.yaml:8:23: property "my_action" is not defined in object type {} [expression]
-test.yaml:15:23: property "some-value" is not defined in object type {some_value: any} [expression]
+test.yaml:15:23: property "some-value" is not defined in object type {some_value: string} [expression]
