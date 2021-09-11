@@ -233,16 +233,13 @@ func NewMapObjectType(t ExprType) *ObjectType {
 }
 
 func (ty *ObjectType) String() string {
-	len := len(ty.Props)
-	if len == 0 {
-		if ty.Mapped != nil {
-			return fmt.Sprintf("{string => %s}", ty.Mapped.String())
-		}
-		if !ty.StrictProps {
-			return "object"
-		}
+	if ty.Mapped != nil {
+		return fmt.Sprintf("{string => %s}", ty.Mapped.String())
 	}
-	ps := make([]string, 0, len)
+	if !ty.StrictProps {
+		return "object"
+	}
+	ps := make([]string, 0, len(ty.Props))
 	for n, t := range ty.Props {
 		ps = append(ps, fmt.Sprintf("%s: %s", n, t.String()))
 	}

@@ -223,13 +223,23 @@ func TestExprTypeStringize(t *testing.T) {
 			want: "{}",
 		},
 		{
-			what: "object",
+			what: "strict object",
+			ty: &ObjectType{
+				Props: map[string]ExprType{
+					"foo": StringType{},
+				},
+				StrictProps: true,
+			},
+			want: "{foo: string}",
+		},
+		{
+			what: "non-strict object",
 			ty: &ObjectType{
 				Props: map[string]ExprType{
 					"foo": StringType{},
 				},
 			},
-			want: "{foo: string}",
+			want: "object",
 		},
 		{
 			what: "strict props object",
@@ -262,9 +272,11 @@ func TestExprTypeStringize(t *testing.T) {
 									Elem: StringType{},
 								},
 							},
+							StrictProps: true,
 						},
 					},
 				},
+				StrictProps: true,
 			},
 			want: "{foo: array<{bar: array<string>}>}",
 		},
