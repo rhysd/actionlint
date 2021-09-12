@@ -568,6 +568,43 @@ func TestExprSemanticsCheckOK(t *testing.T) {
 			input:    "format('{0} {} {x} {', 1)",
 			expected: StringType{},
 		},
+		{
+			what:     "map object dereference",
+			input:    "env.FOO",
+			expected: StringType{},
+		},
+		{
+			what:     "map object dreference on array object filter",
+			input:    "test().*.foo",
+			expected: &ArrayType{NumberType{}, true},
+			funcs: map[string][]*FuncSignature{
+				"test": {
+					{
+						Name: "test",
+						Ret: &ArrayType{
+							Elem: &ObjectType{
+								Mapped: NumberType{},
+							},
+						},
+					},
+				},
+			},
+		},
+		{
+			what:     "map object index access with string literal",
+			input:    "env['FOO']",
+			expected: StringType{},
+		},
+		{
+			what:     "map object index access with dynamic value",
+			input:    "env[github.action]",
+			expected: StringType{},
+		},
+		{
+			what:     "nested object in map object",
+			input:    "job.services.my_service.network",
+			expected: StringType{},
+		},
 	}
 
 	for _, tc := range testCases {

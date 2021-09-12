@@ -6,42 +6,67 @@ import (
 	"github.com/google/go-cmp/cmp"
 )
 
+func TestExprNewMapObjectType(t *testing.T) {
+	o := NewMapObjectType(StringType{})
+	if o.Props != nil {
+		t.Fatalf("props should be nil but %v", o.Props)
+	}
+	if _, ok := o.Mapped.(StringType); !ok {
+		t.Fatalf("mapped type is not string: %v", o.Mapped)
+	}
+	if o.StrictProps {
+		t.Fatalf("map object is not strict object but got %v", o)
+	}
+
+	// Mapping to any type is just a loose object
+	o = NewMapObjectType(AnyType{})
+	if len(o.Props) != 0 {
+		t.Fatalf("loose object with no prop info was expected but got props %v", o.Props)
+	}
+	if o.Mapped != nil {
+		t.Fatalf("loose object should not have mapped type but got %v", o.Mapped)
+	}
+	if o.StrictProps {
+		t.Fatalf("loose object is not strict object but got %v", o)
+	}
+}
+
 func TestExprTypeEquals(t *testing.T) {
 	testCases := []struct {
-		what    string
-		ty      ExprType
-		other   ExprType
-		otherEq ExprType
+		what string
+		ty   ExprType
+		neq  ExprType
+		eq   ExprType
 	}{
 		{
-			what:  "null",
-			ty:    NullType{},
-			other: StringType{},
+			what: "null",
+			ty:   NullType{},
+			neq:  StringType{},
 		},
 		{
-			what:  "number",
-			ty:    NumberType{},
-			other: StringType{},
+			what: "number",
+			ty:   NumberType{},
+			neq:  StringType{},
 		},
 		{
-			what:  "bool",
-			ty:    BoolType{},
-			other: StringType{},
+			what: "bool",
+			ty:   BoolType{},
+			neq:  StringType{},
 		},
 		{
-			what:  "string",
-			ty:    StringType{},
-			other: BoolType{},
+			what: "string",
+			ty:   StringType{},
+			neq:  BoolType{},
 		},
 		{
-			what:  "object",
-			ty:    NewObjectType(),
-			other: &ArrayType{Elem: AnyType{}},
+			what: "object",
+			ty:   NewObjectType(),
+			neq:  &ArrayType{Elem: AnyType{}},
 		},
 		{
-			what:  "strict props object",
-			ty:    NewStrictObjectType(),
-			other: &ArrayType{Elem: AnyType{}},
+			what: "strict props object",
+			ty:   NewStrictObjectType(),
+			neq:  &ArrayType{Elem: AnyType{}},
 		},
 		{
 			what: "nested object",
@@ -54,7 +79,7 @@ func TestExprTypeEquals(t *testing.T) {
 					},
 				},
 			},
-			other: &ArrayType{Elem: AnyType{}},
+			neq: &ArrayType{Elem: AnyType{}},
 		},
 		{
 			what: "nested strict props object",
@@ -69,7 +94,7 @@ func TestExprTypeEquals(t *testing.T) {
 				},
 				StrictProps: true,
 			},
-			other: &ArrayType{Elem: AnyType{}},
+			neq: &ArrayType{Elem: AnyType{}},
 		},
 		{
 			what: "nested object prop name",
@@ -79,7 +104,7 @@ func TestExprTypeEquals(t *testing.T) {
 				},
 				StrictProps: true,
 			},
-			other: &ObjectType{
+			neq: &ObjectType{
 				Props: map[string]ExprType{
 					"bar": StringType{},
 				},
@@ -94,7 +119,7 @@ func TestExprTypeEquals(t *testing.T) {
 				},
 				StrictProps: true,
 			},
-			other: &ObjectType{
+			neq: &ObjectType{
 				Props: map[string]ExprType{
 					"foo": BoolType{},
 				},
@@ -109,7 +134,7 @@ func TestExprTypeEquals(t *testing.T) {
 				},
 				StrictProps: true,
 			},
-			otherEq: &ObjectType{
+			eq: &ObjectType{
 				Props: map[string]ExprType{
 					"foo": NullType{},
 				},
@@ -122,28 +147,107 @@ func TestExprTypeEquals(t *testing.T) {
 					"foo": NullType{},
 				},
 			},
-			otherEq: &ObjectType{
+			eq: &ObjectType{
 				Props: map[string]ExprType{
 					"foo": NullType{},
 				},
 			},
 		},
 		{
-			what:  "array",
-			ty:    &ArrayType{Elem: StringType{}},
-			other: NewObjectType(),
+			what: "map objects",
+			ty: &ObjectType{
+				Mapped: NullType{},
+			},
+			eq: &ObjectType{
+				Mapped: NullType{},
+			},
+			neq: &ObjectType{
+				Mapped: NumberType{},
+			},
 		},
 		{
-			what:  "array element type",
-			ty:    &ArrayType{Elem: StringType{}},
-			other: &ArrayType{Elem: BoolType{}},
+			what: "map object equals loose object",
+			ty: &ObjectType{
+				Mapped: StringType{},
+			},
+			eq: NewObjectType(),
+		},
+		{
+			what: "loose object equals map object",
+			ty:   NewObjectType(),
+			eq: &ObjectType{
+				Mapped: StringType{},
+			},
+		},
+		{
+			what: "map object equals strict object",
+			ty: &ObjectType{
+				Mapped: StringType{},
+			},
+			eq: &ObjectType{
+				Props: map[string]ExprType{
+					"foo": StringType{},
+				},
+				StrictProps: true,
+			},
+			neq: &ObjectType{
+				Props: map[string]ExprType{
+					"foo": NullType{},
+				},
+				StrictProps: true,
+			},
+		},
+		{
+			what: "map object equals strict object including any prop",
+			ty: &ObjectType{
+				Mapped: StringType{},
+			},
+			eq: &ObjectType{
+				Props: map[string]ExprType{
+					"foo": StringType{},
+					"bar": AnyType{},
+				},
+				StrictProps: true,
+			},
+			neq: &ObjectType{
+				Props: map[string]ExprType{
+					"foo": NullType{},
+					"bar": AnyType{},
+				},
+				StrictProps: true,
+			},
+		},
+		{
+			what: "strict object equals map object",
+			ty: &ObjectType{
+				Props: map[string]ExprType{
+					"foo": StringType{},
+				},
+				StrictProps: true,
+			},
+			eq: &ObjectType{
+				Mapped: StringType{},
+			},
+			neq: &ObjectType{
+				Mapped: NullType{},
+			},
+		},
+		{
+			what: "array",
+			ty:   &ArrayType{Elem: StringType{}},
+			neq:  NewObjectType(),
+		},
+		{
+			what: "array element type",
+			ty:   &ArrayType{Elem: StringType{}},
+			neq:  &ArrayType{Elem: BoolType{}},
 		},
 		{
 			what: "nested array",
 			ty: &ArrayType{
 				Elem: &ArrayType{Elem: StringType{}},
 			},
-			other: &ArrayType{
+			neq: &ArrayType{
 				Elem: &ArrayType{Elem: BoolType{}},
 			},
 		},
@@ -157,16 +261,16 @@ func TestExprTypeEquals(t *testing.T) {
 			if !l.Equals(r) {
 				t.Errorf("%s should equal to %s", l.String(), r.String())
 			}
-			if tc.other != nil {
-				l, r = tc.ty, tc.other
+			if tc.neq != nil {
+				l, r = tc.ty, tc.neq
 				if l.Equals(r) {
 					t.Errorf("%s should not equal to %s", l.String(), r.String())
 				}
 			}
-			if tc.otherEq != nil {
-				l, r = tc.ty, tc.otherEq
+			if tc.eq != nil {
+				l, r = tc.ty, tc.eq
 				if !l.Equals(r) {
-					t.Errorf("%s should not equal to %s", l.String(), r.String())
+					t.Errorf("%s should equal to %s", l.String(), r.String())
 				}
 			}
 			l, r = tc.ty, AnyType{}
@@ -280,6 +384,11 @@ func TestExprTypeStringize(t *testing.T) {
 			},
 			want: "{foo: array<{bar: array<string>}>}",
 		},
+		{
+			what: "map object",
+			ty:   NewMapObjectType(NumberType{}),
+			want: "{string => number}",
+		},
 	}
 
 	for _, tc := range testCases {
@@ -301,6 +410,7 @@ func TestExprTypeFuseSimple(t *testing.T) {
 		StringType{},
 		NewObjectType(),
 		NewStrictObjectType(),
+		NewMapObjectType(NullType{}),
 		&ArrayType{Elem: StringType{}},
 	}
 
@@ -673,6 +783,38 @@ func TestExprTypeFuseComplicated(t *testing.T) {
 					"ccc": StringType{},
 				},
 			},
+		},
+		{
+			what: "map object into compatible map object",
+			ty:   NewMapObjectType(NumberType{}),
+			into: NewMapObjectType(StringType{}),
+			want: NewMapObjectType(StringType{}),
+		},
+		{
+			what: "map object into incompatible map object",
+			ty:   NewMapObjectType(NumberType{}),
+			into: NewMapObjectType(NullType{}),
+			want: NewObjectType(),
+		},
+		{
+			what: "map object into compatible object",
+			ty:   NewMapObjectType(NumberType{}),
+			into: &ObjectType{
+				Props: map[string]ExprType{
+					"foo": NumberType{},
+				},
+			},
+			want: NewMapObjectType(NumberType{}),
+		},
+		{
+			what: "map object into incompatible object",
+			ty:   NewMapObjectType(NumberType{}),
+			into: &ObjectType{
+				Props: map[string]ExprType{
+					"foo": BoolType{},
+				},
+			},
+			want: NewObjectType(),
 		},
 	}
 

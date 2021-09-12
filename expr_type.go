@@ -224,6 +224,7 @@ func NewStrictObjectType() *ObjectType {
 	return &ObjectType{map[string]ExprType{}, true, nil}
 }
 
+// NewMapObjectType creates new ObjectType which maps keys to a specific type value.
 func NewMapObjectType(t ExprType) *ObjectType {
 	if _, ok := t.(AnyType); ok {
 		// {[]: any} is object
@@ -367,6 +368,7 @@ func (ty *ObjectType) Fuse(other ExprType) ExprType {
 			}
 			return NewMapObjectType(t)
 		}
+
 		if other.Mapped != nil {
 			t := other.Mapped
 			for _, p := range ty.Props {
