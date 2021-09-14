@@ -213,31 +213,53 @@ type ObjectType struct {
 	Mapped ExprType
 }
 
-// NewObjectType creates new ObjectType instance which allows unknown props. When accessing to
-// unknown props, their values will fall back to any.
-func NewObjectType() *ObjectType {
+// NewEmptyObjectType creates new loose ObjectType instance which allows unknown props. When
+// accessing to unknown props, their values will fall back to any.
+func NewEmptyObjectType() *ObjectType {
 	return &ObjectType{map[string]ExprType{}, false, nil}
 }
 
-// NewStrictObjectType creates new ObjectType instance which does not allow unknown props.
-func NewStrictObjectType() *ObjectType {
+// NewObjectType creates new loose ObjectType instance which allows unknown props with given props.
+func NewObjectType(props map[string]ExprType) *ObjectType {
+	return &ObjectType{props, false, nil}
+}
+
+// NewEmptyStrictObjectType creates new ObjectType instance which does not allow unknown props.
+func NewEmptyStrictObjectType() *ObjectType {
 	return &ObjectType{map[string]ExprType{}, true, nil}
+}
+
+// NewStrictObjectType creates new ObjectType instance which does not allow unknown props with
+// given prop types.
+func NewStrictObjectType(props map[string]ExprType) *ObjectType {
+	return &ObjectType{props, true, nil}
 }
 
 // NewMapObjectType creates new ObjectType which maps keys to a specific type value.
 func NewMapObjectType(t ExprType) *ObjectType {
 	if _, ok := t.(AnyType); ok {
 		// {[]: any} is object
-		return NewObjectType()
+		return NewEmptyObjectType()
 	}
 	return &ObjectType{nil, false, t}
+}
+
+// IsStrict returns if the type is a strict object, which means no unknown prop is allowed.
+func (ty *ObjectType) IsStrict() bool {
+	return ty.StrictProps
+}
+
+// Strict sets the object is strict or non-strict. When true is given, the type is marked as
+// strict object.
+func (ty *ObjectType) Strict(b bool) {
+	ty.StrictProps = b
 }
 
 func (ty *ObjectType) String() string {
 	if ty.Mapped != nil {
 		return fmt.Sprintf("{string => %s}", ty.Mapped.String())
 	}
-	if !ty.StrictProps {
+	if !ty.IsStrict() {
 		return "object"
 	}
 	ps := make([]string, 0, len(ty.Props))
@@ -258,7 +280,7 @@ func (ty *ObjectType) Assignable(other ExprType) bool {
 				// {[]: T} v.s. {[]: U}
 				return ty.Mapped.Assignable(other.Mapped)
 			}
-			if !other.StrictProps {
+			if !other.IsStrict() {
 				// {[]: T} v.s. object
 				return true
 			}
@@ -270,7 +292,7 @@ func (ty *ObjectType) Assignable(other ExprType) bool {
 			}
 			return true
 		}
-		if !ty.StrictProps {
+		if !ty.IsStrict() {
 			// object v.s. object
 			return true
 		}
@@ -283,7 +305,7 @@ func (ty *ObjectType) Assignable(other ExprType) bool {
 			}
 			return true
 		}
-		if !other.StrictProps {
+		if !other.IsStrict() {
 			// {x: T} v.s. object
 			return true
 		}
@@ -310,7 +332,7 @@ func (ty *ObjectType) Equals(other ExprType) bool {
 				// {[]: T} v.s. {[]: U}
 				return ty.Mapped.Equals(other.Mapped)
 			}
-			if !other.StrictProps {
+			if !other.IsStrict() {
 				// {[]: T} v.s. object
 				return true
 			}
@@ -322,7 +344,7 @@ func (ty *ObjectType) Equals(other ExprType) bool {
 			}
 			return true
 		}
-		if !ty.StrictProps {
+		if !ty.IsStrict() {
 			// object v.s. object
 			return true
 		}
@@ -335,7 +357,7 @@ func (ty *ObjectType) Equals(other ExprType) bool {
 			}
 			return true
 		}
-		if !other.StrictProps {
+		if !other.IsStrict() {
 			// {x: T} v.s. object
 			return true
 		}
@@ -384,20 +406,19 @@ func (ty *ObjectType) Fuse(other ExprType) ExprType {
 			return ty
 		}
 
-		ret := &ObjectType{
-			Props:       make(map[string]ExprType, len(ty.Props)),
-			StrictProps: ty.StrictProps && other.StrictProps,
-		}
+		props := make(map[string]ExprType, len(ty.Props))
 		for n, t := range ty.Props {
-			ret.Props[n] = t
+			props[n] = t
 		}
 		for n, rhs := range other.Props {
-			if lhs, ok := ret.Props[n]; ok {
-				ret.Props[n] = lhs.Fuse(rhs)
+			if lhs, ok := props[n]; ok {
+				props[n] = lhs.Fuse(rhs)
 			} else {
-				ret.Props[n] = rhs // New prop
+				props[n] = rhs // New prop
 			}
 		}
+		ret := NewObjectType(props)
+		ret.Strict(ty.IsStrict() && other.IsStrict())
 		return ret
 	default:
 		return AnyType{}

@@ -193,93 +193,76 @@ var BuiltinFuncSignatures = map[string][]*FuncSignature{
 // documented at https://docs.github.com/en/actions/reference/context-and-expression-syntax-for-github-actions#contexts
 var BuiltinGlobalVariableTypes = map[string]ExprType{
 	// https://docs.github.com/en/actions/reference/context-and-expression-syntax-for-github-actions#github-context
-	"github": &ObjectType{
-		Props: map[string]ExprType{
-			"action":           StringType{},
-			"action_path":      StringType{},
-			"actor":            StringType{},
-			"base_ref":         StringType{},
-			"event":            NewObjectType(), // Note: Stricter type check for this payload would be possible
-			"event_name":       StringType{},
-			"event_path":       StringType{},
-			"head_ref":         StringType{},
-			"job":              StringType{},
-			"ref":              StringType{},
-			"repository":       StringType{},
-			"repository_owner": StringType{},
-			"run_id":           StringType{},
-			"run_number":       StringType{},
-			"sha":              StringType{},
-			"token":            StringType{},
-			"workflow":         StringType{},
-			"workspace":        StringType{},
-			// Below props are not documented but actually exist
-			"action_ref":        StringType{},
-			"action_repository": StringType{},
-			"api_url":           StringType{},
-			"env":               StringType{},
-			"graphql_url":       StringType{},
-			"path":              StringType{},
-			"repositoryurl":     StringType{}, // repositoryUrl
-			"retention_days":    NumberType{},
-			"server_url":        StringType{},
-		},
-		StrictProps: true,
-	},
+	"github": NewStrictObjectType(map[string]ExprType{
+		"action":           StringType{},
+		"action_path":      StringType{},
+		"actor":            StringType{},
+		"base_ref":         StringType{},
+		"event":            NewEmptyObjectType(), // Note: Stricter type check for this payload would be possible
+		"event_name":       StringType{},
+		"event_path":       StringType{},
+		"head_ref":         StringType{},
+		"job":              StringType{},
+		"ref":              StringType{},
+		"repository":       StringType{},
+		"repository_owner": StringType{},
+		"run_id":           StringType{},
+		"run_number":       StringType{},
+		"sha":              StringType{},
+		"token":            StringType{},
+		"workflow":         StringType{},
+		"workspace":        StringType{},
+		// Below props are not documented but actually exist
+		"action_ref":        StringType{},
+		"action_repository": StringType{},
+		"api_url":           StringType{},
+		"env":               StringType{},
+		"graphql_url":       StringType{},
+		"path":              StringType{},
+		"repositoryurl":     StringType{}, // repositoryUrl
+		"retention_days":    NumberType{},
+		"server_url":        StringType{},
+	}),
 	// https://docs.github.com/en/actions/reference/context-and-expression-syntax-for-github-actions#env-context
 	"env": NewMapObjectType(StringType{}), // env.<env_name>
 	// https://docs.github.com/en/actions/reference/context-and-expression-syntax-for-github-actions#job-context
-	"job": &ObjectType{
-		Props: map[string]ExprType{
-			"container": &ObjectType{
-				Props: map[string]ExprType{
-					"id":      StringType{},
-					"network": StringType{},
-				},
-				StrictProps: true,
-			},
-			"services": NewMapObjectType(
-				&ObjectType{
-					Props: map[string]ExprType{
-						"id":      StringType{}, // job.services.<service id>.id
-						"network": StringType{},
-						"ports":   NewObjectType(),
-					},
-					StrictProps: true,
-				},
-			),
-			"status": StringType{},
-		},
-		StrictProps: true,
-	},
+	"job": NewStrictObjectType(map[string]ExprType{
+		"container": NewStrictObjectType(map[string]ExprType{
+			"id":      StringType{},
+			"network": StringType{},
+		}),
+		"services": NewMapObjectType(
+			NewStrictObjectType(map[string]ExprType{
+				"id":      StringType{}, // job.services.<service id>.id
+				"network": StringType{},
+				"ports":   NewEmptyObjectType(),
+			}),
+		),
+		"status": StringType{},
+	}),
 	// https://docs.github.com/en/actions/reference/context-and-expression-syntax-for-github-actions#steps-context
-	"steps": NewStrictObjectType(), // This value will be updated contextually
+	"steps": NewEmptyStrictObjectType(), // This value will be updated contextually
 	// https://docs.github.com/en/actions/reference/context-and-expression-syntax-for-github-actions#runner-context
-	"runner": &ObjectType{
-		Props: map[string]ExprType{
-			"os":         StringType{},
-			"temp":       StringType{},
-			"tool_cache": StringType{},
-			// These are not documented but actually exist
-			"workspace": StringType{},
-		},
-		StrictProps: true,
-	},
+	"runner": NewStrictObjectType(map[string]ExprType{
+		"os":         StringType{},
+		"temp":       StringType{},
+		"tool_cache": StringType{},
+		// These are not documented but actually exist
+		"workspace": StringType{},
+	}),
 	// https://docs.github.com/en/actions/reference/context-and-expression-syntax-for-github-actions#contexts
-	"secrets": NewObjectType(),
+	"secrets": NewEmptyObjectType(),
 	// https://docs.github.com/en/actions/reference/context-and-expression-syntax-for-github-actions#contexts
-	"strategy": &ObjectType{
-		Props: map[string]ExprType{
-			"fail-fast":    BoolType{},
-			"job-index":    NumberType{},
-			"job-total":    NumberType{},
-			"max-parallel": NumberType{},
-		},
-	},
+	"strategy": NewObjectType(map[string]ExprType{
+		"fail-fast":    BoolType{},
+		"job-index":    NumberType{},
+		"job-total":    NumberType{},
+		"max-parallel": NumberType{},
+	}),
 	// https://docs.github.com/en/actions/reference/context-and-expression-syntax-for-github-actions#contexts
-	"matrix": NewStrictObjectType(), // This value will be updated contextually
+	"matrix": NewEmptyStrictObjectType(), // This value will be updated contextually
 	// https://docs.github.com/en/actions/reference/context-and-expression-syntax-for-github-actions#needs-context
-	"needs": NewStrictObjectType(), // This value will be updated contextually
+	"needs": NewEmptyStrictObjectType(), // This value will be updated contextually
 }
 
 // Semantics checker
@@ -392,7 +375,7 @@ func (sema *ExprSemanticsChecker) checkObjectDeref(n *ObjectDerefNode) ExprType 
 		if ty.Mapped != nil {
 			return ty.Mapped
 		}
-		if ty.StrictProps {
+		if ty.IsStrict() {
 			sema.errorf(n, "property %q is not defined in object type %s", n.Property, ty.String())
 		}
 		return AnyType{}
@@ -412,7 +395,7 @@ func (sema *ExprSemanticsChecker) checkObjectDeref(n *ObjectDerefNode) ExprType 
 				elem = t
 			} else if et.Mapped != nil {
 				elem = et.Mapped
-			} else if et.StrictProps {
+			} else if et.IsStrict() {
 				sema.errorf(n, "property %q is not defined in object type %s as element of filtered array", n.Property, et.String())
 			}
 			return &ArrayType{elem, true}
@@ -475,7 +458,7 @@ func (sema *ExprSemanticsChecker) checkIndexAccess(n *IndexAccessNode) ExprType 
 				if ty.Mapped != nil {
 					return ty.Mapped
 				}
-				if ty.StrictProps {
+				if ty.IsStrict() {
 					sema.errorf(n, "property %q is not defined in object type %s", lit.Value, ty.String())
 				}
 			}

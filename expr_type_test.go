@@ -14,7 +14,7 @@ func TestExprNewMapObjectType(t *testing.T) {
 	if _, ok := o.Mapped.(StringType); !ok {
 		t.Fatalf("mapped type is not string: %v", o.Mapped)
 	}
-	if o.StrictProps {
+	if o.IsStrict() {
 		t.Fatalf("map object is not strict object but got %v", o)
 	}
 
@@ -26,7 +26,7 @@ func TestExprNewMapObjectType(t *testing.T) {
 	if o.Mapped != nil {
 		t.Fatalf("loose object should not have mapped type but got %v", o.Mapped)
 	}
-	if o.StrictProps {
+	if o.IsStrict() {
 		t.Fatalf("loose object is not strict object but got %v", o)
 	}
 }
@@ -60,182 +60,118 @@ func TestExprTypeEquals(t *testing.T) {
 		},
 		{
 			what: "object",
-			ty:   NewObjectType(),
+			ty:   NewEmptyObjectType(),
 			neq:  &ArrayType{Elem: AnyType{}},
 		},
 		{
 			what: "strict props object",
-			ty:   NewStrictObjectType(),
+			ty:   NewEmptyStrictObjectType(),
 			neq:  &ArrayType{Elem: AnyType{}},
 		},
 		{
 			what: "nested object",
-			ty: &ObjectType{
-				Props: map[string]ExprType{
-					"foo": &ObjectType{
-						Props: map[string]ExprType{
-							"bar": StringType{},
-						},
-					},
-				},
-			},
+			ty: NewObjectType(map[string]ExprType{
+				"foo": NewObjectType(map[string]ExprType{
+					"bar": StringType{},
+				}),
+			}),
 			neq: &ArrayType{Elem: AnyType{}},
 		},
 		{
 			what: "nested strict props object",
-			ty: &ObjectType{
-				Props: map[string]ExprType{
-					"foo": &ObjectType{
-						Props: map[string]ExprType{
-							"bar": StringType{},
-						},
-						StrictProps: true,
-					},
-				},
-				StrictProps: true,
-			},
+			ty: NewStrictObjectType(map[string]ExprType{
+				"foo": NewStrictObjectType(map[string]ExprType{
+					"bar": StringType{},
+				}),
+			}),
 			neq: &ArrayType{Elem: AnyType{}},
 		},
 		{
 			what: "nested object prop name",
-			ty: &ObjectType{
-				Props: map[string]ExprType{
-					"foo": StringType{},
-				},
-				StrictProps: true,
-			},
-			neq: &ObjectType{
-				Props: map[string]ExprType{
-					"bar": StringType{},
-				},
-				StrictProps: true,
-			},
+			ty: NewStrictObjectType(map[string]ExprType{
+				"foo": StringType{},
+			}),
+			neq: NewStrictObjectType(map[string]ExprType{
+				"bar": StringType{},
+			}),
 		},
 		{
 			what: "nested object prop type",
-			ty: &ObjectType{
-				Props: map[string]ExprType{
-					"foo": StringType{},
-				},
-				StrictProps: true,
-			},
-			neq: &ObjectType{
-				Props: map[string]ExprType{
-					"foo": BoolType{},
-				},
-				StrictProps: true,
-			},
+			ty: NewStrictObjectType(map[string]ExprType{
+				"foo": StringType{},
+			}),
+			neq: NewStrictObjectType(map[string]ExprType{
+				"foo": BoolType{},
+			}),
 		},
 		{
 			what: "strict props object and loose object",
-			ty: &ObjectType{
-				Props: map[string]ExprType{
-					"foo": NullType{},
-				},
-				StrictProps: true,
-			},
-			eq: &ObjectType{
-				Props: map[string]ExprType{
-					"foo": NullType{},
-				},
-			},
+			ty: NewStrictObjectType(map[string]ExprType{
+				"foo": NullType{},
+			}),
+			eq: NewObjectType(map[string]ExprType{
+				"foo": NullType{},
+			}),
 		},
 		{
 			what: "loose object and strict props object",
-			ty: &ObjectType{
-				Props: map[string]ExprType{
-					"foo": NullType{},
-				},
-			},
-			eq: &ObjectType{
-				Props: map[string]ExprType{
-					"foo": NullType{},
-				},
-			},
+			ty: NewObjectType(map[string]ExprType{
+				"foo": NullType{},
+			}),
+			eq: NewObjectType(map[string]ExprType{
+				"foo": NullType{},
+			}),
 		},
 		{
 			what: "map objects",
-			ty: &ObjectType{
-				Mapped: NullType{},
-			},
-			eq: &ObjectType{
-				Mapped: NullType{},
-			},
-			neq: &ObjectType{
-				Mapped: NumberType{},
-			},
+			ty:   NewMapObjectType(NullType{}),
+			eq:   NewMapObjectType(NullType{}),
+			neq:  NewMapObjectType(NumberType{}),
 		},
 		{
 			what: "map object equals loose object",
-			ty: &ObjectType{
-				Mapped: StringType{},
-			},
-			eq: NewObjectType(),
+			ty:   NewMapObjectType(StringType{}),
+			eq:   NewEmptyObjectType(),
 		},
 		{
 			what: "loose object equals map object",
-			ty:   NewObjectType(),
-			eq: &ObjectType{
-				Mapped: StringType{},
-			},
+			ty:   NewEmptyObjectType(),
+			eq:   NewMapObjectType(StringType{}),
 		},
 		{
 			what: "map object equals strict object",
-			ty: &ObjectType{
-				Mapped: StringType{},
-			},
-			eq: &ObjectType{
-				Props: map[string]ExprType{
-					"foo": StringType{},
-				},
-				StrictProps: true,
-			},
-			neq: &ObjectType{
-				Props: map[string]ExprType{
-					"foo": NullType{},
-				},
-				StrictProps: true,
-			},
+			ty:   NewMapObjectType(StringType{}),
+			eq: NewStrictObjectType(map[string]ExprType{
+				"foo": StringType{},
+			}),
+			neq: NewStrictObjectType(map[string]ExprType{
+				"foo": NullType{},
+			}),
 		},
 		{
 			what: "map object equals strict object including any prop",
-			ty: &ObjectType{
-				Mapped: StringType{},
-			},
-			eq: &ObjectType{
-				Props: map[string]ExprType{
-					"foo": StringType{},
-					"bar": AnyType{},
-				},
-				StrictProps: true,
-			},
-			neq: &ObjectType{
-				Props: map[string]ExprType{
-					"foo": NullType{},
-					"bar": AnyType{},
-				},
-				StrictProps: true,
-			},
+			ty:   NewMapObjectType(StringType{}),
+			eq: NewStrictObjectType(map[string]ExprType{
+				"foo": StringType{},
+				"bar": AnyType{},
+			}),
+			neq: NewStrictObjectType(map[string]ExprType{
+				"foo": NullType{},
+				"bar": AnyType{},
+			}),
 		},
 		{
 			what: "strict object equals map object",
-			ty: &ObjectType{
-				Props: map[string]ExprType{
-					"foo": StringType{},
-				},
-				StrictProps: true,
-			},
-			eq: &ObjectType{
-				Mapped: StringType{},
-			},
-			neq: &ObjectType{
-				Mapped: NullType{},
-			},
+			ty: NewStrictObjectType(map[string]ExprType{
+				"foo": StringType{},
+			}),
+			eq:  NewMapObjectType(StringType{}),
+			neq: NewMapObjectType(NullType{}),
 		},
 		{
 			what: "array",
 			ty:   &ArrayType{Elem: StringType{}},
-			neq:  NewObjectType(),
+			neq:  NewEmptyObjectType(),
 		},
 		{
 			what: "array element type",
@@ -318,41 +254,33 @@ func TestExprTypeStringize(t *testing.T) {
 		},
 		{
 			what: "empty object",
-			ty:   NewObjectType(),
+			ty:   NewEmptyObjectType(),
 			want: "object",
 		},
 		{
 			what: "empty strict props object",
-			ty:   NewStrictObjectType(),
+			ty:   NewEmptyStrictObjectType(),
 			want: "{}",
 		},
 		{
 			what: "strict object",
-			ty: &ObjectType{
-				Props: map[string]ExprType{
-					"foo": StringType{},
-				},
-				StrictProps: true,
-			},
+			ty: NewStrictObjectType(map[string]ExprType{
+				"foo": StringType{},
+			}),
 			want: "{foo: string}",
 		},
 		{
 			what: "non-strict object",
-			ty: &ObjectType{
-				Props: map[string]ExprType{
-					"foo": StringType{},
-				},
-			},
+			ty: NewObjectType(map[string]ExprType{
+				"foo": StringType{},
+			}),
 			want: "object",
 		},
 		{
 			what: "strict props object",
-			ty: &ObjectType{
-				Props: map[string]ExprType{
-					"foo": StringType{},
-				},
-				StrictProps: true,
-			},
+			ty: NewStrictObjectType(map[string]ExprType{
+				"foo": StringType{},
+			}),
 			want: "{foo: string}",
 		},
 		{
@@ -367,21 +295,15 @@ func TestExprTypeStringize(t *testing.T) {
 		},
 		{
 			what: "object",
-			ty: &ObjectType{
-				Props: map[string]ExprType{
-					"foo": &ArrayType{
-						Elem: &ObjectType{
-							Props: map[string]ExprType{
-								"bar": &ArrayType{
-									Elem: StringType{},
-								},
-							},
-							StrictProps: true,
+			ty: NewStrictObjectType(map[string]ExprType{
+				"foo": &ArrayType{
+					Elem: NewStrictObjectType(map[string]ExprType{
+						"bar": &ArrayType{
+							Elem: StringType{},
 						},
-					},
+					}),
 				},
-				StrictProps: true,
-			},
+			}),
 			want: "{foo: array<{bar: array<string>}>}",
 		},
 		{
@@ -408,8 +330,8 @@ func TestExprTypeFuseSimple(t *testing.T) {
 		NumberType{},
 		BoolType{},
 		StringType{},
-		NewObjectType(),
-		NewStrictObjectType(),
+		NewEmptyObjectType(),
+		NewEmptyStrictObjectType(),
 		NewMapObjectType(NullType{}),
 		&ArrayType{Elem: StringType{}},
 	}
@@ -487,137 +409,90 @@ func TestExprTypeFuseComplicated(t *testing.T) {
 		},
 		{
 			what: "object props",
-			ty: &ObjectType{
-				Props: map[string]ExprType{
-					"foo": NumberType{},
-				},
-			},
-			into: &ObjectType{
-				Props: map[string]ExprType{
-					"bar": StringType{},
-				},
-			},
-			want: &ObjectType{
-				Props: map[string]ExprType{
-					"foo": NumberType{},
-					"bar": StringType{},
-				},
-			},
+			ty: NewObjectType(map[string]ExprType{
+				"foo": NumberType{},
+			}),
+			into: NewObjectType(map[string]ExprType{
+				"bar": StringType{},
+			}),
+			want: NewObjectType(map[string]ExprType{
+				"foo": NumberType{},
+				"bar": StringType{},
+			}),
 		},
 		{
-			what: "object into strict object",
-			ty: &ObjectType{
-				Props: map[string]ExprType{
-					"foo": NumberType{},
-				},
-			},
-			into: &ObjectType{
-				Props: map[string]ExprType{
-					"bar": StringType{},
-				},
-				StrictProps: true,
-			},
-			want: &ObjectType{
-				Props: map[string]ExprType{
-					"foo": NumberType{},
-					"bar": StringType{},
-				},
-				StrictProps: false,
-			},
+			what: "loose object into strict object",
+			ty: NewObjectType(map[string]ExprType{
+				"foo": NumberType{},
+			}),
+			into: NewStrictObjectType(map[string]ExprType{
+				"bar": StringType{},
+			}),
+			want: NewObjectType(map[string]ExprType{
+				"foo": NumberType{},
+				"bar": StringType{},
+			}),
 		},
 		{
 			what: "strict object into strict object",
-			ty: &ObjectType{
-				Props: map[string]ExprType{
-					"foo": NumberType{},
-				},
-				StrictProps: true,
-			},
-			into: &ObjectType{
-				Props: map[string]ExprType{
-					"bar": StringType{},
-				},
-				StrictProps: true,
-			},
-			want: &ObjectType{
-				Props: map[string]ExprType{
-					"foo": NumberType{},
-					"bar": StringType{},
-				},
-				StrictProps: true,
-			},
+			ty: NewStrictObjectType(map[string]ExprType{
+				"foo": NumberType{},
+			}),
+			into: NewStrictObjectType(map[string]ExprType{
+				"bar": StringType{},
+			}),
+			want: NewStrictObjectType(map[string]ExprType{
+				"foo": NumberType{},
+				"bar": StringType{},
+			}),
 		},
 		{
 			what: "compatible prop",
-			ty: &ObjectType{
-				Props: map[string]ExprType{
-					"foo": NumberType{},
-				},
-			},
-			into: &ObjectType{
-				Props: map[string]ExprType{
-					"foo": StringType{},
-				},
-			},
-			want: &ObjectType{
-				Props: map[string]ExprType{
-					"foo": StringType{},
-				},
-			},
+			ty: NewObjectType(map[string]ExprType{
+				"foo": NumberType{},
+			}),
+			into: NewObjectType(map[string]ExprType{
+				"foo": StringType{},
+			}),
+			want: NewObjectType(map[string]ExprType{
+				"foo": StringType{},
+			}),
 		},
 		{
 			what: "any prop into prop",
-			ty: &ObjectType{
-				Props: map[string]ExprType{
-					"foo": AnyType{},
-				},
-			},
-			into: &ObjectType{
-				Props: map[string]ExprType{
-					"foo": StringType{},
-				},
-			},
-			want: &ObjectType{
-				Props: map[string]ExprType{
-					"foo": AnyType{},
-				},
-			},
+			ty: NewObjectType(map[string]ExprType{
+				"foo": AnyType{},
+			}),
+			into: NewObjectType(map[string]ExprType{
+				"foo": StringType{},
+			}),
+			want: NewObjectType(map[string]ExprType{
+				"foo": AnyType{},
+			}),
 		},
 		{
 			what: "prop into any prop",
-			ty: &ObjectType{
-				Props: map[string]ExprType{
-					"foo": StringType{},
-				},
-			},
-			into: &ObjectType{
-				Props: map[string]ExprType{
-					"foo": AnyType{},
-				},
-			},
-			want: &ObjectType{
-				Props: map[string]ExprType{
-					"foo": AnyType{},
-				},
-			},
+			ty: NewObjectType(map[string]ExprType{
+				"foo": StringType{},
+			}),
+			into: NewObjectType(map[string]ExprType{
+				"foo": AnyType{},
+			}),
+			want: NewObjectType(map[string]ExprType{
+				"foo": AnyType{},
+			}),
 		},
 		{
 			what: "incompatible prop",
-			ty: &ObjectType{
-				Props: map[string]ExprType{
-					"foo": NullType{},
-				},
-			},
-			into: &ObjectType{
-				Props: map[string]ExprType{
-					"foo": StringType{},
-				},
-			},
-			want: &ObjectType{
-				Props: map[string]ExprType{
-					"foo": AnyType{},
-				},
-			},
+			ty: NewObjectType(map[string]ExprType{
+				"foo": NullType{},
+			}),
+			into: NewObjectType(map[string]ExprType{
+				"foo": StringType{},
+			}),
+			want: NewObjectType(map[string]ExprType{
+				"foo": AnyType{},
+			}),
 		},
 		{
 			what: "compatible array element",
@@ -687,31 +562,23 @@ func TestExprTypeFuseComplicated(t *testing.T) {
 		},
 		{
 			what: "object no prop at left hand side",
-			ty:   NewObjectType(),
-			into: &ObjectType{
-				Props: map[string]ExprType{
-					"foo": StringType{},
-				},
-			},
-			want: &ObjectType{
-				Props: map[string]ExprType{
-					"foo": StringType{},
-				},
-			},
+			ty:   NewEmptyObjectType(),
+			into: NewObjectType(map[string]ExprType{
+				"foo": StringType{},
+			}),
+			want: NewObjectType(map[string]ExprType{
+				"foo": StringType{},
+			}),
 		},
 		{
 			what: "object no prop at right hand side",
-			ty: &ObjectType{
-				Props: map[string]ExprType{
-					"foo": StringType{},
-				},
-			},
-			into: NewObjectType(),
-			want: &ObjectType{
-				Props: map[string]ExprType{
-					"foo": StringType{},
-				},
-			},
+			ty: NewObjectType(map[string]ExprType{
+				"foo": StringType{},
+			}),
+			into: NewEmptyObjectType(),
+			want: NewObjectType(map[string]ExprType{
+				"foo": StringType{},
+			}),
 		},
 		{
 			what: "any elem array at left hand side",
@@ -745,44 +612,32 @@ func TestExprTypeFuseComplicated(t *testing.T) {
 		},
 		{
 			what: "nested objects",
-			ty: &ObjectType{
-				Props: map[string]ExprType{
-					"foo": &ObjectType{
-						Props: map[string]ExprType{
-							"foo":  NumberType{},
-							"piyo": NumberType{},
-						},
-					},
-					"aaa": NumberType{},
-					"ccc": NumberType{},
-				},
-			},
-			into: &ObjectType{
-				Props: map[string]ExprType{
-					"foo": &ObjectType{
-						Props: map[string]ExprType{
-							"bar":  StringType{},
-							"piyo": StringType{},
-						},
-					},
-					"bbb": StringType{},
-					"ccc": StringType{},
-				},
-			},
-			want: &ObjectType{
-				Props: map[string]ExprType{
-					"foo": &ObjectType{
-						Props: map[string]ExprType{
-							"foo":  NumberType{},
-							"bar":  StringType{},
-							"piyo": StringType{},
-						},
-					},
-					"aaa": NumberType{},
-					"bbb": StringType{},
-					"ccc": StringType{},
-				},
-			},
+			ty: NewObjectType(map[string]ExprType{
+				"foo": NewObjectType(map[string]ExprType{
+					"foo":  NumberType{},
+					"piyo": NumberType{},
+				}),
+				"aaa": NumberType{},
+				"ccc": NumberType{},
+			}),
+			into: NewObjectType(map[string]ExprType{
+				"foo": NewObjectType(map[string]ExprType{
+					"bar":  StringType{},
+					"piyo": StringType{},
+				}),
+				"bbb": StringType{},
+				"ccc": StringType{},
+			}),
+			want: NewObjectType(map[string]ExprType{
+				"foo": NewObjectType(map[string]ExprType{
+					"foo":  NumberType{},
+					"bar":  StringType{},
+					"piyo": StringType{},
+				}),
+				"aaa": NumberType{},
+				"bbb": StringType{},
+				"ccc": StringType{},
+			}),
 		},
 		{
 			what: "map object into compatible map object",
@@ -794,27 +649,23 @@ func TestExprTypeFuseComplicated(t *testing.T) {
 			what: "map object into incompatible map object",
 			ty:   NewMapObjectType(NumberType{}),
 			into: NewMapObjectType(NullType{}),
-			want: NewObjectType(),
+			want: NewEmptyObjectType(),
 		},
 		{
 			what: "map object into compatible object",
 			ty:   NewMapObjectType(NumberType{}),
-			into: &ObjectType{
-				Props: map[string]ExprType{
-					"foo": NumberType{},
-				},
-			},
+			into: NewObjectType(map[string]ExprType{
+				"foo": NumberType{},
+			}),
 			want: NewMapObjectType(NumberType{}),
 		},
 		{
 			what: "map object into incompatible object",
 			ty:   NewMapObjectType(NumberType{}),
-			into: &ObjectType{
-				Props: map[string]ExprType{
-					"foo": BoolType{},
-				},
-			},
-			want: NewObjectType(),
+			into: NewObjectType(map[string]ExprType{
+				"foo": BoolType{},
+			}),
+			want: NewEmptyObjectType(),
 		},
 	}
 
@@ -852,17 +703,15 @@ func TestExprTypeFuseCreateNewInstance(t *testing.T) {
 	}
 
 	{
-		ty := &ObjectType{
-			Props: map[string]ExprType{
-				"foo": NumberType{},
-			},
-		}
-		ty2 := ty.Fuse(&ObjectType{
-			Props: map[string]ExprType{
+		ty := NewObjectType(map[string]ExprType{
+			"foo": NumberType{},
+		})
+		ty2 := ty.Fuse(
+			NewObjectType(map[string]ExprType{
 				"foo": StringType{},
 				"bar": BoolType{},
-			},
-		})
+			}),
+		)
 		if ty == ty2 {
 			t.Fatalf("did not make a new instance (%v => %v)", ty, ty2)
 		}
