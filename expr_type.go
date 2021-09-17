@@ -203,65 +203,71 @@ func (ty StringType) Fuse(other ExprType) ExprType {
 type ObjectType struct {
 	// Props is map from properties name to their type.
 	Props map[string]ExprType
-	// StrictProps is flag to check if the properties should be checked strictly. When this flag
-	// is set to true, it means that other than properties defined in Props field are not permitted
-	// and will cause type error. When this flag is set to false, accessing to unknown properties
-	// does not cause type error and will be deducted to any type.
-	StrictProps bool
-	// Mapped is a mapped value type of this object. For example, MappedType of env context is
-	// string. As invariant condition, when this value is non-nil, the Props field is nil.
+	// Mapped is an element type of this object. This means all props have the type. For example,
+	// The element type of env context is string.
+	// AnyType means its property types can be any type so it shapes a loose object. Setting nil
+	// means propreties are mapped to no type so it shapes a strict object.
+	//
+	// Invariant: All types in Props field must be assignable to this type.
 	Mapped ExprType
 }
 
 // NewEmptyObjectType creates new loose ObjectType instance which allows unknown props. When
 // accessing to unknown props, their values will fall back to any.
 func NewEmptyObjectType() *ObjectType {
-	return &ObjectType{map[string]ExprType{}, false, nil}
+	return &ObjectType{map[string]ExprType{}, AnyType{}}
 }
 
 // NewObjectType creates new loose ObjectType instance which allows unknown props with given props.
 func NewObjectType(props map[string]ExprType) *ObjectType {
-	return &ObjectType{props, false, nil}
+	return &ObjectType{props, AnyType{}}
 }
 
 // NewEmptyStrictObjectType creates new ObjectType instance which does not allow unknown props.
 func NewEmptyStrictObjectType() *ObjectType {
-	return &ObjectType{map[string]ExprType{}, true, nil}
+	return &ObjectType{map[string]ExprType{}, nil}
 }
 
 // NewStrictObjectType creates new ObjectType instance which does not allow unknown props with
 // given prop types.
 func NewStrictObjectType(props map[string]ExprType) *ObjectType {
-	return &ObjectType{props, true, nil}
+	return &ObjectType{props, nil}
 }
 
 // NewMapObjectType creates new ObjectType which maps keys to a specific type value.
 func NewMapObjectType(t ExprType) *ObjectType {
-	if _, ok := t.(AnyType); ok {
-		// {[]: any} is object
-		return NewEmptyObjectType()
-	}
-	return &ObjectType{nil, false, t}
+	return &ObjectType{nil, t}
 }
 
 // IsStrict returns if the type is a strict object, which means no unknown prop is allowed.
 func (ty *ObjectType) IsStrict() bool {
-	return ty.StrictProps
+	return ty.Mapped == nil
+}
+
+// IsLoose returns if the type is a loose object, which allows any unknown props.
+func (ty *ObjectType) IsLoose() bool {
+	_, ok := ty.Mapped.(AnyType)
+	return ok
 }
 
 // Strict sets the object is strict or non-strict. When true is given, the type is marked as
 // strict object.
 func (ty *ObjectType) Strict(b bool) {
-	ty.StrictProps = b
+	if b {
+		ty.Mapped = AnyType{}
+	} else {
+		ty.Mapped = nil
+	}
 }
 
 func (ty *ObjectType) String() string {
-	if ty.Mapped != nil {
+	if !ty.IsStrict() {
+		if ty.IsLoose() {
+			return "object"
+		}
 		return fmt.Sprintf("{string => %s}", ty.Mapped.String())
 	}
-	if !ty.IsStrict() {
-		return "object"
-	}
+
 	ps := make([]string, 0, len(ty.Props))
 	for n, t := range ty.Props {
 		ps = append(ps, fmt.Sprintf("%s: %s", n, t.String()))
@@ -270,51 +276,41 @@ func (ty *ObjectType) String() string {
 }
 
 // Assignable returns if other type can be assignable to the type.
+// In other words, rhs type is more strict than lhs (receiver) type.
 func (ty *ObjectType) Assignable(other ExprType) bool {
 	switch other := other.(type) {
 	case AnyType:
 		return true
 	case *ObjectType:
-		if ty.Mapped != nil {
-			if other.Mapped != nil {
-				// {[]: T} v.s. {[]: U}
+		if !ty.IsStrict() {
+			if !other.IsStrict() {
 				return ty.Mapped.Assignable(other.Mapped)
 			}
-			if !other.IsStrict() {
-				// {[]: T} v.s. object
-				return true
-			}
-			// {[]: T} v.s. {x: U}
-			for _, p := range other.Props {
-				if !ty.Mapped.Assignable(p) {
+			for _, t := range other.Props {
+				if !ty.Mapped.Assignable(t) {
 					return false
 				}
 			}
 			return true
 		}
-		if !ty.IsStrict() {
-			// object v.s. object
-			return true
-		}
-		if other.Mapped != nil {
-			// {x: T} v.s. {[]: U}
-			for _, p := range ty.Props {
-				if !p.Assignable(other.Mapped) {
-					return false
-				}
-			}
-			return true
-		}
+		// ty is strict
+
 		if !other.IsStrict() {
-			// {x: T} v.s. object
+			for _, t := range ty.Props {
+				if !t.Assignable(other.Mapped) {
+					return false
+				}
+			}
 			return true
 		}
-		// {x: T} v.s. {x: U}
-		for n, p1 := range ty.Props {
-			if p2, ok := other.Props[n]; ok && !p1.Assignable(p2) {
+		// ty and other are strict
+
+		for n, r := range other.Props {
+			if l, ok := ty.Props[n]; !ok || !l.Assignable(r) {
 				return false
 			}
 		}
+
 		return true
 	default:
 		return false
@@ -323,55 +319,7 @@ func (ty *ObjectType) Assignable(other ExprType) bool {
 
 // Equals returns if the type is equal to the other type.
 func (ty *ObjectType) Equals(other ExprType) bool {
-	switch other := other.(type) {
-	case AnyType:
-		return true
-	case *ObjectType:
-		if ty.Mapped != nil {
-			if other.Mapped != nil {
-				// {[]: T} v.s. {[]: U}
-				return ty.Mapped.Equals(other.Mapped)
-			}
-			if !other.IsStrict() {
-				// {[]: T} v.s. object
-				return true
-			}
-			// {[]: T} v.s. {x: U}
-			for _, p := range other.Props {
-				if !ty.Mapped.Equals(p) {
-					return false
-				}
-			}
-			return true
-		}
-		if !ty.IsStrict() {
-			// object v.s. object
-			return true
-		}
-		if other.Mapped != nil {
-			// {x: T} v.s. {[]: U}
-			for _, p := range ty.Props {
-				if !p.Equals(other.Mapped) {
-					return false
-				}
-			}
-			return true
-		}
-		if !other.IsStrict() {
-			// {x: T} v.s. object
-			return true
-		}
-		// {x: T} v.s. {x: U}
-		for n, t := range ty.Props {
-			o, ok := other.Props[n]
-			if !ok || !t.Equals(o) {
-				return false
-			}
-		}
-		return true
-	default:
-		return false
-	}
+	return ty.Assignable(other) && other.Assignable(ty)
 }
 
 // Fuse merges two object types into one. When other object has unknown props, they are merged into
@@ -380,46 +328,40 @@ func (ty *ObjectType) Equals(other ExprType) bool {
 func (ty *ObjectType) Fuse(other ExprType) ExprType {
 	switch other := other.(type) {
 	case *ObjectType:
-		if ty.Mapped != nil {
-			if other.Mapped != nil {
-				return NewMapObjectType(ty.Mapped.Fuse(other.Mapped))
-			}
-			t := ty.Mapped
-			for _, p := range other.Props {
-				t = t.Fuse(p)
-			}
-			return NewMapObjectType(t)
-		}
-
-		if other.Mapped != nil {
-			t := other.Mapped
-			for _, p := range ty.Props {
-				t = p.Fuse(t)
-			}
-			return NewMapObjectType(t)
-		}
-
-		if len(ty.Props) == 0 {
+		// Shortcuts
+		if len(ty.Props) == 0 && other.IsLoose() {
 			return other
 		}
-		if len(other.Props) == 0 {
+		if len(other.Props) == 0 && ty.IsLoose() {
 			return ty
 		}
 
-		props := make(map[string]ExprType, len(ty.Props))
-		for n, t := range ty.Props {
-			props[n] = t
+		mapped := ty.Mapped
+		if mapped == nil {
+			mapped = other.Mapped
+		} else if other.Mapped != nil {
+			mapped = mapped.Fuse(other.Mapped)
 		}
-		for n, rhs := range other.Props {
-			if lhs, ok := props[n]; ok {
-				props[n] = lhs.Fuse(rhs)
+
+		props := make(map[string]ExprType, len(ty.Props))
+		for n, l := range ty.Props {
+			props[n] = l
+		}
+		for n, r := range other.Props {
+			if l, ok := props[n]; ok {
+				props[n] = l.Fuse(r)
 			} else {
-				props[n] = rhs // New prop
+				props[n] = r
+				if mapped != nil {
+					mapped = mapped.Fuse(r)
+				}
 			}
 		}
-		ret := NewObjectType(props)
-		ret.Strict(ty.IsStrict() && other.IsStrict())
-		return ret
+
+		return &ObjectType{
+			Props:  props,
+			Mapped: mapped,
+		}
 	default:
 		return AnyType{}
 	}

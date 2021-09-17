@@ -4,6 +4,7 @@ import (
 	"testing"
 
 	"github.com/google/go-cmp/cmp"
+	"github.com/google/go-cmp/cmp/cmpopts"
 )
 
 func TestExprNewMapObjectType(t *testing.T) {
@@ -16,18 +17,6 @@ func TestExprNewMapObjectType(t *testing.T) {
 	}
 	if o.IsStrict() {
 		t.Fatalf("map object is not strict object but got %v", o)
-	}
-
-	// Mapping to any type is just a loose object
-	o = NewMapObjectType(AnyType{})
-	if len(o.Props) != 0 {
-		t.Fatalf("loose object with no prop info was expected but got props %v", o.Props)
-	}
-	if o.Mapped != nil {
-		t.Fatalf("loose object should not have mapped type but got %v", o.Mapped)
-	}
-	if o.IsStrict() {
-		t.Fatalf("loose object is not strict object but got %v", o)
 	}
 }
 
@@ -336,6 +325,8 @@ func TestExprTypeFuseSimple(t *testing.T) {
 		&ArrayType{Elem: StringType{}},
 	}
 
+	opt := cmpopts.EquateEmpty()
+
 	for _, ty := range testCases {
 		t.Run("any/"+ty.String(), func(t *testing.T) {
 			have := ty.Fuse(AnyType{})
@@ -368,7 +359,7 @@ func TestExprTypeFuseSimple(t *testing.T) {
 	for _, ty := range testCases {
 		t.Run("self/"+ty.String(), func(t *testing.T) {
 			have := ty.Fuse(ty)
-			if !cmp.Equal(ty, have) {
+			if !cmp.Equal(ty, have, opt) {
 				s := ty.String()
 				t.Errorf("%s into %s was %s while expecting %s", s, s, have.String(), s)
 			}
@@ -657,7 +648,9 @@ func TestExprTypeFuseComplicated(t *testing.T) {
 			into: NewObjectType(map[string]ExprType{
 				"foo": NumberType{},
 			}),
-			want: NewMapObjectType(NumberType{}),
+			want: NewObjectType(map[string]ExprType{
+				"foo": NumberType{},
+			}),
 		},
 		{
 			what: "map object into incompatible object",
@@ -665,21 +658,24 @@ func TestExprTypeFuseComplicated(t *testing.T) {
 			into: NewObjectType(map[string]ExprType{
 				"foo": BoolType{},
 			}),
-			want: NewEmptyObjectType(),
+			want: NewObjectType(map[string]ExprType{
+				"foo": BoolType{},
+			}),
 		},
 	}
 
 	for _, tc := range testCases {
 		t.Run(tc.what, func(t *testing.T) {
+			opt := cmpopts.EquateEmpty()
 			ty := tc.into.Fuse(tc.ty)
-			if !cmp.Equal(ty, tc.want) {
+			if !cmp.Equal(ty, tc.want, opt) {
 				t.Fatalf(
 					"%s into %s was %s while expecting %s\ndiff:\n%s",
 					tc.ty.String(),
 					tc.into.String(),
 					ty.String(),
 					tc.want.String(),
-					cmp.Diff(tc.want, ty),
+					cmp.Diff(tc.want, ty, opt),
 				)
 			}
 		})
