@@ -12,7 +12,7 @@ var AllWebhookTypes = map[string][]string{
 	"delete":                      {},
 	"deployment":                  {},
 	"deployment_status":           {},
-	"discussion":                  {"opened", "edited", "deleted", "transferred", "pinned", "unpinned", "labeled", "unlabeled", "locked", "unlocked", "category_changed", "answered", "unanswered"},
+	"discussion":                  {"created", "edited", "deleted", "transferred", "pinned", "unpinned", "labeled", "unlabeled", "locked", "unlocked", "category_changed", "answered", "unanswered"},
 	"discussion_comment":          {"created", "edited", "deleted"},
 	"fork":                        {},
 	"gollum":                      {},
