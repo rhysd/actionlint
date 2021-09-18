@@ -262,6 +262,19 @@ func BenchmarkLintWorkflowFiles(b *testing.B) {
 	}
 	format := "{{range $ := .}}### Error at line {{$.Line}}, col {{$.Column}} of `{{$.Filepath}}`\\n\\n{{$.Message}}\\n\\n```\\n{{$.Snippet}}\\n```\\n\\n{{end}}"
 
+	// Workflow files for this repository
+	workflows := []string{}
+	{
+		d := filepath.Join(".github", "workflows")
+		es, err := ioutil.ReadDir(d)
+		if err != nil {
+			panic(err)
+		}
+		for _, e := range es {
+			workflows = append(workflows, filepath.Join(d, e.Name()))
+		}
+	}
+
 	bms := []struct {
 		what       string
 		files      []string
@@ -333,6 +346,10 @@ func BenchmarkLintWorkflowFiles(b *testing.B) {
 			what:   "small",
 			files:  []string{small, small, small, small, small, small, small, small, small, small},
 			format: format,
+		},
+		{
+			what:  "our workflows",
+			files: workflows,
 		},
 	}
 
