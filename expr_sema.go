@@ -616,7 +616,7 @@ func (sema *ExprSemanticsChecker) checkCompareOp(n *CompareOpNode) ExprType {
 func (sema *ExprSemanticsChecker) checkLogicalOp(n *LogicalOpNode) ExprType {
 	lty := sema.check(n.Left)
 	rty := sema.check(n.Right)
-	return lty.Fuse(rty)
+	return lty.Merge(rty)
 }
 
 func (sema *ExprSemanticsChecker) check(expr ExprNode) ExprType {

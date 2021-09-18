@@ -312,7 +312,7 @@ func TestExprTypeStringize(t *testing.T) {
 	}
 }
 
-func TestExprTypeFuseSimple(t *testing.T) {
+func TestExprTypeMergeSimple(t *testing.T) {
 	testCases := []ExprType{
 		AnyType{},
 		NullType{},
@@ -329,14 +329,14 @@ func TestExprTypeFuseSimple(t *testing.T) {
 
 	for _, ty := range testCases {
 		t.Run("any/"+ty.String(), func(t *testing.T) {
-			have := ty.Fuse(AnyType{})
+			have := ty.Merge(AnyType{})
 			if _, ok := have.(AnyType); !ok {
-				t.Errorf("any type into %s was %s while expecting any", ty.String(), have.String())
+				t.Errorf("any type merged with %s was %s while expecting any", ty.String(), have.String())
 			}
 
-			have = (AnyType{}).Fuse(ty)
+			have = (AnyType{}).Merge(ty)
 			if _, ok := have.(AnyType); !ok {
-				t.Errorf("%s into any type was %s while expecting any", ty.String(), have.String())
+				t.Errorf("%s merged with any type was %s while expecting any", ty.String(), have.String())
 			}
 		})
 	}
@@ -349,53 +349,53 @@ func TestExprTypeFuseSimple(t *testing.T) {
 				in = StringType{} // null is compatible with null so use string instead
 			}
 
-			have := ty.Fuse(in)
+			have := ty.Merge(in)
 			if _, ok := have.(AnyType); !ok {
-				t.Errorf("incompatible %s type into %s was %s while expecting any", in.String(), ty.String(), have.String())
+				t.Errorf("incompatible %s type merged with %s was %s while expecting any", in.String(), ty.String(), have.String())
 			}
 		})
 	}
 
 	for _, ty := range testCases {
 		t.Run("self/"+ty.String(), func(t *testing.T) {
-			have := ty.Fuse(ty)
+			have := ty.Merge(ty)
 			if !cmp.Equal(ty, have, opt) {
 				s := ty.String()
-				t.Errorf("%s into %s was %s while expecting %s", s, s, have.String(), s)
+				t.Errorf("%s merged with %s was %s while expecting %s", s, s, have.String(), s)
 			}
 		})
 	}
 }
 
-func TestExprTypeFuseComplicated(t *testing.T) {
+func TestExprTypeMergeComplicated(t *testing.T) {
 	testCases := []struct {
 		what string
 		ty   ExprType
-		into ExprType
+		with ExprType
 		want ExprType
 	}{
 		{
-			what: "number fuses into string",
+			what: "number merges with string",
 			ty:   NumberType{},
-			into: StringType{},
+			with: StringType{},
 			want: StringType{},
 		},
 		{
-			what: "string is fused by number",
+			what: "string is merged by number",
 			ty:   StringType{},
-			into: NumberType{},
+			with: NumberType{},
 			want: StringType{},
 		},
 		{
-			what: "bool fuses into string",
+			what: "bool merges with string",
 			ty:   BoolType{},
-			into: StringType{},
+			with: StringType{},
 			want: StringType{},
 		},
 		{
-			what: "string is fused by bool",
+			what: "string is merged by bool",
 			ty:   StringType{},
-			into: BoolType{},
+			with: BoolType{},
 			want: StringType{},
 		},
 		{
@@ -403,7 +403,7 @@ func TestExprTypeFuseComplicated(t *testing.T) {
 			ty: NewObjectType(map[string]ExprType{
 				"foo": NumberType{},
 			}),
-			into: NewObjectType(map[string]ExprType{
+			with: NewObjectType(map[string]ExprType{
 				"bar": StringType{},
 			}),
 			want: NewObjectType(map[string]ExprType{
@@ -412,11 +412,11 @@ func TestExprTypeFuseComplicated(t *testing.T) {
 			}),
 		},
 		{
-			what: "loose object into strict object",
+			what: "loose object with strict object",
 			ty: NewObjectType(map[string]ExprType{
 				"foo": NumberType{},
 			}),
-			into: NewStrictObjectType(map[string]ExprType{
+			with: NewStrictObjectType(map[string]ExprType{
 				"bar": StringType{},
 			}),
 			want: NewObjectType(map[string]ExprType{
@@ -425,11 +425,11 @@ func TestExprTypeFuseComplicated(t *testing.T) {
 			}),
 		},
 		{
-			what: "strict object into strict object",
+			what: "strict object with strict object",
 			ty: NewStrictObjectType(map[string]ExprType{
 				"foo": NumberType{},
 			}),
-			into: NewStrictObjectType(map[string]ExprType{
+			with: NewStrictObjectType(map[string]ExprType{
 				"bar": StringType{},
 			}),
 			want: NewStrictObjectType(map[string]ExprType{
@@ -442,7 +442,7 @@ func TestExprTypeFuseComplicated(t *testing.T) {
 			ty: NewObjectType(map[string]ExprType{
 				"foo": NumberType{},
 			}),
-			into: NewObjectType(map[string]ExprType{
+			with: NewObjectType(map[string]ExprType{
 				"foo": StringType{},
 			}),
 			want: NewObjectType(map[string]ExprType{
@@ -450,11 +450,11 @@ func TestExprTypeFuseComplicated(t *testing.T) {
 			}),
 		},
 		{
-			what: "any prop into prop",
+			what: "any prop with prop",
 			ty: NewObjectType(map[string]ExprType{
 				"foo": AnyType{},
 			}),
-			into: NewObjectType(map[string]ExprType{
+			with: NewObjectType(map[string]ExprType{
 				"foo": StringType{},
 			}),
 			want: NewObjectType(map[string]ExprType{
@@ -462,11 +462,11 @@ func TestExprTypeFuseComplicated(t *testing.T) {
 			}),
 		},
 		{
-			what: "prop into any prop",
+			what: "prop with any prop",
 			ty: NewObjectType(map[string]ExprType{
 				"foo": StringType{},
 			}),
-			into: NewObjectType(map[string]ExprType{
+			with: NewObjectType(map[string]ExprType{
 				"foo": AnyType{},
 			}),
 			want: NewObjectType(map[string]ExprType{
@@ -478,7 +478,7 @@ func TestExprTypeFuseComplicated(t *testing.T) {
 			ty: NewObjectType(map[string]ExprType{
 				"foo": NullType{},
 			}),
-			into: NewObjectType(map[string]ExprType{
+			with: NewObjectType(map[string]ExprType{
 				"foo": StringType{},
 			}),
 			want: NewObjectType(map[string]ExprType{
@@ -490,7 +490,7 @@ func TestExprTypeFuseComplicated(t *testing.T) {
 			ty: &ArrayType{
 				Elem: NumberType{},
 			},
-			into: &ArrayType{
+			with: &ArrayType{
 				Elem: StringType{},
 			},
 			want: &ArrayType{
@@ -502,7 +502,7 @@ func TestExprTypeFuseComplicated(t *testing.T) {
 			ty: &ArrayType{
 				Elem: NullType{},
 			},
-			into: &ArrayType{
+			with: &ArrayType{
 				Elem: StringType{},
 			},
 			want: &ArrayType{
@@ -510,11 +510,11 @@ func TestExprTypeFuseComplicated(t *testing.T) {
 			},
 		},
 		{
-			what: "any array element into element",
+			what: "any array element with element",
 			ty: &ArrayType{
 				Elem: AnyType{},
 			},
-			into: &ArrayType{
+			with: &ArrayType{
 				Elem: StringType{},
 			},
 			want: &ArrayType{
@@ -522,11 +522,11 @@ func TestExprTypeFuseComplicated(t *testing.T) {
 			},
 		},
 		{
-			what: "array element into any element",
+			what: "array element with any element",
 			ty: &ArrayType{
 				Elem: StringType{},
 			},
-			into: &ArrayType{
+			with: &ArrayType{
 				Elem: AnyType{},
 			},
 			want: &ArrayType{
@@ -534,27 +534,27 @@ func TestExprTypeFuseComplicated(t *testing.T) {
 			},
 		},
 		{
-			what: "array into array deref",
+			what: "array with array deref",
 			ty:   &ArrayType{StringType{}, false},
-			into: &ArrayType{StringType{}, true},
+			with: &ArrayType{StringType{}, true},
 			want: &ArrayType{StringType{}, false},
 		},
 		{
-			what: "array deref into array",
+			what: "array deref with array",
 			ty:   &ArrayType{StringType{}, true},
-			into: &ArrayType{StringType{}, false},
+			with: &ArrayType{StringType{}, false},
 			want: &ArrayType{StringType{}, false},
 		},
 		{
-			what: "array deref into array deref",
+			what: "array deref with array deref",
 			ty:   &ArrayType{StringType{}, true},
-			into: &ArrayType{StringType{}, true},
+			with: &ArrayType{StringType{}, true},
 			want: &ArrayType{StringType{}, false},
 		},
 		{
 			what: "object no prop at left hand side",
 			ty:   NewEmptyObjectType(),
-			into: NewObjectType(map[string]ExprType{
+			with: NewObjectType(map[string]ExprType{
 				"foo": StringType{},
 			}),
 			want: NewObjectType(map[string]ExprType{
@@ -566,7 +566,7 @@ func TestExprTypeFuseComplicated(t *testing.T) {
 			ty: NewObjectType(map[string]ExprType{
 				"foo": StringType{},
 			}),
-			into: NewEmptyObjectType(),
+			with: NewEmptyObjectType(),
 			want: NewObjectType(map[string]ExprType{
 				"foo": StringType{},
 			}),
@@ -574,13 +574,13 @@ func TestExprTypeFuseComplicated(t *testing.T) {
 		{
 			what: "any elem array at left hand side",
 			ty:   &ArrayType{AnyType{}, false},
-			into: &ArrayType{StringType{}, false},
+			with: &ArrayType{StringType{}, false},
 			want: &ArrayType{AnyType{}, false},
 		},
 		{
 			what: "any elem array at right hand side",
 			ty:   &ArrayType{StringType{}, false},
-			into: &ArrayType{AnyType{}, false},
+			with: &ArrayType{AnyType{}, false},
 			want: &ArrayType{AnyType{}, false},
 		},
 		{
@@ -590,7 +590,7 @@ func TestExprTypeFuseComplicated(t *testing.T) {
 					Elem: NumberType{},
 				},
 			},
-			into: &ArrayType{
+			with: &ArrayType{
 				Elem: &ArrayType{
 					Elem: StringType{},
 				},
@@ -611,7 +611,7 @@ func TestExprTypeFuseComplicated(t *testing.T) {
 				"aaa": NumberType{},
 				"ccc": NumberType{},
 			}),
-			into: NewObjectType(map[string]ExprType{
+			with: NewObjectType(map[string]ExprType{
 				"foo": NewObjectType(map[string]ExprType{
 					"bar":  StringType{},
 					"piyo": StringType{},
@@ -631,21 +631,21 @@ func TestExprTypeFuseComplicated(t *testing.T) {
 			}),
 		},
 		{
-			what: "map object into compatible map object",
+			what: "map object with compatible map object",
 			ty:   NewMapObjectType(NumberType{}),
-			into: NewMapObjectType(StringType{}),
+			with: NewMapObjectType(StringType{}),
 			want: NewMapObjectType(StringType{}),
 		},
 		{
-			what: "map object into incompatible map object",
+			what: "map object with incompatible map object",
 			ty:   NewMapObjectType(NumberType{}),
-			into: NewMapObjectType(NullType{}),
+			with: NewMapObjectType(NullType{}),
 			want: NewEmptyObjectType(),
 		},
 		{
-			what: "map object into compatible object",
+			what: "map object with compatible object",
 			ty:   NewMapObjectType(NumberType{}),
-			into: NewObjectType(map[string]ExprType{
+			with: NewObjectType(map[string]ExprType{
 				"foo": NumberType{},
 			}),
 			want: NewObjectType(map[string]ExprType{
@@ -653,9 +653,9 @@ func TestExprTypeFuseComplicated(t *testing.T) {
 			}),
 		},
 		{
-			what: "map object into incompatible object",
+			what: "map object with incompatible object",
 			ty:   NewMapObjectType(NumberType{}),
-			into: NewObjectType(map[string]ExprType{
+			with: NewObjectType(map[string]ExprType{
 				"foo": BoolType{},
 			}),
 			want: NewObjectType(map[string]ExprType{
@@ -667,12 +667,12 @@ func TestExprTypeFuseComplicated(t *testing.T) {
 	for _, tc := range testCases {
 		t.Run(tc.what, func(t *testing.T) {
 			opt := cmpopts.EquateEmpty()
-			ty := tc.into.Fuse(tc.ty)
+			ty := tc.with.Merge(tc.ty)
 			if !cmp.Equal(ty, tc.want, opt) {
 				t.Fatalf(
-					"%s into %s was %s while expecting %s\ndiff:\n%s",
+					"%s was merged with %s as %s while expecting %s\ndiff:\n%s",
 					tc.ty.String(),
-					tc.into.String(),
+					tc.with.String(),
 					ty.String(),
 					tc.want.String(),
 					cmp.Diff(tc.want, ty, opt),
@@ -682,12 +682,12 @@ func TestExprTypeFuseComplicated(t *testing.T) {
 	}
 }
 
-func TestExprTypeFuseCreateNewInstance(t *testing.T) {
+func TestExprTypeMergeCreateNewInstance(t *testing.T) {
 	{
 		ty := &ArrayType{
 			Elem: NumberType{},
 		}
-		ty2 := ty.Fuse(&ArrayType{
+		ty2 := ty.Merge(&ArrayType{
 			Elem: StringType{},
 		})
 		if ty == ty2 {
@@ -702,7 +702,7 @@ func TestExprTypeFuseCreateNewInstance(t *testing.T) {
 		ty := NewObjectType(map[string]ExprType{
 			"foo": NumberType{},
 		})
-		ty2 := ty.Fuse(
+		ty2 := ty.Merge(
 			NewObjectType(map[string]ExprType{
 				"foo": StringType{},
 				"bar": BoolType{},

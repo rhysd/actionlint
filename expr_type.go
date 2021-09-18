@@ -13,9 +13,9 @@ type ExprType interface {
 	String() string
 	// Assignable returns if other type can be assignable to the type.
 	Assignable(other ExprType) bool
-	// Fuse merges other type into this type. When other type conflicts with this type, fused
+	// Merge merges other type into this type. When other type conflicts with this type, the merged
 	// result is any type as fallback.
-	Fuse(other ExprType) ExprType
+	Merge(other ExprType) ExprType
 }
 
 // AnyType represents type which can be any type. It also indicates that a value of the type cannot
@@ -31,9 +31,9 @@ func (ty AnyType) Assignable(_ ExprType) bool {
 	return true
 }
 
-// Fuse merges other type into this type. When other type conflicts with this type, fused result is
-// any type as fallback.
-func (ty AnyType) Fuse(other ExprType) ExprType {
+// Merge merges other type into this type. When other type conflicts with this type, the merged
+// result is any type as fallback.
+func (ty AnyType) Merge(other ExprType) ExprType {
 	return ty
 }
 
@@ -54,9 +54,9 @@ func (ty NullType) Assignable(other ExprType) bool {
 	}
 }
 
-// Fuse merges other type into this type. When other type conflicts with this type, fused result is
-// any type as fallback.
-func (ty NullType) Fuse(other ExprType) ExprType {
+// Merge merges other type into this type. When other type conflicts with this type, the merged
+// result is any type as fallback.
+func (ty NullType) Merge(other ExprType) ExprType {
 	if _, ok := other.(NullType); ok {
 		return ty
 	}
@@ -81,9 +81,9 @@ func (ty NumberType) Assignable(other ExprType) bool {
 	}
 }
 
-// Fuse merges other type into this type. When other type conflicts with this type, fused result is
-// any type as fallback.
-func (ty NumberType) Fuse(other ExprType) ExprType {
+// Merge merges other type into this type. When other type conflicts with this type, the merged
+// result is any type as fallback.
+func (ty NumberType) Merge(other ExprType) ExprType {
 	switch other.(type) {
 	case NumberType:
 		return ty
@@ -109,9 +109,9 @@ func (ty BoolType) Assignable(other ExprType) bool {
 	return true
 }
 
-// Fuse merges other type into this type. When other type conflicts with this type, fused result is
-// any type as fallback.
-func (ty BoolType) Fuse(other ExprType) ExprType {
+// Merge merges other type into this type. When other type conflicts with this type, the merged
+// result is any type as fallback.
+func (ty BoolType) Merge(other ExprType) ExprType {
 	switch other.(type) {
 	case BoolType:
 		return ty
@@ -141,9 +141,9 @@ func (ty StringType) Assignable(other ExprType) bool {
 	}
 }
 
-// Fuse merges other type into this type. When other type conflicts with this type, fused result is
-// any type as fallback.
-func (ty StringType) Fuse(other ExprType) ExprType {
+// Merge merges other type into this type. When other type conflicts with this type, the merged
+// result is any type as fallback.
+func (ty StringType) Merge(other ExprType) ExprType {
 	switch other.(type) {
 	case StringType, NumberType, BoolType:
 		return ty
@@ -270,10 +270,10 @@ func (ty *ObjectType) Assignable(other ExprType) bool {
 	}
 }
 
-// Fuse merges two object types into one. When other object has unknown props, they are merged into
+// Merge merges two object types into one. When other object has unknown props, they are merged into
 // current object. When both have same property, when they are assignable, it remains as-is.
 // Otherwise, the property falls back to any type.
-func (ty *ObjectType) Fuse(other ExprType) ExprType {
+func (ty *ObjectType) Merge(other ExprType) ExprType {
 	switch other := other.(type) {
 	case *ObjectType:
 		// Shortcuts
@@ -288,7 +288,7 @@ func (ty *ObjectType) Fuse(other ExprType) ExprType {
 		if mapped == nil {
 			mapped = other.Mapped
 		} else if other.Mapped != nil {
-			mapped = mapped.Fuse(other.Mapped)
+			mapped = mapped.Merge(other.Mapped)
 		}
 
 		props := make(map[string]ExprType, len(ty.Props))
@@ -297,11 +297,11 @@ func (ty *ObjectType) Fuse(other ExprType) ExprType {
 		}
 		for n, r := range other.Props {
 			if l, ok := props[n]; ok {
-				props[n] = l.Fuse(r)
+				props[n] = l.Merge(r)
 			} else {
 				props[n] = r
 				if mapped != nil {
-					mapped = mapped.Fuse(r)
+					mapped = mapped.Merge(r)
 				}
 			}
 		}
@@ -339,10 +339,10 @@ func (ty *ArrayType) Assignable(other ExprType) bool {
 	}
 }
 
-// Fuse merges two object types into one. When other object has unknown props, they are merged into
+// Merge merges two object types into one. When other object has unknown props, they are merged into
 // current object. When both have same property, when they are assignable, it remains as-is.
 // Otherwise, the property falls back to any type.
-func (ty *ArrayType) Fuse(other ExprType) ExprType {
+func (ty *ArrayType) Merge(other ExprType) ExprType {
 	switch other := other.(type) {
 	case *ArrayType:
 		if _, ok := ty.Elem.(AnyType); ok {
@@ -352,7 +352,7 @@ func (ty *ArrayType) Fuse(other ExprType) ExprType {
 			return other
 		}
 		return &ArrayType{
-			Elem:  ty.Elem.Fuse(other.Elem),
+			Elem:  ty.Elem.Merge(other.Elem),
 			Deref: false, // When fusing array deref type, it means prop deref chain breaks
 		}
 	default:

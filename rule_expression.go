@@ -633,7 +633,7 @@ func (rule *RuleExpression) guessTypeOfMatrixExpression(expr *String) *ObjectTyp
 						matTy.Props[n] = p
 						continue
 					}
-					matTy.Props[n] = t.Fuse(p)
+					matTy.Props[n] = t.Merge(p)
 				}
 			}
 		}
@@ -663,7 +663,7 @@ func (rule *RuleExpression) guessTypeOfMatrix(m *Matrix) *ObjectType {
 
 	if m.Include.Expression != nil {
 		if ty, ok := rule.checkOneExpression(m.Include.Expression, "include").(*ArrayType); ok {
-			if ret, ok := o.Fuse(ty.Elem).(*ObjectType); ok {
+			if ret, ok := o.Merge(ty.Elem).(*ObjectType); ok {
 				return ret
 			}
 		}
@@ -676,8 +676,8 @@ func (rule *RuleExpression) guessTypeOfMatrix(m *Matrix) *ObjectType {
 			if ty == nil {
 				continue
 			}
-			if fused, ok := o.Fuse(ty).(*ObjectType); ok {
-				o = fused
+			if merged, ok := o.Merge(ty).(*ObjectType); ok {
+				o = merged
 			} else {
 				o.Strict(false)
 			}
@@ -687,8 +687,8 @@ func (rule *RuleExpression) guessTypeOfMatrix(m *Matrix) *ObjectType {
 		for n, assign := range combi.Assigns {
 			ty := guessTypeOfRawYAMLValue(assign.Value)
 			if t, ok := o.Props[n]; ok {
-				// When the combination exists in 'matrix' section, fuse type into existing one
-				ty = t.Fuse(ty)
+				// When the combination exists in 'matrix' section, merge type with existing one
+				ty = t.Merge(ty)
 			}
 			o.Props[n] = ty
 		}
@@ -713,7 +713,7 @@ func (rule *RuleExpression) guessTypeOfMatrixRow(r *MatrixRow) ExprType {
 		if ty == nil {
 			ty = t
 		} else {
-			ty = ty.Fuse(t)
+			ty = ty.Merge(t)
 		}
 	}
 
@@ -738,7 +738,7 @@ func guessTypeOfRawYAMLValue(v RawYAMLValue) ExprType {
 		}
 		elem := guessTypeOfRawYAMLValue(v.Elems[0])
 		for _, v := range v.Elems[1:] {
-			elem = elem.Fuse(guessTypeOfRawYAMLValue(v))
+			elem = elem.Merge(guessTypeOfRawYAMLValue(v))
 		}
 		return &ArrayType{elem, false}
 	case *RawYAMLString:
