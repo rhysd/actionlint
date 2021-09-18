@@ -13,8 +13,6 @@ type ExprType interface {
 	String() string
 	// Assignable returns if other type can be assignable to the type.
 	Assignable(other ExprType) bool
-	// Equals returns if the type is equal to the other type.
-	Equals(other ExprType) bool
 	// Fuse merges other type into this type. When other type conflicts with this type, fused
 	// result is any type as fallback.
 	Fuse(other ExprType) ExprType
@@ -30,11 +28,6 @@ func (ty AnyType) String() string {
 
 // Assignable returns if other type can be assignable to the type.
 func (ty AnyType) Assignable(_ ExprType) bool {
-	return true
-}
-
-// Equals returns if the type is equal to the other type.
-func (ty AnyType) Equals(other ExprType) bool {
 	return true
 }
 
@@ -61,16 +54,6 @@ func (ty NullType) Assignable(other ExprType) bool {
 	}
 }
 
-// Equals returns if the type is equal to the other type.
-func (ty NullType) Equals(other ExprType) bool {
-	switch other.(type) {
-	case NullType, AnyType:
-		return true
-	default:
-		return false
-	}
-}
-
 // Fuse merges other type into this type. When other type conflicts with this type, fused result is
 // any type as fallback.
 func (ty NullType) Fuse(other ExprType) ExprType {
@@ -85,16 +68,6 @@ type NumberType struct{}
 
 func (ty NumberType) String() string {
 	return "number"
-}
-
-// Equals returns if the type is equal to the other type.
-func (ty NumberType) Equals(other ExprType) bool {
-	switch other.(type) {
-	case NumberType, AnyType:
-		return true
-	default:
-		return false
-	}
 }
 
 // Assignable returns if other type can be assignable to the type.
@@ -136,16 +109,6 @@ func (ty BoolType) Assignable(other ExprType) bool {
 	return true
 }
 
-// Equals returns if the type is equal to the other type.
-func (ty BoolType) Equals(other ExprType) bool {
-	switch other.(type) {
-	case BoolType, AnyType:
-		return true
-	default:
-		return false
-	}
-}
-
 // Fuse merges other type into this type. When other type conflicts with this type, fused result is
 // any type as fallback.
 func (ty BoolType) Fuse(other ExprType) ExprType {
@@ -172,16 +135,6 @@ func (ty StringType) Assignable(other ExprType) bool {
 	// would be mistakes.
 	switch other.(type) {
 	case StringType, NumberType, AnyType:
-		return true
-	default:
-		return false
-	}
-}
-
-// Equals returns if the type is equal to the other type.
-func (ty StringType) Equals(other ExprType) bool {
-	switch other.(type) {
-	case StringType, AnyType:
 		return true
 	default:
 		return false
@@ -317,11 +270,6 @@ func (ty *ObjectType) Assignable(other ExprType) bool {
 	}
 }
 
-// Equals returns if the type is equal to the other type.
-func (ty *ObjectType) Equals(other ExprType) bool {
-	return ty.Assignable(other) && other.Assignable(ty)
-}
-
 // Fuse merges two object types into one. When other object has unknown props, they are merged into
 // current object. When both have same property, when they are assignable, it remains as-is.
 // Otherwise, the property falls back to any type.
@@ -379,18 +327,6 @@ func (ty *ArrayType) String() string {
 	return fmt.Sprintf("array<%s>", ty.Elem.String())
 }
 
-// Equals returns if the type is equal to the other type.
-func (ty *ArrayType) Equals(other ExprType) bool {
-	switch other := other.(type) {
-	case AnyType:
-		return true
-	case *ArrayType:
-		return ty.Elem.Equals(other.Elem)
-	default:
-		return false
-	}
-}
-
 // Assignable returns if other type can be assignable to the type.
 func (ty *ArrayType) Assignable(other ExprType) bool {
 	switch other := other.(type) {
@@ -422,4 +358,9 @@ func (ty *ArrayType) Fuse(other ExprType) ExprType {
 	default:
 		return AnyType{}
 	}
+}
+
+// EqualTypes returns if the two types are equal.
+func EqualTypes(l, r ExprType) bool {
+	return l.Assignable(r) && r.Assignable(l)
 }

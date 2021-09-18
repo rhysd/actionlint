@@ -20,7 +20,7 @@ func TestExprNewMapObjectType(t *testing.T) {
 	}
 }
 
-func TestExprTypeEquals(t *testing.T) {
+func TestExprEqualTypes(t *testing.T) {
 	testCases := []struct {
 		what string
 		ty   ExprType
@@ -183,27 +183,27 @@ func TestExprTypeEquals(t *testing.T) {
 			var l, r ExprType
 
 			l, r = tc.ty, tc.ty
-			if !l.Equals(r) {
+			if !EqualTypes(l, r) {
 				t.Errorf("%s should equal to %s", l.String(), r.String())
 			}
 			if tc.neq != nil {
 				l, r = tc.ty, tc.neq
-				if l.Equals(r) {
+				if EqualTypes(l, r) {
 					t.Errorf("%s should not equal to %s", l.String(), r.String())
 				}
 			}
 			if tc.eq != nil {
 				l, r = tc.ty, tc.eq
-				if !l.Equals(r) {
+				if !EqualTypes(l, r) {
 					t.Errorf("%s should equal to %s", l.String(), r.String())
 				}
 			}
 			l, r = tc.ty, AnyType{}
-			if !l.Equals(r) {
+			if !EqualTypes(l, r) {
 				t.Errorf("%s should equal to %s", l.String(), r.String())
 			}
 			l, r = AnyType{}, tc.ty
-			if !l.Equals(r) {
+			if !EqualTypes(l, r) {
 				t.Errorf("%s should equal to %s", l.String(), r.String())
 			}
 		})
