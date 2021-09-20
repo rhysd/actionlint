@@ -203,14 +203,14 @@ func (ty *ObjectType) IsLoose() bool {
 	return ok
 }
 
-// Strict sets the object is strict or non-strict. When true is given, the type is marked as
-// strict object.
-func (ty *ObjectType) Strict(b bool) {
-	if b {
-		ty.Mapped = AnyType{}
-	} else {
-		ty.Mapped = nil
-	}
+// Strict sets the object is strict, which means only known properties are allowed.
+func (ty *ObjectType) Strict() {
+	ty.Mapped = nil
+}
+
+// Loose sets the object is loose, which means any properties can be set.
+func (ty *ObjectType) Loose() {
+	ty.Mapped = AnyType{}
 }
 
 func (ty *ObjectType) String() string {

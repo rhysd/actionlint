@@ -20,6 +20,131 @@ func TestExprNewMapObjectType(t *testing.T) {
 	}
 }
 
+func TestExprObjectTypeSetStrict(t *testing.T) {
+	o := NewEmptyObjectType()
+	if o.IsStrict() || !o.IsLoose() {
+		t.Fatal("should be loose")
+	}
+	o.Strict()
+	if !o.IsStrict() || o.IsLoose() {
+		t.Fatal("should be strict")
+	}
+	o.Loose()
+	if o.IsStrict() || !o.IsLoose() {
+		t.Fatal("should be loose")
+	}
+}
+
+func TestExprAssignableSimple(t *testing.T) {
+	testCases := []ExprType{
+		AnyType{},
+		NullType{},
+		NumberType{},
+		BoolType{},
+		StringType{},
+		NewObjectType(map[string]ExprType{"n": NumberType{}}),
+		NewStrictObjectType(map[string]ExprType{"b": BoolType{}}),
+		NewMapObjectType(NullType{}),
+		&ArrayType{Elem: StringType{}},
+	}
+
+	for _, ty := range testCases {
+		s := ty.String()
+		t.Run(s, func(t *testing.T) {
+			if !ty.Assignable(ty) {
+				t.Fatalf("%s is not self-assignable", ty)
+			}
+
+			switch ty.(type) {
+			case NullType:
+			case AnyType:
+			default:
+				if (NullType{}).Assignable(ty) {
+					t.Fatalf("%s is assignable to null", ty)
+				}
+			}
+
+			if !(AnyType{}).Assignable(ty) {
+				t.Fatalf("%s is not assignable to any", ty)
+			}
+		})
+	}
+}
+
+func TestExprAssignableObject(t *testing.T) {
+	testCases := []struct {
+		from, to ExprType
+		no       bool
+	}{
+		{
+			from: NewMapObjectType(NumberType{}),
+			to:   NewMapObjectType(StringType{}),
+		},
+		{
+			from: NewEmptyObjectType(),
+			to:   NewMapObjectType(StringType{}),
+		},
+		{
+			from: NewMapObjectType(StringType{}),
+			to:   NewEmptyObjectType(),
+		},
+		{
+			from: NewStrictObjectType(map[string]ExprType{
+				"a": NumberType{},
+				"b": StringType{},
+			}),
+			to: NewMapObjectType(StringType{}),
+		},
+		{
+			from: NewStrictObjectType(map[string]ExprType{"a": NullType{}}),
+			to:   NewMapObjectType(StringType{}),
+			no:   true,
+		},
+		{
+			from: NewMapObjectType(NumberType{}),
+			to: NewStrictObjectType(map[string]ExprType{
+				"a": AnyType{},
+				"b": StringType{},
+			}),
+		},
+		{
+			from: NewMapObjectType(NumberType{}),
+			to: NewStrictObjectType(map[string]ExprType{
+				"a": NullType{},
+				"b": StringType{},
+			}),
+			no: true,
+		},
+		{
+			from: NewStrictObjectType(map[string]ExprType{"a": NumberType{}}),
+			to:   NewStrictObjectType(map[string]ExprType{"a": StringType{}}),
+		},
+		{
+			from: NewStrictObjectType(map[string]ExprType{"a": StringType{}}),
+			to:   NewStrictObjectType(map[string]ExprType{"b": StringType{}}),
+			no:   true,
+		},
+		{
+			from: NewStrictObjectType(map[string]ExprType{"a": NullType{}}),
+			to:   NewStrictObjectType(map[string]ExprType{"a": StringType{}}),
+			no:   true,
+		},
+	}
+
+	for _, tc := range testCases {
+		l, r := tc.to.String(), tc.from.String()
+		t.Run(l+" := "+r, func(t *testing.T) {
+			if tc.to.Assignable(tc.from) == tc.no {
+				not := ""
+				if tc.no {
+					not = " not"
+				}
+				t.Fatalf("%s should%s be assignable to %s", r, not, l)
+			}
+		})
+	}
+}
+
 func TestExprEqualTypes(t *testing.T) {
 	testCases := []struct {
 		what string

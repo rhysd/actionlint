@@ -679,7 +679,7 @@ func (rule *RuleExpression) guessTypeOfMatrix(m *Matrix) *ObjectType {
 			if merged, ok := o.Merge(ty).(*ObjectType); ok {
 				o = merged
 			} else {
-				o.Strict(false)
+				o.Loose()
 			}
 			continue
 		}
