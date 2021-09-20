@@ -238,6 +238,7 @@ checker.
 | Array         | Array of specific type elements                                                            | `array<T>`               |
 | Loose object  | Object which can contain any properties                                                    | `object`                 |
 | Strict object | Object whose properties are strictly typed                                                 | `{prop1: T1, prop2: T2}` |
+| Map object    | Object who has specific type values like `env` context                                     | `{string => T}`          |
 
 Type check by actionlint is more strict than GitHub Actions runtime.
 
@@ -278,7 +279,7 @@ test.yaml:11:24: receiver of object dereference "owner" must be type of object b
    |
 11 |       - run: echo '${{ github.repository.owner }}'
    |                        ^~~~~~~~~~~~~~~~~~~~~~~
-test.yaml:13:20: object, array, and null values should not be evaluated in template with ${{ }} but evaluating the value of type object [expression]
+test.yaml:13:20: object, array, and null values should not be evaluated in template with ${{ }} but evaluating the value of type {string => string} [expression]
    |
 13 |       - run: echo '${{ env }}'
    |                    ^~~
@@ -502,7 +503,7 @@ test.yaml:8:23: property "cache" is not defined in object type {} [expression]
   |
 8 |       - run: echo ${{ steps.cache.outputs.cache-hit }}
   |                       ^~~~~~~~~~~~~~~~~~~~~~~~~~~~~
-test.yaml:18:23: property "cache_hit" is not defined in object type {cache-hit: any} [expression]
+test.yaml:18:23: property "cache_hit" is not defined in object type {cache-hit: string} [expression]
    |
 18 |       - run: echo ${{ steps.cache.outputs.cache_hit }}
    |                       ^~~~~~~~~~~~~~~~~~~~~~~~~~~~~
@@ -559,7 +560,7 @@ test.yaml:8:23: property "my_action" is not defined in object type {} [expressio
   |
 8 |       - run: echo ${{ steps.my_action.outputs.some_value }}
   |                       ^~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
-test.yaml:15:23: property "some-value" is not defined in object type {some_value: any} [expression]
+test.yaml:15:23: property "some-value" is not defined in object type {some_value: string} [expression]
    |
 15 |       - run: echo ${{ steps.my_action.outputs.some-value }}
    |                       ^~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~

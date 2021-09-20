@@ -135,7 +135,7 @@ func (rule *RuleExpression) VisitJobPre(n *Job) error {
 		rule.checkContainer(s.Container)
 	}
 
-	rule.stepsTy = NewStrictObjectType()
+	rule.stepsTy = NewEmptyStrictObjectType()
 
 	return nil
 }
@@ -190,14 +190,11 @@ func (rule *RuleExpression) VisitStep(n *Step) error {
 	if n.ID != nil {
 		// Step ID is case insensitive
 		id := strings.ToLower(n.ID.Value)
-		rule.stepsTy.Props[id] = &ObjectType{
-			Props: map[string]ExprType{
-				"outputs":    rule.getActionOutputsType(spec),
-				"conclusion": StringType{},
-				"outcome":    StringType{},
-			},
-			StrictProps: true,
-		}
+		rule.stepsTy.Props[id] = NewStrictObjectType(map[string]ExprType{
+			"outputs":    rule.getActionOutputsType(spec),
+			"conclusion": StringType{},
+			"outcome":    StringType{},
+		})
 	}
 
 	return nil
@@ -205,17 +202,17 @@ func (rule *RuleExpression) VisitStep(n *Step) error {
 
 func (rule *RuleExpression) getActionOutputsType(spec *String) *ObjectType {
 	if spec == nil {
-		return NewObjectType()
+		return NewMapObjectType(StringType{}) // outputs.<output name>
 	}
 
 	if strings.HasPrefix(spec.Value, "./") {
 		meta, err := rule.localActions.FindMetadata(spec.Value)
 		if err != nil {
 			rule.error(spec.Pos, err.Error())
-			return NewObjectType()
+			return NewMapObjectType(StringType{}) // outputs.<output name>
 		}
 		if meta == nil {
-			return NewObjectType()
+			return NewMapObjectType(StringType{}) // outputs.<output name>
 		}
 
 		return typeOfActionOutputs(meta)
@@ -227,7 +224,7 @@ func (rule *RuleExpression) getActionOutputsType(spec *String) *ObjectType {
 		return typeOfActionOutputs(meta)
 	}
 
-	return NewObjectType()
+	return NewMapObjectType(StringType{}) // outputs.<output name>
 }
 
 func (rule *RuleExpression) checkOneExpression(s *String, what string) ExprType {
@@ -580,7 +577,7 @@ func (rule *RuleExpression) checkSemantics(src string, line, col int, checkUntru
 
 func (rule *RuleExpression) calcNeedsType(job *Job) *ObjectType {
 	// https://docs.github.com/en/actions/reference/context-and-expression-syntax-for-github-actions#needs-context
-	o := NewStrictObjectType()
+	o := NewEmptyStrictObjectType()
 	rule.populateDependantNeedsTypes(o, job, job)
 	return o
 }
@@ -600,18 +597,15 @@ func (rule *RuleExpression) populateDependantNeedsTypes(out *ObjectType, job *Jo
 			continue
 		}
 
-		outputs := NewStrictObjectType()
+		outputs := NewEmptyStrictObjectType()
 		for name := range j.Outputs {
 			outputs.Props[name] = StringType{}
 		}
 
-		out.Props[i] = &ObjectType{
-			Props: map[string]ExprType{
-				"outputs": outputs,
-				"result":  StringType{},
-			},
-			StrictProps: true,
-		}
+		out.Props[i] = NewStrictObjectType(map[string]ExprType{
+			"outputs": outputs,
+			"result":  StringType{},
+		})
 
 		rule.populateDependantNeedsTypes(out, j, root) // Add necessary needs props recursively
 	}
@@ -620,11 +614,11 @@ func (rule *RuleExpression) populateDependantNeedsTypes(out *ObjectType, job *Jo
 func (rule *RuleExpression) guessTypeOfMatrixExpression(expr *String) *ObjectType {
 	ty := rule.checkObjectExpression(expr, "matrix")
 	if ty == nil {
-		return NewObjectType()
+		return NewEmptyObjectType()
 	}
 	matTy, ok := ty.(*ObjectType)
 	if !ok {
-		return NewObjectType()
+		return NewEmptyObjectType()
 	}
 
 	// Consider properties in include section elements since 'include' section adds matrix values
@@ -639,7 +633,7 @@ func (rule *RuleExpression) guessTypeOfMatrixExpression(expr *String) *ObjectTyp
 						matTy.Props[n] = p
 						continue
 					}
-					matTy.Props[n] = t.Fuse(p)
+					matTy.Props[n] = t.Merge(p)
 				}
 			}
 		}
@@ -655,7 +649,7 @@ func (rule *RuleExpression) guessTypeOfMatrix(m *Matrix) *ObjectType {
 		return rule.guessTypeOfMatrixExpression(m.Expression)
 	}
 
-	o := NewStrictObjectType()
+	o := NewEmptyStrictObjectType()
 
 	for n, r := range m.Rows {
 		o.Props[n] = rule.guessTypeOfMatrixRow(r)
@@ -669,11 +663,11 @@ func (rule *RuleExpression) guessTypeOfMatrix(m *Matrix) *ObjectType {
 
 	if m.Include.Expression != nil {
 		if ty, ok := rule.checkOneExpression(m.Include.Expression, "include").(*ArrayType); ok {
-			if ret, ok := o.Fuse(ty.Elem).(*ObjectType); ok {
+			if ret, ok := o.Merge(ty.Elem).(*ObjectType); ok {
 				return ret
 			}
 		}
-		return NewObjectType()
+		return NewEmptyObjectType()
 	}
 
 	for _, combi := range m.Include.Combinations {
@@ -682,10 +676,10 @@ func (rule *RuleExpression) guessTypeOfMatrix(m *Matrix) *ObjectType {
 			if ty == nil {
 				continue
 			}
-			if fused, ok := o.Fuse(ty).(*ObjectType); ok {
-				o = fused
+			if merged, ok := o.Merge(ty).(*ObjectType); ok {
+				o = merged
 			} else {
-				o.StrictProps = false
+				o.Loose()
 			}
 			continue
 		}
@@ -693,8 +687,8 @@ func (rule *RuleExpression) guessTypeOfMatrix(m *Matrix) *ObjectType {
 		for n, assign := range combi.Assigns {
 			ty := guessTypeOfRawYAMLValue(assign.Value)
 			if t, ok := o.Props[n]; ok {
-				// When the combination exists in 'matrix' section, fuse type into existing one
-				ty = t.Fuse(ty)
+				// When the combination exists in 'matrix' section, merge type with existing one
+				ty = t.Merge(ty)
 			}
 			o.Props[n] = ty
 		}
@@ -719,7 +713,7 @@ func (rule *RuleExpression) guessTypeOfMatrixRow(r *MatrixRow) ExprType {
 		if ty == nil {
 			ty = t
 		} else {
-			ty = ty.Fuse(t)
+			ty = ty.Merge(t)
 		}
 	}
 
@@ -737,14 +731,14 @@ func guessTypeOfRawYAMLValue(v RawYAMLValue) ExprType {
 		for k, p := range v.Props {
 			m[k] = guessTypeOfRawYAMLValue(p)
 		}
-		return &ObjectType{Props: m, StrictProps: true}
+		return NewStrictObjectType(m)
 	case *RawYAMLArray:
 		if len(v.Elems) == 0 {
 			return &ArrayType{AnyType{}, false}
 		}
 		elem := guessTypeOfRawYAMLValue(v.Elems[0])
 		for _, v := range v.Elems[1:] {
-			elem = elem.Fuse(guessTypeOfRawYAMLValue(v))
+			elem = elem.Merge(guessTypeOfRawYAMLValue(v))
 		}
 		return &ArrayType{elem, false}
 	case *RawYAMLString:
@@ -780,12 +774,11 @@ func typeOfActionOutputs(meta *ActionMetadata) *ObjectType {
 	// Some action sets outputs dynamically. Such outputs are not defined in action.yml. actionlint
 	// cannot check such outputs statically so it allows any props (#18)
 	if meta.SkipOutputs {
-		return NewObjectType()
+		return NewEmptyObjectType()
 	}
-	ty := NewObjectType()
+	props := make(map[string]ExprType, len(meta.Outputs))
 	for n := range meta.Outputs {
-		ty.Props[n] = AnyType{}
+		props[n] = StringType{}
 	}
-	ty.StrictProps = true
-	return ty
+	return NewStrictObjectType(props)
 }

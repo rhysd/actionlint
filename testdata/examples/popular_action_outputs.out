@@ -1,2 +1,2 @@
 test.yaml:8:23: property "cache" is not defined in object type {} [expression]
-test.yaml:18:23: property "cache_hit" is not defined in object type {cache-hit: any} [expression]
+test.yaml:18:23: property "cache_hit" is not defined in object type {cache-hit: string} [expression]

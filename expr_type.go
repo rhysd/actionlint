@@ -13,11 +13,9 @@ type ExprType interface {
 	String() string
 	// Assignable returns if other type can be assignable to the type.
 	Assignable(other ExprType) bool
-	// Equals returns if the type is equal to the other type.
-	Equals(other ExprType) bool
-	// Fuse merges other type into this type. When other type conflicts with this type, fused
+	// Merge merges other type into this type. When other type conflicts with this type, the merged
 	// result is any type as fallback.
-	Fuse(other ExprType) ExprType
+	Merge(other ExprType) ExprType
 }
 
 // AnyType represents type which can be any type. It also indicates that a value of the type cannot
@@ -33,14 +31,9 @@ func (ty AnyType) Assignable(_ ExprType) bool {
 	return true
 }
 
-// Equals returns if the type is equal to the other type.
-func (ty AnyType) Equals(other ExprType) bool {
-	return true
-}
-
-// Fuse merges other type into this type. When other type conflicts with this type, fused result is
-// any type as fallback.
-func (ty AnyType) Fuse(other ExprType) ExprType {
+// Merge merges other type into this type. When other type conflicts with this type, the merged
+// result is any type as fallback.
+func (ty AnyType) Merge(other ExprType) ExprType {
 	return ty
 }
 
@@ -61,19 +54,9 @@ func (ty NullType) Assignable(other ExprType) bool {
 	}
 }
 
-// Equals returns if the type is equal to the other type.
-func (ty NullType) Equals(other ExprType) bool {
-	switch other.(type) {
-	case NullType, AnyType:
-		return true
-	default:
-		return false
-	}
-}
-
-// Fuse merges other type into this type. When other type conflicts with this type, fused result is
-// any type as fallback.
-func (ty NullType) Fuse(other ExprType) ExprType {
+// Merge merges other type into this type. When other type conflicts with this type, the merged
+// result is any type as fallback.
+func (ty NullType) Merge(other ExprType) ExprType {
 	if _, ok := other.(NullType); ok {
 		return ty
 	}
@@ -87,16 +70,6 @@ func (ty NumberType) String() string {
 	return "number"
 }
 
-// Equals returns if the type is equal to the other type.
-func (ty NumberType) Equals(other ExprType) bool {
-	switch other.(type) {
-	case NumberType, AnyType:
-		return true
-	default:
-		return false
-	}
-}
-
 // Assignable returns if other type can be assignable to the type.
 func (ty NumberType) Assignable(other ExprType) bool {
 	// TODO: Is string of numbers corced into number?
@@ -108,9 +81,9 @@ func (ty NumberType) Assignable(other ExprType) bool {
 	}
 }
 
-// Fuse merges other type into this type. When other type conflicts with this type, fused result is
-// any type as fallback.
-func (ty NumberType) Fuse(other ExprType) ExprType {
+// Merge merges other type into this type. When other type conflicts with this type, the merged
+// result is any type as fallback.
+func (ty NumberType) Merge(other ExprType) ExprType {
 	switch other.(type) {
 	case NumberType:
 		return ty
@@ -136,19 +109,9 @@ func (ty BoolType) Assignable(other ExprType) bool {
 	return true
 }
 
-// Equals returns if the type is equal to the other type.
-func (ty BoolType) Equals(other ExprType) bool {
-	switch other.(type) {
-	case BoolType, AnyType:
-		return true
-	default:
-		return false
-	}
-}
-
-// Fuse merges other type into this type. When other type conflicts with this type, fused result is
-// any type as fallback.
-func (ty BoolType) Fuse(other ExprType) ExprType {
+// Merge merges other type into this type. When other type conflicts with this type, the merged
+// result is any type as fallback.
+func (ty BoolType) Merge(other ExprType) ExprType {
 	switch other.(type) {
 	case BoolType:
 		return ty
@@ -178,19 +141,9 @@ func (ty StringType) Assignable(other ExprType) bool {
 	}
 }
 
-// Equals returns if the type is equal to the other type.
-func (ty StringType) Equals(other ExprType) bool {
-	switch other.(type) {
-	case StringType, AnyType:
-		return true
-	default:
-		return false
-	}
-}
-
-// Fuse merges other type into this type. When other type conflicts with this type, fused result is
-// any type as fallback.
-func (ty StringType) Fuse(other ExprType) ExprType {
+// Merge merges other type into this type. When other type conflicts with this type, the merged
+// result is any type as fallback.
+func (ty StringType) Merge(other ExprType) ExprType {
 	switch other.(type) {
 	case StringType, NumberType, BoolType:
 		return ty
@@ -203,30 +156,72 @@ func (ty StringType) Fuse(other ExprType) ExprType {
 type ObjectType struct {
 	// Props is map from properties name to their type.
 	Props map[string]ExprType
-	// StrictProps is flag to check if the properties should be checked strictly. When this flag
-	// is set to true, it means that other than properties defined in Props field are not permitted
-	// and will cause type error. When this flag is set to false, accessing to unknown properties
-	// does not cause type error and will be deducted to any type.
-	StrictProps bool
+	// Mapped is an element type of this object. This means all props have the type. For example,
+	// The element type of env context is string.
+	// AnyType means its property types can be any type so it shapes a loose object. Setting nil
+	// means propreties are mapped to no type so it shapes a strict object.
+	//
+	// Invariant: All types in Props field must be assignable to this type.
+	Mapped ExprType
 }
 
-// NewObjectType creates new ObjectType instance which allows unknown props. When accessing to
-// unknown props, their values will fall back to any.
-func NewObjectType() *ObjectType {
-	return &ObjectType{map[string]ExprType{}, false}
+// NewEmptyObjectType creates new loose ObjectType instance which allows unknown props. When
+// accessing to unknown props, their values will fall back to any.
+func NewEmptyObjectType() *ObjectType {
+	return &ObjectType{map[string]ExprType{}, AnyType{}}
 }
 
-// NewStrictObjectType creates new ObjectType instance which does not allow unknown props.
-func NewStrictObjectType() *ObjectType {
-	return &ObjectType{map[string]ExprType{}, true}
+// NewObjectType creates new loose ObjectType instance which allows unknown props with given props.
+func NewObjectType(props map[string]ExprType) *ObjectType {
+	return &ObjectType{props, AnyType{}}
+}
+
+// NewEmptyStrictObjectType creates new ObjectType instance which does not allow unknown props.
+func NewEmptyStrictObjectType() *ObjectType {
+	return &ObjectType{map[string]ExprType{}, nil}
+}
+
+// NewStrictObjectType creates new ObjectType instance which does not allow unknown props with
+// given prop types.
+func NewStrictObjectType(props map[string]ExprType) *ObjectType {
+	return &ObjectType{props, nil}
+}
+
+// NewMapObjectType creates new ObjectType which maps keys to a specific type value.
+func NewMapObjectType(t ExprType) *ObjectType {
+	return &ObjectType{nil, t}
+}
+
+// IsStrict returns if the type is a strict object, which means no unknown prop is allowed.
+func (ty *ObjectType) IsStrict() bool {
+	return ty.Mapped == nil
+}
+
+// IsLoose returns if the type is a loose object, which allows any unknown props.
+func (ty *ObjectType) IsLoose() bool {
+	_, ok := ty.Mapped.(AnyType)
+	return ok
+}
+
+// Strict sets the object is strict, which means only known properties are allowed.
+func (ty *ObjectType) Strict() {
+	ty.Mapped = nil
+}
+
+// Loose sets the object is loose, which means any properties can be set.
+func (ty *ObjectType) Loose() {
+	ty.Mapped = AnyType{}
 }
 
 func (ty *ObjectType) String() string {
-	len := len(ty.Props)
-	if len == 0 && !ty.StrictProps {
-		return "object"
+	if !ty.IsStrict() {
+		if ty.IsLoose() {
+			return "object"
+		}
+		return fmt.Sprintf("{string => %s}", ty.Mapped.String())
 	}
-	ps := make([]string, 0, len)
+
+	ps := make([]string, 0, len(ty.Props))
 	for n, t := range ty.Props {
 		ps = append(ps, fmt.Sprintf("%s: %s", n, t.String()))
 	}
@@ -234,71 +229,87 @@ func (ty *ObjectType) String() string {
 }
 
 // Assignable returns if other type can be assignable to the type.
+// In other words, rhs type is more strict than lhs (receiver) type.
 func (ty *ObjectType) Assignable(other ExprType) bool {
 	switch other := other.(type) {
 	case AnyType:
 		return true
 	case *ObjectType:
-		for n, p1 := range ty.Props {
-			if p2, ok := other.Props[n]; ok && !p1.Assignable(p2) {
-				return false
+		if !ty.IsStrict() {
+			if !other.IsStrict() {
+				return ty.Mapped.Assignable(other.Mapped)
 			}
-		}
-		return true
-	default:
-		return false
-	}
-}
-
-// Equals returns if the type is equal to the other type.
-func (ty *ObjectType) Equals(other ExprType) bool {
-	switch other := other.(type) {
-	case AnyType:
-		return true
-	case *ObjectType:
-		if !ty.StrictProps || !other.StrictProps {
+			for _, t := range other.Props {
+				if !ty.Mapped.Assignable(t) {
+					return false
+				}
+			}
 			return true
 		}
-		for n, t := range ty.Props {
-			o, ok := other.Props[n]
-			if !ok || !t.Equals(o) {
+		// ty is strict
+
+		if !other.IsStrict() {
+			for _, t := range ty.Props {
+				if !t.Assignable(other.Mapped) {
+					return false
+				}
+			}
+			return true
+		}
+		// ty and other are strict
+
+		for n, r := range other.Props {
+			if l, ok := ty.Props[n]; !ok || !l.Assignable(r) {
 				return false
 			}
 		}
+
 		return true
 	default:
 		return false
 	}
 }
 
-// Fuse merges two object types into one. When other object has unknown props, they are merged into
+// Merge merges two object types into one. When other object has unknown props, they are merged into
 // current object. When both have same property, when they are assignable, it remains as-is.
 // Otherwise, the property falls back to any type.
-func (ty *ObjectType) Fuse(other ExprType) ExprType {
+func (ty *ObjectType) Merge(other ExprType) ExprType {
 	switch other := other.(type) {
 	case *ObjectType:
-		if len(ty.Props) == 0 {
+		// Shortcuts
+		if len(ty.Props) == 0 && other.IsLoose() {
 			return other
 		}
-		if len(other.Props) == 0 {
+		if len(other.Props) == 0 && ty.IsLoose() {
 			return ty
 		}
 
-		ret := &ObjectType{
-			Props:       make(map[string]ExprType, len(ty.Props)),
-			StrictProps: ty.StrictProps && other.StrictProps,
+		mapped := ty.Mapped
+		if mapped == nil {
+			mapped = other.Mapped
+		} else if other.Mapped != nil {
+			mapped = mapped.Merge(other.Mapped)
 		}
-		for n, t := range ty.Props {
-			ret.Props[n] = t
+
+		props := make(map[string]ExprType, len(ty.Props))
+		for n, l := range ty.Props {
+			props[n] = l
 		}
-		for n, rhs := range other.Props {
-			if lhs, ok := ret.Props[n]; ok {
-				ret.Props[n] = lhs.Fuse(rhs)
+		for n, r := range other.Props {
+			if l, ok := props[n]; ok {
+				props[n] = l.Merge(r)
 			} else {
-				ret.Props[n] = rhs // New prop
+				props[n] = r
+				if mapped != nil {
+					mapped = mapped.Merge(r)
+				}
 			}
 		}
-		return ret
+
+		return &ObjectType{
+			Props:  props,
+			Mapped: mapped,
+		}
 	default:
 		return AnyType{}
 	}
@@ -316,18 +327,6 @@ func (ty *ArrayType) String() string {
 	return fmt.Sprintf("array<%s>", ty.Elem.String())
 }
 
-// Equals returns if the type is equal to the other type.
-func (ty *ArrayType) Equals(other ExprType) bool {
-	switch other := other.(type) {
-	case AnyType:
-		return true
-	case *ArrayType:
-		return ty.Elem.Equals(other.Elem)
-	default:
-		return false
-	}
-}
-
 // Assignable returns if other type can be assignable to the type.
 func (ty *ArrayType) Assignable(other ExprType) bool {
 	switch other := other.(type) {
@@ -340,10 +339,10 @@ func (ty *ArrayType) Assignable(other ExprType) bool {
 	}
 }
 
-// Fuse merges two object types into one. When other object has unknown props, they are merged into
+// Merge merges two object types into one. When other object has unknown props, they are merged into
 // current object. When both have same property, when they are assignable, it remains as-is.
 // Otherwise, the property falls back to any type.
-func (ty *ArrayType) Fuse(other ExprType) ExprType {
+func (ty *ArrayType) Merge(other ExprType) ExprType {
 	switch other := other.(type) {
 	case *ArrayType:
 		if _, ok := ty.Elem.(AnyType); ok {
@@ -353,10 +352,15 @@ func (ty *ArrayType) Fuse(other ExprType) ExprType {
 			return other
 		}
 		return &ArrayType{
-			Elem:  ty.Elem.Fuse(other.Elem),
+			Elem:  ty.Elem.Merge(other.Elem),
 			Deref: false, // When fusing array deref type, it means prop deref chain breaks
 		}
 	default:
 		return AnyType{}
 	}
+}
+
+// EqualTypes returns if the two types are equal.
+func EqualTypes(l, r ExprType) bool {
+	return l.Assignable(r) && r.Assignable(l)
 }

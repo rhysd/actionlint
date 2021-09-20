@@ -56,15 +56,11 @@ func TestExprSemanticsCheckOK(t *testing.T) {
 				"test": {
 					{
 						Name: "test",
-						Ret: &ObjectType{
-							Props: map[string]ExprType{
-								"bar": &ObjectType{
-									Props: map[string]ExprType{
-										"piyo": BoolType{},
-									},
-								},
-							},
-						},
+						Ret: NewObjectType(map[string]ExprType{
+							"bar": NewObjectType(map[string]ExprType{
+								"piyo": BoolType{},
+							}),
+						}),
 					},
 				},
 			},
@@ -87,11 +83,9 @@ func TestExprSemanticsCheckOK(t *testing.T) {
 				"test": {
 					{
 						Name: "test",
-						Ret: &ObjectType{
-							Props: map[string]ExprType{
-								"bar": &ArrayType{Elem: BoolType{}},
-							},
-						},
+						Ret: NewObjectType(map[string]ExprType{
+							"bar": &ArrayType{Elem: BoolType{}},
+						}),
 					},
 				},
 			},
@@ -104,21 +98,15 @@ func TestExprSemanticsCheckOK(t *testing.T) {
 				"test": {
 					{
 						Name: "test",
-						Ret: &ObjectType{
-							Props: map[string]ExprType{
-								"foo": &ArrayType{
-									Elem: &ObjectType{
-										Props: map[string]ExprType{
-											"bar": &ObjectType{
-												Props: map[string]ExprType{
-													"piyo": StringType{},
-												},
-											},
-										},
-									},
-								},
+						Ret: NewObjectType(map[string]ExprType{
+							"foo": &ArrayType{
+								Elem: NewObjectType(map[string]ExprType{
+									"bar": NewObjectType(map[string]ExprType{
+										"piyo": StringType{},
+									}),
+								}),
 							},
-						},
+						}),
 					},
 				},
 			},
@@ -131,24 +119,15 @@ func TestExprSemanticsCheckOK(t *testing.T) {
 				"test": {
 					{
 						Name: "test",
-						Ret: &ObjectType{
-							Props: map[string]ExprType{
-								"foo": &ArrayType{
-									Elem: &ObjectType{
-										Props: map[string]ExprType{
-											"bar": &ObjectType{
-												Props: map[string]ExprType{
-													"piyo": StringType{},
-												},
-												StrictProps: true,
-											},
-										},
-										StrictProps: true,
-									},
-								},
+						Ret: NewStrictObjectType(map[string]ExprType{
+							"foo": &ArrayType{
+								Elem: NewStrictObjectType(map[string]ExprType{
+									"bar": NewStrictObjectType(map[string]ExprType{
+										"piyo": StringType{},
+									}),
+								}),
 							},
-							StrictProps: true,
-						},
+						}),
 					},
 				},
 			},
@@ -192,22 +171,18 @@ func TestExprSemanticsCheckOK(t *testing.T) {
 				"test": {
 					{
 						Name: "test",
-						Ret: &ObjectType{
-							Props: map[string]ExprType{
-								"bar": &ObjectType{
-									Props: map[string]ExprType{
-										"piyo": BoolType{},
-									},
-								},
-							},
-						},
+						Ret: NewObjectType(map[string]ExprType{
+							"bar": NewObjectType(map[string]ExprType{
+								"piyo": BoolType{},
+							}),
+						}),
 					},
 				},
 			},
 		},
 		{
 			what:     "object property index access with any type",
-			input:    "env['FOOO']",
+			input:    "github.event['FOOO']",
 			expected: AnyType{},
 		},
 		{
@@ -236,17 +211,13 @@ func TestExprSemanticsCheckOK(t *testing.T) {
 				"test": {
 					{
 						Name: "test",
-						Ret: &ObjectType{
-							Props: map[string]ExprType{
-								"foo": &ArrayType{
-									Elem: &ObjectType{
-										Props: map[string]ExprType{
-											"bar": StringType{},
-										},
-									},
-								},
+						Ret: NewObjectType(map[string]ExprType{
+							"foo": &ArrayType{
+								Elem: NewObjectType(map[string]ExprType{
+									"bar": StringType{},
+								}),
 							},
-						},
+						}),
 					},
 				},
 			},
@@ -260,11 +231,9 @@ func TestExprSemanticsCheckOK(t *testing.T) {
 					{
 						Name: "test",
 						Ret: &ArrayType{
-							Elem: &ObjectType{
-								Props: map[string]ExprType{
-									"x": NumberType{},
-								},
-							},
+							Elem: NewObjectType(map[string]ExprType{
+								"x": NumberType{},
+							}),
 						},
 					},
 				},
@@ -339,30 +308,25 @@ func TestExprSemanticsCheckOK(t *testing.T) {
 		{
 			what:  "coercing two objects on && operator",
 			input: "foo() && bar()",
-			expected: &ObjectType{
-				Props: map[string]ExprType{
-					"foo": NumberType{},
-					"bar": BoolType{},
-				},
-				StrictProps: true,
-			},
+			expected: NewStrictObjectType(map[string]ExprType{
+				"foo": NumberType{},
+				"bar": BoolType{},
+			}),
 			funcs: map[string][]*FuncSignature{
 				"foo": {
 					{
 						Name: "foo",
-						Ret: &ObjectType{
-							Props:       map[string]ExprType{"foo": NumberType{}},
-							StrictProps: true,
-						},
+						Ret: NewStrictObjectType(map[string]ExprType{
+							"foo": NumberType{},
+						}),
 					},
 				},
 				"bar": {
 					{
 						Name: "bar",
-						Ret: &ObjectType{
-							Props:       map[string]ExprType{"bar": BoolType{}},
-							StrictProps: true,
-						},
+						Ret: NewStrictObjectType(map[string]ExprType{
+							"bar": BoolType{},
+						}),
 					},
 				},
 			},
@@ -370,30 +334,25 @@ func TestExprSemanticsCheckOK(t *testing.T) {
 		{
 			what:  "coercing two objects on || operator",
 			input: "foo() || bar()",
-			expected: &ObjectType{
-				Props: map[string]ExprType{
-					"foo": NumberType{},
-					"bar": BoolType{},
-				},
-				StrictProps: true,
-			},
+			expected: NewStrictObjectType(map[string]ExprType{
+				"foo": NumberType{},
+				"bar": BoolType{},
+			}),
 			funcs: map[string][]*FuncSignature{
 				"foo": {
 					{
 						Name: "foo",
-						Ret: &ObjectType{
-							Props:       map[string]ExprType{"foo": NumberType{}},
-							StrictProps: true,
-						},
+						Ret: NewStrictObjectType(map[string]ExprType{
+							"foo": NumberType{},
+						}),
 					},
 				},
 				"bar": {
 					{
 						Name: "bar",
-						Ret: &ObjectType{
-							Props:       map[string]ExprType{"bar": BoolType{}},
-							StrictProps: true,
-						},
+						Ret: NewStrictObjectType(map[string]ExprType{
+							"bar": BoolType{},
+						}),
 					},
 				},
 			},
@@ -412,99 +371,66 @@ func TestExprSemanticsCheckOK(t *testing.T) {
 			what:     "matrix value with typed matrix values",
 			input:    "matrix.foooo",
 			expected: StringType{},
-			matrix: &ObjectType{
-				Props: map[string]ExprType{
-					"foooo": StringType{},
-				},
-				StrictProps: true,
-			},
+			matrix: NewStrictObjectType(map[string]ExprType{
+				"foooo": StringType{},
+			}),
 		},
 		{
 			what:     "step output value with typed steps outputs",
 			input:    "steps.foo.outputs",
-			expected: NewObjectType(),
-			steps: &ObjectType{
-				Props: map[string]ExprType{
-					"foo": &ObjectType{
-						Props: map[string]ExprType{
-							"outputs":    NewObjectType(),
-							"conclusion": StringType{},
-							"outcome":    StringType{},
-						},
-						StrictProps: true,
-					},
-				},
-				StrictProps: true,
-			},
+			expected: NewEmptyObjectType(),
+			steps: NewStrictObjectType(map[string]ExprType{
+				"foo": NewStrictObjectType(map[string]ExprType{
+					"outputs":    NewEmptyObjectType(),
+					"conclusion": StringType{},
+					"outcome":    StringType{},
+				}),
+			}),
 		},
 		{
 			what:     "step conclusion with typed steps outputs",
 			input:    "steps.foo.conclusion",
 			expected: StringType{},
-			steps: &ObjectType{
-				Props: map[string]ExprType{
-					"foo": &ObjectType{
-						Props: map[string]ExprType{
-							"outputs":    NewObjectType(),
-							"conclusion": StringType{},
-							"outcome":    StringType{},
-						},
-						StrictProps: true,
-					},
-				},
-				StrictProps: true,
-			},
+			steps: NewStrictObjectType(map[string]ExprType{
+				"foo": NewStrictObjectType(map[string]ExprType{
+					"outputs":    NewEmptyObjectType(),
+					"conclusion": StringType{},
+					"outcome":    StringType{},
+				}),
+			}),
 		},
 		{
 			what:     "needs context object",
 			input:    "needs",
-			expected: NewStrictObjectType(),
+			expected: NewEmptyStrictObjectType(),
 		},
 		{
 			what:     "output string in needs context object",
 			input:    "needs.foo.outputs.out1",
 			expected: StringType{},
-			needs: &ObjectType{
-				Props: map[string]ExprType{
-					"foo": &ObjectType{
-						Props: map[string]ExprType{
-							"outputs": &ObjectType{
-								Props: map[string]ExprType{
-									"out1": StringType{},
-									"out2": StringType{},
-								},
-								StrictProps: true,
-							},
-							"result": StringType{},
-						},
-						StrictProps: true,
-					},
-				},
-				StrictProps: true,
-			},
+			needs: NewStrictObjectType(map[string]ExprType{
+				"foo": NewStrictObjectType(map[string]ExprType{
+					"outputs": NewStrictObjectType(map[string]ExprType{
+						"out1": StringType{},
+						"out2": StringType{},
+					}),
+					"result": StringType{},
+				}),
+			}),
 		},
 		{
 			what:     "result in needs context object",
 			input:    "needs.foo.result",
 			expected: StringType{},
-			needs: &ObjectType{
-				Props: map[string]ExprType{
-					"foo": &ObjectType{
-						Props: map[string]ExprType{
-							"outputs": &ObjectType{
-								Props: map[string]ExprType{
-									"out1": StringType{},
-									"out2": StringType{},
-								},
-								StrictProps: true,
-							},
-							"result": StringType{},
-						},
-						StrictProps: true,
-					},
-				},
-				StrictProps: true,
-			},
+			needs: NewStrictObjectType(map[string]ExprType{
+				"foo": NewStrictObjectType(map[string]ExprType{
+					"outputs": NewStrictObjectType(map[string]ExprType{
+						"out1": StringType{},
+						"out2": StringType{},
+					}),
+					"result": StringType{},
+				}),
+			}),
 		},
 		{
 			what:     "number is coerced into string",
@@ -539,11 +465,9 @@ func TestExprSemanticsCheckOK(t *testing.T) {
 				"test": {
 					{
 						Name: "test",
-						Ret: &ObjectType{
-							Props: map[string]ExprType{
-								"foo-bar_piyo": NullType{},
-							},
-						},
+						Ret: NewObjectType(map[string]ExprType{
+							"foo-bar_piyo": NullType{},
+						}),
 					},
 				},
 			},
@@ -566,6 +490,41 @@ func TestExprSemanticsCheckOK(t *testing.T) {
 		{
 			what:     "braces not for placeholders in format string of format() call",
 			input:    "format('{0} {} {x} {', 1)",
+			expected: StringType{},
+		},
+		{
+			what:     "map object dereference",
+			input:    "env.FOO",
+			expected: StringType{},
+		},
+		{
+			what:     "map object dreference on array object filter",
+			input:    "test().*.foo",
+			expected: &ArrayType{NumberType{}, true},
+			funcs: map[string][]*FuncSignature{
+				"test": {
+					{
+						Name: "test",
+						Ret: &ArrayType{
+							Elem: NewMapObjectType(NumberType{}),
+						},
+					},
+				},
+			},
+		},
+		{
+			what:     "map object index access with string literal",
+			input:    "env['FOO']",
+			expected: StringType{},
+		},
+		{
+			what:     "map object index access with dynamic value",
+			input:    "env[github.action]",
+			expected: StringType{},
+		},
+		{
+			what:     "nested object in map object",
+			input:    "job.services.my_service.network",
 			expected: StringType{},
 		},
 	}
@@ -673,12 +632,9 @@ func TestExprSemanticsCheckError(t *testing.T) {
 					{
 						Name: "test",
 						Ret: &ArrayType{
-							Elem: &ObjectType{
-								Props: map[string]ExprType{
-									"foo": BoolType{},
-								},
-								StrictProps: true,
-							},
+							Elem: NewStrictObjectType(map[string]ExprType{
+								"foo": BoolType{},
+							}),
 						},
 					},
 				},
@@ -863,12 +819,9 @@ func TestExprSemanticsCheckError(t *testing.T) {
 			expected: []string{
 				"property \"bar\" is not defined in object type {foo: any}",
 			},
-			matrix: &ObjectType{
-				Props: map[string]ExprType{
-					"foo": AnyType{},
-				},
-				StrictProps: true,
-			},
+			matrix: NewStrictObjectType(map[string]ExprType{
+				"foo": AnyType{},
+			}),
 		},
 		{
 			what:  "type mismatch in matrix value",
@@ -876,12 +829,9 @@ func TestExprSemanticsCheckError(t *testing.T) {
 			expected: []string{
 				"2nd argument of function call is not assignable. \"null\" cannot be assigned to \"string\"",
 			},
-			matrix: &ObjectType{
-				Props: map[string]ExprType{
-					"foo": NullType{},
-				},
-				StrictProps: true,
-			},
+			matrix: NewStrictObjectType(map[string]ExprType{
+				"foo": NullType{},
+			}),
 		},
 		{
 			what:  "matrix value with untyped matrix values",
@@ -896,19 +846,13 @@ func TestExprSemanticsCheckError(t *testing.T) {
 			expected: []string{
 				"property \"foo\" is not defined in object type {bar: ", // order of prop types in object type changes randomly so we cannot check it easily
 			},
-			steps: &ObjectType{
-				Props: map[string]ExprType{
-					"bar": &ObjectType{
-						Props: map[string]ExprType{
-							"outputs":    NewObjectType(),
-							"conclusion": StringType{},
-							"outcome":    StringType{},
-						},
-						StrictProps: true,
-					},
-				},
-				StrictProps: true,
-			},
+			steps: NewStrictObjectType(map[string]ExprType{
+				"bar": NewStrictObjectType(map[string]ExprType{
+					"outputs":    NewEmptyObjectType(),
+					"conclusion": StringType{},
+					"outcome":    StringType{},
+				}),
+			}),
 		},
 		{
 			what:  "invalid property in step object",
@@ -916,19 +860,13 @@ func TestExprSemanticsCheckError(t *testing.T) {
 			expected: []string{
 				"property \"foo\" is not defined in object type {", // order of prop types in object type changes randomly so we cannot check it easily
 			},
-			steps: &ObjectType{
-				Props: map[string]ExprType{
-					"bar": &ObjectType{
-						Props: map[string]ExprType{
-							"outputs":    NewObjectType(),
-							"conclusion": StringType{},
-							"outcome":    StringType{},
-						},
-						StrictProps: true,
-					},
-				},
-				StrictProps: true,
-			},
+			steps: NewStrictObjectType(map[string]ExprType{
+				"bar": NewStrictObjectType(map[string]ExprType{
+					"outputs":    NewEmptyObjectType(),
+					"conclusion": StringType{},
+					"outcome":    StringType{},
+				}),
+			}),
 		},
 		{
 			what:  "step output value without typed steps outputs",
@@ -943,24 +881,15 @@ func TestExprSemanticsCheckError(t *testing.T) {
 			expected: []string{
 				"property \"bar\" is not defined in object type ",
 			},
-			needs: &ObjectType{
-				Props: map[string]ExprType{
-					"foo": &ObjectType{
-						Props: map[string]ExprType{
-							"outputs": &ObjectType{
-								Props: map[string]ExprType{
-									"out1": StringType{},
-									"out2": StringType{},
-								},
-								StrictProps: true,
-							},
-							"result": StringType{},
-						},
-						StrictProps: true,
-					},
-				},
-				StrictProps: true,
-			},
+			needs: NewStrictObjectType(map[string]ExprType{
+				"foo": NewStrictObjectType(map[string]ExprType{
+					"outputs": NewStrictObjectType(map[string]ExprType{
+						"out1": StringType{},
+						"out2": StringType{},
+					}),
+					"result": StringType{},
+				}),
+			}),
 		},
 		{
 			what:  "undefined output in needs context",
@@ -968,24 +897,15 @@ func TestExprSemanticsCheckError(t *testing.T) {
 			expected: []string{
 				"property \"out3\" is not defined in object type ",
 			},
-			needs: &ObjectType{
-				Props: map[string]ExprType{
-					"foo": &ObjectType{
-						Props: map[string]ExprType{
-							"outputs": &ObjectType{
-								Props: map[string]ExprType{
-									"out1": StringType{},
-									"out2": StringType{},
-								},
-								StrictProps: true,
-							},
-							"result": StringType{},
-						},
-						StrictProps: true,
-					},
-				},
-				StrictProps: true,
-			},
+			needs: NewStrictObjectType(map[string]ExprType{
+				"foo": NewStrictObjectType(map[string]ExprType{
+					"outputs": NewStrictObjectType(map[string]ExprType{
+						"out1": StringType{},
+						"out2": StringType{},
+					}),
+					"result": StringType{},
+				}),
+			}),
 		},
 		{
 			what:  "undefined prop in needs context",
@@ -993,24 +913,15 @@ func TestExprSemanticsCheckError(t *testing.T) {
 			expected: []string{
 				"property \"bar\" is not defined in object type ",
 			},
-			needs: &ObjectType{
-				Props: map[string]ExprType{
-					"foo": &ObjectType{
-						Props: map[string]ExprType{
-							"outputs": &ObjectType{
-								Props: map[string]ExprType{
-									"out1": StringType{},
-									"out2": StringType{},
-								},
-								StrictProps: true,
-							},
-							"result": StringType{},
-						},
-						StrictProps: true,
-					},
-				},
-				StrictProps: true,
-			},
+			needs: NewStrictObjectType(map[string]ExprType{
+				"foo": NewStrictObjectType(map[string]ExprType{
+					"outputs": NewStrictObjectType(map[string]ExprType{
+						"out1": StringType{},
+						"out2": StringType{},
+					}),
+					"result": StringType{},
+				}),
+			}),
 		},
 		{
 			what:  "undefined prop in untyped needs context",
@@ -1075,7 +986,7 @@ func TestExprSemanticsCheckError(t *testing.T) {
 
 func TestExprSemanticsCheckerUpdateMatrix(t *testing.T) {
 	c := NewExprSemanticsChecker(false)
-	ty := NewObjectType()
+	ty := NewEmptyObjectType()
 	prev := c.vars["matrix"]
 	c.UpdateMatrix(ty)
 	if c.vars["matrix"] == prev {
@@ -1090,7 +1001,7 @@ func TestExprSemanticsCheckerUpdateMatrix(t *testing.T) {
 
 func TestExprSemanticsCheckerUpdateSteps(t *testing.T) {
 	c := NewExprSemanticsChecker(false)
-	ty := NewObjectType()
+	ty := NewEmptyObjectType()
 	prev := c.vars["steps"]
 	c.UpdateSteps(ty)
 	if c.vars["steps"] == prev {
