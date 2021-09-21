@@ -1,3 +1,21 @@
+<a name="v1.6.4"></a>
+# [v1.6.4](https://github.com/rhysd/actionlint/releases/tag/v1.6.4) - 21 Sep 2021
+
+- Implement 'map' object types `{ string => T }`, where all properties of the object are typed as `T` (since a key of object is always string, left hand side of `=>` is fixed to `string`). For example, `env` context only has string properties so it is typed as `{ string => string}`. (previously it was `any`).
+  ```yaml
+  # typed as string (previously any)
+  env.FOO
+
+  # typed as { id: string; network: string; ports: object; } (previously any)
+  job.services.redis
+  ```
+- `github.event.discussion.title` and `github.event.discussion.body` are now checked as untrusted inputs.
+- Update popular actions data set. (#50, #51)
+- Update webhooks payload data set. `branch_protection_rule` hook was dropped from the list due to [github/docs@179a6d3](https://github.com/github/docs/commit/179a6d334e92b9ade8626ef42a546dae66b49951). (#50, #51)
+
+[Changes][v1.6.4]
+
+
 <a name="v1.6.3"></a>
 # [v1.6.3](https://github.com/rhysd/actionlint/releases/tag/v1.6.3) - 04 Sep 2021
 
@@ -8,7 +26,7 @@
       # matrix.node is now deduced as `string` instead of `any`
       node: [14, 'latest']
   ```
-- Fix types of `||` and `&&` expressions. Previously they were typed as `bool` but it was not correct. Corret type is sum of types of both sides of the operator like TypeScript. For example, type of `'foo' || 'bar'` is a string, and `github.event && matrix` is an object.
+- Fix types of `||` and `&&` expressions. Previously they were typed as `bool` but it was not correct. Correct type is sum of types of both sides of the operator like TypeScript. For example, type of `'foo' || 'bar'` is a string, and `github.event && matrix` is an object.
 - actionlint no longer reports an error when a local action does not exist in the repository. It is a popular pattern that a local action directory is cloned while a workflow running. (#25, #40)
 - Disable [SC2050](https://github.com/koalaman/shellcheck/wiki/SC2050) shellcheck rule since it causes some false positive. (#45)
 - Fix `-version` did not work when running actionlint via [the Docker image](https://github.com/rhysd/actionlint/blob/main/docs/usage.md#docker) (#47).
@@ -385,6 +403,7 @@ See documentation for more details:
 [Changes][v1.0.0]
 
 
+[v1.6.4]: https://github.com/rhysd/actionlint/compare/v1.6.3...v1.6.4
 [v1.6.3]: https://github.com/rhysd/actionlint/compare/v1.6.2...v1.6.3
 [v1.6.2]: https://github.com/rhysd/actionlint/compare/v1.6.1...v1.6.2
 [v1.6.1]: https://github.com/rhysd/actionlint/compare/v1.6.0...v1.6.1
