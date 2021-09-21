@@ -192,8 +192,8 @@ func (rule *RuleExpression) VisitStep(n *Step) error {
 		id := strings.ToLower(n.ID.Value)
 		rule.stepsTy.Props[id] = NewStrictObjectType(map[string]ExprType{
 			"outputs":    rule.getActionOutputsType(spec),
-			"conclusion": StringType{},
-			"outcome":    StringType{},
+			"conclusion": theStringType,
+			"outcome":    theStringType,
 		})
 	}
 
@@ -202,17 +202,17 @@ func (rule *RuleExpression) VisitStep(n *Step) error {
 
 func (rule *RuleExpression) getActionOutputsType(spec *String) *ObjectType {
 	if spec == nil {
-		return NewMapObjectType(StringType{}) // outputs.<output name>
+		return NewMapObjectType(theStringType) // outputs.<output name>
 	}
 
 	if strings.HasPrefix(spec.Value, "./") {
 		meta, err := rule.localActions.FindMetadata(spec.Value)
 		if err != nil {
 			rule.error(spec.Pos, err.Error())
-			return NewMapObjectType(StringType{}) // outputs.<output name>
+			return NewMapObjectType(theStringType) // outputs.<output name>
 		}
 		if meta == nil {
-			return NewMapObjectType(StringType{}) // outputs.<output name>
+			return NewMapObjectType(theStringType) // outputs.<output name>
 		}
 
 		return typeOfActionOutputs(meta)
@@ -224,7 +224,7 @@ func (rule *RuleExpression) getActionOutputsType(spec *String) *ObjectType {
 		return typeOfActionOutputs(meta)
 	}
 
-	return NewMapObjectType(StringType{}) // outputs.<output name>
+	return NewMapObjectType(theStringType) // outputs.<output name>
 }
 
 func (rule *RuleExpression) checkOneExpression(s *String, what string) ExprType {
@@ -246,7 +246,7 @@ func (rule *RuleExpression) checkObjectTy(ty ExprType, pos *Pos, what string) Ex
 		return nil
 	}
 	switch ty.(type) {
-	case *ObjectType, AnyType:
+	case *ObjectType, *AnyType:
 		return ty
 	default:
 		rule.errorf(pos, "type of expression at %q must be object but found type %s", what, ty.String())
@@ -259,7 +259,7 @@ func (rule *RuleExpression) checkArrayTy(ty ExprType, pos *Pos, what string) Exp
 		return nil
 	}
 	switch ty.(type) {
-	case *ArrayType, AnyType:
+	case *ArrayType, *AnyType:
 		return ty
 	default:
 		rule.errorf(pos, "type of expression at %q must be array but found type %s", what, ty.String())
@@ -272,7 +272,7 @@ func (rule *RuleExpression) checkNumberTy(ty ExprType, pos *Pos, what string) Ex
 		return nil
 	}
 	switch ty.(type) {
-	case NumberType, AnyType:
+	case *NumberType, *AnyType:
 		return ty
 	default:
 		rule.errorf(pos, "type of expression at %q must be number but found type %s", what, ty.String())
@@ -430,7 +430,7 @@ func (rule *RuleExpression) checkIfCondition(str *String) {
 		condTy = rule.checkSemanticsOfExprNode(expr, line, col, false)
 	}
 
-	if condTy != nil && !(BoolType{}).Assignable(condTy) {
+	if condTy != nil && !(theBoolType).Assignable(condTy) {
 		rule.errorf(str.Pos, "\"if\" condition should be type \"bool\" but got type %q", condTy.String())
 	}
 }
@@ -438,7 +438,7 @@ func (rule *RuleExpression) checkIfCondition(str *String) {
 func (rule *RuleExpression) checkTemplateEvaluatedType(ts []typedExpr) {
 	for _, t := range ts {
 		switch t.ty.(type) {
-		case *ObjectType, *ArrayType, NullType:
+		case *ObjectType, *ArrayType, *NullType:
 			rule.errorf(&t.pos, "object, array, and null values should not be evaluated in template with ${{ }} but evaluating the value of type %s", t.ty)
 		}
 	}
@@ -468,7 +468,7 @@ func (rule *RuleExpression) checkBool(b *Bool) {
 	}
 	ty := rule.checkOneExpression(b.Expression, "bool value")
 	switch ty.(type) {
-	case BoolType, AnyType:
+	case *BoolType, *AnyType:
 		// ok
 	default:
 		rule.errorf(b.Expression.Pos, "type of expression must be bool but found type %s", ty.String())
@@ -599,12 +599,12 @@ func (rule *RuleExpression) populateDependantNeedsTypes(out *ObjectType, job *Jo
 
 		outputs := NewEmptyStrictObjectType()
 		for name := range j.Outputs {
-			outputs.Props[name] = StringType{}
+			outputs.Props[name] = theStringType
 		}
 
 		out.Props[i] = NewStrictObjectType(map[string]ExprType{
 			"outputs": outputs,
-			"result":  StringType{},
+			"result":  theStringType,
 		})
 
 		rule.populateDependantNeedsTypes(out, j, root) // Add necessary needs props recursively
@@ -704,7 +704,7 @@ func (rule *RuleExpression) guessTypeOfMatrixRow(r *MatrixRow) ExprType {
 		if a, ok := rule.checkArrayExpression(r.Expression, "matrix row").(*ArrayType); ok {
 			return a
 		}
-		return AnyType{}
+		return theAnyType
 	}
 
 	var ty ExprType
@@ -718,7 +718,7 @@ func (rule *RuleExpression) guessTypeOfMatrixRow(r *MatrixRow) ExprType {
 	}
 
 	if ty == nil {
-		return AnyType{} // No element
+		return theAnyType // No element
 	}
 
 	return ty
@@ -734,7 +734,7 @@ func guessTypeOfRawYAMLValue(v RawYAMLValue) ExprType {
 		return NewStrictObjectType(m)
 	case *RawYAMLArray:
 		if len(v.Elems) == 0 {
-			return &ArrayType{AnyType{}, false}
+			return &ArrayType{theAnyType, false}
 		}
 		elem := guessTypeOfRawYAMLValue(v.Elems[0])
 		for _, v := range v.Elems[1:] {
@@ -751,15 +751,15 @@ func guessTypeOfRawYAMLValue(v RawYAMLValue) ExprType {
 func guessTypeFromString(s string) ExprType {
 	// Note that keywords are case sensitive. TRUE, FALSE, NULL are invalid named value.
 	if s == "true" || s == "false" {
-		return BoolType{}
+		return theBoolType
 	}
 	if s == "null" {
-		return NullType{}
+		return theNullType
 	}
 	if _, err := strconv.ParseFloat(s, 64); err == nil {
-		return NumberType{}
+		return theNumberType
 	}
-	return StringType{}
+	return theStringType
 }
 
 func convertExprLineColToPos(line, col, lineBase, colBase int) *Pos {
@@ -778,7 +778,7 @@ func typeOfActionOutputs(meta *ActionMetadata) *ObjectType {
 	}
 	props := make(map[string]ExprType, len(meta.Outputs))
 	for n := range meta.Outputs {
-		props[n] = StringType{}
+		props[n] = theStringType
 	}
 	return NewStrictObjectType(props)
 }

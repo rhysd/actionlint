@@ -21,27 +21,27 @@ func TestExprSemanticsCheckOK(t *testing.T) {
 		{
 			what:     "null",
 			input:    "null",
-			expected: NullType{},
+			expected: theNullType,
 		},
 		{
 			what:     "bool",
 			input:    "true",
-			expected: BoolType{},
+			expected: theBoolType,
 		},
 		{
 			what:     "integer",
 			input:    "42",
-			expected: NumberType{},
+			expected: theNumberType,
 		},
 		{
 			what:     "float",
 			input:    "-3.14e16",
-			expected: NumberType{},
+			expected: theNumberType,
 		},
 		{
 			what:     "string",
 			input:    "'this is string'",
-			expected: StringType{},
+			expected: theStringType,
 		},
 		{
 			what:     "variable",
@@ -51,14 +51,14 @@ func TestExprSemanticsCheckOK(t *testing.T) {
 		{
 			what:     "object property dereference",
 			input:    "test().bar.piyo",
-			expected: BoolType{},
+			expected: theBoolType,
 			funcs: map[string][]*FuncSignature{
 				"test": {
 					{
 						Name: "test",
 						Ret: NewObjectType(map[string]ExprType{
 							"bar": NewObjectType(map[string]ExprType{
-								"piyo": BoolType{},
+								"piyo": theBoolType,
 							}),
 						}),
 					},
@@ -68,23 +68,23 @@ func TestExprSemanticsCheckOK(t *testing.T) {
 		{
 			what:     "object property dereference of global variable",
 			input:    "job.container.network",
-			expected: StringType{},
+			expected: theStringType,
 		},
 		{
 			what:     "object property dereference for any type",
 			input:    "github.event.labels",
-			expected: AnyType{},
+			expected: theAnyType,
 		},
 		{
 			what:     "array element dereference",
 			input:    "test().bar.*",
-			expected: &ArrayType{BoolType{}, true},
+			expected: &ArrayType{theBoolType, true},
 			funcs: map[string][]*FuncSignature{
 				"test": {
 					{
 						Name: "test",
 						Ret: NewObjectType(map[string]ExprType{
-							"bar": &ArrayType{Elem: BoolType{}},
+							"bar": &ArrayType{Elem: theBoolType},
 						}),
 					},
 				},
@@ -93,7 +93,7 @@ func TestExprSemanticsCheckOK(t *testing.T) {
 		{
 			what:     "filter object property by array element dereference",
 			input:    "test().foo.*.bar.piyo",
-			expected: &ArrayType{StringType{}, true},
+			expected: &ArrayType{theStringType, true},
 			funcs: map[string][]*FuncSignature{
 				"test": {
 					{
@@ -102,7 +102,7 @@ func TestExprSemanticsCheckOK(t *testing.T) {
 							"foo": &ArrayType{
 								Elem: NewObjectType(map[string]ExprType{
 									"bar": NewObjectType(map[string]ExprType{
-										"piyo": StringType{},
+										"piyo": theStringType,
 									}),
 								}),
 							},
@@ -114,7 +114,7 @@ func TestExprSemanticsCheckOK(t *testing.T) {
 		{
 			what:     "filter strict object property by array element dereference",
 			input:    "test().foo.*.bar.piyo",
-			expected: &ArrayType{StringType{}, true},
+			expected: &ArrayType{theStringType, true},
 			funcs: map[string][]*FuncSignature{
 				"test": {
 					{
@@ -123,7 +123,7 @@ func TestExprSemanticsCheckOK(t *testing.T) {
 							"foo": &ArrayType{
 								Elem: NewStrictObjectType(map[string]ExprType{
 									"bar": NewStrictObjectType(map[string]ExprType{
-										"piyo": StringType{},
+										"piyo": theStringType,
 									}),
 								}),
 							},
@@ -136,44 +136,44 @@ func TestExprSemanticsCheckOK(t *testing.T) {
 		{
 			what:     "array element dereference with any type",
 			input:    "github.event.labels.*.name",
-			expected: &ArrayType{AnyType{}, true},
+			expected: &ArrayType{theAnyType, true},
 		},
 		{
 			what:     "nested array element dereference",
 			input:    "github.event.issues.*.labels.*.name",
-			expected: &ArrayType{AnyType{}, true},
+			expected: &ArrayType{theAnyType, true},
 		},
 		{
 			what:     "function call",
 			input:    "contains('hello', 'll')",
-			expected: BoolType{},
+			expected: theBoolType,
 		},
 		{
 			what:     "function call overload",
 			input:    "contains(github.event.labels, 'foo')",
-			expected: BoolType{},
+			expected: theBoolType,
 		},
 		{
 			what:     "function call zero arguments",
 			input:    "always()",
-			expected: BoolType{},
+			expected: theBoolType,
 		},
 		{
 			what:     "function call variable length parameters",
 			input:    "format('hello {0} {1}', 42, true)",
-			expected: StringType{},
+			expected: theStringType,
 		},
 		{
 			what:     "object property index access",
 			input:    "test()['bar']['piyo']",
-			expected: BoolType{},
+			expected: theBoolType,
 			funcs: map[string][]*FuncSignature{
 				"test": {
 					{
 						Name: "test",
 						Ret: NewObjectType(map[string]ExprType{
 							"bar": NewObjectType(map[string]ExprType{
-								"piyo": BoolType{},
+								"piyo": theBoolType,
 							}),
 						}),
 					},
@@ -183,17 +183,17 @@ func TestExprSemanticsCheckOK(t *testing.T) {
 		{
 			what:     "object property index access with any type",
 			input:    "github.event['FOOO']",
-			expected: AnyType{},
+			expected: theAnyType,
 		},
 		{
 			what:     "array element dereference",
 			input:    "test()[0]",
-			expected: BoolType{},
+			expected: theBoolType,
 			funcs: map[string][]*FuncSignature{
 				"test": {
 					{
 						Name: "test",
-						Ret:  &ArrayType{Elem: BoolType{}},
+						Ret:  &ArrayType{Elem: theBoolType},
 					},
 				},
 			},
@@ -201,12 +201,12 @@ func TestExprSemanticsCheckOK(t *testing.T) {
 		{
 			what:     "array element index access with any type fallback",
 			input:    "github.event.labels[0]",
-			expected: AnyType{},
+			expected: theAnyType,
 		},
 		{
 			what:     "index access to dereferenced array",
 			input:    "test().foo.*.bar[0]",
-			expected: StringType{},
+			expected: theStringType,
 			funcs: map[string][]*FuncSignature{
 				"test": {
 					{
@@ -214,7 +214,7 @@ func TestExprSemanticsCheckOK(t *testing.T) {
 						Ret: NewObjectType(map[string]ExprType{
 							"foo": &ArrayType{
 								Elem: NewObjectType(map[string]ExprType{
-									"bar": StringType{},
+									"bar": theStringType,
 								}),
 							},
 						}),
@@ -225,14 +225,14 @@ func TestExprSemanticsCheckOK(t *testing.T) {
 		{
 			what:     "coerce array dereference into array at function parameter",
 			input:    "contains(test().*.x, 10)",
-			expected: BoolType{},
+			expected: theBoolType,
 			funcs: map[string][]*FuncSignature{
 				"test": {
 					{
 						Name: "test",
 						Ret: &ArrayType{
 							Elem: NewObjectType(map[string]ExprType{
-								"x": NumberType{},
+								"x": theNumberType,
 							}),
 						},
 					},
@@ -243,81 +243,81 @@ func TestExprSemanticsCheckOK(t *testing.T) {
 		{
 			what:     "index access to dereferenced array with any type fallback",
 			input:    "github.event.labels.*.name[0]",
-			expected: AnyType{},
+			expected: theAnyType,
 		},
 		{
 			what:     "! operator",
 			input:    "!true",
-			expected: BoolType{},
+			expected: theBoolType,
 		},
 		{
 			what:     "! operator with non-bool operand",
 			input:    "!null",
-			expected: BoolType{},
+			expected: theBoolType,
 		},
 		{
 			what:     "< operator",
 			input:    "0 < 1",
-			expected: BoolType{},
+			expected: theBoolType,
 		},
 		{
 			what:     "<= operator",
 			input:    "0 <= 1",
-			expected: BoolType{},
+			expected: theBoolType,
 		},
 		{
 			what:     "> operator",
 			input:    "0 > 1",
-			expected: BoolType{},
+			expected: theBoolType,
 		},
 		{
 			what:     ">= operator",
 			input:    "0 >= 1",
-			expected: BoolType{},
+			expected: theBoolType,
 		},
 		{
 			what:     "== operator",
 			input:    "0 == 1",
-			expected: BoolType{},
+			expected: theBoolType,
 		},
 		{
 			what:     "!= operator",
 			input:    "0 != 1",
-			expected: BoolType{},
+			expected: theBoolType,
 		},
 		{
 			what:     "&& operator",
 			input:    "true && false",
-			expected: BoolType{},
+			expected: theBoolType,
 		},
 		{
 			what:     "|| operator",
 			input:    "true || false",
-			expected: BoolType{},
+			expected: theBoolType,
 		},
 		{
 			what:     "&& operator with non-bool operands",
 			input:    "10 && 'foo'",
-			expected: StringType{},
+			expected: theStringType,
 		},
 		{
 			what:     "|| operator with non-bool operands",
 			input:    "'foo' || 42",
-			expected: StringType{},
+			expected: theStringType,
 		},
 		{
 			what:  "coercing two objects on && operator",
 			input: "foo() && bar()",
 			expected: NewStrictObjectType(map[string]ExprType{
-				"foo": NumberType{},
-				"bar": BoolType{},
+				"foo": theNumberType,
+				"bar": theBoolType,
 			}),
 			funcs: map[string][]*FuncSignature{
 				"foo": {
 					{
 						Name: "foo",
 						Ret: NewStrictObjectType(map[string]ExprType{
-							"foo": NumberType{},
+							"foo": theNumberType,
 						}),
 					},
 				},
@@ -325,7 +325,7 @@ func TestExprSemanticsCheckOK(t *testing.T) {
 					{
 						Name: "bar",
 						Ret: NewStrictObjectType(map[string]ExprType{
-							"bar": BoolType{},
+							"bar": theBoolType,
 						}),
 					},
 				},
@@ -335,15 +335,15 @@ func TestExprSemanticsCheckOK(t *testing.T) {
 			what:  "coercing two objects on || operator",
 			input: "foo() || bar()",
 			expected: NewStrictObjectType(map[string]ExprType{
-				"foo": NumberType{},
-				"bar": BoolType{},
+				"foo": theNumberType,
+				"bar": theBoolType,
 			}),
 			funcs: map[string][]*FuncSignature{
 				"foo": {
 					{
 						Name: "foo",
 						Ret: NewStrictObjectType(map[string]ExprType{
-							"foo": NumberType{},
+							"foo": theNumberType,
 						}),
 					},
 				},
@@ -351,7 +351,7 @@ func TestExprSemanticsCheckOK(t *testing.T) {
 					{
 						Name: "bar",
 						Ret: NewStrictObjectType(map[string]ExprType{
-							"bar": BoolType{},
+							"bar": theBoolType,
 						}),
 					},
 				},
@@ -360,19 +360,19 @@ func TestExprSemanticsCheckOK(t *testing.T) {
 		{
 			what:     "== operator with loose equality check",
 			input:    "true == 1.1",
-			expected: BoolType{},
+			expected: theBoolType,
 		},
 		{
 			what:     "arguments of format() is not checked when first argument is not a literal",
 			input:    "format(github.action, 1, 2, 3)",
-			expected: StringType{},
+			expected: theStringType,
 		},
 		{
 			what:     "matrix value with typed matrix values",
 			input:    "matrix.foooo",
-			expected: StringType{},
+			expected: theStringType,
 			matrix: NewStrictObjectType(map[string]ExprType{
-				"foooo": StringType{},
+				"foooo": theStringType,
 			}),
 		},
 		{
@@ -382,20 +382,20 @@ func TestExprSemanticsCheckOK(t *testing.T) {
 			steps: NewStrictObjectType(map[string]ExprType{
 				"foo": NewStrictObjectType(map[string]ExprType{
 					"outputs":    NewEmptyObjectType(),
-					"conclusion": StringType{},
-					"outcome":    StringType{},
+					"conclusion": theStringType,
+					"outcome":    theStringType,
 				}),
 			}),
 		},
 		{
 			what:     "step conclusion with typed steps outputs",
 			input:    "steps.foo.conclusion",
-			expected: StringType{},
+			expected: theStringType,
 			steps: NewStrictObjectType(map[string]ExprType{
 				"foo": NewStrictObjectType(map[string]ExprType{
 					"outputs":    NewEmptyObjectType(),
-					"conclusion": StringType{},
-					"outcome":    StringType{},
+					"conclusion": theStringType,
+					"outcome":    theStringType,
 				}),
 			}),
 		},
@@ -407,66 +407,66 @@ func TestExprSemanticsCheckOK(t *testing.T) {
 		{
 			what:     "output string in needs context object",
 			input:    "needs.foo.outputs.out1",
-			expected: StringType{},
+			expected: theStringType,
 			needs: NewStrictObjectType(map[string]ExprType{
 				"foo": NewStrictObjectType(map[string]ExprType{
 					"outputs": NewStrictObjectType(map[string]ExprType{
-						"out1": StringType{},
-						"out2": StringType{},
+						"out1": theStringType,
+						"out2": theStringType,
 					}),
-					"result": StringType{},
+					"result": theStringType,
 				}),
 			}),
 		},
 		{
 			what:     "result in needs context object",
 			input:    "needs.foo.result",
-			expected: StringType{},
+			expected: theStringType,
 			needs: NewStrictObjectType(map[string]ExprType{
 				"foo": NewStrictObjectType(map[string]ExprType{
 					"outputs": NewStrictObjectType(map[string]ExprType{
-						"out1": StringType{},
-						"out2": StringType{},
+						"out1": theStringType,
+						"out2": theStringType,
 					}),
-					"result": StringType{},
+					"result": theStringType,
 				}),
 			}),
 		},
 		{
 			what:     "number is coerced into string",
 			input:    "startsWith('42foo', 42)",
-			expected: BoolType{},
+			expected: theBoolType,
 		},
 		{
 			what:     "string is coerced into bool",
 			input:    "!'hello'",
-			expected: BoolType{},
+			expected: theBoolType,
 		},
 		{
 			what:     "coerce number into bool",
 			input:    "!42",
-			expected: BoolType{},
+			expected: theBoolType,
 		},
 		{
 			what:     "coerce null into bool",
 			input:    "!null",
-			expected: BoolType{},
+			expected: theBoolType,
 		},
 		{
 			what:     "coerce string into bool",
 			input:    "!'hello'",
-			expected: BoolType{},
+			expected: theBoolType,
 		},
 		{
 			what:     "case insensitive comparison for object property",
 			input:    "test().foo-Bar_PIYO",
-			expected: NullType{},
+			expected: theNullType,
 			funcs: map[string][]*FuncSignature{
 				"test": {
 					{
 						Name: "test",
 						Ret: NewObjectType(map[string]ExprType{
-							"foo-bar_piyo": NullType{},
+							"foo-bar_piyo": theNullType,
 						}),
 					},
 				},
@@ -475,38 +475,38 @@ func TestExprSemanticsCheckOK(t *testing.T) {
 		{
 			what:     "case insensitive comparison for function name",
 			input:    "toJSON(fromjson(toJson(github)))",
-			expected: StringType{},
+			expected: theStringType,
 		},
 		{
 			what:     "case insensitive comparison for context name",
 			input:    "JOB.CONTAINER.NETWORK",
-			expected: StringType{},
+			expected: theStringType,
 		},
 		{
 			what:     "format() function arguments varlidation",
 			input:    "format('{0}{0}{0} {1}{2}{1} {1}{2}{1}{2} {0} {1}{1}{1} {2}{2}{2} {0}{0}{0}{0} {0}', 1, 'foo', true)",
-			expected: StringType{},
+			expected: theStringType,
 		},
 		{
 			what:     "braces not for placeholders in format string of format() call",
 			input:    "format('{0} {} {x} {', 1)",
-			expected: StringType{},
+			expected: theStringType,
 		},
 		{
 			what:     "map object dereference",
 			input:    "env.FOO",
-			expected: StringType{},
+			expected: theStringType,
 		},
 		{
 			what:     "map object dreference on array object filter",
 			input:    "test().*.foo",
-			expected: &ArrayType{NumberType{}, true},
+			expected: &ArrayType{theNumberType, true},
 			funcs: map[string][]*FuncSignature{
 				"test": {
 					{
 						Name: "test",
 						Ret: &ArrayType{
-							Elem: NewMapObjectType(NumberType{}),
+							Elem: NewMapObjectType(theNumberType),
 						},
 					},
 				},
@@ -515,17 +515,17 @@ func TestExprSemanticsCheckOK(t *testing.T) {
 		{
 			what:     "map object index access with string literal",
 			input:    "env['FOO']",
-			expected: StringType{},
+			expected: theStringType,
 		},
 		{
 			what:     "map object index access with dynamic value",
 			input:    "env[github.action]",
-			expected: StringType{},
+			expected: theStringType,
 		},
 		{
 			what:     "nested object in map object",
 			input:    "job.services.my_service.network",
-			expected: StringType{},
+			expected: theStringType,
 		},
 	}
 
@@ -633,7 +633,7 @@ func TestExprSemanticsCheckError(t *testing.T) {
 						Name: "test",
 						Ret: &ArrayType{
 							Elem: NewStrictObjectType(map[string]ExprType{
-								"foo": BoolType{},
+								"foo": theBoolType,
 							}),
 						},
 					},
@@ -651,7 +651,7 @@ func TestExprSemanticsCheckError(t *testing.T) {
 					{
 						Name: "test",
 						Ret: &ArrayType{
-							Elem: StringType{},
+							Elem: theStringType,
 						},
 					},
 				},
@@ -689,7 +689,7 @@ func TestExprSemanticsCheckError(t *testing.T) {
 					{
 						Name: "test",
 						Ret: &ArrayType{
-							Elem: StringType{},
+							Elem: theStringType,
 						},
 					},
 				},
@@ -706,7 +706,7 @@ func TestExprSemanticsCheckError(t *testing.T) {
 					{
 						Name: "test",
 						Ret: &ArrayType{
-							Elem: StringType{},
+							Elem: theStringType,
 						},
 					},
 				},
@@ -820,7 +820,7 @@ func TestExprSemanticsCheckError(t *testing.T) {
 				"property \"bar\" is not defined in object type {foo: any}",
 			},
 			matrix: NewStrictObjectType(map[string]ExprType{
-				"foo": AnyType{},
+				"foo": theAnyType,
 			}),
 		},
 		{
@@ -830,7 +830,7 @@ func TestExprSemanticsCheckError(t *testing.T) {
 				"2nd argument of function call is not assignable. \"null\" cannot be assigned to \"string\"",
 			},
 			matrix: NewStrictObjectType(map[string]ExprType{
-				"foo": NullType{},
+				"foo": theNullType,
 			}),
 		},
 		{
@@ -849,8 +849,8 @@ func TestExprSemanticsCheckError(t *testing.T) {
 			steps: NewStrictObjectType(map[string]ExprType{
 				"bar": NewStrictObjectType(map[string]ExprType{
 					"outputs":    NewEmptyObjectType(),
-					"conclusion": StringType{},
-					"outcome":    StringType{},
+					"conclusion": theStringType,
+					"outcome":    theStringType,
 				}),
 			}),
 		},
@@ -863,8 +863,8 @@ func TestExprSemanticsCheckError(t *testing.T) {
 			steps: NewStrictObjectType(map[string]ExprType{
 				"bar": NewStrictObjectType(map[string]ExprType{
 					"outputs":    NewEmptyObjectType(),
-					"conclusion": StringType{},
-					"outcome":    StringType{},
+					"conclusion": theStringType,
+					"outcome":    theStringType,
 				}),
 			}),
 		},
@@ -884,10 +884,10 @@ func TestExprSemanticsCheckError(t *testing.T) {
 			needs: NewStrictObjectType(map[string]ExprType{
 				"foo": NewStrictObjectType(map[string]ExprType{
 					"outputs": NewStrictObjectType(map[string]ExprType{
-						"out1": StringType{},
-						"out2": StringType{},
+						"out1": theStringType,
+						"out2": theStringType,
 					}),
-					"result": StringType{},
+					"result": theStringType,
 				}),
 			}),
 		},
@@ -900,10 +900,10 @@ func TestExprSemanticsCheckError(t *testing.T) {
 			needs: NewStrictObjectType(map[string]ExprType{
 				"foo": NewStrictObjectType(map[string]ExprType{
 					"outputs": NewStrictObjectType(map[string]ExprType{
-						"out1": StringType{},
-						"out2": StringType{},
+						"out1": theStringType,
+						"out2": theStringType,
 					}),
-					"result": StringType{},
+					"result": theStringType,
 				}),
 			}),
 		},
@@ -916,10 +916,10 @@ func TestExprSemanticsCheckError(t *testing.T) {
 			needs: NewStrictObjectType(map[string]ExprType{
 				"foo": NewStrictObjectType(map[string]ExprType{
 					"outputs": NewStrictObjectType(map[string]ExprType{
-						"out1": StringType{},
-						"out2": StringType{},
+						"out1": theStringType,
+						"out2": theStringType,
 					}),
-					"result": StringType{},
+					"result": theStringType,
 				}),
 			}),
 		},

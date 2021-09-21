@@ -64,48 +64,48 @@ var BuiltinFuncSignatures = map[string][]*FuncSignature{
 	"contains": {
 		{
 			Name: "contains",
-			Ret:  BoolType{},
+			Ret:  theBoolType,
 			Params: []ExprType{
-				StringType{},
-				StringType{},
+				theStringType,
+				theStringType,
 			},
 		},
 		{
 			Name: "contains",
-			Ret:  BoolType{},
+			Ret:  theBoolType,
 			Params: []ExprType{
-				&ArrayType{Elem: AnyType{}},
-				AnyType{},
+				&ArrayType{Elem: theAnyType},
+				theAnyType,
 			},
 		},
 	},
 	"startswith": {
 		{
 			Name: "startsWith",
-			Ret:  BoolType{},
+			Ret:  theBoolType,
 			Params: []ExprType{
-				StringType{},
-				StringType{},
+				theStringType,
+				theStringType,
 			},
 		},
 	},
 	"endswith": {
 		{
 			Name: "endsWith",
-			Ret:  BoolType{},
+			Ret:  theBoolType,
 			Params: []ExprType{
-				StringType{},
-				StringType{},
+				theStringType,
+				theStringType,
 			},
 		},
 	},
 	"format": {
 		{
 			Name: "format",
-			Ret:  StringType{},
+			Ret:  theStringType,
 			Params: []ExprType{
-				StringType{},
-				AnyType{}, // variable length
+				theStringType,
+				theAnyType, // variable length
 			},
 			VariableLengthParams: true,
 		},
@@ -113,76 +113,76 @@ var BuiltinFuncSignatures = map[string][]*FuncSignature{
 	"join": {
 		{
 			Name: "join",
-			Ret:  StringType{},
+			Ret:  theStringType,
 			Params: []ExprType{
-				&ArrayType{Elem: StringType{}},
-				StringType{},
+				&ArrayType{Elem: theStringType},
+				theStringType,
 			},
 		},
 		{
 			Name: "join",
-			Ret:  StringType{},
+			Ret:  theStringType,
 			Params: []ExprType{
-				StringType{},
-				StringType{},
+				theStringType,
+				theStringType,
 			},
 		},
 		// When the second parameter is omitted, values are concatenated with ','.
 		{
 			Name: "join",
-			Ret:  StringType{},
+			Ret:  theStringType,
 			Params: []ExprType{
-				&ArrayType{Elem: StringType{}},
+				&ArrayType{Elem: theStringType},
 			},
 		},
 		{
 			Name: "join",
-			Ret:  StringType{},
+			Ret:  theStringType,
 			Params: []ExprType{
-				StringType{},
+				theStringType,
 			},
 		},
 	},
 	"tojson": {{
 		Name: "toJSON",
-		Ret:  StringType{},
+		Ret:  theStringType,
 		Params: []ExprType{
-			AnyType{},
+			theAnyType,
 		},
 	}},
 	"fromjson": {{
 		Name: "fromJSON",
-		Ret:  AnyType{},
+		Ret:  theAnyType,
 		Params: []ExprType{
-			StringType{},
+			theStringType,
 		},
 	}},
 	"hashfiles": {{
 		Name: "hashFiles",
-		Ret:  StringType{},
+		Ret:  theStringType,
 		Params: []ExprType{
-			StringType{},
+			theStringType,
 		},
 		VariableLengthParams: true,
 	}},
 	"success": {{
 		Name:   "success",
-		Ret:    BoolType{},
+		Ret:    theBoolType,
 		Params: []ExprType{},
 	}},
 	"always": {{
 		Name:   "always",
-		Ret:    BoolType{},
+		Ret:    theBoolType,
 		Params: []ExprType{},
 	}},
 	"cancelled": {{
 		Name:   "cancelled",
-		Ret:    BoolType{},
+		Ret:    theBoolType,
 		Params: []ExprType{},
 	}},
 	"failure": {{
 		Name:   "failure",
-		Ret:    BoolType{},
+		Ret:    theBoolType,
 		Params: []ExprType{},
 	}},
 }
@@ -194,70 +194,70 @@ var BuiltinFuncSignatures = map[string][]*FuncSignature{
 var BuiltinGlobalVariableTypes = map[string]ExprType{
 	// https://docs.github.com/en/actions/reference/context-and-expression-syntax-for-github-actions#github-context
 	"github": NewStrictObjectType(map[string]ExprType{
-		"action":           StringType{},
-		"action_path":      StringType{},
-		"actor":            StringType{},
-		"base_ref":         StringType{},
+		"action":           theStringType,
+		"action_path":      theStringType,
+		"actor":            theStringType,
+		"base_ref":         theStringType,
 		"event":            NewEmptyObjectType(), // Note: Stricter type check for this payload would be possible
-		"event_name":       StringType{},
-		"event_path":       StringType{},
-		"head_ref":         StringType{},
-		"job":              StringType{},
-		"ref":              StringType{},
-		"repository":       StringType{},
-		"repository_owner": StringType{},
-		"run_id":           StringType{},
-		"run_number":       StringType{},
-		"sha":              StringType{},
-		"token":            StringType{},
-		"workflow":         StringType{},
-		"workspace":        StringType{},
+		"event_name":       theStringType,
+		"event_path":       theStringType,
+		"head_ref":         theStringType,
+		"job":              theStringType,
+		"ref":              theStringType,
+		"repository":       theStringType,
+		"repository_owner": theStringType,
+		"run_id":           theStringType,
+		"run_number":       theStringType,
+		"sha":              theStringType,
+		"token":            theStringType,
+		"workflow":         theStringType,
+		"workspace":        theStringType,
 		// Below props are not documented but actually exist
-		"action_ref":        StringType{},
-		"action_repository": StringType{},
-		"api_url":           StringType{},
-		"env":               StringType{},
-		"graphql_url":       StringType{},
-		"path":              StringType{},
-		"repositoryurl":     StringType{}, // repositoryUrl
-		"retention_days":    NumberType{},
-		"server_url":        StringType{},
+		"action_ref":        theStringType,
+		"action_repository": theStringType,
+		"api_url":           theStringType,
+		"env":               theStringType,
+		"graphql_url":       theStringType,
+		"path":              theStringType,
+		"repositoryurl":     theStringType, // repositoryUrl
+		"retention_days":    theNumberType,
+		"server_url":        theStringType,
 	}),
 	// https://docs.github.com/en/actions/reference/context-and-expression-syntax-for-github-actions#env-context
-	"env": NewMapObjectType(StringType{}), // env.<env_name>
+	"env": NewMapObjectType(theStringType), // env.<env_name>
 	// https://docs.github.com/en/actions/reference/context-and-expression-syntax-for-github-actions#job-context
 	"job": NewStrictObjectType(map[string]ExprType{
 		"container": NewStrictObjectType(map[string]ExprType{
-			"id":      StringType{},
-			"network": StringType{},
+			"id":      theStringType,
+			"network": theStringType,
 		}),
 		"services": NewMapObjectType(
 			NewStrictObjectType(map[string]ExprType{
-				"id":      StringType{}, // job.services.<service id>.id
-				"network": StringType{},
+				"id":      theStringType, // job.services.<service id>.id
+				"network": theStringType,
 				"ports":   NewEmptyObjectType(),
 			}),
 		),
-		"status": StringType{},
+		"status": theStringType,
 	}),
 	// https://docs.github.com/en/actions/reference/context-and-expression-syntax-for-github-actions#steps-context
 	"steps": NewEmptyStrictObjectType(), // This value will be updated contextually
 	// https://docs.github.com/en/actions/reference/context-and-expression-syntax-for-github-actions#runner-context
 	"runner": NewStrictObjectType(map[string]ExprType{
-		"os":         StringType{},
-		"temp":       StringType{},
-		"tool_cache": StringType{},
+		"os":         theStringType,
+		"temp":       theStringType,
+		"tool_cache": theStringType,
 		// These are not documented but actually exist
-		"workspace": StringType{},
+		"workspace": theStringType,
 	}),
 	// https://docs.github.com/en/actions/reference/context-and-expression-syntax-for-github-actions#contexts
 	"secrets": NewEmptyObjectType(),
 	// https://docs.github.com/en/actions/reference/context-and-expression-syntax-for-github-actions#contexts
 	"strategy": NewObjectType(map[string]ExprType{
-		"fail-fast":    BoolType{},
-		"job-index":    NumberType{},
-		"job-total":    NumberType{},
-		"max-parallel": NumberType{},
+		"fail-fast":    theBoolType,
+		"job-index":    theNumberType,
+		"job-total":    theNumberType,
+		"max-parallel": theNumberType,
 	}),
 	// https://docs.github.com/en/actions/reference/context-and-expression-syntax-for-github-actions#contexts
 	"matrix": NewEmptyStrictObjectType(), // This value will be updated contextually
@@ -358,7 +358,7 @@ func (sema *ExprSemanticsChecker) checkVariable(n *VariableNode) ExprType {
 			ss = append(ss, n)
 		}
 		sema.errorf(n, "undefined variable %q. available variables are %s", n.Token().Value, sortedQuotes(ss))
-		return AnyType{}
+		return theAnyType
 	}
 
 	return v
@@ -366,8 +366,8 @@ func (sema *ExprSemanticsChecker) checkVariable(n *VariableNode) ExprType {
 
 func (sema *ExprSemanticsChecker) checkObjectDeref(n *ObjectDerefNode) ExprType {
 	switch ty := sema.check(n.Receiver).(type) {
-	case AnyType:
-		return AnyType{}
+	case *AnyType:
+		return theAnyType
 	case *ObjectType:
 		if t, ok := ty.Props[n.Property]; ok {
 			return t
@@ -378,19 +378,19 @@ func (sema *ExprSemanticsChecker) checkObjectDeref(n *ObjectDerefNode) ExprType 
 		if ty.IsStrict() {
 			sema.errorf(n, "property %q is not defined in object type %s", n.Property, ty.String())
 		}
-		return AnyType{}
+		return theAnyType
 	case *ArrayType:
 		if !ty.Deref {
 			sema.errorf(n, "receiver of object dereference %q must be type of object but got %q", n.Property, ty.String())
-			return AnyType{}
+			return theAnyType
 		}
 		switch et := ty.Elem.(type) {
-		case AnyType:
+		case *AnyType:
 			// When element type is any, map the any type to any. Reuse `ty`
 			return ty
 		case *ObjectType:
 			// Map element type of delererenced array
-			var elem ExprType = AnyType{}
+			var elem ExprType = theAnyType
 			if t, ok := et.Props[n.Property]; ok {
 				elem = t
 			} else if et.Mapped != nil {
@@ -406,24 +406,24 @@ func (sema *ExprSemanticsChecker) checkObjectDeref(n *ObjectDerefNode) ExprType 
 				n.Property,
 				ty.Elem.String(),
 			)
-			return AnyType{}
+			return theAnyType
 		}
 	default:
 		sema.errorf(n, "receiver of object dereference %q must be type of object but got %q", n.Property, ty.String())
-		return AnyType{}
+		return theAnyType
 	}
 }
 
 func (sema *ExprSemanticsChecker) checkArrayDeref(n *ArrayDerefNode) ExprType {
 	switch ty := sema.check(n.Receiver).(type) {
-	case AnyType:
-		return &ArrayType{AnyType{}, true}
+	case *AnyType:
+		return &ArrayType{theAnyType, true}
 	case *ArrayType:
 		ty.Deref = true
 		return ty
 	default:
 		sema.errorf(n, "receiver of array element dereference must be type of array but got %q", ty.String())
-		return AnyType{}
+		return theAnyType
 	}
 }
 
@@ -435,21 +435,21 @@ func (sema *ExprSemanticsChecker) checkIndexAccess(n *IndexAccessNode) ExprType 
 	idx := sema.check(n.Index)
 
 	switch ty := sema.check(n.Operand).(type) {
-	case AnyType:
-		return AnyType{}
+	case *AnyType:
+		return theAnyType
 	case *ArrayType:
 		switch idx.(type) {
-		case AnyType, NumberType:
+		case *AnyType, *NumberType:
 			return ty.Elem
 		default:
 			sema.errorf(n.Index, "index access of array must be type of number but got %q", idx.String())
-			return AnyType{}
+			return theAnyType
 		}
 	case *ObjectType:
 		switch idx.(type) {
-		case AnyType:
-			return AnyType{}
-		case StringType:
+		case *AnyType:
+			return theAnyType
+		case *StringType:
 			// Index access with string literal like foo['bar']
 			if lit, ok := n.Index.(*StringNode); ok {
 				if prop, ok := ty.Props[lit.Value]; ok {
@@ -465,14 +465,14 @@ func (sema *ExprSemanticsChecker) checkIndexAccess(n *IndexAccessNode) ExprType 
 			if ty.Mapped != nil {
 				return ty.Mapped
 			}
-			return AnyType{} // Fallback
+			return theAnyType // Fallback
 		default:
 			sema.errorf(n.Index, "property access of object must be type of string but got %q", idx.String())
-			return AnyType{}
+			return theAnyType
 		}
 	default:
 		sema.errorf(n, "index access operand must be type of object or array but got %q", ty.String())
-		return AnyType{}
+		return theAnyType
 	}
 }
 
@@ -570,7 +570,7 @@ func (sema *ExprSemanticsChecker) checkFuncCall(n *FuncCallNode) ExprType {
 			ss = append(ss, n)
 		}
 		sema.errorf(n, "undefined function %q. available functions are %s", n.Callee, sortedQuotes(ss))
-		return AnyType{}
+		return theAnyType
 	}
 
 	tys := make([]ExprType, 0, len(n.Args))
@@ -593,15 +593,15 @@ func (sema *ExprSemanticsChecker) checkFuncCall(n *FuncCallNode) ExprType {
 	// All candidates failed
 	sema.errs = append(sema.errs, errs...)
 
-	return AnyType{}
+	return theAnyType
 }
 
 func (sema *ExprSemanticsChecker) checkNotOp(n *NotOpNode) ExprType {
 	ty := sema.check(n.Operand)
-	if !(BoolType{}).Assignable(ty) {
+	if !(theBoolType).Assignable(ty) {
 		sema.errorf(n, "type of operand of ! operator %q is not assignable to type \"bool\"", ty.String())
 	}
-	return BoolType{}
+	return theBoolType
 }
 
 func (sema *ExprSemanticsChecker) checkCompareOp(n *CompareOpNode) ExprType {
@@ -610,7 +610,7 @@ func (sema *ExprSemanticsChecker) checkCompareOp(n *CompareOpNode) ExprType {
 	// Note: Comparing values is very loose. Any value can be compared with any value without an
 	// error.
 	// https://docs.github.com/en/actions/reference/context-and-expression-syntax-for-github-actions#operators
-	return BoolType{}
+	return theBoolType
 }
 
 func (sema *ExprSemanticsChecker) checkLogicalOp(n *LogicalOpNode) ExprType {
@@ -626,13 +626,13 @@ func (sema *ExprSemanticsChecker) check(expr ExprNode) ExprType {
 	case *VariableNode:
 		return sema.checkVariable(e)
 	case *NullNode:
-		return NullType{}
+		return theNullType
 	case *BoolNode:
-		return BoolType{}
+		return theBoolType
 	case *StringNode:
-		return StringType{}
+		return theStringType
 	case *IntNode, *FloatNode:
-		return NumberType{}
+		return theNumberType
 	case *ObjectDerefNode:
 		return sema.checkObjectDeref(e)
 	case *ArrayDerefNode:

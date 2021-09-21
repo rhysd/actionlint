@@ -5,6 +5,14 @@ import (
 	"strings"
 )
 
+var (
+	theAnyType    = &AnyType{}
+	theNullType   = &NullType{}
+	theBoolType   = &BoolType{}
+	theNumberType = &NumberType{}
+	theStringType = &StringType{}
+)
+
 // Types
 
 // ExprType is interface for types of values in expression.
@@ -22,32 +30,32 @@ type ExprType interface {
 // be type-checked since it's type cannot be known statically.
 type AnyType struct{}
 
-func (ty AnyType) String() string {
+func (ty *AnyType) String() string {
 	return "any"
 }
 
 // Assignable returns if other type can be assignable to the type.
-func (ty AnyType) Assignable(_ ExprType) bool {
+func (ty *AnyType) Assignable(_ ExprType) bool {
 	return true
 }
 
 // Merge merges other type into this type. When other type conflicts with this type, the merged
 // result is any type as fallback.
-func (ty AnyType) Merge(other ExprType) ExprType {
+func (ty *AnyType) Merge(other ExprType) ExprType {
 	return ty
 }
 
 // NullType is type for null value.
 type NullType struct{}
 
-func (ty NullType) String() string {
+func (ty *NullType) String() string {
 	return "null"
 }
 
 // Assignable returns if other type can be assignable to the type.
-func (ty NullType) Assignable(other ExprType) bool {
+func (ty *NullType) Assignable(other ExprType) bool {
 	switch other.(type) {
-	case NullType, AnyType:
+	case *NullType, *AnyType:
 		return true
 	default:
 		return false
@@ -56,25 +64,25 @@ func (ty NullType) Assignable(other ExprType) bool {
 
 // Merge merges other type into this type. When other type conflicts with this type, the merged
 // result is any type as fallback.
-func (ty NullType) Merge(other ExprType) ExprType {
-	if _, ok := other.(NullType); ok {
+func (ty *NullType) Merge(other ExprType) ExprType {
+	if _, ok := other.(*NullType); ok {
 		return ty
 	}
-	return AnyType{}
+	return theAnyType
 }
 
 // NumberType is type for number values such as integer or float.
 type NumberType struct{}
 
-func (ty NumberType) String() string {
+func (ty *NumberType) String() string {
 	return "number"
 }
 
 // Assignable returns if other type can be assignable to the type.
-func (ty NumberType) Assignable(other ExprType) bool {
+func (ty *NumberType) Assignable(other ExprType) bool {
 	// TODO: Is string of numbers corced into number?
 	switch other.(type) {
-	case NumberType, AnyType:
+	case *NumberType, *AnyType:
 		return true
 	default:
 		return false
@@ -83,26 +91,26 @@ func (ty NumberType) Assignable(other ExprType) bool {
 
 // Merge merges other type into this type. When other type conflicts with this type, the merged
 // result is any type as fallback.
-func (ty NumberType) Merge(other ExprType) ExprType {
+func (ty *NumberType) Merge(other ExprType) ExprType {
 	switch other.(type) {
-	case NumberType:
+	case *NumberType:
 		return ty
-	case StringType:
+	case *StringType:
 		return other
 	default:
-		return AnyType{}
+		return theAnyType
 	}
 }
 
 // BoolType is type for boolean values.
 type BoolType struct{}
 
-func (ty BoolType) String() string {
+func (ty *BoolType) String() string {
 	return "bool"
 }
 
 // Assignable returns if other type can be assignable to the type.
-func (ty BoolType) Assignable(other ExprType) bool {
+func (ty *BoolType) Assignable(other ExprType) bool {
 	// Any type can be converted into bool..
 	// e.g.
 	//    if: ${{ steps.foo }}
@@ -111,30 +119,30 @@ func (ty BoolType) Assignable(other ExprType) bool {
 
 // Merge merges other type into this type. When other type conflicts with this type, the merged
 // result is any type as fallback.
-func (ty BoolType) Merge(other ExprType) ExprType {
+func (ty *BoolType) Merge(other ExprType) ExprType {
 	switch other.(type) {
-	case BoolType:
+	case *BoolType:
 		return ty
-	case StringType:
+	case *StringType:
 		return other
 	default:
-		return AnyType{}
+		return theAnyType
 	}
 }
 
 // StringType is type for string values.
 type StringType struct{}
 
-func (ty StringType) String() string {
+func (ty *StringType) String() string {
 	return "string"
 }
 
 // Assignable returns if other type can be assignable to the type.
-func (ty StringType) Assignable(other ExprType) bool {
+func (ty *StringType) Assignable(other ExprType) bool {
 	// Bool and null types also can be coerced into string. But in almost all case, those coercing
 	// would be mistakes.
 	switch other.(type) {
-	case StringType, NumberType, AnyType:
+	case *StringType, *NumberType, *AnyType:
 		return true
 	default:
 		return false
@@ -143,12 +151,12 @@ func (ty StringType) Assignable(other ExprType) bool {
 
 // Merge merges other type into this type. When other type conflicts with this type, the merged
 // result is any type as fallback.
-func (ty StringType) Merge(other ExprType) ExprType {
+func (ty *StringType) Merge(other ExprType) ExprType {
 	switch other.(type) {
-	case StringType, NumberType, BoolType:
+	case *StringType, *NumberType, *BoolType:
 		return ty
 	default:
-		return AnyType{}
+		return theAnyType
 	}
 }
 
@@ -168,12 +176,12 @@ type ObjectType struct {
 // NewEmptyObjectType creates new loose ObjectType instance which allows unknown props. When
 // accessing to unknown props, their values will fall back to any.
 func NewEmptyObjectType() *ObjectType {
-	return &ObjectType{map[string]ExprType{}, AnyType{}}
+	return &ObjectType{map[string]ExprType{}, theAnyType}
 }
 
 // NewObjectType creates new loose ObjectType instance which allows unknown props with given props.
 func NewObjectType(props map[string]ExprType) *ObjectType {
-	return &ObjectType{props, AnyType{}}
+	return &ObjectType{props, theAnyType}
 }
 
 // NewEmptyStrictObjectType creates new ObjectType instance which does not allow unknown props.
@@ -199,7 +207,7 @@ func (ty *ObjectType) IsStrict() bool {
 
 // IsLoose returns if the type is a loose object, which allows any unknown props.
 func (ty *ObjectType) IsLoose() bool {
-	_, ok := ty.Mapped.(AnyType)
+	_, ok := ty.Mapped.(*AnyType)
 	return ok
 }
 
@@ -210,7 +218,7 @@ func (ty *ObjectType) Strict() {
 
 // Loose sets the object is loose, which means any properties can be set.
 func (ty *ObjectType) Loose() {
-	ty.Mapped = AnyType{}
+	ty.Mapped = theAnyType
 }
 
 func (ty *ObjectType) String() string {
@@ -232,7 +240,7 @@ func (ty *ObjectType) String() string {
 // In other words, rhs type is more strict than lhs (receiver) type.
 func (ty *ObjectType) Assignable(other ExprType) bool {
 	switch other := other.(type) {
-	case AnyType:
+	case *AnyType:
 		return true
 	case *ObjectType:
 		if !ty.IsStrict() {
@@ -311,7 +319,7 @@ func (ty *ObjectType) Merge(other ExprType) ExprType {
 			Mapped: mapped,
 		}
 	default:
-		return AnyType{}
+		return theAnyType
 	}
 }
 
@@ -330,7 +338,7 @@ func (ty *ArrayType) String() string {
 // Assignable returns if other type can be assignable to the type.
 func (ty *ArrayType) Assignable(other ExprType) bool {
 	switch other := other.(type) {
-	case AnyType:
+	case *AnyType:
 		return true
 	case *ArrayType:
 		return ty.Elem.Assignable(other.Elem)
@@ -345,10 +353,10 @@ func (ty *ArrayType) Assignable(other ExprType) bool {
 func (ty *ArrayType) Merge(other ExprType) ExprType {
 	switch other := other.(type) {
 	case *ArrayType:
-		if _, ok := ty.Elem.(AnyType); ok {
+		if _, ok := ty.Elem.(*AnyType); ok {
 			return ty
 		}
-		if _, ok := other.Elem.(AnyType); ok {
+		if _, ok := other.Elem.(*AnyType); ok {
 			return other
 		}
 		return &ArrayType{
@@ -356,7 +364,7 @@ func (ty *ArrayType) Merge(other ExprType) ExprType {
 			Deref: false, // When fusing array deref type, it means prop deref chain breaks
 		}
 	default:
-		return AnyType{}
+		return theAnyType
 	}
 }
 
