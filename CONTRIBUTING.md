@@ -143,7 +143,7 @@ not all webhooks are supported by GitHub Actions.
 It is generated automatically with `go generate`. The command runs [`generate-webhook-events`](./scripts/generate-webhook-events)
 script.
 
-It fetches [`events-that-trigger-workflows.md`](https://github.com/github/docs/blob/main/content/actions/reference/events-that-trigger-workflows.md),
+It fetches [`events-that-trigger-workflows.md`](https://github.com/github/docs/blob/main/content/actions/learn-github-actions/events-that-trigger-workflows.md),
 parses the markdown document, and extracts webhook names and their types. For more details, see
 [README.md at the script](./scripts/generate-webhook-events/README.md).
 
