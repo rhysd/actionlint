@@ -1508,9 +1508,6 @@ jobs:
       - run: echo 'hello'
         # ERROR: 'powershell' is only available on Windows
         shell: powershell
-      - run: echo 'hello'
-        # OK: 'powershell' is only available on Windows
-        shell: powershell
   mac:
     runs-on: macos-latest
     defaults:
@@ -1527,6 +1524,9 @@ jobs:
       - run: echo 'hello'
         # ERROR: 'sh' is only available on Windows
         shell: sh
+      - run: echo 'hello'
+        # OK: 'powershell' is only available on Windows
+        shell: powershell
 ```
 
 Output:
