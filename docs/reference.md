@@ -6,12 +6,12 @@ This document describes links to resources.
 - Repository: https://github.com/rhysd/actionlint
 - Playground: https://rhysd.github.io/actionlint/
 - GitHub Actions official documentations
-  - Workflow syntax: https://docs.github.com/en/actions/reference/workflow-syntax-for-github-actions
-  - Expression syntax: https://docs.github.com/en/actions/reference/context-and-expression-syntax-for-github-actions
-  - Built-in functions: https://docs.github.com/en/actions/reference/context-and-expression-syntax-for-github-actions#functions
-  - Webhook events: https://docs.github.com/en/actions/reference/events-that-trigger-workflows#webhook-events
+  - Workflow syntax: https://docs.github.com/en/actions/learn-github-actions/workflow-syntax-for-github-actions
+  - Expression syntax: https://docs.github.com/en/actions/learn-github-actions/contexts
+  - Built-in functions: https://docs.github.com/en/actions/learn-github-actions/contexts#functions
+  - Webhook events: https://docs.github.com/en/actions/learn-github-actions/events-that-trigger-workflows#webhook-events
   - Self-hosted runner: https://docs.github.com/en/actions/hosting-your-own-runners/about-self-hosted-runners
-  - Security: https://docs.github.com/en/actions/learn-github-actions/security-hardening-for-github-actions
+  - Security: https://docs.github.com/en/actions/security-guides/security-hardening-for-github-actions
 - CRON syntax: https://pubs.opengroup.org/onlinepubs/9699919799/utilities/crontab.html#tag_20_25_07
 - shellcheck: https://github.com/koalaman/shellcheck
 - pyflakes: https://github.com/PyCQA/pyflakes

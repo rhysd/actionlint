@@ -346,7 +346,7 @@ repos:
 [reviewdog]: https://github.com/reviewdog/reviewdog
 [cmd-manual]: https://rhysd.github.io/actionlint/usage.html
 [go-template]: https://pkg.go.dev/text/template
-[ga-annotate-error]: https://docs.github.com/en/actions/reference/workflow-commands-for-github-actions#setting-an-error-message
+[ga-annotate-error]: https://docs.github.com/en/actions/learn-github-actions/workflow-commands-for-github-actions#setting-an-error-message
 [jsonl]: https://jsonlines.org/
 [problem-matchers]: https://github.com/actions/toolkit/blob/master/docs/problem-matchers.md
 [super-linter]: https://github.com/github/super-linter
