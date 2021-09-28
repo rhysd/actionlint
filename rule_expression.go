@@ -14,7 +14,7 @@ type typedExpr struct {
 // RuleExpression is a rule checker to check expression syntax in string values of workflow syntax.
 // It checks syntax and semantics of the expressions including type checks and functions/contexts
 // definitions. For more details see
-// https://docs.github.com/en/actions/reference/context-and-expression-syntax-for-github-actions
+// https://docs.github.com/en/actions/learn-github-actions/contexts
 type RuleExpression struct {
 	RuleBase
 	matrixTy     *ObjectType
@@ -387,7 +387,7 @@ func (rule *RuleExpression) checkIfCondition(str *String) {
 	}
 
 	// Note:
-	// https://docs.github.com/en/actions/reference/workflow-syntax-for-github-actions#jobsjob_idif
+	// https://docs.github.com/en/actions/learn-github-actions/workflow-syntax-for-github-actions#jobsjob_idif
 	//
 	// > When you use expressions in an if conditional, you may omit the expression syntax (${{ }})
 	// > because GitHub automatically evaluates the if conditional as an expression, unless the
@@ -576,7 +576,7 @@ func (rule *RuleExpression) checkSemantics(src string, line, col int, checkUntru
 }
 
 func (rule *RuleExpression) calcNeedsType(job *Job) *ObjectType {
-	// https://docs.github.com/en/actions/reference/context-and-expression-syntax-for-github-actions#needs-context
+	// https://docs.github.com/en/actions/learn-github-actions/contexts#needs-context
 	o := NewEmptyStrictObjectType()
 	rule.populateDependantNeedsTypes(o, job, job)
 	return o

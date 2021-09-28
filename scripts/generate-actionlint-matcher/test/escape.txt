@@ -1,4 +1,4 @@
-[33m./testdata/err/one_error.yaml[0m[90m:[0m6[90m:[0m41[90m: [0m[1m"github.event.head_commit.message" is potentially untrusted. avoid using it directly in inline scripts. instead, pass it through an environment variable. see https://docs.github.com/en/actions/learn-github-actions/security-hardening-for-github-actions for more details[0m[90m [expression]
+[33m./testdata/err/one_error.yaml[0m[90m:[0m6[90m:[0m41[90m: [0m[1m"github.event.head_commit.message" is potentially untrusted. avoid using it directly in inline scripts. instead, pass it through an environment variable. see https://docs.github.com/en/actions/security-guides/security-hardening-for-github-actions for more details[0m[90m [expression]
 [0m[90m  |
 [0m[90m6 | [0m      - run: echo "Checking commit '${{ github.event.head_commit.message }}'"
 [90m  | [0m[32m                                        ^~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~

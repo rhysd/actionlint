@@ -15,7 +15,7 @@ var allPermissionScopes = map[string]struct{}{
 }
 
 // RulePermissions is a rule checker to check permission configurations in a workflow.
-// https://docs.github.com/en/actions/reference/authentication-in-a-workflow#permissions-for-the-github_token
+// https://docs.github.com/en/actions/security-guides/automatic-token-authentication#permissions-for-the-github_token
 type RulePermissions struct {
 	RuleBase
 }

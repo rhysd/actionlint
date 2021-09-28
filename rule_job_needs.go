@@ -27,7 +27,7 @@ type edge struct {
 }
 
 // RuleJobNeeds is a rule to check 'needs' field in each job conifiguration. For more details, see
-// https://docs.github.com/en/actions/reference/workflow-syntax-for-github-actions#jobsjob_idneeds
+// https://docs.github.com/en/actions/learn-github-actions/workflow-syntax-for-github-actions#jobsjob_idneeds
 type RuleJobNeeds struct {
 	RuleBase
 	nodes map[string]*jobNode

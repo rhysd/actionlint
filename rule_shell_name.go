@@ -13,7 +13,7 @@ const (
 )
 
 // RuleShellName is a rule to check 'shell' field. For more details, see
-// https://docs.github.com/en/actions/reference/workflow-syntax-for-github-actions#using-a-specific-shell
+// https://docs.github.com/en/actions/learn-github-actions/workflow-syntax-for-github-actions#using-a-specific-shell
 type RuleShellName struct {
 	RuleBase
 	platform platformKind
@@ -67,7 +67,7 @@ func (rule *RuleShellName) checkShellName(node *String) {
 	}
 
 	// Ignore custom shell
-	// https://docs.github.com/en/actions/reference/workflow-syntax-for-github-actions#custom-shell
+	// https://docs.github.com/en/actions/learn-github-actions/workflow-syntax-for-github-actions#custom-shell
 	if strings.Contains(node.Value, "{0}") {
 		return
 	}
@@ -107,7 +107,7 @@ func (rule *RuleShellName) checkShellName(node *String) {
 }
 
 func getAvailableShellNames(kind platformKind) []string {
-	// https://docs.github.com/en/actions/reference/workflow-syntax-for-github-actions#using-a-specific-shell
+	// https://docs.github.com/en/actions/learn-github-actions/workflow-syntax-for-github-actions#using-a-specific-shell
 	switch kind {
 	case platformKindAny:
 		return []string{

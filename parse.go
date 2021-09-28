@@ -297,7 +297,7 @@ func (p *parser) parseScheduleEvent(pos *Pos, n *yaml.Node) *ScheduledEvent {
 	return &ScheduledEvent{cron, pos}
 }
 
-// https://docs.github.com/en/actions/reference/events-that-trigger-workflows#workflow_dispatch
+// https://docs.github.com/en/actions/learn-github-actions/events-that-trigger-workflows#workflow_dispatch
 func (p *parser) parseWorkflowDispatchEvent(pos *Pos, n *yaml.Node) *WorkflowDispatchEvent {
 	ret := &WorkflowDispatchEvent{Pos: pos}
 
@@ -340,7 +340,7 @@ func (p *parser) parseWorkflowDispatchEvent(pos *Pos, n *yaml.Node) *WorkflowDis
 	return ret
 }
 
-// https://docs.github.com/en/actions/reference/events-that-trigger-workflows#repository_dispatch
+// https://docs.github.com/en/actions/learn-github-actions/events-that-trigger-workflows#repository_dispatch
 func (p *parser) parseRepositoryDispatchEvent(pos *Pos, n *yaml.Node) *RepositoryDispatchEvent {
 	ret := &RepositoryDispatchEvent{Pos: pos}
 
@@ -472,7 +472,7 @@ func (p *parser) parseEvents(pos *Pos, n *yaml.Node) []Event {
 	}
 }
 
-// https://docs.github.com/en/actions/reference/workflow-syntax-for-github-actions#permissions
+// https://docs.github.com/en/actions/learn-github-actions/workflow-syntax-for-github-actions#permissions
 func (p *parser) parsePermissions(pos *Pos, n *yaml.Node) *Permissions {
 	ret := &Permissions{Pos: pos}
 
@@ -493,7 +493,7 @@ func (p *parser) parsePermissions(pos *Pos, n *yaml.Node) *Permissions {
 	return ret
 }
 
-// https://docs.github.com/en/actions/reference/workflow-syntax-for-github-actions#env
+// https://docs.github.com/en/actions/learn-github-actions/workflow-syntax-for-github-actions#env
 func (p *parser) parseEnv(n *yaml.Node) *Env {
 	if n.Kind == yaml.ScalarNode {
 		return &Env{
@@ -514,7 +514,7 @@ func (p *parser) parseEnv(n *yaml.Node) *Env {
 	return &Env{Vars: vars}
 }
 
-// https://docs.github.com/en/actions/reference/workflow-syntax-for-github-actions#defaults
+// https://docs.github.com/en/actions/learn-github-actions/workflow-syntax-for-github-actions#defaults
 func (p *parser) parseDefaults(pos *Pos, n *yaml.Node) *Defaults {
 	ret := &Defaults{Pos: pos}
 
@@ -544,7 +544,7 @@ func (p *parser) parseDefaults(pos *Pos, n *yaml.Node) *Defaults {
 	return ret
 }
 
-// https://docs.github.com/en/actions/reference/workflow-syntax-for-github-actions#jobsjob_idconcurrency
+// https://docs.github.com/en/actions/learn-github-actions/workflow-syntax-for-github-actions#jobsjob_idconcurrency
 func (p *parser) parseConcurrency(pos *Pos, n *yaml.Node) *Concurrency {
 	ret := &Concurrency{Pos: pos}
 
@@ -571,7 +571,7 @@ func (p *parser) parseConcurrency(pos *Pos, n *yaml.Node) *Concurrency {
 	return ret
 }
 
-// https://docs.github.com/en/actions/reference/workflow-syntax-for-github-actions#jobsjob_idenvironment
+// https://docs.github.com/en/actions/learn-github-actions/workflow-syntax-for-github-actions#jobsjob_idenvironment
 func (p *parser) parseEnvironment(pos *Pos, n *yaml.Node) *Environment {
 	ret := &Environment{Pos: pos}
 
@@ -598,7 +598,7 @@ func (p *parser) parseEnvironment(pos *Pos, n *yaml.Node) *Environment {
 	return ret
 }
 
-// https://docs.github.com/en/actions/reference/workflow-syntax-for-github-actions#jobsjob_idoutputs
+// https://docs.github.com/en/actions/learn-github-actions/workflow-syntax-for-github-actions#jobsjob_idoutputs
 func (p *parser) parseOutputs(n *yaml.Node) map[string]*Output {
 	outputs := p.parseSectionMapping("outputs", n, false)
 	ret := make(map[string]*Output, len(outputs))
@@ -639,8 +639,8 @@ func (p *parser) parseRawYAMLValue(n *yaml.Node) RawYAMLValue {
 	}
 }
 
-// https://docs.github.com/en/actions/reference/workflow-syntax-for-github-actions#example-including-additional-values-into-combinations
-// https://docs.github.com/en/actions/reference/workflow-syntax-for-github-actions#example-excluding-configurations-from-a-matrix
+// https://docs.github.com/en/actions/learn-github-actions/workflow-syntax-for-github-actions#example-including-additional-values-into-combinations
+// https://docs.github.com/en/actions/learn-github-actions/workflow-syntax-for-github-actions#example-excluding-configurations-from-a-matrix
 func (p *parser) parseMatrixCombinations(sec string, n *yaml.Node) *MatrixCombinations {
 	if n.Kind == yaml.ScalarNode {
 		return &MatrixCombinations{
@@ -673,7 +673,7 @@ func (p *parser) parseMatrixCombinations(sec string, n *yaml.Node) *MatrixCombin
 	return &MatrixCombinations{Combinations: ret}
 }
 
-// https://docs.github.com/en/actions/reference/workflow-syntax-for-github-actions#jobsjob_idstrategymatrix
+// https://docs.github.com/en/actions/learn-github-actions/workflow-syntax-for-github-actions#jobsjob_idstrategymatrix
 func (p *parser) parseMatrix(pos *Pos, n *yaml.Node) *Matrix {
 	if n.Kind == yaml.ScalarNode {
 		return &Matrix{
@@ -719,7 +719,7 @@ func (p *parser) parseMatrix(pos *Pos, n *yaml.Node) *Matrix {
 	return ret
 }
 
-// https://docs.github.com/en/actions/reference/workflow-syntax-for-github-actions#jobsjob_idstrategy
+// https://docs.github.com/en/actions/learn-github-actions/workflow-syntax-for-github-actions#jobsjob_idstrategy
 func (p *parser) parseStrategy(pos *Pos, n *yaml.Node) *Strategy {
 	ret := &Strategy{Pos: pos}
 
@@ -739,7 +739,7 @@ func (p *parser) parseStrategy(pos *Pos, n *yaml.Node) *Strategy {
 	return ret
 }
 
-// https://docs.github.com/en/actions/reference/workflow-syntax-for-github-actions#jobsjob_idcontainer
+// https://docs.github.com/en/actions/learn-github-actions/workflow-syntax-for-github-actions#jobsjob_idcontainer
 func (p *parser) parseContainer(sec string, pos *Pos, n *yaml.Node) *Container {
 	ret := &Container{Pos: pos}
 
@@ -792,7 +792,7 @@ func (p *parser) parseContainer(sec string, pos *Pos, n *yaml.Node) *Container {
 	return ret
 }
 
-// https://docs.github.com/en/actions/reference/workflow-syntax-for-github-actions#jobsjob_idsteps
+// https://docs.github.com/en/actions/learn-github-actions/workflow-syntax-for-github-actions#jobsjob_idsteps
 func (p *parser) parseStep(n *yaml.Node) *Step {
 	ret := &Step{Pos: posAt(n)}
 	var workDir *String
@@ -830,10 +830,10 @@ func (p *parser) parseStep(n *yaml.Node) *Step {
 				for _, input := range with {
 					switch input.key.Value {
 					case "entrypoint":
-						// https://docs.github.com/en/actions/reference/workflow-syntax-for-github-actions#jobsjob_idstepswithentrypoint
+						// https://docs.github.com/en/actions/learn-github-actions/workflow-syntax-for-github-actions#jobsjob_idstepswithentrypoint
 						exec.Entrypoint = p.parseString(input.val, false)
 					case "args":
-						// https://docs.github.com/en/actions/reference/workflow-syntax-for-github-actions#jobsjob_idstepswithargs
+						// https://docs.github.com/en/actions/learn-github-actions/workflow-syntax-for-github-actions#jobsjob_idstepswithargs
 						exec.Args = p.parseString(input.val, true)
 					default:
 						exec.Inputs[input.key.Value] = &Input{input.key, p.parseString(input.val, true)}
@@ -899,7 +899,7 @@ func (p *parser) parseStep(n *yaml.Node) *Step {
 	return ret
 }
 
-// https://docs.github.com/en/actions/reference/workflow-syntax-for-github-actions#jobsjob_idsteps
+// https://docs.github.com/en/actions/learn-github-actions/workflow-syntax-for-github-actions#jobsjob_idsteps
 func (p *parser) parseSteps(n *yaml.Node) []*Step {
 	if ok := p.checkSequence("steps", n, false); !ok {
 		return nil
@@ -916,7 +916,7 @@ func (p *parser) parseSteps(n *yaml.Node) []*Step {
 	return ret
 }
 
-// https://docs.github.com/en/actions/reference/workflow-syntax-for-github-actions#jobsjob_id
+// https://docs.github.com/en/actions/learn-github-actions/workflow-syntax-for-github-actions#jobsjob_id
 func (p *parser) parseJob(id *String, n *yaml.Node) *Job {
 	ret := &Job{ID: id, Pos: id.Pos}
 
@@ -1002,7 +1002,7 @@ func (p *parser) parseJob(id *String, n *yaml.Node) *Job {
 	return ret
 }
 
-// https://docs.github.com/en/actions/reference/workflow-syntax-for-github-actions#jobs
+// https://docs.github.com/en/actions/learn-github-actions/workflow-syntax-for-github-actions#jobs
 func (p *parser) parseJobs(n *yaml.Node) map[string]*Job {
 	jobs := p.parseSectionMapping("jobs", n, false)
 	ret := make(map[string]*Job, len(jobs))
@@ -1013,7 +1013,7 @@ func (p *parser) parseJobs(n *yaml.Node) map[string]*Job {
 	return ret
 }
 
-// https://docs.github.com/en/actions/reference/workflow-syntax-for-github-actions
+// https://docs.github.com/en/actions/learn-github-actions/workflow-syntax-for-github-actions
 func (p *parser) parse(n *yaml.Node) *Workflow {
 	w := &Workflow{}
 

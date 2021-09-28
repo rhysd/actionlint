@@ -69,7 +69,7 @@ type Event interface {
 // WebhookEvent represents event type based on webhook events.
 // Some events can't have 'types' field. Only 'push' and 'pull' events can have 'tags', 'tags-ignore',
 // 'paths' and 'paths-ignore' fields. Only 'workflow_run' event can have 'workflows' field.
-// https://docs.github.com/en/actions/reference/workflow-syntax-for-github-actions#onevent_nametypes
+// https://docs.github.com/en/actions/learn-github-actions/workflow-syntax-for-github-actions#onevent_nametypes
 type WebhookEvent struct {
 	// Hook is a name of the webhook event.
 	Hook *String
@@ -100,7 +100,7 @@ func (e *WebhookEvent) EventName() string {
 }
 
 // ScheduledEvent is event scheduled by workflow.
-// https://docs.github.com/en/actions/reference/events-that-trigger-workflows#scheduled-events
+// https://docs.github.com/en/actions/learn-github-actions/events-that-trigger-workflows#scheduled-events
 type ScheduledEvent struct {
 	// Cron is list of cron strings which schedules workflow.
 	Cron []*String
@@ -114,7 +114,7 @@ func (e *ScheduledEvent) EventName() string {
 }
 
 // DispatchInput is input specified on dispatching workflow manually.
-// https://docs.github.com/en/actions/reference/events-that-trigger-workflows#workflow_dispatch
+// https://docs.github.com/en/actions/learn-github-actions/events-that-trigger-workflows#workflow_dispatch
 type DispatchInput struct {
 	// Name is a name of input value specified on dispatching workflow manually.
 	Name *String
@@ -127,7 +127,7 @@ type DispatchInput struct {
 }
 
 // WorkflowDispatchEvent is event on dispatching workflow manually.
-// https://docs.github.com/en/actions/reference/events-that-trigger-workflows#workflow_dispatch
+// https://docs.github.com/en/actions/learn-github-actions/events-that-trigger-workflows#workflow_dispatch
 type WorkflowDispatchEvent struct {
 	// Inputs is map from input names to input attributes.
 	Inputs map[string]*DispatchInput
@@ -141,7 +141,7 @@ func (e *WorkflowDispatchEvent) EventName() string {
 }
 
 // RepositoryDispatchEvent is repository_dispatch event configuration.
-// https://docs.github.com/en/actions/reference/events-that-trigger-workflows#repository_dispatch
+// https://docs.github.com/en/actions/learn-github-actions/events-that-trigger-workflows#repository_dispatch
 type RepositoryDispatchEvent struct {
 	// Types is list of types which can trigger workflow.
 	Types []*String
@@ -155,7 +155,7 @@ func (e *RepositoryDispatchEvent) EventName() string {
 }
 
 // PermissionScope is struct for respective permission scope like "issues", "checks", ...
-// https://docs.github.com/en/actions/reference/authentication-in-a-workflow#permissions-for-the-github_token
+// https://docs.github.com/en/actions/security-guides/automatic-token-authentication#permissions-for-the-github_token
 type PermissionScope struct {
 	// Name is name of the scope.
 	Name *String
@@ -165,7 +165,7 @@ type PermissionScope struct {
 
 // Permissions is set of permission configurations in workflow file. All permissions can be set at
 // once. Or each permission can be configured respectively.
-// https://docs.github.com/en/actions/reference/workflow-syntax-for-github-actions#permissions
+// https://docs.github.com/en/actions/learn-github-actions/workflow-syntax-for-github-actions#permissions
 type Permissions struct {
 	// All represents a permission value for all the scopes at once.
 	All *String
@@ -176,7 +176,7 @@ type Permissions struct {
 }
 
 // DefaultsRun is configuration that shell is how to be run.
-// https://docs.github.com/en/actions/reference/workflow-syntax-for-github-actions#defaultsrun
+// https://docs.github.com/en/actions/learn-github-actions/workflow-syntax-for-github-actions#defaultsrun
 type DefaultsRun struct {
 	// Shell is shell name to be run.
 	Shell *String
@@ -187,7 +187,7 @@ type DefaultsRun struct {
 }
 
 // Defaults is set of default configurations to run shell.
-// https://docs.github.com/en/actions/reference/workflow-syntax-for-github-actions#defaults
+// https://docs.github.com/en/actions/learn-github-actions/workflow-syntax-for-github-actions#defaults
 type Defaults struct {
 	// Run is configuration of how to run shell.
 	Run *DefaultsRun
@@ -196,7 +196,7 @@ type Defaults struct {
 }
 
 // Concurrency is a configuration of concurrency of the workflow.
-// https://docs.github.com/en/actions/reference/workflow-syntax-for-github-actions#concurrency
+// https://docs.github.com/en/actions/learn-github-actions/workflow-syntax-for-github-actions#concurrency
 type Concurrency struct {
 	// Group is name of the concurrency group.
 	Group *String
@@ -207,7 +207,7 @@ type Concurrency struct {
 }
 
 // Environment is a configuration of environment.
-// https://docs.github.com/en/actions/reference/workflow-syntax-for-github-actions#jobsjob_idenvironment
+// https://docs.github.com/en/actions/learn-github-actions/workflow-syntax-for-github-actions#jobsjob_idenvironment
 type Environment struct {
 	// Name is a name of environment which the workflow uses.
 	Name *String
@@ -236,7 +236,7 @@ type Exec interface {
 }
 
 // ExecRun is configuration how to run shell script at the step.
-// https://docs.github.com/en/actions/reference/workflow-syntax-for-github-actions#jobsjob_idstepsrun
+// https://docs.github.com/en/actions/learn-github-actions/workflow-syntax-for-github-actions#jobsjob_idstepsrun
 type ExecRun struct {
 	// Run is script to run.
 	Run *String
@@ -259,7 +259,7 @@ func (e *ExecRun) SetWorkingDir(dir *String) {
 }
 
 // Input is an input field for running an action.
-// https://docs.github.com/en/actions/reference/workflow-syntax-for-github-actions#jobsjob_idstepswith
+// https://docs.github.com/en/actions/learn-github-actions/workflow-syntax-for-github-actions#jobsjob_idstepswith
 type Input struct {
 	// Name is a name of the input.
 	Name *String
@@ -268,17 +268,17 @@ type Input struct {
 }
 
 // ExecAction is configuration how to run action at the step.
-// https://docs.github.com/en/actions/reference/workflow-syntax-for-github-actions#jobsjob_idstepsuses
+// https://docs.github.com/en/actions/learn-github-actions/workflow-syntax-for-github-actions#jobsjob_idstepsuses
 type ExecAction struct {
-	// https://docs.github.com/en/actions/reference/workflow-syntax-for-github-actions#jobsjob_idstepsuses
+	// https://docs.github.com/en/actions/learn-github-actions/workflow-syntax-for-github-actions#jobsjob_idstepsuses
 	Uses *String
 	// Inputs represents inputs to the action to execute in 'with' section
 	Inputs map[string]*Input
 	// Entrypoint represents optional 'entrypoint' field in 'with' section. Nil field means nothing specified
-	// https://docs.github.com/en/actions/reference/workflow-syntax-for-github-actions#jobsjob_idstepswithentrypoint
+	// https://docs.github.com/en/actions/learn-github-actions/workflow-syntax-for-github-actions#jobsjob_idstepswithentrypoint
 	Entrypoint *String
 	// Args represents optional 'args' field in 'with' section. Nil field means nothing specified
-	// https://docs.github.com/en/actions/reference/workflow-syntax-for-github-actions#jobsjob_idstepswithargs
+	// https://docs.github.com/en/actions/learn-github-actions/workflow-syntax-for-github-actions#jobsjob_idstepswithargs
 	Args *String
 	// WorkingDirectory is a default working directory path to run action
 	WorkingDirectory *String
@@ -437,7 +437,7 @@ func (s *RawYAMLString) String() string {
 
 // MatrixRow is one row of matrix. One matrix row can take multiple values. Those variations are
 // stored as row of values in this struct.
-// https://docs.github.com/en/actions/reference/workflow-syntax-for-github-actions#jobsjob_idstrategymatrix
+// https://docs.github.com/en/actions/learn-github-actions/workflow-syntax-for-github-actions#jobsjob_idstrategymatrix
 type MatrixRow struct {
 	// Name is a name of matrix value.
 	Name *String
@@ -448,7 +448,7 @@ type MatrixRow struct {
 }
 
 // MatrixAssign represents which value should be taken in the row of the matrix.
-// https://docs.github.com/en/actions/reference/workflow-syntax-for-github-actions#jobsjob_idstrategymatrix
+// https://docs.github.com/en/actions/learn-github-actions/workflow-syntax-for-github-actions#jobsjob_idstrategymatrix
 type MatrixAssign struct {
 	// Key is a name of the matrix value.
 	Key *String
@@ -457,7 +457,7 @@ type MatrixAssign struct {
 }
 
 // MatrixCombination is combination of matrix value assignments to define one of matrix variations.
-// https://docs.github.com/en/actions/reference/workflow-syntax-for-github-actions#jobsjob_idstrategymatrix
+// https://docs.github.com/en/actions/learn-github-actions/workflow-syntax-for-github-actions#jobsjob_idstrategymatrix
 type MatrixCombination struct {
 	Assigns map[string]*MatrixAssign
 	// Expression is a string when expression syntax ${{ }} is used for this section.
@@ -466,7 +466,7 @@ type MatrixCombination struct {
 
 // MatrixCombinations is list of combinations of matrix assignments used for 'include' and 'exclude'
 // sections.
-// https://docs.github.com/en/actions/reference/workflow-syntax-for-github-actions#jobsjob_idstrategymatrix
+// https://docs.github.com/en/actions/learn-github-actions/workflow-syntax-for-github-actions#jobsjob_idstrategymatrix
 type MatrixCombinations struct {
 	Combinations []*MatrixCombination
 	// Expression is a string when expression syntax ${{ }} is used for this section.
@@ -487,16 +487,16 @@ func (cs *MatrixCombinations) ContainsExpression() bool {
 }
 
 // Matrix is matrix variations configuration of a job.
-// https://docs.github.com/en/actions/reference/workflow-syntax-for-github-actions#jobsjob_idstrategymatrix
+// https://docs.github.com/en/actions/learn-github-actions/workflow-syntax-for-github-actions#jobsjob_idstrategymatrix
 type Matrix struct {
 	// Values stores mappings from name to values.
 	Rows map[string]*MatrixRow
 	// Include is list of combinations of matrix values and additional values on running matrix combinations.
-	// https://docs.github.com/en/actions/reference/workflow-syntax-for-github-actions#example-including-additional-values-into-combinations
+	// https://docs.github.com/en/actions/learn-github-actions/workflow-syntax-for-github-actions#example-including-additional-values-into-combinations
 	Include *MatrixCombinations
 	// Exclude is list of combinations of matrix values which should not be run. Combinations in
 	// this list will be removed from combinations of matrix to run.
-	// https://docs.github.com/en/actions/reference/workflow-syntax-for-github-actions#example-excluding-configurations-from-a-matrix
+	// https://docs.github.com/en/actions/learn-github-actions/workflow-syntax-for-github-actions#example-excluding-configurations-from-a-matrix
 	Exclude *MatrixCombinations
 	// Expression is a string when expression syntax ${{ }} is used for this section.
 	Expression *String
@@ -505,15 +505,15 @@ type Matrix struct {
 }
 
 // Strategy is strategy configuration of how the job is run.
-// https://docs.github.com/en/actions/reference/workflow-syntax-for-github-actions#jobsjob_idstrategy
+// https://docs.github.com/en/actions/learn-github-actions/workflow-syntax-for-github-actions#jobsjob_idstrategy
 type Strategy struct {
 	// Matrix is matrix of combinations of values. Each combination will run the job once.
 	Matrix *Matrix
 	// FailFast is flag to show if other jobs should stop when one job fails.
-	// https://docs.github.com/en/actions/reference/workflow-syntax-for-github-actions#jobsjob_idstrategyfail-fast
+	// https://docs.github.com/en/actions/learn-github-actions/workflow-syntax-for-github-actions#jobsjob_idstrategyfail-fast
 	FailFast *Bool
 	// MaxParallel is how many jobs should be run at once.
-	// https://docs.github.com/en/actions/reference/workflow-syntax-for-github-actions#jobsjob_idstrategymax-parallel
+	// https://docs.github.com/en/actions/learn-github-actions/workflow-syntax-for-github-actions#jobsjob_idstrategymax-parallel
 	MaxParallel *Int
 	// Pos is a position in source.
 	Pos *Pos
@@ -537,27 +537,27 @@ type Env struct {
 }
 
 // Step is step configuration. Step runs one action or one shell script.
-// https://docs.github.com/en/actions/reference/workflow-syntax-for-github-actions#jobsjob_idsteps
+// https://docs.github.com/en/actions/learn-github-actions/workflow-syntax-for-github-actions#jobsjob_idsteps
 type Step struct {
-	// https://docs.github.com/en/actions/reference/workflow-syntax-for-github-actions#jobsjob_idstepsid
+	// https://docs.github.com/en/actions/learn-github-actions/workflow-syntax-for-github-actions#jobsjob_idstepsid
 	ID *String
-	// https://docs.github.com/en/actions/reference/workflow-syntax-for-github-actions#jobsjob_idstepsif
+	// https://docs.github.com/en/actions/learn-github-actions/workflow-syntax-for-github-actions#jobsjob_idstepsif
 	If *String
-	// https://docs.github.com/en/actions/reference/workflow-syntax-for-github-actions#jobsjob_idstepsname
+	// https://docs.github.com/en/actions/learn-github-actions/workflow-syntax-for-github-actions#jobsjob_idstepsname
 	Name *String
 	Exec Exec
-	// https://docs.github.com/en/actions/reference/workflow-syntax-for-github-actions#jobsjob_idstepsenv
+	// https://docs.github.com/en/actions/learn-github-actions/workflow-syntax-for-github-actions#jobsjob_idstepsenv
 	Env *Env
-	// https://docs.github.com/en/actions/reference/workflow-syntax-for-github-actions#jobsjob_idstepscontinue-on-error
+	// https://docs.github.com/en/actions/learn-github-actions/workflow-syntax-for-github-actions#jobsjob_idstepscontinue-on-error
 	ContinueOnError *Bool
-	// https://docs.github.com/en/actions/reference/workflow-syntax-for-github-actions#jobsjob_idstepstimeout-minutes
+	// https://docs.github.com/en/actions/learn-github-actions/workflow-syntax-for-github-actions#jobsjob_idstepstimeout-minutes
 	TimeoutMinutes *Float
 	// Pos is a position in source.
 	Pos *Pos
 }
 
 // Credentials is credentials configuration.
-// https://docs.github.com/en/actions/reference/workflow-syntax-for-github-actions#jobsjob_idcontainercredentials
+// https://docs.github.com/en/actions/learn-github-actions/workflow-syntax-for-github-actions#jobsjob_idcontainercredentials
 type Credentials struct {
 	// Username is username for authentication.
 	Username *String
@@ -568,31 +568,31 @@ type Credentials struct {
 }
 
 // Container is configuration of how to run the container.
-// https://docs.github.com/en/actions/reference/workflow-syntax-for-github-actions#jobsjob_idcontainer
+// https://docs.github.com/en/actions/learn-github-actions/workflow-syntax-for-github-actions#jobsjob_idcontainer
 type Container struct {
 	// Image is specification of Docker image.
-	// https://docs.github.com/en/actions/reference/workflow-syntax-for-github-actions#jobsjob_idcontainerimage
+	// https://docs.github.com/en/actions/learn-github-actions/workflow-syntax-for-github-actions#jobsjob_idcontainerimage
 	Image *String
 	// Credentials is credentials configuration of the Docker container.
 	Credentials *Credentials
 	// Env is environment variables setup in the container.
-	// https://docs.github.com/en/actions/reference/workflow-syntax-for-github-actions#jobsjob_idcontainerenv
+	// https://docs.github.com/en/actions/learn-github-actions/workflow-syntax-for-github-actions#jobsjob_idcontainerenv
 	Env *Env
 	// Ports is list of port number mappings of the container.
-	// https://docs.github.com/en/actions/reference/workflow-syntax-for-github-actions#jobsjob_idcontainerports
+	// https://docs.github.com/en/actions/learn-github-actions/workflow-syntax-for-github-actions#jobsjob_idcontainerports
 	Ports []*String
 	// Volumes are list of volumes to be mounted to the container.
-	// https://docs.github.com/en/actions/reference/workflow-syntax-for-github-actions#jobsjob_idcontainervolumes
+	// https://docs.github.com/en/actions/learn-github-actions/workflow-syntax-for-github-actions#jobsjob_idcontainervolumes
 	Volumes []*String
 	// Options is options string to run the container.
-	// https://docs.github.com/en/actions/reference/workflow-syntax-for-github-actions#jobsjob_idcontaineroptions
+	// https://docs.github.com/en/actions/learn-github-actions/workflow-syntax-for-github-actions#jobsjob_idcontaineroptions
 	Options *String
 	// Pos is a position in source.
 	Pos *Pos
 }
 
 // Service is configuration to run a service like database.
-// https://docs.github.com/en/actions/reference/workflow-syntax-for-github-actions#jobsjob_idservices
+// https://docs.github.com/en/actions/learn-github-actions/workflow-syntax-for-github-actions#jobsjob_idservices
 type Service struct {
 	// Name is name of the service.
 	Name *String
@@ -601,7 +601,7 @@ type Service struct {
 }
 
 // Output is output entry of the job.
-// https://docs.github.com/en/actions/reference/workflow-syntax-for-github-actions#jobsjob_idoutputs
+// https://docs.github.com/en/actions/learn-github-actions/workflow-syntax-for-github-actions#jobsjob_idoutputs
 type Output struct {
 	// Name is name of output.
 	Name *String
@@ -610,7 +610,7 @@ type Output struct {
 }
 
 // Runner is struct for runner configuration.
-// https://docs.github.com/en/actions/reference/workflow-syntax-for-github-actions#jobsjob_idruns-on
+// https://docs.github.com/en/actions/learn-github-actions/workflow-syntax-for-github-actions#jobsjob_idruns-on
 type Runner struct {
 	// Labels is list label names to select a runner to run a job. There are preset labels and user
 	// defined labels. Runner matching to the labels is selected.
@@ -618,19 +618,19 @@ type Runner struct {
 }
 
 // Job is configuration of how to run a job.
-// https://docs.github.com/en/actions/reference/workflow-syntax-for-github-actions#jobs
+// https://docs.github.com/en/actions/learn-github-actions/workflow-syntax-for-github-actions#jobs
 type Job struct {
 	// ID is an ID of the job, which is key of job configuration objects.
-	// https://docs.github.com/en/actions/reference/workflow-syntax-for-github-actions#jobsjob_id
+	// https://docs.github.com/en/actions/learn-github-actions/workflow-syntax-for-github-actions#jobsjob_id
 	ID *String
 	// Name is a name of job that user can specify freely.
-	// https://docs.github.com/en/actions/reference/workflow-syntax-for-github-actions#jobsjob_idname
+	// https://docs.github.com/en/actions/learn-github-actions/workflow-syntax-for-github-actions#jobsjob_idname
 	Name *String
 	// Needs is list of job IDs which should be run before running this job.
-	// https://docs.github.com/en/actions/reference/workflow-syntax-for-github-actions#jobsjob_idneeds
+	// https://docs.github.com/en/actions/learn-github-actions/workflow-syntax-for-github-actions#jobsjob_idneeds
 	Needs []*String
 	// RunsOn is runner configuration which run the job.
-	// https://docs.github.com/en/actions/reference/workflow-syntax-for-github-actions#jobsjob_idruns-on
+	// https://docs.github.com/en/actions/learn-github-actions/workflow-syntax-for-github-actions#jobsjob_idruns-on
 	RunsOn *Runner
 	// Permissions is permission configuration for running the job.
 	Permissions *Permissions
@@ -639,50 +639,50 @@ type Job struct {
 	// Concurrency is concurrency configuration on running the job.
 	Concurrency *Concurrency
 	// Outputs is map from output name to output specifications.
-	// https://docs.github.com/en/actions/reference/workflow-syntax-for-github-actions#jobsjob_idoutputs
+	// https://docs.github.com/en/actions/learn-github-actions/workflow-syntax-for-github-actions#jobsjob_idoutputs
 	Outputs map[string]*Output
 	// Env is environment variables setup while running the job.
-	// https://docs.github.com/en/actions/reference/workflow-syntax-for-github-actions#jobsjob_idenv
+	// https://docs.github.com/en/actions/learn-github-actions/workflow-syntax-for-github-actions#jobsjob_idenv
 	Env *Env
 	// Defaults is default configurations of how to run scripts.
 	Defaults *Defaults
 	// If is a condition whether this job should be run.
-	// https://docs.github.com/en/actions/reference/workflow-syntax-for-github-actions#jobsjob_idif
+	// https://docs.github.com/en/actions/learn-github-actions/workflow-syntax-for-github-actions#jobsjob_idif
 	If *String
 	// Steps is list of steps to be run in the job.
-	// https://docs.github.com/en/actions/reference/workflow-syntax-for-github-actions#jobsjob_idsteps
+	// https://docs.github.com/en/actions/learn-github-actions/workflow-syntax-for-github-actions#jobsjob_idsteps
 	Steps []*Step
 	// TimeoutMinutes is timeout value of running the job in minutes.
-	// https://docs.github.com/en/actions/reference/workflow-syntax-for-github-actions#jobsjob_idtimeout-minutes
+	// https://docs.github.com/en/actions/learn-github-actions/workflow-syntax-for-github-actions#jobsjob_idtimeout-minutes
 	TimeoutMinutes *Float
 	// Strategy is strategy configuration of running the job.
-	// https://docs.github.com/en/actions/reference/workflow-syntax-for-github-actions#jobsjob_idstrategy
+	// https://docs.github.com/en/actions/learn-github-actions/workflow-syntax-for-github-actions#jobsjob_idstrategy
 	Strategy *Strategy
 	// ContinueOnError is a flag to show if execution should continue on error.
-	// https://docs.github.com/en/actions/reference/workflow-syntax-for-github-actions#jobsjob_idcontinue-on-error
+	// https://docs.github.com/en/actions/learn-github-actions/workflow-syntax-for-github-actions#jobsjob_idcontinue-on-error
 	ContinueOnError *Bool
 	// Container is container configuration to run the job.
 	Container *Container
 	// Services is map from service names to service configurations.
-	// https://docs.github.com/en/actions/reference/workflow-syntax-for-github-actions#jobsjob_idservices
+	// https://docs.github.com/en/actions/learn-github-actions/workflow-syntax-for-github-actions#jobsjob_idservices
 	Services map[string]*Service
 	// Pos is a position in source.
 	Pos *Pos
 }
 
 // Workflow is root of workflow syntax tree, which represents one workflow configuration file.
-// https://docs.github.com/en/actions/reference/workflow-syntax-for-github-actions
+// https://docs.github.com/en/actions/learn-github-actions/workflow-syntax-for-github-actions
 type Workflow struct {
 	// Name is name of the workflow. This field can be nil when user didn't specify the name explicitly.
-	// https://docs.github.com/en/actions/reference/workflow-syntax-for-github-actions#name
+	// https://docs.github.com/en/actions/learn-github-actions/workflow-syntax-for-github-actions#name
 	Name *String
 	// On is list of events which can trigger this workflow.
-	// https://docs.github.com/en/actions/reference/workflow-syntax-for-github-actions#onpushpull_requestbranchestags
+	// https://docs.github.com/en/actions/learn-github-actions/workflow-syntax-for-github-actions#onpushpull_requestbranchestags
 	On []Event
 	// Permissions is configuration of permissions of this workflow.
 	Permissions *Permissions
 	// Env is a default set of environment variables while running this workflow.
-	// https://docs.github.com/en/actions/reference/workflow-syntax-for-github-actions#env
+	// https://docs.github.com/en/actions/learn-github-actions/workflow-syntax-for-github-actions#env
 	Env *Env
 	// Defaults is default configuration of how to run scripts.
 	Defaults *Defaults

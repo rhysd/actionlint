@@ -72,7 +72,7 @@ func (rule *RuleShellcheck) VisitJobPre(n *Job) error {
 	for _, label := range n.RunsOn.Labels {
 		l := strings.ToLower(label.Value)
 		// Default shell on Windows is PowerShell.
-		// https://docs.github.com/en/actions/reference/workflow-syntax-for-github-actions#using-a-specific-shell
+		// https://docs.github.com/en/actions/learn-github-actions/workflow-syntax-for-github-actions#using-a-specific-shell
 		if l == "windows" || strings.HasPrefix(l, "windows-") {
 			return nil
 		}
@@ -168,7 +168,7 @@ func (rule *RuleShellcheck) runShellcheck(src, sh string, pos *Pos) {
 	rule.debug("%s: Running %s command with %s", pos, rule.cmd.exe, args)
 
 	// Use same options to run shell process described at document
-	// https://docs.github.com/en/actions/reference/workflow-syntax-for-github-actions#using-a-specific-shell
+	// https://docs.github.com/en/actions/learn-github-actions/workflow-syntax-for-github-actions#using-a-specific-shell
 	setup := "set -e"
 	if sh == "bash" {
 		setup = "set -eo pipefail"

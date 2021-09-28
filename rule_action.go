@@ -8,7 +8,7 @@ import (
 )
 
 // RuleAction is a rule to check running action in steps of jobs.
-// https://docs.github.com/en/actions/reference/workflow-syntax-for-github-actions#jobsjob_idstepsuses
+// https://docs.github.com/en/actions/learn-github-actions/workflow-syntax-for-github-actions#jobsjob_idstepsuses
 type RuleAction struct {
 	RuleBase
 	cache *LocalActionsCache
@@ -100,7 +100,7 @@ func (rule *RuleAction) invalidActionFormat(pos *Pos, spec string, why string) {
 	rule.errorf(pos, "specifying action %q in invalid format because %s. available formats are \"{owner}/{repo}@{ref}\" or \"{owner}/{repo}/{path}@{ref}\"", spec, why)
 }
 
-// https://docs.github.com/en/actions/reference/workflow-syntax-for-github-actions#example-using-the-github-packages-container-registry
+// https://docs.github.com/en/actions/learn-github-actions/workflow-syntax-for-github-actions#example-using-the-github-packages-container-registry
 func (rule *RuleAction) checkDockerAction(uri string, exec *ExecAction) {
 	tag := ""
 	tagExists := false
@@ -128,7 +128,7 @@ func (rule *RuleAction) checkDockerAction(uri string, exec *ExecAction) {
 	}
 }
 
-// https://docs.github.com/en/actions/reference/workflow-syntax-for-github-actions#example-using-action-in-the-same-repository-as-the-workflow
+// https://docs.github.com/en/actions/learn-github-actions/workflow-syntax-for-github-actions#example-using-action-in-the-same-repository-as-the-workflow
 func (rule *RuleAction) checkLocalAction(path string, action *ExecAction) {
 	meta, err := rule.cache.FindMetadata(path)
 	if err != nil {

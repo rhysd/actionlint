@@ -1,7 +1,7 @@
 package actionlint
 
 // RuleGlob is a rule to check glob syntax.
-// https://docs.github.com/en/actions/reference/workflow-syntax-for-github-actions#filter-pattern-cheat-sheet
+// https://docs.github.com/en/actions/learn-github-actions/workflow-syntax-for-github-actions#filter-pattern-cheat-sheet
 type RuleGlob struct {
 	RuleBase
 }
@@ -50,6 +50,6 @@ func (rule *RuleGlob) globErrors(errs []InvalidGlobPattern, pos *Pos, quoted boo
 		if err.Column != 0 {
 			p.Col += err.Column - 1
 		}
-		rule.errorf(&p, "%s. note: filter pattern syntax is explained at https://docs.github.com/en/actions/reference/workflow-syntax-for-github-actions#filter-pattern-cheat-sheet", err.Message)
+		rule.errorf(&p, "%s. note: filter pattern syntax is explained at https://docs.github.com/en/actions/learn-github-actions/workflow-syntax-for-github-actions#filter-pattern-cheat-sheet", err.Message)
 	}
 }

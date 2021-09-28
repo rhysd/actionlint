@@ -31,7 +31,7 @@ func (m UntrustedInputMap) findElemChild() (UntrustedInputMap, bool) {
 // BuiltinUntrustedInputs is list of untrusted inputs. These inputs are detected as untrusted in
 // `run:` scripts. See the URL for more details.
 // - https://securitylab.github.com/research/github-actions-untrusted-input/
-// - https://docs.github.com/en/actions/learn-github-actions/security-hardening-for-github-actions
+// - https://docs.github.com/en/actions/security-guides/security-hardening-for-github-actions
 // - https://github.com/github/codeql/blob/main/javascript/ql/src/experimental/Security/CWE-094/ExpressionInjection.ql
 var BuiltinUntrustedInputs = UntrustedInputMap{
 	"github": {
@@ -186,7 +186,7 @@ func (u *UntrustedInputChecker) error(n ExprNode) {
 	var b strings.Builder
 	b.WriteByte('"')
 	v := buildPathOfObjectDereference(&b, n)
-	b.WriteString(`" is potentially untrusted. avoid using it directly in inline scripts. instead, pass it through an environment variable. see https://docs.github.com/en/actions/learn-github-actions/security-hardening-for-github-actions for more details`)
+	b.WriteString(`" is potentially untrusted. avoid using it directly in inline scripts. instead, pass it through an environment variable. see https://docs.github.com/en/actions/security-guides/security-hardening-for-github-actions for more details`)
 	err := errorAtExpr(v, b.String())
 	u.errs = append(u.errs, err)
 	u.done()

@@ -110,7 +110,7 @@ func (t TokenKind) String() string {
 }
 
 // Token is a token lexed from expression syntax. For more details, see
-// https://docs.github.com/en/actions/reference/context-and-expression-syntax-for-github-actions
+// https://docs.github.com/en/actions/learn-github-actions/contexts
 type Token struct {
 	// Kind is kind of the token.
 	Kind TokenKind
@@ -154,7 +154,7 @@ const expectedAlphaChars = "'a'..'z', 'A'..'Z', '_'"
 const expectedAllChars = expectedAlphaChars + ", " + expectedDigitChars + ", " + expectedPunctChars
 
 // ExprLexer is a struct to lex expression syntax. To know the syntax, see
-// https://docs.github.com/en/actions/reference/context-and-expression-syntax-for-github-actions
+// https://docs.github.com/en/actions/learn-github-actions/contexts
 type ExprLexer struct {
 	src    string
 	scan   scanner.Scanner
@@ -263,7 +263,7 @@ func (lex *ExprLexer) unexpectedEOF() *Token {
 func (lex *ExprLexer) lexIdent() *Token {
 	for {
 		// a-z, A-Z, 0-9, - or _
-		// https://docs.github.com/en/actions/reference/context-and-expression-syntax-for-github-actions#contexts
+		// https://docs.github.com/en/actions/learn-github-actions/contexts#contexts
 		if r := lex.eat(); !isAlnum(r) && r != '_' && r != '-' {
 			return lex.token(TokenKindIdent)
 		}
@@ -469,7 +469,7 @@ func (lex *ExprLexer) Next() *Token {
 	}
 
 	// Ident starts with a-z or A-Z or _
-	// https://docs.github.com/en/actions/reference/context-and-expression-syntax-for-github-actions#contexts
+	// https://docs.github.com/en/actions/learn-github-actions/contexts#contexts
 	if isAlpha(r) || r == '_' {
 		return lex.lexIdent()
 	}
