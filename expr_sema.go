@@ -59,7 +59,7 @@ func (sig *FuncSignature) String() string {
 
 // BuiltinFuncSignatures is a set of all builtin function signatures. All function names are in
 // lower case because function names are compared in case insensitive.
-// https://docs.github.com/en/actions/learn-github-actions/contexts#functions
+// https://docs.github.com/en/actions/learn-github-actions/expressions#functions
 var BuiltinFuncSignatures = map[string][]*FuncSignature{
 	"contains": {
 		{
@@ -190,7 +190,7 @@ var BuiltinFuncSignatures = map[string][]*FuncSignature{
 // Global variables
 
 // BuiltinGlobalVariableTypes defines types of all global variables. All context variables are
-// documented at https://docs.github.com/en/actions/learn-github-actions/contexts#contexts
+// documented at https://docs.github.com/en/actions/learn-github-actions/contexts
 var BuiltinGlobalVariableTypes = map[string]ExprType{
 	// https://docs.github.com/en/actions/learn-github-actions/contexts#github-context
 	"github": NewStrictObjectType(map[string]ExprType{
@@ -250,16 +250,16 @@ var BuiltinGlobalVariableTypes = map[string]ExprType{
 		// These are not documented but actually exist
 		"workspace": StringType{},
 	}),
-	// https://docs.github.com/en/actions/learn-github-actions/contexts#contexts
+	// https://docs.github.com/en/actions/learn-github-actions/contexts
 	"secrets": NewEmptyObjectType(),
-	// https://docs.github.com/en/actions/learn-github-actions/contexts#contexts
+	// https://docs.github.com/en/actions/learn-github-actions/contexts
 	"strategy": NewObjectType(map[string]ExprType{
 		"fail-fast":    BoolType{},
 		"job-index":    NumberType{},
 		"job-total":    NumberType{},
 		"max-parallel": NumberType{},
 	}),
-	// https://docs.github.com/en/actions/learn-github-actions/contexts#contexts
+	// https://docs.github.com/en/actions/learn-github-actions/contexts
 	"matrix": NewEmptyStrictObjectType(), // This value will be updated contextually
 	// https://docs.github.com/en/actions/learn-github-actions/contexts#needs-context
 	"needs": NewEmptyStrictObjectType(), // This value will be updated contextually
@@ -270,7 +270,9 @@ var BuiltinGlobalVariableTypes = map[string]ExprType{
 // ExprSemanticsChecker is a semantics checker for expression syntax. It checks types of values
 // in given expression syntax tree. It additionally checks other semantics like arguments of
 // format() built-in function. To know the details of the syntax, see
-// https://docs.github.com/en/actions/learn-github-actions/contexts#contexts
+//
+// - https://docs.github.com/en/actions/learn-github-actions/contexts
+// - https://docs.github.com/en/actions/learn-github-actions/expressions
 type ExprSemanticsChecker struct {
 	funcs      map[string][]*FuncSignature
 	vars       map[string]ExprType
@@ -609,7 +611,7 @@ func (sema *ExprSemanticsChecker) checkCompareOp(n *CompareOpNode) ExprType {
 	sema.check(n.Right)
 	// Note: Comparing values is very loose. Any value can be compared with any value without an
 	// error.
-	// https://docs.github.com/en/actions/learn-github-actions/contexts#operators
+	// https://docs.github.com/en/actions/learn-github-actions/expressions#operators
 	return BoolType{}
 }
 

@@ -3,7 +3,7 @@ package actionlint
 import "fmt"
 
 // ExprError is an error type caused by lexing/parsing expression syntax. For more details, see
-// https://docs.github.com/en/actions/learn-github-actions/contexts
+// https://docs.github.com/en/actions/learn-github-actions/expressions
 type ExprError struct {
 	// Message is an error message
 	Message string

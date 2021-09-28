@@ -16,7 +16,7 @@ func errorAtToken(t *Token, msg string) *ExprError {
 }
 
 // ExprParser is a parser for expression syntax. To know the details, see
-// https://docs.github.com/en/actions/learn-github-actions/contexts
+// https://docs.github.com/en/actions/learn-github-actions/expressions
 type ExprParser struct {
 	cur   *Token
 	lexer *ExprLexer

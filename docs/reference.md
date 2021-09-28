@@ -7,8 +7,8 @@ This document describes links to resources.
 - Playground: https://rhysd.github.io/actionlint/
 - GitHub Actions official documentations
   - Workflow syntax: https://docs.github.com/en/actions/learn-github-actions/workflow-syntax-for-github-actions
-  - Expression syntax: https://docs.github.com/en/actions/learn-github-actions/contexts
-  - Built-in functions: https://docs.github.com/en/actions/learn-github-actions/contexts#functions
+  - Expression syntax: https://docs.github.com/en/actions/learn-github-actions/expressions
+  - Built-in functions: https://docs.github.com/en/actions/learn-github-actions/expressions#functions
   - Webhook events: https://docs.github.com/en/actions/learn-github-actions/events-that-trigger-workflows#webhook-events
   - Self-hosted runner: https://docs.github.com/en/actions/hosting-your-own-runners/about-self-hosted-runners
   - Security: https://docs.github.com/en/actions/security-guides/security-hardening-for-github-actions

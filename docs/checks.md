@@ -1746,9 +1746,9 @@ actionlint checks permission scopes and access levels in a workflow are correct.
 [sc2050]: https://github.com/koalaman/shellcheck/wiki/SC2050
 [sc2194]: https://github.com/koalaman/shellcheck/wiki/SC2194
 [pyflakes]: https://github.com/PyCQA/pyflakes
-[expr-doc]: https://docs.github.com/en/actions/learn-github-actions/contexts
-[contexts-doc]: https://docs.github.com/en/actions/learn-github-actions/contexts#contexts
-[funcs-doc]: https://docs.github.com/en/actions/learn-github-actions/contexts#functions
+[expr-doc]: https://docs.github.com/en/actions/learn-github-actions/expressions
+[contexts-doc]: https://docs.github.com/en/actions/learn-github-actions/contexts
+[funcs-doc]: https://docs.github.com/en/actions/learn-github-actions/expressions#functions
 [needs-doc]: https://docs.github.com/en/actions/learn-github-actions/workflow-syntax-for-github-actions#jobsjob_idneeds
 [needs-context-doc]: https://docs.github.com/en/actions/learn-github-actions/contexts#needs-context
 [shell-doc]: https://docs.github.com/en/actions/learn-github-actions/workflow-syntax-for-github-actions#using-a-specific-shell

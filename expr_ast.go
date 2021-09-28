@@ -1,7 +1,7 @@
 package actionlint
 
 // ExprNode is a node of expression syntax tree. To know the syntax, see
-// https://docs.github.com/en/actions/learn-github-actions/contexts
+// https://docs.github.com/en/actions/learn-github-actions/expressions
 type ExprNode interface {
 	// Token returns the first token of the node. This method is useful to get position of this node.
 	Token() *Token

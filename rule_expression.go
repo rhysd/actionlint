@@ -14,7 +14,8 @@ type typedExpr struct {
 // RuleExpression is a rule checker to check expression syntax in string values of workflow syntax.
 // It checks syntax and semantics of the expressions including type checks and functions/contexts
 // definitions. For more details see
-// https://docs.github.com/en/actions/learn-github-actions/contexts
+// - https://docs.github.com/en/actions/learn-github-actions/contexts
+// - https://docs.github.com/en/actions/learn-github-actions/expressions
 type RuleExpression struct {
 	RuleBase
 	matrixTy     *ObjectType
