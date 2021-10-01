@@ -5,9 +5,17 @@ This document describes how to install [actionlint](..).
 
 ## [Homebrew][homebrew] on macOS
 
-You can install `actionlint` via Homebrew.
+[`actionlint` formula][formula] is provided by Homebrew officially.
 
 ```sh
+brew install actionlint
+```
+
+And rhysd/actionlint repository also provides its own Homebrew package, which is automatically updated on new release.
+If you prefer it, tap the repository before running `brew install`.
+
+```sh
+brew tap "rhysd/actionlint" "https://github.com/rhysd/actionlint"
 brew install actionlint
 ```
 
@@ -58,6 +66,7 @@ go install github.com/rhysd/actionlint/cmd/actionlint
 
 [Checks](checks.md) | [Usage](usage.md) | [Configuration](config.md) | [Go API](api.md) | [References](reference.md)
 
+[formula]: https://formulae.brew.sh/formula/actionlint
 [homebrew]: https://brew.sh/
 [releases]: https://github.com/rhysd/actionlint/releases
 [Go]: https://golang.org/
