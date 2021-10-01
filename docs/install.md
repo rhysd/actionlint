@@ -5,10 +5,9 @@ This document describes how to install [actionlint](..).
 
 ## [Homebrew][homebrew] on macOS
 
-Tap this repository and install `actionlint` package. This is a recommended way to manage `actionlint` command on macOS.
+You can install `actionlint` via Homebrew.
 
 ```sh
-brew tap "rhysd/actionlint" "https://github.com/rhysd/actionlint"
 brew install actionlint
 ```
 
