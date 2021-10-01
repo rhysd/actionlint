@@ -1,0 +1,8 @@
+on: push
+jobs:
+  test:
+    runs-on: ubuntu-latest
+    steps:
+      - run: echo hello "$thing"
+        env:
+          thing: world
