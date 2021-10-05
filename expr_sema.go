@@ -208,6 +208,8 @@ var BuiltinGlobalVariableTypes = map[string]ExprType{
 		"repository_owner": StringType{},
 		"run_id":           StringType{},
 		"run_number":       StringType{},
+		"run_attempt":      StringType{},
+		"server_url":       StringType{},
 		"sha":              StringType{},
 		"token":            StringType{},
 		"workflow":         StringType{},
@@ -221,7 +223,6 @@ var BuiltinGlobalVariableTypes = map[string]ExprType{
 		"path":              StringType{},
 		"repositoryurl":     StringType{}, // repositoryUrl
 		"retention_days":    NumberType{},
-		"server_url":        StringType{},
 	}),
 	// https://docs.github.com/en/actions/learn-github-actions/contexts#env-context
 	"env": NewMapObjectType(StringType{}), // env.<env_name>
