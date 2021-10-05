@@ -154,6 +154,63 @@ func (e *RepositoryDispatchEvent) EventName() string {
 	return "repository_dispatch"
 }
 
+// WorkflowCallInputType is a type of inputs at workflow_call event.
+// https://docs.github.com/en/actions/learn-github-actions/workflow-syntax-for-github-actions#onworkflow_callinput_idtype
+type WorkflowCallInputType uint8
+
+const (
+	// WorkflowCallInputTypeInvalid represents invalid type input as default value of the type.
+	WorkflowCallInputTypeInvalid WorkflowCallInputType = iota
+	// WorkflowCallInputTypeBoolean represents boolean type input.
+	WorkflowCallInputTypeBoolean
+	// WorkflowCallInputTypeNumber represents number type input.
+	WorkflowCallInputTypeNumber
+	// WorkflowCallInputTypeString represents string type input.
+	WorkflowCallInputTypeString
+)
+
+// WorkflowCallInput is an input configuration of workflow_call event.
+// https://docs.github.com/en/actions/learn-github-actions/workflow-syntax-for-github-actions#onworkflow_callinputs
+type WorkflowCallInput struct {
+	// Description is a description of the input.
+	Description *String
+	// Default is a default value of the input. Nil means no default value.
+	Default *String
+	// Required represents if the input is required or optional. When this value is nil, it means optional.
+	Required *Bool
+	// Type of the input, which must be one of 'boolean', 'number' or 'string'. This property is required.
+	// https://docs.github.com/en/actions/learn-github-actions/workflow-syntax-for-github-actions#onworkflow_callinput_idtype
+	Type WorkflowCallInputType
+}
+
+// WorkflowCallSecret is a secret configuration of workflow_call event.
+// https://docs.github.com/en/actions/learn-github-actions/workflow-syntax-for-github-actions#onworkflow_callsecrets
+type WorkflowCallSecret struct {
+	// Description is a description of the secret.
+	Description *String
+	// Required represents if the secret is required or optional. When this value is nil, it means optional.
+	// https://docs.github.com/en/actions/learn-github-actions/workflow-syntax-for-github-actions#onworkflow_callsecretssecret_idrequired
+	Required *Bool
+}
+
+// WorkflowCallEvent is workflow_call event configuration.
+// https://docs.github.com/en/actions/learn-github-actions/events-that-trigger-workflows#workflow-reuse-events
+type WorkflowCallEvent struct {
+	// Inputs is a map from input name to input configuration.
+	// https://docs.github.com/en/actions/learn-github-actions/workflow-syntax-for-github-actions#onworkflow_callinputs
+	Inputs map[*String]*WorkflowCallInput
+	// Secrets is a map from name of secret to secret configuration.
+	// https://docs.github.com/en/actions/learn-github-actions/workflow-syntax-for-github-actions#onworkflow_callsecrets
+	Secrets map[*String]*WorkflowCallSecret
+	// Pos is a position in source.
+	Pos *Pos
+}
+
+// EventName returns name of the event to trigger this workflow.
+func (e *WorkflowCallEvent) EventName() string {
+	return "workflow_call"
+}
+
 // PermissionScope is struct for respective permission scope like "issues", "checks", ...
 // https://docs.github.com/en/actions/security-guides/automatic-token-authentication#permissions-for-the-github_token
 type PermissionScope struct {

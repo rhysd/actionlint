@@ -39,6 +39,8 @@ func (rule *RuleEvents) checkEvent(event Event) {
 		// Nothing to do
 	case *RepositoryDispatchEvent:
 		// Nothing to do
+	case *WorkflowCallEvent:
+		// Nothing to do for now
 	case *WebhookEvent:
 		rule.checkWebhookEvent(e)
 	default:

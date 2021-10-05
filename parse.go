@@ -404,6 +404,86 @@ func (p *parser) parseWebhookEvent(name *String, n *yaml.Node) *WebhookEvent {
 	return ret
 }
 
+// - https://docs.github.com/en/actions/learn-github-actions/events-that-trigger-workflows#workflow-reuse-events
+// - https://docs.github.com/en/actions/learn-github-actions/workflow-syntax-for-github-actions#onworkflow_callinputs
+// - https://docs.github.com/en/actions/learn-github-actions/reusing-workflows
+func (p *parser) parseWorkflowCallEvent(pos *Pos, n *yaml.Node) *WorkflowCallEvent {
+	ret := &WorkflowCallEvent{Pos: pos}
+
+	for _, kv := range p.parseSectionMapping("workflow_call", n, true) {
+		switch kv.key.Value {
+		case "inputs":
+			inputs := p.parseSectionMapping("inputs", kv.val, true)
+			ret.Inputs = make(map[*String]*WorkflowCallInput, len(inputs))
+			for _, kv := range inputs {
+				name, spec := kv.key, kv.val
+				input := &WorkflowCallInput{}
+
+				for _, attr := range p.parseMapping("input of workflow_call event", spec, true) {
+					switch attr.key.Value {
+					case "description":
+						input.Description = p.parseString(attr.val, true)
+					case "required":
+						input.Required = p.parseBool(attr.val)
+					case "default":
+						input.Default = p.parseString(attr.val, true)
+					case "type":
+						switch attr.val.Value {
+						case "boolean":
+							input.Type = WorkflowCallInputTypeBoolean
+						case "number":
+							input.Type = WorkflowCallInputTypeNumber
+						case "string":
+							input.Type = WorkflowCallInputTypeString
+						default:
+							p.errorf(attr.val, "\"type\" field of input of workflow_call event must be one of \"boolean\", \"number\", or \"string\" but got %q", attr.val.Value)
+						}
+					default:
+						p.unexpectedKey(attr.key, "inputs at workflow_call event", []string{"description", "required", "default", "type"})
+					}
+				}
+
+				if input.Description == nil {
+					p.errorfAt(name.Pos, "\"description\" is missing at %q input of workflow_call event", name.Value)
+				}
+				if input.Type == WorkflowCallInputTypeInvalid {
+					p.errorfAt(name.Pos, "\"type\" is missing at %q input of workflow_call event", name.Value)
+				}
+
+				ret.Inputs[name] = input
+			}
+		case "secrets":
+			secrets := p.parseSectionMapping("secrets", kv.val, true)
+			ret.Secrets = make(map[*String]*WorkflowCallSecret, len(secrets))
+			for _, kv := range secrets {
+				name, spec := kv.key, kv.val
+				secret := &WorkflowCallSecret{}
+
+				for _, attr := range p.parseMapping("secret of workflow_call event", spec, true) {
+					switch attr.key.Value {
+					case "description":
+						secret.Description = p.parseString(attr.val, true)
+					case "required":
+						secret.Required = p.parseBool(attr.val)
+					default:
+						p.unexpectedKey(attr.key, "secrets", []string{"description", "required"})
+					}
+				}
+
+				if secret.Description == nil {
+					p.errorfAt(name.Pos, "\"description\" is missing at %q secret of workflow_call event", name.Value)
+				}
+
+				ret.Secrets[name] = secret
+			}
+		default:
+			p.unexpectedKey(kv.key, "workflow_call", []string{"inputs", "secrets"})
+		}
+	}
+
+	return ret
+}
+
 func (p *parser) parseEvents(pos *Pos, n *yaml.Node) []Event {
 	switch n.Kind {
 	case yaml.ScalarNode:
@@ -419,6 +499,10 @@ func (p *parser) parseEvents(pos *Pos, n *yaml.Node) []Event {
 		case "schedule":
 			p.errorAt(pos, "schedule event must be configured with mapping")
 			return []Event{}
+		case "workflow_call":
+			return []Event{
+				&WorkflowCallEvent{Pos: posAt(n)},
+			}
 		default:
 			return []Event{
 				&WebhookEvent{
@@ -441,6 +525,8 @@ func (p *parser) parseEvents(pos *Pos, n *yaml.Node) []Event {
 				ret = append(ret, p.parseWorkflowDispatchEvent(kv.key.Pos, kv.val))
 			case "repository_dispatch":
 				ret = append(ret, p.parseRepositoryDispatchEvent(kv.key.Pos, kv.val))
+			case "workflow_call":
+				ret = append(ret, p.parseWorkflowCallEvent(kv.key.Pos, kv.val))
 			default:
 				ret = append(ret, p.parseWebhookEvent(kv.key, kv.val))
 			}
@@ -459,6 +545,8 @@ func (p *parser) parseEvents(pos *Pos, n *yaml.Node) []Event {
 					p.errorf(c, "%q event should not be listed in sequence. Use mapping for \"on\" section and configure the event as values of the mapping", s.Value)
 				case "workflow_dispatch":
 					ret = append(ret, &WorkflowDispatchEvent{Pos: posAt(c)})
+				case "workflow_call":
+					ret = append(ret, &WorkflowCallEvent{Pos: posAt(c)})
 				default:
 					ret = append(ret, &WebhookEvent{Hook: s, Pos: posAt(c)})
 				}
