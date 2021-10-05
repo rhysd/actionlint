@@ -67,7 +67,7 @@ var popularActions = []*action{
 	{"actions/delete-package-versions", []string{"v1"}, "v2", yamlExtYML},
 	{"actions/download-artifact", []string{"v1", "v2"}, "v3", yamlExtYML},
 	{"actions/first-interaction", []string{"v1"}, "v2", yamlExtYML},
-	{"actions/github-script", []string{"v1", "v2", "v3", "v4"}, "v5", yamlExtYML},
+	{"actions/github-script", []string{"v1", "v2", "v3", "v4", "v5"}, "v6", yamlExtYML},
 	{"actions/labeler", []string{"v2", "v3"}, "v4", yamlExtYML}, // v1 does not exist
 	{"actions/setup-dotnet", []string{"v1"}, "v2", yamlExtYML},
 	{"actions/setup-go", []string{"v1", "v2"}, "v3", yamlExtYML},
@@ -83,7 +83,7 @@ var popularActions = []*action{
 	{"codecov/codecov-action", []string{"v1", "v2"}, "v3", yamlExtYML},
 	{"dawidd6/action-download-artifact", []string{"v2"}, "v3", yamlExtYML},
 	{"dawidd6/action-send-mail", []string{"v1", "v2", "v3"}, "v4", yamlExtYML},
-	{"dessant/lock-threads", []string{"v2"}, "v3", yamlExtYML}, // v1 does not exist
+	{"dessant/lock-threads", []string{"v2", "v3"}, "v4", yamlExtYML}, // v1 does not exist
 	{"docker/build-push-action", []string{"v1", "v2"}, "v3", yamlExtYML},
 	{"docker/login-action", []string{"v1"}, "v2", yamlExtYML},
 	{"docker/metadata-action", []string{"v1", "v2", "v3"}, "v4", yamlExtYML},
