@@ -129,7 +129,7 @@ func (rule *RuleEvents) checkWorkflowCallEvent(event *WorkflowCallEvent) {
 				rule.errorf(name.Pos, "input of workflow_call event %q is required but it also has default value. The default value is never used", name.Value)
 			}
 			switch input.Type {
-			case WorkflowCallInputTypeNumber:
+			case WorkflowCallEventInputTypeNumber:
 				if _, err := strconv.ParseFloat(input.Default.Value, 64); err != nil {
 					rule.errorf(
 						input.Default.Pos,
@@ -139,7 +139,7 @@ func (rule *RuleEvents) checkWorkflowCallEvent(event *WorkflowCallEvent) {
 						err,
 					)
 				}
-			case WorkflowCallInputTypeBoolean:
+			case WorkflowCallEventInputTypeBoolean:
 				if d := strings.ToLower(input.Default.Value); d != "true" && d != "false" {
 					rule.errorf(
 						input.Default.Pos,

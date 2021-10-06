@@ -62,6 +62,14 @@ func (rule *RuleExpression) VisitWorkflowPre(n *Workflow) error {
 			}
 		case *RepositoryDispatchEvent:
 			rule.checkStrings(e.Types)
+		case *WorkflowCallEvent:
+			for _, i := range e.Inputs {
+				rule.checkString(i.Description)
+				rule.checkString(i.Default)
+			}
+			for _, s := range e.Secrets {
+				rule.checkString(s.Description)
+			}
 		}
 	}
 
@@ -135,6 +143,8 @@ func (rule *RuleExpression) VisitJobPre(n *Job) error {
 	for _, s := range n.Services {
 		rule.checkContainer(s.Container)
 	}
+
+	rule.checkWorkflowCall(n.WorkflowCall)
 
 	rule.stepsTy = NewEmptyStrictObjectType()
 
@@ -374,6 +384,19 @@ func (rule *RuleExpression) checkDefaults(d *Defaults) {
 	}
 	rule.checkString(d.Run.Shell)
 	rule.checkString(d.Run.WorkingDirectory)
+}
+
+func (rule *RuleExpression) checkWorkflowCall(c *WorkflowCall) {
+	if c == nil || c.Uses == nil {
+		return
+	}
+	rule.checkString(c.Uses)
+	for _, i := range c.Inputs {
+		rule.checkString(i.Value)
+	}
+	for _, s := range c.Secrets {
+		rule.checkString(s.Value)
+	}
 }
 
 func (rule *RuleExpression) checkStrings(ss []*String) {
