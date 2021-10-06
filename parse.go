@@ -436,7 +436,7 @@ func (p *parser) parseWorkflowCallEvent(pos *Pos, n *yaml.Node) *WorkflowCallEve
 						case "string":
 							input.Type = WorkflowCallInputTypeString
 						default:
-							p.errorf(attr.val, "\"type\" field of input of workflow_call event must be one of \"boolean\", \"number\", or \"string\" but got %q", attr.val.Value)
+							p.errorf(attr.val, "invalid value %q for input type of workflow_call event must be one of \"boolean\", \"number\", or \"string\"", attr.val.Value)
 						}
 					default:
 						p.unexpectedKey(attr.key, "inputs at workflow_call event", []string{"description", "required", "default", "type"})

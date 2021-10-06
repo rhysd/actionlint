@@ -1,0 +1,46 @@
+on:
+  workflow_call:
+    inputs:
+      # input without fields
+      input0:
+      # input without type
+      input1:
+        description: 'hi'
+      # input without description
+      input2:
+        type: string
+      # input with invalid type
+      input3:
+        description: 'hi'
+        type: unknown
+      # non-boolean type value for 'required'
+      input4:
+        description: 'hi'
+        required: yes
+      # unknown field
+      input5:
+        description: 'hi'
+        type: number
+        unknown: hello
+      # duplicate input name
+      input0:
+        description: 'hi'
+        type: number
+    secrets:
+      # no field
+      secret0:
+      # unknown field
+      secret1:
+        description: ''
+        unknown: bye
+      # duplicate secret name
+      secret1:
+        description: ''
+    # unknown key for workflow_call event
+    unknown:
+
+jobs:
+  test:
+    runs-on: ubuntu-20.04
+    steps:
+      - run: echo
