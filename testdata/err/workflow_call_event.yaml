@@ -26,6 +26,16 @@ on:
       input0:
         description: 'hi'
         type: number
+      # type mismatch string for number
+      input6:
+        description: 'hi'
+        default: foooo
+        type: number
+      # type mismatch (number for boolean)
+      input7:
+        description: 'hi'
+        default: 123
+        type: boolean
     secrets:
       # no field
       secret0:

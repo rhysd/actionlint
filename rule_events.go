@@ -1,6 +1,8 @@
 package actionlint
 
 import (
+	"strconv"
+	"strings"
 	"time"
 
 	"github.com/robfig/cron"
@@ -40,7 +42,7 @@ func (rule *RuleEvents) checkEvent(event Event) {
 	case *RepositoryDispatchEvent:
 		// Nothing to do
 	case *WorkflowCallEvent:
-		// Nothing to do for now
+		rule.checkWorkflowCallEvent(e)
 	case *WebhookEvent:
 		rule.checkWebhookEvent(e)
 	default:
@@ -114,6 +116,39 @@ func (rule *RuleEvents) checkTypes(hook *String, types []*String, expected []str
 				hook.Value,
 				sortedQuotes(expected),
 			)
+		}
+	}
+}
+
+// https://docs.github.com/en/actions/learn-github-actions/reusing-workflows
+func (rule *RuleEvents) checkWorkflowCallEvent(event *WorkflowCallEvent) {
+	for name, input := range event.Inputs {
+		r := input.Required != nil && input.Required.Value
+		if input.Default != nil {
+			if r {
+				rule.errorf(name.Pos, "input of workflow_call event %q is required but it also has default value. The default value is never used", name.Value)
+			}
+			switch input.Type {
+			case WorkflowCallInputTypeNumber:
+				if _, err := strconv.ParseFloat(input.Default.Value, 64); err != nil {
+					rule.errorf(
+						input.Default.Pos,
+						"input of workflow_call event %q is typed as number but its default value %q cannot be parsed as a float number: %s",
+						name.Value,
+						input.Default.Value,
+						err,
+					)
+				}
+			case WorkflowCallInputTypeBoolean:
+				if d := strings.ToLower(input.Default.Value); d != "true" && d != "false" {
+					rule.errorf(
+						input.Default.Pos,
+						"input of workflow_call event %q is typed as boolean. its default value must be true or false but got %q",
+						name.Value,
+						input.Default.Value,
+					)
+				}
+			}
 		}
 	}
 }
