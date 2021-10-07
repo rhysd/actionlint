@@ -36,7 +36,7 @@ func (rule *RuleWorkflowCall) VisitJobPre(n *Job) error {
 
 // https://docs.github.com/en/actions/learn-github-actions/reusing-workflows#calling-a-reusable-workflow
 func checkWorkflowCallUsesFormat(u string) bool {
-	if strings.HasPrefix(u, ".") || strings.HasPrefix(u, "/") {
+	if strings.HasPrefix(u, "./") || strings.HasPrefix(u, "/") {
 		return false // Local path is not supported.
 	}
 	if strings.Count(u, "/") < 2 || strings.Count(u, "@") < 1 {
