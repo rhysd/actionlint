@@ -1,0 +1,13 @@
+on: push
+jobs:
+  call-workflow:
+    # ERROR: 'runs-on' is not available on calling reusable workflow
+    uses: org/repo/path/to/workflow.yml@v1
+    runs-on: ubuntu-latest
+  say-hello:
+    # ERROR: 'with' is only available on calling reusable workflow
+    with:
+      foo: bar
+    runs-on: ubuntu-latest
+    steps:
+      - run: echo hello

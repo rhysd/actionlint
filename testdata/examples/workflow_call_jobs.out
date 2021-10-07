@@ -1,0 +1,2 @@
+test.yaml:6:5: when a reusable workflow is called with "uses", "runs-on" is not available. only following keys are allowed: "name", "uses", "with", "secrets", "needs", "if", and "permissions" in job "call-workflow" [syntax-check]
+test.yaml:9:5: "with" is only available for a reusable workflow call with "uses" but "uses" is not found in job "say-hello" [syntax-check]

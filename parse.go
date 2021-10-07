@@ -418,6 +418,7 @@ func (p *parser) parseWorkflowCallEvent(pos *Pos, n *yaml.Node) *WorkflowCallEve
 			for _, kv := range inputs {
 				name, spec := kv.key, kv.val
 				input := &WorkflowCallEventInput{}
+				sawType := false
 
 				for _, attr := range p.parseMapping("input of workflow_call event", spec, true) {
 					switch attr.key.Value {
@@ -436,8 +437,9 @@ func (p *parser) parseWorkflowCallEvent(pos *Pos, n *yaml.Node) *WorkflowCallEve
 						case "string":
 							input.Type = WorkflowCallEventInputTypeString
 						default:
-							p.errorf(attr.val, "invalid value %q for input type of workflow_call event must be one of \"boolean\", \"number\", or \"string\"", attr.val.Value)
+							p.errorf(attr.val, "invalid value %q for input type of workflow_call event. it must be one of \"boolean\", \"number\", or \"string\"", attr.val.Value)
 						}
+						sawType = true
 					default:
 						p.unexpectedKey(attr.key, "inputs at workflow_call event", []string{"description", "required", "default", "type"})
 					}
@@ -446,7 +448,7 @@ func (p *parser) parseWorkflowCallEvent(pos *Pos, n *yaml.Node) *WorkflowCallEve
 				if input.Description == nil {
 					p.errorfAt(name.Pos, "\"description\" is missing at %q input of workflow_call event", name.Value)
 				}
-				if input.Type == WorkflowCallEventInputTypeInvalid {
+				if !sawType {
 					p.errorfAt(name.Pos, "\"type\" is missing at %q input of workflow_call event", name.Value)
 				}
 
