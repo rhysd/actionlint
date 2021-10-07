@@ -2,3 +2,7 @@ test.yaml:6:5: when a reusable workflow is called with "uses", "steps" is not av
 test.yaml:10:5: "with" is only available for a reusable workflow call with "uses" but "uses" is not found in job "call2" [syntax-check]
 test.yaml:17:5: "secrets" is only available for a reusable workflow call with "uses" but "uses" is not found in job "call3" [syntax-check]
 test.yaml:24:10: string should not be empty [syntax-check]
+test.yaml:27:11: reusable workflow call "./foo/bar/workflow.yml@main" at "uses" is not following the format "owner/repo/path/to/workflow.yml@ref". see https://docs.github.com/en/actions/learn-github-actions/reusing-workflows for more details [workflow-call]
+test.yaml:30:11: reusable workflow call "/foo/bar/workflow.yml@main" at "uses" is not following the format "owner/repo/path/to/workflow.yml@ref". see https://docs.github.com/en/actions/learn-github-actions/reusing-workflows for more details [workflow-call]
+test.yaml:33:11: reusable workflow call "foo/workflow.yml@main" at "uses" is not following the format "owner/repo/path/to/workflow.yml@ref". see https://docs.github.com/en/actions/learn-github-actions/reusing-workflows for more details [workflow-call]
+test.yaml:36:11: reusable workflow call "foo/bar/workflow.yml" at "uses" is not following the format "owner/repo/path/to/workflow.yml@ref". see https://docs.github.com/en/actions/learn-github-actions/reusing-workflows for more details [workflow-call]

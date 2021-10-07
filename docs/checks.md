@@ -1803,11 +1803,14 @@ Example input:
 ```yaml
 on: push
 jobs:
-  call-workflow:
+  job1:
+    uses: owner/repo/path/to/workflow.yml@v1
     # ERROR: 'runs-on' is not available on calling reusable workflow
-    uses: org/repo/path/to/workflow.yml@v1
     runs-on: ubuntu-latest
-  say-hello:
+  job2:
+    # ERROR: Local file path is not available
+    uses: ./.github/workflows/ci.yml@main
+  job3:
     # ERROR: 'with' is only available on calling reusable workflow
     with:
       foo: bar
@@ -1819,24 +1822,29 @@ jobs:
 Output:
 
 ```
-test.yaml:6:5: when a reusable workflow is called with "uses", "runs-on" is not available. only following keys are allowed: "name", "uses", "with", "secrets", "needs", "if", and "permissions" in job "call-workflow1" [syntax-check]
+test.yaml:6:5: when a reusable workflow is called with "uses", "runs-on" is not available. only following keys are allowed: "name", "uses", "with", "secrets", "needs", "if", and "permissions" in job "job1" [syntax-check]
   |
 6 |     runs-on: ubuntu-latest
   |     ^~~~~~~~
-test.yaml:9:5: "with" is only available for a reusable workflow call with "uses" but "uses" is not found in job "call-workflow2" [syntax-check]
+test.yaml:9:11: reusable workflow call "./.github/workflows/ci.yml@main" at "uses" is not following the format "owner/repo/path/to/workflow.yml@ref". see https://docs.github.com/en/actions/learn-github-actions/reusing-workflows for more details [workflow-call]
   |
-9 |     with:
-  |     ^~~~~
+9 |     uses: ./.github/workflows/ci.yml@main
+  |           ^~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+test.yaml:12:5: "with" is only available for a reusable workflow call with "uses" but "uses" is not found in job "job3" [syntax-check]
+   |
+12 |     with:
+   |     ^~~~~
 ```
 
-[Playground](https://rhysd.github.io/actionlint#eJx9zDEOwzAIQNE9p+ACrtXVU69iR6ROS41loFZuXydR1m4IPo9LgGqSpxcnCRPAHIlc5/ZeiPu+ADBBCcDt6RtW9jVq9sr+im7bhx7f+5E2K+J4mJasqDmKiqLjJHFzGYn4JPuq+ZwAFuYAKbb/wCAUq1xPbi8D4JwZDvcHvYg/Yw==)
+[Playground](https://rhysd.github.io/actionlint#eJx9jTEOwjAMRfeewhdoo8KWiasklUsKaRzFNlFvT9sIxMT0Pbz3TMlCVg7dgzzbDmDf8VgAZWQLVBMWUzCTyU6CETKVynOOVIdtjbfXeMJFE/e0x9RrEu2jE2RpvctvbzDDfZGg/pthMy1nanVLasa1GXUH2wUwE1nwrvz/BsCCmT9Sf5AWcAoEAWOkN6pqSm4=)
 
 When calling an external workflow, [only specific keys are available][reusable-workflow-call-keys] at job configuration.
-
 For example, `secrets:` is not available when running steps as normal job. And `runs-on:` is not available when calling
-a reusable workflow since the called workflow determines which OS is used.
+a reusable workflow since the called workflow determines which OS is used. actionlint checks such keys are used correctly
+to call a reusable workflow or to run steps as normal job.
 
-actionlint checks such keys are used correctly to call a reusable workflow or to run steps as normal job.
+And the workflow syntax at `uses:` must follow the format `owner/repo/path/to/workflow.yml@ref` as described in
+[the official document][create-reusable-workflow-doc]. actionlint checks if the value follows the format.
 
 ---
 

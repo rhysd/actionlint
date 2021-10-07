@@ -26,3 +26,6 @@ jobs:
     needs: ['call1']
     if: ${{ env.FOO == 'abc' }}
     permissions: read-all
+  call6:
+    # Edge case. Give up checking format.
+    uses: ${{ env.FOO }}

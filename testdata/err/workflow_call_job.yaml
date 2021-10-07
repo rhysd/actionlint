@@ -22,3 +22,15 @@ jobs:
   # uses is empty
   call4:
     uses:
+  # relative path
+  call5:
+    uses: "./foo/bar/workflow.yml@main"
+  # absolute path
+  call6:
+    uses: "/foo/bar/workflow.yml@main"
+  # missing repo name
+  call7:
+    uses: "foo/workflow.yml@main"
+  # missing ref
+  call8:
+    uses: "foo/bar/workflow.yml"

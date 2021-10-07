@@ -1,10 +1,13 @@
 on: push
 jobs:
-  call-workflow:
+  job1:
+    uses: owner/repo/path/to/workflow.yml@v1
     # ERROR: 'runs-on' is not available on calling reusable workflow
-    uses: org/repo/path/to/workflow.yml@v1
     runs-on: ubuntu-latest
-  say-hello:
+  job2:
+    # ERROR: Local file path is not available
+    uses: ./.github/workflows/ci.yml@main
+  job3:
     # ERROR: 'with' is only available on calling reusable workflow
     with:
       foo: bar
