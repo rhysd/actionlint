@@ -1,0 +1,26 @@
+on:
+  workflow_call:
+    inputs:
+      scheme:
+        description: Scheme of URL
+        # OK: Type is string
+        default: https
+        type: string
+      host:
+        # ERROR: Missing description
+        default: example.com
+        type: string
+      port:
+        description: Port of URL
+        # ERROR: Type is number but default value is string
+        default: ':1234'
+        type: number
+      query:
+        description: Scheme of URL
+        # ERROR: Type must be one of number, string, boolean
+        type: object
+jobs:
+  do:
+    runs-on: ubuntu-latest
+    steps:
+      - run: echo "${{ inputs.scheme }}://${{ inputs.host }}:${{ inputs.port }}"

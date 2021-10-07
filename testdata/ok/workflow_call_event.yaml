@@ -1,0 +1,37 @@
+on:
+  workflow_call:
+    inputs:
+      input0:
+        description: 'hello'
+        type: string
+      input1:
+        description: 'with default and required'
+        default: 'hello'
+        required: false
+        type: string
+      input2:
+        description: 'with default'
+        default: 23
+        type: number
+      input3:
+        description: 'with required'
+        required: true
+        type: boolean
+    secrets:
+      secret0:
+        description: '🙊'
+      secret1:
+        description: 'with required'
+        required: true
+
+jobs:
+  test:
+    runs-on: ubuntu-20.04
+    steps:
+      - run: |
+          echo ${{ inputs.input0 }}
+          echo ${{ inputs.input1 }}
+          echo ${{ inputs.input2 }}
+          echo ${{ inputs.input3 }}
+          echo ${{ secrets.secret0 }}
+          echo ${{ secrets.secret1 }}

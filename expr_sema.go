@@ -264,6 +264,8 @@ var BuiltinGlobalVariableTypes = map[string]ExprType{
 	"matrix": NewEmptyStrictObjectType(), // This value will be updated contextually
 	// https://docs.github.com/en/actions/learn-github-actions/contexts#needs-context
 	"needs": NewEmptyStrictObjectType(), // This value will be updated contextually
+	// https://docs.github.com/en/actions/learn-github-actions/reusing-workflows
+	"inputs": NewEmptyObjectType(),
 }
 
 // Semantics checker

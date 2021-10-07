@@ -154,6 +154,63 @@ func (e *RepositoryDispatchEvent) EventName() string {
 	return "repository_dispatch"
 }
 
+// WorkflowCallEventInputType is a type of inputs at workflow_call event.
+// https://docs.github.com/en/actions/learn-github-actions/workflow-syntax-for-github-actions#onworkflow_callinput_idtype
+type WorkflowCallEventInputType uint8
+
+const (
+	// WorkflowCallEventInputTypeInvalid represents invalid type input as default value of the type.
+	WorkflowCallEventInputTypeInvalid WorkflowCallEventInputType = iota
+	// WorkflowCallEventInputTypeBoolean represents boolean type input.
+	WorkflowCallEventInputTypeBoolean
+	// WorkflowCallEventInputTypeNumber represents number type input.
+	WorkflowCallEventInputTypeNumber
+	// WorkflowCallEventInputTypeString represents string type input.
+	WorkflowCallEventInputTypeString
+)
+
+// WorkflowCallEventInput is an input configuration of workflow_call event.
+// https://docs.github.com/en/actions/learn-github-actions/workflow-syntax-for-github-actions#onworkflow_callinputs
+type WorkflowCallEventInput struct {
+	// Description is a description of the input.
+	Description *String
+	// Default is a default value of the input. Nil means no default value.
+	Default *String
+	// Required represents if the input is required or optional. When this value is nil, it means optional.
+	Required *Bool
+	// Type of the input, which must be one of 'boolean', 'number' or 'string'. This property is required.
+	// https://docs.github.com/en/actions/learn-github-actions/workflow-syntax-for-github-actions#onworkflow_callinput_idtype
+	Type WorkflowCallEventInputType
+}
+
+// WorkflowCallEventSecret is a secret configuration of workflow_call event.
+// https://docs.github.com/en/actions/learn-github-actions/workflow-syntax-for-github-actions#onworkflow_callsecrets
+type WorkflowCallEventSecret struct {
+	// Description is a description of the secret.
+	Description *String
+	// Required represents if the secret is required or optional. When this value is nil, it means optional.
+	// https://docs.github.com/en/actions/learn-github-actions/workflow-syntax-for-github-actions#onworkflow_callsecretssecret_idrequired
+	Required *Bool
+}
+
+// WorkflowCallEvent is workflow_call event configuration.
+// https://docs.github.com/en/actions/learn-github-actions/events-that-trigger-workflows#workflow-reuse-events
+type WorkflowCallEvent struct {
+	// Inputs is a map from input name to input configuration.
+	// https://docs.github.com/en/actions/learn-github-actions/workflow-syntax-for-github-actions#onworkflow_callinputs
+	Inputs map[*String]*WorkflowCallEventInput
+	// Secrets is a map from name of secret to secret configuration.
+	// https://docs.github.com/en/actions/learn-github-actions/workflow-syntax-for-github-actions#onworkflow_callsecrets
+	Secrets map[*String]*WorkflowCallEventSecret
+	// Pos is a position in source.
+	Pos *Pos
+}
+
+// EventName returns name of the event to trigger this workflow.
+func (e *WorkflowCallEvent) EventName() string {
+	return "workflow_call"
+}
+
 // PermissionScope is struct for respective permission scope like "issues", "checks", ...
 // https://docs.github.com/en/actions/security-guides/automatic-token-authentication#permissions-for-the-github_token
 type PermissionScope struct {
@@ -249,7 +306,7 @@ type ExecRun struct {
 }
 
 // Kind returns kind of the step execution.
-func (r *ExecRun) Kind() ExecKind {
+func (e *ExecRun) Kind() ExecKind {
 	return ExecKindRun
 }
 
@@ -285,7 +342,7 @@ type ExecAction struct {
 }
 
 // Kind returns kind of the step execution.
-func (r *ExecAction) Kind() ExecKind {
+func (e *ExecAction) Kind() ExecKind {
 	return ExecKindAction
 }
 
@@ -617,6 +674,34 @@ type Runner struct {
 	Labels []*String
 }
 
+// WorkflowCallInput is a normal input for workflow call.
+type WorkflowCallInput struct {
+	// Name is a name of the input.
+	Name *String
+	// Value is a value of the input.
+	Value *String
+}
+
+// WorkflowCallSecret is a secret input for workflow call.
+// https://docs.github.com/en/actions/learn-github-actions/workflow-syntax-for-github-actions#jobsjob_idwith
+type WorkflowCallSecret struct {
+	// Name is a name of the secret
+	Name *String
+	// Value is a value of the secret
+	Value *String
+}
+
+// WorkflowCall is a struct to represent workflow call at jobs.<job_id>.
+// https://docs.github.com/en/actions/learn-github-actions/workflow-syntax-for-github-actions#jobsjob_iduses
+type WorkflowCall struct {
+	// Uses is a workflow specification to be called. This field is mandatory.
+	Uses *String
+	// Inputs is a map from input name to input value at 'with:'.
+	Inputs map[string]*WorkflowCallInput
+	// Secrets is a map from secret name to secret value at 'secrets:'.
+	Secrets map[string]*WorkflowCallSecret
+}
+
 // Job is configuration of how to run a job.
 // https://docs.github.com/en/actions/learn-github-actions/workflow-syntax-for-github-actions#jobs
 type Job struct {
@@ -666,6 +751,9 @@ type Job struct {
 	// Services is map from service names to service configurations.
 	// https://docs.github.com/en/actions/learn-github-actions/workflow-syntax-for-github-actions#jobsjob_idservices
 	Services map[string]*Service
+	// WorkflowCall is a workflow call by 'uses:'.
+	// https://docs.github.com/en/actions/learn-github-actions/workflow-syntax-for-github-actions#jobsjob_iduses
+	WorkflowCall *WorkflowCall
 	// Pos is a position in source.
 	Pos *Pos
 }

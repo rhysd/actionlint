@@ -404,6 +404,88 @@ func (p *parser) parseWebhookEvent(name *String, n *yaml.Node) *WebhookEvent {
 	return ret
 }
 
+// - https://docs.github.com/en/actions/learn-github-actions/events-that-trigger-workflows#workflow-reuse-events
+// - https://docs.github.com/en/actions/learn-github-actions/workflow-syntax-for-github-actions#onworkflow_callinputs
+// - https://docs.github.com/en/actions/learn-github-actions/reusing-workflows
+func (p *parser) parseWorkflowCallEvent(pos *Pos, n *yaml.Node) *WorkflowCallEvent {
+	ret := &WorkflowCallEvent{Pos: pos}
+
+	for _, kv := range p.parseSectionMapping("workflow_call", n, true) {
+		switch kv.key.Value {
+		case "inputs":
+			inputs := p.parseSectionMapping("inputs", kv.val, true)
+			ret.Inputs = make(map[*String]*WorkflowCallEventInput, len(inputs))
+			for _, kv := range inputs {
+				name, spec := kv.key, kv.val
+				input := &WorkflowCallEventInput{}
+				sawType := false
+
+				for _, attr := range p.parseMapping("input of workflow_call event", spec, true) {
+					switch attr.key.Value {
+					case "description":
+						input.Description = p.parseString(attr.val, true)
+					case "required":
+						input.Required = p.parseBool(attr.val)
+					case "default":
+						input.Default = p.parseString(attr.val, true)
+					case "type":
+						switch attr.val.Value {
+						case "boolean":
+							input.Type = WorkflowCallEventInputTypeBoolean
+						case "number":
+							input.Type = WorkflowCallEventInputTypeNumber
+						case "string":
+							input.Type = WorkflowCallEventInputTypeString
+						default:
+							p.errorf(attr.val, "invalid value %q for input type of workflow_call event. it must be one of \"boolean\", \"number\", or \"string\"", attr.val.Value)
+						}
+						sawType = true
+					default:
+						p.unexpectedKey(attr.key, "inputs at workflow_call event", []string{"description", "required", "default", "type"})
+					}
+				}
+
+				if input.Description == nil {
+					p.errorfAt(name.Pos, "\"description\" is missing at %q input of workflow_call event", name.Value)
+				}
+				if !sawType {
+					p.errorfAt(name.Pos, "\"type\" is missing at %q input of workflow_call event", name.Value)
+				}
+
+				ret.Inputs[name] = input
+			}
+		case "secrets":
+			secrets := p.parseSectionMapping("secrets", kv.val, true)
+			ret.Secrets = make(map[*String]*WorkflowCallEventSecret, len(secrets))
+			for _, kv := range secrets {
+				name, spec := kv.key, kv.val
+				secret := &WorkflowCallEventSecret{}
+
+				for _, attr := range p.parseMapping("secret of workflow_call event", spec, true) {
+					switch attr.key.Value {
+					case "description":
+						secret.Description = p.parseString(attr.val, true)
+					case "required":
+						secret.Required = p.parseBool(attr.val)
+					default:
+						p.unexpectedKey(attr.key, "secrets", []string{"description", "required"})
+					}
+				}
+
+				if secret.Description == nil {
+					p.errorfAt(name.Pos, "\"description\" is missing at %q secret of workflow_call event", name.Value)
+				}
+
+				ret.Secrets[name] = secret
+			}
+		default:
+			p.unexpectedKey(kv.key, "workflow_call", []string{"inputs", "secrets"})
+		}
+	}
+
+	return ret
+}
+
 func (p *parser) parseEvents(pos *Pos, n *yaml.Node) []Event {
 	switch n.Kind {
 	case yaml.ScalarNode:
@@ -419,6 +501,10 @@ func (p *parser) parseEvents(pos *Pos, n *yaml.Node) []Event {
 		case "schedule":
 			p.errorAt(pos, "schedule event must be configured with mapping")
 			return []Event{}
+		case "workflow_call":
+			return []Event{
+				&WorkflowCallEvent{Pos: posAt(n)},
+			}
 		default:
 			return []Event{
 				&WebhookEvent{
@@ -441,6 +527,8 @@ func (p *parser) parseEvents(pos *Pos, n *yaml.Node) []Event {
 				ret = append(ret, p.parseWorkflowDispatchEvent(kv.key.Pos, kv.val))
 			case "repository_dispatch":
 				ret = append(ret, p.parseRepositoryDispatchEvent(kv.key.Pos, kv.val))
+			case "workflow_call":
+				ret = append(ret, p.parseWorkflowCallEvent(kv.key.Pos, kv.val))
 			default:
 				ret = append(ret, p.parseWebhookEvent(kv.key, kv.val))
 			}
@@ -459,6 +547,8 @@ func (p *parser) parseEvents(pos *Pos, n *yaml.Node) []Event {
 					p.errorf(c, "%q event should not be listed in sequence. Use mapping for \"on\" section and configure the event as values of the mapping", s.Value)
 				case "workflow_dispatch":
 					ret = append(ret, &WorkflowDispatchEvent{Pos: posAt(c)})
+				case "workflow_call":
+					ret = append(ret, &WorkflowCallEvent{Pos: posAt(c)})
 				default:
 					ret = append(ret, &WebhookEvent{Hook: s, Pos: posAt(c)})
 				}
@@ -919,6 +1009,22 @@ func (p *parser) parseSteps(n *yaml.Node) []*Step {
 // https://docs.github.com/en/actions/learn-github-actions/workflow-syntax-for-github-actions#jobsjob_id
 func (p *parser) parseJob(id *String, n *yaml.Node) *Job {
 	ret := &Job{ID: id, Pos: id.Pos}
+	call := &WorkflowCall{}
+
+	// Only below keys are allowed on reusable workflow call
+	// https://docs.github.com/en/actions/learn-github-actions/reusing-workflows#supported-keywords-for-jobs-that-call-a-reusable-workflow
+	//   - jobs.<job_id>.name
+	//   - jobs.<job_id>.uses
+	//   - jobs.<job_id>.with
+	//   - jobs.<job_id>.with.<input_id>
+	//   - jobs.<job_id>.secrets
+	//   - jobs.<job_id>.secrets.<secret_id>
+	//   - jobs.<job_id>.needs
+	//   - jobs.<job_id>.if
+	//   - jobs.<job_id>.permissions
+
+	var stepsOnlyKey *String
+	var callOnlyKey *String
 
 	for _, kv := range p.parseMapping(fmt.Sprintf("%q job", id.Value), n, false) {
 		k, v := kv.key, kv.val
@@ -936,30 +1042,41 @@ func (p *parser) parseJob(id *String, n *yaml.Node) *Job {
 		case "runs-on":
 			labels := p.parseStringOrStringSequence("runs-on", v, false, false)
 			ret.RunsOn = &Runner{labels}
+			stepsOnlyKey = k
 		case "permissions":
 			ret.Permissions = p.parsePermissions(k.Pos, v)
 		case "environment":
 			ret.Environment = p.parseEnvironment(k.Pos, v)
+			stepsOnlyKey = k
 		case "concurrency":
 			ret.Concurrency = p.parseConcurrency(k.Pos, v)
+			stepsOnlyKey = k
 		case "outputs":
 			ret.Outputs = p.parseOutputs(v)
+			stepsOnlyKey = k
 		case "env":
 			ret.Env = p.parseEnv(v)
+			stepsOnlyKey = k
 		case "defaults":
 			ret.Defaults = p.parseDefaults(k.Pos, v)
+			stepsOnlyKey = k
 		case "if":
 			ret.If = p.parseString(v, false)
 		case "steps":
 			ret.Steps = p.parseSteps(v)
+			stepsOnlyKey = k
 		case "timeout-minutes":
 			ret.TimeoutMinutes = p.parseFloat(v)
+			stepsOnlyKey = k
 		case "strategy":
 			ret.Strategy = p.parseStrategy(k.Pos, v)
+			stepsOnlyKey = k
 		case "continue-on-error":
 			ret.ContinueOnError = p.parseBool(v)
+			stepsOnlyKey = k
 		case "container":
 			ret.Container = p.parseContainer("container", k.Pos, v)
+			stepsOnlyKey = k
 		case "services":
 			services := p.parseSectionMapping("services", v, false)
 			ret.Services = make(map[string]*Service, len(services))
@@ -969,6 +1086,29 @@ func (p *parser) parseJob(id *String, n *yaml.Node) *Job {
 					Container: p.parseContainer("services", s.key.Pos, s.val),
 				}
 			}
+		case "uses":
+			call.Uses = p.parseString(v, false)
+			callOnlyKey = k
+		case "with":
+			with := p.parseSectionMapping("with", v, false)
+			call.Inputs = make(map[string]*WorkflowCallInput, len(with))
+			for _, i := range with {
+				call.Inputs[i.key.Value] = &WorkflowCallInput{
+					Name:  i.key,
+					Value: p.parseString(i.val, true),
+				}
+			}
+			callOnlyKey = k
+		case "secrets":
+			secrets := p.parseSectionMapping("secrets", v, false)
+			call.Secrets = make(map[string]*WorkflowCallSecret, len(secrets))
+			for _, s := range secrets {
+				call.Secrets[s.key.Value] = &WorkflowCallSecret{
+					Name:  s.key,
+					Value: p.parseString(s.val, true),
+				}
+			}
+			callOnlyKey = k
 		default:
 			p.unexpectedKey(kv.key, "job", []string{
 				"name",
@@ -987,16 +1127,40 @@ func (p *parser) parseJob(id *String, n *yaml.Node) *Job {
 				"continue-on-error",
 				"container",
 				"services",
+				"uses",
+				"with",
+				"secrets",
 			})
 		}
 	}
 
-	if ret.Steps == nil {
-		p.errorf(n, "\"steps\" section is missing in job %q", id.Value)
-	}
-
-	if ret.RunsOn == nil {
-		p.errorf(n, "\"runs-on\" section is missing in job %q", id.Value)
+	if call.Uses != nil {
+		if stepsOnlyKey != nil {
+			p.errorfAt(
+				stepsOnlyKey.Pos,
+				"when a reusable workflow is called with \"uses\", %q is not available. only following keys are allowed: \"name\", \"uses\", \"with\", \"secrets\", \"needs\", \"if\", and \"permissions\" in job %q",
+				stepsOnlyKey.Value,
+				id.Value,
+			)
+		} else {
+			ret.WorkflowCall = call
+		}
+	} else {
+		// When not a reusable call
+		if ret.Steps == nil {
+			p.errorf(n, "\"steps\" section is missing in job %q", id.Value)
+		}
+		if ret.RunsOn == nil {
+			p.errorf(n, "\"runs-on\" section is missing in job %q", id.Value)
+		}
+		if callOnlyKey != nil {
+			p.errorfAt(
+				callOnlyKey.Pos,
+				"%q is only available for a reusable workflow call with \"uses\" but \"uses\" is not found in job %q",
+				callOnlyKey.Value,
+				id.Value,
+			)
+		}
 	}
 
 	return ret

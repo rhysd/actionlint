@@ -32,6 +32,7 @@ List of checks:
 - [Hardcoded credentials](#check-hardcoded-credentials)
 - [Environment variable names](#check-env-var-names)
 - [Permissions](#permissions)
+- [Reusable workflows](#check-reusable-workflows)
 
 Note that actionlint focuses on catching mistakes in workflow files. If you want some general code style checks, please consider
 using a general YAML checker like [yamllint][].
@@ -52,7 +53,7 @@ jobs:
 Output:
 
 ```
-test.yaml:5:5: unexpected key "step" for "job" section. expected one of "name", "needs", "runs-on", "permissions", "environment", "concurrency", "outputs", "env", "defaults", "if", "steps", "timeout-minutes", "strategy", "continue-on-error", "container", "services" [syntax-check]
+test.yaml:5:5: unexpected key "step" for "job" section. expected one of "concurrency", "container", "continue-on-error", "defaults", "env", "environment", "if", "name", "needs", "outputs", "permissions", "runs-on", "secrets", "services", "steps", "strategy", "timeout-minutes", "uses", "with" [syntax-check]
   |
 5 |     step:
   |     ^~~~~
@@ -1732,6 +1733,119 @@ Each permission scopes have their access levels. The default levels are describe
 
 actionlint checks permission scopes and access levels in a workflow are correct.
 
+<a name="check-reusable-workflows"></a>
+## Reusable workflows
+
+[Reusable workflows][reusable-workflow-doc] is a feature to call a workflow from another workflow.
+
+As of now, the integrity between a workflow caller and a workflow callee is not checked. actionlint does only the syntax check
+and very basic validations.
+
+### Check input definitions of `workflow_call` event
+
+Example input:
+
+```yaml
+on:
+  workflow_call:
+    inputs:
+      scheme:
+        description: Scheme of URL
+        # OK: Type is string
+        default: https
+        type: string
+      host:
+        # ERROR: Missing description
+        default: example.com
+        type: string
+      port:
+        description: Port of URL
+        # ERROR: Type is number but default value is string
+        default: ':1234'
+        type: number
+      query:
+        description: Scheme of URL
+        # ERROR: Type must be one of number, string, boolean
+        type: object
+jobs:
+  do:
+    runs-on: ubuntu-latest
+    steps:
+      - run: echo "${{ inputs.scheme }}://${{ inputs.host }}:${{ inputs.port }}"
+```
+
+Output:
+
+```
+test.yaml:9:7: "description" is missing at "host" input of workflow_call event [syntax-check]
+  |
+9 |       host:
+  |       ^~~~~
+test.yaml:16:18: input of workflow_call event "port" is typed as number but its default value ":1234" cannot be parsed as a float number: strconv.ParseFloat: parsing ":1234": invalid syntax [events]
+   |
+16 |         default: ':1234'
+   |                  ^~~~~~~
+test.yaml:21:15: invalid value "object" for input type of workflow_call event. it must be one of "boolean", "number", or "string" [syntax-check]
+   |
+21 |         type: object
+   |               ^~~~~~
+```
+
+[Playground](https://rhysd.github.io/actionlint#eJyVkcFuwjAMhu88hYUmcSposFOegcPExBm1waVlaZzFjqCqeHeatkMVCCRuyff7t+zfZNUE4ET+Nzd02unUmAgASuuCcP8GYF1ghf8/gD2y9qWTkqyCn04EymG7WY9K8jQYUVCIOL5hqR0qYPGlPQywIBb16MNzWjmDc03VK7cjL08G+26lp2PN1Ody9TW7a21DlaEf4F9AX7+1dN+EsiNqmRwp6wLcU9/DB8tJ9IYsWAmJSQVZOokF3S3sJFa2++uCYPrRNMMt5v0R4HJRi8UIx/giHKGYSYumVxXQiwY=)
+
+Unlike inputs of action, inputs of workflow must specify their types. actionlint validates input types and checks the default
+values are correctly typed. For more details, see [the official document][create-reusable-workflow-doc].
+
+### Check reusable workflow call syntax
+
+Example input:
+
+```yaml
+on: push
+jobs:
+  job1:
+    uses: owner/repo/path/to/workflow.yml@v1
+    # ERROR: 'runs-on' is not available on calling reusable workflow
+    runs-on: ubuntu-latest
+  job2:
+    # ERROR: Local file path is not available
+    uses: ./.github/workflows/ci.yml@main
+  job3:
+    # ERROR: 'with' is only available on calling reusable workflow
+    with:
+      foo: bar
+    runs-on: ubuntu-latest
+    steps:
+      - run: echo hello
+```
+
+Output:
+
+```
+test.yaml:6:5: when a reusable workflow is called with "uses", "runs-on" is not available. only following keys are allowed: "name", "uses", "with", "secrets", "needs", "if", and "permissions" in job "job1" [syntax-check]
+  |
+6 |     runs-on: ubuntu-latest
+  |     ^~~~~~~~
+test.yaml:9:11: reusable workflow call "./.github/workflows/ci.yml@main" at "uses" is not following the format "owner/repo/path/to/workflow.yml@ref". see https://docs.github.com/en/actions/learn-github-actions/reusing-workflows for more details [workflow-call]
+  |
+9 |     uses: ./.github/workflows/ci.yml@main
+  |           ^~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+test.yaml:12:5: "with" is only available for a reusable workflow call with "uses" but "uses" is not found in job "job3" [syntax-check]
+   |
+12 |     with:
+   |     ^~~~~
+```
+
+[Playground](https://rhysd.github.io/actionlint#eJx9jTEOwjAMRfeewhdoo8KWiasklUsKaRzFNlFvT9sIxMT0Pbz3TMlCVg7dgzzbDmDf8VgAZWQLVBMWUzCTyU6CETKVynOOVIdtjbfXeMJFE/e0x9RrEu2jE2RpvctvbzDDfZGg/pthMy1nanVLasa1GXUH2wUwE1nwrvz/BsCCmT9Sf5AWcAoEAWOkN6pqSm4=)
+
+When calling an external workflow, [only specific keys are available][reusable-workflow-call-keys] at job configuration.
+For example, `secrets:` is not available when running steps as normal job. And `runs-on:` is not available when calling
+a reusable workflow since the called workflow determines which OS is used. actionlint checks such keys are used correctly
+to call a reusable workflow or to run steps as normal job.
+
+And the workflow syntax at `uses:` must follow the format `owner/repo/path/to/workflow.yml@ref` as described in
+[the official document][create-reusable-workflow-doc]. actionlint checks if the value follows the format.
+
 ---
 
 [Installation](install.md) | [Usage](usage.md) | [Configuration](config.md) | [Go API](api.md) | [References](reference.md)
@@ -1768,3 +1882,6 @@ actionlint checks permission scopes and access levels in a workflow are correct.
 [issue-25]: https://github.com/rhysd/actionlint/issues/25
 [issue-40]: https://github.com/rhysd/actionlint/issues/40
 [security-doc]: https://docs.github.com/en/actions/security-guides/security-hardening-for-github-actions
+[reusable-workflow-doc]: https://docs.github.com/en/actions/learn-github-actions/reusing-workflows
+[create-reusable-workflow-doc]: https://docs.github.com/en/actions/learn-github-actions/reusing-workflows#creating-a-reusable-workflow
+[reusable-workflow-call-keys]: https://docs.github.com/en/actions/learn-github-actions/reusing-workflows#supported-keywords-for-jobs-that-call-a-reusable-workflow
