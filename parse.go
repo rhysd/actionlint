@@ -1020,7 +1020,9 @@ func (p *parser) parseJob(id *String, n *yaml.Node) *Job {
 	//   - jobs.<job_id>.needs
 	//   - jobs.<job_id>.if
 	//   - jobs.<job_id>.permissions
-	isCall := true
+
+	var stepsOnlyKey *String
+	var callOnlyKey *String
 
 	for _, kv := range p.parseMapping(fmt.Sprintf("%q job", id.Value), n, false) {
 		k, v := kv.key, kv.val
@@ -1038,41 +1040,41 @@ func (p *parser) parseJob(id *String, n *yaml.Node) *Job {
 		case "runs-on":
 			labels := p.parseStringOrStringSequence("runs-on", v, false, false)
 			ret.RunsOn = &Runner{labels}
-			isCall = false
+			stepsOnlyKey = k
 		case "permissions":
 			ret.Permissions = p.parsePermissions(k.Pos, v)
 		case "environment":
 			ret.Environment = p.parseEnvironment(k.Pos, v)
-			isCall = false
+			stepsOnlyKey = k
 		case "concurrency":
 			ret.Concurrency = p.parseConcurrency(k.Pos, v)
-			isCall = false
+			stepsOnlyKey = k
 		case "outputs":
 			ret.Outputs = p.parseOutputs(v)
-			isCall = false
+			stepsOnlyKey = k
 		case "env":
 			ret.Env = p.parseEnv(v)
-			isCall = false
+			stepsOnlyKey = k
 		case "defaults":
 			ret.Defaults = p.parseDefaults(k.Pos, v)
-			isCall = false
+			stepsOnlyKey = k
 		case "if":
 			ret.If = p.parseString(v, false)
 		case "steps":
 			ret.Steps = p.parseSteps(v)
-			isCall = false
+			stepsOnlyKey = k
 		case "timeout-minutes":
 			ret.TimeoutMinutes = p.parseFloat(v)
-			isCall = false
+			stepsOnlyKey = k
 		case "strategy":
 			ret.Strategy = p.parseStrategy(k.Pos, v)
-			isCall = false
+			stepsOnlyKey = k
 		case "continue-on-error":
 			ret.ContinueOnError = p.parseBool(v)
-			isCall = false
+			stepsOnlyKey = k
 		case "container":
 			ret.Container = p.parseContainer("container", k.Pos, v)
-			isCall = false
+			stepsOnlyKey = k
 		case "services":
 			services := p.parseSectionMapping("services", v, false)
 			ret.Services = make(map[string]*Service, len(services))
@@ -1082,9 +1084,9 @@ func (p *parser) parseJob(id *String, n *yaml.Node) *Job {
 					Container: p.parseContainer("services", s.key.Pos, s.val),
 				}
 			}
-			isCall = false
 		case "uses":
 			call.Uses = p.parseString(v, false)
+			callOnlyKey = k
 		case "with":
 			with := p.parseSectionMapping("with", v, false)
 			call.Inputs = make(map[string]*WorkflowCallInput, len(with))
@@ -1094,6 +1096,7 @@ func (p *parser) parseJob(id *String, n *yaml.Node) *Job {
 					Value: p.parseString(i.val, true),
 				}
 			}
+			callOnlyKey = k
 		case "secrets":
 			secrets := p.parseSectionMapping("secrets", v, false)
 			call.Secrets = make(map[string]*WorkflowCallSecret, len(secrets))
@@ -1103,6 +1106,7 @@ func (p *parser) parseJob(id *String, n *yaml.Node) *Job {
 					Value: p.parseString(s.val, true),
 				}
 			}
+			callOnlyKey = k
 		default:
 			p.unexpectedKey(kv.key, "job", []string{
 				"name",
@@ -1129,8 +1133,13 @@ func (p *parser) parseJob(id *String, n *yaml.Node) *Job {
 	}
 
 	if call.Uses != nil {
-		if !isCall {
-			p.errorfAt(id.Pos, "when a reusable workflow is called, only following keys are allowed: \"name\", \"uses\", \"with\", \"secrets\", \"needs\", \"if\", and \"permissions\" in job %q", id.Value)
+		if stepsOnlyKey != nil {
+			p.errorfAt(
+				stepsOnlyKey.Pos,
+				"when a reusable workflow is called with \"uses\", %q is not available. only following keys are allowed: \"name\", \"uses\", \"with\", \"secrets\", \"needs\", \"if\", and \"permissions\" in job %q",
+				stepsOnlyKey.Value,
+				id.Value,
+			)
 		} else {
 			ret.WorkflowCall = call
 		}
@@ -1142,8 +1151,13 @@ func (p *parser) parseJob(id *String, n *yaml.Node) *Job {
 		if ret.RunsOn == nil {
 			p.errorf(n, "\"runs-on\" section is missing in job %q", id.Value)
 		}
-		if call.Inputs != nil || call.Secrets != nil {
-			p.errorfAt(id.Pos, "\"with\" and \"secrets\" are only available for a reusable workflow call but \"uses\" is not found in job %q", id.Value)
+		if callOnlyKey != nil {
+			p.errorfAt(
+				callOnlyKey.Pos,
+				"%q is only available for a reusable workflow call with \"uses\" but \"uses\" is not found in job %q",
+				callOnlyKey.Value,
+				id.Value,
+			)
 		}
 	}
 
