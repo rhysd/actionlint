@@ -1,0 +1,24 @@
+on: push
+jobs:
+  # steps is only for normal job, uses is only for call job
+  call1:
+    uses: org/repo/workflow.yml@v1
+    steps:
+      - run: echo
+  # with requires uses
+  call2:
+    with:
+      foo: bar
+    runs-on: ubuntu-latest
+    steps:
+      - run: echo
+  # secrets requires uses
+  call3:
+    secrets:
+      aaa: bbb
+    runs-on: ubuntu-latest
+    steps:
+      - run: echo
+  # uses is empty
+  call4:
+    uses:

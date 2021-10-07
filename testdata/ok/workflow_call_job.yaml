@@ -1,0 +1,28 @@
+on: push
+jobs:
+  call1:
+    uses: org/repo/workflow.yml@v1
+  call2:
+    uses: org/repo/workflow.yml@v1
+    with:
+      foo: bar
+  call3:
+    uses: org/repo/workflow.yml@v1
+    secrets:
+      foo: bar
+  call4:
+    uses: org/repo/workflow.yml@v1
+    with:
+      foo: bar
+    secrets:
+      foo: bar
+  call5:
+    name: Test
+    uses: org/repo/workflow.yml@v1
+    with:
+      foo: bar
+    secrets:
+      foo: bar
+    needs: ['call1']
+    if: ${{ env.FOO == 'abc' }}
+    permissions: read-all
