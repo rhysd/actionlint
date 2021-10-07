@@ -123,11 +123,7 @@ func (rule *RuleEvents) checkTypes(hook *String, types []*String, expected []str
 // https://docs.github.com/en/actions/learn-github-actions/reusing-workflows
 func (rule *RuleEvents) checkWorkflowCallEvent(event *WorkflowCallEvent) {
 	for name, input := range event.Inputs {
-		r := input.Required != nil && input.Required.Value
 		if input.Default != nil {
-			if r {
-				rule.errorf(name.Pos, "input of workflow_call event %q is required but it also has default value. The default value is never used", name.Value)
-			}
 			switch input.Type {
 			case WorkflowCallEventInputTypeNumber:
 				if _, err := strconv.ParseFloat(input.Default.Value, 64); err != nil {
