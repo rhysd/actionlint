@@ -86,14 +86,14 @@ jobs:
 Output:
 
 ```
+test.yaml:3:3: "runs-on" section is missing in job "test" [syntax-check]
+  |
+3 |   test:
+  |   ^~~~~
 test.yaml:6:3: key "test" is duplicate in "jobs" section. previously defined at line:3,col:3. note that key names are case insensitive [syntax-check]
   |
 6 |   TEST:
   |   ^~~~~
-test.yaml:4:5: "runs-on" section is missing in job "test" [syntax-check]
-  |
-4 |     steps:
-  |     ^~~~~~
 ```
 
 [Playground](https://rhysd.github.io/actionlint#eJzLz7NSKCgtzuDKyk8qtuJSUChJLS4B0QoKxSWpBcUQpoKCrkJRKVBpanJGvoJ6RmpOTr46UCbENTgEogIoW6ybD1RRmlSaV1Kqm5MIMoiAOUmVqeoAYX8k5Q==)

@@ -1148,10 +1148,10 @@ func (p *parser) parseJob(id *String, n *yaml.Node) *Job {
 	} else {
 		// When not a reusable call
 		if ret.Steps == nil {
-			p.errorf(n, "\"steps\" section is missing in job %q", id.Value)
+			p.errorfAt(id.Pos, "\"steps\" section is missing in job %q", id.Value)
 		}
 		if ret.RunsOn == nil {
-			p.errorf(n, "\"runs-on\" section is missing in job %q", id.Value)
+			p.errorfAt(id.Pos, "\"runs-on\" section is missing in job %q", id.Value)
 		}
 		if callOnlyKey != nil {
 			p.errorfAt(
