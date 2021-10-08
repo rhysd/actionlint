@@ -69,8 +69,8 @@ jobs:
         // eslint-disable-next-line @typescript-eslint/no-non-null-assertion
         const err = errors[0]!;
         assert.equal(err.message, '"runs-on" section is missing in job "test"', `message is unexpected: ${json}`);
-        assert.equal(err.line, 6, `line is unexpected: ${json}`);
-        assert.equal(err.column, 5, `column is unexpected: ${json}`);
+        assert.equal(err.line, 5, `line is unexpected: ${json}`);
+        assert.equal(err.column, 3, `column is unexpected: ${json}`);
         assert.equal(err.kind, 'syntax-check', `kind is unexpected: ${json}`);
     });
 
