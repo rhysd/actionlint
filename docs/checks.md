@@ -1772,6 +1772,9 @@ jobs:
     runs-on: ubuntu-latest
     steps:
       - run: echo "${{ inputs.scheme }}://${{ inputs.host }}:${{ inputs.port }}"
+  nested:
+    # ERROR: Nested workflow call is not allowed
+    uses: onwer/repo/w.yml@main
 ```
 
 Output:
@@ -1789,12 +1792,19 @@ test.yaml:21:15: invalid value "object" for input type of workflow_call event. i
    |
 21 |         type: object
    |               ^~~~~~
+test.yaml:29:11: reusable workflow cannot be nested. but this workflow hooks "workflow_call" event at line:2,col:3 [workflow-call]
+   |
+29 |     uses: onwer/repo/w.yml@main
+   |           ^~~~~~~~~~~~~~~~~~~~~
 ```
 
 [Playground](https://rhysd.github.io/actionlint#eJyVkcFuwjAMhu88hYUmcSposFOegcPExBm1waVlaZzFjqCqeHeatkMVCCRuyff7t+zfZNUE4ET+Nzd02unUmAgASuuCcP8GYF1ghf8/gD2y9qWTkqyCn04EymG7WY9K8jQYUVCIOL5hqR0qYPGlPQywIBb16MNzWjmDc03VK7cjL08G+26lp2PN1Ody9TW7a21DlaEf4F9AX7+1dN+EsiNqmRwp6wLcU9/DB8tJ9IYsWAmJSQVZOokF3S3sJFa2++uCYPrRNMMt5v0R4HJRi8UIx/giHKGYSYumVxXQiwY=)
 
 Unlike inputs of action, inputs of workflow must specify their types. actionlint validates input types and checks the default
 values are correctly typed. For more details, see [the official document][create-reusable-workflow-doc].
+
+In addition, nested workflow call is not allowed. actionlint checks reusable workflow is not called when the workflow hooks
+`workflow_call` event.
 
 ### Check reusable workflow call syntax
 
