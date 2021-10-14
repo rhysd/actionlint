@@ -5,6 +5,7 @@ var allPermissionScopes = map[string]struct{}{
 	"checks":              {},
 	"contents":            {},
 	"deployments":         {},
+	"id-token":            {},
 	"issues":              {},
 	"metadata":            {},
 	"packages":            {},
