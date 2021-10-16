@@ -21,6 +21,7 @@ type RuleExpression struct {
 	matrixTy     *ObjectType
 	stepsTy      *ObjectType
 	needsTy      *ObjectType
+	secretsTy    *ObjectType
 	workflow     *Workflow
 	localActions *LocalActionsCache
 }
@@ -32,6 +33,7 @@ func NewRuleExpression(cache *LocalActionsCache) *RuleExpression {
 		matrixTy:     nil,
 		stepsTy:      nil,
 		needsTy:      nil,
+		secretsTy:    nil,
 		workflow:     nil,
 		localActions: cache,
 	}
@@ -67,9 +69,12 @@ func (rule *RuleExpression) VisitWorkflowPre(n *Workflow) error {
 				rule.checkString(i.Description)
 				rule.checkString(i.Default)
 			}
-			for _, s := range e.Secrets {
+			obj := NewEmptyStrictObjectType()
+			for n, s := range e.Secrets {
+				obj.Props[n.Value] = StringType{}
 				rule.checkString(s.Description)
 			}
+			rule.secretsTy = obj
 		}
 	}
 
@@ -578,6 +583,9 @@ func (rule *RuleExpression) checkSemanticsOfExprNode(expr ExprNode, line, col in
 	}
 	if rule.needsTy != nil {
 		c.UpdateNeeds(rule.needsTy)
+	}
+	if rule.secretsTy != nil {
+		c.UpdateSecrets(rule.secretsTy)
 	}
 
 	ty, errs := c.Check(expr)

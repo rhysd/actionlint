@@ -349,6 +349,12 @@ func (sema *ExprSemanticsChecker) UpdateNeeds(ty *ObjectType) {
 	sema.vars["needs"] = ty
 }
 
+// UpdateSecrets updates 'secrets' context object to given object type.
+func (sema *ExprSemanticsChecker) UpdateSecrets(ty *ObjectType) {
+	sema.ensureVarsCopied()
+	sema.vars["secrets"] = ty
+}
+
 func (sema *ExprSemanticsChecker) visitUntrustedCheckerOnLeaveNode(n ExprNode) {
 	if sema.untrusted != nil {
 		sema.untrusted.OnNodeLeave(n)
