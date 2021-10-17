@@ -1856,6 +1856,59 @@ to call a reusable workflow or to run steps as normal job.
 And the workflow syntax at `uses:` must follow the format `owner/repo/path/to/workflow.yml@ref` as described in
 [the official document][create-reusable-workflow-doc]. actionlint checks if the value follows the format.
 
+### Check types of `inputs.*` and `secrets.*` in reusable workflow
+
+Example input:
+
+```yaml
+on:
+  workflow_call:
+    inputs:
+      url:
+        description: 'your URL'
+        type: string
+      lucky_number:
+        description: 'your lucky number'
+        type: number
+    secrets:
+      credential:
+        description: 'your credential'
+
+jobs:
+  test:
+    runs-on: ubuntu-20.04
+    steps:
+      - name: Send data
+        # ERROR: uri is typo of url
+        run: curl ${{ inputs.uri }} -d ${{ inputs.lucky_number }}
+        env:
+          # ERROR: credentials is typo of credential
+          TOKEN: ${{ secrets.credentials }}
+```
+
+Output:
+
+```
+test.yaml:20:23: property "uri" is not defined in object type {url: string; lucky_number: number} [expression]
+   |
+20 |         run: curl ${{ inputs.uri }} -d ${{ inputs.lucky_number }}
+   |                       ^~~~~~~~~~
+test.yaml:23:22: property "credentials" is not defined in object type {credential: string} [expression]
+   |
+23 |           TOKEN: ${{ secrets.credentials }}
+   |                      ^~~~~~~~~~~~~~~~~~~
+```
+
+[Playground](https://rhysd.github.io/actionlint#eJx9UD1PwzAQ3fMr3oCUKVGFmLwzgUAqMFeOfSDT9BzZZ6qo6n/HjUNSMXS7e/c+7s6zqoCjD/vP3h93Rvf9BQAcD0liqYEU+r8SsBRNcIM4zwr16FPAx/a5XuYyDqQQJTj+msE+mf2443ToKNw0mogoxP+OBZ3ASCbQul5uLLE4fXvLlVZX1bfvJr1QlKIKiWNzYacusaTmftNuHkqc0LCENWB9yOu8EVtYLXqJzAYKJv8Kd6fT/ME2BYfzGY29Bq//kaeLA/HPegHw/vr0+KIm4Xxxu94Qs/AXqVaEog==)
+
+Inputs of reusable workflow call are set to `inputs.*` properties following the definitions at `on.workflow_call.inputs`.
+And in a job of a reusable workflow, `secrets.*` are passed from caller of the workflow so it is set following the definitions at
+`on.workflow_call.secrets`. See [the official document][create-reusable-workflow-doc] for more details.
+
+actionlint contextually defines types of `inputs` and `secrets` contexts looking at `workflow_call` event. Keys of `inputs` only
+allow keys at `on.workflow_call.inputs` and their values are typed based on `on.workflow_call.inputs.<input_name>.type`. Type of
+`secrets` is also strictly typed following `on.workflow_call.secrets`.
+
 ---
 
 [Installation](install.md) | [Usage](usage.md) | [Configuration](config.md) | [Go API](api.md) | [References](reference.md)
