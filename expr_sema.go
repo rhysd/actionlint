@@ -252,7 +252,7 @@ var BuiltinGlobalVariableTypes = map[string]ExprType{
 		"workspace": StringType{},
 	}),
 	// https://docs.github.com/en/actions/learn-github-actions/contexts
-	"secrets": NewEmptyObjectType(),
+	"secrets": NewMapObjectType(StringType{}),
 	// https://docs.github.com/en/actions/learn-github-actions/contexts
 	"strategy": NewObjectType(map[string]ExprType{
 		"fail-fast":    BoolType{},

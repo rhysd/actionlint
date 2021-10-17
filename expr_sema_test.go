@@ -17,6 +17,8 @@ func TestExprSemanticsCheckOK(t *testing.T) {
 		matrix   *ObjectType
 		steps    *ObjectType
 		needs    *ObjectType
+		inputs   *ObjectType
+		secrets  *ObjectType
 	}{
 		{
 			what:     "null",
@@ -527,6 +529,27 @@ func TestExprSemanticsCheckOK(t *testing.T) {
 			input:    "job.services.my_service.network",
 			expected: StringType{},
 		},
+		{
+			what:     "narrowed inputs object",
+			input:    "inputs.hello",
+			expected: NumberType{},
+			inputs: NewStrictObjectType(map[string]ExprType{
+				"hello": NumberType{},
+			}),
+		},
+		{
+			what:     "narrowed secrets object",
+			input:    "secrets.token",
+			expected: StringType{},
+			secrets: NewStrictObjectType(map[string]ExprType{
+				"token": StringType{},
+			}),
+		},
+		{
+			what:     "default secrets object",
+			input:    "secrets.any_value",
+			expected: StringType{},
+		},
 	}
 
 	for _, tc := range testCases {
@@ -549,6 +572,12 @@ func TestExprSemanticsCheckOK(t *testing.T) {
 			}
 			if tc.needs != nil {
 				c.UpdateNeeds(tc.needs)
+			}
+			if tc.inputs != nil {
+				c.UpdateInputs(tc.inputs)
+			}
+			if tc.secrets != nil {
+				c.UpdateSecrets(tc.secrets)
 			}
 			ty, errs := c.Check(e)
 			if len(errs) > 0 {
@@ -942,6 +971,13 @@ func TestExprSemanticsCheckError(t *testing.T) {
 			input: "NULL",
 			expected: []string{
 				"undefined variable \"NULL\"",
+			},
+		},
+		{
+			what:  "inputs context accepts nothing by default",
+			input: "inputs.hello",
+			expected: []string{
+				"property \"hello\" is not defined in object type {}",
 			},
 		},
 	}
