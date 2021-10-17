@@ -1,14 +1,67 @@
+<a name="v1.6.6"></a>
+# [v1.6.6](https://github.com/rhysd/actionlint/releases/tag/v1.6.6) - 17 Oct 2021
+
+- `inputs` and `secrets` objects are now typed looking at `workflow_call` event at `on:`. See [the document](https://github.com/rhysd/actionlint/blob/main/docs/checks.md#check-types-of-inputs-and-secrets-in-reusable-workflow) for more details.
+  - `inputs` object is typed with definitions at `on.workflow_call.inputs`. When the workflow is not callable, it is typed at `{}` (empty object) so any `inputs.*` access causes a type error.
+  - `secrets` object is typed with definitions at `on.workflow_call.secrets`.
+  ```yaml
+  on:
+    workflow_call:
+      # `inputs` object is typed {url: string; lucky_number: number}
+      inputs:
+        url:
+          description: 'your URL'
+          type: string
+        lucky_number:
+          description: 'your lucky number'
+          type: number
+      # `secrets` object is typed {user: string; credential: string}
+      secrets:
+        user:
+          description: 'your user name'
+        credential:
+          description: 'your credential'
+  jobs:
+    test:
+      runs-on: ubuntu-20.04
+      steps:
+        - name: Send data
+          # ERROR: uri is typo of url
+          run: curl ${{ inputs.uri }} -d ${{ inputs.lucky_number }}
+          env:
+            # ERROR: credentials is typo of credential
+            TOKEN: ${{ secrets.credentials }}
+  ```
+- `id-token` is added to permissions (thanks @cmmarslender, #62)
+- Report an error on nested workflow calls since it is [not allowed](https://docs.github.com/en/actions/learn-github-actions/reusing-workflows#limitations).
+  ```yaml
+  on:
+    # This workflow is reusable
+    workflow_call:
+
+  jobs:
+    test:
+      # ERROR: Nested workflow call is not allowed
+      uses: owner/repo/path/to/workflow.yml@ref
+  ```
+- Parse `uses:` at reusable workflow call more strictly following `{owner}/{repo}/{path}@{ref}` format.
+- Popular actions data set was updated to the latest (#61).
+- Dependencies of playground were updated to the latest (including eslint v8).
+
+[Changes][v1.6.6]
+
+
 <a name="v1.6.5"></a>
 # [v1.6.5](https://github.com/rhysd/actionlint/releases/tag/v1.6.5) - 08 Oct 2021
 
 - Support [reusable workflows](https://docs.github.com/en/actions/learn-github-actions/reusing-workflows) syntax which is now in beta. Only very basic syntax checks are supported at this time. Please see [the document](https://github.com/rhysd/actionlint/blob/main/docs/checks.md#check-reusable-workflows) to know checks for reusable workflow syntax.
-  - `workflow_call` event
+  - Example of `workflow_call` event
     ```yaml
     on:
       workflow_call:
         inputs:
           name:
-            required: true
+            description: your name
             type: string
         secrets:
           token:
@@ -17,8 +70,9 @@
     jobs:
       ...
     ```
-  - Reusable workflow call with `uses:` at `job.<job_id>`
+  - Example of reusable workflow call with `uses:` at `job.<job_id>`
     ```yaml
+    on: ...
     jobs:
       hello:
         uses: owner/repo/path/to/workflow.yml@main
@@ -29,7 +83,7 @@
     ```
 - Support `github.run_attempt` property in `${{ }}` expression (#57).
 - Add support for `windows-2022` runner which is now in [public beta](https://github.com/actions/virtual-environments/issues/3949).
-- Remove support for `ubuntu-16.04` runner which was [removed at the end of September](https://github.com/actions/virtual-environments/issues/3287).
+- Remove support for `ubuntu-16.04` runner which was [removed from GitHub Actions at the end of September](https://github.com/actions/virtual-environments/issues/3287).
 - Ignore [SC2154](https://github.com/koalaman/shellcheck/wiki/SC2154) shellcheck rule which can cause false positive (#53).
 - Fix error position was not correct when required keys are not existing in job configuration.
 - Update popular actions data set. New major versions of github-script and lock-threads actions are supported (#59).
@@ -444,6 +498,7 @@ See documentation for more details:
 [Changes][v1.0.0]
 
 
+[v1.6.6]: https://github.com/rhysd/actionlint/compare/v1.6.5...v1.6.6
 [v1.6.5]: https://github.com/rhysd/actionlint/compare/v1.6.4...v1.6.5
 [v1.6.4]: https://github.com/rhysd/actionlint/compare/v1.6.3...v1.6.4
 [v1.6.3]: https://github.com/rhysd/actionlint/compare/v1.6.2...v1.6.3
