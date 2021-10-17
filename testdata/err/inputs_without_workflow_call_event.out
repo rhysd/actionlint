@@ -1,0 +1,1 @@
+test.yaml:7:23: property "some_input" is not defined in object type {} [expression]

@@ -53,4 +53,4 @@ jobs:
   test:
     runs-on: ubuntu-20.04
     steps:
-      - run: echo
+      - run: echo ${{ inputs.unknown_input }}

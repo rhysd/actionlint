@@ -265,7 +265,7 @@ var BuiltinGlobalVariableTypes = map[string]ExprType{
 	// https://docs.github.com/en/actions/learn-github-actions/contexts#needs-context
 	"needs": NewEmptyStrictObjectType(), // This value will be updated contextually
 	// https://docs.github.com/en/actions/learn-github-actions/reusing-workflows
-	"inputs": NewEmptyObjectType(),
+	"inputs": NewEmptyStrictObjectType(),
 }
 
 // Semantics checker
@@ -353,6 +353,12 @@ func (sema *ExprSemanticsChecker) UpdateNeeds(ty *ObjectType) {
 func (sema *ExprSemanticsChecker) UpdateSecrets(ty *ObjectType) {
 	sema.ensureVarsCopied()
 	sema.vars["secrets"] = ty
+}
+
+// UpdateInputs updates 'inputs' context object to given object type.
+func (sema *ExprSemanticsChecker) UpdateInputs(ty *ObjectType) {
+	sema.ensureVarsCopied()
+	sema.vars["inputs"] = ty
 }
 
 func (sema *ExprSemanticsChecker) visitUntrustedCheckerOnLeaveNode(n ExprNode) {

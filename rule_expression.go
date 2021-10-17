@@ -22,6 +22,7 @@ type RuleExpression struct {
 	stepsTy      *ObjectType
 	needsTy      *ObjectType
 	secretsTy    *ObjectType
+	inputsTy     *ObjectType
 	workflow     *Workflow
 	localActions *LocalActionsCache
 }
@@ -34,6 +35,7 @@ func NewRuleExpression(cache *LocalActionsCache) *RuleExpression {
 		stepsTy:      nil,
 		needsTy:      nil,
 		secretsTy:    nil,
+		inputsTy:     nil,
 		workflow:     nil,
 		localActions: cache,
 	}
@@ -65,16 +67,32 @@ func (rule *RuleExpression) VisitWorkflowPre(n *Workflow) error {
 		case *RepositoryDispatchEvent:
 			rule.checkStrings(e.Types)
 		case *WorkflowCallEvent:
-			for _, i := range e.Inputs {
+			ity := NewEmptyStrictObjectType()
+			for n, i := range e.Inputs {
+				var ty ExprType
+				switch i.Type {
+				case WorkflowCallEventInputTypeBoolean:
+					ty = BoolType{}
+				case WorkflowCallEventInputTypeString:
+					ty = StringType{}
+				case WorkflowCallEventInputTypeNumber:
+					ty = NumberType{}
+				default:
+					ty = AnyType{}
+				}
+				ity.Props[n.Value] = ty
+
 				rule.checkString(i.Description)
 				rule.checkString(i.Default)
 			}
-			obj := NewEmptyStrictObjectType()
+			rule.inputsTy = ity
+
+			sty := NewEmptyStrictObjectType()
 			for n, s := range e.Secrets {
-				obj.Props[n.Value] = StringType{}
+				sty.Props[n.Value] = StringType{}
 				rule.checkString(s.Description)
 			}
-			rule.secretsTy = obj
+			rule.secretsTy = sty
 		}
 	}
 
@@ -586,6 +604,9 @@ func (rule *RuleExpression) checkSemanticsOfExprNode(expr ExprNode, line, col in
 	}
 	if rule.secretsTy != nil {
 		c.UpdateSecrets(rule.secretsTy)
+	}
+	if rule.inputsTy != nil {
+		c.UpdateInputs(rule.inputsTy)
 	}
 
 	ty, errs := c.Check(expr)
