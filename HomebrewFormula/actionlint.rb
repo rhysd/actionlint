@@ -7,7 +7,6 @@ class Actionlint < Formula
   homepage "https://github.com/rhysd/actionlint#readme"
   version "1.6.6"
   license "MIT"
-  bottle :unneeded
 
   on_macos do
     if Hardware::CPU.arm?
