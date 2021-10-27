@@ -190,6 +190,19 @@ var PopularActions = map[string]*ActionMetadata{
 			"working-directory":      false,
 		},
 	},
+	"Swatinem/rust-cache@v1": {
+		Name: "Rust Cache",
+		Inputs: map[string]ActionMetadataInputRequired{
+			"cache-on-failure":  false,
+			"key":               false,
+			"sharedKey":         false,
+			"target-dir":        false,
+			"working-directory": false,
+		},
+		Outputs: map[string]struct{}{
+			"cache-hit": {},
+		},
+	},
 	"actions-cool/issues-helper@v1": {
 		Name: "Issues Helper",
 		Inputs: map[string]ActionMetadataInputRequired{

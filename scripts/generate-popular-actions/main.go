@@ -57,6 +57,7 @@ var popularActions = []*action{
 	{"EnricoMi/publish-unit-test-result-action", []string{"v1"}, "v2", yamlExtYML},
 	{"JamesIves/github-pages-deploy-action", []string{"releases/v3", "releases/v4"}, "release/v5", yamlExtYML},
 	{"ReactiveCircus/android-emulator-runner", []string{"v1", "v2"}, "v3", yamlExtYML},
+	{"Swatinem/rust-cache", []string{"v1"}, "v2", yamlExtYML},
 	{"actions-cool/issues-helper", []string{"v1", "v2"}, "v3", yamlExtYML},
 	{"actions-rs/audit-check", []string{"v1"}, "v2", yamlExtYML},
 	{"actions-rs/cargo", []string{"v1"}, "v2", yamlExtYML},
