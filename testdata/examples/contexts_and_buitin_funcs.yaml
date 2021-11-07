@@ -18,3 +18,6 @@ jobs:
       - run: echo "${{ contains(github.event.labels.*.name, 'enhancement') }}"
       # format() has special check for formating string
       - run: echo "${{ format('{0}{1}', 1, 2, 3) }}"
+      # Runner metadata
+      - run: echo '${{ runner.os }}'
+      - run: echo '${{ runner.name }}'
