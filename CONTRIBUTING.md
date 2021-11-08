@@ -73,11 +73,12 @@ When releasing v1.2.3 as example:
 1. Ensure all changes were already pushed to remote by checking `git push origin master` outputs `Everything up-to-date`
 2. `git tag v1.2.3 && git push origin v1.2.3`
 3. Wait until [the CI release job](.github/workflows/release.yaml) completes successfully:
-    - GoReleaser builds release binaries and make pre-release at GitHub and updates [Homebrew formula](./HomebrewFormula/actionlint.rb)
-    - The CI job also updates version string in `./scripts/download-actionlint.bash`
+   - GoReleaser builds release binaries and make pre-release at GitHub and updates [Homebrew formula](./HomebrewFormula/actionlint.rb)
+   - The CI job also updates version string in `./scripts/download-actionlint.bash`
 4. Open the pre-release at [release page](https://github.com/rhysd/actionlint/releases) with browser
 5. Write up release notes, uncheck pre-release checkbox and publish the new release
 6. Run `git pull && changelog-from-release > CHANGELOG.md` locally to update [CHANGELOG.md](./CHANGELOG.md)
+7. Update the playground by `./playground/deploy.bash` if it is not updated yet for the release
 
 ## How to generate manual
 

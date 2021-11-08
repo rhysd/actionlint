@@ -1,3 +1,15 @@
+<a name="v1.6.7"></a>
+# [v1.6.7](https://github.com/rhysd/actionlint/releases/tag/v1.6.7) - 08 Nov 2021
+
+- Fix missing property `name` in `runner` context object (thanks @ioanrogers, #67).
+- Fix a false positive on type checking at `x.*` object filtering syntax. A receiver of object filtering can be objects, but actionlint previously only allow arrays. (#66).
+- Add [rust-cache](https://github.com/Swatinem/rust-cache) as new popular action.
+- Remove `bottle: unneeded` from Homebrew formula (thanks @oppara, #63).
+- Update popular actions data set to the latest (#64, #70).
+
+[Changes][v1.6.7]
+
+
 <a name="v1.6.6"></a>
 # [v1.6.6](https://github.com/rhysd/actionlint/releases/tag/v1.6.6) - 17 Oct 2021
 
@@ -32,7 +44,7 @@
             # ERROR: credentials is typo of credential
             TOKEN: ${{ secrets.credentials }}
   ```
-- `id-token` is added to permissions (thanks @cmmarslender, #62)
+- `id-token` is added to permissions (thanks @cmmarslender, #62).
 - Report an error on nested workflow calls since it is [not allowed](https://docs.github.com/en/actions/learn-github-actions/reusing-workflows#limitations).
   ```yaml
   on:
@@ -498,6 +510,7 @@ See documentation for more details:
 [Changes][v1.0.0]
 
 
+[v1.6.7]: https://github.com/rhysd/actionlint/compare/v1.6.6...v1.6.7
 [v1.6.6]: https://github.com/rhysd/actionlint/compare/v1.6.5...v1.6.6
 [v1.6.5]: https://github.com/rhysd/actionlint/compare/v1.6.4...v1.6.5
 [v1.6.4]: https://github.com/rhysd/actionlint/compare/v1.6.3...v1.6.4
