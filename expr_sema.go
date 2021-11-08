@@ -439,6 +439,10 @@ func (sema *ExprSemanticsChecker) checkArrayDeref(n *ArrayDerefNode) ExprType {
 	case *ArrayType:
 		ty.Deref = true
 		return ty
+	case *ObjectType:
+		// Object filtering is available for objects, not only arrays (#66)
+		// TODO: Deduce more strict array type from `ty`
+		return &ArrayType{AnyType{}, true}
 	default:
 		sema.errorf(n, "receiver of array element dereference must be type of array but got %q", ty.String())
 		return AnyType{}

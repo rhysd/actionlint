@@ -146,6 +146,11 @@ func TestExprSemanticsCheckOK(t *testing.T) {
 			expected: &ArrayType{AnyType{}, true},
 		},
 		{
+			what:     "array element dereference with object type",
+			input:    "github.*.name",
+			expected: &ArrayType{AnyType{}, true},
+		},
+		{
 			what:     "function call",
 			input:    "contains('hello', 'll')",
 			expected: BoolType{},

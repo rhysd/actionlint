@@ -319,7 +319,7 @@ func (ty *ObjectType) Merge(other ExprType) ExprType {
 type ArrayType struct {
 	// Elem is type of element of the array.
 	Elem ExprType
-	// Deref is true when this type was derived from array filter syntax (foo.*).
+	// Deref is true when this type was derived from object filtering syntax (foo.*).
 	Deref bool
 }
 
