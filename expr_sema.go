@@ -420,7 +420,7 @@ func (sema *ExprSemanticsChecker) checkObjectDeref(n *ObjectDerefNode) ExprType 
 		default:
 			sema.errorf(
 				n,
-				"object property filter %q of array element dereference must be type of object but got %q",
+				"property filtered by %q at object filtering must be type of object but got %q",
 				n.Property,
 				ty.Elem.String(),
 			)
@@ -441,10 +441,36 @@ func (sema *ExprSemanticsChecker) checkArrayDeref(n *ArrayDerefNode) ExprType {
 		return ty
 	case *ObjectType:
 		// Object filtering is available for objects, not only arrays (#66)
-		// TODO: Deduce more strict array type from `ty`
+
+		if ty.Mapped != nil {
+			// For map object or loose object at reciever of .*
+			switch mty := ty.Mapped.(type) {
+			case AnyType:
+				return &ArrayType{AnyType{}, true}
+			case *ObjectType:
+				return &ArrayType{mty, true}
+			default:
+				sema.errorf(n, "elements of object at receiver of object filtering `.*` must be type of object but got %q. the type of receiver was %q", mty.String(), ty.String())
+				return AnyType{}
+			}
+		}
+
+		// For strict object at receiver of .*
+		found := false
+		for _, t := range ty.Props {
+			if _, ok := t.(*ObjectType); ok {
+				found = true
+				break
+			}
+		}
+		if !found {
+			sema.errorf(n, "object type %q cannot be filtered by object filtering `.*` since it has no object element", ty.String())
+			return AnyType{}
+		}
+
 		return &ArrayType{AnyType{}, true}
 	default:
-		sema.errorf(n, "receiver of array element dereference must be type of array but got %q", ty.String())
+		sema.errorf(n, "receiver of object filtering `.*` must be type of array or object but got %q", ty.String())
 		return AnyType{}
 	}
 }

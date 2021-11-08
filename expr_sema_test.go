@@ -505,7 +505,7 @@ func TestExprSemanticsCheckOK(t *testing.T) {
 			expected: StringType{},
 		},
 		{
-			what:     "map object dreference on array object filter",
+			what:     "map object dreference on array filter",
 			input:    "test().*.foo",
 			expected: &ArrayType{NumberType{}, true},
 			funcs: map[string][]*FuncSignature{
@@ -518,6 +518,31 @@ func TestExprSemanticsCheckOK(t *testing.T) {
 					},
 				},
 			},
+		},
+		{
+			what:     "map object dreference on object filter",
+			input:    "test().*.foo",
+			expected: &ArrayType{NumberType{}, true},
+			funcs: map[string][]*FuncSignature{
+				"test": {
+					{
+						Name: "test",
+						Ret: NewMapObjectType(
+							NewMapObjectType(NumberType{}),
+						),
+					},
+				},
+			},
+		},
+		{
+			what:     "loose object at object filter",
+			input:    "github.event.*.foo",
+			expected: &ArrayType{AnyType{}, true},
+		},
+		{
+			what:     "strict object which has at least one object element at object filter",
+			input:    "github.*.foo",
+			expected: &ArrayType{AnyType{}, true},
 		},
 		{
 			what:     "map object index access with string literal",
@@ -678,7 +703,7 @@ func TestExprSemanticsCheckError(t *testing.T) {
 			what:  "array element is not object for filtering array dereference",
 			input: "test().*.bar",
 			expected: []string{
-				"object property filter \"bar\" of array element dereference must be type of object but got \"string\"",
+				"property filtered by \"bar\" at object filtering must be type of object but got \"string\"",
 			},
 			funcs: map[string][]*FuncSignature{
 				"test": {
@@ -695,7 +720,21 @@ func TestExprSemanticsCheckError(t *testing.T) {
 			what:  "receiver of array dereference is not an array",
 			input: "true.*",
 			expected: []string{
-				"receiver of array element dereference must be type of array but got \"bool\"",
+				"receiver of object filtering `.*` must be type of array or object but got \"bool\"",
+			},
+		},
+		{
+			what:  "receiver of object filter is not an object which has object element",
+			input: "env.*",
+			expected: []string{
+				"elements of object at receiver of object filtering `.*` must be type of object but got \"string\". the type of receiver was \"{string => string}\"",
+			},
+		},
+		{
+			what:  "receiver of object filter is an object which has no object element",
+			input: "runner.*",
+			expected: []string{
+				"cannot be filtered by object filtering `.*` since it has no object element",
 			},
 		},
 		{
