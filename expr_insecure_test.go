@@ -32,14 +32,14 @@ var testAllUntrustedInputs = []string{
 
 func TestExprInsecureBuiltinUntrustedInputs(t *testing.T) {
 	for _, input := range testAllUntrustedInputs {
-		cur := BuiltinUntrustedInputs
+		cur := BuiltinUntrustedInputs2
 		for _, name := range strings.Split(input, ".") {
 			if m, ok := cur[name]; ok {
-				cur = m
+				cur = m.Children
 				continue
 			}
 			if m, ok := cur["*"]; ok {
-				cur = m
+				cur = m.Children
 				continue
 			}
 			t.Fatalf("%s in %s does not match to builtin untrusted inputs map: %v", name, input, cur)
@@ -50,8 +50,8 @@ func TestExprInsecureBuiltinUntrustedInputs(t *testing.T) {
 	}
 
 	re := regexp.MustCompile(`^[a-z_]+$`)
-	var rec func(m UntrustedInputMap, path []string)
-	rec = func(m UntrustedInputMap, path []string) {
+	var rec func(m map[string]*UntrustedInputMap2, path []string)
+	rec = func(m map[string]*UntrustedInputMap2, path []string) {
 		for k, v := range m {
 			p := append(path, k)
 			if k == "*" {
@@ -61,28 +61,24 @@ func TestExprInsecureBuiltinUntrustedInputs(t *testing.T) {
 			} else if !re.MatchString(k) {
 				t.Errorf("%v does not match to ^[a-z_]+$ in %v", k, p)
 			}
-			if v != nil {
-				if len(v) == 0 {
-					t.Errorf("%v must not be empty. use nil for end of branch", p)
-				}
-				rec(v, p)
-			}
+			rec(v.Children, p)
 		}
 	}
 
-	rec(BuiltinUntrustedInputs, []string{})
+	rec(BuiltinUntrustedInputs2, []string{})
 }
 
-func testRunTrustedInputsCheckerForNode(t *testing.T, c *UntrustedInputChecker, input string) {
+func testRunTrustedInputsCheckerForNode(t *testing.T, c *UntrustedInputChecker2, input string) {
 	n, err := NewExprParser().Parse(NewExprLexer(input + "}}"))
 	if err != nil {
 		t.Fatal(err)
 	}
 	VisitExprNode(n, func(n, p ExprNode, entering bool) {
 		if !entering {
-			c.OnNodeLeave(n)
+			c.OnVisitNodeLeave(n)
 		}
 	})
+	c.OnVisitEnd()
 }
 
 func TestExprInsecureDetectUntrustedValue(t *testing.T) {
@@ -141,18 +137,6 @@ func TestExprInsecureDetectUntrustedValue(t *testing.T) {
 			},
 		},
 		testCase{
-			"github.event.issue.body.foo.bar",
-			[]string{
-				"github.event.issue.body",
-			},
-		},
-		testCase{
-			"github.event.issue.body[0]",
-			[]string{
-				"github.event.issue.body",
-			},
-		},
-		testCase{
 			"matrix.foo[github.event.issue.title].bar[github.event.issue.body]",
 			[]string{
 				"github.event.issue.body",
@@ -178,7 +162,6 @@ func TestExprInsecureDetectUntrustedValue(t *testing.T) {
 			[]string{
 				"github.head_ref",
 				"github.event.issue.title",
-				"github.event.issue.body",
 			},
 		},
 		testCase{
@@ -209,7 +192,7 @@ func TestExprInsecureDetectUntrustedValue(t *testing.T) {
 			},
 		},
 		testCase{
-			"contains(github.event.pages.*.page_name.*.foo, github.event.issue.title)",
+			"contains(github.event.pages.*.page_name, github.event.issue.title)",
 			[]string{
 				"github.event.pages.*.page_name",
 				"github.event.issue.title",
@@ -219,11 +202,11 @@ func TestExprInsecureDetectUntrustedValue(t *testing.T) {
 
 	for _, tc := range tests {
 		t.Run(tc.input, func(t *testing.T) {
-			c := NewUntrustedInputChecker(BuiltinUntrustedInputs)
+			c := NewUntrustedInputChecker2(BuiltinUntrustedInputs2)
 			testRunTrustedInputsCheckerForNode(t, c, tc.input)
 			errs := c.Errs()
 			if len(tc.want) != len(errs) {
-				t.Fatalf("wanted %d error(s) but got %v", len(tc.want), errs)
+				t.Fatalf("wanted %d error(s) but got %d error(s): %v", len(tc.want), len(errs), errs)
 			}
 			for i, err := range errs {
 				want := tc.want[i]
@@ -249,7 +232,7 @@ func TestExprInsecureAllUntrustedValuesAtOnce(t *testing.T) {
 	// Generate function call with all untrusted inputs as its arguments
 	expr := "someFunc(" + strings.Join(args, ", ") + ")"
 
-	c := NewUntrustedInputChecker(BuiltinUntrustedInputs)
+	c := NewUntrustedInputChecker2(BuiltinUntrustedInputs2)
 	testRunTrustedInputsCheckerForNode(t, c, expr)
 	errs := c.Errs()
 
@@ -274,7 +257,7 @@ func TestExprInsecureAllUntrustedValuesAtOnce(t *testing.T) {
 }
 
 func TestExprInsecureInitState(t *testing.T) {
-	c := NewUntrustedInputChecker(BuiltinUntrustedInputs)
+	c := NewUntrustedInputChecker2(BuiltinUntrustedInputs2)
 	testRunTrustedInputsCheckerForNode(t, c, "github.event.issue.title")
 	if len(c.Errs()) == 0 {
 		t.Fatal("no error occurred")
@@ -312,16 +295,21 @@ func TestExprInsecureNoUntrustedValue(t *testing.T) {
 		"github.event.issue[0].title",
 		"foo(github.event, pull_request.body)",
 		"foo(github.event, github.pull_request.body)",
+		"foo(github.event, bar().pull_request.body)",
 		"github.event[pull_request.body]",
 		"github[event.pull_request].body",
 		"github[github.event.pull_request].body",
-		"github.event.*.body",
 		"matrix.foo[github.event.pages].page_name",
+		"github.event.issue.body.foo.bar",
+		"github.event.issue.body[0]",
+		// Object filter
+		"github.event.*.foo",
+		"github.*.foo",
 	}
 
 	for _, input := range inputs {
 		t.Run(input, func(t *testing.T) {
-			c := NewUntrustedInputChecker(BuiltinUntrustedInputs)
+			c := NewUntrustedInputChecker2(BuiltinUntrustedInputs2)
 			testRunTrustedInputsCheckerForNode(t, c, input)
 			if errs := c.Errs(); len(errs) > 0 {
 				t.Fatalf("%d error(s) occurred: %v", len(errs), errs)
@@ -332,44 +320,67 @@ func TestExprInsecureNoUntrustedValue(t *testing.T) {
 
 func TestExprInsecureCustomizedUntrustedInputMapping(t *testing.T) {
 	testCases := []struct {
-		mapping UntrustedInputMap
+		mapping *UntrustedInputMap2
 		input   string
 		want    string
 	}{
 		{
-			mapping: UntrustedInputMap{
-				"github": nil,
-			},
-			input: "github.event.issue.title",
-			want:  `"github"`,
+			mapping: NewUntrustedInputMap2("foo"),
+			input:   "foo",
+			want:    `"foo"`,
 		},
 		{
-			mapping: UntrustedInputMap{
-				"github": {
-					"foo": {
-						"*": nil,
-					},
-				},
-			},
+			mapping: NewUntrustedInputMap2("foo",
+				NewUntrustedInputMap2("bar",
+					NewUntrustedInputMap2("piyo"),
+				),
+			),
+			input: "foo.bar.piyo",
+			want:  `"foo.bar.piyo"`,
+		},
+		{
+			mapping: NewUntrustedInputMap2("github",
+				NewUntrustedInputMap2("foo",
+					NewUntrustedInputMap2("*"),
+				),
+			),
 			input: "github.foo[0]",
 			want:  `"github.foo.*"`,
 		},
 		{
-			mapping: UntrustedInputMap{
-				"github": {
-					"foo": {
-						"*": nil,
-					},
-				},
-			},
+			mapping: NewUntrustedInputMap2("github",
+				NewUntrustedInputMap2("foo",
+					NewUntrustedInputMap2("*"),
+				),
+			),
 			input: "github.foo.*",
 			want:  `"github.foo.*"`,
+		},
+		{
+			mapping: NewUntrustedInputMap2("foo",
+				NewUntrustedInputMap2("bar",
+					NewUntrustedInputMap2("piyo"),
+				),
+			),
+			input: "foo.*.piyo",
+			want:  `"foo.bar.piyo"`,
+		},
+		{
+			mapping: NewUntrustedInputMap2("foo",
+				NewUntrustedInputMap2("bar",
+					NewUntrustedInputMap2("piyo"),
+				),
+			),
+			input: "foo.*.piyo[0]",
+			want:  `"foo.bar.piyo"`,
 		},
 	}
 
 	for _, tc := range testCases {
 		t.Run(tc.input, func(t *testing.T) {
-			c := NewUntrustedInputChecker(tc.mapping)
+			roots := UntrustedInputSearchRoots{}
+			roots.AddRoot(tc.mapping)
+			c := NewUntrustedInputChecker2(roots)
 			testRunTrustedInputsCheckerForNode(t, c, tc.input)
 			errs := c.Errs()
 			if len(errs) != 1 {
@@ -378,6 +389,62 @@ func TestExprInsecureCustomizedUntrustedInputMapping(t *testing.T) {
 			err := errs[0]
 			if !strings.Contains(err.Error(), tc.want) {
 				t.Fatalf("%q was wanted to be contained in error message %q", tc.want, err.Error())
+			}
+		})
+	}
+}
+
+func TestExprInsecureDetectUntrustedObjectFiltering(t *testing.T) {
+	inputs := []string{
+		"github.event.*.body",
+		"github.event.*.body[0]",
+		"github.event.*.*", // github.event.commits.*.message
+		"github.*",
+		"github.*[0]",
+		"github.*.*.body",            // github.event.issue.body
+		"github.*.commits.*.message", // github.event.commits.*.message: Second .* is for array
+	}
+
+	for _, input := range inputs {
+		t.Run(input, func(t *testing.T) {
+			c := NewUntrustedInputChecker2(BuiltinUntrustedInputs2)
+			testRunTrustedInputsCheckerForNode(t, c, input)
+			errs := c.Errs()
+			if len(errs) != 1 {
+				t.Fatalf("wanted 1 error but got %d error(s): %v", len(errs), errs)
+			}
+			msg := errs[0].Error()
+
+			pat := strings.ReplaceAll(input, ".", `\.`)
+			pat = strings.ReplaceAll(pat, "*", `([0-9a-z_]+|\*)`)
+			pat = strings.TrimSuffix(pat, "[0]") // Array index at the end means choosing one from object filtering results
+
+			re := regexp.MustCompile(pat)
+			if !re.MatchString(msg) {
+				t.Fatalf("error message did not match to regex %q: %q. input was %q", pat, msg, input)
+			}
+		})
+	}
+}
+
+func TestExprInsecureNoUntrustedObjectFiltering(t *testing.T) {
+	inputs := []string{
+		"github.*.foo",
+		"github.event.*.body.foo",
+		"github.event.*.body.*", // `['aaa', 'bbb'].*` is `[]`
+		"github.*.*.foo",
+		"github.*.commits.*.foo",
+		"github.*.commits.*.message.foo",
+		"a.*",
+	}
+
+	for _, input := range inputs {
+		t.Run(input, func(t *testing.T) {
+			c := NewUntrustedInputChecker2(BuiltinUntrustedInputs2)
+			testRunTrustedInputsCheckerForNode(t, c, input)
+			errs := c.Errs()
+			if len(errs) != 0 {
+				t.Fatalf("unexpected %d error(s): %v", len(errs), errs)
 			}
 		})
 	}

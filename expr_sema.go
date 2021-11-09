@@ -282,7 +282,7 @@ type ExprSemanticsChecker struct {
 	vars       map[string]ExprType
 	errs       []*ExprError
 	varsCopied bool
-	untrusted  *UntrustedInputChecker
+	untrusted  *UntrustedInputChecker2
 }
 
 // NewExprSemanticsChecker creates new ExprSemanticsChecker instance. When checkUntrustedInput is
@@ -294,7 +294,7 @@ func NewExprSemanticsChecker(checkUntrustedInput bool) *ExprSemanticsChecker {
 		varsCopied: false,
 	}
 	if checkUntrustedInput {
-		c.untrusted = NewUntrustedInputChecker(BuiltinUntrustedInputs)
+		c.untrusted = NewUntrustedInputChecker2(BuiltinUntrustedInputs2)
 	}
 	return c
 }
@@ -364,7 +364,7 @@ func (sema *ExprSemanticsChecker) UpdateInputs(ty *ObjectType) {
 
 func (sema *ExprSemanticsChecker) visitUntrustedCheckerOnLeaveNode(n ExprNode) {
 	if sema.untrusted != nil {
-		sema.untrusted.OnNodeLeave(n)
+		sema.untrusted.OnVisitNodeLeave(n)
 	}
 }
 
@@ -711,6 +711,7 @@ func (sema *ExprSemanticsChecker) Check(expr ExprNode) (ExprType, []*ExprError) 
 	ty := sema.check(expr)
 	errs := sema.errs
 	if sema.untrusted != nil {
+		sema.untrusted.OnVisitEnd()
 		errs = append(errs, sema.untrusted.Errs()...)
 	}
 	return ty, errs
