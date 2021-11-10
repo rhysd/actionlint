@@ -32,7 +32,7 @@ var testAllUntrustedInputs = []string{
 
 func TestExprInsecureBuiltinUntrustedInputs(t *testing.T) {
 	for _, input := range testAllUntrustedInputs {
-		cur := BuiltinUntrustedInputs2
+		cur := BuiltinUntrustedInputs
 		for _, name := range strings.Split(input, ".") {
 			if m, ok := cur[name]; ok {
 				cur = m.Children
@@ -50,8 +50,8 @@ func TestExprInsecureBuiltinUntrustedInputs(t *testing.T) {
 	}
 
 	re := regexp.MustCompile(`^[a-z_]+$`)
-	var rec func(m map[string]*UntrustedInputMap2, path []string)
-	rec = func(m map[string]*UntrustedInputMap2, path []string) {
+	var rec func(m map[string]*UntrustedInputMap, path []string)
+	rec = func(m map[string]*UntrustedInputMap, path []string) {
 		for k, v := range m {
 			p := append(path, k)
 			if k == "*" {
@@ -65,10 +65,10 @@ func TestExprInsecureBuiltinUntrustedInputs(t *testing.T) {
 		}
 	}
 
-	rec(BuiltinUntrustedInputs2, []string{})
+	rec(BuiltinUntrustedInputs, []string{})
 }
 
-func testRunTrustedInputsCheckerForNode(t *testing.T, c *UntrustedInputChecker2, input string) {
+func testRunTrustedInputsCheckerForNode(t *testing.T, c *UntrustedInputChecker, input string) {
 	n, err := NewExprParser().Parse(NewExprLexer(input + "}}"))
 	if err != nil {
 		t.Fatal(err)
@@ -202,7 +202,7 @@ func TestExprInsecureDetectUntrustedValue(t *testing.T) {
 
 	for _, tc := range tests {
 		t.Run(tc.input, func(t *testing.T) {
-			c := NewUntrustedInputChecker2(BuiltinUntrustedInputs2)
+			c := NewUntrustedInputChecker(BuiltinUntrustedInputs)
 			testRunTrustedInputsCheckerForNode(t, c, tc.input)
 			errs := c.Errs()
 			if len(tc.want) != len(errs) {
@@ -232,7 +232,7 @@ func TestExprInsecureAllUntrustedValuesAtOnce(t *testing.T) {
 	// Generate function call with all untrusted inputs as its arguments
 	expr := "someFunc(" + strings.Join(args, ", ") + ")"
 
-	c := NewUntrustedInputChecker2(BuiltinUntrustedInputs2)
+	c := NewUntrustedInputChecker(BuiltinUntrustedInputs)
 	testRunTrustedInputsCheckerForNode(t, c, expr)
 	errs := c.Errs()
 
@@ -257,7 +257,7 @@ func TestExprInsecureAllUntrustedValuesAtOnce(t *testing.T) {
 }
 
 func TestExprInsecureInitState(t *testing.T) {
-	c := NewUntrustedInputChecker2(BuiltinUntrustedInputs2)
+	c := NewUntrustedInputChecker(BuiltinUntrustedInputs)
 	testRunTrustedInputsCheckerForNode(t, c, "github.event.issue.title")
 	if len(c.Errs()) == 0 {
 		t.Fatal("no error occurred")
@@ -309,7 +309,7 @@ func TestExprInsecureNoUntrustedValue(t *testing.T) {
 
 	for _, input := range inputs {
 		t.Run(input, func(t *testing.T) {
-			c := NewUntrustedInputChecker2(BuiltinUntrustedInputs2)
+			c := NewUntrustedInputChecker(BuiltinUntrustedInputs)
 			testRunTrustedInputsCheckerForNode(t, c, input)
 			if errs := c.Errs(); len(errs) > 0 {
 				t.Fatalf("%d error(s) occurred: %v", len(errs), errs)
@@ -320,55 +320,55 @@ func TestExprInsecureNoUntrustedValue(t *testing.T) {
 
 func TestExprInsecureCustomizedUntrustedInputMapping(t *testing.T) {
 	testCases := []struct {
-		mapping *UntrustedInputMap2
+		mapping *UntrustedInputMap
 		input   string
 		want    string
 	}{
 		{
-			mapping: NewUntrustedInputMap2("foo"),
+			mapping: NewUntrustedInputMap("foo"),
 			input:   "foo",
 			want:    `"foo"`,
 		},
 		{
-			mapping: NewUntrustedInputMap2("foo",
-				NewUntrustedInputMap2("bar",
-					NewUntrustedInputMap2("piyo"),
+			mapping: NewUntrustedInputMap("foo",
+				NewUntrustedInputMap("bar",
+					NewUntrustedInputMap("piyo"),
 				),
 			),
 			input: "foo.bar.piyo",
 			want:  `"foo.bar.piyo"`,
 		},
 		{
-			mapping: NewUntrustedInputMap2("github",
-				NewUntrustedInputMap2("foo",
-					NewUntrustedInputMap2("*"),
+			mapping: NewUntrustedInputMap("github",
+				NewUntrustedInputMap("foo",
+					NewUntrustedInputMap("*"),
 				),
 			),
 			input: "github.foo[0]",
 			want:  `"github.foo.*"`,
 		},
 		{
-			mapping: NewUntrustedInputMap2("github",
-				NewUntrustedInputMap2("foo",
-					NewUntrustedInputMap2("*"),
+			mapping: NewUntrustedInputMap("github",
+				NewUntrustedInputMap("foo",
+					NewUntrustedInputMap("*"),
 				),
 			),
 			input: "github.foo.*",
 			want:  `"github.foo.*"`,
 		},
 		{
-			mapping: NewUntrustedInputMap2("foo",
-				NewUntrustedInputMap2("bar",
-					NewUntrustedInputMap2("piyo"),
+			mapping: NewUntrustedInputMap("foo",
+				NewUntrustedInputMap("bar",
+					NewUntrustedInputMap("piyo"),
 				),
 			),
 			input: "foo.*.piyo",
 			want:  `"foo.bar.piyo"`,
 		},
 		{
-			mapping: NewUntrustedInputMap2("foo",
-				NewUntrustedInputMap2("bar",
-					NewUntrustedInputMap2("piyo"),
+			mapping: NewUntrustedInputMap("foo",
+				NewUntrustedInputMap("bar",
+					NewUntrustedInputMap("piyo"),
 				),
 			),
 			input: "foo.*.piyo[0]",
@@ -380,7 +380,7 @@ func TestExprInsecureCustomizedUntrustedInputMapping(t *testing.T) {
 		t.Run(tc.input, func(t *testing.T) {
 			roots := UntrustedInputSearchRoots{}
 			roots.AddRoot(tc.mapping)
-			c := NewUntrustedInputChecker2(roots)
+			c := NewUntrustedInputChecker(roots)
 			testRunTrustedInputsCheckerForNode(t, c, tc.input)
 			errs := c.Errs()
 			if len(errs) != 1 {
@@ -407,7 +407,7 @@ func TestExprInsecureDetectUntrustedObjectFiltering(t *testing.T) {
 
 	for _, input := range inputs {
 		t.Run(input, func(t *testing.T) {
-			c := NewUntrustedInputChecker2(BuiltinUntrustedInputs2)
+			c := NewUntrustedInputChecker(BuiltinUntrustedInputs)
 			testRunTrustedInputsCheckerForNode(t, c, input)
 			errs := c.Errs()
 			if len(errs) != 1 {
@@ -440,7 +440,7 @@ func TestExprInsecureNoUntrustedObjectFiltering(t *testing.T) {
 
 	for _, input := range inputs {
 		t.Run(input, func(t *testing.T) {
-			c := NewUntrustedInputChecker2(BuiltinUntrustedInputs2)
+			c := NewUntrustedInputChecker(BuiltinUntrustedInputs)
 			testRunTrustedInputsCheckerForNode(t, c, input)
 			errs := c.Errs()
 			if len(errs) != 0 {

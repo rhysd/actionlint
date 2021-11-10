@@ -282,7 +282,7 @@ type ExprSemanticsChecker struct {
 	vars       map[string]ExprType
 	errs       []*ExprError
 	varsCopied bool
-	untrusted  *UntrustedInputChecker2
+	untrusted  *UntrustedInputChecker
 }
 
 // NewExprSemanticsChecker creates new ExprSemanticsChecker instance. When checkUntrustedInput is
@@ -294,7 +294,7 @@ func NewExprSemanticsChecker(checkUntrustedInput bool) *ExprSemanticsChecker {
 		varsCopied: false,
 	}
 	if checkUntrustedInput {
-		c.untrusted = NewUntrustedInputChecker2(BuiltinUntrustedInputs2)
+		c.untrusted = NewUntrustedInputChecker(BuiltinUntrustedInputs)
 	}
 	return c
 }
