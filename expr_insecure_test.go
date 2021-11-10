@@ -302,9 +302,6 @@ func TestExprInsecureNoUntrustedValue(t *testing.T) {
 		"matrix.foo[github.event.pages].page_name",
 		"github.event.issue.body.foo.bar",
 		"github.event.issue.body[0]",
-		// Object filter
-		"github.event.*.foo",
-		"github.*.foo",
 	}
 
 	for _, input := range inputs {
@@ -425,6 +422,26 @@ func TestExprInsecureDetectUntrustedObjectFiltering(t *testing.T) {
 			}
 		})
 	}
+
+	c := NewUntrustedInputChecker(BuiltinUntrustedInputs)
+	for _, input := range inputs {
+		c.Init()
+		testRunTrustedInputsCheckerForNode(t, c, input)
+		errs := c.Errs()
+		if len(errs) != 1 {
+			t.Fatalf("%q: wanted 1 error but got %d error(s): %v", input, len(errs), errs)
+		}
+		msg := errs[0].Error()
+
+		pat := strings.ReplaceAll(input, ".", `\.`)
+		pat = strings.ReplaceAll(pat, "*", `([0-9a-z_]+|\*)`)
+		pat = strings.TrimSuffix(pat, "[0]") // Array index at the end means choosing one from object filtering results
+
+		re := regexp.MustCompile(pat)
+		if !re.MatchString(msg) {
+			t.Fatalf("error message did not match to regex %q: %q. input was %q", pat, msg, input)
+		}
+	}
 }
 
 func TestExprInsecureNoUntrustedObjectFiltering(t *testing.T) {
@@ -448,4 +465,135 @@ func TestExprInsecureNoUntrustedObjectFiltering(t *testing.T) {
 			}
 		})
 	}
+}
+
+func BenchmarkInsecureDetectUntrustedInputs(b *testing.B) {
+	parseNodes := func(exprs []string) []ExprNode {
+		ns := make([]ExprNode, 0, len(exprs))
+		p := NewExprParser()
+		for _, e := range exprs {
+			n, err := p.Parse(NewExprLexer(e + "}}"))
+			if err != nil {
+				b.Fatal(err)
+			}
+			ns = append(ns, n)
+		}
+		return ns
+	}
+
+	untrustedExprs := []string{
+		"github.event.issue.title",
+		"github.event.issue.body",
+		"github.event.pull_request.title",
+		"github.event.pull_request.body",
+		"github.event.comment.body",
+		"github.event.review.body",
+		"github.event.review_comment.body",
+		"github.event.pages.*.page_name",
+		"github.event.commits.*.message",
+		"github.event.head_commit.message",
+		"github.event.head_commit.author.email",
+		"github.event.head_commit.author.name",
+		"github.event.commits.*.author.email",
+		"github.event.commits.*.author.name",
+		"github.event.pull_request.head.ref",
+		"github.event.pull_request.head.label",
+		"github.event.pull_request.head.repo.default_branch",
+		"github.event.discussion.title",
+		"github.event.discussion.body",
+		"github.head_ref",
+		"github.event.issue.body || github.event.issue.title",
+		"matrix.foo[github.event.issue.title].bar[github.event.issue.body]",
+		"github.event.pages[github.event.issue.title].page_name",
+		"github.event.pages[foo[github.event.issue.title]].page_name",
+		"github.event.issue.body[github.event.issue.title][github.head_ref]",
+		"github.event.pages[format('0')].page_name",
+		"github.event.pages[matrix.page_num].page_name",
+		"github.event.pages[github.event.commits[github.event.issue.title].author.name].page_name",
+		"github.event.pages[format('{0}', github.event.issue.title)].page_name",
+		"contains(github.event.pages.*.page_name, github.event.issue.title)",
+		"github.event.*.body",
+		"github.event.*.body[0]",
+		"github.event.*.*",
+		"github.*",
+		"github.*[0]",
+		"github.*.*.body",
+		"github.*.commits.*.message",
+	}
+	untrustedNodes := parseNodes(untrustedExprs)
+
+	b.Run("UntrustedInput", func(b *testing.B) {
+		for i := 0; i < b.N; i++ {
+			for j, n := range untrustedNodes {
+				c := NewUntrustedInputChecker(BuiltinUntrustedInputs)
+				c.Init()
+				VisitExprNode(n, func(n, p ExprNode, entering bool) {
+					if !entering {
+						c.OnVisitNodeLeave(n)
+					}
+				})
+				c.OnVisitEnd()
+				errs := c.Errs()
+				if len(errs) == 0 {
+					b.Fatalf("no error detected: %q", untrustedExprs[j])
+				}
+			}
+		}
+	})
+
+	trustedExprs := []string{
+		"0",
+		"true",
+		"null",
+		"'github.event.issue.title'",
+		"matrix.foo",
+		"matrix.github.event.issue.title",
+		"matrix.event.issue.title",
+		"github",
+		"github.event.issue",
+		"github.event.commits.foo.message",
+		"github.event.commits[0]",
+		"github.event.commits.*",
+		"github.event.commits.*.foo",
+		"github.event.foo.body",
+		"github[x].issue.title",
+		"github.event[foo].title",
+		"github.event.issue[0].title",
+		"foo(github.event, pull_request.body)",
+		"foo(github.event, github.pull_request.body)",
+		"foo(github.event, bar().pull_request.body)",
+		"github.event[pull_request.body]",
+		"github[event.pull_request].body",
+		"github[github.event.pull_request].body",
+		"matrix.foo[github.event.pages].page_name",
+		"github.event.issue.body.foo.bar",
+		"github.event.issue.body[0]",
+		"github.*.foo",
+		"github.event.*.body.foo",
+		"github.event.*.body.*",
+		"github.*.*.foo",
+		"github.*.commits.*.foo",
+		"github.*.commits.*.message.foo",
+		"a.*",
+	}
+	trustedNodes := parseNodes(trustedExprs)
+
+	b.Run("NoUntrustedInput", func(b *testing.B) {
+		for i := 0; i < b.N; i++ {
+			c := NewUntrustedInputChecker(BuiltinUntrustedInputs)
+			for j, n := range trustedNodes {
+				c.Init()
+				VisitExprNode(n, func(n, p ExprNode, entering bool) {
+					if !entering {
+						c.OnVisitNodeLeave(n)
+					}
+				})
+				c.OnVisitEnd()
+				errs := c.Errs()
+				if len(errs) != 0 {
+					b.Fatalf("error detected: %q: %v", trustedExprs[j], errs)
+				}
+			}
+		}
+	})
 }

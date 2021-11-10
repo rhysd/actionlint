@@ -183,7 +183,12 @@ func (u *UntrustedInputChecker) onVar(v *VariableNode) {
 }
 
 func (u *UntrustedInputChecker) onPropAccess(name string) {
-	for cur := range u.cur {
+	prev := make([]*UntrustedInputMap, 0, len(u.cur))
+	for c := range u.cur {
+		prev = append(prev, c)
+	}
+
+	for _, cur := range prev {
 		delete(u.cur, cur)
 
 		c, ok := cur.findObjectProp(name)
@@ -200,7 +205,13 @@ func (u *UntrustedInputChecker) onIndexAccess() {
 		u.filteringObject = false
 		return // For example, match `github.event.*.body[0]` as `github.event.commits[0].body`
 	}
-	for cur := range u.cur {
+
+	prev := make([]*UntrustedInputMap, 0, len(u.cur))
+	for c := range u.cur {
+		prev = append(prev, c)
+	}
+
+	for _, cur := range prev {
 		delete(u.cur, cur)
 		if c, ok := cur.findArrayElem(); ok {
 			u.cur[c] = struct{}{}
@@ -214,12 +225,17 @@ func (u *UntrustedInputChecker) onObjectFilter() {
 	// Do not iterate elements which are added in the loop.
 	// Order of map element iterations is random, but an element newly created while loop iteration
 	// is always after iterating all elements existing before the loop (if it is not skipped).
-	count := len(u.cur)
+	// count := len(u.cur)
 
-	for cur := range u.cur {
-		if count == 0 {
-			return
-		}
+	prev := make([]*UntrustedInputMap, 0, len(u.cur))
+	for c := range u.cur {
+		prev = append(prev, c)
+	}
+
+	for _, cur := range prev {
+		// if count == 0 {
+		// 	return
+		// }
 		delete(u.cur, cur)
 
 		// Object filter for arrays
@@ -233,7 +249,7 @@ func (u *UntrustedInputChecker) onObjectFilter() {
 			u.cur[c] = struct{}{}
 		}
 
-		count--
+		// count--
 	}
 }
 
