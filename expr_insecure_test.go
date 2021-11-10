@@ -198,6 +198,13 @@ func TestExprInsecureDetectUntrustedValue(t *testing.T) {
 				"github.event.issue.title",
 			},
 		},
+		testCase{
+			"contains(github.event.*.body, github.event.*.*)",
+			[]string{
+				"github.event.",
+				"github.event.",
+			},
+		},
 	)
 
 	for _, tc := range tests {
@@ -395,11 +402,27 @@ func TestExprInsecureDetectUntrustedObjectFiltering(t *testing.T) {
 	inputs := []string{
 		"github.event.*.body",
 		"github.event.*.body[0]",
+		"github.event.*.*.email",
+		"github.event.*.*.email[0]",
+		"github['event'].*.body",
+		"github.event.*.*['email']",
+		"github.event.*.*['email'][0]",
+		"github.event.*.author.email",
+		"github.event.*['author']['email']",
 		"github.event.*.*", // github.event.commits.*.message
 		"github.*",
 		"github.*[0]",
 		"github.*.*.body",            // github.event.issue.body
 		"github.*.commits.*.message", // github.event.commits.*.message: Second .* is for array
+	}
+
+	makePat := func(pat string) string {
+		pat = strings.ReplaceAll(pat, "['", ".")
+		pat = strings.ReplaceAll(pat, "']", "")
+		pat = strings.ReplaceAll(pat, ".", `\.`)
+		pat = strings.ReplaceAll(pat, "*", `([0-9a-z_]+|\*)`)
+		pat = strings.TrimSuffix(pat, "[0]") // Array index at the end means choosing one from object filtering results
+		return pat
 	}
 
 	for _, input := range inputs {
@@ -411,11 +434,7 @@ func TestExprInsecureDetectUntrustedObjectFiltering(t *testing.T) {
 				t.Fatalf("wanted 1 error but got %d error(s): %v", len(errs), errs)
 			}
 			msg := errs[0].Error()
-
-			pat := strings.ReplaceAll(input, ".", `\.`)
-			pat = strings.ReplaceAll(pat, "*", `([0-9a-z_]+|\*)`)
-			pat = strings.TrimSuffix(pat, "[0]") // Array index at the end means choosing one from object filtering results
-
+			pat := makePat(input)
 			re := regexp.MustCompile(pat)
 			if !re.MatchString(msg) {
 				t.Fatalf("error message did not match to regex %q: %q. input was %q", pat, msg, input)
@@ -423,6 +442,7 @@ func TestExprInsecureDetectUntrustedObjectFiltering(t *testing.T) {
 		})
 	}
 
+	// Check all inputs with one checker
 	c := NewUntrustedInputChecker(BuiltinUntrustedInputs)
 	for _, input := range inputs {
 		c.Init()
@@ -433,10 +453,7 @@ func TestExprInsecureDetectUntrustedObjectFiltering(t *testing.T) {
 		}
 		msg := errs[0].Error()
 
-		pat := strings.ReplaceAll(input, ".", `\.`)
-		pat = strings.ReplaceAll(pat, "*", `([0-9a-z_]+|\*)`)
-		pat = strings.TrimSuffix(pat, "[0]") // Array index at the end means choosing one from object filtering results
-
+		pat := makePat(input)
 		re := regexp.MustCompile(pat)
 		if !re.MatchString(msg) {
 			t.Fatalf("error message did not match to regex %q: %q. input was %q", pat, msg, input)
@@ -447,10 +464,12 @@ func TestExprInsecureDetectUntrustedObjectFiltering(t *testing.T) {
 func TestExprInsecureNoUntrustedObjectFiltering(t *testing.T) {
 	inputs := []string{
 		"github.*.foo",
+		"github.*['foo']",
 		"github.event.*.body.foo",
 		"github.event.*.body.*", // `['aaa', 'bbb'].*` is `[]`
 		"github.*.*.foo",
 		"github.*.commits.*.foo",
+		"github.*['commits'].*.foo",
 		"github.*.commits.*.message.foo",
 		"a.*",
 	}
@@ -514,6 +533,13 @@ func BenchmarkInsecureDetectUntrustedInputs(b *testing.B) {
 		"contains(github.event.pages.*.page_name, github.event.issue.title)",
 		"github.event.*.body",
 		"github.event.*.body[0]",
+		"github.event.*.*.email",
+		"github.event.*.*.email[0]",
+		"github['event'].*.body",
+		"github.event.*.*['email']",
+		"github.event.*.*['email'][0]",
+		"github.event.*.author.email",
+		"github.event.*['author']['email']",
 		"github.event.*.*",
 		"github.*",
 		"github.*[0]",
@@ -569,10 +595,12 @@ func BenchmarkInsecureDetectUntrustedInputs(b *testing.B) {
 		"github.event.issue.body.foo.bar",
 		"github.event.issue.body[0]",
 		"github.*.foo",
+		"github.*['foo']",
 		"github.event.*.body.foo",
 		"github.event.*.body.*",
 		"github.*.*.foo",
 		"github.*.commits.*.foo",
+		"github.*['commits'].*.foo",
 		"github.*.commits.*.message.foo",
 		"a.*",
 	}
