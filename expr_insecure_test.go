@@ -524,8 +524,8 @@ func BenchmarkInsecureDetectUntrustedInputs(b *testing.B) {
 
 	b.Run("UntrustedInput", func(b *testing.B) {
 		for i := 0; i < b.N; i++ {
+			c := NewUntrustedInputChecker(BuiltinUntrustedInputs)
 			for j, n := range untrustedNodes {
-				c := NewUntrustedInputChecker(BuiltinUntrustedInputs)
 				c.Init()
 				VisitExprNode(n, func(n, p ExprNode, entering bool) {
 					if !entering {

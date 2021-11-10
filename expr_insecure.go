@@ -147,7 +147,7 @@ var BuiltinUntrustedInputs = UntrustedInputSearchRoots{
 type UntrustedInputChecker struct {
 	roots           UntrustedInputSearchRoots
 	filteringObject bool
-	cur             map[*UntrustedInputMap]struct{}
+	cur             []*UntrustedInputMap
 	start           ExprNode
 	errs            []*ExprError
 }
@@ -158,7 +158,7 @@ func NewUntrustedInputChecker(roots UntrustedInputSearchRoots) *UntrustedInputCh
 	return &UntrustedInputChecker{
 		roots:           roots,
 		filteringObject: false,
-		cur:             make(map[*UntrustedInputMap]struct{}),
+		cur:             nil,
 		start:           nil,
 		errs:            []*ExprError{},
 	}
@@ -168,9 +168,21 @@ func NewUntrustedInputChecker(roots UntrustedInputSearchRoots) *UntrustedInputCh
 func (u *UntrustedInputChecker) reset() {
 	u.start = nil
 	u.filteringObject = false
-	for k := range u.cur {
-		delete(u.cur, k)
+	u.cur = u.cur[:0]
+}
+
+func (u *UntrustedInputChecker) compact() {
+	delta := 0
+	for i, c := range u.cur {
+		if c == nil {
+			delta++
+			continue
+		}
+		if delta > 0 {
+			u.cur[i-delta] = c
+		}
 	}
+	u.cur = u.cur[:len(u.cur)-delta]
 }
 
 func (u *UntrustedInputChecker) onVar(v *VariableNode) {
@@ -179,24 +191,22 @@ func (u *UntrustedInputChecker) onVar(v *VariableNode) {
 		return
 	}
 	u.start = v
-	u.cur[c] = struct{}{}
+	u.cur = append(u.cur, c)
 }
 
 func (u *UntrustedInputChecker) onPropAccess(name string) {
-	prev := make([]*UntrustedInputMap, 0, len(u.cur))
-	for c := range u.cur {
-		prev = append(prev, c)
-	}
-
-	for _, cur := range prev {
-		delete(u.cur, cur)
-
+	compact := false
+	for i, cur := range u.cur {
 		c, ok := cur.findObjectProp(name)
 		if !ok {
+			u.cur[i] = nil
+			compact = true
 			continue
 		}
-
-		u.cur[c] = struct{}{} // depth + 1
+		u.cur[i] = c // depth + 1
+	}
+	if compact {
+		u.compact()
 	}
 }
 
@@ -206,55 +216,54 @@ func (u *UntrustedInputChecker) onIndexAccess() {
 		return // For example, match `github.event.*.body[0]` as `github.event.commits[0].body`
 	}
 
-	prev := make([]*UntrustedInputMap, 0, len(u.cur))
-	for c := range u.cur {
-		prev = append(prev, c)
-	}
-
-	for _, cur := range prev {
-		delete(u.cur, cur)
+	compact := false
+	for i, cur := range u.cur {
 		if c, ok := cur.findArrayElem(); ok {
-			u.cur[c] = struct{}{}
+			u.cur[i] = c
+			continue
 		}
+		u.cur[i] = nil
+		compact = true
+	}
+	if compact {
+		u.compact()
 	}
 }
 
 func (u *UntrustedInputChecker) onObjectFilter() {
 	u.filteringObject = true
 
-	// Do not iterate elements which are added in the loop.
-	// Order of map element iterations is random, but an element newly created while loop iteration
-	// is always after iterating all elements existing before the loop (if it is not skipped).
-	// count := len(u.cur)
-
-	prev := make([]*UntrustedInputMap, 0, len(u.cur))
-	for c := range u.cur {
-		prev = append(prev, c)
-	}
-
-	for _, cur := range prev {
-		// if count == 0 {
-		// 	return
-		// }
-		delete(u.cur, cur)
-
+	compact := false
+	for i, cur := range u.cur {
 		// Object filter for arrays
 		if c, ok := cur.findArrayElem(); ok {
-			u.cur[c] = struct{}{}
+			u.cur[i] = c
 			continue
 		}
 
-		// Object filter for objects
-		for _, c := range cur.Children {
-			u.cur[c] = struct{}{}
+		if len(cur.Children) == 0 {
+			u.cur[i] = nil
+			compact = true
 		}
 
-		// count--
+		// Object filter for objects
+		first := true
+		for _, c := range cur.Children {
+			if first {
+				u.cur[i] = c
+				first = false
+			} else {
+				u.cur = append(u.cur, c)
+			}
+		}
+	}
+	if compact {
+		u.compact()
 	}
 }
 
 func (u *UntrustedInputChecker) end() {
-	for cur := range u.cur {
+	for _, cur := range u.cur {
 		if cur.Children != nil {
 			continue // When `Children` is nil, the node is a leaf
 		}
@@ -305,6 +314,6 @@ func (u *UntrustedInputChecker) Errs() []*ExprError {
 
 // Init initializes a state of checker.
 func (u *UntrustedInputChecker) Init() {
-	u.errs = []*ExprError{}
+	u.errs = u.errs[:0]
 	u.reset()
 }
