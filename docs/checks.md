@@ -917,7 +917,7 @@ test.yaml:19:36: "github.event.head_commit.author.name" is potentially untrusted
    |
 19 |           script: console.log('${{ github.event.head_commit.author.name }}')
    |                                    ^~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
-test.yaml:22:31: "github.event.pull_request.body" is potentially untrusted. avoid using it directly in inline scripts. instead, pass it through an environment variable. see https://docs.github.com/en/actions/security-guides/security-hardening-for-github-actions for more details [expression]
+test.yaml:22:31: object filter extracts potentially untrusted properties "github.event.comment.body", "github.event.discussion.body", "github.event.issue.body", "github.event.pull_request.body", "github.event.review.body", "github.event.review_comment.body". avoid using the value directly in inline scripts. instead, pass the value through an environment variable. see https://docs.github.com/en/actions/security-guides/security-hardening-for-github-actions for more details [expression]
    |
 22 |         run: echo '${{ toJSON(github.event.*.body) }}'
    |                               ^~~~~~~~~~~~~~~~~~~~

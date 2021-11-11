@@ -1,7 +1,6 @@
 package actionlint
 
 import (
-	"fmt"
 	"strings"
 )
 
@@ -14,10 +13,9 @@ type UntrustedInputMap struct {
 }
 
 func (m *UntrustedInputMap) String() string {
-	if m.Children == nil {
-		return fmt.Sprintf("{%q}", m.Name)
-	}
-	return fmt.Sprintf("{%q: %v}", m.Name, m.Children)
+	var b strings.Builder
+	m.buildPath(&b)
+	return b.String()
 }
 
 // Find child object property in this map
@@ -263,18 +261,34 @@ func (u *UntrustedInputChecker) onObjectFilter() {
 }
 
 func (u *UntrustedInputChecker) end() {
+	var inputs []string
 	for _, cur := range u.cur {
 		if cur.Children != nil {
 			continue // When `Children` is nil, the node is a leaf
 		}
 		var b strings.Builder
-		b.WriteRune('"')
 		cur.buildPath(&b)
-		b.WriteString(`" is potentially untrusted. avoid using it directly in inline scripts. instead, pass it through an environment variable. see https://docs.github.com/en/actions/security-guides/security-hardening-for-github-actions for more details`)
-		err := errorAtExpr(u.start, b.String())
-		u.errs = append(u.errs, err)
-		break // Get only first path
+		inputs = append(inputs, b.String())
 	}
+
+	if len(inputs) == 1 {
+		err := errorfAtExpr(
+			u.start,
+			"%q is potentially untrusted. avoid using it directly in inline scripts. instead, pass it through an environment variable. see https://docs.github.com/en/actions/security-guides/security-hardening-for-github-actions for more details",
+			inputs[0],
+		)
+		u.errs = append(u.errs, err)
+	} else if len(inputs) > 1 {
+		// When multiple untrusted inputs are detected, it means the expression extracts multiple properties with object
+		// filter syntax. Show all properties in error message.
+		err := errorfAtExpr(
+			u.start,
+			"object filter extracts potentially untrusted properties %s. avoid using the value directly in inline scripts. instead, pass the value through an environment variable. see https://docs.github.com/en/actions/security-guides/security-hardening-for-github-actions for more details",
+			sortedQuotes(inputs),
+		)
+		u.errs = append(u.errs, err)
+	}
+
 	u.reset()
 }
 

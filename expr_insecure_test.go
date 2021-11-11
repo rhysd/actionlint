@@ -399,64 +399,151 @@ func TestExprInsecureCustomizedUntrustedInputMapping(t *testing.T) {
 }
 
 func TestExprInsecureDetectUntrustedObjectFiltering(t *testing.T) {
-	inputs := []string{
-		"github.event.*.body",
-		"github.event.*.body[0]",
-		"github.event.*.*.email",
-		"github.event.*.*.email[0]",
-		"github['event'].*.body",
-		"github.event.*.*['email']",
-		"github.event.*.*['email'][0]",
-		"github.event.*.author.email",
-		"github.event.*['author']['email']",
-		"github.event.*.*", // github.event.commits.*.message
-		"github.*",
-		"github.*[0]",
-		"github.*.*.body",            // github.event.issue.body
-		"github.*.commits.*.message", // github.event.commits.*.message: Second .* is for array
+	tests := []struct {
+		input    string
+		detected []string
+	}{
+		{
+			input: "github.event.*.body",
+			detected: []string{
+				"github.event.issue.body",
+				"github.event.comment.body",
+				"github.event.review.body",
+				"github.event.review_comment.body",
+				"github.event.pull_request.body",
+			},
+		},
+		{
+			input: "github.event.*.body[0]",
+			detected: []string{
+				"github.event.issue.body",
+				"github.event.comment.body",
+				"github.event.review.body",
+				"github.event.review_comment.body",
+				"github.event.pull_request.body",
+			},
+		},
+		{
+			input: "github.event.*.*.email",
+			detected: []string{
+				"github.event.head_commit.author.email",
+			},
+		},
+		{
+			input: "github.event.*.*.email[0]",
+			detected: []string{
+				"github.event.head_commit.author.email",
+			},
+		},
+		{
+			input: "github['event'].*.body",
+			detected: []string{
+				"github.event.issue.body",
+				"github.event.comment.body",
+				"github.event.review.body",
+				"github.event.review_comment.body",
+				"github.event.pull_request.body",
+			},
+		},
+		{
+			input: "github.event.*.*['email']",
+			detected: []string{
+				"github.event.head_commit.author.email",
+			},
+		},
+		{
+			input: "github.event.*.*['email'][0]",
+			detected: []string{
+				"github.event.head_commit.author.email",
+			},
+		},
+		{
+			input: "github.event.*.author.email",
+			detected: []string{
+				"github.event.head_commit.author.email",
+			},
+		},
+		{
+			input: "github.event.*['author']['email']",
+			detected: []string{
+				"github.event.head_commit.author.email",
+			},
+		},
+		{
+			input: "github.event.*.*.message",
+			detected: []string{
+				"github.event.commits.*.message",
+			},
+		},
+		{
+			input: "github.event.*.*.*",
+			detected: []string{
+				"github.event.commits.*.message",
+				"github.event.head_commit.author.email",
+				"github.event.head_commit.author.name",
+			},
+		},
+		{
+			input: "github.*",
+			detected: []string{
+				"github.head_ref",
+			},
+		},
+		{
+			input: "github.*[0]",
+			detected: []string{
+				"github.head_ref",
+			},
+		},
+		{
+			input: "github.*.*.body",
+			detected: []string{
+				"github.event.issue.body",
+				"github.event.comment.body",
+				"github.event.review.body",
+				"github.event.review_comment.body",
+				"github.event.pull_request.body",
+			},
+		},
+		{
+			input: "github.*.commits.*.message",
+			detected: []string{
+				"github.event.commits.*.message", // Second .* is for array
+			},
+		},
 	}
 
-	makePat := func(pat string) string {
-		pat = strings.ReplaceAll(pat, "['", ".")
-		pat = strings.ReplaceAll(pat, "']", "")
-		pat = strings.ReplaceAll(pat, ".", `\.`)
-		pat = strings.ReplaceAll(pat, "*", `([0-9a-z_]+|\*)`)
-		pat = strings.TrimSuffix(pat, "[0]") // Array index at the end means choosing one from object filtering results
-		return pat
-	}
-
-	for _, input := range inputs {
-		t.Run(input, func(t *testing.T) {
+	for _, tc := range tests {
+		t.Run(tc.input, func(t *testing.T) {
 			c := NewUntrustedInputChecker(BuiltinUntrustedInputs)
-			testRunTrustedInputsCheckerForNode(t, c, input)
+			testRunTrustedInputsCheckerForNode(t, c, tc.input)
 			errs := c.Errs()
 			if len(errs) != 1 {
 				t.Fatalf("wanted 1 error but got %d error(s): %v", len(errs), errs)
 			}
 			msg := errs[0].Error()
-			pat := makePat(input)
-			re := regexp.MustCompile(pat)
-			if !re.MatchString(msg) {
-				t.Fatalf("error message did not match to regex %q: %q. input was %q", pat, msg, input)
+			for _, want := range tc.detected {
+				if !strings.Contains(msg, want) {
+					t.Fatalf("error message did not include expected untrusted input %q: %q. input was %q", want, msg, tc.input)
+				}
 			}
 		})
 	}
 
 	// Check all inputs with one checker
 	c := NewUntrustedInputChecker(BuiltinUntrustedInputs)
-	for _, input := range inputs {
+	for _, tc := range tests {
 		c.Init()
-		testRunTrustedInputsCheckerForNode(t, c, input)
+		testRunTrustedInputsCheckerForNode(t, c, tc.input)
 		errs := c.Errs()
 		if len(errs) != 1 {
-			t.Fatalf("%q: wanted 1 error but got %d error(s): %v", input, len(errs), errs)
+			t.Fatalf("%q: wanted 1 error but got %d error(s): %v", tc.input, len(errs), errs)
 		}
 		msg := errs[0].Error()
-
-		pat := makePat(input)
-		re := regexp.MustCompile(pat)
-		if !re.MatchString(msg) {
-			t.Fatalf("error message did not match to regex %q: %q. input was %q", pat, msg, input)
+		for _, want := range tc.detected {
+			if !strings.Contains(msg, want) {
+				t.Fatalf("error message did not include expected untrusted input %q: %q. input was %q", want, msg, tc.input)
+			}
 		}
 	}
 }
@@ -535,14 +622,9 @@ func BenchmarkInsecureDetectUntrustedInputs(b *testing.B) {
 		"github.event.*.body[0]",
 		"github.event.*.*.email",
 		"github.event.*.*.email[0]",
-		"github['event'].*.body",
-		"github.event.*.*['email']",
-		"github.event.*.*['email'][0]",
 		"github.event.*.author.email",
-		"github.event.*['author']['email']",
 		"github.event.*.*",
 		"github.*",
-		"github.*[0]",
 		"github.*.*.body",
 		"github.*.commits.*.message",
 	}
@@ -595,12 +677,10 @@ func BenchmarkInsecureDetectUntrustedInputs(b *testing.B) {
 		"github.event.issue.body.foo.bar",
 		"github.event.issue.body[0]",
 		"github.*.foo",
-		"github.*['foo']",
 		"github.event.*.body.foo",
 		"github.event.*.body.*",
 		"github.*.*.foo",
 		"github.*.commits.*.foo",
-		"github.*['commits'].*.foo",
 		"github.*.commits.*.message.foo",
 		"a.*",
 	}
