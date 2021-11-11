@@ -113,6 +113,23 @@ func (e *ScheduledEvent) EventName() string {
 	return "schedule"
 }
 
+// WorkflowDispatchEventInputType is a type for input types of workflow_dispatch events.
+// https://github.blog/changelog/2021-11-10-github-actions-input-types-for-manual-workflows/
+type WorkflowDispatchEventInputType uint8
+
+const (
+	// WorkflowDispatchEventInputTypeNone represents no type is specified to the input of workflow_dispatch event.
+	WorkflowDispatchEventInputTypeNone WorkflowDispatchEventInputType = iota
+	// WorkflowDispatchEventInputTypeString is string type of input of workflow_dispatch event.
+	WorkflowDispatchEventInputTypeString
+	// WorkflowDispatchEventInputTypeBoolean is boolean type of input of workflow_dispatch event.
+	WorkflowDispatchEventInputTypeBoolean
+	// WorkflowDispatchEventInputTypeChoice is choice type of input of workflow_dispatch event.
+	WorkflowDispatchEventInputTypeChoice
+	// WorkflowDispatchEventInputTypeEnvironment is environment type of input of workflow_dispatch event.
+	WorkflowDispatchEventInputTypeEnvironment
+)
+
 // DispatchInput is input specified on dispatching workflow manually.
 // https://docs.github.com/en/actions/learn-github-actions/events-that-trigger-workflows#workflow_dispatch
 type DispatchInput struct {
@@ -124,6 +141,11 @@ type DispatchInput struct {
 	Required *Bool
 	// Default is a default value of input value on dispatching workflow manually.
 	Default *String
+	// Type is a type of the input
+	// https://docs.github.com/en/actions/learn-github-actions/events-that-trigger-workflows#workflow_dispatch
+	Type WorkflowDispatchEventInputType
+	// Options is list of options of choice type
+	Options []*String
 }
 
 // WorkflowDispatchEvent is event on dispatching workflow manually.
