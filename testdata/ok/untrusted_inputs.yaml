@@ -1,0 +1,20 @@
+name: Test
+on: push
+
+jobs:
+  test:
+    runs-on: ubuntu-latest
+    steps:
+      # Direct access to untrusted inputs
+      - run: |
+          echo "ISSUE: $ISSUE, COMMITS: $COMMIT, REF: $REF"
+        env:
+          ISSUE: ${{ github.event.issue.body }}
+          COMMITS: ${{ toJSON(github.event.commits.*.message) }}
+          REF: ${{ github.head_ref }}
+      # Indirect access to untrusted inputs via object filter
+      - run: |
+          echo "BODIES: $BODIES, EMAILS: $EMAILS"
+        env:
+          BODIES: ${{ toJSON(github.event.*.body) }}
+          EMAILS: ${{ toJSON(github.event.*.*.email) }}

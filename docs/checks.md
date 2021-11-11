@@ -901,6 +901,9 @@ jobs:
         with:
           # ERROR: Using the potentially untrusted input can cause script injection
           script: console.log('${{ github.event.head_commit.author.name }}')
+      - name: Get comments
+        # ERROR: Accessing to untrusted inputs via `.*` object filter; bodies of comment, review, and review_comment
+        run: echo '${{ toJSON(github.event.*.body) }}'
 ```
 
 Output:
@@ -914,9 +917,13 @@ test.yaml:19:36: "github.event.head_commit.author.name" is potentially untrusted
    |
 19 |           script: console.log('${{ github.event.head_commit.author.name }}')
    |                                    ^~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+test.yaml:22:31: object filter extracts potentially untrusted properties "github.event.comment.body", "github.event.discussion.body", "github.event.issue.body", "github.event.pull_request.body", "github.event.review.body", "github.event.review_comment.body". avoid using the value directly in inline scripts. instead, pass the value through an environment variable. see https://docs.github.com/en/actions/security-guides/security-hardening-for-github-actions for more details [expression]
+   |
+22 |         run: echo '${{ toJSON(github.event.*.body) }}'
+   |                               ^~~~~~~~~~~~~~~~~~~~
 ```
 
-[Playground](https://rhysd.github.io/actionlint#eJyFkDFPAzEMhff7FR6QCkPCwpSJhQmJMnSvcql1F8jFR+y0Q9X/TpKrTpUQMEWOn7/39KKd0MAOWTqKBuYcwj7hV64f3Qf1bDoAKVN9AVKOrKow9zlKVsHWXVux4MyLCkBBbOD35KM0KlypIF4CXmUNaADdSLC5O59h8DLmXuMRo+jbMLqdweWyWR0yIxuwTjxFfmSxAZ+PTyv5VFBmnYoTzqSEPrEYVitGl1BY77avL28FfCNtLDUnNSGzHXA5+D8bnCyDC8R4+CXlwlDskp/lr7SLwoArVxRQBxrufzY0oj3sHU2TF22zjJR07b3W9PANx/eW/g==)
+[Playground](https://rhysd.github.io/actionlint#eJyFkUFLAzEQhe/9FXMQ2gqJF085eRFBoRXsvWSzQ3drNrNmJi1S+t9NdkupSvUUknnzvcdLsB0aWCHLhIKBPnm/jviRysNkSxWbCYDkWzkBYgqsijBVKUhS3pbZMGLBnkcVgIIwgF9jG2SgwokK0orHk2wAGkDXEExvDgfYtNKkSuMOg+jLMHpYg+NxenZIjGzAOmkp8B2L9fiwuz+T9xllzrfshD0poXfMhsWK0UUU1qvly+Migy+kA0v1UXXIbDc4LvyfDfaWwXlirK+kHBmKXWx7+SvtqDDg8hZ51J42s98NNWjrtaOua0XbJA1FXXovNc1//MQTChRlXuNr7Qs9vy0Xs28Wt7qi+nNekF/IR69F)
 
 Since `${{ }}` placeholders are evaluated and replaced directly by GitHub Actions runtime, you need to use them carefully in
 inline scripts at `run:`. For example, if we have step as follows,
@@ -957,7 +964,26 @@ directly in a script, actionlint will report it as error.
 - `github.event.pull_request.head.repo.default_branch`
 - `github.head_ref`
 
-Popular action [actions/github-script]() has the same issue in its `script` input. actionlint also checks the input.
+Not only direct accesses to the untrusted properties, actionlint also detects those properties indirectly accessed via
+[object filter syntax][object-filter-syntax]. For example, `github.event.*.body` collects all `body` properties in child objects
+of `github.event` as array. Those properties include untrusted inputs like `github.event.comment.body`,
+`github.event.pull_request.body`, ...
+
+```sh
+# Echo list of github.event.comment.body, github.event.pull_request.body, ...
+echo '${{ toJSON(github.event.*.body) }}'
+```
+
+Instead, you should store the JSON string in environment variable:
+
+```sh
+- run: echo "${BODIES}"
+  env:
+    BODIES: '${{ toJSON(github.event.*.body) }}'
+```
+
+At last, the popular action [actions/github-script][github-script] has the same issue in its `script` input. actionlint also
+checks the input.
 
 <a name="check-job-deps"></a>
 ## Job dependencies validation
@@ -1948,3 +1974,5 @@ allow keys at `on.workflow_call.inputs` and their values are typed based on `on.
 [reusable-workflow-doc]: https://docs.github.com/en/actions/learn-github-actions/reusing-workflows
 [create-reusable-workflow-doc]: https://docs.github.com/en/actions/learn-github-actions/reusing-workflows#creating-a-reusable-workflow
 [reusable-workflow-call-keys]: https://docs.github.com/en/actions/learn-github-actions/reusing-workflows#supported-keywords-for-jobs-that-call-a-reusable-workflow
+[object-filter-syntax]: https://docs.github.com/en/actions/learn-github-actions/expressions#object-filters
+[github-script]: https://github.com/actions/github-script

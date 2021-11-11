@@ -17,3 +17,6 @@ jobs:
         with:
           # ERROR: Using the potentially untrusted input can cause script injection
           script: console.log('${{ github.event.head_commit.author.name }}')
+      - name: Get comments
+        # ERROR: Accessing to untrusted inputs via `.*` object filter; bodies of comment, review, and review_comment
+        run: echo '${{ toJSON(github.event.*.body) }}'
