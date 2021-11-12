@@ -21,6 +21,7 @@ List of checks:
 - [Job dependencies validation](#check-job-deps)
 - [Matrix values](#check-matrix-values)
 - [Webhook events validation](#check-webhook-events)
+- [Workflow dispatch event validation](#check-workflow-dispatch-events)
 - [Glob filter pattern syntax validation](#check-glob-pattern)
 - [CRON syntax check at `schedule:`](#check-cron-syntax)
 - [Runner labels](#check-runner-labels)
@@ -1217,6 +1218,117 @@ workflow. It checks:
 Most common mistake I have ever seen here is misunderstanding that regular expression is available for filtering. This rule
 can catch the mistake so that users can notice their mistakes.
 
+<a name="check-workflow-dispatch-events"></a>
+## Workflow dispatch event validation
+
+Example input:
+
+```yaml
+on:
+  workflow_dispatch:
+    inputs:
+      # Unknown input type
+      variation:
+        type: select
+      # ERROR: No options for 'choice' input type
+      kind:
+        type: choice
+      name:
+        type: choice
+        options:
+          - Tama
+          - Mike
+        # ERROR: Default value is not in options
+        default: Chobi
+      message:
+        type: string
+      verbose:
+        type: boolean
+        # ERROR: Boolean value must be 'true' or 'false'
+        default: yes
+
+jobs:
+  test:
+    runs-on: ubuntu-latest
+    steps:
+      # ERROR: Undefined input
+      - run: echo "${{ github.event.inputs.massage }}"
+      # ERROR: Bool value is not available for object key
+      - run: echo "${{ env[github.event.inputs.verbose] }}"
+```
+
+Output:
+
+```
+test.yaml:6:15: input type of workflow_dispatch event must be one of "string", "boolean", "choice", "environment" but got "select" [syntax-check]
+  |
+6 |         type: select
+  |               ^~~~~~
+test.yaml:8:7: input type of "kind" is "choice" but "options" is not set [events]
+  |
+8 |       kind:
+  |       ^~~~~
+test.yaml:16:18: default value "Chobi" of "name" input is not included in its options "\"Tama\", \"Mike\"" [events]
+   |
+16 |         default: Chobi
+   |                  ^~~~~
+test.yaml:22:18: type of "verbose" input is "boolean". its default value "yes" must be "true" or "false" [events]
+   |
+22 |         default: yes
+   |                  ^~~
+test.yaml:29:24: property "massage" is not defined in object type {name: string; message: string; verbose: bool; variation: any; kind: string} [expression]
+   |
+29 |       - run: echo "${{ github.event.inputs.massage }}"
+   |                        ^~~~~~~~~~~~~~~~~~~~~~~~~~~
+test.yaml:31:28: property access of object must be type of string but got "bool" [expression]
+   |
+31 |       - run: echo "${{ env[github.event.inputs.verbose] }}"
+   |                            ^~~~~~~~~~~~~~~~~~~~~~~~~~~~
+```
+
+[Playground](https://rhysd.github.io/actionlint#eJx9kEFug0AMRfecwoqyhQOwzbq77Kqq8oADUwYbYQ9RFOXuzQBp1NJ2Zz3/b/tbuMwAzjJ2pyDn99rrgFa1CQJ4HqLpUgNMOHo0L/wAAHYZqASlQJWtsPNc/xRUrfiKVsjY078CABnSGn2qAHI4Yo/fwIvvnpaaThiDlXBoxfkV96SKzWab2ui5eaSi0YluNE4kEPJ2/oU0yz7EzdcZqS3OMbLm99dAdJEt5gFTb26p0fCVJU/KEuieGHb76xUab210BU3EViwPL3qc74bbbfeXjXh6/c26xnlL3k/KuIcG)
+
+[`workflow_dispatch`][workflow-dispatch-event] is an event to trigger a workflow manually. The event can have parameters called
+'inputs'. Each input has its name, description, default value, and [input type][workflow-dispatch-input-type-announce].
+
+actionlint checks several mistakes around `workflow_dispatch` configuration.
+
+- Input type must be one of 'choice', 'string', 'boolean', 'environment'
+- `options:` must be set for 'choice' input type
+- The default value of 'choice' input must be included in options
+- The default value of 'boolean' input must be `true` or `false`
+
+In addition, `github.event.inputs` object is typed based on the input definitions. properties not defined in `inputs:` will cause
+a type error thanks to a type checker.
+
+For example,
+
+```yaml
+inputs:
+  string_input:
+    type: string
+  choice_input:
+    type: choice
+    options: ['hello']
+  bool_input:
+    type: boolean
+  env_input:
+    type: environment
+  no_type_input:
+```
+
+`github.event.inputs` is typed as follows from these definitions:
+
+```
+{
+  "string_input": string,
+  "choice_input": string,
+  "bool_input": bool,
+  "env_input": string,
+  "no_type_input": any,
+}
+```
+
 <a name="check-cron-syntax"></a>
 ## CRON syntax check at `schedule:`
 
@@ -1976,3 +2088,5 @@ allow keys at `on.workflow_call.inputs` and their values are typed based on `on.
 [reusable-workflow-call-keys]: https://docs.github.com/en/actions/learn-github-actions/reusing-workflows#supported-keywords-for-jobs-that-call-a-reusable-workflow
 [object-filter-syntax]: https://docs.github.com/en/actions/learn-github-actions/expressions#object-filters
 [github-script]: https://github.com/actions/github-script
+[workflow-dispatch-event]: https://docs.github.com/en/actions/learn-github-actions/events-that-trigger-workflows#workflow_dispatch
+[workflow-dispatch-input-type-announce]: https://github.blog/changelog/2021-11-10-github-actions-input-types-for-manual-workflows/

@@ -99,6 +99,20 @@ func (p *parser) checkSequence(sec string, n *yaml.Node, allowEmpty bool) bool {
 	return allowEmpty || p.checkNotEmpty(sec, len(n.Content), n)
 }
 
+func (p *parser) checkString(n *yaml.Node, allowEmpty bool) bool {
+	// Do not check n.Tag is !!str because we don't need to check the node is string strictly.
+	// In almost all cases, other nodes (like 42) are handled as string with its string representation.
+	if n.Kind != yaml.ScalarNode {
+		p.errorf(n, "expected scalar node for string value but found %s node with %q tag", nodeKindName(n.Kind), n.Tag)
+		return false
+	}
+	if !allowEmpty && n.Value == "" {
+		p.error(n, "string should not be empty")
+		return false
+	}
+	return true
+}
+
 func (p *parser) missingExpression(n *yaml.Node, expecting string) {
 	p.errorf(n, "expecting a string with ${{...}} expression or %s, but found plain text node", expecting)
 }
@@ -117,14 +131,8 @@ func (p *parser) parseExpression(n *yaml.Node, expecting string) *String {
 }
 
 func (p *parser) parseString(n *yaml.Node, allowEmpty bool) *String {
-	// Do not check n.Tag is !!str because we don't need to check the node is string strictly.
-	// In almost all cases, other nodes (like 42) are handled as string with its string representation.
-	if n.Kind != yaml.ScalarNode {
-		p.errorf(n, "expected scalar node for string value but found %s node with %q tag", nodeKindName(n.Kind), n.Tag)
+	if !p.checkString(n, allowEmpty) {
 		return &String{"", false, posAt(n)}
-	}
-	if !allowEmpty && n.Value == "" {
-		p.error(n, "string should not be empty")
 	}
 	return newString(n)
 }
@@ -311,6 +319,8 @@ func (p *parser) parseWorkflowDispatchEvent(pos *Pos, n *yaml.Node) *WorkflowDis
 				var desc *String
 				var req *Bool
 				var def *String
+				var ty WorkflowDispatchEventInputType = WorkflowDispatchEventInputTypeNone
+				var opts []*String
 
 				for _, attr := range p.parseMapping("input settings of workflow_dispatch event", spec, true) {
 					switch attr.key.Value {
@@ -320,6 +330,24 @@ func (p *parser) parseWorkflowDispatchEvent(pos *Pos, n *yaml.Node) *WorkflowDis
 						req = p.parseBool(attr.val)
 					case "default":
 						def = p.parseString(attr.val, true)
+					case "type":
+						if !p.checkString(attr.val, false) {
+							continue
+						}
+						switch attr.val.Value {
+						case "string":
+							ty = WorkflowDispatchEventInputTypeString
+						case "boolean":
+							ty = WorkflowDispatchEventInputTypeBoolean
+						case "choice":
+							ty = WorkflowDispatchEventInputTypeChoice
+						case "environment":
+							ty = WorkflowDispatchEventInputTypeEnvironment
+						default:
+							p.errorf(attr.val, "input type of workflow_dispatch event must be one of \"string\", \"boolean\", \"choice\", \"environment\" but got %q", attr.val.Value)
+						}
+					case "options":
+						opts = p.parseStringSequence("options", attr.val, false, false)
 					default:
 						p.unexpectedKey(attr.key, "inputs", []string{"description", "required", "default"})
 					}
@@ -330,6 +358,8 @@ func (p *parser) parseWorkflowDispatchEvent(pos *Pos, n *yaml.Node) *WorkflowDis
 					Description: desc,
 					Required:    req,
 					Default:     def,
+					Type:        ty,
+					Options:     opts,
 				}
 			}
 		} else {

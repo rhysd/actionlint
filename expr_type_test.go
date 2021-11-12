@@ -844,3 +844,69 @@ func TestExprTypeMergeCreateNewInstance(t *testing.T) {
 		}
 	}
 }
+
+func TestExprTypeDeepCopy(t *testing.T) {
+	for _, ty := range []ExprType{
+		AnyType{},
+		NullType{},
+		BoolType{},
+		StringType{},
+		NumberType{},
+	} {
+		copied := ty.DeepCopy()
+		if ty != copied {
+			t.Errorf("%q and cloned %q must be equal", ty, copied)
+		}
+	}
+
+	{
+		nested := NewObjectType(map[string]ExprType{
+			"piyo": StringType{},
+		})
+		o := NewObjectType(map[string]ExprType{
+			"foo": NumberType{},
+			"bar": nested,
+		})
+
+		o2 := o.DeepCopy().(*ObjectType)
+		if o2.Props["foo"] != (NumberType{}) {
+			t.Fatal("o2.foo is not number", o2.Props["foo"])
+		}
+		nested2 := o2.Props["bar"].(*ObjectType)
+		if nested2.Props["piyo"] != (StringType{}) {
+			t.Fatal("o2.bar.piyo is not string", nested2.Props["piyo"])
+		}
+		if o2.Mapped != (AnyType{}) {
+			t.Fatal("key of o2 is not any", o2.Mapped)
+		}
+
+		o2.Props["foo"] = BoolType{}
+		o2.Mapped = NumberType{}
+		nested2.Props["piyo"] = NullType{}
+		if o.Props["foo"] != (NumberType{}) {
+			t.Fatal("o.foo is not number", o.Props["foo"])
+		}
+		if nested.Props["piyo"] != (StringType{}) {
+			t.Fatal("o.bar.piyo is not string", nested.Props["piyo"])
+		}
+		if o.Mapped != (AnyType{}) {
+			t.Fatal("key of o is not any", o2.Mapped)
+		}
+	}
+
+	{
+		nested := &ArrayType{StringType{}, false}
+		arr := &ArrayType{nested, false}
+
+		arr2 := arr.DeepCopy().(*ArrayType)
+		nested2 := arr2.Elem.(*ArrayType)
+		if nested2.Elem != (StringType{}) {
+			t.Fatal("arr2[][] is not string type", nested2.Elem)
+		}
+
+		nested2.Elem = NullType{}
+		if nested.Elem != (StringType{}) {
+			t.Fatal("arr[][] is not string type", nested.Elem)
+		}
+	}
+}

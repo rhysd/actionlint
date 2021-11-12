@@ -18,26 +18,28 @@ type typedExpr struct {
 // - https://docs.github.com/en/actions/learn-github-actions/expressions
 type RuleExpression struct {
 	RuleBase
-	matrixTy     *ObjectType
-	stepsTy      *ObjectType
-	needsTy      *ObjectType
-	secretsTy    *ObjectType
-	inputsTy     *ObjectType
-	workflow     *Workflow
-	localActions *LocalActionsCache
+	matrixTy         *ObjectType
+	stepsTy          *ObjectType
+	needsTy          *ObjectType
+	secretsTy        *ObjectType
+	inputsTy         *ObjectType
+	dispatchInputsTy *ObjectType
+	workflow         *Workflow
+	localActions     *LocalActionsCache
 }
 
 // NewRuleExpression creates new RuleExpression instance.
 func NewRuleExpression(cache *LocalActionsCache) *RuleExpression {
 	return &RuleExpression{
-		RuleBase:     RuleBase{name: "expression"},
-		matrixTy:     nil,
-		stepsTy:      nil,
-		needsTy:      nil,
-		secretsTy:    nil,
-		inputsTy:     nil,
-		workflow:     nil,
-		localActions: cache,
+		RuleBase:         RuleBase{name: "expression"},
+		matrixTy:         nil,
+		stepsTy:          nil,
+		needsTy:          nil,
+		secretsTy:        nil,
+		inputsTy:         nil,
+		dispatchInputsTy: nil,
+		workflow:         nil,
+		localActions:     cache,
 	}
 }
 
@@ -59,11 +61,25 @@ func (rule *RuleExpression) VisitWorkflowPre(n *Workflow) error {
 		case *ScheduledEvent:
 			rule.checkStrings(e.Cron)
 		case *WorkflowDispatchEvent:
+			ity := NewEmptyStrictObjectType()
 			for _, i := range e.Inputs {
 				rule.checkString(i.Description)
 				rule.checkString(i.Default)
 				rule.checkBool(i.Required)
+				rule.checkStrings(i.Options)
+
+				var ty ExprType
+				switch i.Type {
+				case WorkflowDispatchEventInputTypeBoolean:
+					ty = BoolType{}
+				case WorkflowDispatchEventInputTypeString, WorkflowDispatchEventInputTypeChoice, WorkflowDispatchEventInputTypeEnvironment:
+					ty = StringType{}
+				default:
+					ty = AnyType{}
+				}
+				ity.Props[i.Name.Value] = ty
 			}
+			rule.dispatchInputsTy = ity
 		case *RepositoryDispatchEvent:
 			rule.checkStrings(e.Types)
 		case *WorkflowCallEvent:
@@ -607,6 +623,9 @@ func (rule *RuleExpression) checkSemanticsOfExprNode(expr ExprNode, line, col in
 	}
 	if rule.inputsTy != nil {
 		c.UpdateInputs(rule.inputsTy)
+	}
+	if rule.dispatchInputsTy != nil {
+		c.UpdateDispatchInputs(rule.dispatchInputsTy)
 	}
 
 	ty, errs := c.Check(expr)

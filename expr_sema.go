@@ -278,20 +278,22 @@ var BuiltinGlobalVariableTypes = map[string]ExprType{
 // - https://docs.github.com/en/actions/learn-github-actions/contexts
 // - https://docs.github.com/en/actions/learn-github-actions/expressions
 type ExprSemanticsChecker struct {
-	funcs      map[string][]*FuncSignature
-	vars       map[string]ExprType
-	errs       []*ExprError
-	varsCopied bool
-	untrusted  *UntrustedInputChecker
+	funcs           map[string][]*FuncSignature
+	vars            map[string]ExprType
+	errs            []*ExprError
+	varsCopied      bool
+	githubVarCopied bool
+	untrusted       *UntrustedInputChecker
 }
 
 // NewExprSemanticsChecker creates new ExprSemanticsChecker instance. When checkUntrustedInput is
 // set to true, the checker will make use of possibly untrusted inputs error.
 func NewExprSemanticsChecker(checkUntrustedInput bool) *ExprSemanticsChecker {
 	c := &ExprSemanticsChecker{
-		funcs:      BuiltinFuncSignatures,
-		vars:       BuiltinGlobalVariableTypes,
-		varsCopied: false,
+		funcs:           BuiltinFuncSignatures,
+		vars:            BuiltinGlobalVariableTypes,
+		varsCopied:      false,
+		githubVarCopied: false,
 	}
 	if checkUntrustedInput {
 		c.untrusted = NewUntrustedInputChecker(BuiltinUntrustedInputs)
@@ -331,6 +333,15 @@ func (sema *ExprSemanticsChecker) ensureVarsCopied() {
 	sema.varsCopied = true
 }
 
+func (sema *ExprSemanticsChecker) ensureGithubVarCopied() {
+	if sema.githubVarCopied {
+		return
+	}
+	sema.ensureVarsCopied()
+
+	sema.vars["github"] = sema.vars["github"].DeepCopy()
+}
+
 // UpdateMatrix updates matrix object to given object type. Since matrix values change according to
 // 'matrix' section of job configuration, the type needs to be updated.
 func (sema *ExprSemanticsChecker) UpdateMatrix(ty *ObjectType) {
@@ -360,6 +371,13 @@ func (sema *ExprSemanticsChecker) UpdateSecrets(ty *ObjectType) {
 func (sema *ExprSemanticsChecker) UpdateInputs(ty *ObjectType) {
 	sema.ensureVarsCopied()
 	sema.vars["inputs"] = ty
+}
+
+// UpdateDispatchInputs updates 'github.event.inputs' object to given object type.
+func (sema *ExprSemanticsChecker) UpdateDispatchInputs(ty *ObjectType) {
+	sema.ensureGithubVarCopied()
+	// Update github.event.inputs with `ty`
+	sema.vars["github"].(*ObjectType).Props["event"].(*ObjectType).Props["inputs"] = ty
 }
 
 func (sema *ExprSemanticsChecker) visitUntrustedCheckerOnLeaveNode(n ExprNode) {

@@ -1,0 +1,50 @@
+name: Test for workflow_dispatch input types
+on:
+  workflow_dispatch:
+    inputs:
+      name:
+        type: choice
+        description: Name of event
+        options:
+          - workflow_dispatch
+          - workflow_call
+          - webhook
+      type:
+        type: choice
+        description: Type of input
+        options:
+          - choice
+          - string
+          - boolean
+          - environment
+        default: string
+      submitter:
+        type: string
+      message:
+        type: string
+        default: hello
+      verbose:
+        type: boolean
+        default: false
+      dry-run:
+        type: boolean
+        default: true
+      notification:
+        type: boolean
+      environment:
+        type: environment
+
+jobs:
+  test:
+    runs-on: ubuntu-latest
+    steps:
+      - run: echo '${{ github.event.inputs.name }}'
+      - run: echo '${{ github.event.inputs.type }}'
+      - run: echo '${{ github.event.inputs.submitter }}'
+      - run: echo '${{ github.event.inputs.message }}'
+      - run: echo '${{ github.event.inputs.verbose }}'
+      - run: echo '${{ github.event.inputs.dry-run }}'
+      - run: echo '${{ github.event.inputs.notification }}'
+      - run: echo '${{ github.event.inputs.environment }}'
+      - run: echo "${{ contains('hello, world!', github.event.inputs.name) }}"
+        if: ${{ github.event.inputs.verbose }}
