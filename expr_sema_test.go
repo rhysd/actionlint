@@ -1094,7 +1094,7 @@ func TestExprSemanticsCheckerUpdateSteps(t *testing.T) {
 	}
 }
 
-func testExprSematincsCheckerUpdateDispatchInputsVarType(t *testing.T) {
+func TestExprSematincsCheckerUpdateDispatchInputsVarType(t *testing.T) {
 	ty := NewStrictObjectType(map[string]ExprType{"foo": NullType{}})
 	c := NewExprSemanticsChecker(false)
 	c.UpdateDispatchInputs(ty)
@@ -1105,12 +1105,9 @@ func testExprSematincsCheckerUpdateDispatchInputsVarType(t *testing.T) {
 	if !o.IsStrict() {
 		t.Error("Local github.event.inputs is not strict")
 	}
-	o = BuiltinGlobalVariableTypes["github"].(*ObjectType).Props["event"].(*ObjectType).Props["inputs"].(*ObjectType)
-	if _, ok := o.Props["foo"]; ok {
-		t.Error("Global github.event.inputs is updated", o)
-	}
-	if o.IsStrict() {
-		t.Error("Global github.event.inputs is strict")
+	o = BuiltinGlobalVariableTypes["github"].(*ObjectType).Props["event"].(*ObjectType)
+	if _, ok := o.Props["inputs"]; ok {
+		t.Error("Global github.event.inputs exists", o)
 	}
 }
 

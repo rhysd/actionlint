@@ -1,0 +1,27 @@
+name: Test for type check of workflow_dispatch inputs
+on:
+  workflow_dispatch:
+    inputs:
+      string:
+        type: string
+      choice:
+        type: choice
+        options:
+          - aaa
+      boolean:
+        type: boolean
+      environment:
+        type: environment
+
+jobs:
+  test:
+    runs-on: ubuntu-latest
+    steps:
+      # Unkown input name
+      - run: echo "${{ github.event.inputs.select }}"
+      # Bool value is not available for object key
+      - run: echo "${{ github[github.event.inputs.boolean] }}"
+      # String value cannot be index value of array
+      - run: echo "${{ github.event.*[github.event.inputs.choice] }}"
+      - run: echo "${{ github.event.*[github.event.inputs.string] }}"
+      - run: echo "${{ github.event.*[github.event.inputs.environment] }}"
