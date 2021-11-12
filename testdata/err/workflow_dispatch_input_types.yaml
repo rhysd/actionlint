@@ -1,0 +1,53 @@
+name: Test for workflow_dispatch input types
+on:
+  workflow_dispatch:
+    inputs:
+      # no options for chice
+      choice_input_no_options:
+        type: choice
+      choice_input_options_is_empty:
+        type: choice
+        options: []
+      choice_input_empty_option:
+        type: choice
+        options: ['']
+      choice_default_is_not_in_options:
+        type: choice
+        options:
+          - foo
+        default: bar
+      choice_duplicate_options:
+        type: choice
+        options:
+          - foo
+          - foo
+      boolean_invalid_default:
+        type: boolean
+        default: foo
+      boolean_with_options:
+        type: boolean
+        options:
+          - aaa
+          - bbb
+      string_with_options:
+        type: string
+        options:
+          - aaa
+          - bbb
+      environment_with_options:
+        type: environment
+        options:
+          - aaa
+          - bbb
+      no_type_with_options:
+        options:
+          - aaa
+          - bbb
+      input_unknown_type:
+        type: unknown
+
+jobs:
+  test:
+    runs-on: ubuntu-latest
+    steps:
+      - run: echo hi
