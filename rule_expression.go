@@ -59,10 +59,14 @@ func (rule *RuleExpression) VisitWorkflowPre(n *Workflow) error {
 		case *ScheduledEvent:
 			rule.checkStrings(e.Cron)
 		case *WorkflowDispatchEvent:
+			// Type checking based on i.Type is possible. However currently github.event is typed as loose object.
+			// So github.event.inputs can't have strict types. When we type github.event object more strictly,
+			// github.event.inputs would be able to be typed more strictly checking value of i.Type here.
 			for _, i := range e.Inputs {
 				rule.checkString(i.Description)
 				rule.checkString(i.Default)
 				rule.checkBool(i.Required)
+				rule.checkStrings(i.Options)
 			}
 		case *RepositoryDispatchEvent:
 			rule.checkStrings(e.Types)

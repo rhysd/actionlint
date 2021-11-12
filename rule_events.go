@@ -38,7 +38,7 @@ func (rule *RuleEvents) checkEvent(event Event) {
 			rule.checkCron(c)
 		}
 	case *WorkflowDispatchEvent:
-		// Nothing to do
+		rule.checkWorkflowDispatchEvent(e)
 	case *RepositoryDispatchEvent:
 		// Nothing to do
 	case *WorkflowCallEvent:
@@ -122,28 +122,74 @@ func (rule *RuleEvents) checkTypes(hook *String, types []*String, expected []str
 
 // https://docs.github.com/en/actions/learn-github-actions/reusing-workflows
 func (rule *RuleEvents) checkWorkflowCallEvent(event *WorkflowCallEvent) {
-	for name, input := range event.Inputs {
-		if input.Default != nil {
-			switch input.Type {
-			case WorkflowCallEventInputTypeNumber:
-				if _, err := strconv.ParseFloat(input.Default.Value, 64); err != nil {
-					rule.errorf(
-						input.Default.Pos,
-						"input of workflow_call event %q is typed as number but its default value %q cannot be parsed as a float number: %s",
-						name.Value,
-						input.Default.Value,
-						err,
-					)
+	for n, i := range event.Inputs {
+		if i.Default == nil {
+			continue
+		}
+		switch i.Type {
+		case WorkflowCallEventInputTypeNumber:
+			if _, err := strconv.ParseFloat(i.Default.Value, 64); err != nil {
+				rule.errorf(
+					i.Default.Pos,
+					"input of workflow_call event %q is typed as number but its default value %q cannot be parsed as a float number: %s",
+					n.Value,
+					i.Default.Value,
+					err,
+				)
+			}
+		case WorkflowCallEventInputTypeBoolean:
+			if d := strings.ToLower(i.Default.Value); d != "true" && d != "false" {
+				rule.errorf(
+					i.Default.Pos,
+					"input of workflow_call event %q is typed as boolean. its default value must be true or false but got %q",
+					n.Value,
+					i.Default.Value,
+				)
+			}
+		}
+	}
+}
+
+// https://github.blog/changelog/2021-11-10-github-actions-input-types-for-manual-workflows/
+// https://docs.github.com/en/actions/learn-github-actions/workflow-syntax-for-github-actions#onworkflow_dispatchinputs
+func (rule *RuleEvents) checkWorkflowDispatchEvent(event *WorkflowDispatchEvent) {
+	for n, i := range event.Inputs {
+		if i.Type == WorkflowDispatchEventInputTypeChoice {
+			if len(i.Options) == 0 {
+				rule.errorf(i.Name.Pos, "input type of %q is \"choice\" but \"options\" is not set", n)
+				continue
+			}
+			seen := make(map[string]struct{}, len(i.Options))
+			for _, o := range i.Options {
+				if _, ok := seen[o.Value]; ok {
+					rule.errorf(o.Pos, "option %q is duplicate in options of %q input", o.Value, n)
+					continue
 				}
-			case WorkflowCallEventInputTypeBoolean:
-				if d := strings.ToLower(input.Default.Value); d != "true" && d != "false" {
-					rule.errorf(
-						input.Default.Pos,
-						"input of workflow_call event %q is typed as boolean. its default value must be true or false but got %q",
-						name.Value,
-						input.Default.Value,
-					)
+				seen[o.Value] = struct{}{}
+			}
+			if i.Default != nil {
+				var b quotesBuilder
+				for _, o := range i.Options {
+					b.append(o.Value)
 				}
+				if _, ok := seen[i.Default.Value]; !ok {
+					rule.errorf(i.Default.Pos, "default value %q of %q input is not included in its options %q", i.Default.Value, n, b.build())
+				}
+			}
+		} else {
+			if len(i.Options) > 0 {
+				rule.errorf(i.Name.Pos, "\"options\" can not be set to %q input because its input type is not \"choice\"", n)
+			}
+			switch i.Type {
+			case WorkflowDispatchEventInputTypeBoolean:
+				if i.Default != nil {
+					if d := strings.ToLower(i.Default.Value); d != "true" && d != "false" {
+						rule.errorf(i.Default.Pos, "type of %q input is \"boolean\". its default value %q must be \"true\" or \"false\"", n, i.Default.Value)
+					}
+				}
+			default:
+				// TODO: Can some check be done for WorkflowDispatchEventInputTypeEnvironment?
+				// What is suitable for default value of the type? (Or is a default value never suitable?)
 			}
 		}
 	}
