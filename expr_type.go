@@ -16,6 +16,8 @@ type ExprType interface {
 	// Merge merges other type into this type. When other type conflicts with this type, the merged
 	// result is any type as fallback.
 	Merge(other ExprType) ExprType
+	// DeepCopy duplicates itself. All its child types are copied recursively.
+	DeepCopy() ExprType
 }
 
 // AnyType represents type which can be any type. It also indicates that a value of the type cannot
@@ -34,6 +36,11 @@ func (ty AnyType) Assignable(_ ExprType) bool {
 // Merge merges other type into this type. When other type conflicts with this type, the merged
 // result is any type as fallback.
 func (ty AnyType) Merge(other ExprType) ExprType {
+	return ty
+}
+
+// DeepCopy duplicates itself. All its child types are copied recursively.
+func (ty AnyType) DeepCopy() ExprType {
 	return ty
 }
 
@@ -61,6 +68,11 @@ func (ty NullType) Merge(other ExprType) ExprType {
 		return ty
 	}
 	return AnyType{}
+}
+
+// DeepCopy duplicates itself. All its child types are copied recursively.
+func (ty NullType) DeepCopy() ExprType {
+	return ty
 }
 
 // NumberType is type for number values such as integer or float.
@@ -94,6 +106,11 @@ func (ty NumberType) Merge(other ExprType) ExprType {
 	}
 }
 
+// DeepCopy duplicates itself. All its child types are copied recursively.
+func (ty NumberType) DeepCopy() ExprType {
+	return ty
+}
+
 // BoolType is type for boolean values.
 type BoolType struct{}
 
@@ -120,6 +137,11 @@ func (ty BoolType) Merge(other ExprType) ExprType {
 	default:
 		return AnyType{}
 	}
+}
+
+// DeepCopy duplicates itself. All its child types are copied recursively.
+func (ty BoolType) DeepCopy() ExprType {
+	return ty
 }
 
 // StringType is type for string values.
@@ -150,6 +172,11 @@ func (ty StringType) Merge(other ExprType) ExprType {
 	default:
 		return AnyType{}
 	}
+}
+
+// DeepCopy duplicates itself. All its child types are copied recursively.
+func (ty StringType) DeepCopy() ExprType {
+	return ty
 }
 
 // ObjectType is type for objects, which can hold key-values.
@@ -315,6 +342,19 @@ func (ty *ObjectType) Merge(other ExprType) ExprType {
 	}
 }
 
+// DeepCopy duplicates itself. All its child types are copied recursively.
+func (ty *ObjectType) DeepCopy() ExprType {
+	p := make(map[string]ExprType, len(ty.Props))
+	for n, t := range ty.Props {
+		p[n] = t.DeepCopy()
+	}
+	m := ty.Mapped
+	if m != nil {
+		m = m.DeepCopy()
+	}
+	return &ObjectType{p, m}
+}
+
 // ArrayType is type for arrays.
 type ArrayType struct {
 	// Elem is type of element of the array.
@@ -358,6 +398,11 @@ func (ty *ArrayType) Merge(other ExprType) ExprType {
 	default:
 		return AnyType{}
 	}
+}
+
+// DeepCopy duplicates itself. All its child types are copied recursively.
+func (ty *ArrayType) DeepCopy() ExprType {
+	return &ArrayType{ty.Elem.DeepCopy(), ty.Deref}
 }
 
 // EqualTypes returns if the two types are equal.
