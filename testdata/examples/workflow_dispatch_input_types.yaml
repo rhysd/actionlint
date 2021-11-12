@@ -1,0 +1,31 @@
+on:
+  workflow_dispatch:
+    inputs:
+      # Unknown input type
+      variation:
+        type: select
+      # ERROR: No options for 'choice' input type
+      kind:
+        type: choice
+      name:
+        type: choice
+        options:
+          - Tama
+          - Mike
+        # ERROR: Default value is not in options
+        default: Chobi
+      message:
+        type: string
+      verbose:
+        type: boolean
+        # ERROR: Boolean value must be 'true' or 'false'
+        default: yes
+
+jobs:
+  test:
+    runs-on: ubuntu-latest
+    steps:
+      # ERROR: Undefined input
+      - run: echo "${{ github.event.inputs.massage }}"
+      # ERROR: Bool value is not available for object key
+      - run: echo "${{ env[github.event.inputs.verbose] }}"
