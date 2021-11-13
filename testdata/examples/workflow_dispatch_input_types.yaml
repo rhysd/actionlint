@@ -2,8 +2,8 @@ on:
   workflow_dispatch:
     inputs:
       # Unknown input type
-      variation:
-        type: select
+      id:
+        type: number
       # ERROR: No options for 'choice' input type
       kind:
         type: choice
