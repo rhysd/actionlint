@@ -205,6 +205,8 @@ var BuiltinGlobalVariableTypes = map[string]ExprType{
 		"job":              StringType{},
 		"ref":              StringType{},
 		"ref_name":         StringType{},
+		"ref_protected":    StringType{},
+		"ref_type":         StringType{},
 		"repository":       StringType{},
 		"repository_owner": StringType{},
 		"run_id":           StringType{},
