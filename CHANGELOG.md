@@ -1,10 +1,95 @@
+<a name="v1.6.8"></a>
+# [v1.6.8](https://github.com/rhysd/actionlint/releases/tag/v1.6.8) - 15 Nov 2021
+
+- [Untrusted inputs](https://docs.github.com/en/actions/security-guides/security-hardening-for-github-actions) detection can detect untrusted inputs in object filter syntax. For example, `github.event.*.body` filters `body` properties and it includes the untrusted input `github.event.comment.body`. actionlint detects such filters and causes an error. The error message includes all untrusted input names which are filtered by the object filter so that you can know what inputs are untrusted easily. See [the document](https://github.com/rhysd/actionlint/blob/main/docs/checks.md#untrusted-inputs) for more details.
+  Input example:
+  ```yaml
+  - name: Get comments
+    run: echo '${{ toJSON(github.event.*.body) }}'
+  ```
+  Error message:
+  ```
+  object filter extracts potentially untrusted properties "github.event.comment.body", "github.event.discussion.body", "github.event.issue.body", ...
+  ```
+  Instead you should do:
+  ```yaml
+  - name: Get comments
+    run: echo "$JSON"
+    env:
+      JSON: {{ toJSON(github.event.*.body) }}
+  ```
+- Support [the new input type syntax for `workflow_dispatch` event](https://github.blog/changelog/2021-11-10-github-actions-input-types-for-manual-workflows/), which was introduced recently. You can declare types of inputs on triggering a workflow manually. actionlint does two things with this new syntax.
+  - 1. actionlint checks the syntax. Unknown input types, invalid default values, missing options for 'choice' type.
+    ```yaml
+    inputs:
+      # Unknown input type
+      id:
+        type: number
+      # ERROR: No options for 'choice' input type
+      kind:
+        type: choice
+      name:
+        type: choice
+        options:
+          - Tama
+          - Mike
+        # ERROR: Default value is not in options
+        default: Chobi
+      verbose:
+        type: boolean
+        # ERROR: Boolean value must be 'true' or 'false'
+        default: yes
+    ```
+  - 2. actionlint give a strict object type to `github.event.inputs` so that a type checker can check unknown input names and type mismatches on using the value.
+    ```yaml
+    on:
+      workflow_dispatch:
+        inputs:
+          message:
+            type: string
+          verbose:
+            type: boolean
+    # Type of `github.event.inputs` is {"message": string; "verbose": bool}
+    jobs:
+      test:
+        runs-on: ubuntu-latest
+        steps:
+          # ERROR: Undefined input
+          - run: echo "${{ github.event.inputs.massage }}"
+          # ERROR: Bool value is not available for object key
+          - run: echo "${{ env[github.event.inputs.verbose] }}"
+    ```
+  - See [the document](https://github.com/rhysd/actionlint/blob/main/docs/checks.md#check-workflow-dispatch-events) for more details.
+- Add missing properties in `github` context. See [the contexts document](https://docs.github.com/en/actions/learn-github-actions/contexts#github-context) to know the full list of properties.
+  - `github.ref_name` (thanks @dihmandrake, #72)
+  - `github.ref_protected`
+  - `github.ref_type`
+- Filtered array by object filters is typed more strictly.
+  ```
+  # `env` is a map object { string => string }
+  # Previously typed as array<any> now it is typed as array<string>
+  env.*
+  ```
+- Update Go module dependencies and playground dependencies.
+
+[Changes][v1.6.8]
+
+
 <a name="v1.6.7"></a>
 # [v1.6.7](https://github.com/rhysd/actionlint/releases/tag/v1.6.7) - 08 Nov 2021
 
 - Fix missing property `name` in `runner` context object (thanks @ioanrogers, #67).
-- Fix a false positive on type checking at `x.*` object filtering syntax. A receiver of object filtering can be objects, but actionlint previously only allow arrays. (#66).
+- Fix a false positive on type checking at `x.*` object filtering syntax where the receiver is an object. actionlint previously only allowed arrays as receiver of object filtering (#66).
+  ```ruby
+  fromJSON('{"a": "from a", "b": "from b"}').*
+  # => ["from a", "from b"]
+
+  fromJSON('{"a": {"x": "from a.x"}, "b": {"x": "from b.x"}}').*.x
+  # => ["from a.x", "from b.x"]
+  ```
 - Add [rust-cache](https://github.com/Swatinem/rust-cache) as new popular action.
 - Remove `bottle: unneeded` from Homebrew formula (thanks @oppara, #63).
+- Support `branch_protection_rule` webhook again.
 - Update popular actions data set to the latest (#64, #70).
 
 [Changes][v1.6.7]
@@ -510,6 +595,7 @@ See documentation for more details:
 [Changes][v1.0.0]
 
 
+[v1.6.8]: https://github.com/rhysd/actionlint/compare/v1.6.7...v1.6.8
 [v1.6.7]: https://github.com/rhysd/actionlint/compare/v1.6.6...v1.6.7
 [v1.6.6]: https://github.com/rhysd/actionlint/compare/v1.6.5...v1.6.6
 [v1.6.5]: https://github.com/rhysd/actionlint/compare/v1.6.4...v1.6.5
