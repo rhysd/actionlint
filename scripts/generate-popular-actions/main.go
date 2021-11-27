@@ -65,7 +65,7 @@ var popularActions = []*action{
 	{"actions-rs/toolchain", []string{"v1"}, "v2", yamlExtYML},
 	{"actions/cache", []string{"v1", "v2"}, "v3", yamlExtYML},
 	{"actions/checkout", []string{"v1", "v2"}, "v3", yamlExtYML},
-	{"actions/delete-package-versions", []string{"v1"}, "v2", yamlExtYML},
+	{"actions/delete-package-versions", []string{"v1", "v2"}, "v3", yamlExtYML},
 	{"actions/download-artifact", []string{"v1", "v2"}, "v3", yamlExtYML},
 	{"actions/first-interaction", []string{"v1"}, "v2", yamlExtYML},
 	{"actions/github-script", []string{"v1", "v2", "v3", "v4", "v5"}, "v6", yamlExtYML},
