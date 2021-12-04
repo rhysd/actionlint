@@ -103,6 +103,7 @@ var PopularActions = map[string]*ActionMetadata{
 			"seconds_between_github_reads":     false,
 			"seconds_between_github_writes":    false,
 			"test_changes_limit":               false,
+			"time_unit":                        false,
 		},
 	},
 	"JamesIves/github-pages-deploy-action@releases/v3": {
@@ -600,6 +601,7 @@ var PopularActions = map[string]*ActionMetadata{
 			"cache-dependency-path": false,
 			"check-latest":          false,
 			"node-version":          false,
+			"node-version-file":     false,
 			"registry-url":          false,
 			"scope":                 false,
 			"token":                 false,
