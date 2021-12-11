@@ -744,6 +744,7 @@ var PopularActions = map[string]*ActionMetadata{
 			"exempt-all-pr-assignees":         false,
 			"exempt-all-pr-milestones":        false,
 			"exempt-assignees":                false,
+			"exempt-draft-pr":                 false,
 			"exempt-issue-assignees":          false,
 			"exempt-issue-labels":             false,
 			"exempt-issue-milestones":         false,
@@ -751,6 +752,11 @@ var PopularActions = map[string]*ActionMetadata{
 			"exempt-pr-assignees":             false,
 			"exempt-pr-labels":                false,
 			"exempt-pr-milestones":            false,
+			"ignore-issue-updates":            false,
+			"ignore-pr-updates":               false,
+			"ignore-updates":                  false,
+			"labels-to-add-when-unstale":      false,
+			"labels-to-remove-when-unstale":   false,
 			"only-issue-labels":               false,
 			"only-labels":                     false,
 			"only-pr-labels":                  false,
@@ -1525,6 +1531,7 @@ var PopularActions = map[string]*ActionMetadata{
 	"mikepenz/release-changelog-builder-action@v2": {
 		Name: "Release Changelog Builder",
 		Inputs: map[string]ActionMetadataInputRequired{
+			"baseUrl":           false,
 			"commitMode":        false,
 			"configuration":     false,
 			"failOnError":       false,
