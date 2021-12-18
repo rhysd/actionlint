@@ -1747,6 +1747,7 @@ var PopularActions = map[string]*ActionMetadata{
 	"peter-evans/create-pull-request@v3": {
 		Name: "Create Pull Request",
 		Inputs: map[string]ActionMetadataInputRequired{
+			"add-paths":      false,
 			"assignees":      false,
 			"author":         false,
 			"base":           false,
