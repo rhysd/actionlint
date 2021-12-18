@@ -11,14 +11,6 @@ This document describes how to install [actionlint](..).
 brew install actionlint
 ```
 
-And rhysd/actionlint repository also provides its own Homebrew package, which is automatically updated on new release.
-If you prefer it, tap the repository before running `brew install`.
-
-```sh
-brew tap "rhysd/actionlint" "https://github.com/rhysd/actionlint"
-brew install actionlint
-```
-
 ## Prebuilt binaries
 
 Download an archive file from [the releases page][releases] for your platform, unarchive it and put the executable file to a
