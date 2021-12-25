@@ -181,6 +181,7 @@ var PopularActions = map[string]*ActionMetadata{
 			"disable-spellchecker":   false,
 			"emulator-build":         false,
 			"emulator-options":       false,
+			"enable-hw-keyboard":     false,
 			"force-avd-creation":     false,
 			"ndk":                    false,
 			"profile":                false,
@@ -1099,6 +1100,7 @@ var PopularActions = map[string]*ActionMetadata{
 	"docker/login-action@v1": {
 		Name: "Docker Login",
 		Inputs: map[string]ActionMetadataInputRequired{
+			"ecr":      false,
 			"logout":   false,
 			"password": false,
 			"registry": false,
