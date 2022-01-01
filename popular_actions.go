@@ -1827,6 +1827,7 @@ var PopularActions = map[string]*ActionMetadata{
 			"filter_mode":     false,
 			"github_token":    false,
 			"level":           false,
+			"node_options":    false,
 			"reporter":        false,
 			"reviewdog_flags": false,
 			"tool_name":       false,
