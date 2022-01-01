@@ -250,6 +250,7 @@ var BuiltinGlobalVariableTypes = map[string]ExprType{
 	"runner": NewStrictObjectType(map[string]ExprType{
 		"name":       StringType{},
 		"os":         StringType{},
+		"arch":       StringType{},
 		"temp":       StringType{},
 		"tool_cache": StringType{},
 		// These are not documented but actually exist
