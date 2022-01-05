@@ -222,7 +222,7 @@ func (rule *RuleExpression) VisitStep(n *Step) error {
 	case *ExecAction:
 		rule.checkString(e.Uses)
 		for n, i := range e.Inputs {
-			if strings.HasPrefix(e.Uses.Value, "actions/github-script@") && n == "script" {
+			if e.Uses != nil && strings.HasPrefix(e.Uses.Value, "actions/github-script@") && n == "script" {
 				rule.checkScriptString(i.Value)
 			} else {
 				rule.checkString(i.Value)
