@@ -1,7 +1,7 @@
 generate-popular-actions
 ========================
 
-This is a script for generating [`popular_actions.go`](../popular_actions.go).
+This is a script for generating [`popular_actions.go`](../../popular_actions.go).
 
 It does:
 
