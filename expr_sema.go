@@ -368,7 +368,7 @@ func (sema *ExprSemanticsChecker) UpdateNeeds(ty *ObjectType) {
 func (sema *ExprSemanticsChecker) UpdateSecrets(ty *ObjectType) {
 	sema.ensureVarsCopied()
 
-  // Merges automatically supplied secrets with manually defined secrets.
+	// Merges automatically supplied secrets with manually defined secrets.
 	copied := NewStrictObjectType(map[string]ExprType{
 		"github_token": StringType{},
 	})
