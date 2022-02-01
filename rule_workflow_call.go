@@ -44,18 +44,36 @@ func (rule *RuleWorkflowCall) VisitJobPre(n *Job) error {
 		rule.errorf(u.Pos, "reusable workflow cannot be nested. but this workflow hooks \"workflow_call\" event at %s", rule.workflowCallEventPos)
 	}
 
-	if !strings.Contains(u.Value, "${{") && !checkWorkflowCallUsesFormat(u.Value) {
+	if !strings.Contains(u.Value, "${{") && !(checkWorkflowCallUsesLocalFormat(u.Value) || checkWorkflowCallUsesRepoFormat(u.Value)) {
 		rule.errorf(u.Pos, "reusable workflow call %q at \"uses\" is not following the format \"owner/repo/path/to/workflow.yml@ref\". see https://docs.github.com/en/actions/learn-github-actions/reusing-workflows for more details", u.Value)
 	}
 
 	return nil
 }
 
+// Parse ./{path/{filename}
+// https://docs.github.com/en/actions/learn-github-actions/reusing-workflows#calling-a-reusable-workflow
+func checkWorkflowCallUsesLocalFormat(u string) bool {
+	if !strings.HasPrefix(u, "./") {
+		return false
+	}
+	u = strings.TrimPrefix(u, "./")
+
+	// Cannot container a ref
+	idx := strings.IndexRune(u, '@')
+	if idx > 0 {
+		return false
+	}
+
+	return len(u) > 0
+}
+
 // Parse {owner}/{repo}/{path to workflow.yml}@{ref}
 // https://docs.github.com/en/actions/learn-github-actions/reusing-workflows#calling-a-reusable-workflow
-func checkWorkflowCallUsesFormat(u string) bool {
+func checkWorkflowCallUsesRepoFormat(u string) bool {
+	// Repo reference must start with owner
 	if strings.HasPrefix(u, ".") {
-		return false // Local path is not supported.
+		return false
 	}
 
 	idx := strings.IndexRune(u, '/')
