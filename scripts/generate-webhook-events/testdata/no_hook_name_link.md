@@ -2,7 +2,7 @@
 title: Test
 ---
 
-## Webhook events
+## Available events
 
 ### `check_run`
 
