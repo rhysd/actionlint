@@ -21,11 +21,6 @@ import (
 
 var dbg = log.New(ioutil.Discard, "", log.LstdFlags)
 
-type webhook struct {
-	name  string
-	types []string
-}
-
 func getFirstLinkText(n ast.Node, src []byte) (string, bool) {
 	var link ast.Node
 	ast.Walk(n, func(n ast.Node, entering bool) (ast.WalkStatus, error) {
