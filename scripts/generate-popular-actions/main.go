@@ -128,7 +128,7 @@ var popularActions = []*action{
 	{"ruby/setup-ruby", []string{"v1"}, "v2", yamlExtYML},
 	{"shivammathur/setup-php", []string{"v1", "v2"}, "v3", yamlExtYML},
 	{"softprops/action-gh-release", []string{"v1"}, "v2", yamlExtYML},
-	{"subosito/flutter-action", []string{"v1"}, "v2", yamlExtYML},
+	{"subosito/flutter-action", []string{"v1", "v2"}, "v3", yamlExtYML},
 	{"treosh/lighthouse-ci-action", []string{"v1", "v2", "v3", "v7", "v8"}, "v9", yamlExtYML},
 	{"wearerequired/lint-action", []string{"v1"}, "v2", yamlExtYML},
 }
