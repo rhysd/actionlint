@@ -51,11 +51,11 @@ func (rule *RuleWorkflowCall) VisitJobPre(n *Job) error {
 	return nil
 }
 
-// Parse {owner}/{repo}/{path to workflow.yml}@{ref}
+// Parse {owner}/{repo}/{path to workflow.yml}@{ref} or ./{path to workflow.yml}
 // https://docs.github.com/en/actions/learn-github-actions/reusing-workflows#calling-a-reusable-workflow
 func checkWorkflowCallUsesFormat(u string) bool {
 	if strings.HasPrefix(u, ".") {
-		return false // Local path is not supported.
+		return true // Local paths have no known path components to validate.
 	}
 
 	idx := strings.IndexRune(u, '/')
