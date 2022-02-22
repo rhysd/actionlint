@@ -4,6 +4,10 @@ import (
 	"strings"
 )
 
+const (
+	localPathPrefix = "./.github/workflows/"
+)
+
 // RuleWorkflowCall is a rule checker to check workflow call at jobs.<job_id>.
 type RuleWorkflowCall struct {
 	RuleBase
@@ -54,8 +58,12 @@ func (rule *RuleWorkflowCall) VisitJobPre(n *Job) error {
 // Parse {owner}/{repo}/{path to workflow.yml}@{ref} or ./{path to workflow.yml}
 // https://docs.github.com/en/actions/learn-github-actions/reusing-workflows#calling-a-reusable-workflow
 func checkWorkflowCallUsesFormat(u string) bool {
+	if strings.HasPrefix(u, localPathPrefix) {
+		return len(u) > len(localPathPrefix)
+	}
+
 	if strings.HasPrefix(u, ".") {
-		return true // Local paths have no known path components to validate.
+		return false // Other local paths are not supported.
 	}
 
 	idx := strings.IndexRune(u, '/')

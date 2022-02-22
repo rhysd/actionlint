@@ -15,6 +15,7 @@ func TestRuleWorkflowCallCheckWorkflowCallUsesFormat(t *testing.T) {
 		{"owner/repo/x.yml@release/v1", true},
 		{"${{ env.FOO }}", true},
 		{"./path/to/x.yml@ref", false},
+		{"./.github/workflows/x.yml", true},
 		{"/path/to/x.yml@ref", false},
 		{"owner/x.yml@ref", false},
 		{"owner/repo@ref", false},

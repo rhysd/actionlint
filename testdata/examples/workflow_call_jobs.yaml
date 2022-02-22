@@ -5,9 +5,12 @@ jobs:
     # ERROR: 'runs-on' is not available on calling reusable workflow
     runs-on: ubuntu-latest
   job2:
-    # ERROR: Local file path is not available
-    uses: ./.github/workflows/ci.yml@main
+    # OK: Local file path is valid
+    uses: ./.github/workflows/ci.yml
   job3:
+    # ERROR: Local file path is the wrong format
+    uses: .github/workflows/ci.yml
+  job4:
     # ERROR: 'with' is only available on calling reusable workflow
     with:
       foo: bar
