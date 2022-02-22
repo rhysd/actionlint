@@ -60,9 +60,7 @@ func (rule *RuleWorkflowCall) VisitJobPre(n *Job) error {
 func checkWorkflowCallUsesFormat(u string) bool {
 	if strings.HasPrefix(u, localPathPrefix) {
 		return len(u) > len(localPathPrefix)
-	}
-
-	if strings.HasPrefix(u, ".") {
+	} else if strings.HasPrefix(u, ".") {
 		return false // Other local paths are not supported.
 	}
 
