@@ -55,7 +55,7 @@ func (rule *RuleWorkflowCall) VisitJobPre(n *Job) error {
 	return nil
 }
 
-// Parse {owner}/{repo}/{path to workflow.yml}@{ref} or ./{path to workflow.yml}
+// Parse {owner}/{repo}/{path to workflow.yml}@{ref} or ./.github/workflows/{path to workflow.yml}
 // https://docs.github.com/en/actions/learn-github-actions/reusing-workflows#calling-a-reusable-workflow
 func checkWorkflowCallUsesFormat(u string) bool {
 	if strings.HasPrefix(u, localPathPrefix) {
