@@ -160,7 +160,6 @@ func TestLinterLintError(t *testing.T) {
 				}
 
 				if len(errs) != len(expected) {
-					fmt.Printf("File: %s", base)
 					t.Fatalf("%d errors are expected but actually got %d errors: %# v", len(expected), len(errs), errs)
 				}
 
