@@ -19,6 +19,24 @@ brew tap "rhysd/actionlint" "https://github.com/rhysd/actionlint"
 brew install actionlint
 ```
 
+## asdf
+
+You can install actionlint with the [asdf version manager](https://asdf-vm.com/) using this [plugin](https://github.com/crazy-matt/asdf-actionlint), which automates the process of installing (and switching between) various versions of github release binaries. With asdf already installed, run these commands to install actionlint:
+
+```bash
+# Add actionlint plugin
+asdf plugin add actionlint
+
+# Show all installable versions
+asdf list-all actionlint
+
+# Install specific version
+asdf install actionlint latest
+
+# Set a version globally (on your ~/.tool-versions file)
+asdf global actionlint latest
+```
+
 ## Prebuilt binaries
 
 Download an archive file from [the releases page][releases] for your platform, unarchive it and put the executable file to a
