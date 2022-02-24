@@ -368,7 +368,15 @@ func (sema *ExprSemanticsChecker) UpdateNeeds(ty *ObjectType) {
 // UpdateSecrets updates 'secrets' context object to given object type.
 func (sema *ExprSemanticsChecker) UpdateSecrets(ty *ObjectType) {
 	sema.ensureVarsCopied()
-	sema.vars["secrets"] = ty
+
+	// Merges automatically supplied secrets with manually defined secrets.
+	copied := NewStrictObjectType(map[string]ExprType{
+		"github_token": StringType{},
+	})
+	for n, v := range ty.Props {
+		copied.Props[n] = v
+	}
+	sema.vars["secrets"] = copied
 }
 
 // UpdateInputs updates 'inputs' context object to given object type.
