@@ -179,6 +179,7 @@ var PopularActions = map[string]*ActionMetadata{
 			"disable-animations":     false,
 			"disable-linux-hw-accel": false,
 			"disable-spellchecker":   false,
+			"disk-size":              false,
 			"emulator-build":         false,
 			"emulator-options":       false,
 			"enable-hw-keyboard":     false,
@@ -534,9 +535,10 @@ var PopularActions = map[string]*ActionMetadata{
 	"actions/setup-go@v2": {
 		Name: "Setup Go environment",
 		Inputs: map[string]ActionMetadataInputRequired{
-			"go-version": false,
-			"stable":     false,
-			"token":      false,
+			"check-latest": false,
+			"go-version":   false,
+			"stable":       false,
+			"token":        false,
 		},
 	},
 	"actions/setup-java@v1": {
@@ -1336,6 +1338,8 @@ var PopularActions = map[string]*ActionMetadata{
 			"matrix":              false,
 			"output":              false,
 			"ram":                 false,
+			"ref":                 false,
+			"sha":                 false,
 			"skip-queries":        false,
 			"threads":             false,
 			"token":               false,
@@ -1345,6 +1349,7 @@ var PopularActions = map[string]*ActionMetadata{
 		},
 		Outputs: map[string]struct{}{
 			"db-locations": {},
+			"sarif-id":     {},
 		},
 	},
 	"github/codeql-action/autobuild@v1": {
@@ -2045,6 +2050,7 @@ var PopularActions = map[string]*ActionMetadata{
 		Inputs: map[string]ActionMetadataInputRequired{
 			"coverage":    false,
 			"extensions":  false,
+			"ini-file":    false,
 			"ini-values":  false,
 			"php-version": false,
 			"tools":       false,
