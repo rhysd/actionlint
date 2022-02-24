@@ -580,6 +580,14 @@ func TestExprSemanticsCheckOK(t *testing.T) {
 			input:    "secrets.any_value",
 			expected: StringType{},
 		},
+		{
+			what:     "automatically supplied secret",
+			input:    "secrets.github_token",
+			expected: StringType{},
+			secrets: NewStrictObjectType(map[string]ExprType{
+				"foo": StringType{},
+			}),
+		},
 	}
 
 	for _, tc := range testCases {
