@@ -1,0 +1,6 @@
+jobs:
+  actionlint:
+    steps:
+      -
+        with:
+          info: test
