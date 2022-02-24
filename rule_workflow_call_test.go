@@ -18,6 +18,7 @@ func TestRuleWorkflowCallCheckWorkflowCallUsesFormat(t *testing.T) {
 		{"./path/to/x.yml@ref", false},
 		{"/path/to/x.yml@ref", false},
 		{"./", false},
+		{".", false},
 		{"owner/x.yml@ref", false},
 		{"owner/repo@ref", false},
 		{"owner/repo/x.yml", false},

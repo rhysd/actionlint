@@ -1956,7 +1956,7 @@ jobs:
     # ERROR: 'runs-on' is not available on calling reusable workflow
     runs-on: ubuntu-latest
   job2:
-    # ERROR: Local file path is not available
+    # ERROR: Local file path with ref is not available
     uses: ./.github/workflows/ci.yml@main
   job3:
     # ERROR: 'with' is only available on calling reusable workflow
@@ -1974,7 +1974,7 @@ test.yaml:6:5: when a reusable workflow is called with "uses", "runs-on" is not 
   |
 6 |     runs-on: ubuntu-latest
   |     ^~~~~~~~
-test.yaml:9:11: reusable workflow call "./.github/workflows/ci.yml@main" at "uses" is not following the format "owner/repo/path/to/workflow.yml@ref". see https://docs.github.com/en/actions/learn-github-actions/reusing-workflows for more details [workflow-call]
+test.yaml:9:11: reusable workflow call "./.github/workflows/ci.yml@main" at "uses" is not following the format "owner/repo/path/to/workflow.yml@ref" nor "./path/to/workflow.yml". see https://docs.github.com/en/actions/learn-github-actions/reusing-workflows for more details [workflow-call]
   |
 9 |     uses: ./.github/workflows/ci.yml@main
   |           ^~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
