@@ -1,3 +1,29 @@
+<a name="v1.6.9"></a>
+# [v1.6.9](https://github.com/rhysd/actionlint/releases/tag/v1.6.9) - 24 Feb 2022
+
+- Support [`runner.arch` context value](https://docs.github.com/en/actions/learn-github-actions/contexts#runner-context). (thanks @shogo82148, #101)
+  ```yaml
+  steps:
+    - run: ./do_something_64bit.sh
+      if ${{ runner.arch == 'x64' }}
+  ```
+- Support [calling reusable workflows in local directories](https://docs.github.com/en/actions/using-workflows/reusing-workflows#calling-a-reusable-workflow). (thanks @jsok, #107)
+  ```yaml
+  jobs:
+    call-workflow-in-local-repo:
+      uses: ./.github/workflows/useful_workflow.yml
+  ```
+- Add [a document](https://github.com/rhysd/actionlint/blob/main/docs/install.md#asdf) to install actionlint via [asdf](https://asdf-vm.com/) version manager. (thanks @crazy-matt, #99)
+- Fix using `secrets.GITHUB_TOKEN` caused a type error when some other secret is defined. (thanks @mkj-is, #106)
+- Fix nil check is missing on parsing `uses:` step. (thanks @shogo82148, #102)
+- Fix some documents including broken links. (thanks @ohkinozomu, #105)
+- Update popular actions data set to the latest. More arguments are added to many actions. And a few actions had new major versions.
+- Update webhook payload data set to the latest. `requested_action` type was added to `check_run` hook. `requested` and `rerequested` types were removed from `check_suite` hook. `updated` type was removed from `project` hook.
+
+
+[Changes][v1.6.9]
+
+
 <a name="v1.6.8"></a>
 # [v1.6.8](https://github.com/rhysd/actionlint/releases/tag/v1.6.8) - 15 Nov 2021
 
@@ -19,7 +45,7 @@
       JSON: {{ toJSON(github.event.*.body) }}
   ```
 - Support [the new input type syntax for `workflow_dispatch` event](https://github.blog/changelog/2021-11-10-github-actions-input-types-for-manual-workflows/), which was introduced recently. You can declare types of inputs on triggering a workflow manually. actionlint does two things with this new syntax.
-  - 1. actionlint checks the syntax. Unknown input types, invalid default values, missing options for 'choice' type.
+  - actionlint checks the syntax. Unknown input types, invalid default values, missing options for 'choice' type.
     ```yaml
     inputs:
       # Unknown input type
@@ -40,7 +66,7 @@
         # ERROR: Boolean value must be 'true' or 'false'
         default: yes
     ```
-  - 2. actionlint give a strict object type to `github.event.inputs` so that a type checker can check unknown input names and type mismatches on using the value.
+  - actionlint give a strict object type to `github.event.inputs` so that a type checker can check unknown input names and type mismatches on using the value.
     ```yaml
     on:
       workflow_dispatch:
@@ -595,6 +621,7 @@ See documentation for more details:
 [Changes][v1.0.0]
 
 
+[v1.6.9]: https://github.com/rhysd/actionlint/compare/v1.6.8...v1.6.9
 [v1.6.8]: https://github.com/rhysd/actionlint/compare/v1.6.7...v1.6.8
 [v1.6.7]: https://github.com/rhysd/actionlint/compare/v1.6.6...v1.6.7
 [v1.6.6]: https://github.com/rhysd/actionlint/compare/v1.6.5...v1.6.6
