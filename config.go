@@ -16,6 +16,7 @@ type Config struct {
 		// Labels is label names for self-hosted runner.
 		Labels []string `yaml:"labels"`
 	} `yaml:"self-hosted-runner"`
+	RunScriptMaxLines *int `yaml:"run-script-max-lines",omitempty`
 }
 
 func parseConfig(b []byte, path string) (*Config, error) {
@@ -39,6 +40,8 @@ func writeDefaultConfigFile(path string) error {
 	b := []byte(`self-hosted-runner:
   # Labels of self-hosted runner in array of string
   labels: []
+
+#run-script-max-lines: 23
 `)
 	if err := ioutil.WriteFile(path, b, 0644); err != nil {
 		return fmt.Errorf("could not write default configuration file at %q: %w", path, err)

@@ -457,8 +457,12 @@ func (l *Linter) check(path string, content []byte, project *Project, proc *conc
 		dbg := l.debugWriter()
 
 		var labels []string
+		var maxLines int = 10
 		if cfg != nil {
 			labels = cfg.SelfHostedRunner.Labels
+			if cfg.RunScriptMaxLines != nil {
+				maxLines = *cfg.RunScriptMaxLines
+			}
 		}
 
 		rules := []Rule{
@@ -475,6 +479,7 @@ func (l *Linter) check(path string, content []byte, project *Project, proc *conc
 			NewRulePermissions(),
 			NewRuleWorkflowCall(),
 			NewRuleExpression(localActions),
+			NewRuleRunScriptLength(maxLines),
 		}
 		if l.shellcheck != "" {
 			r, err := NewRuleShellcheck(l.shellcheck, proc)
