@@ -287,6 +287,55 @@ var PopularActions = map[string]*ActionMetadata{
 			"issue-number": {},
 		},
 	},
+	"actions-cool/issues-helper@v3": {
+		Name: "Issues Helper",
+		Inputs: map[string]ActionMetadataInputRequired{
+			"actions":            false,
+			"assign-command":     false,
+			"assignee-includes":  false,
+			"assignees":          false,
+			"body":               false,
+			"body-includes":      false,
+			"close-issue":        false,
+			"comment-auth":       false,
+			"comment-id":         false,
+			"direction":          false,
+			"duplicate-command":  false,
+			"duplicate-labels":   false,
+			"emoji":              false,
+			"exclude-labels":     false,
+			"inactive-day":       false,
+			"inactive-label":     false,
+			"issue-assignee":     false,
+			"issue-creator":      false,
+			"issue-emoji":        false,
+			"issue-mentioned":    false,
+			"issue-number":       false,
+			"issue-state":        false,
+			"label-color":        false,
+			"label-desc":         false,
+			"label-name":         false,
+			"labels":             false,
+			"lock-reason":        false,
+			"random-to":          false,
+			"remove-labels":      false,
+			"repo":               false,
+			"require-permission": false,
+			"state":              false,
+			"title":              false,
+			"title-excludes":     false,
+			"title-includes":     false,
+			"token":              false,
+			"update-mode":        false,
+		},
+		Outputs: map[string]struct{}{
+			"check-result": {},
+			"comment-id":   {},
+			"comments":     {},
+			"issue-number": {},
+			"issues":       {},
+		},
+	},
 	"actions-rs/audit-check@v1": {
 		Name: "rust-audit-check",
 		Inputs: map[string]ActionMetadataInputRequired{
@@ -499,6 +548,20 @@ var PopularActions = map[string]*ActionMetadata{
 			"result": {},
 		},
 	},
+	"actions/github-script@v6": {
+		Name: "GitHub Script",
+		Inputs: map[string]ActionMetadataInputRequired{
+			"debug":           false,
+			"github-token":    false,
+			"previews":        false,
+			"result-encoding": false,
+			"script":          true,
+			"user-agent":      false,
+		},
+		Outputs: map[string]struct{}{
+			"result": {},
+		},
+	},
 	"actions/labeler@v2": {
 		Name: "Pull Request Labeler",
 		Inputs: map[string]ActionMetadataInputRequired{
@@ -516,6 +579,16 @@ var PopularActions = map[string]*ActionMetadata{
 		},
 	},
 	"actions/setup-dotnet@v1": {
+		Name: "Setup .NET Core SDK",
+		Inputs: map[string]ActionMetadataInputRequired{
+			"config-file":        false,
+			"dotnet-version":     false,
+			"include-prerelease": false,
+			"owner":              false,
+			"source-url":         false,
+		},
+	},
+	"actions/setup-dotnet@v2": {
 		Name: "Setup .NET Core SDK",
 		Inputs: map[string]ActionMetadataInputRequired{
 			"config-file":        false,
@@ -585,6 +658,31 @@ var PopularActions = map[string]*ActionMetadata{
 			"version":      {},
 		},
 	},
+	"actions/setup-java@v3": {
+		Name: "Setup Java JDK",
+		Inputs: map[string]ActionMetadataInputRequired{
+			"architecture":       false,
+			"cache":              false,
+			"check-latest":       false,
+			"distribution":       true,
+			"gpg-passphrase":     false,
+			"gpg-private-key":    false,
+			"java-package":       false,
+			"java-version":       true,
+			"jdkFile":            false,
+			"job-status":         false,
+			"overwrite-settings": false,
+			"server-id":          false,
+			"server-password":    false,
+			"server-username":    false,
+			"settings-path":      false,
+		},
+		Outputs: map[string]struct{}{
+			"distribution": {},
+			"path":         {},
+			"version":      {},
+		},
+	},
 	"actions/setup-node@v1": {
 		Name: "Setup Node.js environment",
 		Inputs: map[string]ActionMetadataInputRequired{
@@ -609,6 +707,24 @@ var PopularActions = map[string]*ActionMetadata{
 			"scope":                 false,
 			"token":                 false,
 			"version":               false,
+		},
+		Outputs: map[string]struct{}{
+			"cache-hit": {},
+		},
+	},
+	"actions/setup-node@v3": {
+		Name: "Setup Node.js environment",
+		Inputs: map[string]ActionMetadataInputRequired{
+			"always-auth":           false,
+			"architecture":          false,
+			"cache":                 false,
+			"cache-dependency-path": false,
+			"check-latest":          false,
+			"node-version":          false,
+			"node-version-file":     false,
+			"registry-url":          false,
+			"scope":                 false,
+			"token":                 false,
 		},
 		Outputs: map[string]struct{}{
 			"cache-hit": {},
@@ -1456,6 +1572,18 @@ var PopularActions = map[string]*ActionMetadata{
 			"working-directory":    false,
 		},
 	},
+	"golangci/golangci-lint-action@v3": {
+		Name: "Run golangci-lint",
+		Inputs: map[string]ActionMetadataInputRequired{
+			"args":              false,
+			"github-token":      false,
+			"only-new-issues":   false,
+			"skip-build-cache":  false,
+			"skip-pkg-cache":    false,
+			"version":           false,
+			"working-directory": false,
+		},
+	},
 	"goreleaser/goreleaser-action@v1": {
 		Name: "GoReleaser Action",
 		Inputs: map[string]ActionMetadataInputRequired{
@@ -2166,6 +2294,27 @@ var PopularActions = map[string]*ActionMetadata{
 		},
 	},
 	"treosh/lighthouse-ci-action@v8": {
+		Name: "Lighthouse CI Action",
+		Inputs: map[string]ActionMetadataInputRequired{
+			"artifactName":           false,
+			"basicAuthPassword":      false,
+			"basicAuthUsername":      false,
+			"budgetPath":             false,
+			"configPath":             false,
+			"runs":                   false,
+			"serverBaseUrl":          false,
+			"serverToken":            false,
+			"temporaryPublicStorage": false,
+			"uploadArtifacts":        false,
+			"urls":                   false,
+		},
+		Outputs: map[string]struct{}{
+			"assertionResults": {},
+			"links":            {},
+			"resultsPath":      {},
+		},
+	},
+	"treosh/lighthouse-ci-action@v9": {
 		Name: "Lighthouse CI Action",
 		Inputs: map[string]ActionMetadataInputRequired{
 			"artifactName":           false,
