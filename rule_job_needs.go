@@ -59,12 +59,17 @@ func (rule *RuleJobNeeds) VisitJobPre(n *Job) error {
 			rule.errorf(j.Pos, "job ID %q duplicates in \"needs\" section. note that job ID is case insensitive", j.Value)
 			continue
 		}
-		// Job ID is key of mapping. Key mapping is stored in lowercase since it is case
-		// insensitive. So values in 'needs' array must be compared in lowercase.
-		needs = append(needs, id)
+		if id != "" {
+			// Job ID is key of mapping. Key mapping is stored in lowercase since it is case
+			// insensitive. So values in 'needs' array must be compared in lowercase.
+			needs = append(needs, id)
+		}
 	}
 
 	id := strings.ToLower(n.ID.Value)
+	if id == "" {
+		return nil
+	}
 	if prev, ok := rule.nodes[id]; ok {
 		rule.errorf(n.Pos, "job ID %q duplicates. previously defined at %s. note that job ID is case insensitive", n.ID.Value, prev.pos.String())
 	}
