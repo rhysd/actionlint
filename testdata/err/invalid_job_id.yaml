@@ -1,0 +1,10 @@
+on: push
+jobs:
+  -foo:
+    runs-on: ubuntu-latest
+    steps:
+      - run: echo 'must start with _ or letters'
+  v1.2.3:
+    runs-on: ubuntu-latest
+    steps:
+      - run: echo 'must contain only alnum or _ or -'
