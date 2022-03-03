@@ -34,6 +34,7 @@ List of checks:
 - [Environment variable names](#check-env-var-names)
 - [Permissions](#permissions)
 - [Reusable workflows](#check-reusable-workflows)
+- [Job ID naming convention](#job-id-naming-convention)
 
 Note that actionlint focuses on catching mistakes in workflow files. If you want some general code style checks, please consider
 using a general YAML checker like [yamllint][].
@@ -2046,6 +2047,44 @@ And in a job of a reusable workflow, `secrets.*` are passed from caller of the w
 actionlint contextually defines types of `inputs` and `secrets` contexts looking at `workflow_call` event. Keys of `inputs` only
 allow keys at `on.workflow_call.inputs` and their values are typed based on `on.workflow_call.inputs.<input_name>.type`. Type of
 `secrets` is also strictly typed following `on.workflow_call.secrets`.
+
+<a name="job-id-naming-convention"></a>
+## Job ID naming convention
+
+Example input:
+
+```yaml
+on: push
+jobs:
+  # ERROR: '.' cannot be contained in job ID
+  foo-v1.2.3:
+    runs-on: ubuntu-latest
+    steps:
+      - run: 'job ID with version'
+  # ERROR: Job ID cannot start with '-'
+  -hello-world-:
+    runs-on: ubuntu-latest
+    steps:
+      - run: 'hello'
+```
+
+Output:
+
+```
+test.yaml:4:3: invalid job ID "foo-v1.2.3". job ID must start with a letter or _ and contain only alphanumeric characters, -, or _ [job-needs]
+  |
+4 |   foo-v1.2.3:
+  |   ^~~~~~~~~~~
+test.yaml:9:3: invalid job ID "-hello-world-". job ID must start with a letter or _ and contain only alphanumeric characters, -, or _ [job-needs]
+  |
+9 |   -hello-world-:
+  |   ^~~~~~~~~~~~~~
+```
+
+[Playground](https://rhysd.github.io/actionlint#eJydzDEOhDAMRNGeU0yXykhAl5qGY4DIKqAoRrEN1yfADbYczdPn7HGYxGbnRXwD/Jjp7Nq+HZ4FFMtCXJUtltUozRpE30s0HPIpgB7p4WoH04hr04gzFNk4u0oohpSYLi5ppf/Kb8HdY9w0wA==)
+
+Job ID must start with a letter or `_` and contain only alphanumeric characters, `-` or `_`. actionlint checks the naming
+convention and reports invalid IDs as error.
 
 ---
 

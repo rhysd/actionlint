@@ -1,0 +1,12 @@
+on: push
+jobs:
+  # ERROR: '.' cannot be contained in job ID
+  foo-v1.2.3:
+    runs-on: ubuntu-latest
+    steps:
+      - run: 'job ID with version'
+  # ERROR: Job ID cannot start with '-'
+  -hello-world-:
+    runs-on: ubuntu-latest
+    steps:
+      - run: 'hello'
