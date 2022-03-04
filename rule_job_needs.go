@@ -27,20 +27,20 @@ type edge struct {
 	to   *jobNode
 }
 
+var jobIDPattern = regexp.MustCompile(`^[a-zA-Z0-9_][a-zA-Z0-9_-]*$`)
+
 // RuleJobNeeds is a rule to check 'needs' field in each job conifiguration. For more details, see
 // https://docs.github.com/en/actions/learn-github-actions/workflow-syntax-for-github-actions#jobsjob_idneeds
 type RuleJobNeeds struct {
 	RuleBase
-	nodes     map[string]*jobNode
-	idPattern *regexp.Regexp
+	nodes map[string]*jobNode
 }
 
 // NewRuleJobNeeds creates new RuleJobNeeds instance.
 func NewRuleJobNeeds() *RuleJobNeeds {
 	return &RuleJobNeeds{
-		RuleBase:  RuleBase{name: "job-needs"},
-		nodes:     map[string]*jobNode{},
-		idPattern: regexp.MustCompile(`^[a-zA-Z0-9_][a-zA-Z0-9_-]*$`),
+		RuleBase: RuleBase{name: "job-needs"},
+		nodes:    map[string]*jobNode{},
 	}
 }
 
@@ -130,7 +130,7 @@ func (rule *RuleJobNeeds) VisitWorkflowPost(n *Workflow) error {
 }
 
 func (rule *RuleJobNeeds) validateNaming(id *String) {
-	if rule.idPattern.MatchString(id.Value) {
+	if jobIDPattern.MatchString(id.Value) {
 		return
 	}
 	rule.errorf(id.Pos, "invalid job ID %q. job ID must start with a letter or _ and contain only alphanumeric characters, -, or _", id.Value)

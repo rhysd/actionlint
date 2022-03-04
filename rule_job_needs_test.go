@@ -11,6 +11,7 @@ func TestCheckInvalidJobNames(t *testing.T) {
 		"-foo",
 		"v1.2.3",
 		"hello!",
+		"じょぶ",
 	}
 
 	for _, input := range inputs {
@@ -49,5 +50,28 @@ func TestCheckInvalidJobNames(t *testing.T) {
 				}
 			})
 		}
+	}
+}
+
+func TestCheckValidJobNames(t *testing.T) {
+	inputs := []string{
+		"foo-bar",
+		"foo_bar",
+		"_FOO123-",
+		"1_2_3-foo",
+	}
+
+	for _, input := range inputs {
+		t.Run(input, func(t *testing.T) {
+			job := &Job{
+				ID: &String{Value: input, Pos: &Pos{}},
+			}
+			r := NewRuleJobNeeds()
+			r.VisitJobPre(job)
+			errs := r.Errs()
+			if len(errs) > 0 {
+				t.Fatalf("Unexpected error(s): %#v", errs)
+			}
+		})
 	}
 }
