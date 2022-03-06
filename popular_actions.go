@@ -431,6 +431,23 @@ var PopularActions = map[string]*ActionMetadata{
 			"token":               false,
 		},
 	},
+	"actions/checkout@v3": {
+		Name: "Checkout",
+		Inputs: map[string]ActionMetadataInputRequired{
+			"clean":               false,
+			"fetch-depth":         false,
+			"lfs":                 false,
+			"path":                false,
+			"persist-credentials": false,
+			"ref":                 false,
+			"repository":          false,
+			"ssh-key":             false,
+			"ssh-known-hosts":     false,
+			"ssh-strict":          false,
+			"submodules":          false,
+			"token":               false,
+		},
+	},
 	"actions/delete-package-versions@v1": {
 		Name: "Delete Package Versions",
 		Inputs: map[string]ActionMetadataInputRequired{
@@ -456,6 +473,20 @@ var PopularActions = map[string]*ActionMetadata{
 			"token":                            false,
 		},
 	},
+	"actions/delete-package-versions@v3": {
+		Name: "Delete Package Versions",
+		Inputs: map[string]ActionMetadataInputRequired{
+			"delete-only-pre-release-versions": false,
+			"ignore-versions":                  false,
+			"min-versions-to-keep":             false,
+			"num-old-versions-to-delete":       false,
+			"owner":                            false,
+			"package-name":                     false,
+			"package-version-ids":              false,
+			"repo":                             false,
+			"token":                            false,
+		},
+	},
 	"actions/download-artifact@v1": {
 		Name: "Download a Build Artifact",
 		Inputs: map[string]ActionMetadataInputRequired{
@@ -464,6 +495,13 @@ var PopularActions = map[string]*ActionMetadata{
 		},
 	},
 	"actions/download-artifact@v2": {
+		Name: "Download a Build Artifact",
+		Inputs: map[string]ActionMetadataInputRequired{
+			"name": false,
+			"path": false,
+		},
+	},
+	"actions/download-artifact@v3": {
 		Name: "Download a Build Artifact",
 		Inputs: map[string]ActionMetadataInputRequired{
 			"name": false,
@@ -578,6 +616,14 @@ var PopularActions = map[string]*ActionMetadata{
 			"sync-labels":        false,
 		},
 	},
+	"actions/labeler@v4": {
+		Name: "Labeler",
+		Inputs: map[string]ActionMetadataInputRequired{
+			"configuration-path": false,
+			"repo-token":         false,
+			"sync-labels":        false,
+		},
+	},
 	"actions/setup-dotnet@v1": {
 		Name: "Setup .NET Core SDK",
 		Inputs: map[string]ActionMetadataInputRequired{
@@ -611,6 +657,14 @@ var PopularActions = map[string]*ActionMetadata{
 			"check-latest": false,
 			"go-version":   false,
 			"stable":       false,
+			"token":        false,
+		},
+	},
+	"actions/setup-go@v3": {
+		Name: "Setup Go environment",
+		Inputs: map[string]ActionMetadataInputRequired{
+			"check-latest": false,
+			"go-version":   false,
 			"token":        false,
 		},
 	},
@@ -741,6 +795,19 @@ var PopularActions = map[string]*ActionMetadata{
 		},
 	},
 	"actions/setup-python@v2": {
+		Name: "Setup Python",
+		Inputs: map[string]ActionMetadataInputRequired{
+			"architecture":          false,
+			"cache":                 false,
+			"cache-dependency-path": false,
+			"python-version":        false,
+			"token":                 false,
+		},
+		Outputs: map[string]struct{}{
+			"python-version": {},
+		},
+	},
+	"actions/setup-python@v3": {
 		Name: "Setup Python",
 		Inputs: map[string]ActionMetadataInputRequired{
 			"architecture":          false,
@@ -895,6 +962,65 @@ var PopularActions = map[string]*ActionMetadata{
 			"staled-issues-prs": {},
 		},
 	},
+	"actions/stale@v5": {
+		Name: "Close Stale Issues",
+		Inputs: map[string]ActionMetadataInputRequired{
+			"any-of-issue-labels":             false,
+			"any-of-labels":                   false,
+			"any-of-pr-labels":                false,
+			"ascending":                       false,
+			"close-issue-label":               false,
+			"close-issue-message":             false,
+			"close-pr-label":                  false,
+			"close-pr-message":                false,
+			"days-before-close":               false,
+			"days-before-issue-close":         false,
+			"days-before-issue-stale":         false,
+			"days-before-pr-close":            false,
+			"days-before-pr-stale":            false,
+			"days-before-stale":               false,
+			"debug-only":                      false,
+			"delete-branch":                   false,
+			"enable-statistics":               false,
+			"exempt-all-assignees":            false,
+			"exempt-all-issue-assignees":      false,
+			"exempt-all-issue-milestones":     false,
+			"exempt-all-milestones":           false,
+			"exempt-all-pr-assignees":         false,
+			"exempt-all-pr-milestones":        false,
+			"exempt-assignees":                false,
+			"exempt-draft-pr":                 false,
+			"exempt-issue-assignees":          false,
+			"exempt-issue-labels":             false,
+			"exempt-issue-milestones":         false,
+			"exempt-milestones":               false,
+			"exempt-pr-assignees":             false,
+			"exempt-pr-labels":                false,
+			"exempt-pr-milestones":            false,
+			"ignore-issue-updates":            false,
+			"ignore-pr-updates":               false,
+			"ignore-updates":                  false,
+			"labels-to-add-when-unstale":      false,
+			"labels-to-remove-when-unstale":   false,
+			"only-issue-labels":               false,
+			"only-labels":                     false,
+			"only-pr-labels":                  false,
+			"operations-per-run":              false,
+			"remove-issue-stale-when-updated": false,
+			"remove-pr-stale-when-updated":    false,
+			"remove-stale-when-updated":       false,
+			"repo-token":                      false,
+			"stale-issue-label":               false,
+			"stale-issue-message":             false,
+			"stale-pr-label":                  false,
+			"stale-pr-message":                false,
+			"start-date":                      false,
+		},
+		Outputs: map[string]struct{}{
+			"closed-issues-prs": {},
+			"staled-issues-prs": {},
+		},
+	},
 	"actions/upload-artifact@v1": {
 		Name: "Upload a Build Artifact",
 		Inputs: map[string]ActionMetadataInputRequired{
@@ -903,6 +1029,15 @@ var PopularActions = map[string]*ActionMetadata{
 		},
 	},
 	"actions/upload-artifact@v2": {
+		Name: "Upload a Build Artifact",
+		Inputs: map[string]ActionMetadataInputRequired{
+			"if-no-files-found": false,
+			"name":              false,
+			"path":              true,
+			"retention-days":    false,
+		},
+	},
+	"actions/upload-artifact@v3": {
 		Name: "Upload a Build Artifact",
 		Inputs: map[string]ActionMetadataInputRequired{
 			"if-no-files-found": false,
@@ -1579,6 +1714,7 @@ var PopularActions = map[string]*ActionMetadata{
 			"github-token":      false,
 			"only-new-issues":   false,
 			"skip-build-cache":  false,
+			"skip-cache":        false,
 			"skip-pkg-cache":    false,
 			"version":           false,
 			"working-directory": false,
@@ -1601,6 +1737,10 @@ var PopularActions = map[string]*ActionMetadata{
 			"install-only": false,
 			"version":      false,
 			"workdir":      false,
+		},
+		Outputs: map[string]struct{}{
+			"artifacts": {},
+			"metadata":  {},
 		},
 	},
 	"gradle/wrapper-validation-action@v1": {
