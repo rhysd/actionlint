@@ -1,0 +1,16 @@
+on:
+  workflow_call:
+    inputs:
+      image-name:
+        description: Name of Docker image
+        required: true
+        type: string
+    outputs:
+      image-version:
+        description: "Docker image version"
+        value: ${{ jobs.generate-image-version.outputs.imagetag }}
+jobs:
+  generate-image-version:
+    runs-on: ubuntu-latest
+    steps:
+      - run: echo

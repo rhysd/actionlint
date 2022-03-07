@@ -1,0 +1,26 @@
+on:
+  workflow_call:
+    outputs:
+      missing-description:
+        value: ${{ jobs.test.output }}
+      missing-value:
+        description: "description"
+      missing-all:
+      unknown-section:
+        description: "description"
+        value: ${{ jobs.test.output }}
+        unknown-section:
+      duplicate-key:
+        description: "description"
+        value: ${{ jobs.test.output }}
+      duplicate-key:
+        description: "description"
+        value: ${{ jobs.test.output }}
+      empty-value:
+        description: "description"
+        value:
+jobs:
+  test:
+    runs-on: ubuntu-latest
+    steps:
+      - run: echo
