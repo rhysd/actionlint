@@ -519,7 +519,7 @@ func (p *parser) parseWorkflowCallEvent(pos *Pos, n *yaml.Node) *WorkflowCallEve
 					case "description":
 						output.Description = p.parseString(attr.val, true)
 					case "value":
-						output.Value = p.parseString(attr.val, true)
+						output.Value = p.parseString(attr.val, false)
 					default:
 						p.unexpectedKey(attr.key, "outputs at workflow_call event", []string{"description", "value"})
 					}
