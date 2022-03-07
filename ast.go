@@ -215,6 +215,15 @@ type WorkflowCallEventSecret struct {
 	Required *Bool
 }
 
+// WorkflowCallEventOutput is an output configuration of workflow_call event.
+// https://docs.github.com/en/actions/using-workflows/reusing-workflows#using-outputs-from-a-reusable-workflow
+type WorkflowCallEventOutput struct {
+	// Description is a description of the output.
+	Description *String
+	// Value is an expression for the value of the output.
+	Value *String
+}
+
 // WorkflowCallEvent is workflow_call event configuration.
 // https://docs.github.com/en/actions/learn-github-actions/events-that-trigger-workflows#workflow-reuse-events
 type WorkflowCallEvent struct {
@@ -224,6 +233,9 @@ type WorkflowCallEvent struct {
 	// Secrets is a map from name of secret to secret configuration.
 	// https://docs.github.com/en/actions/learn-github-actions/workflow-syntax-for-github-actions#onworkflow_callsecrets
 	Secrets map[*String]*WorkflowCallEventSecret
+	// Outputs is a map from name of output to output configuration.
+	// https://docs.github.com/en/actions/using-workflows/reusing-workflows#using-outputs-from-a-reusable-workflow
+	Outputs map[*String]*WorkflowCallEventOutput
 	// Pos is a position in source.
 	Pos *Pos
 }
