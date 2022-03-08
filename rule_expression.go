@@ -669,9 +669,16 @@ func (rule *RuleExpression) populateDependantNeedsTypes(out *ObjectType, job *Jo
 			continue
 		}
 
-		outputs := NewEmptyStrictObjectType()
-		for name := range j.Outputs {
-			outputs.Props[name] = StringType{}
+		var outputs *ObjectType
+		if j.WorkflowCall == nil {
+			outputs = NewEmptyStrictObjectType()
+			for name := range j.Outputs {
+				outputs.Props[name] = StringType{}
+			}
+		} else {
+			// When the outputs are the result of reusable workflow call, their names are not defined in the job's
+			// configuration (instead, they are defined in the reusable workflow). Fall back to a loose object. (#121)
+			outputs = NewEmptyObjectType()
 		}
 
 		out.Props[i] = NewStrictObjectType(map[string]ExprType{
