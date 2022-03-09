@@ -2048,6 +2048,44 @@ actionlint contextually defines types of `inputs` and `secrets` contexts looking
 allow keys at `on.workflow_call.inputs` and their values are typed based on `on.workflow_call.inputs.<input_name>.type`. Type of
 `secrets` is also strictly typed following `on.workflow_call.secrets`.
 
+### Check outputs of reusable workflow
+
+Example input:
+
+```yaml
+on:
+  workflow_call:
+    outputs:
+      image-version:
+        description: "Docker image version"
+        # ERROR: 'imagetag' does not exist (typo of 'image_tag')
+        value: ${{ jobs.gen-image-version.outputs.imagetag }}
+jobs:
+  gen-image-version:
+    runs-on: ubuntu-latest
+    outputs:
+      image_tag: "${{ steps.get_tag.outputs.tag }}"
+    steps:
+      - run: ./output_image_tag.sh
+        id: get_tag
+```
+
+Output:
+
+```
+test.yaml:6:20: property "imagetag" is not defined in object type {image_tag: string} [expression]
+  |
+6 |         value: ${{ jobs.gen-image-version.outputs.imagetag }}
+  |                    ^~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+```
+
+[Playground](https://rhysd.github.io/actionlint#eJx1j0EOgyAQRfc9xcR0C92z7j0M6tRSKRgYdGG8ex1Rkqbpkp/Hf3+8UxeA2YfhYf1ct9paDgB8ojFRzA8A89Y9iglDNN6dIUCHsQ1mJA6huvt2wJBZONiqsJO2CRVclwVevomyRye+auXhlHtKuod1vTDKvh86jwjJRcHy1CRHSVhNGOnvBfXWug3lDZFw5BHEWVFnax69E+d3wSoF8pbJutTJ+Cwnmk7B0fgB2ORuYw==)
+
+Outputs of a reusable workflow can be defined at `on.workflow_call.outputs` as described in [the document][reusable-workflow-outputs].
+The `jobs` context is available to define an output value to refer outputs of jobs in the workflow. actionlint checks
+the context is used correctly.
+
+
 <a name="job-id-naming-convention"></a>
 ## Job ID naming convention
 
@@ -2129,3 +2167,4 @@ convention and reports invalid IDs as error.
 [github-script]: https://github.com/actions/github-script
 [workflow-dispatch-event]: https://docs.github.com/en/actions/learn-github-actions/events-that-trigger-workflows#workflow_dispatch
 [workflow-dispatch-input-type-announce]: https://github.blog/changelog/2021-11-10-github-actions-input-types-for-manual-workflows/
+[reusable-workflow-outputs]: https://docs.github.com/en/actions/using-workflows/reusing-workflows#using-outputs-from-a-reusable-workflow
