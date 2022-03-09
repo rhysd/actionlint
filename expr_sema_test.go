@@ -19,6 +19,7 @@ func TestExprSemanticsCheckOK(t *testing.T) {
 		needs    *ObjectType
 		inputs   *ObjectType
 		secrets  *ObjectType
+		jobs     *ObjectType
 	}{
 		{
 			what:     "null",
@@ -588,6 +589,14 @@ func TestExprSemanticsCheckOK(t *testing.T) {
 				"foo": StringType{},
 			}),
 		},
+		{
+			what:     "jobs object",
+			input:    "jobs.some_job",
+			expected: NewEmptyObjectType(),
+			jobs: NewStrictObjectType(map[string]ExprType{
+				"some_job": NewEmptyObjectType(),
+			}),
+		},
 	}
 
 	for _, tc := range testCases {
@@ -616,6 +625,9 @@ func TestExprSemanticsCheckOK(t *testing.T) {
 			}
 			if tc.secrets != nil {
 				c.UpdateSecrets(tc.secrets)
+			}
+			if tc.jobs != nil {
+				c.UpdateJobs(tc.jobs)
 			}
 			ty, errs := c.Check(e)
 			if len(errs) > 0 {

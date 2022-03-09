@@ -12,5 +12,8 @@ on:
 jobs:
   generate-image-version:
     runs-on: ubuntu-latest
+    outputs:
+      imagetag: "${{ steps.hello.outputs.foo }}"
     steps:
-      - run: echo
+      - run: echo hello
+        id: hello

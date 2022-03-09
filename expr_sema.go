@@ -392,6 +392,12 @@ func (sema *ExprSemanticsChecker) UpdateDispatchInputs(ty *ObjectType) {
 	sema.vars["github"].(*ObjectType).Props["event"].(*ObjectType).Props["inputs"] = ty
 }
 
+// UpdateJobs updates 'jobs' context object to given object type.
+func (sema *ExprSemanticsChecker) UpdateJobs(ty *ObjectType) {
+	sema.ensureGithubVarCopied()
+	sema.vars["jobs"] = ty
+}
+
 func (sema *ExprSemanticsChecker) visitUntrustedCheckerOnLeaveNode(n ExprNode) {
 	if sema.untrusted != nil {
 		sema.untrusted.OnVisitNodeLeave(n)

@@ -2,17 +2,17 @@ on:
   workflow_call:
     outputs:
       missing-description:
-        value: ${{ jobs.test.output }}
+        value: ${{ jobs.test.outputs.x }}
       missing-value:
         description: "description"
       missing-all:
       unknown-section:
         description: "description"
-        value: ${{ jobs.test.output }}
+        value: ${{ jobs.test.outputs.x }}
         unknown-section:
       duplicate-key:
         description: "description"
-        value: ${{ jobs.test.output }}
+        value: ${{ jobs.test.outputs.x }}
       duplicate-key:
         description: "description"
         value: ${{ jobs.test.output }}
@@ -22,5 +22,7 @@ on:
 jobs:
   test:
     runs-on: ubuntu-latest
+    outputs:
+      x: hi
     steps:
       - run: echo
