@@ -1,0 +1,21 @@
+on:
+  workflow_call:
+    outputs:
+      output1:
+        description: "no outputs"
+        value: ${{ jobs.job0.outputs.some_output }}
+      output2:
+        description: "unknown output"
+        value: ${{ jobs.job1.outputs.unknown_output }}
+jobs:
+  job0:
+    runs-on: ubuntu-latest
+    steps:
+      - run: echo hi
+  job1:
+    runs-on: ubuntu-latest
+    outputs:
+      foo: "${{ steps.hello.outputs.foo }}"
+    steps:
+      - run: echo hello
+        id: hello
