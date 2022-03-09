@@ -814,3 +814,13 @@ type Workflow struct {
 	// Jobs is mappings from job ID to the job object
 	Jobs map[string]*Job
 }
+
+// FindWorkflowCallEvent returns workflow_call event node if exists
+func (w *Workflow) FindWorkflowCallEvent() (*WorkflowCallEvent, bool) {
+	for _, e := range w.On {
+		if e, ok := e.(*WorkflowCallEvent); ok {
+			return e, true
+		}
+	}
+	return nil, false
+}

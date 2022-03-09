@@ -24,6 +24,7 @@ type RuleExpression struct {
 	secretsTy        *ObjectType
 	inputsTy         *ObjectType
 	dispatchInputsTy *ObjectType
+	jobsTy           *ObjectType
 	workflow         *Workflow
 	localActions     *LocalActionsCache
 }
@@ -38,6 +39,7 @@ func NewRuleExpression(cache *LocalActionsCache) *RuleExpression {
 		secretsTy:        nil,
 		inputsTy:         nil,
 		dispatchInputsTy: nil,
+		jobsTy:           nil,
 		workflow:         nil,
 		localActions:     cache,
 	}
@@ -109,6 +111,10 @@ func (rule *RuleExpression) VisitWorkflowPre(n *Workflow) error {
 				rule.checkString(s.Description)
 			}
 			rule.secretsTy = sty
+
+			for _, o := range e.Outputs {
+				rule.checkString(o.Description)
+			}
 		}
 	}
 
@@ -123,6 +129,9 @@ func (rule *RuleExpression) VisitWorkflowPre(n *Workflow) error {
 
 // VisitWorkflowPost is callback when visiting Workflow node after visiting its children
 func (rule *RuleExpression) VisitWorkflowPost(n *Workflow) error {
+	if e, ok := n.FindWorkflowCallEvent(); ok {
+		rule.checkWorkflowCallOutputs(e.Outputs, n.Jobs)
+	}
 	rule.workflow = nil
 	return nil
 }
@@ -250,19 +259,20 @@ func (rule *RuleExpression) VisitStep(n *Step) error {
 	return nil
 }
 
+// Get type of `outputs.<output name>`
 func (rule *RuleExpression) getActionOutputsType(spec *String) *ObjectType {
 	if spec == nil {
-		return NewMapObjectType(StringType{}) // outputs.<output name>
+		return NewMapObjectType(StringType{})
 	}
 
 	if strings.HasPrefix(spec.Value, "./") {
 		meta, err := rule.localActions.FindMetadata(spec.Value)
 		if err != nil {
 			rule.error(spec.Pos, err.Error())
-			return NewMapObjectType(StringType{}) // outputs.<output name>
+			return NewMapObjectType(StringType{})
 		}
 		if meta == nil {
-			return NewMapObjectType(StringType{}) // outputs.<output name>
+			return NewMapObjectType(StringType{})
 		}
 
 		return typeOfActionOutputs(meta)
@@ -274,7 +284,7 @@ func (rule *RuleExpression) getActionOutputsType(spec *String) *ObjectType {
 		return typeOfActionOutputs(meta)
 	}
 
-	return NewMapObjectType(StringType{}) // outputs.<output name>
+	return NewMapObjectType(StringType{})
 }
 
 func (rule *RuleExpression) checkOneExpression(s *String, what string) ExprType {
@@ -627,6 +637,9 @@ func (rule *RuleExpression) checkSemanticsOfExprNode(expr ExprNode, line, col in
 	if rule.dispatchInputsTy != nil {
 		c.UpdateDispatchInputs(rule.dispatchInputsTy)
 	}
+	if rule.jobsTy != nil {
+		c.UpdateJobs(rule.jobsTy)
+	}
 
 	ty, errs := c.Check(expr)
 	for _, err := range errs {
@@ -801,6 +814,35 @@ func (rule *RuleExpression) guessTypeOfMatrixRow(r *MatrixRow) ExprType {
 	}
 
 	return ty
+}
+
+func (rule *RuleExpression) checkWorkflowCallOutputs(outputs map[*String]*WorkflowCallEventOutput, jobs map[string]*Job) {
+	if len(outputs) == 0 || len(jobs) == 0 {
+		return
+	}
+
+	props := make(map[string]ExprType, len(jobs))
+	for n, j := range jobs {
+		var o *ObjectType
+		if j.WorkflowCall != nil {
+			// Outputs are not defined in jobs.<job_id> section when it is reusable workflow call.
+			o = NewEmptyObjectType()
+		} else {
+			p := make(map[string]ExprType, len(j.Outputs))
+			for n := range j.Outputs {
+				p[n] = StringType{}
+			}
+			o = NewStrictObjectType(p)
+		}
+		props[n] = NewStrictObjectType(map[string]ExprType{
+			"outputs": o,
+		})
+	}
+	rule.jobsTy = NewStrictObjectType(props)
+
+	for _, o := range outputs {
+		rule.checkString(o.Value)
+	}
 }
 
 func guessTypeOfRawYAMLValue(v RawYAMLValue) ExprType {
