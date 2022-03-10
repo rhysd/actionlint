@@ -55,7 +55,7 @@ var defaultRunnerOSCompats = map[string]runnerOSCompat{
 	"macos-11":       compatMacOS110,
 	"macos-11.0":     compatMacOS110,
 	"macos-10.15":    compatMacOS1015,
-	"windows-latest": compatWindows2019,
+	"windows-latest": compatWindows2022,
 	"windows-2022":   compatWindows2022,
 	"windows-2019":   compatWindows2019,
 	"windows-2016":   compatWindows2016,
