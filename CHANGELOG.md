@@ -1,3 +1,68 @@
+<a name="v1.6.10"></a>
+# [v1.6.10](https://github.com/rhysd/actionlint/releases/tag/v1.6.10) - 11 Mar 2022
+
+- Support outputs in reusable workflow call. See [the official document](https://docs.github.com/en/actions/using-workflows/reusing-workflows#using-outputs-from-a-reusable-workflow) for the usage of the outputs syntax. (#119, #121)
+  Example of reusable workflow definition:
+  ```yaml
+  on:
+    workflow_call:
+      outputs:
+        some_output:
+          description: "Some awesome output"
+          value: 'result value of workflow call'
+  jobs:
+    job:
+      runs-on: ubuntu-latest
+      steps:
+        ...
+  ```
+  Example of reusable workflow usage:
+  ```yaml
+  jobs:
+    job1:
+      uses: ./.github/workflows/some_workflow.yml
+    job2:
+      runs-on: ubuntu-latest
+      needs: job1
+      steps:
+        - run: echo ${{ needs.job1.outputs.some_output }}
+  ```
+- Support checking `jobs` context, which is only available in `on.workflow_call.outputs.<name>.value`. Outputs of jobs can be referred via the context. See [the document](https://github.com/rhysd/actionlint/blob/main/docs/checks.md#check-outputs-of-reusable-workflow) for more details.
+  ```yaml
+  on:
+    workflow_call:
+      outputs:
+        image-version:
+          description: "Docker image version"
+          # ERROR: 'imagetag' does not exist (typo of 'image_tag')
+          value: ${{ jobs.gen-image-version.outputs.imagetag }}
+  jobs:
+    gen-image-version:
+      runs-on: ubuntu-latest
+      outputs:
+        image_tag: "${{ steps.get_tag.outputs.tag }}"
+      steps:
+        - run: ./output_image_tag.sh
+          id: get_tag
+  ```
+- Add new major releases in `actions/*` actions including `actions/checkout@v3`, `actions/setup-go@v3`, `actions/setup-python@v3`, ...
+- Check job IDs. They must start with a letter or `_` and contain only alphanumeric characters, `-` or `_`. See [the document](https://github.com/rhysd/actionlint/blob/main/docs/checks.md#job-id-naming-convention) for more details. (#80)
+  ```yaml
+  on: push
+  jobs:
+    # ERROR: '.' cannot be contained in job ID
+    foo-v1.2.3:
+      runs-on: ubuntu-latest
+      steps:
+        - run: 'job ID with version'
+  ```
+- Fix `windows-latest` now means `windows-2022` runner. See [virtual-environments#4856](https://github.com/actions/virtual-environments/issues/4856) for the details. (#120)
+- Update [the playground](https://rhysd.github.io/actionlint/) dependencies to the latest.
+- Update Go module dependencies
+
+[Changes][v1.6.10]
+
+
 <a name="v1.6.9"></a>
 # [v1.6.9](https://github.com/rhysd/actionlint/releases/tag/v1.6.9) - 24 Feb 2022
 
@@ -5,7 +70,7 @@
   ```yaml
   steps:
     - run: ./do_something_64bit.sh
-      if ${{ runner.arch == 'x64' }}
+      if: ${{ runner.arch == 'x64' }}
   ```
 - Support [calling reusable workflows in local directories](https://docs.github.com/en/actions/using-workflows/reusing-workflows#calling-a-reusable-workflow). (thanks @jsok, #107)
   ```yaml
@@ -621,6 +686,7 @@ See documentation for more details:
 [Changes][v1.0.0]
 
 
+[v1.6.10]: https://github.com/rhysd/actionlint/compare/v1.6.9...v1.6.10
 [v1.6.9]: https://github.com/rhysd/actionlint/compare/v1.6.8...v1.6.9
 [v1.6.8]: https://github.com/rhysd/actionlint/compare/v1.6.7...v1.6.8
 [v1.6.7]: https://github.com/rhysd/actionlint/compare/v1.6.6...v1.6.7
