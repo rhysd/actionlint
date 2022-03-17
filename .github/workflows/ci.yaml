@@ -90,8 +90,13 @@ jobs:
             exit 1
           fi
       - name: Install staticcheck
+        # NOTE: Using 'master' instead of 'latest' to avoid the following errors with Go 1.18
+        # > cannot import "internal/cpu" (unknown iexport format version 2), export data is newer version - update tool (compile)
+        # > cannot import "internal/goarch" (unknown iexport format version 2), export data is newer version - update tool (compile)
+        # > cannot import "math/bits" (unknown iexport format version 2), export data is newer version - update tool (compile)
+        # > cannot import "unicode/utf8" (unknown iexport format version 2), export data is newer version - update tool (compile)
         run: |
-          go install honnef.co/go/tools/cmd/staticcheck@latest
+          go install honnef.co/go/tools/cmd/staticcheck@master
           echo "$(go env GOPATH)/bin" >> "$GITHUB_PATH"
       - run: make lint
       - name: Lint bash scripts
