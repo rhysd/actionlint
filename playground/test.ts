@@ -1,6 +1,9 @@
 import { JSDOM } from 'jsdom';
 import { promises as fs } from 'fs';
 import { strict as assert } from 'assert';
+import { Crypto } from '@peculiar/webcrypto';
+
+globalThis.crypto = new Crypto();
 
 // Inject global.Go
 require('./lib/js/wasm_exec.js');
