@@ -16,7 +16,7 @@ jobs:
       - run: ronn ./man/actionlint.1.ronn
       - uses: actions/setup-go@v2
         with:
-          go-version: '1.17'
+          go-version: '1.18'
       - uses: goreleaser/goreleaser-action@v2
         with:
           version: latest
@@ -59,7 +59,7 @@ jobs:
         uses: docker/build-push-action@v2
         with:
           build-args: |
-            GOLANG_VER=1.17
+            GOLANG_VER=1.18
             ACTIONLINT_VER=${{ steps.tag.outputs.name }}
           push: true
           tags: |
