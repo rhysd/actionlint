@@ -278,6 +278,12 @@ func (rule *RuleExpression) getActionOutputsType(spec *String) *ObjectType {
 		return typeOfActionOutputs(meta)
 	}
 
+	// github-script action allows to set any outputs through calling `core.setOutput` directly.
+	// So any `outputs.*` properties should be accepted (#104)
+	if strings.HasPrefix(spec.Value, "actions/github-script@") {
+		return NewEmptyObjectType()
+	}
+
 	// When the action run at this step is a popular action, we know what outputs are set by it.
 	// Set the output names to `steps.{step_id}.outputs.{name}`.
 	if meta, ok := PopularActions[spec.Value]; ok {
