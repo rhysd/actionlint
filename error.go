@@ -127,6 +127,10 @@ func (e *Error) getIndicator(line string) string {
 	}
 
 	start := e.Column - 1 // Column is 1-based
+	if start > len(line) {
+		// Avoid out-of-bounds error reported at #128
+		return ""
+	}
 
 	// Count width of non-space characters after '^' for underline
 	uw := 0
