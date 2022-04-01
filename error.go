@@ -63,8 +63,10 @@ func (e *Error) GetTemplateFields(source []byte) *ErrorTemplateFields {
 	if len(source) > 0 && e.Line > 0 {
 		if l, ok := e.getLine(source); ok {
 			snippet = l
-			if i := e.getIndicator(l); i != "" {
-				snippet += "\n" + i
+			if len(l) >= e.Column-1 {
+				if i := e.getIndicator(l); i != "" {
+					snippet += "\n" + i
+				}
 			}
 		}
 	}
