@@ -210,7 +210,7 @@ func NewErrorFormatter(format string) (*ErrorFormatter, error) {
 	if !strings.Contains(format, "{{") {
 		return nil, fmt.Errorf("template to format error messages must contain at least one {{ }} placeholder: %s", format)
 	}
-	funcs := map[string]interface{}{
+	funcs := template.FuncMap(map[string]interface{}{
 		"json": func(data interface{}) (string, error) {
 			var b strings.Builder
 			enc := json.NewEncoder(&b)
@@ -222,7 +222,7 @@ func NewErrorFormatter(format string) (*ErrorFormatter, error) {
 		"replace": func(s string, oldnew ...string) string {
 			return strings.NewReplacer(oldnew...).Replace(s)
 		},
-	}
+	})
 	t, err := template.New("error formatter").Funcs(funcs).Parse(unescapeBackslash(format))
 	if err != nil {
 		return nil, fmt.Errorf("template %q to format error messages could not be parsed: %w", format, err)
