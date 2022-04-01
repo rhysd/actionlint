@@ -271,7 +271,7 @@ func TestErrorSortByErrorPosition(t *testing.T) {
 	}
 }
 
-func TestErrorGetTemplateFields(t *testing.T) {
+func TestErrorGetTemplateFieldsOK(t *testing.T) {
 	testCases := []struct {
 		message string
 		column  int
@@ -321,6 +321,16 @@ func TestErrorGetTemplateFields(t *testing.T) {
 				t.Fatalf("wanted %q but have %q", tc.snippet, f.Snippet)
 			}
 		})
+	}
+}
+
+// Regression for #128
+func TestErrorGetTemplateFieldsColumnIsOutOfBounds(t *testing.T) {
+	err := errorAt(&Pos{1, 9999}, "kind", "this is message")
+	err.Filepath = "filename.yaml"
+	f := err.GetTemplateFields([]byte("this is source"))
+	if strings.Contains(f.Snippet, "\n") {
+		t.Fatalf("snippet should contain indicator but it has: %q", f.Snippet)
 	}
 }
 
