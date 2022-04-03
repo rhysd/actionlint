@@ -1620,6 +1620,31 @@ var PopularActions = map[string]*ActionMetadata{
 			"sarif-id":     {},
 		},
 	},
+	"github/codeql-action/analyze@v2": {
+		Name: "CodeQL: Finish",
+		Inputs: map[string]ActionMetadataInputRequired{
+			"add-snippets":        false,
+			"category":            false,
+			"check_name":          false,
+			"checkout_path":       false,
+			"cleanup-level":       false,
+			"matrix":              false,
+			"output":              false,
+			"ram":                 false,
+			"ref":                 false,
+			"sha":                 false,
+			"skip-queries":        false,
+			"threads":             false,
+			"token":               false,
+			"upload":              false,
+			"upload-database":     false,
+			"wait-for-processing": false,
+		},
+		Outputs: map[string]struct{}{
+			"db-locations": {},
+			"sarif-id":     {},
+		},
+	},
 	"github/codeql-action/autobuild@v1": {
 		Name: "CodeQL: Autobuild",
 		Inputs: map[string]ActionMetadataInputRequired{
@@ -1627,7 +1652,38 @@ var PopularActions = map[string]*ActionMetadata{
 			"token":  false,
 		},
 	},
+	"github/codeql-action/autobuild@v2": {
+		Name: "CodeQL: Autobuild",
+		Inputs: map[string]ActionMetadataInputRequired{
+			"matrix": false,
+			"token":  false,
+		},
+	},
 	"github/codeql-action/init@v1": {
+		Name: "CodeQL: Init",
+		Inputs: map[string]ActionMetadataInputRequired{
+			"config-file":               false,
+			"db-location":               false,
+			"debug":                     false,
+			"debug-artifact-name":       false,
+			"debug-database-name":       false,
+			"external-repository-token": false,
+			"languages":                 false,
+			"matrix":                    false,
+			"packs":                     false,
+			"queries":                   false,
+			"ram":                       false,
+			"setup-python-dependencies": false,
+			"source-root":               false,
+			"threads":                   false,
+			"token":                     false,
+			"tools":                     false,
+		},
+		Outputs: map[string]struct{}{
+			"codeql-path": {},
+		},
+	},
+	"github/codeql-action/init@v2": {
 		Name: "CodeQL: Init",
 		Inputs: map[string]ActionMetadataInputRequired{
 			"config-file":               false,
@@ -1898,6 +1954,7 @@ var PopularActions = map[string]*ActionMetadata{
 			"name":                       false,
 			"omitBody":                   false,
 			"omitBodyDuringUpdate":       false,
+			"omitDraftDuringUpdate":      false,
 			"omitName":                   false,
 			"omitNameDuringUpdate":       false,
 			"omitPrereleaseDuringUpdate": false,
