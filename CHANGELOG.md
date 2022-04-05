@@ -1,3 +1,24 @@
+<a name="v1.6.11"></a>
+# [v1.6.11](https://github.com/rhysd/actionlint/releases/tag/v1.6.11) - 05 Apr 2022
+
+- Fix crash on making [outputs in JSON format](https://github.com/rhysd/actionlint/blob/main/docs/usage.md#format-error-messages) with `actionlint -format '{{json .}}'`. (#128)
+- Allow any outputs from `actions/github-script` action because it allows to set any outputs via calling `core.setOutput()` in JavaScript. (#104)
+  ```yaml
+  - id: test
+    uses: actions/github-script@v5
+    with:
+      script: |
+        core.setOutput('answer', 42);
+  - run: |
+      echo "The answer is ${{ steps.test.outputs.answer }}"
+  ```
+- Add support for Go 1.18. Now Go 1.16 or later is supported. All released binaries were built with Go 1.18 compiler.
+- Update popular actions data set (`actions/cache`, `code-ql-actions/*`, ...)
+- Update some Go module dependencies
+
+[Changes][v1.6.11]
+
+
 <a name="v1.6.10"></a>
 # [v1.6.10](https://github.com/rhysd/actionlint/releases/tag/v1.6.10) - 11 Mar 2022
 
@@ -16,7 +37,7 @@
       steps:
         ...
   ```
-  Example of reusable workflow usage:
+  Example of reusable workflow call:
   ```yaml
   jobs:
     job1:
@@ -686,6 +707,7 @@ See documentation for more details:
 [Changes][v1.0.0]
 
 
+[v1.6.11]: https://github.com/rhysd/actionlint/compare/v1.6.10...v1.6.11
 [v1.6.10]: https://github.com/rhysd/actionlint/compare/v1.6.9...v1.6.10
 [v1.6.9]: https://github.com/rhysd/actionlint/compare/v1.6.8...v1.6.9
 [v1.6.8]: https://github.com/rhysd/actionlint/compare/v1.6.7...v1.6.8
