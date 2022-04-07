@@ -370,8 +370,11 @@ func (sema *ExprSemanticsChecker) UpdateSecrets(ty *ObjectType) {
 	sema.ensureVarsCopied()
 
 	// Merges automatically supplied secrets with manually defined secrets.
+	// ACTIONS_STEP_DEBUG and ACTIONS_RUNNER_DEBUG seem supplied from caller of the workflow (#130)
 	copied := NewStrictObjectType(map[string]ExprType{
-		"github_token": StringType{},
+		"github_token":         StringType{},
+		"actions_step_debug":   StringType{},
+		"actions_runner_debug": StringType{},
 	})
 	for n, v := range ty.Props {
 		copied.Props[n] = v

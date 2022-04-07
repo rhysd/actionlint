@@ -590,6 +590,22 @@ func TestExprSemanticsCheckOK(t *testing.T) {
 			}),
 		},
 		{
+			what:     "automatically supplied secret",
+			input:    "secrets.ACTIONS_STEP_DEBUG",
+			expected: StringType{},
+			secrets: NewStrictObjectType(map[string]ExprType{
+				"foo": StringType{},
+			}),
+		},
+		{
+			what:     "automatically supplied secret",
+			input:    "secrets.ACTIONS_RUNNER_DEBUG",
+			expected: StringType{},
+			secrets: NewStrictObjectType(map[string]ExprType{
+				"foo": StringType{},
+			}),
+		},
+		{
 			what:     "jobs object",
 			input:    "jobs.some_job",
 			expected: NewEmptyObjectType(),
