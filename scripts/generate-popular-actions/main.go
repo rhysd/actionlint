@@ -81,7 +81,7 @@ var popularActions = []*action{
 	{"azure/aks-set-context", []string{"v1"}, "v2", yamlExtYML},
 	{"azure/login", []string{"v1"}, "v2", yamlExtYML},
 	{"bahmutov/npm-install", []string{"v1"}, "v2", yamlExtYML},
-	{"codecov/codecov-action", []string{"v1", "v2"}, "v3", yamlExtYML},
+	{"codecov/codecov-action", []string{"v1", "v2", "v3"}, "v4", yamlExtYML},
 	{"dawidd6/action-download-artifact", []string{"v2"}, "v3", yamlExtYML},
 	{"dawidd6/action-send-mail", []string{"v1", "v2", "v3"}, "v4", yamlExtYML},
 	{"dessant/lock-threads", []string{"v2", "v3"}, "v4", yamlExtYML}, // v1 does not exist
