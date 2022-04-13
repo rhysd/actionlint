@@ -166,7 +166,9 @@ func (rule *RuleShellcheck) runShellcheck(src, sh string, pos *Pos) {
 	//           underscores (#45). For example, `if [ "${{ matrix.foo }}" = "x" ]` -> `if [ "_________________" = "x" ]`
 	// - SC2154: The var is referenced but not assigned. Script at `run:` can refer variables defined in `env:` section
 	//           so this rule can cause false positives (#53).
-	args := []string{"--norc", "-f", "json", "-x", "--shell", sh, "-e", "SC1091,SC2194,SC2050,SC2154", "-"}
+	// - SC2157: Argument to -z is always false due to literal strings. When the argument of -z is replaced from ${{ }},
+	//           this can happen. For example, `if [ -z ${{ env.FOO }} ]` -> `if [ -z ______________ ]` (#113).
+	args := []string{"--norc", "-f", "json", "-x", "--shell", sh, "-e", "SC1091,SC2194,SC2050,SC2154,SC2157", "-"}
 	rule.debug("%s: Running %s command with %s", pos, rule.cmd.exe, args)
 
 	// Use same options to run shell process described at document
