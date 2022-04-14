@@ -1,8 +1,25 @@
+<a name="v1.6.12"></a>
+# [v1.6.12](https://github.com/rhysd/actionlint/releases/tag/v1.6.12) - 14 Apr 2022
+
+- Fix `secrets.ACTIONS_RUNNER_DEBUG` and `secrets.ACTIONS_STEP_DEBUG` are not pre-defined in a reusable workflow. (#130)
+- Fix checking permissions is outdated. `pages` and `discussions` permissions were added and `metadata` permission was removed. (#131, thanks @suzuki-shunsuke)
+- Disable [SC2157](https://github.com/koalaman/shellcheck/wiki/SC2157) shellcheck rule to avoid a false positive due to [the replacement of `${{ }}`](https://github.com/rhysd/actionlint/blob/main/docs/checks.md#shellcheck-integration-for-run) in script. For example, in the below script `-z ${{ env.FOO }}` was replaced with `-z ______________` and it caused 'always false due to literal strings' error. (#113)
+  ```yaml
+  - run: |
+      if [[ -z ${{ env.FOO }} ]]; then
+        echo "FOO is empty"
+      fi
+  ```
+- Add codecov-action@v3 to popular actions data set.
+
+[Changes][v1.6.12]
+
+
 <a name="v1.6.11"></a>
 # [v1.6.11](https://github.com/rhysd/actionlint/releases/tag/v1.6.11) - 05 Apr 2022
 
 - Fix crash on making [outputs in JSON format](https://github.com/rhysd/actionlint/blob/main/docs/usage.md#format-error-messages) with `actionlint -format '{{json .}}'`. (#128)
-- Allow any outputs from `actions/github-script` action because it allows to set any outputs via calling `core.setOutput()` in JavaScript. (#104)
+- Allow any outputs from `actions/github-script` action because it allows to set arbitrary outputs via calling `core.setOutput()` in JavaScript. (#104)
   ```yaml
   - id: test
     uses: actions/github-script@v5
@@ -12,7 +29,7 @@
   - run: |
       echo "The answer is ${{ steps.test.outputs.answer }}"
   ```
-- Add support for Go 1.18. Now Go 1.16 or later is supported. All released binaries were built with Go 1.18 compiler.
+- Add support for Go 1.18. All released binaries were built with Go 1.18 compiler. The bottom supported version is Go 1.16 and it's not been changed.
 - Update popular actions data set (`actions/cache`, `code-ql-actions/*`, ...)
 - Update some Go module dependencies
 
@@ -707,6 +724,7 @@ See documentation for more details:
 [Changes][v1.0.0]
 
 
+[v1.6.12]: https://github.com/rhysd/actionlint/compare/v1.6.11...v1.6.12
 [v1.6.11]: https://github.com/rhysd/actionlint/compare/v1.6.10...v1.6.11
 [v1.6.10]: https://github.com/rhysd/actionlint/compare/v1.6.9...v1.6.10
 [v1.6.9]: https://github.com/rhysd/actionlint/compare/v1.6.8...v1.6.9
