@@ -1,3 +1,9 @@
+// `styleActiveLine` is a property for active-line.js addon. @types/codemirror requires `import 'codemirror/addon/selection/active-line'`
+// to add this property but we don't use import statement.
+type CodeMirrorConfig = CodeMirror.EditorConfiguration & {
+    styleActiveLine: true;
+};
+
 (async function () {
     function getElementById(id: string): HTMLElement {
         const e = document.getElementById(id);
@@ -97,7 +103,7 @@ jobs:
         return src;
     }
 
-    const editor = CodeMirror(getElementById('editor'), {
+    const editorConfig: CodeMirrorConfig = {
         mode: 'yaml',
         theme: 'material-darker',
         lineNumbers: true,
@@ -115,7 +121,8 @@ jobs:
             },
         },
         value: await getDefaultSource(),
-    } as CodeMirror.EditorConfiguration);
+    };
+    const editor = CodeMirror(getElementById('editor'), editorConfig);
 
     const debounceInterval = isMobile.phone ? 1000 : 300;
     let debounceId: number | null = null;
