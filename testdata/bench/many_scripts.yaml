@@ -23,9 +23,9 @@ jobs:
         if: ${{ matrix.os == 'windows-latest' }}
       - run: shellcheck --version
       - run: pyflakes --version
-      - uses: actions/checkout@v2
+      - uses: actions/checkout@v3
       - run: git --version
-      - uses: actions/setup-go@v2
+      - uses: actions/setup-go@v3
         with:
           go-version: '1.16'
       - run: go build ./cmd/actionlint
@@ -56,9 +56,9 @@ jobs:
     name: Lint
     runs-on: ubuntu-latest
     steps:
-      - uses: actions/checkout@v2
+      - uses: actions/checkout@v3
       - run: git --version
-      - uses: actions/setup-go@v2
+      - uses: actions/setup-go@v3
         with:
           go-version: '1.16'
       - run: go version
@@ -67,7 +67,7 @@ jobs:
           go get honnef.co/go/tools/cmd/staticcheck@latest
           echo "$(go env GOPATH)/bin" >> "$GITHUB_PATH"
       - run: make lint
-      - uses: actions/setup-node@v2
+      - uses: actions/setup-node@v3
         with:
           node-version: "lts/*"
       - run: cd ./playground && make main.wasm && npm install && npm run lint
