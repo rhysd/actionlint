@@ -12,6 +12,7 @@ const (
 	compatUbuntu2004
 	compatMacOS1015
 	compatMacOS110
+	compatMacOS120
 	compatWindows2016
 	compatWindows2019
 	compatWindows2022
@@ -27,6 +28,8 @@ var allGitHubHostedRunnerLabels = []string{
 	"ubuntu-20.04",
 	"ubuntu-18.04",
 	"macos-latest",
+	"macos-12",
+	"macos-12.0",
 	"macos-11",
 	"macos-11.0",
 	"macos-10.15",
@@ -52,6 +55,8 @@ var defaultRunnerOSCompats = map[string]runnerOSCompat{
 	"ubuntu-20.04":   compatUbuntu2004,
 	"ubuntu-18.04":   compatUbuntu1804,
 	"macos-latest":   compatMacOS110,
+	"macos-12":       compatMacOS120,
+	"macos-12.0":     compatMacOS120,
 	"macos-11":       compatMacOS110,
 	"macos-11.0":     compatMacOS110,
 	"macos-10.15":    compatMacOS1015,
