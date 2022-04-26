@@ -7,7 +7,7 @@ jobs:
       # ERROR: The step is not run yet at this point
       - run: echo ${{ steps.cache.outputs.cache-hit }}
       # actions/cache sets cache-hit output
-      - uses: actions/cache@v2
+      - uses: actions/cache@v3
         id: cache
         with:
           key: ${{ hashFiles('**/*.lock') }}

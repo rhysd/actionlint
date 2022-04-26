@@ -28,14 +28,14 @@ jobs:
       matrix:
         language: ['go', 'javascript']
     steps:
-      - uses: actions/checkout@v2
-      - uses: github/codeql-action/init@v1
+      - uses: actions/checkout@v3
+      - uses: github/codeql-action/init@v2
         with:
           config-file: ./.github/codeql/codeql-config.yaml
           languages: ${{ matrix.language }}
-      - uses: github/codeql-action/autobuild@v1
+      - uses: github/codeql-action/autobuild@v2
         if: ${{ matrix.language != 'go' }}
-      - uses: actions/setup-go@v2
+      - uses: actions/setup-go@v3
         with:
           go-version: '1.18'
         if: ${{ matrix.language == 'go' }}
@@ -45,4 +45,4 @@ jobs:
           go build -v ./cmd/actionlint
           GOOS=js GOARCH=wasm go build -v -o ./playground/main.wasm ./playground
         if: ${{ matrix.language == 'go' }}
-      - uses: github/codeql-action/analyze@v1
+      - uses: github/codeql-action/analyze@v2
