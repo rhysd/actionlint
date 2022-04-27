@@ -495,3 +495,58 @@ func TestDetectErrorBadRequest(t *testing.T) {
 		t.Fatalf("stderr was unexpected: %q", out)
 	}
 }
+
+func TestActionBuildRawURL(t *testing.T) {
+	a := &action{slug: "foo/bar"}
+	have := a.rawURL("v1")
+	want := "https://raw.githubusercontent.com/foo/bar/v1/action.yml"
+	if have != want {
+		t.Errorf("Wanted %q but have %q", want, have)
+	}
+
+	a = &action{slug: "foo/bar", path: "/a/b"}
+	have = a.rawURL("v1")
+	want = "https://raw.githubusercontent.com/foo/bar/v1/a/b/action.yml"
+	if have != want {
+		t.Errorf("Wanted %q but have %q", want, have)
+	}
+
+	a = &action{slug: "foo/bar", ext: yamlExtYAML}
+	have = a.rawURL("v1")
+	want = "https://raw.githubusercontent.com/foo/bar/v1/action.yaml"
+	if have != want {
+		t.Errorf("Wanted %q but have %q", want, have)
+	}
+}
+
+func TestActionBuildGitHubURL(t *testing.T) {
+	a := &action{slug: "foo/bar"}
+	have := a.githubURL("v1")
+	want := "https://github.com/foo/bar/tree/v1"
+	if have != want {
+		t.Errorf("Wanted %q but have %q", want, have)
+	}
+
+	a = &action{slug: "foo/bar", path: "/a/b"}
+	have = a.githubURL("v1")
+	want = "https://github.com/foo/bar/tree/v1/a/b"
+	if have != want {
+		t.Errorf("Wanted %q but have %q", want, have)
+	}
+}
+
+func TestActionBuildSpec(t *testing.T) {
+	a := &action{slug: "foo/bar"}
+	have := a.spec("v1")
+	want := "foo/bar@v1"
+	if have != want {
+		t.Errorf("Wanted %q but have %q", want, have)
+	}
+
+	a = &action{slug: "foo/bar", path: "/a/b"}
+	have = a.spec("v1")
+	want = "foo/bar/a/b@v1"
+	if have != want {
+		t.Errorf("Wanted %q but have %q", want, have)
+	}
+}
