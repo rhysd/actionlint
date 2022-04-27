@@ -13,7 +13,11 @@ import (
 )
 
 var testDummyPopularActions = []*action{
-	{"rhysd/action-setup-vim", []string{"v1"}, "v2", yamlExtYML},
+	{
+		slug: "rhysd/action-setup-vim",
+		tags: []string{"v1"},
+		next: "v2",
+	},
 }
 
 // Normal cases
@@ -34,7 +38,7 @@ func TestDataSource(t *testing.T) {
 
 	slugs := map[string]int{}
 	for i, a := range popularActions {
-		if j, ok := slugs[a.slug]; ok {
+		if j, ok := slugs[a.slug]; ok && popularActions[i].path == popularActions[j].path {
 			t.Errorf("slug %q at popularActions[%d] was already added at popularActions[%d]", a.slug, i, j)
 		} else {
 			slugs[a.slug] = i
@@ -217,8 +221,15 @@ func TestWriteGoFile(t *testing.T) {
 
 func TestFetchRemoteYAML(t *testing.T) {
 	data := []*action{
-		{"rhysd/action-setup-vim", []string{"v1.2.7"}, "", yamlExtYML},
-		{"rhysd/changelog-from-release/action", []string{"v2.2.2"}, "", yamlExtYML},
+		{
+			slug: "rhysd/action-setup-vim",
+			tags: []string{"v1.2.7"},
+		},
+		{
+			slug: "rhysd/changelog-from-release",
+			path: "/action",
+			tags: []string{"v2.2.2"},
+		},
 	}
 	stdout := &bytes.Buffer{}
 	stderr := ioutil.Discard
@@ -289,7 +300,11 @@ func TestHelpOutput(t *testing.T) {
 
 func TestDetectNewRelease(t *testing.T) {
 	data := []*action{
-		{"rhysd/action-setup-vim", []string{"v0"}, "v1", yamlExtYML},
+		{
+			slug: "rhysd/action-setup-vim",
+			tags: []string{"v0"},
+			next: "v1",
+		},
 	}
 	stdout := &bytes.Buffer{}
 	stderr := ioutil.Discard
@@ -316,7 +331,11 @@ func TestDetectNoRelease(t *testing.T) {
 	for _, tc := range testCases {
 		t.Run(tc.what, func(t *testing.T) {
 			data := []*action{
-				{"rhysd/action-setup-vim", []string{"v1"}, tc.next, yamlExtYML},
+				{
+					slug: "rhysd/action-setup-vim",
+					tags: []string{"v1"},
+					next: tc.next,
+				},
 			}
 			stdout := &bytes.Buffer{}
 			stderr := ioutil.Discard
@@ -407,7 +426,11 @@ func TestWriteError(t *testing.T) {
 
 func TestCouldNotFetch(t *testing.T) {
 	data := []*action{
-		{"rhysd/this-action-does-not-exist", []string{"v1"}, "v2", yamlExtYML},
+		{
+			slug: "rhysd/this-action-does-not-exist",
+			tags: []string{"v1"},
+			next: "v2",
+		},
 	}
 
 	stdout := testErrorWriter{}
@@ -455,7 +478,11 @@ func TestInvalidCommandArgs(t *testing.T) {
 func TestDetectErrorBadRequest(t *testing.T) {
 	data := []*action{
 		// This expects to cause 400 Bad Request
-		{"", []string{"v1"}, "v2", yamlExtYML},
+		{
+			slug: "",
+			tags: []string{"v1"},
+			next: "v2",
+		},
 	}
 	stdout := ioutil.Discard
 	stderr := &bytes.Buffer{}

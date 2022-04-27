@@ -54,6 +54,10 @@ func (a *action) githubURL(tag string) string {
 	return fmt.Sprintf("https://github.com/%s/tree/%s%s", a.slug, tag, a.path)
 }
 
+func (a *action) spec(tag string) string {
+	return fmt.Sprintf("%s%s@%s", a.slug, a.path, tag)
+}
+
 type slugSet = map[string]struct{}
 
 // Note: Actions used by top 1000 public repositories at GitHub sorted by number of occurrences:
@@ -532,7 +536,7 @@ func (a *app) fetchRemote() (map[string]*actionlint.ActionMetadata, error) {
 						ret <- &fetched{err: fmt.Errorf("could not read body for %s: %w", url, err)}
 						break
 					}
-					spec := fmt.Sprintf("%s@%s", req.action.slug, req.tag)
+					spec := req.action.spec(req.tag)
 					var meta actionlint.ActionMetadata
 					if err := yaml.Unmarshal(body, &meta); err != nil {
 						ret <- &fetched{err: fmt.Errorf("coult not parse metadata for %s: %w", url, err)}
