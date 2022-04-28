@@ -70,11 +70,11 @@ jobs:
     runs-on: \${{ matrix.os }}
     steps:
       - run: echo "Checking commit '\${{ github.event.head_commit.message }}'"
-      - uses: actions/checkout@v2
-      - uses: actions/setup-node@v2
+      - uses: actions/checkout@v3
+      - uses: actions/setup-node@v3
         with:
           node_version: 16.x
-      - uses: actions/cache@v2
+      - uses: actions/cache@v3
         with:
           path: ~/.npm
           key: \${{ matrix.platform }}-node-\${{ hashFiles('**/package-lock.json') }}
@@ -82,7 +82,7 @@ jobs:
       - run: npm install && npm test`;
         return src;
     }
-    const editor = CodeMirror(getElementById('editor'), {
+    const editorConfig = {
         mode: 'yaml',
         theme: 'material-darker',
         lineNumbers: true,
@@ -101,7 +101,8 @@ jobs:
             },
         },
         value: await getDefaultSource(),
-    });
+    };
+    const editor = CodeMirror(getElementById('editor'), editorConfig);
     const debounceInterval = isMobile.phone ? 1000 : 300;
     let debounceId = null;
     let contentChanged = false;
