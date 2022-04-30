@@ -784,8 +784,8 @@ Since both `${{ }}` expression syntax and ShellScript's variable access `$FOO` u
 To avoid it, actionlint replaces `${{ }}` with underscores. For example `echo '${{ matrix.os }}'` is replaced with
 `echo '________________'`.
 
-Some shellcheck rules conflict with the `${{ }}` expression syntax. To avoid errors due to the syntax, [SC1091][sc1091],
-[SC2050][sc2050], [SC2194][sc2194] are disabled.
+Some shellcheck rules conflict with the `${{ }}` expression syntax. To avoid errors due to the syntax, [SC1091][], [SC2050][],
+[SC2194][], [SC2154][], [SC2157][] are disabled.
 
 When what shell is used cannot be determined statically, actionlint assumes `shell: bash` optimistically. For example,
 
@@ -2133,9 +2133,11 @@ convention and reports invalid IDs as error.
 [filter-pattern-doc]: https://docs.github.com/en/actions/learn-github-actions/workflow-syntax-for-github-actions#filter-pattern-cheat-sheet
 [shellcheck]: https://github.com/koalaman/shellcheck
 [shellcheck-install]: https://github.com/koalaman/shellcheck#installing
-[sc1091]: https://github.com/koalaman/shellcheck/wiki/SC1091
-[sc2050]: https://github.com/koalaman/shellcheck/wiki/SC2050
-[sc2194]: https://github.com/koalaman/shellcheck/wiki/SC2194
+[SC1091]: https://github.com/koalaman/shellcheck/wiki/SC1091
+[SC2050]: https://github.com/koalaman/shellcheck/wiki/SC2050
+[SC2194]: https://github.com/koalaman/shellcheck/wiki/SC2194
+[SC2154]: https://github.com/koalaman/shellcheck/wiki/SC2154
+[SC2157]: https://github.com/koalaman/shellcheck/wiki/SC2157
 [pyflakes]: https://github.com/PyCQA/pyflakes
 [expr-doc]: https://docs.github.com/en/actions/learn-github-actions/expressions
 [contexts-doc]: https://docs.github.com/en/actions/learn-github-actions/contexts
