@@ -1700,15 +1700,17 @@ var PopularActions = map[string]*ActionMetadata{
 	"github/codeql-action/autobuild@v1": {
 		Name: "CodeQL: Autobuild",
 		Inputs: map[string]ActionMetadataInputRequired{
-			"matrix": false,
-			"token":  false,
+			"matrix":            false,
+			"token":             false,
+			"working-directory": false,
 		},
 	},
 	"github/codeql-action/autobuild@v2": {
 		Name: "CodeQL: Autobuild",
 		Inputs: map[string]ActionMetadataInputRequired{
-			"matrix": false,
-			"token":  false,
+			"matrix":            false,
+			"token":             false,
+			"working-directory": false,
 		},
 	},
 	"github/codeql-action/init@v1": {
