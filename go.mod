@@ -11,7 +11,7 @@ require (
 	github.com/robfig/cron v1.2.0
 	github.com/yuin/goldmark v1.4.0
 	golang.org/x/sync v0.0.0-20210220032951-036812b2e83c
-	golang.org/x/sys v0.0.0-20220330033206-e17cdc41300f
+	golang.org/x/sys v0.0.0-20220429233432-b5fbb4746d32
 	gopkg.in/yaml.v3 v3.0.0-20210107192922-496545a6307b
 )
 
