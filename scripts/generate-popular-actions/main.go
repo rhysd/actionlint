@@ -235,28 +235,28 @@ var popularActions = []*action{
 		next: "v4"}, // v1 does not exist
 	{
 		slug: "docker/build-push-action",
-		tags: []string{"v1", "v2"},
-		next: "v3",
-	},
-	{
-		slug: "docker/login-action",
-		tags: []string{"v1"},
-		next: "v2",
-	},
-	{
-		slug: "docker/metadata-action",
 		tags: []string{"v1", "v2", "v3"},
 		next: "v4",
 	},
 	{
+		slug: "docker/login-action",
+		tags: []string{"v1", "v2"},
+		next: "v3",
+	},
+	{
+		slug: "docker/metadata-action",
+		tags: []string{"v1", "v2", "v3", "v4"},
+		next: "v5",
+	},
+	{
 		slug: "docker/setup-buildx-action",
-		tags: []string{"v1"},
-		next: "v2",
+		tags: []string{"v1", "v2"},
+		next: "v3",
 	},
 	{
 		slug: "docker/setup-qemu-action",
-		tags: []string{"v1"},
-		next: "v2",
+		tags: []string{"v1", "v2"},
+		next: "v3",
 	},
 	{
 		slug: "dorny/paths-filter",
