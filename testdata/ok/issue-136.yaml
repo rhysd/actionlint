@@ -1,0 +1,8 @@
+on: push
+
+jobs:
+  checks:
+    concurrency:
+      group: some-group
+      cancel-in-progress: true
+    uses: ./path/to/workflow.yaml

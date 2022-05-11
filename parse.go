@@ -1087,6 +1087,7 @@ func (p *parser) parseJob(id *String, n *yaml.Node) *Job {
 	//   - jobs.<job_id>.if
 	//   - jobs.<job_id>.permissions
 
+	// https://docs.github.com/en/actions/using-workflows/reusing-workflows#supported-keywords-for-jobs-that-call-a-reusable-workflow
 	var stepsOnlyKey *String
 	var callOnlyKey *String
 
@@ -1114,7 +1115,6 @@ func (p *parser) parseJob(id *String, n *yaml.Node) *Job {
 			stepsOnlyKey = k
 		case "concurrency":
 			ret.Concurrency = p.parseConcurrency(k.Pos, v)
-			stepsOnlyKey = k
 		case "outputs":
 			ret.Outputs = p.parseOutputs(v)
 			stepsOnlyKey = k
