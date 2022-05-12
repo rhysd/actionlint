@@ -658,6 +658,7 @@ var PopularActions = map[string]*ActionMetadata{
 		Inputs: map[string]ActionMetadataInputRequired{
 			"config-file":        false,
 			"dotnet-version":     false,
+			"global-json-file":   false,
 			"include-prerelease": false,
 			"owner":              false,
 			"source-url":         false,
@@ -682,9 +683,13 @@ var PopularActions = map[string]*ActionMetadata{
 	"actions/setup-go@v3": {
 		Name: "Setup Go environment",
 		Inputs: map[string]ActionMetadataInputRequired{
-			"check-latest": false,
-			"go-version":   false,
-			"token":        false,
+			"check-latest":    false,
+			"go-version":      false,
+			"go-version-file": false,
+			"token":           false,
+		},
+		Outputs: map[string]struct{}{
+			"go-version": {},
 		},
 	},
 	"actions/setup-java@v1": {
