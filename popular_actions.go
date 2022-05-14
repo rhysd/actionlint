@@ -100,6 +100,7 @@ var PopularActions = map[string]*ActionMetadata{
 			"github_token":                     false,
 			"hide_comments":                    false,
 			"ignore_runs":                      false,
+			"job_summary":                      false,
 			"json_file":                        false,
 			"pull_request_build":               false,
 			"report_individual_runs":           false,
