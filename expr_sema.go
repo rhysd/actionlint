@@ -256,19 +256,20 @@ var BuiltinGlobalVariableTypes = map[string]ExprType{
 		// These are not documented but actually exist
 		"workspace": StringType{},
 	}),
-	// https://docs.github.com/en/actions/learn-github-actions/contexts
+	// https://docs.github.com/en/actions/learn-github-actions/contexts#secrets-context
 	"secrets": NewMapObjectType(StringType{}),
-	// https://docs.github.com/en/actions/learn-github-actions/contexts
+	// https://docs.github.com/en/actions/learn-github-actions/contexts#strategy-context
 	"strategy": NewObjectType(map[string]ExprType{
 		"fail-fast":    BoolType{},
 		"job-index":    NumberType{},
 		"job-total":    NumberType{},
 		"max-parallel": NumberType{},
 	}),
-	// https://docs.github.com/en/actions/learn-github-actions/contexts
+	// https://docs.github.com/en/actions/learn-github-actions/contexts#matrix-context
 	"matrix": NewEmptyStrictObjectType(), // This value will be updated contextually
 	// https://docs.github.com/en/actions/learn-github-actions/contexts#needs-context
 	"needs": NewEmptyStrictObjectType(), // This value will be updated contextually
+	// https://docs.github.com/en/actions/learn-github-actions/contexts#inputs-context
 	// https://docs.github.com/en/actions/learn-github-actions/reusing-workflows
 	"inputs": NewEmptyStrictObjectType(),
 }
