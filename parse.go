@@ -485,38 +485,28 @@ func (p *parser) parseWorkflowCallEvent(pos *Pos, n *yaml.Node) *WorkflowCallEve
 				ret.Inputs[name] = input
 			}
 		case "secrets":
-			if kv.val.Kind == yaml.ScalarNode {
-				// `secrets: inherit` special case
-				// https://docs.github.com/en/actions/using-workflows/workflow-syntax-for-github-actions#onworkflow_callsecretsinherit
-				if kv.val.Value == "inherit" {
-					ret.InheritSecrets = true
-				} else {
-					p.errorf(kv.val, "expected mapping node for secrets or \"inherit\" string node but found %q node", kv.val.Value)
-				}
-			} else {
-				secrets := p.parseSectionMapping("secrets", kv.val, true)
-				ret.Secrets = make(map[*String]*WorkflowCallEventSecret, len(secrets))
-				for _, kv := range secrets {
-					name, spec := kv.key, kv.val
-					secret := &WorkflowCallEventSecret{}
+			secrets := p.parseSectionMapping("secrets", kv.val, true)
+			ret.Secrets = make(map[*String]*WorkflowCallEventSecret, len(secrets))
+			for _, kv := range secrets {
+				name, spec := kv.key, kv.val
+				secret := &WorkflowCallEventSecret{}
 
-					for _, attr := range p.parseMapping("secret of workflow_call event", spec, true) {
-						switch attr.key.Value {
-						case "description":
-							secret.Description = p.parseString(attr.val, true)
-						case "required":
-							secret.Required = p.parseBool(attr.val)
-						default:
-							p.unexpectedKey(attr.key, "secrets", []string{"description", "required"})
-						}
+				for _, attr := range p.parseMapping("secret of workflow_call event", spec, true) {
+					switch attr.key.Value {
+					case "description":
+						secret.Description = p.parseString(attr.val, true)
+					case "required":
+						secret.Required = p.parseBool(attr.val)
+					default:
+						p.unexpectedKey(attr.key, "secrets", []string{"description", "required"})
 					}
-
-					if secret.Description == nil {
-						p.errorfAt(name.Pos, "\"description\" is missing at %q secret of workflow_call event", name.Value)
-					}
-
-					ret.Secrets[name] = secret
 				}
+
+				if secret.Description == nil {
+					p.errorfAt(name.Pos, "\"description\" is missing at %q secret of workflow_call event", name.Value)
+				}
+
+				ret.Secrets[name] = secret
 			}
 		case "outputs":
 			outputs := p.parseSectionMapping("outputs", kv.val, true)

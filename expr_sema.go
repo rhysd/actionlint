@@ -369,13 +369,6 @@ func (sema *ExprSemanticsChecker) UpdateNeeds(ty *ObjectType) {
 func (sema *ExprSemanticsChecker) UpdateSecrets(ty *ObjectType) {
 	sema.ensureVarsCopied()
 
-	// When the secrets object is loose, adding each properties is unnecessary. This happens when
-	// `secrets: inherit` is specified in a callable workflow.
-	if ty.IsLoose() {
-		sema.vars["secrets"] = ty
-		return
-	}
-
 	// Merges automatically supplied secrets with manually defined secrets.
 	// ACTIONS_STEP_DEBUG and ACTIONS_RUNNER_DEBUG seem supplied from caller of the workflow (#130)
 	copied := NewStrictObjectType(map[string]ExprType{

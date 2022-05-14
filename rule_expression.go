@@ -105,16 +105,12 @@ func (rule *RuleExpression) VisitWorkflowPre(n *Workflow) error {
 			}
 			rule.inputsTy = ity
 
-			if e.InheritSecrets {
-				rule.secretsTy = NewEmptyObjectType()
-			} else {
-				sty := NewEmptyStrictObjectType()
-				for n, s := range e.Secrets {
-					sty.Props[n.Value] = StringType{}
-					rule.checkString(s.Description)
-				}
-				rule.secretsTy = sty
+			sty := NewEmptyStrictObjectType()
+			for n, s := range e.Secrets {
+				sty.Props[n.Value] = StringType{}
+				rule.checkString(s.Description)
 			}
+			rule.secretsTy = sty
 
 			for _, o := range e.Outputs {
 				rule.checkString(o.Description)
