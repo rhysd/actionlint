@@ -18,6 +18,11 @@ if ! git diff --cached --quiet; then
     exit 1
 fi
 
+if [[ "$(git rev-parse --abbrev-ref HEAD)" != main ]]; then
+    echo "This script must be run on 'main' branch" >&2
+    exit 1
+fi
+
 version="$1"
 
 if [[ ! "$version" =~ ^[0-9]+\.[0-9]+\.[0-9]+$ ]]; then
@@ -46,6 +51,10 @@ echo 'Creating a version bump commit and a version tag'
 git add "$pre_commit_hook"
 git commit -m "bump up version to ${tag}"
 git tag "$tag"
+
+# This is necessary since docker/build-push-action assumes the tagged commit was also pushed to main branch
+echo "Pushing bump commit to main"
+git push origin main
 
 echo "Pushing the version tag '${tag}'"
 git push origin "$tag"
