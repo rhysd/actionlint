@@ -734,6 +734,9 @@ type WorkflowCall struct {
 	Inputs map[string]*WorkflowCallInput
 	// Secrets is a map from secret name to secret value at 'secrets:'.
 	Secrets map[string]*WorkflowCallSecret
+	// InheritSecrets is true when 'secrets: inherit' is specified. In this case, Secrets must be empty.
+	// https://docs.github.com/en/actions/using-workflows/workflow-syntax-for-github-actions#onworkflow_callsecretsinherit
+	InheritSecrets bool
 }
 
 // Job is configuration of how to run a job.

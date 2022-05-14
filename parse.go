@@ -1154,12 +1154,22 @@ func (p *parser) parseJob(id *String, n *yaml.Node) *Job {
 			}
 			callOnlyKey = k
 		case "secrets":
-			secrets := p.parseSectionMapping("secrets", v, false)
-			call.Secrets = make(map[string]*WorkflowCallSecret, len(secrets))
-			for _, s := range secrets {
-				call.Secrets[s.key.Value] = &WorkflowCallSecret{
-					Name:  s.key,
-					Value: p.parseString(s.val, true),
+			if kv.val.Kind == yaml.ScalarNode {
+				// `secrets: inherit` special case
+				// https://docs.github.com/en/actions/using-workflows/workflow-syntax-for-github-actions#onworkflow_callsecretsinherit
+				if kv.val.Value == "inherit" {
+					call.InheritSecrets = true
+				} else {
+					p.errorf(kv.val, "expected mapping node for secrets or \"inherit\" string node but found %q node", kv.val.Value)
+				}
+			} else {
+				secrets := p.parseSectionMapping("secrets", v, false)
+				call.Secrets = make(map[string]*WorkflowCallSecret, len(secrets))
+				for _, s := range secrets {
+					call.Secrets[s.key.Value] = &WorkflowCallSecret{
+						Name:  s.key,
+						Value: p.parseString(s.val, true),
+					}
 				}
 			}
 			callOnlyKey = k
