@@ -256,19 +256,20 @@ var BuiltinGlobalVariableTypes = map[string]ExprType{
 		// These are not documented but actually exist
 		"workspace": StringType{},
 	}),
-	// https://docs.github.com/en/actions/learn-github-actions/contexts
+	// https://docs.github.com/en/actions/learn-github-actions/contexts#secrets-context
 	"secrets": NewMapObjectType(StringType{}),
-	// https://docs.github.com/en/actions/learn-github-actions/contexts
+	// https://docs.github.com/en/actions/learn-github-actions/contexts#strategy-context
 	"strategy": NewObjectType(map[string]ExprType{
 		"fail-fast":    BoolType{},
 		"job-index":    NumberType{},
 		"job-total":    NumberType{},
 		"max-parallel": NumberType{},
 	}),
-	// https://docs.github.com/en/actions/learn-github-actions/contexts
+	// https://docs.github.com/en/actions/learn-github-actions/contexts#matrix-context
 	"matrix": NewEmptyStrictObjectType(), // This value will be updated contextually
 	// https://docs.github.com/en/actions/learn-github-actions/contexts#needs-context
 	"needs": NewEmptyStrictObjectType(), // This value will be updated contextually
+	// https://docs.github.com/en/actions/learn-github-actions/contexts#inputs-context
 	// https://docs.github.com/en/actions/learn-github-actions/reusing-workflows
 	"inputs": NewEmptyStrictObjectType(),
 }
@@ -368,13 +369,6 @@ func (sema *ExprSemanticsChecker) UpdateNeeds(ty *ObjectType) {
 // UpdateSecrets updates 'secrets' context object to given object type.
 func (sema *ExprSemanticsChecker) UpdateSecrets(ty *ObjectType) {
 	sema.ensureVarsCopied()
-
-	// When the secrets object is loose, adding each properties is unnecessary. This happens when
-	// `secrets: inherit` is specified in a callable workflow.
-	if ty.IsLoose() {
-		sema.vars["secrets"] = ty
-		return
-	}
 
 	// Merges automatically supplied secrets with manually defined secrets.
 	// ACTIONS_STEP_DEBUG and ACTIONS_RUNNER_DEBUG seem supplied from caller of the workflow (#130)

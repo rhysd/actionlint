@@ -105,9 +105,9 @@ func (rule *RuleExpression) VisitWorkflowPre(n *Workflow) error {
 			}
 			rule.inputsTy = ity
 
-			if e.InheritSecrets {
-				rule.secretsTy = NewEmptyObjectType()
-			} else {
+			// When no secret is passed, secrets may be inherited from a caller of the workflow.
+			// So `secrets` context must be typed as { string => string }.
+			if len(e.Secrets) > 0 {
 				sty := NewEmptyStrictObjectType()
 				for n, s := range e.Secrets {
 					sty.Props[n.Value] = StringType{}

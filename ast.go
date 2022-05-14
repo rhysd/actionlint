@@ -233,9 +233,6 @@ type WorkflowCallEvent struct {
 	// Secrets is a map from name of secret to secret configuration.
 	// https://docs.github.com/en/actions/learn-github-actions/workflow-syntax-for-github-actions#onworkflow_callsecrets
 	Secrets map[*String]*WorkflowCallEventSecret
-	// InheritSecrets is true when 'secrets: inherit' is specified. In this case, Secrets must be empty.
-	// https://docs.github.com/en/actions/using-workflows/workflow-syntax-for-github-actions#onworkflow_callsecretsinherit
-	InheritSecrets bool
 	// Outputs is a map from name of output to output configuration.
 	// https://docs.github.com/en/actions/using-workflows/reusing-workflows#using-outputs-from-a-reusable-workflow
 	Outputs map[*String]*WorkflowCallEventOutput
@@ -737,6 +734,9 @@ type WorkflowCall struct {
 	Inputs map[string]*WorkflowCallInput
 	// Secrets is a map from secret name to secret value at 'secrets:'.
 	Secrets map[string]*WorkflowCallSecret
+	// InheritSecrets is true when 'secrets: inherit' is specified. In this case, Secrets must be empty.
+	// https://docs.github.com/en/actions/using-workflows/workflow-syntax-for-github-actions#onworkflow_callsecretsinherit
+	InheritSecrets bool
 }
 
 // Job is configuration of how to run a job.
