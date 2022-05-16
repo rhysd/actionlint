@@ -106,8 +106,9 @@ func (rule *RuleExpression) VisitWorkflowPre(n *Workflow) error {
 			rule.inputsTy = ity
 
 			// When no secret is passed, secrets may be inherited from a caller of the workflow.
-			// So `secrets` context must be typed as { string => string }.
-			if len(e.Secrets) > 0 {
+			// So `secrets` context must be typed as { string => string }. `e.Secrets` is nil when `secrets:` does not
+			// exist. When `e.Secrets` is an empty map, `secrets:` exists but it has no child.
+			if e.Secrets != nil {
 				sty := NewEmptyStrictObjectType()
 				for n, s := range e.Secrets {
 					sty.Props[n.Value] = StringType{}

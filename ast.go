@@ -230,7 +230,8 @@ type WorkflowCallEvent struct {
 	// Inputs is a map from input name to input configuration.
 	// https://docs.github.com/en/actions/learn-github-actions/workflow-syntax-for-github-actions#onworkflow_callinputs
 	Inputs map[*String]*WorkflowCallEventInput
-	// Secrets is a map from name of secret to secret configuration.
+	// Secrets is a map from name of secret to secret configuration. When 'secrets' is omitted, nil is set to this
+	// field.
 	// https://docs.github.com/en/actions/learn-github-actions/workflow-syntax-for-github-actions#onworkflow_callsecrets
 	Secrets map[*String]*WorkflowCallEventSecret
 	// Outputs is a map from name of output to output configuration.
