@@ -2048,6 +2048,53 @@ actionlint contextually defines types of `inputs` and `secrets` contexts looking
 allow keys at `on.workflow_call.inputs` and their values are typed based on `on.workflow_call.inputs.<input_name>.type`. Type of
 `secrets` is also strictly typed following `on.workflow_call.secrets`.
 
+[From May 3, 2022][inherit-secrets-announce], GitHub Actions allows to inherit secrets on calling reusable workflows. The caller
+declares to inherit all secrets.
+
+```yaml
+jobs:
+  pass-secrets-to-workflow:
+    uses: ./.github/workflows/called-workflow.yml
+    secrets: inherit
+```
+
+This means that actionlint cannot know the workflow inherits secrets or not when checking a reusable workflow. To solve this
+issue, actionlint assumes that
+
+- when `secrets:` is omitted in a reusable workflow, the workflow inherits secrets from a caller
+- when `secrets:` exists in a reusable workflow, the workflow inherits no other secret
+
+Following the assumptions,
+
+```yaml
+on:
+  workflow_call:
+
+jobs:
+  pass-secret-to-action:
+    runs-on: ubuntu-latest
+    steps:
+      # OK: This reports no error. FOO is assumed to be inherited from caller
+      - run: echo ${{ secrets.FOO }}
+```
+
+this workflow causes no error. And
+
+```yaml
+on:
+  workflow_call:
+    secrets:
+
+jobs:
+  pass-secret-to-action:
+    runs-on: ubuntu-latest
+    steps:
+      # ERROR: Secret FOO is not defined
+      - run: echo ${{ secrets.FOO }}
+```
+
+this workflow causes 'no such secret' error at `secrets.FOO`.
+
 ### Check outputs of reusable workflow
 
 Example input:
@@ -2169,3 +2216,4 @@ convention and reports invalid IDs as error.
 [workflow-dispatch-event]: https://docs.github.com/en/actions/learn-github-actions/events-that-trigger-workflows#workflow_dispatch
 [workflow-dispatch-input-type-announce]: https://github.blog/changelog/2021-11-10-github-actions-input-types-for-manual-workflows/
 [reusable-workflow-outputs]: https://docs.github.com/en/actions/using-workflows/reusing-workflows#using-outputs-from-a-reusable-workflow
+[inherit-secrets-announce]: https://github.blog/changelog/2022-05-03-github-actions-simplify-using-secrets-with-reusable-workflows/
