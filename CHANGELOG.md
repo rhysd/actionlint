@@ -1,3 +1,45 @@
+<a name="v1.6.13"></a>
+# [v1.6.13](https://github.com/rhysd/actionlint/releases/tag/v1.6.13) - 18 May 2022
+
+- [`secrets: inherit` in reusable workflow](https://docs.github.com/en/actions/using-workflows/workflow-syntax-for-github-actions#onworkflow_callsecretsinherit) is now supported (#138)
+  ```yaml
+  on:
+    workflow_dispatch:
+
+  jobs:
+    pass-secrets-to-workflow:
+      uses: ./.github/workflows/called-workflow.yml
+      secrets: inherit
+  ```
+  This means that actionlint cannot know the workflow inherits secrets or not when checking a reusable workflow. To support `secrets: inherit` without giving up on checking `secrets` context, actionlint assumes the followings. See [the document](https://github.com/rhysd/actionlint/blob/main/docs/checks.md#check-types-of-inputs-and-secrets-in-reusable-workflow) for the details.
+  - when `secrets:` is omitted in a reusable workflow, the workflow inherits secrets from a caller
+  - when `secrets:` exists in a reusable workflow, the workflow inherits no other secret
+- [`macos-12` runner](https://github.blog/changelog/2022-04-25-github-actions-public-beta-of-macos-12-for-github-hosted-runners-is-now-available/) is now supported (#134, thanks @shogo82148)
+- [`ubuntu-22.04` runner](https://github.blog/changelog/2022-05-10-github-actions-beta-of-ubuntu-22-04-for-github-hosted-runners-is-now-available/) is now supported (#142, thanks @shogo82148)
+- `concurrency` is available on reusable workflow call (#136)
+  ```yaml
+  jobs:
+    checks:
+      concurrency:
+        group: ${{ github.ref }}-${{ github.workflow }}
+        cancel-in-progress: true
+      uses: ./path/to/workflow.yaml
+  ```
+- [pre-commit](https://pre-commit.com/) hook now uses a fixed version of actionlint. For example, the following configuration continues to use actionlint v1.6.13 even if v1.6.14 is released. (#116)
+  ```yaml
+  repos:
+    - repo: https://github.com/rhysd/actionlint
+      rev: v1.6.13
+      hooks:
+        - id: actionlint-docker
+  ```
+- Update popular actions data set including new versions of `docker/*`, `haskell/actions/setup`,  `actions/setup-go`, ... (#140, thanks @bflad)
+- Update Go module dependencies
+
+
+[Changes][v1.6.13]
+
+
 <a name="v1.6.12"></a>
 # [v1.6.12](https://github.com/rhysd/actionlint/releases/tag/v1.6.12) - 14 Apr 2022
 
@@ -724,6 +766,7 @@ See documentation for more details:
 [Changes][v1.0.0]
 
 
+[v1.6.13]: https://github.com/rhysd/actionlint/compare/v1.6.12...v1.6.13
 [v1.6.12]: https://github.com/rhysd/actionlint/compare/v1.6.11...v1.6.12
 [v1.6.11]: https://github.com/rhysd/actionlint/compare/v1.6.10...v1.6.11
 [v1.6.10]: https://github.com/rhysd/actionlint/compare/v1.6.9...v1.6.10
