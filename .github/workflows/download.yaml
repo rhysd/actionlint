@@ -2,14 +2,12 @@ name: Download script
 on:
   push:
     paths:
-      - 'scripts/download-actionlint.bash'
-    branches:
-      - '*'
-    tags-ignore:
-      - '*'
+      - scripts/download-actionlint.bash
+      - scripts/test-download-actionlint.bash
   pull_request:
     paths:
-      - 'scripts/download-actionlint.bash'
+      - scripts/download-actionlint.bash
+      - scripts/test-download-actionlint.bash
   workflow_dispatch:
 
 jobs:
@@ -21,10 +19,5 @@ jobs:
     runs-on: ${{ matrix.os }}
     steps:
       - uses: actions/checkout@v3
-      # bash <(curl ...) is not available because it does not download the latest script just after pushing a change
-      - run: ./scripts/download-actionlint.bash
-        shell: bash
-        id: get_actionlint
-      - name: Run actionlint
-        run: ${{ steps.get_actionlint.outputs.executable }} -help
+      - run: ./scripts/test-download-actionlint.bash
         shell: bash
