@@ -18,13 +18,13 @@ pushd "$temp_dir"
 # Normal cases
 set -e
 
+# No arguments
 out="$(bash "$script")"
 if [ -n "$GITHUB_ACTION" ]; then
     if [[ "$out" != *"::set-output name=executable::"* ]]; then
         echo "'executable' step output is not set: '${out}'" >&2
     fi
 fi
-
 out="$(./actionlint -version)"
 if [[ "$out" != *'installed by downloading from release page'* ]]; then
     echo "Output from ./actionlint -version is unexpected: '${out}'" >&2
@@ -32,6 +32,7 @@ if [[ "$out" != *'installed by downloading from release page'* ]]; then
 fi
 rm -f ./actionlint
 
+# Specify only version
 bash "$script" '1.6.12'
 out="$(./actionlint -version | head -n 1)"
 if [[ "$out" != '1.6.12' ]]; then
@@ -40,8 +41,37 @@ if [[ "$out" != '1.6.12' ]]; then
 fi
 rm -f ./actionlint
 
+# Specify only a download directory
+mkdir ./test1
+bash "$script" latest ./test1
+out="$(./test1/actionlint -version)"
+if [[ "$out" != *'installed by downloading from release page'* ]]; then
+    echo "Output from ./actionlint -version is unexpected: '${out}'" >&2
+    exit 1
+fi
+rm -rf ./test1
+
+# Specify both version and a download directory
+mkdir ./test2
+bash "$script" '1.6.12' ./test2
+out="$(./test2/actionlint -version | head -n 1)"
+if [[ "$out" != '1.6.12' ]]; then
+    echo "Unexpected version: '${out}'" 1>&2
+    exit 1
+fi
+rm -rf ./test2
+
 # Error cases
 set +e
+
 if bash "$script" 'v1.6.12'; then
-    echo "Argument 'v1.6.12' did not cause any error" >&2
+    echo "Invalid version at the first argument did not cause any error" >&2
 fi
+if bash "$script" './this/dir/does/not/exist'; then
+    echo "Directory which does not exist at the first argument did not cause any error" >&2
+fi
+if bash "$script" '999999999999999999.9.9'; then
+    echo "Unknown version at the first argument did not cause any error" >&2
+fi
+
+echo 'SUCCESS'

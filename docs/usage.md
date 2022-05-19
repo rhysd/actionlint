@@ -198,6 +198,9 @@ Or simply download the executable and run it in one step:
   shell: bash
 ```
 
+The download script allows to specify the version of actionlint and the download directory. Try to give `--help` argument
+to the script for more usage details.
+
 If you want to enable [shellcheck integration](checks.md#check-shellcheck-integ), install `shellcheck` command. Note that
 shellcheck is [pre-installed on Ubuntu worker][preinstall-ubuntu].
 
