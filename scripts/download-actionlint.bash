@@ -2,12 +2,9 @@
 
 set -e -o pipefail
 
-# Default value is updated manually on release
-version="1.6.13"
-
 function usage() {
     echo 'USAGE:' >&2
-    echo '  bash download-actionlint.bash [DIR] [VERSION]' >&2
+    echo '  bash download-actionlint.bash [[VERSION] DIR]' >&2
     echo >&2
     echo 'This script downloads actionlint binary from the following release page. curl' >&2
     echo 'command is required as dependency' >&2
@@ -18,8 +15,9 @@ function usage() {
     echo '  omitted, the binary will be put in the current directory.' >&2
     echo >&2
     echo 'VERSION:' >&2
-    echo '   Version of actionlint to download (e.g. 1.6.9). When this value is omitted,' >&2
-    echo '   the latest version will be selected.' >&2
+    echo '   Version of actionlint to download. Version must be a specific version' >&2
+    echo '   "{major}.{minor}.{patch}" such as "1.6.9" or "latest". When "latest" is' >&2
+    echo '   specified or this argument is omitted, the latest version will be selected.' >&2
     echo >&2
     echo 'EXAMPLE:' >&2
     echo '  - Download the latest binary to the current directory' >&2
@@ -28,7 +26,7 @@ function usage() {
     echo >&2
     echo '  - Download the latest binary to /usr/bin' >&2
     echo >&2
-    echo '      $ bash download-actionlint.bash /usr/bin' >&2
+    echo '      $ bash download-actionlint.bash latest /usr/bin' >&2
     echo >&2
     echo '  - Download version 1.6.9 to the current directory' >&2
     echo >&2
@@ -36,7 +34,7 @@ function usage() {
     echo >&2
     echo '  - Download version 1.6.9 to /usr/bin' >&2
     echo >&2
-    echo '      $ bash download-actionlint.bash /usr/bin 1.6.9' >&2
+    echo '      $ bash download-actionlint.bash 1.6.9 /usr/bin' >&2
 }
 
 if [[ "$1" == "-h" || "$1" == "--help" ]]; then
@@ -44,25 +42,27 @@ if [[ "$1" == "-h" || "$1" == "--help" ]]; then
     exit
 fi
 
-target_dir="$(pwd)"
+# Default value is updated manually on release
+version="1.6.13"
 if [ -n "$1" ]; then
-    if [[ "$1" =~ ^[0-9]+\.[0-9]+\.[0-9]+$ ]]; then
-        version="$1"
-    elif [ -d "$1" ]; then
-        target_dir="${1%/}"
-    else
-        echo "Directory '$1' does not exist" >&2
-        echo >&2
-        usage
-        exit 1
+    if [[ "$1" != 'latest' && "$1" != 'LATEST' ]]; then
+        if [[ "$1" =~ ^[0-9]+\.[0-9]+\.[0-9]+$ ]]; then
+            version="$1"
+        else
+            echo "Given version '$1' does not match to regex '^[0-9]+\.[0-9]+\.[0-9]+$' nor equal to 'latest'" >&2
+            echo >&2
+            usage
+            exit 1
+        fi
     fi
 fi
 
+target_dir="$(pwd)"
 if [ -n "$2" ]; then
-    if [[ "$2" =~ ^[0-9]+\.[0-9]+\.[0-9]+$ ]]; then
-        version="$2"
+    if [ -d "$2" ]; then
+        target_dir="${2%/}"
     else
-        echo "Given version '${version}' does not match to regex" '^[0-9]+\.[0-9]+\.[0-9]+$' >&2
+        echo "Directory '$2' does not exist" >&2
         echo >&2
         usage
         exit 1
