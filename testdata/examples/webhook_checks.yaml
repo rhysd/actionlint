@@ -2,6 +2,9 @@ on:
   push:
     # ERROR: Incorrect filter. 'branches' is correct
     branch: foo
+    # ERROR: Both 'paths' and 'paths-ignore' filters cannot be used for the same event
+    paths: path/to/foo
+    paths-ignore: path/to/foo
   issues:
     # ERROR: Incorrect type. 'opened' is correct
     types: created

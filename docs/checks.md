@@ -1118,6 +1118,9 @@ on:
   push:
     # ERROR: Incorrect filter. 'branches' is correct
     branch: foo
+    # ERROR: Both 'paths' and 'paths-ignore' filters cannot be used for the same event
+    paths: path/to/foo
+    paths-ignore: path/to/foo
   issues:
     # ERROR: Incorrect type. 'opened' is correct
     types: created
@@ -1134,21 +1137,25 @@ jobs:
 Output:
 
 ```
-test.yaml:4:5: unexpected key "branch" for "push" section. expected one of "types", "branches", "branches-ignore", "tags", "tags-ignore", ... [syntax-check]
+test.yaml:2:3: both "paths" and "paths-ignore" filters cannot be used for the same event "push" [events]
+  |
+2 |   push:
+  |   ^~~~~
+test.yaml:4:5: unexpected key "branch" for "push" section. expected one of "branches", "branches-ignore", "paths", "paths-ignore", "tags", "tags-ignore", "types", "workflows" [syntax-check]
   |
 4 |     branch: foo
   |     ^~~~~~~
-test.yaml:7:12: invalid activity type "created" for "issues" Webhook event. available types are "opened", "edited", "deleted", "transferred", ... [events]
-  |
-7 |     types: created
-  |            ^~~~~~~
-test.yaml:9:3: unknown Webhook event "pullreq". see https://docs.github.com/en/actions/learn-github-actions/events-that-trigger-workflows#webhook-events for list of all Webhook event names [events]
-  |
-8 |   pullreq:
-  |   ^~~~~~~~
+test.yaml:10:12: invalid activity type "created" for "issues" Webhook event. available types are "assigned", "closed", "deleted", "demilestoned", "edited", "labeled", "locked", "milestoned", "opened", "pinned", "reopened", "transferred", "unassigned", "unlabeled", "unlocked", "unpinned" [events]
+   |
+10 |     types: created
+   |            ^~~~~~~
+test.yaml:12:3: unknown Webhook event "pullreq". see https://docs.github.com/en/actions/learn-github-actions/events-that-trigger-workflows#webhook-events for list of all Webhook event names [events]
+   |
+12 |   pullreq:
+   |   ^~~~~~~~
 ```
 
-[Playground](https://rhysd.github.io/actionlint#eJwtjMERAyEMA/9UoQagALoB4gzJMDbB9iPd5+DysjS7snAOwHTt+wJ1FW494yly9Zeqk97EvvOKaIuK0eOMxlj0ySG8pR7JSO2Wl7NG4QyvzuZxlM0OUqP5fwnEbWZQ64KU0g/W7Cnh)
+[Playground](https://rhysd.github.io/actionlint#eJxdjTESAyEIRXtPwQV0e26jhsTNOGAEitw+WTfNpvrAe/MRxgAwXNuRAGVmrg3hLrL2ka0prthMtss57g+WSf90V3XSs87e4ztCnZSNbutT75NeGMJTypKM1E55OmsURvDibB57PthCajR+lQDxMBGoNoGU0gfaazr+)
 
 At `on:`, Webhook events can be specified to trigger the workflow. [Webhook event documentation][webhook-doc] defines
 which Webhook events are available and what types can be specified at `types:` for each event.
@@ -1158,6 +1165,9 @@ actionlint validates the Webhook configurations:
 - unknown Webhook event name
 - unknown type for Webhook event
 - invalid filter names
+- invalid filter usages
+  - `paths` and `paths-ignore` can be used only for `push`, `pull_request`, or `pull_request_target` events
+  - both `paths` and `paths-ignore` can not be used for the same event as explained in [the official document][specific-paths-doc]
 
 The table of available Webhooks and their types are defined in [`all_webhooks.go`](../all_webhooks.go). It is generated
 by [a script][generate-webhook-events] and kept to the latest by CI workflow triggered weekly.
@@ -2217,3 +2227,4 @@ convention and reports invalid IDs as error.
 [workflow-dispatch-input-type-announce]: https://github.blog/changelog/2021-11-10-github-actions-input-types-for-manual-workflows/
 [reusable-workflow-outputs]: https://docs.github.com/en/actions/using-workflows/reusing-workflows#using-outputs-from-a-reusable-workflow
 [inherit-secrets-announce]: https://github.blog/changelog/2022-05-03-github-actions-simplify-using-secrets-with-reusable-workflows/
+[specific-paths-doc]: https://docs.github.com/en/actions/using-workflows/triggering-a-workflow#using-filters-to-target-specific-paths-for-pull-request-or-push-events
