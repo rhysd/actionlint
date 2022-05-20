@@ -1,0 +1,13 @@
+on:
+  pull_request_review:
+    types: submitted
+    paths: /path/to/foo.txt
+  pull_request_review_comment:
+    types: created
+    paths-ignore: /path/to/foo.txt
+
+jobs:
+  test:
+    runs-on: ubuntu-latest
+    steps:
+      - run: echo hello

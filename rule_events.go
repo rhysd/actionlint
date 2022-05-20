@@ -92,6 +92,19 @@ func (rule *RuleEvents) checkWebhookEvent(event *WebhookEvent) {
 			rule.errorf(event.Pos, "\"workflows\" cannot be configured for %q event. it is only for workflow_run event", hook)
 		}
 	}
+
+	if hook == "push" || hook == "pull_request" || hook == "pull_request_target" {
+		if len(event.Paths) > 0 && len(event.PathsIgnore) > 0 {
+			rule.errorf(event.Pos, "both \"paths\" and \"paths-ignore\" filters cannot be used for the same event %q", hook)
+		}
+	} else {
+		if len(event.Paths) > 0 {
+			rule.errorf(event.Pos, "\"paths\" filter is only available for push, pull_request, or pull_request_target event")
+		}
+		if len(event.PathsIgnore) > 0 {
+			rule.errorf(event.Pos, "\"paths-ignore\" filter is only available for push, pull_request, or pull_request_target event")
+		}
+	}
 }
 
 func (rule *RuleEvents) checkTypes(hook *String, types []*String, expected []string) {

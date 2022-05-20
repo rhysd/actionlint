@@ -1,0 +1,2 @@
+test.yaml:2:3: "paths" filter is only available for push, pull_request, or pull_request_target event [events]
+test.yaml:5:3: "paths-ignore" filter is only available for push, pull_request, or pull_request_target event [events]
