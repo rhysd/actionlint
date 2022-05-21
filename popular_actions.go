@@ -109,6 +109,9 @@ var PopularActions = map[string]*ActionMetadata{
 			"test_changes_limit":               false,
 			"time_unit":                        false,
 		},
+		Outputs: map[string]struct{}{
+			"json": {},
+		},
 	},
 	"JamesIves/github-pages-deploy-action@releases/v3": {
 		Name: "Deploy to GitHub Pages",
