@@ -8,6 +8,9 @@ on:
   issues:
     # ERROR: Incorrect type. 'opened' is correct
     types: created
+  release:
+    # ERROR: 'tags' filter is not available for 'release' event
+    tags: v*.*.*
   # ERROR: Unknown event name
   pullreq:
 

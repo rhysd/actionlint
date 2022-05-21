@@ -1124,6 +1124,9 @@ on:
   issues:
     # ERROR: Incorrect type. 'opened' is correct
     types: created
+  release:
+    # ERROR: 'tags' filter is not available for 'release' event
+    tags: v*.*.*
   # ERROR: Unknown event name
   pullreq:
 
@@ -1149,25 +1152,38 @@ test.yaml:10:12: invalid activity type "created" for "issues" Webhook event. ava
    |
 10 |     types: created
    |            ^~~~~~~
-test.yaml:12:3: unknown Webhook event "pullreq". see https://docs.github.com/en/actions/learn-github-actions/events-that-trigger-workflows#webhook-events for list of all Webhook event names [events]
+test.yaml:11:3: "tags" filter is not available for release event. it is only for push event [events]
    |
-12 |   pullreq:
+11 |   release:
+   |   ^~~~~~~~
+test.yaml:15:3: unknown Webhook event "pullreq". see https://docs.github.com/en/actions/learn-github-actions/events-that-trigger-workflows#webhook-events for list of all Webhook event names [events]
+   |
+15 |   pullreq:
    |   ^~~~~~~~
 ```
 
-[Playground](https://rhysd.github.io/actionlint#eJxdjTESAyEIRXtPwQV0e26jhsTNOGAEitw+WTfNpvrAe/MRxgAwXNuRAGVmrg3hLrL2ka0prthMtss57g+WSf90V3XSs87e4ztCnZSNbutT75NeGMJTypKM1E55OmsURvDibB57PthCajR+lQDxMBGoNoGU0gfaazr+)
+[Playground](https://rhysd.github.io/actionlint#eJxdjkEOAyEIRfeegnUTnb23UUvHaYxYwCa9fdWZTRsWH3g/H6h6A9C65KkAkUNN2cODaM0taBa/ZFPaftb22Csx/tNDpKOccfppo4XEGBTvY8VYMAheNOwDvm9u1PqiFMaXN+ZJcQUoip5W7lUsVQ899qrdljDZQqLYrnMAdjo9YMoEzrkvdVRCRg==)
 
 At `on:`, Webhook events can be specified to trigger the workflow. [Webhook event documentation][webhook-doc] defines
 which Webhook events are available and what types can be specified at `types:` for each event.
 
 actionlint validates the Webhook configurations:
 
-- unknown Webhook event name
-- unknown type for Webhook event
-- invalid filter names
-- invalid filter usages
-  - `paths` and `paths-ignore` can be used only for `push`, `pull_request`, or `pull_request_target` events
-  - both `paths` and `paths-ignore` can not be used for the same event as explained in [the official document][specific-paths-doc]
+- Webhook event name
+- types for Webhook event
+- filter names
+- filter usages
+  - some filters are only available for specific events as explained in [the official document][specific-paths-doc] (see the following table)
+  - both `paths` and `paths-ignore` can not be used for the same event
+
+| Filter name       | Events where the filter is available          |
+|-------------------|-----------------------------------------------|
+| `paths`           | `push`, `pull_request`, `pull_request_target` |
+| `paths-ignore`    | `push`, `pull_request`, `pull_request_target` |
+| `branches`        | `push`, `pull_request`, `pull_request_target` |
+| `branches-ignore` | `push`, `pull_request`, `pull_request_target` |
+| `tags`            | `push`                                        |
+| `tags-ignore`     | `push`                                        |
 
 The table of available Webhooks and their types are defined in [`all_webhooks.go`](../all_webhooks.go). It is generated
 by [a script][generate-webhook-events] and kept to the latest by CI workflow triggered weekly.
