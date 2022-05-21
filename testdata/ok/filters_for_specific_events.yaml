@@ -1,0 +1,21 @@
+on:
+  push:
+    branches: main
+    branches-ignore: test
+    tags: v*.*.*
+    tags-ignore: deploy/*
+    paths: path/to/foo
+  pull_request:
+    branches: main
+    branches-ignore: test
+    paths-ignore: path/to/foo
+  pull_request_target:
+    branches: main
+    branches-ignore: test
+    paths-ignore: path/to/foo
+
+jobs:
+  test:
+    runs-on: ubuntu-latest
+    steps:
+      - run: echo ...

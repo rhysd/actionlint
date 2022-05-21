@@ -71,6 +71,10 @@ func (rule *RuleEvents) checkCron(spec *String) {
 	}
 }
 
+func (rule *RuleEvents) filterNotAvailable(pos *Pos, filter, hook, available string) {
+	rule.errorf(pos, "%q filter is not available for %s event. it is only for %s event", filter, hook, available)
+}
+
 // https://docs.github.com/en/actions/learn-github-actions/events-that-trigger-workflows#webhook-events
 func (rule *RuleEvents) checkWebhookEvent(event *WebhookEvent) {
 	hook := event.Hook.Value
@@ -93,16 +97,34 @@ func (rule *RuleEvents) checkWebhookEvent(event *WebhookEvent) {
 		}
 	}
 
+	// Some filters are available with specific events
+	// - on.<push|pull_request|pull_request_target>.<paths|paths-ignore>
+	// - on.push.<branches|tags|branches-ignore|tags-ignore>
+	// - on.<pull_request|pull_request_target>.<branches|branches-ignore>
 	if hook == "push" || hook == "pull_request" || hook == "pull_request_target" {
 		if len(event.Paths) > 0 && len(event.PathsIgnore) > 0 {
 			rule.errorf(event.Pos, "both \"paths\" and \"paths-ignore\" filters cannot be used for the same event %q", hook)
 		}
 	} else {
 		if len(event.Paths) > 0 {
-			rule.errorf(event.Pos, "\"paths\" filter is only available for push, pull_request, or pull_request_target event")
+			rule.filterNotAvailable(event.Pos, "paths", hook, "push, pull_request, or pull_request_target")
 		}
 		if len(event.PathsIgnore) > 0 {
-			rule.errorf(event.Pos, "\"paths-ignore\" filter is only available for push, pull_request, or pull_request_target event")
+			rule.filterNotAvailable(event.Pos, "paths-ignore", hook, "push, pull_request, or pull_request_target")
+		}
+		if len(event.Branches) > 0 {
+			rule.filterNotAvailable(event.Pos, "branches", hook, "push, pull_request, or pull_request_target")
+		}
+		if len(event.BranchesIgnore) > 0 {
+			rule.filterNotAvailable(event.Pos, "branches-ignore", hook, "push, pull_request, or pull_request_target")
+		}
+	}
+	if hook != "push" {
+		if len(event.Tags) > 0 {
+			rule.filterNotAvailable(event.Pos, "tags", hook, "push")
+		}
+		if len(event.TagsIgnore) > 0 {
+			rule.filterNotAvailable(event.Pos, "tags-ignore", hook, "push")
 		}
 	}
 }

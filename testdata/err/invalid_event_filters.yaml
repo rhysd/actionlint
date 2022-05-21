@@ -2,9 +2,14 @@ on:
   pull_request_review:
     types: submitted
     paths: /path/to/foo.txt
-  pull_request_review_comment:
-    types: created
-    paths-ignore: /path/to/foo.txt
+    paths-ignore: /path/to/bar.txt
+    branches: main
+    branches-ignore: test
+    tags: v*.*.*
+    tags-ignore: deploy/*
+  pull_request:
+    tags: v*.*.*
+    tags-ignore: deploy/*
 
 jobs:
   test:
