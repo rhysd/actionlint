@@ -13,6 +13,10 @@ on:
     branches: main
     branches-ignore: test
     paths-ignore: path/to/foo
+  workflow_run:
+    workflows: foo.yaml
+    branches: main
+    branches-ignore: test
 
 jobs:
   test:

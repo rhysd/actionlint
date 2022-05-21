@@ -87,7 +87,11 @@ func (rule *RuleEvents) checkWebhookEvent(event *WebhookEvent) {
 
 	rule.checkTypes(event.Hook, event.Types, types)
 
-	if hook == "workflow_run" {
+	isWorkflowRun := hook == "workflow_run"
+	isPush := hook == "push"
+	isPullRequest := hook == "pull_request" || hook == "pull_request_target"
+
+	if isWorkflowRun {
 		if len(event.Workflows) == 0 {
 			rule.error(event.Pos, "no workflow is configured for \"workflow_run\" event")
 		}
@@ -101,7 +105,8 @@ func (rule *RuleEvents) checkWebhookEvent(event *WebhookEvent) {
 	// - on.<push|pull_request|pull_request_target>.<paths|paths-ignore>
 	// - on.push.<branches|tags|branches-ignore|tags-ignore>
 	// - on.<pull_request|pull_request_target>.<branches|branches-ignore>
-	if hook == "push" || hook == "pull_request" || hook == "pull_request_target" {
+	// - on.workflow_run.<branches|branches-ignore>
+	if isPush || isPullRequest {
 		if len(event.Paths) > 0 && len(event.PathsIgnore) > 0 {
 			rule.errorf(event.Pos, "both \"paths\" and \"paths-ignore\" filters cannot be used for the same event %q", hook)
 		}
@@ -112,14 +117,16 @@ func (rule *RuleEvents) checkWebhookEvent(event *WebhookEvent) {
 		if len(event.PathsIgnore) > 0 {
 			rule.filterNotAvailable(event.Pos, "paths-ignore", hook, "push, pull_request, or pull_request_target")
 		}
+	}
+	if !isPush && !isPullRequest && !isWorkflowRun {
 		if len(event.Branches) > 0 {
-			rule.filterNotAvailable(event.Pos, "branches", hook, "push, pull_request, or pull_request_target")
+			rule.filterNotAvailable(event.Pos, "branches", hook, "push, pull_request, pull_request_target, or workflow_run")
 		}
 		if len(event.BranchesIgnore) > 0 {
-			rule.filterNotAvailable(event.Pos, "branches-ignore", hook, "push, pull_request, or pull_request_target")
+			rule.filterNotAvailable(event.Pos, "branches-ignore", hook, "push, pull_request, pull_request_target, or workflow_run")
 		}
 	}
-	if hook != "push" {
+	if !isPush {
 		if len(event.Tags) > 0 {
 			rule.filterNotAvailable(event.Pos, "tags", hook, "push")
 		}
