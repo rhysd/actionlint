@@ -75,6 +75,10 @@ func (rule *RuleEvents) filterNotAvailable(pos *Pos, filter, hook, available str
 	rule.errorf(pos, "%q filter is not available for %s event. it is only for %s event", filter, hook, available)
 }
 
+func (rule *RuleEvents) exclusiveFilters(pos *Pos, name, hook string) {
+	rule.errorf(pos, "both \"%s\" and \"%s-ignore\" filters cannot be used for the same event %q", name, name, hook)
+}
+
 // https://docs.github.com/en/actions/learn-github-actions/events-that-trigger-workflows#webhook-events
 func (rule *RuleEvents) checkWebhookEvent(event *WebhookEvent) {
 	hook := event.Hook.Value
@@ -108,7 +112,7 @@ func (rule *RuleEvents) checkWebhookEvent(event *WebhookEvent) {
 	// - on.workflow_run.<branches|branches-ignore>
 	if isPush || isPullRequest {
 		if len(event.Paths) > 0 && len(event.PathsIgnore) > 0 {
-			rule.errorf(event.Pos, "both \"paths\" and \"paths-ignore\" filters cannot be used for the same event %q", hook)
+			rule.exclusiveFilters(event.Pos, "paths", hook)
 		}
 	} else {
 		if len(event.Paths) > 0 {
@@ -118,7 +122,11 @@ func (rule *RuleEvents) checkWebhookEvent(event *WebhookEvent) {
 			rule.filterNotAvailable(event.Pos, "paths-ignore", hook, "push, pull_request, or pull_request_target")
 		}
 	}
-	if !isPush && !isPullRequest && !isWorkflowRun {
+	if isPush || isPullRequest || isWorkflowRun {
+		if len(event.Branches) > 0 && len(event.BranchesIgnore) > 0 {
+			rule.exclusiveFilters(event.Pos, "branches", hook)
+		}
+	} else {
 		if len(event.Branches) > 0 {
 			rule.filterNotAvailable(event.Pos, "branches", hook, "push, pull_request, pull_request_target, or workflow_run")
 		}
@@ -126,7 +134,11 @@ func (rule *RuleEvents) checkWebhookEvent(event *WebhookEvent) {
 			rule.filterNotAvailable(event.Pos, "branches-ignore", hook, "push, pull_request, pull_request_target, or workflow_run")
 		}
 	}
-	if !isPush {
+	if isPush {
+		if len(event.Tags) > 0 && len(event.TagsIgnore) > 0 {
+			rule.exclusiveFilters(event.Pos, "tags", hook)
+		}
+	} else {
 		if len(event.Tags) > 0 {
 			rule.filterNotAvailable(event.Pos, "tags", hook, "push")
 		}

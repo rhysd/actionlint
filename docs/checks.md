@@ -1173,8 +1173,10 @@ actionlint validates the Webhook configurations:
 - types for Webhook event
 - filter names
 - filter usages
-  - some filters are only available for specific events as explained in [the official document][specific-paths-doc] (see the following table)
-  - both `paths` and `paths-ignore` can not be used for the same event
+  - `paths` and `paths-ignore`, `branches` and `branches-ignore`, `tags` and `tags-ignore` are exclusive. They can not
+    be used for the same event.
+  - Some filters are only available for specific events as explained in [the official document][specific-paths-doc]
+    (see the following table).
 
 | Filter name       | Events where the filter is available          |
 |-------------------|-----------------------------------------------|

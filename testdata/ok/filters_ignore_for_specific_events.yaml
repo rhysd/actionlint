@@ -1,17 +1,17 @@
 on:
   push:
-    branches: main
-    tags: v*.*.*
-    paths: path/to/foo
+    branches-ignore: test
+    tags-ignore: deploy/*
+    paths-ignore: path/to/foo
   pull_request:
-    branches: main
-    paths: path/to/foo
+    branches-ignore: test
+    paths-ignore: path/to/foo
   pull_request_target:
-    branches: main
+    branches-ignore: test
     paths-ignore: path/to/foo
   workflow_run:
     workflows: foo.yaml
-    branches: main
+    branches-ignore: test
 
 jobs:
   test:

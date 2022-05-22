@@ -1,0 +1,8 @@
+test.yaml:2:3: both "paths" and "paths-ignore" filters cannot be used for the same event "push" [events]
+test.yaml:2:3: both "branches" and "branches-ignore" filters cannot be used for the same event "push" [events]
+test.yaml:2:3: both "tags" and "tags-ignore" filters cannot be used for the same event "push" [events]
+test.yaml:9:3: both "paths" and "paths-ignore" filters cannot be used for the same event "pull_request" [events]
+test.yaml:9:3: both "branches" and "branches-ignore" filters cannot be used for the same event "pull_request" [events]
+test.yaml:14:3: both "paths" and "paths-ignore" filters cannot be used for the same event "pull_request_target" [events]
+test.yaml:14:3: both "branches" and "branches-ignore" filters cannot be used for the same event "pull_request_target" [events]
+test.yaml:19:3: both "branches" and "branches-ignore" filters cannot be used for the same event "workflow_run" [events]

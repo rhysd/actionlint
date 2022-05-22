@@ -1,3 +1,0 @@
-test.yaml:2:3: both "paths" and "paths-ignore" filters cannot be used for the same event "push" [events]
-test.yaml:5:3: both "paths" and "paths-ignore" filters cannot be used for the same event "pull_request" [events]
-test.yaml:8:3: both "paths" and "paths-ignore" filters cannot be used for the same event "pull_request_target" [events]
