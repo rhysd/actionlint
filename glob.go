@@ -42,11 +42,11 @@ type globValidator struct {
 
 func (v *globValidator) error(msg string) {
 	p := v.scan.Pos()
+	// - 1 because character at the error position is already eaten from scanner
 	c := p.Column - 1
 	if p.Line > 1 {
 		c = 0 // fallback to 0
 	}
-	// - 1 because character at the error position is already eaten from scanner
 	v.errs = append(v.errs, InvalidGlobPattern{msg, c})
 }
 
@@ -237,5 +237,15 @@ func ValidateRefGlob(pat string) []InvalidGlobPattern {
 // errors found by the validation. See the following URL for more details of the sytnax:
 // https://docs.github.com/en/actions/learn-github-actions/workflow-syntax-for-github-actions#filter-pattern-cheat-sheet
 func ValidatePathGlob(pat string) []InvalidGlobPattern {
+	if strings.HasPrefix(pat, " ") {
+		return []InvalidGlobPattern{
+			{"path value must not start with spaces", 0},
+		}
+	}
+	if strings.HasSuffix(pat, " ") {
+		return []InvalidGlobPattern{
+			{"path value must not end with spaces", len(pat)},
+		}
+	}
 	return validateGlob(pat, false)
 }
