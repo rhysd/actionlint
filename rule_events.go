@@ -71,12 +71,35 @@ func (rule *RuleEvents) checkCron(spec *String) {
 	}
 }
 
-func (rule *RuleEvents) filterNotAvailable(pos *Pos, filter, hook, available string) {
-	rule.errorf(pos, "%q filter is not available for %s event. it is only for %s event", filter, hook, available)
+func (rule *RuleEvents) filterNotAvailable(pos *Pos, filter, hook string, available []string) {
+	e := "events"
+	if len(available) < 2 {
+		e = "event"
+	}
+	rule.errorf(pos, "%q filter is not available for %s event. it is only for %s %s", filter, hook, strings.Join(available, ", "), e)
 }
 
-func (rule *RuleEvents) exclusiveFilters(pos *Pos, name, hook string) {
-	rule.errorf(pos, "both \"%s\" and \"%s-ignore\" filters cannot be used for the same event %q", name, name, hook)
+func (rule *RuleEvents) checkExclusiveFilters(pos *Pos, filter, ignore *WebhookEventFilter, hook string, available []string) {
+	ok := false
+	for _, a := range available {
+		if a == hook {
+			ok = true
+			break
+		}
+	}
+
+	if ok {
+		if !filter.IsEmpty() && !ignore.IsEmpty() {
+			rule.errorf(pos, "both %q and %q filters cannot be used for the same event %q", filter.Name.Value, ignore.Name.Value, hook)
+		}
+	} else {
+		if !filter.IsEmpty() {
+			rule.filterNotAvailable(pos, filter.Name.Value, hook, available)
+		}
+		if !ignore.IsEmpty() {
+			rule.filterNotAvailable(pos, ignore.Name.Value, hook, available)
+		}
+	}
 }
 
 // https://docs.github.com/en/actions/learn-github-actions/events-that-trigger-workflows#webhook-events
@@ -91,11 +114,7 @@ func (rule *RuleEvents) checkWebhookEvent(event *WebhookEvent) {
 
 	rule.checkTypes(event.Hook, event.Types, types)
 
-	isWorkflowRun := hook == "workflow_run"
-	isPush := hook == "push"
-	isPullRequest := hook == "pull_request" || hook == "pull_request_target"
-
-	if isWorkflowRun {
+	if hook == "workflow_run" {
 		if len(event.Workflows) == 0 {
 			rule.error(event.Pos, "no workflow is configured for \"workflow_run\" event")
 		}
@@ -105,47 +124,32 @@ func (rule *RuleEvents) checkWebhookEvent(event *WebhookEvent) {
 		}
 	}
 
-	// Some filters are available with specific events
+	// Some filters are available with specific events and exclusive
 	// - on.<push|pull_request|pull_request_target>.<paths|paths-ignore>
 	// - on.push.<branches|tags|branches-ignore|tags-ignore>
 	// - on.<pull_request|pull_request_target>.<branches|branches-ignore>
 	// - on.workflow_run.<branches|branches-ignore>
-	if isPush || isPullRequest {
-		if len(event.Paths) > 0 && len(event.PathsIgnore) > 0 {
-			rule.exclusiveFilters(event.Pos, "paths", hook)
-		}
-	} else {
-		if len(event.Paths) > 0 {
-			rule.filterNotAvailable(event.Pos, "paths", hook, "push, pull_request, or pull_request_target")
-		}
-		if len(event.PathsIgnore) > 0 {
-			rule.filterNotAvailable(event.Pos, "paths-ignore", hook, "push, pull_request, or pull_request_target")
-		}
-	}
-	if isPush || isPullRequest || isWorkflowRun {
-		if len(event.Branches) > 0 && len(event.BranchesIgnore) > 0 {
-			rule.exclusiveFilters(event.Pos, "branches", hook)
-		}
-	} else {
-		if len(event.Branches) > 0 {
-			rule.filterNotAvailable(event.Pos, "branches", hook, "push, pull_request, pull_request_target, or workflow_run")
-		}
-		if len(event.BranchesIgnore) > 0 {
-			rule.filterNotAvailable(event.Pos, "branches-ignore", hook, "push, pull_request, pull_request_target, or workflow_run")
-		}
-	}
-	if isPush {
-		if len(event.Tags) > 0 && len(event.TagsIgnore) > 0 {
-			rule.exclusiveFilters(event.Pos, "tags", hook)
-		}
-	} else {
-		if len(event.Tags) > 0 {
-			rule.filterNotAvailable(event.Pos, "tags", hook, "push")
-		}
-		if len(event.TagsIgnore) > 0 {
-			rule.filterNotAvailable(event.Pos, "tags-ignore", hook, "push")
-		}
-	}
+	rule.checkExclusiveFilters(
+		event.Pos,
+		event.Paths,
+		event.PathsIgnore,
+		hook,
+		[]string{"push", "pull_request", "pull_request_target"},
+	)
+	rule.checkExclusiveFilters(
+		event.Pos,
+		event.Branches,
+		event.BranchesIgnore,
+		hook,
+		[]string{"push", "pull_request", "pull_request_target", "workflow_run"},
+	)
+	rule.checkExclusiveFilters(
+		event.Pos,
+		event.Tags,
+		event.TagsIgnore,
+		hook,
+		[]string{"push"},
+	)
 }
 
 func (rule *RuleEvents) checkTypes(hook *String, types []*String, expected []string) {

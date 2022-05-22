@@ -66,6 +66,21 @@ type Event interface {
 	EventName() string
 }
 
+// WebhookEventFilter is a filter for Webhook events such as 'branches', 'paths-ignore', ...
+// Webhook events are filtered by those filters. Some filters are exclusive.
+// https://docs.github.com/en/actions/using-workflows/workflow-syntax-for-github-actions#using-filters
+type WebhookEventFilter struct {
+	// Name is a name of filter such like 'branches', 'tags'
+	Name *String
+	// Values is a list of filter values.
+	Values []*String
+}
+
+// IsEmpty returns true when it has no value. This may mean the WebhookEventFilter instance itself is nil.
+func (f *WebhookEventFilter) IsEmpty() bool {
+	return f == nil || len(f.Values) == 0
+}
+
 // WebhookEvent represents event type based on webhook events.
 // Some events can't have 'types' field. Only 'push' and 'pull' events can have 'tags', 'tags-ignore',
 // 'paths' and 'paths-ignore' fields. Only 'workflow_run' event can have 'workflows' field.
@@ -76,18 +91,18 @@ type WebhookEvent struct {
 	// Types is list of types of the webhook event. Only the types enumerated here will trigger
 	// the workflow.
 	Types []*String
-	// Branches is list of branch filters to choose branches.
-	Branches []*String
-	// BranchesIgnore is list of branch filters to reject some branches.
-	BranchesIgnore []*String
-	// Tags is list of tag filters to choose tags.
-	Tags []*String
-	// TagsIgnore is list of tag filters to reject some tags.
-	TagsIgnore []*String
-	// Paths is list of path filters to choose file paths.
-	Paths []*String
-	// PathsIgnore is list of path filters to reject some file paths.
-	PathsIgnore []*String
+	// Branches is 'branches' filter. This value is nil when it is omitted.
+	Branches *WebhookEventFilter
+	// BranchesIgnore is 'branches-ignore' filter. This value is nil when it is omitted.
+	BranchesIgnore *WebhookEventFilter
+	// Tags is 'tags' filter. This value is nil when it is omitted.
+	Tags *WebhookEventFilter
+	// TagsIgnore is 'tags-ignore' filter. This value is nil when it is omitted.
+	TagsIgnore *WebhookEventFilter
+	// Paths is 'paths' filter. This value is nil when it is omitted.
+	Paths *WebhookEventFilter
+	// PathsIgnore is 'paths-ignore' filter. This value is nil when it is omitted.
+	PathsIgnore *WebhookEventFilter
 	// Workflows is list of workflow names which are triggered by 'workflow_run' event.
 	Workflows []*String
 	// Pos is a position in source.

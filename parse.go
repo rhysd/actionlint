@@ -386,6 +386,12 @@ func (p *parser) parseRepositoryDispatchEvent(pos *Pos, n *yaml.Node) *Repositor
 	return ret
 }
 
+// https://docs.github.com/en/actions/using-workflows/workflow-syntax-for-github-actions#using-filters
+func (p *parser) parseWebhookEventFilter(name *String, n *yaml.Node) *WebhookEventFilter {
+	v := p.parseStringOrStringSequence(name.Value, n, false, false)
+	return &WebhookEventFilter{name, v}
+}
+
 func (p *parser) parseWebhookEvent(name *String, n *yaml.Node) *WebhookEvent {
 	ret := &WebhookEvent{Hook: name, Pos: name.Pos}
 
@@ -404,17 +410,17 @@ func (p *parser) parseWebhookEvent(name *String, n *yaml.Node) *WebhookEvent {
 		case "types":
 			ret.Types = p.parseStringOrStringSequence(kv.key.Value, kv.val, false, false)
 		case "branches":
-			ret.Branches = p.parseStringOrStringSequence(kv.key.Value, kv.val, true, true)
+			ret.Branches = p.parseWebhookEventFilter(kv.key, kv.val)
 		case "branches-ignore":
-			ret.BranchesIgnore = p.parseStringOrStringSequence(kv.key.Value, kv.val, true, true)
+			ret.BranchesIgnore = p.parseWebhookEventFilter(kv.key, kv.val)
 		case "tags":
-			ret.Tags = p.parseStringOrStringSequence(kv.key.Value, kv.val, true, true)
+			ret.Tags = p.parseWebhookEventFilter(kv.key, kv.val)
 		case "tags-ignore":
-			ret.TagsIgnore = p.parseStringOrStringSequence(kv.key.Value, kv.val, true, true)
+			ret.TagsIgnore = p.parseWebhookEventFilter(kv.key, kv.val)
 		case "paths":
-			ret.Paths = p.parseStringOrStringSequence(kv.key.Value, kv.val, false, true)
+			ret.Paths = p.parseWebhookEventFilter(kv.key, kv.val)
 		case "paths-ignore":
-			ret.PathsIgnore = p.parseStringOrStringSequence(kv.key.Value, kv.val, false, true)
+			ret.PathsIgnore = p.parseWebhookEventFilter(kv.key, kv.val)
 		case "workflows":
 			ret.Workflows = p.parseStringOrStringSequence(kv.key.Value, kv.val, false, false)
 		default:

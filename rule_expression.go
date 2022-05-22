@@ -53,12 +53,12 @@ func (rule *RuleExpression) VisitWorkflowPre(n *Workflow) error {
 		switch e := e.(type) {
 		case *WebhookEvent:
 			rule.checkStrings(e.Types)
-			rule.checkStrings(e.Branches)
-			rule.checkStrings(e.BranchesIgnore)
-			rule.checkStrings(e.Tags)
-			rule.checkStrings(e.TagsIgnore)
-			rule.checkStrings(e.Paths)
-			rule.checkStrings(e.PathsIgnore)
+			rule.checkWebhookEventFilter(e.Branches)
+			rule.checkWebhookEventFilter(e.BranchesIgnore)
+			rule.checkWebhookEventFilter(e.Tags)
+			rule.checkWebhookEventFilter(e.TagsIgnore)
+			rule.checkWebhookEventFilter(e.Paths)
+			rule.checkWebhookEventFilter(e.PathsIgnore)
 			rule.checkStrings(e.Workflows)
 		case *ScheduledEvent:
 			rule.checkStrings(e.Cron)
@@ -457,6 +457,13 @@ func (rule *RuleExpression) checkWorkflowCall(c *WorkflowCall) {
 	for _, s := range c.Secrets {
 		rule.checkString(s.Value)
 	}
+}
+
+func (rule *RuleExpression) checkWebhookEventFilter(f *WebhookEventFilter) {
+	if f == nil {
+		return
+	}
+	rule.checkStrings(f.Values)
 }
 
 func (rule *RuleExpression) checkStrings(ss []*String) {

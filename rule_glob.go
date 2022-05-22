@@ -28,15 +28,27 @@ func (rule *RuleGlob) VisitWorkflowPre(n *Workflow) error {
 	return nil
 }
 
-func (rule *RuleGlob) checkGitRefGlobs(names []*String) {
-	for _, n := range names {
-		rule.globErrors(ValidateRefGlob(n.Value), n.Pos, n.Quoted)
+func (rule *RuleGlob) checkGitRefGlobs(filter *WebhookEventFilter) {
+	if filter == nil {
+		return
+	}
+	for _, v := range filter.Values {
+		// Empty value is already checked by parser. Avoid duplicate errors
+		if v.Value != "" {
+			rule.globErrors(ValidateRefGlob(v.Value), v.Pos, v.Quoted)
+		}
 	}
 }
 
-func (rule *RuleGlob) checkFilePathGlobs(paths []*String) {
-	for _, p := range paths {
-		rule.globErrors(ValidatePathGlob(p.Value), p.Pos, p.Quoted)
+func (rule *RuleGlob) checkFilePathGlobs(filter *WebhookEventFilter) {
+	if filter == nil {
+		return
+	}
+	for _, v := range filter.Values {
+		// Empty value is already checked by parser. Avoid duplicate errors
+		if v.Value != "" {
+			rule.globErrors(ValidatePathGlob(v.Value), v.Pos, v.Quoted)
+		}
 	}
 }
 
