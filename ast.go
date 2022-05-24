@@ -28,7 +28,7 @@ func (p *Pos) IsBefore(other *Pos) bool {
 	if p.Line > other.Line {
 		return false
 	}
-	return p.Col < other.Line
+	return p.Col < other.Col
 }
 
 // String represents generic string value in YAML file with position.
