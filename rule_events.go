@@ -79,7 +79,7 @@ func (rule *RuleEvents) filterNotAvailable(pos *Pos, filter, hook string, availa
 	rule.errorf(pos, "%q filter is not available for %s event. it is only for %s %s", filter, hook, strings.Join(available, ", "), e)
 }
 
-func (rule *RuleEvents) checkExclusiveFilters(pos *Pos, filter, ignore *WebhookEventFilter, hook string, available []string) {
+func (rule *RuleEvents) checkExclusiveFilters(filter, ignore *WebhookEventFilter, hook string, available []string) {
 	ok := false
 	for _, a := range available {
 		if a == hook {
@@ -90,14 +90,18 @@ func (rule *RuleEvents) checkExclusiveFilters(pos *Pos, filter, ignore *WebhookE
 
 	if ok {
 		if !filter.IsEmpty() && !ignore.IsEmpty() {
-			rule.errorf(pos, "both %q and %q filters cannot be used for the same event %q", filter.Name.Value, ignore.Name.Value, hook)
+			p := filter.Name.Pos
+			if p.IsBefore(ignore.Name.Pos) {
+				p = ignore.Name.Pos
+			}
+			rule.errorf(p, "both %q and %q filters cannot be used for the same event %q", filter.Name.Value, ignore.Name.Value, hook)
 		}
 	} else {
 		if !filter.IsEmpty() {
-			rule.filterNotAvailable(pos, filter.Name.Value, hook, available)
+			rule.filterNotAvailable(filter.Name.Pos, filter.Name.Value, hook, available)
 		}
 		if !ignore.IsEmpty() {
-			rule.filterNotAvailable(pos, ignore.Name.Value, hook, available)
+			rule.filterNotAvailable(ignore.Name.Pos, ignore.Name.Value, hook, available)
 		}
 	}
 }
@@ -130,21 +134,18 @@ func (rule *RuleEvents) checkWebhookEvent(event *WebhookEvent) {
 	// - on.<pull_request|pull_request_target>.<branches|branches-ignore>
 	// - on.workflow_run.<branches|branches-ignore>
 	rule.checkExclusiveFilters(
-		event.Pos,
 		event.Paths,
 		event.PathsIgnore,
 		hook,
 		[]string{"push", "pull_request", "pull_request_target"},
 	)
 	rule.checkExclusiveFilters(
-		event.Pos,
 		event.Branches,
 		event.BranchesIgnore,
 		hook,
 		[]string{"push", "pull_request", "pull_request_target", "workflow_run"},
 	)
 	rule.checkExclusiveFilters(
-		event.Pos,
 		event.Tags,
 		event.TagsIgnore,
 		hook,

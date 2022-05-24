@@ -20,6 +20,17 @@ func (p *Pos) String() string {
 	return fmt.Sprintf("line:%d,col:%d", p.Line, p.Col)
 }
 
+// IsBefore returns if the position is before the other position. If they are equal, this function returns false.
+func (p *Pos) IsBefore(other *Pos) bool {
+	if p.Line < other.Line {
+		return true
+	}
+	if p.Line > other.Line {
+		return false
+	}
+	return p.Col < other.Line
+}
+
 // String represents generic string value in YAML file with position.
 type String struct {
 	// Value is a raw value of the string.
