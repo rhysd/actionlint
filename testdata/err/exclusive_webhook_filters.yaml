@@ -2,20 +2,20 @@ on:
   push:
     paths: path/to/foo
     paths-ignore: path/to/bar
-    branches: foo
     branches-ignore: bar
+    branches: foo
     tags: v*.*.*
     tags-ignore: dev
   pull_request:
-    paths: path/to/foo
     paths-ignore: path/to/bar
+    paths: path/to/foo
     branches: foo
     branches-ignore: bar
   pull_request_target:
     paths: path/to/foo
     paths-ignore: path/to/bar
-    branches: foo
     branches-ignore: bar
+    branches: foo
   workflow_run:
     workflows: foo.yaml
     branches: foo

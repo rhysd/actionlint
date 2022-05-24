@@ -1140,22 +1140,22 @@ jobs:
 Output:
 
 ```
-test.yaml:2:3: both "paths" and "paths-ignore" filters cannot be used for the same event "push" [events]
-  |
-2 |   push:
-  |   ^~~~~
 test.yaml:4:5: unexpected key "branch" for "push" section. expected one of "branches", "branches-ignore", "paths", "paths-ignore", "tags", "tags-ignore", "types", "workflows" [syntax-check]
   |
 4 |     branch: foo
   |     ^~~~~~~
+test.yaml:7:5: both "paths" and "paths-ignore" filters cannot be used for the same event "push" [events]
+  |
+7 |     paths-ignore: path/to/foo
+  |     ^~~~~~~~~~~~~
 test.yaml:10:12: invalid activity type "created" for "issues" Webhook event. available types are "assigned", "closed", "deleted", "demilestoned", "edited", "labeled", "locked", "milestoned", "opened", "pinned", "reopened", "transferred", "unassigned", "unlabeled", "unlocked", "unpinned" [events]
    |
 10 |     types: created
    |            ^~~~~~~
-test.yaml:11:3: "tags" filter is not available for release event. it is only for push event [events]
+test.yaml:13:5: "tags" filter is not available for release event. it is only for push event [events]
    |
-11 |   release:
-   |   ^~~~~~~~
+13 |     tags: v*.*.*
+   |     ^~~~~
 test.yaml:15:3: unknown Webhook event "pullreq". see https://docs.github.com/en/actions/learn-github-actions/events-that-trigger-workflows#webhook-events for list of all Webhook event names [events]
    |
 15 |   pullreq:
