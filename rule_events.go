@@ -94,7 +94,7 @@ func (rule *RuleEvents) checkExclusiveFilters(filter, ignore *WebhookEventFilter
 			if p.IsBefore(ignore.Name.Pos) {
 				p = ignore.Name.Pos
 			}
-			rule.errorf(p, "both %q and %q filters cannot be used for the same event %q", filter.Name.Value, ignore.Name.Value, hook)
+			rule.errorf(p, "both %q and %q filters cannot be used for the same event %q. note: use '!' to negate patterns", filter.Name.Value, ignore.Name.Value, hook)
 		}
 	} else {
 		if !filter.IsEmpty() {

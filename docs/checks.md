@@ -1144,7 +1144,7 @@ test.yaml:4:5: unexpected key "branch" for "push" section. expected one of "bran
   |
 4 |     branch: foo
   |     ^~~~~~~
-test.yaml:7:5: both "paths" and "paths-ignore" filters cannot be used for the same event "push" [events]
+test.yaml:7:5: both "paths" and "paths-ignore" filters cannot be used for the same event "push". note: use '!' to negate patterns [events]
   |
 7 |     paths-ignore: path/to/foo
   |     ^~~~~~~~~~~~~
