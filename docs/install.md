@@ -1,7 +1,7 @@
 Installation
 ============
 
-This document describes how to install [actionlint](..).
+This document describes how to install [actionlint](../docs).
 
 ## [Homebrew][homebrew] on macOS
 
