@@ -102,6 +102,7 @@ var PopularActions = map[string]*ActionMetadata{
 			"ignore_runs":                      false,
 			"job_summary":                      false,
 			"json_file":                        false,
+			"json_thousands_separator":         false,
 			"pull_request_build":               false,
 			"report_individual_runs":           false,
 			"seconds_between_github_reads":     false,
@@ -687,12 +688,15 @@ var PopularActions = map[string]*ActionMetadata{
 	"actions/setup-go@v3": {
 		Name: "Setup Go environment",
 		Inputs: map[string]ActionMetadataInputRequired{
-			"check-latest":    false,
-			"go-version":      false,
-			"go-version-file": false,
-			"token":           false,
+			"cache":                 false,
+			"cache-dependency-path": false,
+			"check-latest":          false,
+			"go-version":            false,
+			"go-version-file":       false,
+			"token":                 false,
 		},
 		Outputs: map[string]struct{}{
+			"cache-hit":  {},
 			"go-version": {},
 		},
 	},
@@ -1230,6 +1234,7 @@ var PopularActions = map[string]*ActionMetadata{
 			"branch":              false,
 			"check_artifacts":     false,
 			"commit":              false,
+			"dry_run":             false,
 			"event":               false,
 			"github_token":        false,
 			"name":                false,
@@ -1244,6 +1249,7 @@ var PopularActions = map[string]*ActionMetadata{
 			"workflow_conclusion": false,
 		},
 		Outputs: map[string]struct{}{
+			"dry_run":       {},
 			"error_message": {},
 		},
 	},
@@ -1965,6 +1971,20 @@ var PopularActions = map[string]*ActionMetadata{
 		},
 	},
 	"goreleaser/goreleaser-action@v2": {
+		Name: "GoReleaser Action",
+		Inputs: map[string]ActionMetadataInputRequired{
+			"args":         false,
+			"distribution": false,
+			"install-only": false,
+			"version":      false,
+			"workdir":      false,
+		},
+		Outputs: map[string]struct{}{
+			"artifacts": {},
+			"metadata":  {},
+		},
+	},
+	"goreleaser/goreleaser-action@v3": {
 		Name: "GoReleaser Action",
 		Inputs: map[string]ActionMetadataInputRequired{
 			"args":         false,

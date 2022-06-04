@@ -318,8 +318,8 @@ var popularActions = []*action{
 	},
 	{
 		slug: "goreleaser/goreleaser-action",
-		tags: []string{"v1", "v2"},
-		next: "v3",
+		tags: []string{"v1", "v2", "v3"},
+		next: "v4",
 	},
 	{
 		slug: "gradle/wrapper-validation-action",
