@@ -455,6 +455,7 @@ func (p *parser) parseWorkflowCallEvent(pos *Pos, n *yaml.Node) *WorkflowCallEve
 				name, spec := kv.key, kv.val
 				input := &WorkflowCallEventInput{}
 				sawType := false
+				sawDefault := false
 
 				for _, attr := range p.parseMapping("input of workflow_call event", spec, true) {
 					switch attr.key.Value {
@@ -464,6 +465,7 @@ func (p *parser) parseWorkflowCallEvent(pos *Pos, n *yaml.Node) *WorkflowCallEve
 						input.Required = p.parseBool(attr.val)
 					case "default":
 						input.Default = p.parseString(attr.val, true)
+						sawDefault = true
 					case "type":
 						switch attr.val.Value {
 						case "boolean":
@@ -486,6 +488,12 @@ func (p *parser) parseWorkflowCallEvent(pos *Pos, n *yaml.Node) *WorkflowCallEve
 				}
 				if !sawType {
 					p.errorfAt(name.Pos, "\"type\" is missing at %q input of workflow_call event", name.Value)
+				}
+
+				if input.Required != nil {
+					if sawDefault && input.Required.Value {
+						p.errorfAt(input.Default.Pos, "unexpected default value \"%q\" is set at %q input of workflow_call event. it is set to required", input.Default.Value, name.Value)
+					}
 				}
 
 				ret.Inputs[name] = input
