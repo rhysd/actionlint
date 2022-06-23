@@ -55,7 +55,7 @@ func (rule *RuleWorkflowCall) VisitJobPre(n *Job) error {
 func (rule *RuleWorkflowCall) checkEvent(e *WorkflowCallEvent) {
 	for n, i := range e.Inputs {
 		if i.Required != nil && i.Required.Value && i.Default != nil {
-			rule.errorf(i.Default.Pos, "input %q has the default value %q, but it is also required. If an input is marked as required, its default value will never be used", n.Value, i.Default.Value)
+			rule.errorf(i.Default.Pos, "input %q has the default value %q, but it is also required. if an input is marked as required, its default value will never be used", n.Value, i.Default.Value)
 		}
 	}
 }
