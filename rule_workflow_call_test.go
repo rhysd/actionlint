@@ -100,3 +100,36 @@ func TestRuleWorkflowCallCheckCannotCallNestedly(t *testing.T) {
 		t.Errorf("error message %q does not contain proper position %q", msg, want)
 	}
 }
+
+func TestRuleWorkflowCallCheckRequiredAndHasDefault(t *testing.T) {
+	w := &Workflow{
+		On: []Event{
+			&WorkflowCallEvent{
+				Pos: &Pos{},
+				Inputs: map[*String]*WorkflowCallEventInput{
+					{Value: "foo", Pos: &Pos{}}: {
+						Default:  &String{Value: "aaa", Pos: &Pos{}},
+						Required: &Bool{Value: true, Pos: &Pos{}},
+					},
+				},
+			},
+		},
+	}
+
+	r := NewRuleWorkflowCall()
+
+	if err := r.VisitWorkflowPre(w); err != nil {
+		t.Fatal(err)
+	}
+
+	errs := r.Errs()
+	if len(errs) != 1 {
+		t.Fatalf("wanted 1 error but got %d error occurred: %v", len(errs), errs)
+	}
+
+	msg := errs[0].Error()
+	want := "input \"foo\" of workflow_call event has the default value \"aaa\", but it is also required"
+	if !strings.Contains(msg, want) {
+		t.Errorf("error message %q does not contain expected message %q", msg, want)
+	}
+}
