@@ -1,0 +1,1 @@
+test.yaml:9:18: input "input_not_ok" has the default value "a", but it is also required. If an input is marked as required, its default value will never be used [workflow-call]
