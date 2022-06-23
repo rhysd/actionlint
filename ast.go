@@ -224,11 +224,18 @@ type WorkflowCallEventInput struct {
 	Description *String
 	// Default is a default value of the input. Nil means no default value.
 	Default *String
-	// Required represents if the input is required or optional. When this value is nil, it means optional.
+	// Required represents if the input is required or optional. When this value is nil, it was not explicitly specified.
+	// In the case the default value is 'not required'.
 	Required *Bool
 	// Type of the input, which must be one of 'boolean', 'number' or 'string'. This property is required.
 	// https://docs.github.com/en/actions/learn-github-actions/workflow-syntax-for-github-actions#onworkflow_callinput_idtype
 	Type WorkflowCallEventInputType
+}
+
+// IsRequired returns if the input is marked as required or not.
+// require
+func (i *WorkflowCallEventInput) IsRequired() bool {
+	return i.Required != nil && i.Required.Value
 }
 
 // WorkflowCallEventSecret is a secret configuration of workflow_call event.
