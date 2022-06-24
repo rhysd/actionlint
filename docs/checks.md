@@ -1931,14 +1931,20 @@ on:
         default: ':1234'
         type: number
       query:
-        description: Scheme of URL
+        description: Query of URL
         # ERROR: Type must be one of number, string, boolean
         type: object
+      path:
+        description: Path of URL
+        required: true
+        # ERROR: Default value is never used since this input is required
+        default: ''
+        type: string
 jobs:
   do:
     runs-on: ubuntu-latest
     steps:
-      - run: echo "${{ inputs.scheme }}://${{ inputs.host }}:${{ inputs.port }}"
+      - run: echo "${{ inputs.scheme }}://${{ inputs.host }}:${{ inputs.port }}${{ inputs.path }}"
   nested:
     # ERROR: Nested workflow call is not allowed
     uses: onwer/repo/w.yml@main
@@ -1959,13 +1965,18 @@ test.yaml:21:15: invalid value "object" for input type of workflow_call event. i
    |
 21 |         type: object
    |               ^~~~~~
-test.yaml:29:11: reusable workflow cannot be nested. but this workflow hooks "workflow_call" event at line:2,col:3 [workflow-call]
+test.yaml:26:18: input "path" of workflow_call event has the default value "", but it is also required. if an input is marked as required, its default value will never be used [workflow-call]
    |
-29 |     uses: onwer/repo/w.yml@main
+26 |         default: ''
+   |                  ^~
+test.yaml:35:11: reusable workflow cannot be nested. but this workflow hooks "workflow_call" event at line:2,col:3 [workflow-call]
+   |
+35 |     uses: onwer/repo/w.yml@main
    |           ^~~~~~~~~~~~~~~~~~~~~
 ```
 
-[Playground](https://rhysd.github.io/actionlint#eJyVkcFuwjAMhu88hYUmcSposFOegcPExBm1waVlaZzFjqCqeHeatkMVCCRuyff7t+zfZNUE4ET+Nzd02unUmAgASuuCcP8GYF1ghf8/gD2y9qWTkqyCn04EymG7WY9K8jQYUVCIOL5hqR0qYPGlPQywIBb16MNzWjmDc03VK7cjL08G+26lp2PN1Ody9TW7a21DlaEf4F9AX7+1dN+EsiNqmRwp6wLcU9/DB8tJ9IYsWAmJSQVZOokF3S3sJFa2++uCYPrRNMMt5v0R4HJRi8UIx/giHKGYSYumVxXQiwY=)
+[Playground](https://rhysd.github.io/actionlint#eJx9kc1ugzAQhO99ilVUKSdA/Tn51AfooT/quTKwFBLjdey1KIp499pAIkRLb/CtPTPeIS1uADqyx0pR91lIpSIAaLTx7KZvAFfU2OLlD6BEV9jGcENawPs4BKrg4+15caSSXrGAmtm4K+beoADHttFfM6zJsfh9D79laxSmBbX/3TZkeSPYSxhtxtqLu/uHx/1KWvs2RzvDk0fbb2i/xtlafNKg/IAFX+JJrrfihdFaweLJNxZLAWw9/pF6HXjexYHysaySJjPrtUuiic+9Zp8oyeimTI7RXItN4smw66Im2N2ez3Pv6VQ4DIPIsgWOVUW4QHH/AS1JfNcw7IKFDqbhMaOZd+jCcnSHNrNoKOvSvlVPrWz0D3BGvIY=)
+[Playground]()
 
 Unlike inputs of action, inputs of workflow must specify their types. actionlint validates input types and checks the default
 values are correctly typed. For more details, see [the official document][create-reusable-workflow-doc].

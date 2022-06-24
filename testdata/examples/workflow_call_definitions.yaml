@@ -16,14 +16,20 @@ on:
         default: ':1234'
         type: number
       query:
-        description: Scheme of URL
+        description: Query of URL
         # ERROR: Type must be one of number, string, boolean
         type: object
+      path:
+        description: Path of URL
+        required: true
+        # ERROR: Default value is never used since this input is required
+        default: ''
+        type: string
 jobs:
   do:
     runs-on: ubuntu-latest
     steps:
-      - run: echo "${{ inputs.scheme }}://${{ inputs.host }}:${{ inputs.port }}"
+      - run: echo "${{ inputs.scheme }}://${{ inputs.host }}:${{ inputs.port }}${{ inputs.path }}"
   nested:
     # ERROR: Nested workflow call is not allowed
     uses: onwer/repo/w.yml@main
