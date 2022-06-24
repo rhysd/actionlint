@@ -181,8 +181,8 @@ var popularActions = []*action{
 	},
 	{
 		slug: "actions/setup-python",
-		tags: []string{"v1", "v2", "v3"},
-		next: "v4",
+		tags: []string{"v1", "v2", "v3", "v4"},
+		next: "v5",
 	},
 	{
 		slug: "actions/stale",
@@ -201,8 +201,8 @@ var popularActions = []*action{
 	},
 	{
 		slug: "azure/aks-set-context",
-		tags: []string{"v1"},
-		next: "v2",
+		tags: []string{"v1", "v2", "v3"},
+		next: "v4",
 	},
 	{
 		slug: "azure/login",

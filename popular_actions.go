@@ -853,6 +853,22 @@ var PopularActions = map[string]*ActionMetadata{
 			"python-version": {},
 		},
 	},
+	"actions/setup-python@v4": {
+		Name: "Setup Python",
+		Inputs: map[string]ActionMetadataInputRequired{
+			"architecture":          false,
+			"cache":                 false,
+			"cache-dependency-path": false,
+			"python-version":        false,
+			"python-version-file":   false,
+			"token":                 false,
+		},
+		Outputs: map[string]struct{}{
+			"cache-hit":      {},
+			"python-path":    {},
+			"python-version": {},
+		},
+	},
 	"actions/stale@v1": {
 		Name: "Close Stale Issues",
 		Inputs: map[string]ActionMetadataInputRequired{
@@ -1104,6 +1120,26 @@ var PopularActions = map[string]*ActionMetadata{
 			"cluster-name":   false,
 			"creds":          false,
 			"resource-group": false,
+		},
+	},
+	"azure/aks-set-context@v2": {
+		Name: "Azure Kubernetes set context",
+		Inputs: map[string]ActionMetadataInputRequired{
+			"admin":          false,
+			"cluster-name":   true,
+			"resource-group": true,
+			"subscription":   false,
+			"use-kubelogin":  false,
+		},
+	},
+	"azure/aks-set-context@v3": {
+		Name: "Azure Kubernetes set context",
+		Inputs: map[string]ActionMetadataInputRequired{
+			"admin":          false,
+			"cluster-name":   true,
+			"resource-group": true,
+			"subscription":   false,
+			"use-kubelogin":  false,
 		},
 	},
 	"azure/login@v1": {
