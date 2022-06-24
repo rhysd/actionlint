@@ -142,7 +142,7 @@ func (cmd *Command) Main(args []string) int {
 	flags.BoolVar(&opts.Verbose, "verbose", false, "Enable verbose output")
 	flags.BoolVar(&opts.Debug, "debug", false, "Enable debug output (for development)")
 	flags.BoolVar(&ver, "version", false, "Show version and how this binary was installed")
-	flags.StringVar(&opts.StdinFileName, "stdin-filename", "", "File name for stdin")
+	flags.StringVar(&opts.StdinFileName, "stdin-filename", "", "File name when reading input from stdin")
 	flags.Usage = func() {
 		fmt.Fprintln(cmd.Stderr, commandUsageHeader)
 		flags.PrintDefaults()

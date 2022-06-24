@@ -84,6 +84,9 @@ with Go template syntax.
   * `-verbose`:
     Enable verbose output
 
+  * `-stdin-filename` <NAME>:
+    File name when reading input from stdin (default "&lt;stdin&gt;")
+
   * `-version`:
     Show version and how this binary was installed
 
