@@ -79,6 +79,8 @@ type LinterOptions struct {
 	// Format is a custom template to format error messages. It must follow Go Template format and
 	// contain at least one {{ }} placeholder. https://pkg.go.dev/text/template
 	Format string
+	// Set FileName for stdin
+	StdinFileName string
 	// More options will come here
 }
 
