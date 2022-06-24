@@ -80,7 +80,7 @@ type LinterOptions struct {
 	// contain at least one {{ }} placeholder. https://pkg.go.dev/text/template
 	Format string
 	// Set FileName for stdin
-	StdInFileName string
+	StdinFileName string
 	// More options will come here
 }
 
