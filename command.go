@@ -97,11 +97,11 @@ func (cmd *Command) runLinter(args []string, opts *LinterOptions, initConfig boo
 		if err != nil {
 			return nil, fmt.Errorf("could not read stdin: %w", err)
 		}
-		if opts.StdInFileName == "" {
-			return l.Lint("<stdin>", b, nil)
-		} else {
-			return l.Lint(opts.StdInFileName, b, nil)
+		n := "<stdin>"
+		if opts.StdInFileName != "" {
+			n = opts.StdInFileName
 		}
+		return l.Lint(n, b, nil)
 	}
 
 	return l.LintFiles(args, nil)
