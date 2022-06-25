@@ -1270,8 +1270,8 @@ actionlint checks several mistakes around `workflow_dispatch` configuration.
 - The default value of 'choice' input must be included in options
 - The default value of 'boolean' input must be `true` or `false`
 
-In addition, `github.event.inputs` object is typed based on the input definitions. properties not defined in `inputs:` will cause
-a type error thanks to a type checker.
+In addition, `github.event.inputs` and `inputs` objects are typed based on the input definitions. properties not defined in
+`inputs:` will cause a type error thanks to a type checker.
 
 For example,
 
@@ -1289,7 +1289,7 @@ inputs:
   no_type_input:
 ```
 
-`github.event.inputs` is typed as follows from these definitions:
+`github.event.inputs` and `inputs` are typed as follows from these definitions:
 
 ```
 {
