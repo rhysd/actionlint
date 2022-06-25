@@ -1965,7 +1965,7 @@ test.yaml:21:15: invalid value "object" for input type of workflow_call event. i
    |
 21 |         type: object
    |               ^~~~~~
-test.yaml:26:18: input "path" of workflow_call event has the default value "", but it is also required. if an input is marked as required, its default value will never be used [workflow-call]
+test.yaml:26:18: input "path" of workflow_call event has the default value "", but it is also required. if an input is marked as required, its default value will never be used [events]
    |
 26 |         default: ''
    |                  ^~

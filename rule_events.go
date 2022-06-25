@@ -206,6 +206,14 @@ func (rule *RuleEvents) checkWorkflowCallEvent(event *WorkflowCallEvent) {
 				)
 			}
 		}
+		if i.IsRequired() {
+			rule.errorf(
+				i.Default.Pos,
+				"input %q of workflow_call event has the default value %q, but it is also required. if an input is marked as required, its default value will never be used",
+				n.Value,
+				i.Default.Value,
+			)
+		}
 	}
 }
 
