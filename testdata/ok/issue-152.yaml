@@ -1,0 +1,13 @@
+on:
+  workflow_dispatch:
+    inputs:
+      my_input:
+        type: string
+        required: true
+
+jobs:
+  my_job:
+    runs-on: ubuntu-latest
+    steps:
+      - run: echo ${{ github.event.inputs.my_input }}
+      - run: echo ${{ inputs.my_input }}
