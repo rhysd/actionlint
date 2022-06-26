@@ -1,3 +1,80 @@
+<a name="v1.6.14"></a>
+# [v1.6.14](https://github.com/rhysd/actionlint/releases/tag/v1.6.14) - 26 Jun 2022
+
+- Some filters are exclusive in events at `on:`. Now actionlint checks the exclusive filters are used in the same event. `paths` and `paths-ignore`, `branches` and `branches-ignore`, `tags` and `tags-ignore` are exclusive. See [the document](https://github.com/rhysd/actionlint/blob/main/docs/checks.md#webhook-events-validation) for the details.
+  ```yaml
+  on:
+    push:
+      # ERROR: Both 'paths' and 'paths-ignore' filters cannot be used for the same event
+      paths: path/to/foo
+      paths-ignore: path/to/foo
+  ```
+- Some event filters are checked more strictly. Some filters are only available with specific events. Now actionlint checks the limitation. See [the document](https://github.com/rhysd/actionlint/blob/main/docs/checks.md#webhook-events-validation) for complete list of such events.
+  ```yaml
+  on:
+    release:
+      # ERROR: 'tags' filter is only available for 'push' event
+      tags: v*.*.*
+  ```
+- Paths starting/ending with spaces are now reported as error.
+- Inputs of workflow which specifying both `default` and `required` are now reported as error. When `required` is specified at input of workflow call, a caller of it must specify value of the input. So the default value will never be used. (#154, thanks @sksat)
+  ```yaml
+  on:
+    workflow_call:
+      inputs:
+        my_input:
+          description: test
+          type: string
+          # ERROR: The default value 'aaa' will never be used
+          required: true
+          default: aaa
+  ```
+- Fix inputs of `workflow_dispatch` are set to `inputs` context as well as `github.event.inputs`. This was added by [the recent change of GitHub Actions](https://github.blog/changelog/2022-06-10-github-actions-inputs-unified-across-manual-and-reusable-workflows/). (#152)
+  ```yaml
+  on:
+    workflow_dispatch:
+      inputs:
+        my_input:
+          type: string
+          required: true
+  jobs:
+    my_job:
+      runs-on: ubuntu-latest
+      steps:
+        - run: echo ${{ github.event.inputs.my_input }}
+        # Now the input is also set to `inputs` context
+        - run: echo ${{ inputs.my_input }}
+  ```
+- Improve that `env` context is now not defined in values of `env:`, `id:` and `uses:`. actionlint now reports usage of `env` context in such places as type errors. (#158)
+  ```yaml
+  runs-on: ubuntu-latest
+  env:
+    FOO: aaa
+  steps:
+    # ERROR: 'env' context is not defined in values of 'env:', 'id:' and 'uses:'
+    - uses: test/${{ env.FOO }}@main
+      env:
+        BAR: ${{ env.FOO }}
+      id: foo-${{ env.FOO }}
+  ```
+- `actionlint` command gains `-stdin-filename` command line option. When it is specified, the file name is used on reading input from stdin instead of `<stdin>`. (#157, thanks @arahatashun)
+  ```sh
+  # Error message shows foo.yml as file name where the error happened
+  ... | actionlint -stdin-filename foo.yml -
+  ```
+- [The download script](https://github.com/rhysd/actionlint/blob/main/docs/install.md#download-script) allows to specify a directory path to install `actionlint` executable with the second argument of the script. For example, the following command downloads `/path/to/bin/actionlint`:
+  ```sh
+  # Downloads the latest stable version at `/path/to/bin/actionlint`
+  bash <(curl https://raw.githubusercontent.com/rhysd/actionlint/main/scripts/download-actionlint.bash) latest /path/to/bin
+  # Downloads actionlint v1.6.14 at `/path/to/bin/actionlint`
+  bash <(curl https://raw.githubusercontent.com/rhysd/actionlint/main/scripts/download-actionlint.bash) 1.6.14 /path/to/bin
+  ```
+- Update popular actions data set including `goreleaser-action@v3`, `setup-python@v4`, `aks-set-context@v3`.
+- Update Go dependencies including go-yaml/yaml v3.
+
+[Changes][v1.6.14]
+
+
 <a name="v1.6.13"></a>
 # [v1.6.13](https://github.com/rhysd/actionlint/releases/tag/v1.6.13) - 18 May 2022
 
@@ -766,6 +843,7 @@ See documentation for more details:
 [Changes][v1.0.0]
 
 
+[v1.6.14]: https://github.com/rhysd/actionlint/compare/v1.6.13...v1.6.14
 [v1.6.13]: https://github.com/rhysd/actionlint/compare/v1.6.12...v1.6.13
 [v1.6.12]: https://github.com/rhysd/actionlint/compare/v1.6.11...v1.6.12
 [v1.6.11]: https://github.com/rhysd/actionlint/compare/v1.6.10...v1.6.11
