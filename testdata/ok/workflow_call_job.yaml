@@ -28,4 +28,4 @@ jobs:
     permissions: read-all
   call6:
     # Edge case. Give up checking format.
-    uses: ${{ env.FOO }}
+    uses: ${{ runner.name }}
