@@ -405,6 +405,13 @@ func (sema *ExprSemanticsChecker) UpdateJobs(ty *ObjectType) {
 	sema.vars["jobs"] = ty
 }
 
+// NoEnv deletes 'env' context from global scope. This method is useful when checking expressions
+// in a template where 'env' context is banned ('id', 'uses' 'env'). See #158 for more details.
+func (sema *ExprSemanticsChecker) NoEnv() {
+	sema.ensureVarsCopied()
+	delete(sema.vars, "env")
+}
+
 func (sema *ExprSemanticsChecker) visitUntrustedCheckerOnLeaveNode(n ExprNode) {
 	if sema.untrusted != nil {
 		sema.untrusted.OnVisitNodeLeave(n)

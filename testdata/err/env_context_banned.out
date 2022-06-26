@@ -1,0 +1,3 @@
+test.yaml:11:24: undefined variable "env". available variables are "github", "inputs", "job", "matrix", "needs", "runner", "secrets", "steps", "strategy" [expression]
+test.yaml:13:20: undefined variable "env". available variables are "github", "inputs", "job", "matrix", "needs", "runner", "secrets", "steps", "strategy" [expression]
+test.yaml:14:21: undefined variable "env". available variables are "github", "inputs", "job", "matrix", "needs", "runner", "secrets", "steps", "strategy" [expression]

@@ -234,7 +234,7 @@ func (rule *RuleExpression) VisitStep(n *Step) error {
 		rule.checkString(e.Shell)
 		rule.checkString(e.WorkingDirectory)
 	case *ExecAction:
-		rule.checkString(e.Uses)
+		rule.checkStringNoEnv(e.Uses)
 		for n, i := range e.Inputs {
 			if e.Uses != nil && strings.HasPrefix(e.Uses.Value, "actions/github-script@") && n == "script" {
 				rule.checkScriptString(i.Value)
@@ -254,6 +254,10 @@ func (rule *RuleExpression) VisitStep(n *Step) error {
 	if n.ID != nil {
 		// Step ID is case insensitive
 		id := strings.ToLower(n.ID.Value)
+		if strings.Contains(id, "${{") && strings.Contains(id, "}}") {
+			rule.checkStringNoEnv(n.ID)
+			rule.stepsTy.Loose()
+		}
 		rule.stepsTy.Props[id] = NewStrictObjectType(map[string]ExprType{
 			"outputs":    rule.getActionOutputsType(spec),
 			"conclusion": StringType{},
@@ -303,7 +307,7 @@ func (rule *RuleExpression) checkOneExpression(s *String, what string) ExprType 
 	if s == nil {
 		return nil
 	}
-	ts := rule.checkExprsIn(s.Value, s.Pos, s.Quoted, false)
+	ts := rule.checkExprsIn(s.Value, s.Pos, s.Quoted, false, false)
 	if len(ts) != 1 {
 		// This case should be unreachable since only one ${{ }} is included is checked by parser
 		rule.errorf(s.Pos, "one ${{ }} expression should be included in %q value but got %d expressions", what, len(ts))
@@ -406,7 +410,7 @@ func (rule *RuleExpression) checkEnv(env *Env) {
 
 	if env.Vars != nil {
 		for _, e := range env.Vars {
-			rule.checkString(e.Value)
+			rule.checkStringNoEnv(e.Value)
 		}
 		return
 	}
@@ -450,7 +454,7 @@ func (rule *RuleExpression) checkWorkflowCall(c *WorkflowCall) {
 	if c == nil || c.Uses == nil {
 		return
 	}
-	rule.checkString(c.Uses)
+	rule.checkStringNoEnv(c.Uses)
 	for _, i := range c.Inputs {
 		rule.checkString(i.Value)
 	}
@@ -518,7 +522,7 @@ func (rule *RuleExpression) checkIfCondition(str *String) {
 			return
 		}
 
-		condTy = rule.checkSemanticsOfExprNode(expr, line, col, false)
+		condTy = rule.checkSemanticsOfExprNode(expr, line, col, false, false)
 	}
 
 	if condTy != nil && !(BoolType{}).Assignable(condTy) {
@@ -539,7 +543,7 @@ func (rule *RuleExpression) checkString(str *String) []typedExpr {
 	if str == nil {
 		return nil
 	}
-	ts := rule.checkExprsIn(str.Value, str.Pos, str.Quoted, false)
+	ts := rule.checkExprsIn(str.Value, str.Pos, str.Quoted, false, false)
 	rule.checkTemplateEvaluatedType(ts)
 	return ts
 }
@@ -548,7 +552,23 @@ func (rule *RuleExpression) checkScriptString(str *String) []typedExpr {
 	if str == nil {
 		return nil
 	}
-	ts := rule.checkExprsIn(str.Value, str.Pos, str.Quoted, true)
+	ts := rule.checkExprsIn(str.Value, str.Pos, str.Quoted, true, false)
+	rule.checkTemplateEvaluatedType(ts)
+	return ts
+}
+
+// When checking 'env', 'id' or 'uses', 'env' context cannot be referred. (#158)
+//
+// > Variables in the env map cannot be defined in terms of other variables in the map.
+// https://docs.github.com/en/actions/using-workflows/workflow-syntax-for-github-actions#env
+//
+// > You can use the env context in the value of any key in a step except for the id and uses keys.
+// https://docs.github.com/en/actions/learn-github-actions/contexts#env-context
+func (rule *RuleExpression) checkStringNoEnv(str *String) []typedExpr {
+	if str == nil {
+		return nil
+	}
+	ts := rule.checkExprsIn(str.Value, str.Pos, str.Quoted, false, true)
 	rule.checkTemplateEvaluatedType(ts)
 	return ts
 }
@@ -580,7 +600,7 @@ func (rule *RuleExpression) checkFloat(f *Float) {
 	rule.checkNumberExpression(f.Expression, "float number value")
 }
 
-func (rule *RuleExpression) checkExprsIn(s string, pos *Pos, quoted bool, checkUntrusted bool) []typedExpr {
+func (rule *RuleExpression) checkExprsIn(s string, pos *Pos, quoted bool, checkUntrusted, noEnv bool) []typedExpr {
 	// TODO: Line number is not correct when the string contains newlines.
 
 	line, col := pos.Line, pos.Col
@@ -600,7 +620,7 @@ func (rule *RuleExpression) checkExprsIn(s string, pos *Pos, quoted bool, checkU
 		offset += start
 		col := col + offset
 
-		ty, offsetAfter := rule.checkSemantics(s, line, col, checkUntrusted)
+		ty, offsetAfter := rule.checkSemantics(s, line, col, checkUntrusted, noEnv)
 		if ty == nil || offsetAfter == 0 {
 			return nil
 		}
@@ -624,7 +644,7 @@ func (rule *RuleExpression) checkRawYAMLValue(v RawYAMLValue) {
 			rule.checkRawYAMLValue(v)
 		}
 	case *RawYAMLString:
-		rule.checkExprsIn(v.Value, v.Pos(), false, false)
+		rule.checkExprsIn(v.Value, v.Pos(), false, false, false)
 	default:
 		panic("unreachable")
 	}
@@ -635,7 +655,7 @@ func (rule *RuleExpression) exprError(err *ExprError, lineBase, colBase int) {
 	rule.error(pos, err.Message)
 }
 
-func (rule *RuleExpression) checkSemanticsOfExprNode(expr ExprNode, line, col int, checkUntrusted bool) ExprType {
+func (rule *RuleExpression) checkSemanticsOfExprNode(expr ExprNode, line, col int, checkUntrusted, noEnv bool) ExprType {
 	c := NewExprSemanticsChecker(checkUntrusted)
 	if rule.matrixTy != nil {
 		c.UpdateMatrix(rule.matrixTy)
@@ -658,6 +678,9 @@ func (rule *RuleExpression) checkSemanticsOfExprNode(expr ExprNode, line, col in
 	if rule.jobsTy != nil {
 		c.UpdateJobs(rule.jobsTy)
 	}
+	if noEnv {
+		c.NoEnv()
+	}
 
 	ty, errs := c.Check(expr)
 	for _, err := range errs {
@@ -667,7 +690,7 @@ func (rule *RuleExpression) checkSemanticsOfExprNode(expr ExprNode, line, col in
 	return ty
 }
 
-func (rule *RuleExpression) checkSemantics(src string, line, col int, checkUntrusted bool) (ExprType, int) {
+func (rule *RuleExpression) checkSemantics(src string, line, col int, checkUntrusted, noEnv bool) (ExprType, int) {
 	l := NewExprLexer(src)
 	p := NewExprParser()
 	expr, err := p.Parse(l)
@@ -675,7 +698,7 @@ func (rule *RuleExpression) checkSemantics(src string, line, col int, checkUntru
 		rule.exprError(err, line, col)
 		return nil, l.Offset()
 	}
-	return rule.checkSemanticsOfExprNode(expr, line, col, checkUntrusted), l.Offset()
+	return rule.checkSemanticsOfExprNode(expr, line, col, checkUntrusted, noEnv), l.Offset()
 }
 
 func (rule *RuleExpression) calcNeedsType(job *Job) *ObjectType {

@@ -1,0 +1,19 @@
+# issue #158
+on: push
+
+jobs:
+  my_job:
+    runs-on: ubuntu-latest
+    env:
+      FOO: aaa
+    steps:
+      # 'uses:', 'env:' and 'BAR:' cause errors
+      - uses: test/${{ env.FOO }}@main
+        env:
+          BAR: ${{ env.FOO }}
+        id: foo-${{ env.FOO }}
+      # This still should be OK
+      - uses: test/my-action@main
+        env:
+          OS: ${{ runner.os }}
+        id: foo-${{ runner.name }}
