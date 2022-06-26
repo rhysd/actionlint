@@ -401,7 +401,7 @@ func (sema *ExprSemanticsChecker) UpdateDispatchInputs(ty *ObjectType) {
 
 // UpdateJobs updates 'jobs' context object to given object type.
 func (sema *ExprSemanticsChecker) UpdateJobs(ty *ObjectType) {
-	sema.ensureGithubVarCopied()
+	sema.ensureVarsCopied()
 	sema.vars["jobs"] = ty
 }
 
