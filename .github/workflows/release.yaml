@@ -36,7 +36,7 @@ jobs:
           set -x
           ver="${GITHUB_REF#refs/tags/v}"
           cd ./tmp-actionlint-for-update-ver
-          sed -i -E "s/version=\"[^\"]+\"/version=\"${ver}\"/" ./scripts/download-actionlint.bash
+          sed -i -E "0,/version=\"[^\"]+\"/s//version=\"${ver}\"/" ./scripts/download-actionlint.bash
           git diff
           git add ./scripts/download-actionlint.bash
           git -c user.email='41898282+github-actions[bot]@users.noreply.github.com' -c user.name='github-actions[bot]' commit -m "update version to $ver in download-actionlint.bash"
