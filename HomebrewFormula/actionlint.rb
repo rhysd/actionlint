@@ -5,13 +5,13 @@
 class Actionlint < Formula
   desc "Static checker for GitHub Actions workflow files"
   homepage "https://github.com/rhysd/actionlint#readme"
-  version "1.6.14"
+  version "1.6.15"
   license "MIT"
 
   on_macos do
     if Hardware::CPU.arm?
-      url "https://github.com/rhysd/actionlint/releases/download/v1.6.14/actionlint_1.6.14_darwin_arm64.tar.gz"
-      sha256 "2f8e3993443d12befbcd0e48caad7bef024d26ff2008662a6ac168360ec83f60"
+      url "https://github.com/rhysd/actionlint/releases/download/v1.6.15/actionlint_1.6.15_darwin_arm64.tar.gz"
+      sha256 "01001efe7e0c6554c6cf557f55ffe2e832dc9dc78060d659d7f1ef89cfd297d5"
 
       def install
         bin.install "actionlint"
@@ -19,8 +19,8 @@ class Actionlint < Formula
       end
     end
     if Hardware::CPU.intel?
-      url "https://github.com/rhysd/actionlint/releases/download/v1.6.14/actionlint_1.6.14_darwin_amd64.tar.gz"
-      sha256 "4f8d59d945716ca5b5208e6f74bec5e0761af1e75fdbbcb4e322116b6445e4f0"
+      url "https://github.com/rhysd/actionlint/releases/download/v1.6.15/actionlint_1.6.15_darwin_amd64.tar.gz"
+      sha256 "8b27be147f13b9daf58e035f6f463e8e1291aa1af91a02007c86f3351fd4df76"
 
       def install
         bin.install "actionlint"
@@ -31,17 +31,8 @@ class Actionlint < Formula
 
   on_linux do
     if Hardware::CPU.arm? && Hardware::CPU.is_64_bit?
-      url "https://github.com/rhysd/actionlint/releases/download/v1.6.14/actionlint_1.6.14_linux_arm64.tar.gz"
-      sha256 "48a8d04cbd654ed37d1622d53f52811755580add31f32a46d435445bcdc6aa48"
-
-      def install
-        bin.install "actionlint"
-        man1.install "man/actionlint.1"
-      end
-    end
-    if Hardware::CPU.intel?
-      url "https://github.com/rhysd/actionlint/releases/download/v1.6.14/actionlint_1.6.14_linux_amd64.tar.gz"
-      sha256 "9500c85f28dee3e9b4e918df3c336d87a360bd912493d0f2d70a148597127f85"
+      url "https://github.com/rhysd/actionlint/releases/download/v1.6.15/actionlint_1.6.15_linux_arm64.tar.gz"
+      sha256 "e3f06f077d46656a42737d2a6729c9b4da46ff6de7da196a4acb37741692d311"
 
       def install
         bin.install "actionlint"
@@ -49,8 +40,17 @@ class Actionlint < Formula
       end
     end
     if Hardware::CPU.arm? && !Hardware::CPU.is_64_bit?
-      url "https://github.com/rhysd/actionlint/releases/download/v1.6.14/actionlint_1.6.14_linux_armv6.tar.gz"
-      sha256 "d8815754aa578547dbec6339d1340b4b9ecd64ea31224ccea5726d0983cda6ba"
+      url "https://github.com/rhysd/actionlint/releases/download/v1.6.15/actionlint_1.6.15_linux_armv6.tar.gz"
+      sha256 "ad7d36c92a1bb8c5b3910516b7aca63b36569935a1827500183e5c51d01ecd63"
+
+      def install
+        bin.install "actionlint"
+        man1.install "man/actionlint.1"
+      end
+    end
+    if Hardware::CPU.intel?
+      url "https://github.com/rhysd/actionlint/releases/download/v1.6.15/actionlint_1.6.15_linux_amd64.tar.gz"
+      sha256 "18ce9a10a4366f61087b639f60537cde133b26de6814aec1edfde09771277c7a"
 
       def install
         bin.install "actionlint"
