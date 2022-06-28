@@ -10,10 +10,10 @@ jobs:
     runs-on: ubuntu-latest
     env:
       FOO: aaa
-      # 'env:' at toplevel cannot refer 'env' context
+      # 'env:' at job level cannot refer 'env' context
       ERROR2: ${{ env.PATH }}
     steps:
-      # 'uses:' and 'BAR:' cause errors
+      # 'uses:' and 'id:' cause errors
       - uses: test/${{ env.FOO }}@main
         id: foo-${{ env.FOO }}
       # 'env:' at step level can refer 'env' context
@@ -25,3 +25,12 @@ jobs:
         env:
           OS: ${{ runner.os }}
         id: foo-${{ runner.name }}
+  container-job:
+    runs-on: ubuntu-latest
+    container:
+      image: node:14.16
+      # 'env:' at 'container:' can refer 'env' context
+      env:
+        MYPATH: ${{ env.PATH }}
+    steps:
+      - run: echo hello
