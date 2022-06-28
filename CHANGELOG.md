@@ -1,3 +1,32 @@
+<a name="v1.6.15"></a>
+# [v1.6.15](https://github.com/rhysd/actionlint/releases/tag/v1.6.15) - 28 Jun 2022
+
+- Fix referring `env` context from `env:` at step level caused an error. `env:` at toplevel and job level cannot refer `env` context, but `env:` at step level can. (#158)
+  ```yaml
+  on: push
+
+  env:
+    # 'env:' at toplevel cannot refer 'env' context
+    ERROR1: ${{ env.PATH }}
+
+  jobs:
+    my_job:
+      runs-on: ubuntu-latest
+      env:
+        # 'env:' at job level cannot refer 'env' context
+        ERROR2: ${{ env.PATH }}
+      steps:
+        - run: echo "$BAR"
+          env:
+            # 'env:' at step level CAN refer 'env' context
+            THIS_IS_OK: ${{ env.PATH }}
+  ```
+- [Docker image for linux/arm64](https://hub.docker.com/layers/rhysd/actionlint/1.6.15/images/sha256-f63ee59f1846abce86ca9de1d41a1fc22bc7148d14b788cb455a9594d83e73f7?context=repo) is now provided. It is useful for M1 Mac users. (#159, thanks @politician)
+- Fix [the download script](https://github.com/rhysd/actionlint/blob/main/scripts/download-actionlint.bash) did not respect the version specified via the first argument. (#162, thanks @mateiidavid)
+
+[Changes][v1.6.15]
+
+
 <a name="v1.6.14"></a>
 # [v1.6.14](https://github.com/rhysd/actionlint/releases/tag/v1.6.14) - 26 Jun 2022
 
@@ -6,10 +35,10 @@
   on:
     push:
       # ERROR: Both 'paths' and 'paths-ignore' filters cannot be used for the same event
-      paths: path/to/foo
-      paths-ignore: path/to/foo
+      paths: ...
+      paths-ignore: ...
   ```
-- Some event filters are checked more strictly. Some filters are only available with specific events. Now actionlint checks the limitation. See [the document](https://github.com/rhysd/actionlint/blob/main/docs/checks.md#webhook-events-validation) for complete list of such events.
+- Some event filters are checked more strictly. Some filters are only available with specific events. Now actionlint checks the limitation. See [the document](https://github.com/rhysd/actionlint/blob/main/docs/checks.md#webhook-events-validation) for complete list of such filters.
   ```yaml
   on:
     release:
@@ -17,7 +46,7 @@
       tags: v*.*.*
   ```
 - Paths starting/ending with spaces are now reported as error.
-- Inputs of workflow which specifying both `default` and `required` are now reported as error. When `required` is specified at input of workflow call, a caller of it must specify value of the input. So the default value will never be used. (#154, thanks @sksat)
+- Inputs of workflow which specify both `default` and `required` are now reported as error. When `required` is specified at input of workflow call, a caller of it must specify value of the input. So the default value will never be used. (#154, thanks @sksat)
   ```yaml
   on:
     workflow_call:
@@ -843,6 +872,7 @@ See documentation for more details:
 [Changes][v1.0.0]
 
 
+[v1.6.15]: https://github.com/rhysd/actionlint/compare/v1.6.14...v1.6.15
 [v1.6.14]: https://github.com/rhysd/actionlint/compare/v1.6.13...v1.6.14
 [v1.6.13]: https://github.com/rhysd/actionlint/compare/v1.6.12...v1.6.13
 [v1.6.12]: https://github.com/rhysd/actionlint/compare/v1.6.11...v1.6.12
