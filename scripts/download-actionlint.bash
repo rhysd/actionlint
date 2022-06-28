@@ -43,7 +43,7 @@ if [[ "$1" == "-h" || "$1" == "--help" ]]; then
 fi
 
 # Default value is updated manually on release
-version="1.6.14"
+version="1.6.15"
 if [ -n "$1" ]; then
     if [[ "$1" != 'latest' && "$1" != 'LATEST' ]]; then
         if [[ "$1" =~ ^[0-9]+\.[0-9]+\.[0-9]+$ ]]; then
