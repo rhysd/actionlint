@@ -123,7 +123,7 @@ func (rule *RuleExpression) VisitWorkflowPre(n *Workflow) error {
 		}
 	}
 
-	rule.checkEnv(n.Env)
+	rule.checkEnv(n.Env, true)
 
 	rule.checkDefaults(n.Defaults)
 	rule.checkConcurrency(n.Concurrency)
@@ -170,7 +170,7 @@ func (rule *RuleExpression) VisitJobPre(n *Job) error {
 
 	rule.checkConcurrency(n.Concurrency)
 
-	rule.checkEnv(n.Env)
+	rule.checkEnv(n.Env, true)
 
 	rule.checkDefaults(n.Defaults)
 	rule.checkIfCondition(n.If)
@@ -247,7 +247,7 @@ func (rule *RuleExpression) VisitStep(n *Step) error {
 		spec = e.Uses
 	}
 
-	rule.checkEnv(n.Env)
+	rule.checkEnv(n.Env, false) // env: at step level can refer 'env' context (#158)
 	rule.checkBool(n.ContinueOnError)
 	rule.checkFloat(n.TimeoutMinutes)
 
@@ -403,14 +403,18 @@ func (rule *RuleExpression) checkMatrixCombinations(cs *MatrixCombinations, what
 	}
 }
 
-func (rule *RuleExpression) checkEnv(env *Env) {
+func (rule *RuleExpression) checkEnv(env *Env, noEnv bool) {
 	if env == nil {
 		return
 	}
 
 	if env.Vars != nil {
 		for _, e := range env.Vars {
-			rule.checkStringNoEnv(e.Value)
+			if noEnv {
+				rule.checkStringNoEnv(e.Value)
+			} else {
+				rule.checkString(e.Value)
+			}
 		}
 		return
 	}
@@ -428,7 +432,7 @@ func (rule *RuleExpression) checkContainer(c *Container) {
 		rule.checkString(c.Credentials.Username)
 		rule.checkString(c.Credentials.Password)
 	}
-	rule.checkEnv(c.Env)
+	rule.checkEnv(c.Env, false)
 	rule.checkStrings(c.Ports)
 	rule.checkStrings(c.Volumes)
 	rule.checkString(c.Options)
@@ -557,7 +561,8 @@ func (rule *RuleExpression) checkScriptString(str *String) []typedExpr {
 	return ts
 }
 
-// When checking 'env', 'id' or 'uses', 'env' context cannot be referred. (#158)
+// When checking 'id:' or 'uses:' or 'env:' at toplevel or 'env:' at job level, 'env' context cannot
+// be referred. (#158)
 //
 // > Variables in the env map cannot be defined in terms of other variables in the map.
 // https://docs.github.com/en/actions/using-workflows/workflow-syntax-for-github-actions#env
