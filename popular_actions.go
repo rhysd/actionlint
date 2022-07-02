@@ -143,7 +143,7 @@ var PopularActions = map[string]*ActionMetadata{
 	"JamesIves/github-pages-deploy-action@releases/v4": {
 		Name: "Deploy to GitHub Pages",
 		Inputs: map[string]ActionMetadataInputRequired{
-			"branch":           true,
+			"branch":           false,
 			"clean":            false,
 			"clean-exclude":    false,
 			"commit-message":   false,
