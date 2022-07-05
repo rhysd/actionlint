@@ -3,9 +3,40 @@ Installation
 
 This document describes how to install [actionlint](../docs).
 
-## [Homebrew][homebrew] on macOS
+## Windows
 
-[`actionlint` formula][formula] is provided by Homebrew officially.
+### [Chocolatey](https://chocolatey.org/)
+
+[`actionlint`](https://community.chocolatey.org/packages/actionlint) is available in the community repo:
+
+```powershell
+choco install actionlint
+```
+
+### [Scoop](https://scoop.sh/)
+
+[`actionlint`](https://github.com/ScoopInstaller/Extras/blob/master/bucket/actionlint.json) is available in the official buckets:
+
+```powershell
+scoop install actionlint
+```
+
+## Linux
+
+### [AUR](https://aur.archlinux.org/)
+
+[`actionlint`](https://aur.archlinux.org/packages/actionlint) is available in the AUR:
+
+```sh
+paru -S actionlint
+```
+
+
+## macOS
+
+### [Homebrew][homebrew]
+
+[`actionlint`][formula] formula is provided by Homebrew officially.
 
 ```sh
 brew install actionlint
