@@ -15,7 +15,7 @@ choco install actionlint
 
 ### [Scoop](https://scoop.sh/)
 
-[`actionlint`](https://github.com/ScoopInstaller/Extras/blob/master/bucket/actionlint.json) is available in the official buckets:
+[`actionlint`](https://scoop.sh/#/apps?q=actionlint&s=0&d=1&o=true) is available in the main bucket:
 
 ```powershell
 scoop install actionlint
