@@ -341,6 +341,11 @@ repos:
       - id: actionlint-docker
 ```
 
+### VS Code
+
+[Linter extension][vsc-extension] for [VS Code][vscode] is available. The extension automatically detects `.github/workflows`
+directory, runs `actionlint` command, and reports errors in the code editor while editing workflow files.
+
 ---
 
 [Checks](checks.md) | [Installation](install.md) | [Configuration](config.md) | [Go API](api.md) | [References](reference.md)
@@ -358,3 +363,5 @@ repos:
 [pre-commit]: https://pre-commit.com
 [docker]: https://www.docker.com/
 [docker-image]: https://hub.docker.com/r/rhysd/actionlint
+[vsc-extension]: https://marketplace.visualstudio.com/items?itemName=arahata.linter-actionlint
+[vscode]: https://code.visualstudio.com/
