@@ -1,0 +1,15 @@
+on: push
+
+permissions: {}
+
+jobs:
+  job1:
+    permissions: {}
+    runs-on: ubuntu-latest
+    steps:
+      - run: echo '1'
+  job2:
+    permissions:
+    runs-on: ubuntu-latest
+    steps:
+      - run: echo '2'
