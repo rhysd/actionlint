@@ -629,7 +629,7 @@ func (p *parser) parsePermissions(pos *Pos, n *yaml.Node) *Permissions {
 	if n.Kind == yaml.ScalarNode {
 		ret.All = p.parseString(n, false)
 	} else {
-		m := p.parseSectionMapping("permissions", n, false)
+		m := p.parseSectionMapping("permissions", n, true)
 		scopes := make(map[string]*PermissionScope, len(m))
 		for _, kv := range m {
 			scopes[kv.key.Value] = &PermissionScope{
