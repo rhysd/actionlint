@@ -82,8 +82,8 @@ var popularActions = []*action{
 	},
 	{
 		slug: "EnricoMi/publish-unit-test-result-action",
-		tags: []string{"v1"},
-		next: "v2",
+		tags: []string{"v1", "v2"},
+		next: "v3",
 	},
 	{
 		slug: "JamesIves/github-pages-deploy-action",
