@@ -849,7 +849,8 @@ var PopularActions = map[string]*ActionMetadata{
 			"token":                 false,
 		},
 		Outputs: map[string]struct{}{
-			"cache-hit": {},
+			"cache-hit":    {},
+			"node-version": {},
 		},
 	},
 	"actions/setup-python@v1": {
@@ -898,6 +899,7 @@ var PopularActions = map[string]*ActionMetadata{
 			"python-version":        false,
 			"python-version-file":   false,
 			"token":                 false,
+			"update-environment":    false,
 		},
 		Outputs: map[string]struct{}{
 			"cache-hit":      {},
@@ -2999,6 +3001,7 @@ var PopularActions = map[string]*ActionMetadata{
 			"auto_fix":                             false,
 			"autopep8":                             false,
 			"autopep8_args":                        false,
+			"autopep8_auto_fix":                    false,
 			"autopep8_command_prefix":              false,
 			"autopep8_dir":                         false,
 			"autopep8_extensions":                  false,
