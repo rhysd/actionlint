@@ -97,8 +97,8 @@ var popularActions = []*action{
 	},
 	{
 		slug: "Swatinem/rust-cache",
-		tags: []string{"v1"},
-		next: "v2",
+		tags: []string{"v1", "v2"},
+		next: "v3",
 	},
 	{
 		slug: "actions-cool/issues-helper",
