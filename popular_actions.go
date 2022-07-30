@@ -81,7 +81,7 @@ var PopularActions = map[string]*ActionMetadata{
 		},
 	},
 	"EnricoMi/publish-unit-test-result-action@v1": {
-		Name: "Publish Unit Test Results",
+		Name: "Publish Test Results",
 		Inputs: map[string]ActionMetadataInputRequired{
 			"check_name":                       false,
 			"check_run_annotations":            false,
@@ -115,7 +115,7 @@ var PopularActions = map[string]*ActionMetadata{
 		},
 	},
 	"EnricoMi/publish-unit-test-result-action@v2": {
-		Name: "Publish Unit Test Results",
+		Name: "Publish Test Results",
 		Inputs: map[string]ActionMetadataInputRequired{
 			"check_name":                       false,
 			"check_run_annotations":            false,
@@ -1072,6 +1072,7 @@ var PopularActions = map[string]*ActionMetadata{
 			"ascending":                       false,
 			"close-issue-label":               false,
 			"close-issue-message":             false,
+			"close-issue-reason":              false,
 			"close-pr-label":                  false,
 			"close-pr-message":                false,
 			"days-before-close":               false,
