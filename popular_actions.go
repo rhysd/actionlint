@@ -522,6 +522,20 @@ var PopularActions = map[string]*ActionMetadata{
 			"token":               false,
 		},
 	},
+	"actions/configure-pages@v1": {
+		Name: "Configure Pages",
+		Inputs: map[string]ActionMetadataInputRequired{
+			"enablement":            false,
+			"static_site_generator": false,
+			"token":                 false,
+		},
+		Outputs: map[string]struct{}{
+			"base_path": {},
+			"base_url":  {},
+			"host":      {},
+			"origin":    {},
+		},
+	},
 	"actions/delete-package-versions@v1": {
 		Name: "Delete Package Versions",
 		Inputs: map[string]ActionMetadataInputRequired{
@@ -559,6 +573,20 @@ var PopularActions = map[string]*ActionMetadata{
 			"package-version-ids":              false,
 			"repo":                             false,
 			"token":                            false,
+		},
+	},
+	"actions/deploy-pages@v1": {
+		Name: "Deploy to GitHub Pages",
+		Inputs: map[string]ActionMetadataInputRequired{
+			"artifact_name":      false,
+			"emit_telemetry":     false,
+			"error_count":        false,
+			"reporting_interval": false,
+			"timeout":            false,
+			"token":              false,
+		},
+		Outputs: map[string]struct{}{
+			"page_url": {},
 		},
 	},
 	"actions/download-artifact@v1": {
@@ -1147,6 +1175,13 @@ var PopularActions = map[string]*ActionMetadata{
 			"name":              false,
 			"path":              true,
 			"retention-days":    false,
+		},
+	},
+	"actions/upload-pages-artifact@v1": {
+		Name: "Upload Pages artifact",
+		Inputs: map[string]ActionMetadataInputRequired{
+			"path":           false,
+			"retention-days": false,
 		},
 	},
 	"aws-actions/configure-aws-credentials@v1": {

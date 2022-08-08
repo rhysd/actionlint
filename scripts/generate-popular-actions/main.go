@@ -136,6 +136,16 @@ var popularActions = []*action{
 		next: "v4",
 	},
 	{
+		slug: "actions/configure-pages",
+		tags: []string{"v1"},
+		next: "v2",
+	},
+	{
+		slug: "actions/deploy-pages",
+		tags: []string{"v1"},
+		next: "v2",
+	},
+	{
 		slug: "actions/delete-package-versions",
 		tags: []string{"v1", "v2", "v3"},
 		next: "v4",
@@ -193,6 +203,11 @@ var popularActions = []*action{
 		slug: "actions/upload-artifact",
 		tags: []string{"v1", "v2", "v3"},
 		next: "v4",
+	},
+	{
+		slug: "actions/upload-pages-artifact",
+		tags: []string{"v1"},
+		next: "v2",
 	},
 	{
 		slug: "aws-actions/configure-aws-credentials",
