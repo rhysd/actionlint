@@ -216,7 +216,7 @@ func (l *Linter) GenerateDefaultConfig(dir string) error {
 }
 
 // LintRepository lints YAML workflow files and outputs the errors to given writer. It finds the nearest
-// `.github/workflow` directory based on `dir` and applies lint rules to all YAML worflow files
+// `.github/workflows` directory based on `dir` and applies lint rules to all YAML worflow files
 // under the directory.
 func (l *Linter) LintRepository(dir string) ([]*Error, error) {
 	l.log("Linting all workflow files in repository:", dir)
