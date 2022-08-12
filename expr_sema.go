@@ -215,6 +215,7 @@ var BuiltinGlobalVariableTypes = map[string]ExprType{
 		"server_url":       StringType{},
 		"sha":              StringType{},
 		"token":            StringType{},
+		"triggering_actor": StringType{},
 		"workflow":         StringType{},
 		"workspace":        StringType{},
 		// Below props are not documented but actually exist
