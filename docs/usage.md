@@ -207,6 +207,23 @@ shellcheck is [pre-installed on Ubuntu worker][preinstall-ubuntu].
 If you want to [annotate errors][ga-annotate-error] from actionlint on GitHub, consider to use
 [Problem Matchers](#problem-matchers).
 
+If you prefer Docker image to running a downloaded executable, using [actionlint Docker image](#docker) is another option.
+
+```yaml
+name: Lint GitHub Actions workflows
+on: [push, pull_request]
+
+jobs:
+  actionlint:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v3
+      - name: Check workflow files
+        uses: docker://rhysd/actionlint:latest
+        with:
+          args: -color
+```
+
 ## Online playground
 
 Thanks to WebAssembly, actionlint playground is available on your browser. It never sends any data to outside of your browser.
