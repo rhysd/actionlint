@@ -173,7 +173,7 @@ func (rule *RuleExpression) VisitJobPre(n *Job) error {
 	rule.checkEnv(n.Env, true)
 
 	rule.checkDefaults(n.Defaults)
-	rule.checkIfCondition(n.If)
+	rule.checkIfCondition(n.If, true)
 
 	if n.Strategy != nil {
 		if n.Strategy.Matrix != nil {
@@ -224,7 +224,7 @@ func (rule *RuleExpression) VisitJobPost(n *Job) error {
 
 // VisitStep is callback when visiting Step node.
 func (rule *RuleExpression) VisitStep(n *Step) error {
-	rule.checkIfCondition(n.If)
+	rule.checkIfCondition(n.If, false)
 	rule.checkString(n.Name)
 
 	var spec *String
@@ -480,7 +480,7 @@ func (rule *RuleExpression) checkStrings(ss []*String) {
 	}
 }
 
-func (rule *RuleExpression) checkIfCondition(str *String) {
+func (rule *RuleExpression) checkIfCondition(str *String, noEnv bool) {
 	if str == nil {
 		return
 	}
@@ -509,7 +509,15 @@ func (rule *RuleExpression) checkIfCondition(str *String) {
 
 	var condTy ExprType
 	if strings.Contains(str.Value, "${{") && strings.Contains(str.Value, "}}") {
-		if ts := rule.checkString(str); len(ts) == 1 {
+		var ts []typedExpr
+
+		if noEnv {
+			ts = rule.checkStringNoEnv(str)
+		} else {
+			ts = rule.checkString(str)
+		}
+
+		if len(ts) == 1 {
 			s := strings.TrimSpace(str.Value)
 			if strings.HasPrefix(s, "${{") && strings.HasSuffix(s, "}}") {
 				condTy = ts[0].ty
@@ -526,7 +534,7 @@ func (rule *RuleExpression) checkIfCondition(str *String) {
 			return
 		}
 
-		condTy = rule.checkSemanticsOfExprNode(expr, line, col, false, false)
+		condTy = rule.checkSemanticsOfExprNode(expr, line, col, false, noEnv)
 	}
 
 	if condTy != nil && !(BoolType{}).Assignable(condTy) {
