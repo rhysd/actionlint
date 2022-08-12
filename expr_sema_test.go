@@ -694,6 +694,7 @@ func TestExprSemanticsCheckError(t *testing.T) {
 		matrix   *ObjectType
 		steps    *ObjectType
 		needs    *ObjectType
+		noEnv    bool
 	}{
 		{
 			what:  "undefined variable",
@@ -1060,6 +1061,14 @@ func TestExprSemanticsCheckError(t *testing.T) {
 				"property \"hello\" is not defined in object type {}",
 			},
 		},
+		{
+			what:  "'env' context is not allowed",
+			input: "env.FOO",
+			expected: []string{
+				"undefined variable \"env\"",
+			},
+			noEnv: true,
+		},
 	}
 
 	for _, tc := range testCases {
@@ -1082,6 +1091,9 @@ func TestExprSemanticsCheckError(t *testing.T) {
 			}
 			if tc.needs != nil {
 				c.UpdateNeeds(tc.needs)
+			}
+			if tc.noEnv {
+				c.NoEnv()
 			}
 			_, errs := c.Check(e)
 			if len(errs) != len(tc.expected) {
