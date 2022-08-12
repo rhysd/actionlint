@@ -87,12 +87,20 @@ func (rule *RuleMatrix) checkExclude(m *Matrix) {
 	}
 
 	vals := make(map[string][]RawYAMLValue, len(rows))
+	ignored := map[string]struct{}{}
 	for name, row := range rows {
-		vals[name] = row.Values
+		if row.Expression != nil {
+			ignored[name] = struct{}{}
+		} else {
+			vals[name] = row.Values
+		}
 	}
 	if m.Include != nil {
 		for _, combi := range m.Include.Combinations {
 			for n, a := range combi.Assigns {
+				if _, ok := ignored[n]; ok {
+					continue
+				}
 				vs, ok := vals[n]
 				if !ok {
 					vals[n] = []RawYAMLValue{a.Value}
@@ -107,6 +115,9 @@ func (rule *RuleMatrix) checkExclude(m *Matrix) {
 
 	for _, combi := range m.Exclude.Combinations {
 		for k, a := range combi.Assigns {
+			if _, ok := ignored[k]; ok {
+				continue
+			}
 			vs, ok := vals[k]
 			if !ok {
 				ss := make([]string, 0, len(vals))
