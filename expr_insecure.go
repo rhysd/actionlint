@@ -71,7 +71,7 @@ func (ms UntrustedInputSearchRoots) AddRoot(m *UntrustedInputMap) {
 	ms[m.Name] = m
 }
 
-// TODO: Automatically generate BuitinUntrustedInputs from https://github.com/github/codeql/blob/main/javascript/ql/src/experimental/Security/CWE-094/ExpressionInjection.ql
+// TODO: Automatically generate BuiltinUntrustedInputs from https://github.com/github/codeql/blob/main/javascript/ql/src/experimental/Security/CWE-094/ExpressionInjection.ql
 
 // BuiltinUntrustedInputs is list of untrusted inputs. These inputs are detected as untrusted in
 // `run:` scripts. See the URL for more details.

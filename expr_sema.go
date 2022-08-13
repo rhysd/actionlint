@@ -495,7 +495,7 @@ func (sema *ExprSemanticsChecker) checkArrayDeref(n *ArrayDerefNode) ExprType {
 		// Object filtering is available for objects, not only arrays (#66)
 
 		if ty.Mapped != nil {
-			// For map object or loose object at reciever of .*
+			// For map object or loose object at receiver of .*
 			switch mty := ty.Mapped.(type) {
 			case AnyType:
 				return &ArrayType{AnyType{}, true}

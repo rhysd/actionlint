@@ -29,7 +29,7 @@ type edge struct {
 
 var jobIDPattern = regexp.MustCompile(`^[a-zA-Z0-9_][a-zA-Z0-9_-]*$`)
 
-// RuleJobNeeds is a rule to check 'needs' field in each job conifiguration. For more details, see
+// RuleJobNeeds is a rule to check 'needs' field in each job configuration. For more details, see
 // https://docs.github.com/en/actions/learn-github-actions/workflow-syntax-for-github-actions#jobsjob_idneeds
 type RuleJobNeeds struct {
 	RuleBase

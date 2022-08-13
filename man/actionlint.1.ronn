@@ -76,10 +76,12 @@ with Go template syntax.
     Use one line per one error. Useful for reading error messages from programs
 
   * `-pyflakes` <EXECUTABLE>:
-    Command name or file path of "pyflakes" external command (default "pyflakes")
+    Command name or file path of "pyflakes" external command. If empty, pyflakes integration will be
+    disabled (default "pyflakes")
 
   * `-shellcheck` <EXECUTABLE>:
-    Command name or file path of "shellcheck" external command (default "shellcheck")
+    Command name or file path of "shellcheck" external command. If empty, shellcheck integration will
+    be disabled (default "shellcheck")
 
   * `-verbose`:
     Enable verbose output

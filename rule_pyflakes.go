@@ -107,7 +107,7 @@ func (rule *RulePyflakes) isPythonShell(r *ExecRun) bool {
 }
 
 func (rule *RulePyflakes) runPyflakes(src string, pos *Pos) {
-	src = sanitizeExpressionsInScript(src) // Defiend at rule_shellcheck.go
+	src = sanitizeExpressionsInScript(src) // Defined at rule_shellcheck.go
 	rule.debug("%s: Running %s for Python script:\n%s", pos, rule.cmd.exe, src)
 
 	rule.cmd.run([]string{}, src, func(stdout []byte, err error) error {

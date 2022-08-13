@@ -57,7 +57,7 @@ func errorfAt(pos *Pos, kind string, format string, args ...interface{}) *Error 
 	}
 }
 
-// GetTemplateFields fields for formating this error with Go template.
+// GetTemplateFields fields for formatting this error with Go template.
 func (e *Error) GetTemplateFields(source []byte) *ErrorTemplateFields {
 	var snippet string
 	if len(source) > 0 && e.Line > 0 {

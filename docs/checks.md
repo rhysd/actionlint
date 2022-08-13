@@ -372,7 +372,7 @@ jobs:
       # Function overloads can be handled properly. contains() has string version and array version
       - run: echo "${{ contains('hello, world', 'lo,') }}"
       - run: echo "${{ contains(github.event.labels.*.name, 'enhancement') }}"
-      # format() has special check for formating string
+      # format() has special check for formatting string
       - run: echo "${{ format('{0}{1}', 1, 2, 3) }}"
 ```
 

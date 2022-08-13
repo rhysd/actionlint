@@ -227,14 +227,14 @@ func validateGlob(pat string, isRef bool) []InvalidGlobPattern {
 }
 
 // ValidateRefGlob checks a given input as glob pattern for Git ref names. It returns list of
-// errors found by the validation. See the following URL for more details of the sytnax:
+// errors found by the validation. See the following URL for more details of the syntax:
 // https://docs.github.com/en/actions/using-workflows/workflow-syntax-for-github-actions#filter-pattern-cheat-sheet
 func ValidateRefGlob(pat string) []InvalidGlobPattern {
 	return validateGlob(pat, true)
 }
 
 // ValidatePathGlob checks a given input as glob pattern for file paths. It returns list of
-// errors found by the validation. See the following URL for more details of the sytnax:
+// errors found by the validation. See the following URL for more details of the syntax:
 // https://docs.github.com/en/actions/using-workflows/workflow-syntax-for-github-actions#filter-pattern-cheat-sheet
 func ValidatePathGlob(pat string) []InvalidGlobPattern {
 	if strings.HasPrefix(pat, " ") {
