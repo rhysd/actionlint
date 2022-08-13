@@ -357,6 +357,7 @@ var PopularActions = map[string]*ActionMetadata{
 			"body":               false,
 			"body-includes":      false,
 			"close-issue":        false,
+			"close-reason":       false,
 			"comment-auth":       false,
 			"comment-id":         false,
 			"direction":          false,
@@ -576,7 +577,7 @@ var PopularActions = map[string]*ActionMetadata{
 		},
 	},
 	"actions/deploy-pages@v1": {
-		Name: "Deploy to GitHub Pages",
+		Name: "Deploy GitHub Pages site",
 		Inputs: map[string]ActionMetadataInputRequired{
 			"artifact_name":      false,
 			"emit_telemetry":     false,
@@ -1371,7 +1372,7 @@ var PopularActions = map[string]*ActionMetadata{
 			"run_number":          false,
 			"search_artifacts":    false,
 			"skip_unpack":         false,
-			"workflow":            true,
+			"workflow":            false,
 			"workflow_conclusion": false,
 		},
 		Outputs: map[string]struct{}{
