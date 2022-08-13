@@ -1,0 +1,1 @@
+test.yaml:10:14: type of expression at "runs-on" must be string or array but found type "{foo: string}" [expression]
