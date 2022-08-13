@@ -76,7 +76,7 @@ func (proc *concurrentProcess) run(eg *errgroup.Group, exe string, args []string
 
 // wait waits all goroutines started by this concurrentProcess instance finish.
 func (proc *concurrentProcess) wait() {
-	proc.wg.Wait() // Wait for all gorotines completing to shutdown
+	proc.wg.Wait() // Wait for all goroutines completing to shutdown
 }
 
 // newCommandRunner creates new external command runner for given executable. The executable path

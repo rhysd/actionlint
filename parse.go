@@ -130,6 +130,17 @@ func (p *parser) parseExpression(n *yaml.Node, expecting string) *String {
 	return newString(n)
 }
 
+func (p *parser) mayParseExpression(n *yaml.Node) *String {
+	if n.Tag != "!!str" {
+		return nil
+	}
+	s := strings.TrimSpace(n.Value)
+	if !strings.HasPrefix(s, "${{") || !strings.HasSuffix(s, "}}") || strings.Count(n.Value, "${{") != 1 || strings.Count(n.Value, "}}") != 1 {
+		return nil
+	}
+	return newString(n)
+}
+
 func (p *parser) parseString(n *yaml.Node, allowEmpty bool) *String {
 	if !p.checkString(n, allowEmpty) {
 		return &String{"", false, posAt(n)}
@@ -1101,8 +1112,12 @@ func (p *parser) parseJob(id *String, n *yaml.Node) *Job {
 				ret.Needs = p.parseStringSequence("needs", v, false, false)
 			}
 		case "runs-on":
-			labels := p.parseStringOrStringSequence("runs-on", v, false, false)
-			ret.RunsOn = &Runner{labels}
+			if expr := p.mayParseExpression(v); expr != nil {
+				ret.RunsOn = &Runner{nil, expr}
+			} else {
+				labels := p.parseStringOrStringSequence("runs-on", v, false, false)
+				ret.RunsOn = &Runner{labels, nil}
+			}
 			stepsOnlyKey = k
 		case "permissions":
 			ret.Permissions = p.parsePermissions(k.Pos, v)

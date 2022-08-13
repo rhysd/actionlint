@@ -112,8 +112,12 @@ func (rule *RuleRunnerLabel) VisitJobPre(n *Job) error {
 	}
 
 	rule.compats = map[runnerOSCompat]*String{}
-	for _, label := range n.RunsOn.Labels {
-		rule.checkLabelAndConflict(label, m)
+	if n.RunsOn.Expression != nil {
+		rule.checkLabelAndConflict(n.RunsOn.Expression, m)
+	} else {
+		for _, label := range n.RunsOn.Labels {
+			rule.checkLabelAndConflict(label, m)
+		}
 	}
 
 	rule.compats = nil // reset

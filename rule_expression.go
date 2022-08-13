@@ -163,8 +163,18 @@ func (rule *RuleExpression) VisitJobPre(n *Job) error {
 	rule.checkStrings(n.Needs)
 
 	if n.RunsOn != nil {
-		for _, l := range n.RunsOn.Labels {
-			rule.checkString(l)
+		if n.RunsOn.Expression != nil {
+			ty := rule.checkOneExpression(n.RunsOn.Expression, "runner label at \"runs-on\" section")
+			switch ty.(type) {
+			case *ArrayType, StringType, AnyType:
+				// OK
+			default:
+				rule.errorf(n.RunsOn.Expression.Pos, "type of expression at \"runs-on\" must be string or array but found type %q", ty.String())
+			}
+		} else {
+			for _, l := range n.RunsOn.Labels {
+				rule.checkString(l)
+			}
 		}
 	}
 

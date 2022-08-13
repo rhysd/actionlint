@@ -740,6 +740,8 @@ type Runner struct {
 	// Labels is list label names to select a runner to run a job. There are preset labels and user
 	// defined labels. Runner matching to the labels is selected.
 	Labels []*String
+	// Expression is a string when expression syntax ${{ }} is used for this section. Related issue is #164.
+	Expression *String
 }
 
 // WorkflowCallInput is a normal input for workflow call.
