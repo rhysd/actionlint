@@ -2611,6 +2611,7 @@ var PopularActions = map[string]*ActionMetadata{
 			"filter_mode":           false,
 			"github_token":          false,
 			"go_version":            false,
+			"go_version_file":       false,
 			"golangci_lint_flags":   false,
 			"golangci_lint_version": false,
 			"level":                 false,
