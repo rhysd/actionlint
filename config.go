@@ -2,7 +2,7 @@ package actionlint
 
 import (
 	"fmt"
-	"io/ioutil"
+	"os"
 	"strings"
 
 	"gopkg.in/yaml.v3"
@@ -28,7 +28,7 @@ func parseConfig(b []byte, path string) (*Config, error) {
 }
 
 func readConfigFile(path string) (*Config, error) {
-	b, err := ioutil.ReadFile(path)
+	b, err := os.ReadFile(path)
 	if err != nil {
 		return nil, fmt.Errorf("could not read config file %q: %w", path, err)
 	}
@@ -40,7 +40,7 @@ func writeDefaultConfigFile(path string) error {
   # Labels of self-hosted runner in array of string
   labels: []
 `)
-	if err := ioutil.WriteFile(path, b, 0644); err != nil {
+	if err := os.WriteFile(path, b, 0644); err != nil {
 		return fmt.Errorf("could not write default configuration file at %q: %w", path, err)
 	}
 	return nil

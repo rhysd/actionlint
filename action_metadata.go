@@ -3,7 +3,6 @@ package actionlint
 import (
 	"fmt"
 	"io"
-	"io/ioutil"
 	"os"
 	"path/filepath"
 	"strings"
@@ -133,7 +132,7 @@ func readLocalActionMetadataFile(dir string) ([]byte, error) {
 		filepath.Join(dir, "action.yaml"),
 		filepath.Join(dir, "action.yml"),
 	} {
-		if b, err := ioutil.ReadFile(p); err == nil {
+		if b, err := os.ReadFile(p); err == nil {
 			return b, nil
 		}
 	}

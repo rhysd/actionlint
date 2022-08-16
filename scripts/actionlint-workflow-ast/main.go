@@ -3,7 +3,6 @@ package main
 import (
 	"fmt"
 	"io"
-	"io/ioutil"
 	"os"
 
 	"github.com/kr/pretty"
@@ -14,13 +13,13 @@ func run(args []string, stdin io.Reader, stdout, stderr io.Writer) int {
 	var src []byte
 	var err error
 	if len(args) <= 1 {
-		src, err = ioutil.ReadAll(stdin)
+		src, err = io.ReadAll(stdin)
 	} else {
 		if args[1] == "-h" || args[1] == "-help" || args[1] == "--help" {
 			fmt.Fprintln(stdout, "Usage: go run ./scripts/actionlint-workflow-ast {workflow_file}")
 			return 0
 		}
-		src, err = ioutil.ReadFile(args[1])
+		src, err = os.ReadFile(args[1])
 	}
 	if err != nil {
 		fmt.Fprintln(stderr, err)

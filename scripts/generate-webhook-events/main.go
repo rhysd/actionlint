@@ -6,7 +6,6 @@ import (
 	"fmt"
 	"go/format"
 	"io"
-	"io/ioutil"
 	"log"
 	"net/http"
 	"os"
@@ -19,7 +18,7 @@ import (
 	"github.com/yuin/goldmark/text"
 )
 
-var dbg = log.New(ioutil.Discard, "", log.LstdFlags)
+var dbg = log.New(io.Discard, "", log.LstdFlags)
 
 func getFirstLinkText(n ast.Node, src []byte) (string, bool) {
 	var link ast.Node
@@ -213,7 +212,7 @@ func fetch(url string) ([]byte, error) {
 	if res.StatusCode < 200 || 300 <= res.StatusCode {
 		return nil, fmt.Errorf("request was not successful for %s: %s", url, res.Status)
 	}
-	body, err := ioutil.ReadAll(res.Body)
+	body, err := io.ReadAll(res.Body)
 	if err != nil {
 		return nil, fmt.Errorf("could not fetch body for %s: %w", url, err)
 	}
@@ -236,7 +235,7 @@ func run(args []string, stdout, stderr, dbgout io.Writer, srcURL string) int {
 	var src []byte
 	var err error
 	if len(args) == 2 {
-		src, err = ioutil.ReadFile(args[0])
+		src, err = os.ReadFile(args[0])
 	} else {
 		src, err = fetch(srcURL)
 	}

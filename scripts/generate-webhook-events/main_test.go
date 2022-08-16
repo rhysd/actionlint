@@ -3,7 +3,7 @@ package main
 import (
 	"bytes"
 	"errors"
-	"io/ioutil"
+	"io"
 	"os"
 	"path/filepath"
 	"strings"
@@ -15,7 +15,7 @@ import (
 func testRunMain(args []string) (string, string, int) {
 	stdout := &bytes.Buffer{}
 	stderr := &bytes.Buffer{}
-	status := run(args, stdout, stderr, ioutil.Discard, "")
+	status := run(args, stdout, stderr, io.Discard, "")
 	return stdout.String(), stderr.String(), status
 }
 
@@ -26,7 +26,7 @@ func TestOKWriteStdout(t *testing.T) {
 		t.Fatalf("status was non-zero: %d: %q", status, stderr)
 	}
 
-	b, err := ioutil.ReadFile(filepath.Join("testdata", "ok.go"))
+	b, err := os.ReadFile(filepath.Join("testdata", "ok.go"))
 	if err != nil {
 		panic(err)
 	}
@@ -47,7 +47,7 @@ func TestOKWriteFile(t *testing.T) {
 		t.Fatalf("status was non-zero: %d: %q", status, stderr)
 	}
 
-	b, err := ioutil.ReadFile(filepath.Join("testdata", "ok.go"))
+	b, err := os.ReadFile(filepath.Join("testdata", "ok.go"))
 	if err != nil {
 		panic(err)
 	}
@@ -57,7 +57,7 @@ func TestOKWriteFile(t *testing.T) {
 		t.Fatalf("stdout is not empty: %q", stdout)
 	}
 
-	b, err = ioutil.ReadFile(out)
+	b, err = os.ReadFile(out)
 	if err != nil {
 		t.Fatalf("output file %q cannot be read: %v", out, err)
 	}
@@ -112,7 +112,7 @@ func (w testErrorWriter) Write(b []byte) (int, error) {
 func TestErrorWriteResult(t *testing.T) {
 	f := filepath.Join("testdata", "ok.md")
 	stderr := &bytes.Buffer{}
-	status := run([]string{f, "-"}, testErrorWriter{}, stderr, ioutil.Discard, "")
+	status := run([]string{f, "-"}, testErrorWriter{}, stderr, io.Discard, "")
 	if status == 0 {
 		t.Fatal("status was zero")
 	}
@@ -135,7 +135,7 @@ func TestFetchError(t *testing.T) {
 	for _, tc := range testCases {
 		t.Run(tc.what, func(t *testing.T) {
 			stderr := &bytes.Buffer{}
-			status := run([]string{"-"}, ioutil.Discard, stderr, ioutil.Discard, tc.url)
+			status := run([]string{"-"}, io.Discard, stderr, io.Discard, tc.url)
 			if status == 0 {
 				t.Fatal("status was zero")
 			}

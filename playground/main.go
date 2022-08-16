@@ -1,7 +1,7 @@
 package main
 
 import (
-	"io/ioutil"
+	"io"
 	"syscall/js"
 
 	"github.com/rhysd/actionlint"
@@ -26,7 +26,7 @@ func encodeErrorAsMap(err *actionlint.Error) map[string]interface{} {
 
 func lint(source string) interface{} {
 	opts := actionlint.LinterOptions{}
-	linter, err := actionlint.NewLinter(ioutil.Discard, &opts)
+	linter, err := actionlint.NewLinter(io.Discard, &opts)
 	if err != nil {
 		fail(err, "creating linter instance")
 		return nil

@@ -5,7 +5,6 @@ import (
 	"errors"
 	"fmt"
 	"io"
-	"io/ioutil"
 	"os"
 	"path/filepath"
 	"regexp"
@@ -123,7 +122,7 @@ func NewLinter(out io.Writer, opts *LinterOptions) (*Linter, error) {
 		}
 	}
 
-	var lout io.Writer = ioutil.Discard
+	var lout io.Writer = io.Discard
 	if opts.LogWriter != nil {
 		lout = opts.LogWriter
 	}
@@ -306,7 +305,7 @@ func (l *Linter) LintFiles(filepaths []string, project *Project) ([]*Error, erro
 		eg.Go(func() error {
 			// Bound concurrency on reading files to avoid "too many files to open" error (issue #3)
 			sema.Acquire(ctx, 1)
-			src, err := ioutil.ReadFile(w.path)
+			src, err := os.ReadFile(w.path)
 			sema.Release(1)
 			if err != nil {
 				return fmt.Errorf("could not read %q: %w", w.path, err)
@@ -370,7 +369,7 @@ func (l *Linter) LintFile(path string, project *Project) ([]*Error, error) {
 		project = l.projects.At(path)
 	}
 
-	src, err := ioutil.ReadFile(path)
+	src, err := os.ReadFile(path)
 	if err != nil {
 		return nil, fmt.Errorf("could not read %q: %w", path, err)
 	}

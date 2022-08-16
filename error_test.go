@@ -5,7 +5,6 @@ import (
 	"encoding/json"
 	"errors"
 	"io"
-	"io/ioutil"
 	"math"
 	"sort"
 	"strconv"
@@ -462,7 +461,7 @@ func TestErrorFormatterPrintError(t *testing.T) {
 		temp string
 		want string
 	}{
-		{ioutil.Discard, "{{.Foo}}", "can't evaluate field Foo in type"},
+		{io.Discard, "{{.Foo}}", "can't evaluate field Foo in type"},
 		{testErrorWriter{}, "{{(index . 0).Message}}", "dummy write error"},
 	}
 

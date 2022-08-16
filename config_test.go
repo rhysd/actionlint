@@ -1,7 +1,6 @@
 package actionlint
 
 import (
-	"io/ioutil"
 	"os"
 	"path/filepath"
 	"strings"
@@ -106,7 +105,7 @@ func TestConfigReadFileParseError(t *testing.T) {
 }
 
 func TestConfigGenerateDefaultConfigFileOK(t *testing.T) {
-	dir, err := ioutil.TempDir(filepath.Join("testdata", "config"), "generate")
+	dir, err := os.MkdirTemp(filepath.Join("testdata", "config"), "generate")
 	if err != nil {
 		panic(err)
 	}

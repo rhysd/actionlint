@@ -1,7 +1,6 @@
 package actionlint
 
 import (
-	"io/ioutil"
 	"os"
 	"path/filepath"
 	"strings"
@@ -68,7 +67,7 @@ func (p *Project) Config() (*Config, error) {
 
 	for _, f := range []string{"actionlint.yaml", "actionlint.yml"} {
 		path := filepath.Join(p.root, ".github", f)
-		b, err := ioutil.ReadFile(path)
+		b, err := os.ReadFile(path)
 		if err != nil {
 			continue // file does not exist
 		}

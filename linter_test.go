@@ -3,7 +3,7 @@ package actionlint
 import (
 	"bufio"
 	"fmt"
-	"io/ioutil"
+	"io"
 	"os"
 	"path/filepath"
 	"regexp"
@@ -19,7 +19,7 @@ import (
 func TestLinterLintOK(t *testing.T) {
 	dir := filepath.Join("testdata", "ok")
 
-	es, err := ioutil.ReadDir(dir)
+	es, err := os.ReadDir(dir)
 	if err != nil {
 		panic(err)
 	}
@@ -53,7 +53,7 @@ func TestLinterLintOK(t *testing.T) {
 				Pyflakes:   pyflakes,
 			}
 
-			linter, err := NewLinter(ioutil.Discard, &opts)
+			linter, err := NewLinter(io.Discard, &opts)
 			if err != nil {
 				t.Fatal(err)
 			}
@@ -75,7 +75,7 @@ func TestLinterLintOK(t *testing.T) {
 func testFindAllWorkflowsInDir(subdir string) (string, []string, error) {
 	dir := filepath.Join("testdata", subdir)
 
-	entries, err := ioutil.ReadDir(dir)
+	entries, err := os.ReadDir(dir)
 	if err != nil {
 		return "", nil, err
 	}
@@ -108,7 +108,7 @@ func TestLinterLintError(t *testing.T) {
 			outfile := base + ".out"
 			testName := filepath.Base(base)
 			t.Run(subdir+"/"+testName, func(t *testing.T) {
-				b, err := ioutil.ReadFile(infile)
+				b, err := os.ReadFile(infile)
 				if err != nil {
 					panic(err)
 				}
@@ -131,7 +131,7 @@ func TestLinterLintError(t *testing.T) {
 					opts.Pyflakes = p
 				}
 
-				linter, err := NewLinter(ioutil.Discard, &opts)
+				linter, err := NewLinter(io.Discard, &opts)
 				if err != nil {
 					t.Fatal(err)
 				}
@@ -229,7 +229,7 @@ func TestLinterFormatErrorMessageOK(t *testing.T) {
 				t.Fatal("no error")
 			}
 
-			buf, err := ioutil.ReadFile(filepath.Join(dir, tc.file))
+			buf, err := os.ReadFile(filepath.Join(dir, tc.file))
 			if err != nil {
 				panic(err)
 			}
@@ -266,7 +266,7 @@ func BenchmarkLintWorkflowFiles(b *testing.B) {
 	ours := []string{}
 	{
 		d := filepath.Join(".github", "workflows")
-		es, err := ioutil.ReadDir(d)
+		es, err := os.ReadDir(d)
 		if err != nil {
 			panic(err)
 		}
@@ -369,7 +369,7 @@ func BenchmarkLintWorkflowFiles(b *testing.B) {
 					Format:     bm.format,
 				}
 
-				l, err := NewLinter(ioutil.Discard, &opts)
+				l, err := NewLinter(io.Discard, &opts)
 				if err != nil {
 					b.Fatal(err)
 				}
@@ -408,7 +408,7 @@ func BenchmarkLintWorkflowContent(b *testing.B) {
 		case "large":
 			f = filepath.Join(dir, "testdata", "bench", "many_scripts.yaml")
 		}
-		content, err := ioutil.ReadFile(f)
+		content, err := os.ReadFile(f)
 		if err != nil {
 			b.Fatal(err)
 		}
@@ -416,7 +416,7 @@ func BenchmarkLintWorkflowContent(b *testing.B) {
 		b.Run(name, func(b *testing.B) {
 			for i := 0; i < b.N; i++ {
 				opts := LinterOptions{}
-				l, err := NewLinter(ioutil.Discard, &opts)
+				l, err := NewLinter(io.Discard, &opts)
 				if err != nil {
 					b.Fatal(err)
 				}
@@ -455,7 +455,7 @@ func BenchmarkExamplesLintFiles(b *testing.B) {
 			Pyflakes:   pyflakes,
 		}
 
-		l, err := NewLinter(ioutil.Discard, &opts)
+		l, err := NewLinter(io.Discard, &opts)
 		if err != nil {
 			b.Fatal(err)
 		}
@@ -475,7 +475,7 @@ func BenchmarkExamplesLintFiles(b *testing.B) {
 func BenchmarkLintRepository(b *testing.B) {
 	for i := 0; i < b.N; i++ {
 		opts := LinterOptions{}
-		l, err := NewLinter(ioutil.Discard, &opts)
+		l, err := NewLinter(io.Discard, &opts)
 		if err != nil {
 			b.Fatal(err)
 		}

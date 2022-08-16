@@ -3,7 +3,7 @@ package main
 import (
 	"bytes"
 	"errors"
-	"io/ioutil"
+	"io"
 	"path/filepath"
 	"strings"
 	"testing"
@@ -18,7 +18,7 @@ jobs:
     steps:
       - run: echo hi`)
 	stdout := &bytes.Buffer{}
-	stderr := ioutil.Discard
+	stderr := io.Discard
 	s := run([]string{"actionlint-workflow-ast"}, stdin, stdout, stderr)
 	if s != 0 {
 		t.Fatal("exit status is non-zero:", s)
@@ -36,7 +36,7 @@ func TestViewASTOfFile(t *testing.T) {
 	file := filepath.Join("..", "..", "testdata", "bench", "minimal.yaml")
 	stdin := strings.NewReader("")
 	stdout := &bytes.Buffer{}
-	stderr := ioutil.Discard
+	stderr := io.Discard
 	s := run([]string{"actionlint-workflow-ast", file}, stdin, stdout, stderr)
 	if s != 0 {
 		t.Fatal("exit status is non-zero:", s)
@@ -53,7 +53,7 @@ func TestViewASTOfFile(t *testing.T) {
 func TestViewASTShowHelp(t *testing.T) {
 	stdin := strings.NewReader("")
 	stdout := &bytes.Buffer{}
-	stderr := ioutil.Discard
+	stderr := io.Discard
 	s := run([]string{"actionlint-workflow-ast", "-h"}, stdin, stdout, stderr)
 	if s != 0 {
 		t.Fatal("exit status is non-zero:", s)
@@ -66,7 +66,7 @@ func TestViewASTShowHelp(t *testing.T) {
 
 func TestViewASTErrorFileDoesNotExist(t *testing.T) {
 	stdin := strings.NewReader("")
-	stdout := ioutil.Discard
+	stdout := io.Discard
 	stderr := &bytes.Buffer{}
 	s := run([]string{"actionlint-workflow-ast", "this-file-does-not-exist.yaml"}, stdin, stdout, stderr)
 	if s == 0 {
@@ -84,7 +84,7 @@ func TestViewASTErrorParseFailed(t *testing.T) {
 jobs:
   test:
     steps:`)
-	stdout := ioutil.Discard
+	stdout := io.Discard
 	stderr := &bytes.Buffer{}
 	s := run([]string{"actionlint-workflow-ast"}, stdin, stdout, stderr)
 	if s == 0 {
@@ -110,7 +110,7 @@ func (r alwaysFail) Read(p []byte) (int, error) {
 
 func TestViewASTErrorFailToReadStdin(t *testing.T) {
 	stdin := alwaysFail{}
-	stdout := ioutil.Discard
+	stdout := io.Discard
 	stderr := &bytes.Buffer{}
 	s := run([]string{"actionlint-workflow-ast"}, stdin, stdout, stderr)
 	if s == 0 {

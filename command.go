@@ -4,7 +4,6 @@ import (
 	"flag"
 	"fmt"
 	"io"
-	"io/ioutil"
 	"runtime"
 	"runtime/debug"
 )
@@ -93,7 +92,7 @@ func (cmd *Command) runLinter(args []string, opts *LinterOptions, initConfig boo
 	}
 
 	if len(args) == 1 && args[0] == "-" {
-		b, err := ioutil.ReadAll(cmd.Stdin)
+		b, err := io.ReadAll(cmd.Stdin)
 		if err != nil {
 			return nil, fmt.Errorf("could not read stdin: %w", err)
 		}

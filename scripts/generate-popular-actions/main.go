@@ -8,7 +8,6 @@ import (
 	"fmt"
 	"go/format"
 	"io"
-	"io/ioutil"
 	"log"
 	"net/http"
 	"os"
@@ -545,7 +544,7 @@ func (a *app) fetchRemote() (map[string]*actionlint.ActionMetadata, error) {
 						ret <- &fetched{err: fmt.Errorf("request was not successful %s: %s", url, res.Status)}
 						break
 					}
-					body, err := ioutil.ReadAll(res.Body)
+					body, err := io.ReadAll(res.Body)
 					res.Body.Close()
 					if err != nil {
 						ret <- &fetched{err: fmt.Errorf("could not read body for %s: %w", url, err)}
@@ -837,7 +836,7 @@ Flags:`)
 	if quiet {
 		w := log.Writer()
 		defer func() { a.log.SetOutput(w) }()
-		a.log.SetOutput(ioutil.Discard)
+		a.log.SetOutput(io.Discard)
 	}
 
 	a.log.Println("Start generate-popular-actions script")
