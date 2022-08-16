@@ -53,6 +53,8 @@ type ActionMetadata struct {
 
 // LocalActionsCache is cache for local actions' metadata. It avoids repeating to find/read/parse
 // local action's metadata file (action.yml).
+// This cache is not available across multiple repositories. One LocalActionsCache instance needs
+// to be created per one repository.
 type LocalActionsCache struct {
 	mu    sync.RWMutex
 	proj  *Project // might be nil
@@ -60,7 +62,7 @@ type LocalActionsCache struct {
 	dbg   io.Writer
 }
 
-// NewLocalActionsCache creates new LocalActionsCache instance.
+// NewLocalActionsCache creates new LocalActionsCache instance for the given project.
 func NewLocalActionsCache(proj *Project, dbg io.Writer) *LocalActionsCache {
 	return &LocalActionsCache{
 		proj:  proj,
@@ -142,4 +144,30 @@ func readLocalActionMetadataFile(dir string) ([]byte, error) {
 		}
 	}
 	return nil, fmt.Errorf("neither action.yaml nor action.yml is found in directory \"%s\"", dir)
+}
+
+// LocalActionsCacheFactory is a factory to create LocalActionsCache instances. LocalActionsCache
+// should be created for each repositories. LocalActionsCacheFactory creates new LocalActionsCache
+// instance per repository (project).
+type LocalActionsCacheFactory struct {
+	caches map[string]*LocalActionsCache
+	dbg    io.Writer
+}
+
+// GetCache returns LocalActionsCache instance for the given project. One LocalActionsCache is
+// created per one repository. Created instances are cached and will be used when caches are
+// requested for the same projects. This method is not thread safe.
+func (f *LocalActionsCacheFactory) GetCache(p *Project) *LocalActionsCache {
+	r := p.RootDir()
+	if c, ok := f.caches[r]; ok {
+		return c
+	}
+	c := NewLocalActionsCache(p, f.dbg)
+	f.caches[r] = c
+	return c
+}
+
+// NewLocalActionsCacheFactory creates a new LocalActionsCacheFactory instance.
+func NewLocalActionsCacheFactory(dbg io.Writer) *LocalActionsCacheFactory {
+	return &LocalActionsCacheFactory{map[string]*LocalActionsCache{}, dbg}
 }

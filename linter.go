@@ -276,9 +276,9 @@ func (l *Linter) LintFiles(filepaths []string, project *Project) ([]*Error, erro
 	}
 
 	proc := newConcurrentProcess(runtime.NumCPU())
-	localActions := NewLocalActionsCache(project, l.debugWriter())
 	sema := semaphore.NewWeighted(int64(runtime.NumCPU()))
 	ctx := context.Background()
+	factory := NewLocalActionsCacheFactory(l.debugWriter())
 
 	type workspace struct {
 		path string
@@ -301,6 +301,7 @@ func (l *Linter) LintFiles(filepaths []string, project *Project) ([]*Error, erro
 			// Before entering goroutine, resolve project instance.
 			p = l.projects.At(w.path)
 		}
+		c := factory.GetCache(p) // #173
 
 		eg.Go(func() error {
 			// Bound concurrency on reading files to avoid "too many files to open" error (issue #3)
@@ -316,7 +317,7 @@ func (l *Linter) LintFiles(filepaths []string, project *Project) ([]*Error, erro
 					w.path = r // Use relative path if possible
 				}
 			}
-			errs, err := l.check(w.path, src, p, proc, localActions)
+			errs, err := l.check(w.path, src, p, proc, c)
 			if err != nil {
 				return fmt.Errorf("fatal error while checking %s: %w", w.path, err)
 			}

@@ -2,6 +2,7 @@ package actionlint
 
 import (
 	"bytes"
+	"io"
 	"path/filepath"
 	"strings"
 	"testing"
@@ -485,5 +486,20 @@ outputs: "foo"`,
 				t.Fatalf("%q is not contained in error message %q", tc.want, msg)
 			}
 		})
+	}
+}
+
+func TestLocalActionsCacheFactory(t *testing.T) {
+	f := NewLocalActionsCacheFactory(io.Discard)
+	p1 := &Project{"path/to/project1", nil}
+	c1 := f.GetCache(p1)
+	p2 := &Project{"path/to/project2", nil}
+	c2 := f.GetCache(p2)
+	if c1 == c2 {
+		t.Errorf("different cache was not created: %v", c1)
+	}
+	c3 := f.GetCache(p1)
+	if c1 != c3 {
+		t.Errorf("same cache is not returned for the same project: %v vs %v", c1, c3)
 	}
 }
