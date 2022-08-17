@@ -519,10 +519,6 @@ func (p *parser) parseWorkflowCallEvent(pos *Pos, n *yaml.Node) *WorkflowCallEve
 					}
 				}
 
-				if secret.Description == nil {
-					p.errorfAt(name.Pos, "\"description\" is missing at %q secret of workflow_call event", name.Value)
-				}
-
 				ret.Secrets[name] = secret
 			}
 		case "outputs":
