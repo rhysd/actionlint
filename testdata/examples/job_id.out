@@ -1,2 +1,0 @@
-test.yaml:4:3: invalid job ID "foo-v1.2.3". job ID must start with a letter or _ and contain only alphanumeric characters, -, or _ [job-needs]
-test.yaml:9:3: invalid job ID "-hello-world-". job ID must start with a letter or _ and contain only alphanumeric characters, -, or _ [job-needs]

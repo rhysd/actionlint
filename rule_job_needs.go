@@ -2,7 +2,6 @@ package actionlint
 
 import (
 	"fmt"
-	"regexp"
 	"strings"
 )
 
@@ -26,8 +25,6 @@ type edge struct {
 	from *jobNode
 	to   *jobNode
 }
-
-var jobIDPattern = regexp.MustCompile(`^[a-zA-Z0-9_][a-zA-Z0-9_-]*$`)
 
 // RuleJobNeeds is a rule to check 'needs' field in each job configuration. For more details, see
 // https://docs.github.com/en/actions/learn-github-actions/workflow-syntax-for-github-actions#jobsjob_idneeds
@@ -63,7 +60,6 @@ func (rule *RuleJobNeeds) VisitJobPre(n *Job) error {
 			continue
 		}
 		if id != "" {
-			rule.validateNaming(j)
 			// Job ID is key of mapping. Key mapping is stored in lowercase since it is case
 			// insensitive. So values in 'needs' array must be compared in lowercase.
 			needs = append(needs, id)
@@ -74,7 +70,6 @@ func (rule *RuleJobNeeds) VisitJobPre(n *Job) error {
 	if id == "" {
 		return nil
 	}
-	rule.validateNaming(n.ID)
 	if prev, ok := rule.nodes[id]; ok {
 		rule.errorf(n.Pos, "job ID %q duplicates. previously defined at %s. note that job ID is case insensitive", n.ID.Value, prev.pos.String())
 	}
@@ -127,13 +122,6 @@ func (rule *RuleJobNeeds) VisitWorkflowPost(n *Workflow) error {
 	}
 
 	return nil
-}
-
-func (rule *RuleJobNeeds) validateNaming(id *String) {
-	if jobIDPattern.MatchString(id.Value) {
-		return
-	}
-	rule.errorf(id.Pos, "invalid job ID %q. job ID must start with a letter or _ and contain only alphanumeric characters, -, or _", id.Value)
 }
 
 func collectCyclic(src *jobNode, edges map[string]string) bool {

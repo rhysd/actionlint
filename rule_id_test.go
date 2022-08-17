@@ -38,7 +38,7 @@ func TestCheckInvalidJobNames(t *testing.T) {
 
 		for _, tc := range tests {
 			t.Run(input+"/"+tc.where, func(t *testing.T) {
-				r := NewRuleJobNeeds()
+				r := NewRuleID()
 				r.VisitJobPre(tc.job)
 				errs := r.Errs()
 				if len(errs) != 1 {
@@ -66,7 +66,7 @@ func TestCheckValidJobNames(t *testing.T) {
 			job := &Job{
 				ID: &String{Value: input, Pos: &Pos{}},
 			}
-			r := NewRuleJobNeeds()
+			r := NewRuleID()
 			r.VisitJobPre(job)
 			errs := r.Errs()
 			if len(errs) > 0 {
