@@ -1,0 +1,7 @@
+test.yaml:3:3: invalid job ID "-foo". job ID must start with a letter or _ and contain only alphanumeric characters, -, or _ [id]
+test.yaml:7:13: invalid step ID "-foo". step ID must start with a letter or _ and contain only alphanumeric characters, -, or _ [id]
+test.yaml:8:3: invalid job ID "v1.2.3". job ID must start with a letter or _ and contain only alphanumeric characters, -, or _ [id]
+test.yaml:12:13: invalid step ID "v1.2.3". step ID must start with a letter or _ and contain only alphanumeric characters, -, or _ [id]
+test.yaml:13:3: invalid job ID "1-2-3". job ID must start with a letter or _ and contain only alphanumeric characters, -, or _ [id]
+test.yaml:17:13: invalid step ID "1-2-3". step ID must start with a letter or _ and contain only alphanumeric characters, -, or _ [id]
+test.yaml:22:13: string should not be empty [syntax-check]

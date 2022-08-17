@@ -17,14 +17,16 @@ func TestCheckInvalidJobNames(t *testing.T) {
 
 	for _, input := range inputs {
 		tests := []struct {
-			where string
-			job   *Job
+			where    string
+			job      *Job
+			expected string
 		}{
 			{
 				"jobs.<job_id>",
 				&Job{
 					ID: &String{Value: input, Pos: &Pos{}},
 				},
+				"invalid job ID",
 			},
 			{
 				"jobs.<job_id>.needs",
@@ -34,6 +36,16 @@ func TestCheckInvalidJobNames(t *testing.T) {
 						{Value: input, Pos: &Pos{}},
 					},
 				},
+				"invalid job ID",
+			},
+			{
+				"steps.*.id",
+				&Job{
+					Steps: []*Step{
+						{ID: &String{Value: input, Pos: &Pos{}}},
+					},
+				},
+				"invalid step ID",
 			},
 		}
 
@@ -41,13 +53,16 @@ func TestCheckInvalidJobNames(t *testing.T) {
 			t.Run(input+"/"+tc.where, func(t *testing.T) {
 				r := NewRuleID()
 				r.VisitJobPre(tc.job)
+				for _, s := range tc.job.Steps {
+					r.VisitStep(s)
+				}
 				errs := r.Errs()
 				if len(errs) != 1 {
 					t.Fatalf("Wanted exactly one error but got %d errors: %#v", len(errs), errs)
 				}
 				msg := errs[0].Error()
-				if !strings.Contains(msg, "invalid job ID") {
-					t.Errorf("Unexpected error message %q", msg)
+				if !strings.Contains(msg, tc.expected) {
+					t.Errorf("Error message %q should contain %q", msg, tc.expected)
 				}
 			})
 		}
@@ -70,9 +85,18 @@ func TestCheckValidJobNames(t *testing.T) {
 		t.Run(input, func(t *testing.T) {
 			job := &Job{
 				ID: &String{Value: input, Pos: &Pos{}},
+				Needs: []*String{
+					{Value: input, Pos: &Pos{}},
+				},
+				Steps: []*Step{
+					{ID: &String{Value: input, Pos: &Pos{}}},
+				},
 			}
 			r := NewRuleID()
 			r.VisitJobPre(job)
+			for _, s := range job.Steps {
+				r.VisitStep(s)
+			}
 			errs := r.Errs()
 			if len(errs) > 0 {
 				t.Fatalf("Unexpected error(s): %#v", errs)
