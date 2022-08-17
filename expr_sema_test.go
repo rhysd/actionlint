@@ -1153,6 +1153,13 @@ func TestExprSematincsCheckerUpdateDispatchInputsVarType(t *testing.T) {
 	if !o.IsStrict() {
 		t.Error("Local github.event.inputs is not strict")
 	}
+	for n, ty := range o.Props {
+		if _, ok := ty.(StringType); !ok {
+			t.Errorf("Type of %q input is not string: %s", n, ty)
+		}
+	}
+
+	// Check global value is not polluted
 	o = BuiltinGlobalVariableTypes["github"].(*ObjectType).Props["event"].(*ObjectType)
 	if _, ok := o.Props["inputs"]; ok {
 		t.Error("Global github.event.inputs exists", o)

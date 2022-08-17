@@ -393,11 +393,20 @@ func (sema *ExprSemanticsChecker) UpdateInputs(ty *ObjectType) {
 // UpdateDispatchInputs updates 'github.event.inputs' and 'inputs' objects to given object type.
 // https://docs.github.com/en/actions/using-workflows/events-that-trigger-workflows#workflow_dispatch
 func (sema *ExprSemanticsChecker) UpdateDispatchInputs(ty *ObjectType) {
-	sema.ensureGithubVarCopied()
-	// Update github.event.inputs with `ty`
-	sema.vars["github"].(*ObjectType).Props["event"].(*ObjectType).Props["inputs"] = ty
-	// Inputs value is set to both `github.event.inputs` and `inputs`.
 	sema.UpdateInputs(ty)
+
+	// Update `github.event.inputs`.
+	// Unlike `inputs.*`, type of `github.event.inputs.*` is always string unlike `inputs.*`. We need
+	// to create a new type from `ty` (e.g. {foo: boolean, bar: number} -> {foo: string, bar: string})
+
+	p := make(map[string]ExprType, len(ty.Props))
+	for n := range ty.Props {
+		p[n] = StringType{}
+	}
+	ty = NewStrictObjectType(p)
+
+	sema.ensureGithubVarCopied()
+	sema.vars["github"].(*ObjectType).Props["event"].(*ObjectType).Props["inputs"] = ty
 }
 
 // UpdateJobs updates 'jobs' context object to given object type.

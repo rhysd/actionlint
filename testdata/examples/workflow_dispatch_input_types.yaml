@@ -26,6 +26,8 @@ jobs:
     runs-on: ubuntu-latest
     steps:
       # ERROR: Undefined input
-      - run: echo "${{ github.event.inputs.massage }}"
+      - run: echo "${{ inputs.massage }}"
       # ERROR: Bool value is not available for object key
-      - run: echo "${{ env[github.event.inputs.verbose] }}"
+      - run: echo "${{ env[inputs.verbose] }}"
+      # ERROR: `github.event.inputs` is also defined
+      - run: echo "${{ github.event.inputs.massage }}"

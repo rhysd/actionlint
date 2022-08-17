@@ -1224,9 +1224,11 @@ jobs:
     runs-on: ubuntu-latest
     steps:
       # ERROR: Undefined input
-      - run: echo "${{ github.event.inputs.massage }}"
+      - run: echo "${{ inputs.massage }}"
       # ERROR: Bool value is not available for object key
-      - run: echo "${{ env[github.event.inputs.verbose] }}"
+      - run: echo "${{ env[inputs.verbose] }}"
+      # ERROR: `github.event.inputs` is also defined
+      - run: echo "${{ github.event.inputs.massage }}"
 ```
 
 Output:
@@ -1248,17 +1250,21 @@ test.yaml:22:18: type of "verbose" input is "boolean". its default value "yes" m
    |
 22 |         default: yes
    |                  ^~~
-test.yaml:29:24: property "massage" is not defined in object type {message: string; verbose: bool; id: any; kind: string; name: string} [expression]
+test.yaml:29:24: property "massage" is not defined in object type {id: any; kind: string; name: string; message: string; verbose: bool} [expression]
    |
-29 |       - run: echo "${{ github.event.inputs.massage }}"
-   |                        ^~~~~~~~~~~~~~~~~~~~~~~~~~~
+29 |       - run: echo "${{ inputs.massage }}"
+   |                        ^~~~~~~~~~~~~~
 test.yaml:31:28: property access of object must be type of string but got "bool" [expression]
    |
-31 |       - run: echo "${{ env[github.event.inputs.verbose] }}"
-   |                            ^~~~~~~~~~~~~~~~~~~~~~~~~~~~
+31 |       - run: echo "${{ env[inputs.verbose] }}"
+   |                            ^~~~~~~~~~~~~~~
+test.yaml:33:24: property "massage" is not defined in object type {id: string; kind: string; name: string; message: string; verbose: string} [expression]
+   |
+33 |       - run: echo "${{ github.event.inputs.massage }}"
+   |                        ^~~~~~~~~~~~~~~~~~~~~~~~~~~
 ```
 
-[Playground](https://rhysd.github.io/actionlint#eJx9kDFuwzAMRXefggi62gfQmrlbt6IoJJuxVVukIFIOgiB3b2yrDQq33cjH/yl+MZkK4MxpPE18fu+8RKvtsEAATzGrbPW9674qAL1ENEA5OEwFjp52gnZg32KBZAP+KwDgqJ5JHiqAGl5ssD/Asx8flg5PNk9q4Diw8wUHFLH97jXR5KkvcMbkWHYaxzyhpf3+C0pVfbBbr1MU3Zwpk9RMBrLLpLme7DJbR6IYv7PUi9IA3hPD4el6hd7rkF2DM5I22083wa53w+12+MuGNL/+Zi1x3hbvJ3Q1hA8=)
+[Playground](https://rhysd.github.io/actionlint#eJx9kDtuwzAMQHefggiy2gfwmrlbtqIoJJuxVVukIFIOgiB3b+yoDQqh2ajHR/HD1FYAZ47TaebzZ+8kGO3GFQI4CknlEd9f/U8EoJeALVDyFmOGk6NC6EZ2HWZIxuNLAYCDOiZ5WgA1HI03f8Cbm54lPZ5MmrWFw8jWZexRxAxFN9HoaMhwwWhZCscyz2io/P+CUlVfbLfpFEUflTGR1EwtJJtIUz2bNbelRDH87lKvZgt43xh2++s1H7fxZhsVbrfdfybS8p7tPPTHK31wOibb4IKkTdnlG041i90=)
 
 [`workflow_dispatch`][workflow-dispatch-event] is an event to trigger a workflow manually. The event can have parameters called
 'inputs'. Each input has its name, description, default value, and [input type][workflow-dispatch-input-type-announce].
@@ -1270,7 +1276,7 @@ actionlint checks several mistakes around `workflow_dispatch` configuration.
 - The default value of 'choice' input must be included in options
 - The default value of 'boolean' input must be `true` or `false`
 
-In addition, `github.event.inputs` and `inputs` objects are typed based on the input definitions. properties not defined in
+In addition, `github.event.inputs` and `inputs` objects are typed based on the input definitions. Properties not defined in
 `inputs:` will cause a type error thanks to a type checker.
 
 For example,
@@ -1289,7 +1295,7 @@ inputs:
   no_type_input:
 ```
 
-`github.event.inputs` and `inputs` are typed as follows from these definitions:
+`inputs` is typed as follows from these definitions:
 
 ```
 {
@@ -1298,6 +1304,18 @@ inputs:
   "bool_input": bool;
   "env_input": string;
   "no_type_input": any;
+}
+```
+
+`github.event.inputs` is typed as follows since all properties of it are strings unlike `inputs`:
+
+```
+{
+  "string_input": string;
+  "choice_input": string;
+  "bool_input": string;
+  "env_input": string;
+  "no_type_input": string;
 }
 ```
 
