@@ -473,7 +473,7 @@ func (l *Linter) check(path string, content []byte, project *Project, proc *conc
 			NewRuleJobNeeds(),
 			NewRuleAction(localActions),
 			NewRuleEnvVar(),
-			NewRuleStepID(),
+			NewRuleID(),
 			NewRuleGlob(),
 			NewRulePermissions(),
 			NewRuleWorkflowCall(),

@@ -34,7 +34,7 @@ List of checks:
 - [Environment variable names](#check-env-var-names)
 - [Permissions](#permissions)
 - [Reusable workflows](#check-reusable-workflows)
-- [Job ID naming convention](#job-id-naming-convention)
+- [ID naming convention](#id-naming-convention)
 
 Note that actionlint focuses on catching mistakes in workflow files. If you want some general code style checks, please consider
 using a general YAML checker like [yamllint][].
@@ -1773,7 +1773,7 @@ jobs:
 Output:
 
 ```
-test.yaml:10:13: step ID "STEP_ID" duplicates. previously defined at line:7,col:13. step ID must be unique within a job. note that step ID is case insensitive [step-id]
+test.yaml:10:13: step ID "STEP_ID" duplicates. previously defined at line:7,col:13. step ID must be unique within a job. note that step ID is case insensitive [id]
    |
 10 |         id: STEP_ID
    |             ^~~~~~~
@@ -2189,43 +2189,59 @@ Outputs of a reusable workflow can be defined at `on.workflow_call.outputs` as d
 The `jobs` context is available to define an output value to refer outputs of jobs in the workflow. actionlint checks
 the context is used correctly.
 
-<a name="job-id-naming-convention"></a>
-## Job ID naming convention
+<a name="id-naming-convention"></a>
+## ID naming convention
 
 Example input:
 
 ```yaml
 on: push
+
 jobs:
-  # ERROR: '.' cannot be contained in job ID
+  # ERROR: '.' cannot be contained in ID
   foo-v1.2.3:
     runs-on: ubuntu-latest
     steps:
-      - run: 'job ID with version'
-  # ERROR: Job ID cannot start with '-'
+      - run: echo 'job ID with version'
+        # ERROR: ID cannot contain spaces
+        id: echo for test
+  # ERROR: ID cannot start with '-'
   -hello-world-:
     runs-on: ubuntu-latest
     steps:
-      - run: 'hello'
+      - run: echo 'oops'
+  # ERROR: ID cannot start with numbers
+  2d-game:
+    runs-on: ubuntu-latest
+    steps:
+      - run: echo 'oops'
 ```
 
 Output:
 
 ```
-test.yaml:4:3: invalid job ID "foo-v1.2.3". job ID must start with a letter or _ and contain only alphanumeric characters, -, or _ [job-needs]
+test.yaml:5:3: invalid job ID "foo-v1.2.3". job ID must start with a letter or _ and contain only alphanumeric characters, -, or _ [id]
   |
-4 |   foo-v1.2.3:
+5 |   foo-v1.2.3:
   |   ^~~~~~~~~~~
-test.yaml:9:3: invalid job ID "-hello-world-". job ID must start with a letter or _ and contain only alphanumeric characters, -, or _ [job-needs]
-  |
-9 |   -hello-world-:
-  |   ^~~~~~~~~~~~~~
+test.yaml:10:13: invalid step ID "echo for test". step ID must start with a letter or _ and contain only alphanumeric characters, -, or _ [id]
+   |
+10 |         id: echo for test
+   |             ^~~~
+test.yaml:12:3: invalid job ID "-hello-world-". job ID must start with a letter or _ and contain only alphanumeric characters, -, or _ [id]
+   |
+12 |   -hello-world-:
+   |   ^~~~~~~~~~~~~~
+test.yaml:17:3: invalid job ID "2d-game". job ID must start with a letter or _ and contain only alphanumeric characters, -, or _ [id]
+   |
+17 |   2d-game:
+   |   ^~~~~~~~
 ```
 
-[Playground](https://rhysd.github.io/actionlint#eJydzDEOhDAMRNGeU0yXykhAl5qGY4DIKqAoRrEN1yfADbYczdPn7HGYxGbnRXwD/Jjp7Nq+HZ4FFMtCXJUtltUozRpE30s0HPIpgB7p4WoH04hr04gzFNk4u0oohpSYLi5ppf/Kb8HdY9w0wA==)
+[Playground](https://rhysd.github.io/actionlint#eJylzTEOwyAMheGdU7wtkyM13Zi79BhJIYWKYoQhuX5Cyw0yWv70P44aqYpT6sOLaAWszLTdxmm8twvINQrxyepSY6kU5mKl/F5SbJK/AqhJDftyjOGM4fnA7ovDZrN4jkN3gDedrZzRY+RsCEw752DowjBzkrY0GXrPX3u1dACDIlSH)
 
-Job ID must start with a letter or `_` and contain only alphanumeric characters, `-` or `_`. actionlint checks the naming
-convention and reports invalid IDs as error.
+IDs must start with a letter or `_` and contain only alphanumeric characters, `-` or `_`. actionlint checks the naming convention
+and reports invalid IDs as error.
 
 ---
 

@@ -28,7 +28,7 @@ func FuzzCheck(data []byte) int {
 		actionlint.NewRuleJobNeeds(),
 		actionlint.NewRuleAction(c),
 		actionlint.NewRuleEnvVar(),
-		actionlint.NewRuleStepID(),
+		actionlint.NewRuleID(),
 		actionlint.NewRuleExpression(c),
 	}
 
