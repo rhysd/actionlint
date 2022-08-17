@@ -12,6 +12,7 @@ func TestCheckInvalidJobNames(t *testing.T) {
 		"v1.2.3",
 		"hello!",
 		"じょぶ",
+		"12345",
 	}
 
 	for _, input := range inputs {
@@ -57,8 +58,12 @@ func TestCheckValidJobNames(t *testing.T) {
 	inputs := []string{
 		"foo-bar",
 		"foo_bar",
+		"foo--bar",
+		"foo__bar",
 		"_FOO123-",
-		"1_2_3-foo",
+		"abcdefhijklmnopqrstuvwxyzABCDEFHIJKLMNOPQRSTUVWXYZ",
+		"_____",
+		"_-_-_",
 	}
 
 	for _, input := range inputs {

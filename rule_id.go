@@ -5,7 +5,7 @@ import (
 	"strings"
 )
 
-var jobIDPattern = regexp.MustCompile(`^[a-zA-Z0-9_][a-zA-Z0-9_-]*$`)
+var jobIDPattern = regexp.MustCompile(`^[a-zA-Z_][a-zA-Z0-9_-]*$`)
 
 // RuleID is a rule to check step IDs in workflow.
 type RuleID struct {
@@ -56,7 +56,7 @@ func (rule *RuleID) VisitStep(n *Step) error {
 }
 
 func (rule *RuleID) validateConvention(id *String, what string) {
-	if id == nil || containsPlaceholder(id.Value) || jobIDPattern.MatchString(id.Value) {
+	if id == nil || id.Value == "" || containsPlaceholder(id.Value) || jobIDPattern.MatchString(id.Value) {
 		return
 	}
 	rule.errorf(id.Pos, "invalid %s ID %q. %s ID must start with a letter or _ and contain only alphanumeric characters, -, or _", what, id.Value, what)
