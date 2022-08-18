@@ -1,0 +1,2 @@
+test.yaml:8:28: one ${{ }} expression should be included in "bool value" value but got 0 expressions [expression]
+test.yaml:8:42: got unexpected character '"' while lexing expression, expecting 'a'..'z', 'A'..'Z', '_', '0'..'9', ''', '}', '(', ')', '[', ']', '.', '!', '<', '>', '=', '&', '|', '*', ',', ' '. do you mean string literals? only single quotes are available for string delimiter [expression]

@@ -600,7 +600,12 @@ func (rule *RuleExpression) checkBool(b *Bool) {
 	if b == nil || b.Expression == nil {
 		return
 	}
+
 	ty := rule.checkOneExpression(b.Expression, "bool value")
+	if ty == nil {
+		return
+	}
+
 	switch ty.(type) {
 	case BoolType, AnyType:
 		// ok
