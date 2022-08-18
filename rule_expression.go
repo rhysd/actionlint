@@ -164,12 +164,13 @@ func (rule *RuleExpression) VisitJobPre(n *Job) error {
 
 	if n.RunsOn != nil {
 		if n.RunsOn.Expression != nil {
-			ty := rule.checkOneExpression(n.RunsOn.Expression, "runner label at \"runs-on\" section")
-			switch ty.(type) {
-			case *ArrayType, StringType, AnyType:
-				// OK
-			default:
-				rule.errorf(n.RunsOn.Expression.Pos, "type of expression at \"runs-on\" must be string or array but found type %q", ty.String())
+			if ty := rule.checkOneExpression(n.RunsOn.Expression, "runner label at \"runs-on\" section"); ty != nil {
+				switch ty.(type) {
+				case *ArrayType, StringType, AnyType:
+					// OK
+				default:
+					rule.errorf(n.RunsOn.Expression.Pos, "type of expression at \"runs-on\" must be string or array but found type %q", ty.String())
+				}
 			}
 		} else {
 			for _, l := range n.RunsOn.Labels {
@@ -317,12 +318,18 @@ func (rule *RuleExpression) checkOneExpression(s *String, what string) ExprType 
 	if s == nil {
 		return nil
 	}
-	ts := rule.checkExprsIn(s.Value, s.Pos, s.Quoted, false, false)
+
+	ts, ok := rule.checkExprsIn(s.Value, s.Pos, s.Quoted, false, false)
+	if !ok {
+		return nil
+	}
+
 	if len(ts) != 1 {
 		// This case should be unreachable since only one ${{ }} is included is checked by parser
 		rule.errorf(s.Pos, "one ${{ }} expression should be included in %q value but got %d expressions", what, len(ts))
 		return nil
 	}
+
 	return ts[0].ty
 }
 
@@ -544,7 +551,9 @@ func (rule *RuleExpression) checkIfCondition(str *String, noEnv bool) {
 			return
 		}
 
-		condTy = rule.checkSemanticsOfExprNode(expr, line, col, false, noEnv)
+		if ty, ok := rule.checkSemanticsOfExprNode(expr, line, col, false, noEnv); ok {
+			condTy = ty
+		}
 	}
 
 	if condTy != nil && !(BoolType{}).Assignable(condTy) {
@@ -565,18 +574,27 @@ func (rule *RuleExpression) checkString(str *String) []typedExpr {
 	if str == nil {
 		return nil
 	}
-	ts := rule.checkExprsIn(str.Value, str.Pos, str.Quoted, false, false)
+
+	ts, ok := rule.checkExprsIn(str.Value, str.Pos, str.Quoted, false, false)
+	if !ok {
+		return nil
+	}
+
 	rule.checkTemplateEvaluatedType(ts)
 	return ts
 }
 
-func (rule *RuleExpression) checkScriptString(str *String) []typedExpr {
+func (rule *RuleExpression) checkScriptString(str *String) {
 	if str == nil {
-		return nil
+		return
 	}
-	ts := rule.checkExprsIn(str.Value, str.Pos, str.Quoted, true, false)
+
+	ts, ok := rule.checkExprsIn(str.Value, str.Pos, str.Quoted, true, false)
+	if !ok {
+		return
+	}
+
 	rule.checkTemplateEvaluatedType(ts)
-	return ts
 }
 
 // When checking 'id:' or 'uses:' or 'env:' at toplevel or 'env:' at job level, 'env' context cannot
@@ -591,7 +609,12 @@ func (rule *RuleExpression) checkStringNoEnv(str *String) []typedExpr {
 	if str == nil {
 		return nil
 	}
-	ts := rule.checkExprsIn(str.Value, str.Pos, str.Quoted, false, true)
+
+	ts, ok := rule.checkExprsIn(str.Value, str.Pos, str.Quoted, false, true)
+	if !ok {
+		return nil
+	}
+
 	rule.checkTemplateEvaluatedType(ts)
 	return ts
 }
@@ -628,7 +651,7 @@ func (rule *RuleExpression) checkFloat(f *Float) {
 	rule.checkNumberExpression(f.Expression, "float number value")
 }
 
-func (rule *RuleExpression) checkExprsIn(s string, pos *Pos, quoted bool, checkUntrusted, noEnv bool) []typedExpr {
+func (rule *RuleExpression) checkExprsIn(s string, pos *Pos, quoted bool, checkUntrusted, noEnv bool) ([]typedExpr, bool) {
 	// TODO: Line number is not correct when the string contains newlines.
 
 	line, col := pos.Line, pos.Col
@@ -648,9 +671,12 @@ func (rule *RuleExpression) checkExprsIn(s string, pos *Pos, quoted bool, checkU
 		offset += start
 		col := col + offset
 
-		ty, offsetAfter := rule.checkSemantics(s, line, col, checkUntrusted, noEnv)
+		ty, offsetAfter, ok := rule.checkSemantics(s, line, col, checkUntrusted, noEnv)
+		if !ok {
+			return nil, false
+		}
 		if ty == nil || offsetAfter == 0 {
-			return nil
+			return nil, true
 		}
 		ts = append(ts, typedExpr{ty, Pos{line, col - 3}})
 
@@ -658,7 +684,7 @@ func (rule *RuleExpression) checkExprsIn(s string, pos *Pos, quoted bool, checkU
 		offset += offsetAfter
 	}
 
-	return ts
+	return ts, true
 }
 
 func (rule *RuleExpression) checkRawYAMLValue(v RawYAMLValue) {
@@ -683,7 +709,7 @@ func (rule *RuleExpression) exprError(err *ExprError, lineBase, colBase int) {
 	rule.error(pos, err.Message)
 }
 
-func (rule *RuleExpression) checkSemanticsOfExprNode(expr ExprNode, line, col int, checkUntrusted, noEnv bool) ExprType {
+func (rule *RuleExpression) checkSemanticsOfExprNode(expr ExprNode, line, col int, checkUntrusted, noEnv bool) (ExprType, bool) {
 	c := NewExprSemanticsChecker(checkUntrusted)
 	if rule.matrixTy != nil {
 		c.UpdateMatrix(rule.matrixTy)
@@ -715,18 +741,19 @@ func (rule *RuleExpression) checkSemanticsOfExprNode(expr ExprNode, line, col in
 		rule.exprError(err, line, col)
 	}
 
-	return ty
+	return ty, len(errs) == 0
 }
 
-func (rule *RuleExpression) checkSemantics(src string, line, col int, checkUntrusted, noEnv bool) (ExprType, int) {
+func (rule *RuleExpression) checkSemantics(src string, line, col int, checkUntrusted, noEnv bool) (ExprType, int, bool) {
 	l := NewExprLexer(src)
 	p := NewExprParser()
 	expr, err := p.Parse(l)
 	if err != nil {
 		rule.exprError(err, line, col)
-		return nil, l.Offset()
+		return nil, l.Offset(), false
 	}
-	return rule.checkSemanticsOfExprNode(expr, line, col, checkUntrusted, noEnv), l.Offset()
+	t, ok := rule.checkSemanticsOfExprNode(expr, line, col, checkUntrusted, noEnv)
+	return t, l.Offset(), ok
 }
 
 func (rule *RuleExpression) calcNeedsType(job *Job) *ObjectType {
@@ -823,8 +850,8 @@ func (rule *RuleExpression) guessTypeOfMatrix(m *Matrix) *ObjectType {
 	}
 
 	if m.Include.Expression != nil {
-		if ty, ok := rule.checkOneExpression(m.Include.Expression, "include").(*ArrayType); ok {
-			if ret, ok := o.Merge(ty.Elem).(*ObjectType); ok {
+		if a, ok := rule.checkOneExpression(m.Include.Expression, "include").(*ArrayType); ok {
+			if ret, ok := o.Merge(a.Elem).(*ObjectType); ok {
 				return ret
 			}
 		}
