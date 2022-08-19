@@ -1227,7 +1227,7 @@ jobs:
       - run: echo "${{ inputs.massage }}"
       # ERROR: Bool value is not available for object key
       - run: echo "${{ env[inputs.verbose] }}"
-      # ERROR: `github.event.inputs` is also defined
+      # ERROR: `github.event.inputs` is also not defined
       - run: echo "${{ github.event.inputs.massage }}"
 ```
 
