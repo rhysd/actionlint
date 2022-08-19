@@ -524,9 +524,10 @@ var PopularActions = map[string]*ActionMetadata{
 		},
 	},
 	"actions/configure-pages@v1": {
-		Name: "Configure Pages",
+		Name: "Configure GitHub Pages",
 		Inputs: map[string]ActionMetadataInputRequired{
 			"enablement":            false,
+			"generator_config_file": false,
 			"static_site_generator": false,
 			"token":                 false,
 		},
@@ -1922,6 +1923,7 @@ var PopularActions = map[string]*ActionMetadata{
 			"check_name":          false,
 			"checkout_path":       false,
 			"cleanup-level":       false,
+			"expect-error":        false,
 			"matrix":              false,
 			"output":              false,
 			"ram":                 false,
@@ -1998,6 +2000,7 @@ var PopularActions = map[string]*ActionMetadata{
 			"threads":                   false,
 			"token":                     false,
 			"tools":                     false,
+			"trap-caching":              false,
 		},
 		Outputs: map[string]struct{}{
 			"codeql-path": {},
