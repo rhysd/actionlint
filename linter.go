@@ -363,7 +363,7 @@ func (l *Linter) LintFiles(filepaths []string, project *Project) ([]*Error, erro
 }
 
 // LintFile lints one YAML workflow file and outputs the errors to given writer. The project
-//parameter can be nil. In the case, the project is detected from the given path.
+// parameter can be nil. In the case, the project is detected from the given path.
 func (l *Linter) LintFile(path string, project *Project) ([]*Error, error) {
 	if project == nil {
 		project = l.projects.At(path)

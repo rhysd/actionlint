@@ -507,7 +507,7 @@ func TestLexExpression(t *testing.T) {
 			},
 		},
 		{
-			what: "skip white spaces",
+			what:  "skip white spaces",
 			input: " 	a .b .c	x ( 'foo bar' ,	42	) [ true ]	",
 			tokens: []TokenKind{
 				TokenKindIdent,

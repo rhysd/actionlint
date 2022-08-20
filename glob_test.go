@@ -298,7 +298,7 @@ func TestValidateGlobGitRefNameInvalidCharacter(t *testing.T) {
 			expected: "only special characters [, ?, +, *, \\ ! can be escaped with \\",
 		},
 		{
-			what: "prohibited characters for ref names",
+			what:  "prohibited characters for ref names",
 			input: " 	~^:",
 			expectedAll: []string{
 				"ref name cannot contain spaces, ~, ^, :, [, ?, *",

@@ -116,9 +116,10 @@ func (rule *RuleShellcheck) getShellName(exec *ExecRun) string {
 
 // Replace ${{ ... }} with underscores like __________
 // Note: replacing with spaces sometimes causes syntax error. For example,
-//   if ${{ contains(xs, s) }}; then
-//     echo 'hello'
-//   fi
+//
+//	if ${{ contains(xs, s) }}; then
+//	  echo 'hello'
+//	fi
 func sanitizeExpressionsInScript(src string) string {
 	b := strings.Builder{}
 	for {
