@@ -136,8 +136,8 @@ var popularActions = []*action{
 	},
 	{
 		slug: "actions/configure-pages",
-		tags: []string{"v1"},
-		next: "v2",
+		tags: []string{"v1", "v2"},
+		next: "v3",
 	},
 	{
 		slug: "actions/deploy-pages",

@@ -538,6 +538,21 @@ var PopularActions = map[string]*ActionMetadata{
 			"origin":    {},
 		},
 	},
+	"actions/configure-pages@v2": {
+		Name: "Configure GitHub Pages",
+		Inputs: map[string]ActionMetadataInputRequired{
+			"enablement":            false,
+			"generator_config_file": false,
+			"static_site_generator": false,
+			"token":                 false,
+		},
+		Outputs: map[string]struct{}{
+			"base_path": {},
+			"base_url":  {},
+			"host":      {},
+			"origin":    {},
+		},
+	},
 	"actions/delete-package-versions@v1": {
 		Name: "Delete Package Versions",
 		Inputs: map[string]ActionMetadataInputRequired{
