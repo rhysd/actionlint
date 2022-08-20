@@ -1,0 +1,10 @@
+on: push
+
+jobs:
+  build:
+    strategy:
+      matrix:
+        host: ["macOS", "linux"]
+    runs-on: ["self-hosted", "${{ matrix.host }}"]
+    steps:
+      - run: echo "hello, ${{ matrix.host }}"
