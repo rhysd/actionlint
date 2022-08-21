@@ -81,6 +81,9 @@ type LinterOptions struct {
 	// StdinFileName is a file name when reading input from stdin. When this value is empty, "<stdin>"
 	// is used as the default value.
 	StdinFileName string
+	// WorkingDir is a file path to the current working directory. When this value is empty, os.Getwd
+	// will be used to get a working directory.
+	WorkingDir string
 	// More options will come here
 }
 
@@ -96,6 +99,7 @@ type Linter struct {
 	ignorePats    []*regexp.Regexp
 	defaultConfig *Config
 	errFmt        *ErrorFormatter
+	cwd           string
 }
 
 // NewLinter creates a new Linter instance.
@@ -154,6 +158,13 @@ func NewLinter(out io.Writer, opts *LinterOptions) (*Linter, error) {
 		formatter = f
 	}
 
+	cwd := opts.WorkingDir
+	if cwd == "" {
+		if d, err := os.Getwd(); err == nil {
+			cwd = d
+		}
+	}
+
 	return &Linter{
 		NewProjects(),
 		out,
@@ -165,6 +176,7 @@ func NewLinter(out io.Writer, opts *LinterOptions) (*Linter, error) {
 		ignore,
 		cfg,
 		formatter,
+		cwd,
 	}, nil
 }
 
@@ -227,9 +239,13 @@ func (l *Linter) LintRepository(dir string) ([]*Error, error) {
 
 	l.log("Detected project:", proj.RootDir())
 	wd := proj.WorkflowsDir()
+	return l.LintDir(wd, proj)
+}
 
+// LintDir lints all YAML workflow files in the given directory recursively.
+func (l *Linter) LintDir(dir string, project *Project) ([]*Error, error) {
 	files := []string{}
-	if err := filepath.Walk(wd, func(path string, info os.FileInfo, err error) error {
+	if err := filepath.Walk(dir, func(path string, info os.FileInfo, err error) error {
 		if err != nil {
 			return err
 		}
@@ -241,18 +257,18 @@ func (l *Linter) LintRepository(dir string) ([]*Error, error) {
 		}
 		return nil
 	}); err != nil {
-		return nil, fmt.Errorf("could not read files in %q: %w", wd, err)
+		return nil, fmt.Errorf("could not read files in %q: %w", dir, err)
 	}
 
 	if len(files) == 0 {
-		return nil, fmt.Errorf("no YAML file was found in %q", wd)
+		return nil, fmt.Errorf("no YAML file was found in %q", dir)
 	}
 	l.log("Collected", len(files), "YAML files")
 
 	// To make output deterministic, sort order of file paths
 	sort.Strings(files)
 
-	return l.LintFiles(files, proj)
+	return l.LintFiles(files, project)
 }
 
 // LintFiles lints YAML workflow files and outputs the errors to given writer. It applies lint
@@ -269,15 +285,11 @@ func (l *Linter) LintFiles(filepaths []string, project *Project) ([]*Error, erro
 
 	l.log("Linting", n, "files")
 
-	cwd := ""
-	if wd, err := os.Getwd(); err == nil {
-		cwd = wd
-	}
-
+	cwd := l.cwd
 	proc := newConcurrentProcess(runtime.NumCPU())
 	sema := semaphore.NewWeighted(int64(runtime.NumCPU()))
 	ctx := context.Background()
-	factory := NewLocalActionsCacheFactory(l.debugWriter())
+	factory := NewLocalActionsCacheFactory(l.cwd, l.debugWriter())
 
 	type workspace struct {
 		path string
@@ -374,16 +386,14 @@ func (l *Linter) LintFile(path string, project *Project) ([]*Error, error) {
 		return nil, fmt.Errorf("could not read %q: %w", path, err)
 	}
 
-	cwd := ""
-	if wd, err := os.Getwd(); err == nil {
-		cwd = wd
-		if r, err := filepath.Rel(cwd, path); err == nil {
+	if l.cwd != "" {
+		if r, err := filepath.Rel(l.cwd, path); err == nil {
 			path = r
 		}
 	}
 
 	proc := newConcurrentProcess(runtime.NumCPU())
-	localActions := NewLocalActionsCache(project, l.debugWriter())
+	localActions := NewLocalActionsCache(project, l.cwd, l.debugWriter())
 	errs, err := l.check(path, src, project, proc, localActions)
 	proc.wait()
 	if err != nil {
@@ -405,7 +415,7 @@ func (l *Linter) LintFile(path string, project *Project) ([]*Error, error) {
 // based on path parameter.
 func (l *Linter) Lint(path string, content []byte, project *Project) ([]*Error, error) {
 	proc := newConcurrentProcess(runtime.NumCPU())
-	localActions := NewLocalActionsCache(project, l.debugWriter())
+	localActions := NewLocalActionsCache(project, l.cwd, l.debugWriter())
 	errs, err := l.check(path, content, project, proc, localActions)
 	proc.wait()
 	if err != nil {
