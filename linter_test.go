@@ -117,6 +117,7 @@ func checkErrors(t *testing.T, outfile string, errs []*Error) {
 	sort.Sort(ByErrorPosition(errs))
 
 	for i := 0; i < len(errs); i++ {
+		errs[i].Filepath = filepath.ToSlash(errs[i].Filepath) // For Windows
 		want, have := expected[i], errs[i].Error()
 		if strings.HasPrefix(want, "/") && strings.HasSuffix(want, "/") {
 			want := regexp.MustCompile(want[1 : len(want)-1])
