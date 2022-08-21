@@ -149,7 +149,8 @@ func (e *Error) getIndicator(line string) string {
 	return fmt.Sprintf("%s^%s", strings.Repeat(" ", sw), strings.Repeat("~", uw))
 }
 
-// ByErrorPosition is type for sort.Interface. It sorts errors slice in line and column order.
+// ByErrorPosition is predicate for sort.Interface. It sorts errors slice by file path, line, and
+// column.
 type ByErrorPosition []*Error
 
 func (by ByErrorPosition) Len() int {
@@ -157,6 +158,9 @@ func (by ByErrorPosition) Len() int {
 }
 
 func (by ByErrorPosition) Less(i, j int) bool {
+	if c := strings.Compare(by[i].Filepath, by[j].Filepath); c != 0 {
+		return c < 0
+	}
 	if by[i].Line == by[j].Line {
 		return by[i].Column < by[j].Column
 	}
