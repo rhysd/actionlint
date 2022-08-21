@@ -227,9 +227,13 @@ func (l *Linter) LintRepository(dir string) ([]*Error, error) {
 
 	l.log("Detected project:", proj.RootDir())
 	wd := proj.WorkflowsDir()
+	return l.LintDir(wd, proj)
+}
 
+// LintDir lints all YAML workflow files in the given directory recursively.
+func (l *Linter) LintDir(dir string, project *Project) ([]*Error, error) {
 	files := []string{}
-	if err := filepath.Walk(wd, func(path string, info os.FileInfo, err error) error {
+	if err := filepath.Walk(dir, func(path string, info os.FileInfo, err error) error {
 		if err != nil {
 			return err
 		}
@@ -241,18 +245,18 @@ func (l *Linter) LintRepository(dir string) ([]*Error, error) {
 		}
 		return nil
 	}); err != nil {
-		return nil, fmt.Errorf("could not read files in %q: %w", wd, err)
+		return nil, fmt.Errorf("could not read files in %q: %w", dir, err)
 	}
 
 	if len(files) == 0 {
-		return nil, fmt.Errorf("no YAML file was found in %q", wd)
+		return nil, fmt.Errorf("no YAML file was found in %q", dir)
 	}
 	l.log("Collected", len(files), "YAML files")
 
 	// To make output deterministic, sort order of file paths
 	sort.Strings(files)
 
-	return l.LintFiles(files, proj)
+	return l.LintFiles(files, project)
 }
 
 // LintFiles lints YAML workflow files and outputs the errors to given writer. It applies lint

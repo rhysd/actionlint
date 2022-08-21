@@ -94,6 +94,43 @@ func testFindAllWorkflowsInDir(subdir string) (string, []string, error) {
 	return dir, fs, nil
 }
 
+func checkErrors(t *testing.T, outfile string, errs []*Error) {
+	expected := []string{}
+	{
+		f, err := os.Open(outfile)
+		if err != nil {
+			panic(err)
+		}
+		s := bufio.NewScanner(f)
+		for s.Scan() {
+			expected = append(expected, s.Text())
+		}
+		if err := s.Err(); err != nil {
+			panic(err)
+		}
+	}
+
+	if len(errs) != len(expected) {
+		t.Fatalf("%d errors are expected but actually got %d errors: %# v", len(expected), len(errs), errs)
+	}
+
+	sort.Sort(ByErrorPosition(errs))
+
+	for i := 0; i < len(errs); i++ {
+		want, have := expected[i], errs[i].Error()
+		if strings.HasPrefix(want, "/") && strings.HasSuffix(want, "/") {
+			want := regexp.MustCompile(want[1 : len(want)-1])
+			if !want.MatchString(have) {
+				t.Errorf("error message mismatch at %dth error does not match to regular expression\n  want: /%s/\n  have: %q", i+1, want, have)
+			}
+		} else {
+			if want != have {
+				t.Errorf("error message mismatch at %dth error does not match exactly\n  want: %q\n  have: %q", i+1, want, have)
+			}
+		}
+	}
+}
+
 func TestLinterLintError(t *testing.T) {
 	for _, subdir := range []string{"examples", "err"} {
 		dir, infiles, err := testFindAllWorkflowsInDir(subdir)
@@ -105,7 +142,6 @@ func TestLinterLintError(t *testing.T) {
 
 		for _, infile := range infiles {
 			base := strings.TrimSuffix(infile, filepath.Ext(infile))
-			outfile := base + ".out"
 			testName := filepath.Base(base)
 			t.Run(subdir+"/"+testName, func(t *testing.T) {
 				b, err := os.ReadFile(infile)
@@ -139,47 +175,49 @@ func TestLinterLintError(t *testing.T) {
 				config := Config{}
 				linter.defaultConfig = &config
 
-				expected := []string{}
-				{
-					f, err := os.Open(outfile)
-					if err != nil {
-						panic(err)
-					}
-					s := bufio.NewScanner(f)
-					for s.Scan() {
-						expected = append(expected, s.Text())
-					}
-					if err := s.Err(); err != nil {
-						panic(err)
-					}
-				}
-
 				errs, err := linter.Lint("test.yaml", b, proj)
 				if err != nil {
 					t.Fatal(err)
 				}
 
-				if len(errs) != len(expected) {
-					t.Fatalf("%d errors are expected but actually got %d errors: %# v", len(expected), len(errs), errs)
-				}
-
-				sort.Sort(ByErrorPosition(errs))
-
-				for i := 0; i < len(errs); i++ {
-					want, have := expected[i], errs[i].Error()
-					if strings.HasPrefix(want, "/") && strings.HasSuffix(want, "/") {
-						want := regexp.MustCompile(want[1 : len(want)-1])
-						if !want.MatchString(have) {
-							t.Errorf("error message mismatch at %dth error does not match to regular expression\n  want: /%s/\n  have: %q", i+1, want, have)
-						}
-					} else {
-						if want != have {
-							t.Errorf("error message mismatch at %dth error does not match exactly\n  want: %q\n  have: %q", i+1, want, have)
-						}
-					}
-				}
+				checkErrors(t, base+".out", errs)
 			})
 		}
+	}
+}
+
+func TestLinterLintProjectError(t *testing.T) {
+	root := filepath.Join("testdata", "err", "projects")
+	entries, err := os.ReadDir(root)
+	if err != nil {
+		panic(err)
+	}
+
+	for _, info := range entries {
+		if !info.IsDir() {
+			continue
+		}
+
+		name := info.Name()
+		t.Run("err/"+name, func(t *testing.T) {
+			opts := LinterOptions{}
+			linter, err := NewLinter(io.Discard, &opts)
+			if err != nil {
+				t.Fatal(err)
+			}
+
+			config := Config{}
+			linter.defaultConfig = &config
+
+			repo := filepath.Join(root, name)
+			proj := &Project{root: repo}
+			errs, err := linter.LintDir(filepath.Join(repo, "workflows"), proj)
+			if err != nil {
+				t.Fatal(err)
+			}
+
+			checkErrors(t, repo+".out", errs)
+		})
 	}
 }
 
