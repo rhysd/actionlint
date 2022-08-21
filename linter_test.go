@@ -141,6 +141,16 @@ func TestLinterLintError(t *testing.T) {
 
 		proj := &Project{root: dir}
 
+		shellcheck := ""
+		if p, err := execabs.LookPath("shellcheck"); err == nil {
+			shellcheck = p
+		}
+
+		pyflakes := ""
+		if p, err := execabs.LookPath("pyflakes"); err == nil {
+			pyflakes = p
+		}
+
 		for _, infile := range infiles {
 			base := strings.TrimSuffix(infile, filepath.Ext(infile))
 			testName := filepath.Base(base)
@@ -153,19 +163,17 @@ func TestLinterLintError(t *testing.T) {
 				opts := LinterOptions{}
 
 				if strings.Contains(testName, "shellcheck") {
-					p, err := execabs.LookPath("shellcheck")
-					if err != nil {
+					if shellcheck == "" {
 						t.Skip("skipped because \"shellcheck\" command does not exist in system")
 					}
-					opts.Shellcheck = p
+					opts.Shellcheck = shellcheck
 				}
 
 				if strings.Contains(testName, "pyflakes") {
-					p, err := execabs.LookPath("pyflakes")
-					if err != nil {
+					if pyflakes == "" {
 						t.Skip("skipped because \"pyflakes\" command does not exist in system")
 					}
-					opts.Pyflakes = p
+					opts.Pyflakes = pyflakes
 				}
 
 				linter, err := NewLinter(io.Discard, &opts)
@@ -201,7 +209,10 @@ func TestLinterLintProjectError(t *testing.T) {
 
 		name := info.Name()
 		t.Run("err/"+name, func(t *testing.T) {
-			opts := LinterOptions{}
+			repo := filepath.Join(root, name)
+			opts := LinterOptions{
+				WorkingDir: repo,
+			}
 			linter, err := NewLinter(io.Discard, &opts)
 			if err != nil {
 				t.Fatal(err)
@@ -210,7 +221,6 @@ func TestLinterLintProjectError(t *testing.T) {
 			config := Config{}
 			linter.defaultConfig = &config
 
-			repo := filepath.Join(root, name)
 			proj := &Project{root: repo}
 			errs, err := linter.LintDir(filepath.Join(repo, "workflows"), proj)
 			if err != nil {

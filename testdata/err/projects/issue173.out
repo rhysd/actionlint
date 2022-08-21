@@ -1,4 +1,4 @@
-testdata/err/projects/issue173/workflows/workflow1.yaml:9:15: missing input "hello" which is required by action "My action" defined at "./action". all required inputs are "hello" [action]
-testdata/err/projects/issue173/workflows/workflow1.yaml:11:11: input "goodbye" is not defined in action "My action" defined at "./action". available inputs are "hello" [action]
-testdata/err/projects/issue173/workflows/workflow2.yaml:9:15: missing input "hello" which is required by action "My action" defined at "./action". all required inputs are "hello" [action]
-testdata/err/projects/issue173/workflows/workflow2.yaml:11:11: input "goodbye" is not defined in action "My action" defined at "./action". available inputs are "hello" [action]
+workflows/workflow1.yaml:9:15: missing input "hello" which is required by action "My action" defined at "./action". all required inputs are "hello" [action]
+workflows/workflow1.yaml:11:11: input "goodbye" is not defined in action "My action" defined at "./action". available inputs are "hello" [action]
+workflows/workflow2.yaml:9:15: missing input "hello" which is required by action "My action" defined at "./action". all required inputs are "hello" [action]
+workflows/workflow2.yaml:11:11: input "goodbye" is not defined in action "My action" defined at "./action". available inputs are "hello" [action]

@@ -58,14 +58,16 @@ type LocalActionsCache struct {
 	mu    sync.RWMutex
 	proj  *Project // might be nil
 	cache map[string]*ActionMetadata
+	cwd   string
 	dbg   io.Writer
 }
 
 // NewLocalActionsCache creates new LocalActionsCache instance for the given project.
-func NewLocalActionsCache(proj *Project, dbg io.Writer) *LocalActionsCache {
+func NewLocalActionsCache(proj *Project, cwd string, dbg io.Writer) *LocalActionsCache {
 	return &LocalActionsCache{
 		proj:  proj,
 		cache: map[string]*ActionMetadata{},
+		cwd:   cwd,
 		dbg:   dbg,
 	}
 }
@@ -108,7 +110,7 @@ func (c *LocalActionsCache) FindMetadata(spec string) (*ActionMetadata, error) {
 	}
 
 	dir := filepath.Join(c.proj.RootDir(), filepath.FromSlash(spec))
-	b, err := readLocalActionMetadataFile(dir)
+	b, err := c.readLocalActionMetadataFile(dir)
 	if err != nil {
 		c.writeCache(spec, nil) // Remember action was not found
 		return nil, err
@@ -127,7 +129,7 @@ func (c *LocalActionsCache) FindMetadata(spec string) (*ActionMetadata, error) {
 	return &meta, nil
 }
 
-func readLocalActionMetadataFile(dir string) ([]byte, error) {
+func (c *LocalActionsCache) readLocalActionMetadataFile(dir string) ([]byte, error) {
 	for _, p := range []string{
 		filepath.Join(dir, "action.yaml"),
 		filepath.Join(dir, "action.yml"),
@@ -137,8 +139,8 @@ func readLocalActionMetadataFile(dir string) ([]byte, error) {
 		}
 	}
 
-	if wd, err := os.Getwd(); err == nil {
-		if p, err := filepath.Rel(wd, dir); err == nil {
+	if c.cwd != "" {
+		if p, err := filepath.Rel(c.cwd, dir); err == nil {
 			dir = p
 		}
 	}
@@ -150,6 +152,7 @@ func readLocalActionMetadataFile(dir string) ([]byte, error) {
 // instance per repository (project).
 type LocalActionsCacheFactory struct {
 	caches map[string]*LocalActionsCache
+	cwd    string
 	dbg    io.Writer
 }
 
@@ -161,12 +164,12 @@ func (f *LocalActionsCacheFactory) GetCache(p *Project) *LocalActionsCache {
 	if c, ok := f.caches[r]; ok {
 		return c
 	}
-	c := NewLocalActionsCache(p, f.dbg)
+	c := NewLocalActionsCache(p, f.cwd, f.dbg)
 	f.caches[r] = c
 	return c
 }
 
 // NewLocalActionsCacheFactory creates a new LocalActionsCacheFactory instance.
-func NewLocalActionsCacheFactory(dbg io.Writer) *LocalActionsCacheFactory {
-	return &LocalActionsCacheFactory{map[string]*LocalActionsCache{}, dbg}
+func NewLocalActionsCacheFactory(cwd string, dbg io.Writer) *LocalActionsCacheFactory {
+	return &LocalActionsCacheFactory{map[string]*LocalActionsCache{}, cwd, dbg}
 }
