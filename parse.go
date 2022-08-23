@@ -1204,7 +1204,6 @@ func (p *parser) parseJob(id *String, n *yaml.Node) *Job {
 				"if",
 				"steps",
 				"timeout-minutes",
-				"strategy",
 				"continue-on-error",
 				"container",
 				"services",
