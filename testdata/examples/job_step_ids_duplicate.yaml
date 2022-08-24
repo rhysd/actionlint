@@ -6,9 +6,9 @@ jobs:
       - run: echo 'hello'
         id: step_id
       - run: echo 'bye'
-        # ERROR: Duplicate of step ID
+        # ERROR: Duplicate step ID
         id: STEP_ID
-  # ERROR: Duplicate of job ID
+  # ERROR: Duplicate job ID
   TEST:
     runs-on: ubuntu-latest
     steps:

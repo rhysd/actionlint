@@ -229,7 +229,7 @@ func (rule *RuleEvents) checkWorkflowDispatchEvent(event *WorkflowDispatchEvent)
 			seen := make(map[string]struct{}, len(i.Options))
 			for _, o := range i.Options {
 				if _, ok := seen[o.Value]; ok {
-					rule.errorf(o.Pos, "option %q is duplicate in options of %q input", o.Value, n)
+					rule.errorf(o.Pos, "option %q is duplicated in options of %q input", o.Value, n)
 					continue
 				}
 				seen[o.Value] = struct{}{}

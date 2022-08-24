@@ -15,7 +15,7 @@ jobs:
             npm: 7.5.4
     runs-on: ${{ matrix.os }}
     steps:
-      # Access to undefined matrix value
+      # Access undefined matrix value
       - run: echo '${{ matrix.platform }}'
       # Matrix value is strongly typed. Below line causes an error since matrix.package is {name: string, optional: bool}
       - run: echo '${{ matrix.package.dev }}'

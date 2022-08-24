@@ -66,7 +66,7 @@ test.yaml:5:5: unexpected key "step" for "job" section. expected one of "concurr
 [Workflow syntax][syntax-doc] defines what keys can be defined in which mapping object. When other keys are defined, they
 are simply ignored and don't affect workflow behavior. It means typo in keys is not detected by GitHub.
 
-actionlint can detect unexpected keys while parsing workflow syntax and report them as error.
+actionlint can detect unexpected keys while parsing workflow syntax and report them as an error.
 
 <a name="check-missing-required-duplicate-keys"></a>
 ## Missing required keys or key duplicates
@@ -92,7 +92,7 @@ test.yaml:3:3: "runs-on" section is missing in job "test" [syntax-check]
   |
 3 |   test:
   |   ^~~~~
-test.yaml:6:3: key "test" is duplicate in "jobs" section. previously defined at line:3,col:3. note that key names are case insensitive [syntax-check]
+test.yaml:6:3: key "test" is duplicated in "jobs" section. previously defined at line:3,col:3. note that key names are case insensitive [syntax-check]
   |
 6 |   TEST:
   |   ^~~~~
@@ -102,10 +102,10 @@ test.yaml:6:3: key "test" is duplicate in "jobs" section. previously defined at 
 
 Some mappings must include specific keys. For example, job mappings must include `runs-on:` and `steps:`.
 
-And duplicate in keys is not allowed. In workflow syntax, comparing keys is **case insensitive**. For example, the job ID
+And duplicate keys are not allowed. In workflow syntax, comparing keys is **case insensitive**. For example, the job ID
 `test` in lower case and the job ID `TEST` in upper case are not able to exist in the same workflow.
 
-actionlint checks these missing required keys and duplicate of keys while parsing, and reports an error.
+actionlint checks these missing required keys and duplicate keys while parsing, and reports an error.
 
 <a name="check-empty-mapping"></a>
 ## Unexpected empty mappings
@@ -130,7 +130,8 @@ test.yaml:2:6: "jobs" section should not be empty. please remove this section if
 
 Some mappings and sequences should not be empty. For example, `steps:` must include at least one step.
 
-actionlint checks such mappings and sequences are not empty while parsing, and reports the empty mappings and sequences as error.
+actionlint checks such mappings and sequences are not empty while parsing, and reports the empty mappings and sequences as an
+error.
 
 <a name="check-mapping-values"></a>
 ## Unexpected mapping values
@@ -172,10 +173,10 @@ test.yaml:13:26: expecting a string with ${{...}} expression or float number lit
 
 [Playground](https://rhysd.github.io/actionlint#eJw1jssNAjEMRO9bxTQQtCBxSTdeyYGg/BTbArongXCy5o395Fo8msl9e9RD/AYoi84JiHZSvr1/CQgUkws0atQQFsz0co06pcTJ43y6fnm3Iq4OtR1W1FyiqV1WbvJXurnpIYm54bLvC48vYuZq6nIsNk499FmxwgdsuTVm)
 
-Some mapping's values are restricted to some constant strings. Several mapping values expect boolean value like `true` or
+Some mapping values are restricted to some constant strings. Several mapping values expect boolean value like `true` or
 `false`. And some mapping values expect integer or floating number values.
 
-actionlint checks such constant strings are used properly while parsing, and reports an error when unexpected value is
+actionlint checks such constant strings are used properly while parsing and reports an error when an unexpected value is
 specified.
 
 <a name="check-syntax-expression"></a>
@@ -257,7 +258,7 @@ jobs:
   test:
     runs-on: ubuntu-latest
     steps:
-      # ERROR: `env` is object. Index access to object is invalid
+      # ERROR: `env` is object. Index access object is invalid
       - run: echo '${{ env[0] }}'
       # ERROR: Properties in objects are strongly typed. Missing property can be caught
       - run: echo '${{ job.container.os }}'
@@ -304,8 +305,8 @@ echo '${{ toJSON(github.event) }}'
 ```
 
 There are two types of object types internally. One is an object which is strict for properties, which causes a type error
-when trying to access to unknown properties. And another is an object which is not strict for properties, which allows to
-access to unknown properties. In the case, accessing to unknown property is typed as `any`.
+when trying to access unknown properties. And another is an object which is not strict for properties, which allows to access
+unknown properties. In the case, accessing unknown property is typed as `any`.
 
 When the type check cannot be done statically, the type is deduced to `any` (e.g. return type of `toJSON()`).
 
@@ -359,9 +360,9 @@ jobs:
   test:
     runs-on: ubuntu-latest
     steps:
-      # Access to undefined context
+      # Access undefined context
       - run: echo '${{ unknown_context }}'
-      # Access to undefined property of context
+      # Access undefined property of context
       - run: echo '${{ github.events }}'
       # Calling undefined function (start's'With is correct)
       - run: echo "${{ startWith('hello, world', 'lo,') }}"
@@ -372,7 +373,7 @@ jobs:
       # Function overloads can be handled properly. contains() has string version and array version
       - run: echo "${{ contains('hello, world', 'lo,') }}"
       - run: echo "${{ contains(github.event.labels.*.name, 'enhancement') }}"
-      # format() has special check for formatting string
+      # format() has a special check for formatting string
       - run: echo "${{ format('{0}{1}', 1, 2, 3) }}"
 ```
 
@@ -417,7 +418,8 @@ The semantics checker can properly handle that
 - some parameters are optional (e.g. `join(strings, sep)` and `join(strings)`)
 - some parameters are repeatable (e.g. `hashFiles(file1, file2, ...)`)
 
-In addition, `format()` function has special check for placeholders in the first parameter which represents formatting string.
+In addition, `format()` function has a special check for placeholders in the first parameter which represents the formatting
+string.
 
 Note that context names and function names are case insensitive. For example, `toJSON` and `toJson` are the same function.
 
@@ -435,7 +437,7 @@ jobs:
       # Step outputs can be used in job outputs since this section is evaluated after all steps were run
       foo: '${{ steps.get_value.outputs.name }}'
     steps:
-      # ERROR: Access to undefined step outputs
+      # ERROR: Access undefined step outputs
       - run: echo '${{ steps.get_value.outputs.name }}'
       # Outputs are set here
       - run: echo '::set-output name=foo::value'
@@ -447,7 +449,7 @@ jobs:
   other:
     runs-on: ubuntu-latest
     steps:
-      # ERROR: Access to undefined step outputs. Step objects are job-local
+      # ERROR: Access undefined step outputs. Step objects are job-local
       - run: echo '${{ steps.get_value.outputs.name }}'
 ```
 
@@ -468,11 +470,11 @@ test.yaml:22:24: property "get_value" is not defined in object type {} [expressi
 
 Outputs of step can be accessed via `steps.<step_id>` objects. The `steps` context is dynamic:
 
-- Accessing to the outputs before running the step are `null`
-- Outputs of steps only in the job can be accessed. It cannot access to steps across jobs
+- Accessing the outputs before running the step causes `null`
+- Outputs of steps only in the job can be accessed. It cannot access steps across jobs
 
-It is actually common mistake to access to the wrong step outputs since people often forget fixing placeholders on
-copying&pasting steps. actionlint can catch the invalid accesses to step outputs and reports them as errors.
+It is a common mistake to access the wrong step outputs since people often forget to fix placeholders on copying&pasting
+steps. actionlint can catch invalid accesses to step outputs and reports them as errors.
 
 When the outputs are set by popular actions, the outputs object is more strictly typed.
 
@@ -514,13 +516,13 @@ test.yaml:18:23: property "cache_hit" is not defined in object type {cache-hit: 
 
 [Playground](https://rhysd.github.io/actionlint#eJyNTksKwjAQ3fcUbyFUC0nBZVauvIakMZjY0gRnokjp3W3TUl26Gt53XugVYiJXFPfQkCoAtsTzBR6pJxEmQ2pSz0l0etayRGwjLS5AIJElBW3Yh55qo42zp+dxlQF/Vcjkxrw8O7UhoLVvhd0wwGlyZ99Z2pdVVVeyC6YtDxjHH3PUUxiyjtq0+mZpmzENVrDGhVyVN8r8V4bEMfGKhPP8bfw7dlliH1xHWso=)
 
-In the above example, [actions/cache][actions-cache] action sets `cache-hit` output so that following steps can know the
-cache was hit or not. At line 8, the cache action is not run yet. So `cache` property does not exit in `steps` context yet.
-On running the step whose ID is `cache`, `steps.cache` object is typed as `{outputs: {cache-hit: any}, conclusion: string, outcome: string}`.
-At line 18, the expression has typo in output name. actionlint can check it because properties of `steps.cache.outputs` are
-typed.
+In the above example, [actions/cache][actions-cache] action sets `cache-hit` output so that the following steps can know
+whether the cache was hit or not. At line 8, the cache action is not run yet. So `cache` property does not exist in the
+`steps` context yet. On running the step whose ID is `cache`, `steps.cache` object is typed as
+`{outputs: {cache-hit: any}, conclusion: string, outcome: string}`. At line 18, the expression has a typo in the output
+name. actionlint can check it because properties of `steps.cache.outputs` are typed.
 
-This strict outputs typing is also applied to local actions. Let's say we have the following local action.
+This strict typing for outputs is also applied to local actions. Let's say we have the following local action.
 
 ```yaml
 name: 'My action with output'
@@ -570,7 +572,7 @@ test.yaml:15:23: property "some-value" is not defined in object type {some_value
 ```
 
 The 'My action with output' action defines one output `some_value`. The property is typed at `steps.my_action.outputs` object
-so that actionlint can check incorrect property accesses like a typo in output name.
+so that actionlint can check incorrect property accesses like a typo in the output name.
 
 <a name="check-contextual-matrix-object"></a>
 ## Contextual typing for `matrix` object
@@ -595,7 +597,7 @@ jobs:
             npm: 7.5.4
     runs-on: ${{ matrix.os }}
     steps:
-      # Access to undefined matrix value
+      # Access undefined matrix value
       - run: echo '${{ matrix.platform }}'
       # Matrix value is strongly typed. Below line causes an error since matrix.package is {name: string, optional: bool}
       - run: echo '${{ matrix.package.dev }}'
@@ -633,11 +635,11 @@ test.yaml:34:24: property "os" is not defined in object type {} [expression]
 
 [Playground](https://rhysd.github.io/actionlint#eJyNUstuwyAQvOcr5lCJRIotpUpUCalfUvVAbJzQ2oBYSFql+fdCHOo8XLUntMsMOzuD0Rw20HbyZtbEJ4CX5NMJkHfCy81nXwGd8E595AowxPES1kH7ULQi8ebYK12bPZ3r1x+sNrWM6MVyjsVqaFtRvYuNHN4ECmjRRSxrjGEX/TjPemW0aDm8C3KMshbuN0ojWho4SldtqG/nnjQuVlcvaNtxPJWrcnlqu6CpMNGzh8PhbEhpCMfj2TFpKT9aJDCHrLYG7AJuozeNcV0ksb+gvT1lLXf36K8LnT0zBXKri92h0prYSUfqZo/TxRgjp4QRacn5SMI0W/08Asp3ETgb3Tm6nCVBEcjKSjVK1oMW1fTjK6O9UJqmWbTt5mAxIDbrU0j/7pFfh3X1Sf+fVG/gN6xO5N4=)
 
-Types of `matrix` context is contextually checked by the semantics checker. Type of matrix values in `matrix:` section
+Types of `matrix` context are contextually checked by the semantics checker. Type of matrix values in `matrix:` section
 is deduced from element values of its array. When the matrix value is an array of objects, objects' properties are checked
 strictly like `package.name` in above example.
 
-When type of the array elements is not persistent, type of the matrix value falls back to `any`.
+When a type of the array elements is not persistent, the type of the matrix value falls back to `any`.
 
 ```yaml
 strategy:
@@ -686,16 +688,16 @@ jobs:
       built: '...'
     runs-on: ubuntu-latest
     steps:
-      # OK: Accessing to job results
+      # OK: Accessing job results
       - run: echo 'build something with ${{ needs.install.outputs.installed }} and ${{ needs.prepare.outputs.prepared }}'
-      # ERROR: Accessing to undefined output cases an error
+      # ERROR: Accessing undefined output causes an error
       - run: echo '${{ needs.install.outputs.foo }}'
-      # ERROR: Accessing to undefined job ID
+      # ERROR: Accessing undefined job ID
       - run: echo '${{ needs.some_job }}'
   other:
     runs-on: ubuntu-latest
     steps:
-      # ERROR: Cannot access to outptus across jobs
+      # ERROR: Cannot access outputs across jobs
       - run: echo '${{ needs.build.outputs.built }}'
 ```
 
@@ -725,7 +727,7 @@ test.yaml:33:24: property "build" is not defined in object type {} [expression]
 Job dependencies can be defined at [`needs:`][needs-doc]. A job runs after all jobs defined in `needs:` are done.
 Outputs from the jobs can be accessed only from jobs following them via [`needs` context][needs-context-doc].
 
-actionlint defines type of `needs` variable contextually looking at each job's `outputs:` section and `needs:` section.
+actionlint defines a type of `needs` variable contextually by looking at each job's `outputs:` section and `needs:` section.
 
 <a name="check-shellcheck-integ"></a>
 ## [shellcheck][] integration for `run:`
@@ -766,8 +768,8 @@ test.yaml:14:9: shellcheck reported issue in this script: SC2086:info:1:6: Doubl
 [shellcheck][] is a famous linter for ShellScript. actionlint runs shellcheck for scripts at `run:` step in a workflow.
 For installing shellcheck, see [the official installation document][shellcheck-install].
 
-actionlint detects which shell is used to run the scripts following [the documentation][shell-doc]. On Linux or macOS,
-the default shell is `bash` and on Windows it is `pwsh`. Shell can be configured by `shell:` configuration at a workflow
+actionlint detects which shell is used to run the scripts following [the documentation][shell-doc]. On Linux or macOS the
+default shell is `bash`, and on Windows it is `pwsh`. Shell can be configured by `shell:` configuration at a workflow
 level or job level. Each step can configure shell to run scripts by `shell:`.
 
 In the above example output, `SC2086:info:1:6:` means that shellcheck reported SC2086 rule violation and the location is at
@@ -780,9 +782,9 @@ By default, actionlint checks if `shellcheck` command exists in your system and 
 option on running `actionlint` command specifies the executable path of shellcheck. Setting empty string by `shellcheck=`
 disables shellcheck integration explicitly.
 
-Since both `${{ }}` expression syntax and ShellScript's variable access `$FOO` use `$`, remaining `${{ }}` confuses shellcheck.
-To avoid it, actionlint replaces `${{ }}` with underscores. For example `echo '${{ matrix.os }}'` is replaced with
-`echo '________________'`.
+Since both `${{ }}` expression syntax and ShellScript's variable access `$FOO` use `$`, the remaining `${{ }}` confuses
+shellcheck. To avoid it, actionlint replaces `${{ }}` with underscores. For example `echo '${{ matrix.os }}'` is replaced
+with `echo '________________'`.
 
 Some shellcheck rules conflict with the `${{ }}` expression syntax. To avoid errors due to the syntax, [SC1091][], [SC2050][],
 [SC2194][], [SC2154][], [SC2157][] are disabled.
@@ -904,7 +906,7 @@ jobs:
           # ERROR: Using the potentially untrusted input can cause script injection
           script: console.log('${{ github.event.head_commit.author.name }}')
       - name: Get comments
-        # ERROR: Accessing to untrusted inputs via `.*` object filter; bodies of comment, review, and review_comment
+        # ERROR: Accessing untrusted inputs via `.*` object filter; bodies of comment, review, and review_comment
         run: echo '${{ toJSON(github.event.*.body) }}'
 ```
 
@@ -934,7 +936,7 @@ inline scripts at `run:`. For example, if we have step as follows,
 - run: echo 'issue ${{github.event.issue.title}}'
 ```
 
-an attacker can create a new issue with title `'; malicious_command ...`, and the inline script will run
+an attacker can create a new issue with the title `'; malicious_command ...`, and the inline script will run
 `echo 'issue'; malicious_command ...` in your workflow. The remediation of such script injection is passing potentially untrusted
 inputs via environment variables. See [the official document][security-doc] for more details.
 
@@ -945,7 +947,7 @@ inputs via environment variables. See [the official document][security-doc] for 
 ```
 
 actionlint recognizes the following inputs as potentially untrusted and checks your inline scripts at `run:`. When they are used
-directly in a script, actionlint will report it as error.
+directly in a script, actionlint will report it as an error.
 
 - `github.event.issue.title`
 - `github.event.issue.body`
@@ -966,7 +968,7 @@ directly in a script, actionlint will report it as error.
 - `github.event.pull_request.head.repo.default_branch`
 - `github.head_ref`
 
-Not only direct accesses to the untrusted properties, actionlint also detects those properties indirectly accessed via
+Not only direct access to the untrusted properties, actionlint also detects those properties indirectly accessed via
 [object filter syntax][object-filter-syntax]. For example, `github.event.*.body` collects all `body` properties in child objects
 of `github.event` as array. Those properties include untrusted inputs like `github.event.comment.body`,
 `github.event.pull_request.body`, ...
@@ -976,7 +978,7 @@ of `github.event` as array. Those properties include untrusted inputs like `gith
 echo '${{ toJSON(github.event.*.body) }}'
 ```
 
-Instead, you should store the JSON string in environment variable:
+Instead, you should store the JSON string in an environment variable:
 
 ```sh
 - run: echo "${BODIES}"
@@ -1024,7 +1026,7 @@ test.yaml:8:3: cyclic dependencies in "needs" configurations of jobs are detecte
 [Playground](https://rhysd.github.io/actionlint#eJyljjEOxCAMBPu8YjsqPsBXTikgsZREyCBs/z+Bo0mdzvJ4Z104oJocy1WShAWojWps1EeAiXYJ+CU7876OVTMWX56UJWM1n6OS6ECiVOUfBHy/DKDtKHBT6h52smjM+e2f/EPD1PaG8ezbP+kH/5C6G78nW+Q=)
 
 Job dependencies can be defined at [`needs:`][needs-doc]. If cyclic dependencies exist, jobs never start to run. actionlint
-detects cyclic dependencies in `needs:` sections of jobs and reports it as error.
+detects cyclic dependencies in `needs:` sections of jobs and reports it as an error.
 
 actionlint also detects undefined jobs and duplicate jobs in `needs:` section.
 
@@ -1106,7 +1108,7 @@ test.yaml:12:13: "platform" in "exclude" section does not exist in matrix. avail
 combination of matrix values. actionlint checks
 
 - values in `exclude:` appear in `matrix:` or `include:`
-- duplicate in variations of matrix values
+- duplicate variations of matrix values
 
 <a name="check-webhook-events"></a>
 ## Webhook events validation
@@ -1373,8 +1375,8 @@ workflow. It checks:
   - ref name cannot start/end with `/`
   - ref name cannot contain `[`, `:`, `\`, ...
 
-Most common mistake I have ever seen here is misunderstanding that regular expression is available for filtering. This rule
-can catch the mistake so that users can notice their mistakes.
+Most common mistake I have ever seen here is a misunderstanding that regular expression is available for filtering.
+This rule can catch the mistake so that users can notice their mistakes.
 
 <a name="check-cron-syntax"></a>
 ## CRON syntax check at `schedule:`
@@ -1481,8 +1483,8 @@ actionlint checks proper label is used at `runs-on:` configuration. Even if an e
 When you define some custom labels for your self-hosted runner, actionlint does not know the labels. Please set the label
 names in [`actionlint.yaml` configuration file](config.md) to let actionlint know them.
 
-In addition to checking label values, actionlint checks combinations of labels. `runs-on:` section can be an array which contains
-multiple labels. In the case, a runner which has all the labels will be selected. However, those labels combinations can have
+In addition to checking label values, actionlint checks combinations of labels. `runs-on:` section can be an array that contains
+multiple labels. In this case, a runner which has all the labels will be selected. However, those labels combinations can have
 conflicts.
 
 Example input:
@@ -1507,7 +1509,7 @@ test.yaml:4:30: label "windows-latest" conflicts with label "ubuntu-latest" defi
 
 [Playground](https://rhysd.github.io/actionlint#eJwti0EOgCAMBO+8Yh8gPICvGA+iJEhMS2wbvq+op81mZpgimklxlZNEB2gWHQtcRuL54bMlIzV/rgNO6Aft3OX/yyuL5iZfB/jRRuStMEIIN17iHww=)
 
-In most cases this is a misunderstanding that a matrix combination can be specified at `runs-on:` directly. It should use
+In most cases, this is a misunderstanding that a matrix combination can be specified at `runs-on:` directly. It should use
 `matrix:` and expand it with `${{ }}` at `runs-on:` to run the workflow on multiple runners.
 
 <a name="check-action-format"></a>
@@ -1527,7 +1529,7 @@ jobs:
       - uses: checkout@v2
       # ERROR: tag is empty
       - uses: 'docker://image:'
-      # ERROR: local action must starts with './'
+      # ERROR: local action must start with './'
       - uses: .github/my-actions/do-something
 ```
 
@@ -1562,8 +1564,8 @@ Action needs to be specified in a format defined in [the document][action-uses-d
 
 actionlint checks values at `uses:` sections follow one of these formats.
 
-Note that actionlint does not report any error when a direcotyr for a local action does not exist in the repository because it is
-a common case that the action is managed in a separate repository and the action directory is cloned at running the workflow.
+Note that actionlint does not report any error when a directory for a local action does not exist in the repository because it is
+a common case where the action is managed in a separate repository and the action directory is cloned at running the workflow.
 (See [#25][issue-25] and [#40][issue-40] for more details).
 
 <a name="check-local-action-inputs"></a>
@@ -1664,13 +1666,13 @@ test.yaml:9:11: input "keys" is not defined in action "actions/cache@v3". availa
 
 actionlint checks inputs of many popular actions such as `actions/checkout@v3`. It checks
 
-- some input is required by the action but it not set at `with:`
-- input set at `with:` is not defined in the action (this commonly occurs by typo)
+- some input is required by the action but it is not set at `with:`
+- input set at `with:` is not defined in the action (this commonly occurs by a typo)
 
 this is done by checking `with:` section items with a small database collected at building `actionlint` binary. actionlint
-can check popular actions without fetching any `action.yml` of the actions from remote so that it can run efficiently.
+can check popular actions without fetching any `action.yml` of the actions from the remote so that it can run efficiently.
 
-Note that it only supports the case of specifying major version like `actions/checkout@v3`. Fixing version of action like
+Note that it only supports the case of specifying major versions like `actions/checkout@v3`. Fixing version of action like
 `actions/checkout@v3.0.2` and using the HEAD of action like `actions/checkout@main` are not supported for now.
 
 So far, actionlint supports more than 100 popular actions The data set is embedded at [`popular_actions.go`](../popular_actions.go)
@@ -1759,9 +1761,9 @@ jobs:
       - run: echo 'hello'
         id: step_id
       - run: echo 'bye'
-        # ERROR: Duplicate of step ID
+        # ERROR: Duplicate step ID
         id: STEP_ID
-  # ERROR: Duplicate of job ID
+  # ERROR: Duplicate job ID
   TEST:
     runs-on: ubuntu-latest
     steps:
@@ -1777,7 +1779,7 @@ test.yaml:10:13: step ID "STEP_ID" duplicates. previously defined at line:7,col:
    |
 10 |         id: STEP_ID
    |             ^~~~~~~
-test.yaml:12:3: key "test" is duplicate in "jobs" section. previously defined at line:3,col:3. note that key names are case insensitive [syntax-check]
+test.yaml:12:3: key "test" is duplicated in "jobs" section. previously defined at line:3,col:3. note that key names are case insensitive [syntax-check]
    |
 12 |   TEST:
    |   ^~~~~
@@ -1786,7 +1788,7 @@ test.yaml:12:3: key "test" is duplicate in "jobs" section. previously defined at
 [Playground](https://rhysd.github.io/actionlint#eJzLz7NSKCgtzuDKyk8qtuJSUChJLS4B0QoKRaV5xbr5QPnSpNK8klLdnESQHFiquCS1oBiiSkFBF6TSSiE1OSNfQT0jNScnXx0qo6CQmWIFVhyfmYJNdVJlKqra4BDXgHhPF6BYiGtwCE3cAQCKgUNq)
 
 Job IDs and step IDs in each jobs must be unique. IDs are compared in case insensitive. actionlint checks all job IDs
-and step IDs and reports errors when some IDs duplicate.
+and step IDs, and reports errors when some IDs duplicate.
 
 <a name="check-hardcoded-credentials"></a>
 ## Hardcoded credentials
@@ -1831,8 +1833,8 @@ test.yaml:17:21: "password" section in "redis" service should be specified via s
 [Playground](https://rhysd.github.io/actionlint#eJx1kLEOwyAMRPd8hTemNDt/4xCroQKMMDT9/AJNUYd0wrp357PgoCEW2acHr6IngEyS2wuQSpCZKy9rCbnMDhvryHDIaAOljxPAeryTBkUv9NHRzbBf+KiGpRN12kyijUK26OSbBChCKaCv8TYNOaLIwWnTfepyxU9raGTrNvuz6Dyiq0O8rPxbel2bKY7w3P5FA5mdQe3kHKs3Uktdww==)
 
 [Credentials for container][credentials-doc] can be put in `container:` configuration. Password should be put in secrets
-and the value should be expanded with `${{ }}` syntax at `password:`. actionlint checks hardcoded credentials and reports
-them as error.
+and the value should be expanded with `${{ }}` syntax at `password:`. actionlint checks hardcoded credentials, and reports
+them as an error.
 
 <a name="check-env-var-names"></a>
 ## Environment variable names
@@ -1914,7 +1916,7 @@ test.yaml:13:15: "readable" is invalid for permission of scope "issues". availab
 [Playground](https://rhysd.github.io/actionlint#eJxNjd0NwyAMhN89xS3AAmwDxBK0FCOMlfUDiVr16aTv/qR5dNNM1Hl8imqRph7nKJOJXhLVEzBZ51ZgWFMnq2TR2jRXw/Zu63/gBkDKnN7ftQethPF6GByOEOuDdXL/ldw+8eCUBZlrlQvntjLp)
 
 Permissions of `GITHUB_TOKEN` token can be configured at workflow-level or job-level by [`permissions:` section][perm-config-doc].
-Each permission scopes have their access levels. The default levels are described in [the document][permissions-doc].
+Each permission scopes have its access levels. The default levels are described in [the document][permissions-doc].
 
 actionlint checks permission scopes and access levels in a workflow are correct.
 
@@ -1996,7 +1998,7 @@ test.yaml:35:11: reusable workflow cannot be nested. but this workflow hooks "wo
 [Playground](https://rhysd.github.io/actionlint#eJx9kc1ugzAQhO99ilVUKSdA/Tn51AfooT/quTKwFBLjdey1KIp499pAIkRLb/CtPTPeIS1uADqyx0pR91lIpSIAaLTx7KZvAFfU2OLlD6BEV9jGcENawPs4BKrg4+15caSSXrGAmtm4K+beoADHttFfM6zJsfh9D79laxSmBbX/3TZkeSPYSxhtxtqLu/uHx/1KWvs2RzvDk0fbb2i/xtlafNKg/IAFX+JJrrfihdFaweLJNxZLAWw9/pF6HXjexYHysaySJjPrtUuiic+9Zp8oyeimTI7RXItN4smw66Im2N2ez3Pv6VQ4DIPIsgWOVUW4QHH/AS1JfNcw7IKFDqbhMaOZd+jCcnSHNrNoKOvSvlVPrWz0D3BGvIY=)
 [Playground]()
 
-Unlike inputs of action, inputs of workflow must specify their types. actionlint validates input types and checks the default
+Unlike inputs of action, inputs of a workflow must specify their types. actionlint validates input types and checks the default
 values are correctly typed. For more details, see [the official document][create-reusable-workflow-doc].
 
 In addition, nested workflow call is not allowed. actionlint checks reusable workflow is not called when the workflow hooks
@@ -2045,9 +2047,9 @@ test.yaml:12:5: "with" is only available for a reusable workflow call with "uses
 [Playground](https://rhysd.github.io/actionlint#eJx9jTEOwjAMRfeewhdoo8KWiasklUsKaRzFNlFvT9sIxMT0Pbz3TMlCVg7dgzzbDmDf8VgAZWQLVBMWUzCTyU6CETKVynOOVIdtjbfXeMJFE/e0x9RrEu2jE2RpvctvbzDDfZGg/pthMy1nanVLasa1GXUH2wUwE1nwrvz/BsCCmT9Sf5AWcAoEAWOkN6pqSm4=)
 
 When calling an external workflow, [only specific keys are available][reusable-workflow-call-keys] at job configuration.
-For example, `secrets:` is not available when running steps as normal job. And `runs-on:` is not available when calling
+For example, `secrets:` is not available when running steps in a normal job. And `runs-on:` is not available when calling
 a reusable workflow since the called workflow determines which OS is used. actionlint checks such keys are used correctly
-to call a reusable workflow or to run steps as normal job.
+to call a reusable workflow or to run steps in a normal job.
 
 And the workflow syntax at `uses:` must follow the format `owner/repo/path/to/workflow.yml@ref` as described in
 [the official document][create-reusable-workflow-doc]. actionlint checks if the value follows the format.
@@ -2097,7 +2099,7 @@ test.yaml:23:22: property "credentials" is not defined in object type {credentia
 
 [Playground](https://rhysd.github.io/actionlint#eJx9UD1PwzAQ3fMr3oCUKVGFmLwzgUAqMFeOfSDT9BzZZ6qo6n/HjUNSMXS7e/c+7s6zqoCjD/vP3h93Rvf9BQAcD0liqYEU+r8SsBRNcIM4zwr16FPAx/a5XuYyDqQQJTj+msE+mf2443ToKNw0mogoxP+OBZ3ASCbQul5uLLE4fXvLlVZX1bfvJr1QlKIKiWNzYacusaTmftNuHkqc0LCENWB9yOu8EVtYLXqJzAYKJv8Kd6fT/ME2BYfzGY29Bq//kaeLA/HPegHw/vr0+KIm4Xxxu94Qs/AXqVaEog==)
 
-Inputs of reusable workflow call are set to `inputs.*` properties following the definitions at `on.workflow_call.inputs`.
+Inputs of reusable workflow calls are set to `inputs.*` properties following the definitions at `on.workflow_call.inputs`.
 And in a job of a reusable workflow, `secrets.*` are passed from caller of the workflow so it is set following the definitions at
 `on.workflow_call.secrets`. See [the official document][create-reusable-workflow-doc] for more details.
 
@@ -2105,7 +2107,7 @@ actionlint contextually defines types of `inputs` and `secrets` contexts looking
 allow keys at `on.workflow_call.inputs` and their values are typed based on `on.workflow_call.inputs.<input_name>.type`. Type of
 `secrets` is also strictly typed following `on.workflow_call.secrets`.
 
-[From May 3, 2022][inherit-secrets-announce], GitHub Actions allows to inherit secrets on calling reusable workflows. The caller
+[From May 3, 2022][inherit-secrets-announce], GitHub Actions allows inheriting secrets by calling reusable workflows. The caller
 declares to inherit all secrets.
 
 ```yaml
@@ -2115,8 +2117,8 @@ jobs:
     secrets: inherit
 ```
 
-This means that actionlint cannot know the workflow inherits secrets or not when checking a reusable workflow. To solve this
-issue, actionlint assumes that
+This means that actionlint cannot know whether the workflow inherits secrets or not when checking a reusable workflow.
+To solve this issue, actionlint assumes that
 
 - when `secrets:` is omitted in a reusable workflow, the workflow inherits secrets from a caller
 - when `secrets:` exists in a reusable workflow, the workflow inherits no other secret
@@ -2186,7 +2188,7 @@ test.yaml:6:20: property "imagetag" is not defined in object type {image_tag: st
 [Playground](https://rhysd.github.io/actionlint#eJx1j0EOgyAQRfc9xcR0C92z7j0M6tRSKRgYdGG8ex1Rkqbpkp/Hf3+8UxeA2YfhYf1ct9paDgB8ojFRzA8A89Y9iglDNN6dIUCHsQ1mJA6huvt2wJBZONiqsJO2CRVclwVevomyRye+auXhlHtKuod1vTDKvh86jwjJRcHy1CRHSVhNGOnvBfXWug3lDZFw5BHEWVFnax69E+d3wSoF8pbJutTJ+Cwnmk7B0fgB2ORuYw==)
 
 Outputs of a reusable workflow can be defined at `on.workflow_call.outputs` as described in [the document][reusable-workflow-outputs].
-The `jobs` context is available to define an output value to refer outputs of jobs in the workflow. actionlint checks
+The `jobs` context is available to define an output value to refer the outputs of jobs in the workflow. actionlint checks
 the context is used correctly.
 
 <a name="id-naming-convention"></a>
@@ -2240,8 +2242,8 @@ test.yaml:17:3: invalid job ID "2d-game". job ID must start with a letter or _ a
 
 [Playground](https://rhysd.github.io/actionlint#eJylzTEOwyAMheGdU7wtkyM13Zi79BhJIYWKYoQhuX5Cyw0yWv70P44aqYpT6sOLaAWszLTdxmm8twvINQrxyepSY6kU5mKl/F5SbJK/AqhJDftyjOGM4fnA7ovDZrN4jkN3gDedrZzRY+RsCEw752DowjBzkrY0GXrPX3u1dACDIlSH)
 
-IDs must start with a letter or `_` and contain only alphanumeric characters, `-` or `_`. actionlint checks the naming convention
-and reports invalid IDs as error.
+IDs must start with a letter or `_` and contain only alphanumeric characters, `-` or `_`. actionlint checks the naming
+convention, and reports invalid IDs as errors.
 
 ---
 

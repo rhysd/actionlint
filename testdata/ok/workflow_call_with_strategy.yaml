@@ -2,6 +2,7 @@ name: Reusable workflow with matrix strategy
 
 # This was enabled by https://github.blog/changelog/2022-08-22-github-actions-improvements-to-reusable-workflows-2/
 #
+# Issue: #197
 # Doc: https://docs.github.com/en/actions/using-workflows/reusing-workflows#example-matrix-strategy-with-a-reusable-workflow
 
 on:

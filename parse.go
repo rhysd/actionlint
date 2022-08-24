@@ -277,7 +277,7 @@ func (p *parser) parseMapping(what string, n *yaml.Node, allowEmpty bool) []keyV
 		k.Value = strings.ToLower(k.Value)
 
 		if pos, ok := keys[k.Value]; ok {
-			p.errorfAt(k.Pos, "key %q is duplicate in %s. previously defined at %s. note that key names are case insensitive", k.Value, what, pos.String())
+			p.errorfAt(k.Pos, "key %q is duplicated in %s. previously defined at %s. note that key names are case insensitive", k.Value, what, pos.String())
 			continue
 		}
 		m = append(m, keyVal{k, n.Content[i+1]})

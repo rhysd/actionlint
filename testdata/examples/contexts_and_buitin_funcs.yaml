@@ -3,9 +3,9 @@ jobs:
   test:
     runs-on: ubuntu-latest
     steps:
-      # Access to undefined context
+      # Access undefined context
       - run: echo '${{ unknown_context }}'
-      # Access to undefined property of context
+      # Access undefined property of context
       - run: echo '${{ github.events }}'
       # Calling undefined function (start's'With is correct)
       - run: echo "${{ startWith('hello, world', 'lo,') }}"
@@ -16,5 +16,5 @@ jobs:
       # Function overloads can be handled properly. contains() has string version and array version
       - run: echo "${{ contains('hello, world', 'lo,') }}"
       - run: echo "${{ contains(github.event.labels.*.name, 'enhancement') }}"
-      # format() has special check for formating string
+      # format() has a special check for formating string
       - run: echo "${{ format('{0}{1}', 1, 2, 3) }}"
