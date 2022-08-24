@@ -1,4 +1,4 @@
 test.yaml:16:24: property "prepare" is not defined in object type {} [expression]
 test.yaml:26:24: property "foo" is not defined in object type {installed: string} [expression]
-test.yaml:28:24: property "some_job" is not defined in object type {install: {result: string; outputs: {installed: string}}; prepare: {outputs: {prepared: string}; result: string}} [expression]
+/test\.yaml:28:24: property "some_job" is not defined in object type {.+} \[expression\]/
 test.yaml:33:24: property "build" is not defined in object type {} [expression]
