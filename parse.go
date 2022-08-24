@@ -1141,7 +1141,6 @@ func (p *parser) parseJob(id *String, n *yaml.Node) *Job {
 			stepsOnlyKey = k
 		case "strategy":
 			ret.Strategy = p.parseStrategy(k.Pos, v)
-			stepsOnlyKey = k
 		case "continue-on-error":
 			ret.ContinueOnError = p.parseBool(v)
 			stepsOnlyKey = k

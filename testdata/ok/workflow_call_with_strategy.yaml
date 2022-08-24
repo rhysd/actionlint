@@ -1,0 +1,17 @@
+name: Reusable workflow with matrix strategy
+
+# This was enabled by https://github.blog/changelog/2022-08-22-github-actions-improvements-to-reusable-workflows-2/
+#
+# Doc: https://docs.github.com/en/actions/using-workflows/reusing-workflows#example-matrix-strategy-with-a-reusable-workflow
+
+on:
+  push:
+
+jobs:
+  ReuseableMatrixJobForDeployment:
+    strategy:
+      matrix:
+        target: [dev, stage, prod]
+    uses: octocat/octo-repo/.github/workflows/deployment.yml@main
+    with:
+      target: ${{ matrix.target }}
