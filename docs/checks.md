@@ -1965,9 +1965,6 @@ jobs:
     runs-on: ubuntu-latest
     steps:
       - run: echo "${{ inputs.scheme }}://${{ inputs.host }}:${{ inputs.port }}${{ inputs.path }}"
-  nested:
-    # ERROR: Nested workflow call is not allowed
-    uses: onwer/repo/w.yml@main
 ```
 
 Output:
@@ -1989,20 +1986,12 @@ test.yaml:26:18: input "path" of workflow_call event has the default value "", b
    |
 26 |         default: ''
    |                  ^~
-test.yaml:35:11: reusable workflow cannot be nested. but this workflow hooks "workflow_call" event at line:2,col:3 [workflow-call]
-   |
-35 |     uses: onwer/repo/w.yml@main
-   |           ^~~~~~~~~~~~~~~~~~~~~
 ```
 
-[Playground](https://rhysd.github.io/actionlint#eJx9kc1ugzAQhO99ilVUKSdA/Tn51AfooT/quTKwFBLjdey1KIp499pAIkRLb/CtPTPeIS1uADqyx0pR91lIpSIAaLTx7KZvAFfU2OLlD6BEV9jGcENawPs4BKrg4+15caSSXrGAmtm4K+beoADHttFfM6zJsfh9D79laxSmBbX/3TZkeSPYSxhtxtqLu/uHx/1KWvs2RzvDk0fbb2i/xtlafNKg/IAFX+JJrrfihdFaweLJNxZLAWw9/pF6HXjexYHysaySJjPrtUuiic+9Zp8oyeimTI7RXItN4smw66Im2N2ez3Pv6VQ4DIPIsgWOVUW4QHH/AS1JfNcw7IKFDqbhMaOZd+jCcnSHNrNoKOvSvlVPrWz0D3BGvIY=)
-[Playground]()
+[Playground](https://rhysd.github.io/actionlint#eJx9kctuwyAQRff9ilFUKSsn6mPFN3TRh7quMB4XUswQGJRGkf+9JjiR5dbdwZnhzmUuOXEDcKDw1Vo6fChpbQYAxvnEsZwBotLY4eUG0GBUwXg25AS8nYtALby/Pk1aWpksC9DMPl4xHz0KiByM+xyhpsji9zv8lp23uFHU/ffaU+AFY89DadHWWtzdPzyuZ9IudTWGEe4ThuOC9kuuzcWLBtU7VHyxJ1kv2RtKc4WA+2QCNgI4JPzD9dzwuIsd1eewGirDQnKxykNSnRynykrGWDxFRn8Ntsqdw66VJljdnk5j7psSOPS92G4nOEeV4QTl/Q9oSvK/+n71A7U5rsA=)
 
 Unlike inputs of action, inputs of a workflow must specify their types. actionlint validates input types and checks the default
 values are correctly typed. For more details, see [the official document][create-reusable-workflow-doc].
-
-In addition, nested workflow call is not allowed. actionlint checks reusable workflow is not called when the workflow hooks
-`workflow_call` event.
 
 ### Check reusable workflow call syntax
 

@@ -922,8 +922,6 @@ func (rule *RuleExpression) checkWorkflowCallOutputs(outputs map[*String]*Workfl
 		var o *ObjectType
 		if j.WorkflowCall != nil {
 			// Outputs are not defined in jobs.<job_id> section when it is reusable workflow call.
-			// At the point of writing this comment, reusable workflow cannot be nested. So reaching
-			// here would cause other error in some other checks.
 			o = NewEmptyObjectType()
 		} else {
 			p := make(map[string]ExprType, len(j.Outputs))

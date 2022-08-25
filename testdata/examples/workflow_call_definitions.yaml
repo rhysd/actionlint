@@ -30,6 +30,3 @@ jobs:
     runs-on: ubuntu-latest
     steps:
       - run: echo "${{ inputs.scheme }}://${{ inputs.host }}:${{ inputs.port }}${{ inputs.path }}"
-  nested:
-    # ERROR: Nested workflow call is not allowed
-    uses: onwer/repo/w.yml@main

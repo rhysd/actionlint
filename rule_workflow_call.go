@@ -40,10 +40,6 @@ func (rule *RuleWorkflowCall) VisitJobPre(n *Job) error {
 		return nil
 	}
 
-	if rule.workflowCallEventPos != nil {
-		rule.errorf(u.Pos, "reusable workflow cannot be nested. but this workflow hooks \"workflow_call\" event at %s", rule.workflowCallEventPos)
-	}
-
 	if !strings.Contains(u.Value, "${{") && !(checkWorkflowCallUsesLocalFormat(u.Value) || checkWorkflowCallUsesRepoFormat(u.Value)) {
 		rule.errorf(u.Pos, "reusable workflow call %q at \"uses\" is not following the format \"owner/repo/path/to/workflow.yml@ref\" nor \"./path/to/workflow.yml\". see https://docs.github.com/en/actions/learn-github-actions/reusing-workflows for more details", u.Value)
 	}

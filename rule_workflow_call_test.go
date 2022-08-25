@@ -1,7 +1,6 @@
 package actionlint
 
 import (
-	"strings"
 	"testing"
 )
 
@@ -56,14 +55,11 @@ func TestRuleWorkflowCallCheckWorkflowCallUsesFormat(t *testing.T) {
 	}
 }
 
-func TestRuleWorkflowCallCheckCannotCallNestedly(t *testing.T) {
+func TestRuleWorkflowCallNestedWorkflowCalls(t *testing.T) {
 	w := &Workflow{
 		On: []Event{
 			&WorkflowCallEvent{
-				Pos: &Pos{
-					Line: 12,
-					Col:  34,
-				},
+				Pos: &Pos{},
 			},
 		},
 	}
@@ -86,17 +82,9 @@ func TestRuleWorkflowCallCheckCannotCallNestedly(t *testing.T) {
 	if err := r.VisitJobPre(j); err != nil {
 		t.Fatal(err)
 	}
+	errs := r.Errs()
 
-	err := r.Errs()[0]
-	msg := err.Error()
-
-	want := "reusable workflow cannot be nested"
-	if !strings.Contains(msg, want) {
-		t.Errorf("error message %q does not contain expected message %q", msg, want)
-	}
-
-	want = "line:12,col:34"
-	if !strings.Contains(msg, want) {
-		t.Errorf("error message %q does not contain proper position %q", msg, want)
+	if len(errs) > 0 {
+		t.Fatal("unexpected errors:", errs)
 	}
 }
