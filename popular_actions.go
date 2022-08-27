@@ -783,6 +783,7 @@ var PopularActions = map[string]*ActionMetadata{
 	"actions/setup-go@v3": {
 		Name: "Setup Go environment",
 		Inputs: map[string]ActionMetadataInputRequired{
+			"architecture":          false,
 			"cache":                 false,
 			"cache-dependency-path": false,
 			"check-latest":          false,
@@ -1913,6 +1914,7 @@ var PopularActions = map[string]*ActionMetadata{
 			"check_name":          false,
 			"checkout_path":       false,
 			"cleanup-level":       false,
+			"expect-error":        false,
 			"matrix":              false,
 			"output":              false,
 			"ram":                 false,
@@ -1991,6 +1993,7 @@ var PopularActions = map[string]*ActionMetadata{
 			"threads":                   false,
 			"token":                     false,
 			"tools":                     false,
+			"trap-caching":              false,
 		},
 		Outputs: map[string]struct{}{
 			"codeql-path": {},
