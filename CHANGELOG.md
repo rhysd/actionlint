@@ -1,3 +1,83 @@
+<a name="v1.6.17"></a>
+# [v1.6.17](https://github.com/rhysd/actionlint/releases/tag/v1.6.17) - 28 Aug 2022
+
+- Workflow calls are available in matrix jobs. See [the official announcement](https://github.blog/changelog/2022-08-22-github-actions-improvements-to-reusable-workflows-2/) for more details. ([#197](https://github.com/rhysd/actionlint/issues/197))
+  ```yaml
+  jobs:
+    ReuseableMatrixJobForDeployment:
+      strategy:
+        matrix:
+          target: [dev, stage, prod]
+      uses: octocat/octo-repo/.github/workflows/deployment.yml@main
+      with:
+        target: ${{ matrix.target }}
+  ```
+- Workflow calls can be nested. See [the official announcement](https://github.blog/changelog/2022-08-22-github-actions-improvements-to-reusable-workflows-2/) for more details. ([#201](https://github.com/rhysd/actionlint/issues/201))
+  ```yaml
+  on: workflow_call
+
+  jobs:
+    call-another-reusable:
+      uses: octo-org/example-repo/.github/workflows/another-reusable.yml@v1
+  ```
+- Fix job outputs should be passed to `needs.*.outputs` of only direct children. Until v1.6.16, they are passed to any downstream jobs. ([#151](https://github.com/rhysd/actionlint/issues/151))
+  ```yaml
+  jobs:
+    first:
+      runs-on: ubuntu-latest
+      outputs:
+        first: 'output from first job'
+      steps:
+        - run: echo 'first'
+
+    second:
+      needs: [first]
+      runs-on: ubuntu-latest
+      outputs:
+        second: 'output from second job'
+      steps:
+        - run: echo 'second'
+
+    third:
+      needs: [second]
+      runs-on: ubuntu-latest
+      steps:
+        - run: echo '${{ toJSON(needs.second.outputs) }}'
+        # ERROR: `needs.first` does not exist, but v1.6.16 reported no error
+        - run: echo '${{ toJSON(needs.first.outputs) }}'
+  ```
+  When you need both `needs.first` and `needs.second`, add the both to `needs:`.
+  ```yaml
+    third:
+      needs: [first, second]
+      runs-on: ubuntu-latest
+      steps: ...
+  ```
+- Fix `}}` in string literals are detected as end marker of placeholder `${{ }}`. ([#205](https://github.com/rhysd/actionlint/issues/205))
+  ```yaml
+  jobs:
+    test:
+      runs-on: ubuntu-latest
+      strategy:
+        # This caused an incorrect error until v1.6.16
+        matrix: ${{ fromJSON('{"foo":{}}') }}
+  ```
+- Fix `working-directory:` should not be available with `uses:` in steps. `working-directory:` is only available with `run:`. ([#207](https://github.com/rhysd/actionlint/issues/207))
+  ```yaml
+  steps:
+    - uses: actions/checkout@v3
+      # ERROR: `working-directory:` is not available here
+      working-directory: ./foo
+  ```
+- The working directory for running `actionlint` command can be set via [`WorkingDir` field of `LinterOptions` struct](https://pkg.go.dev/github.com/rhysd/actionlint#LinterOptions). When it is empty, the return value from `os.Getwd` will be used.
+- Update popular actions data set. `actions/configure-pages@v2` was added.
+- Use Go 1.19 on CI by default. It is used to build release binaries.
+- Update dependencies (go-yaml/yaml v3.0.1).
+- Update playground dependencies (except for CodeMirror v6).
+
+[Changes][v1.6.17]
+
+
 <a name="v1.6.16"></a>
 # [v1.6.16](https://github.com/rhysd/actionlint/releases/tag/v1.6.16) - 19 Aug 2022
 
@@ -963,6 +1043,7 @@ See documentation for more details:
 [Changes][v1.0.0]
 
 
+[v1.6.17]: https://github.com/rhysd/actionlint/compare/v1.6.16...v1.6.17
 [v1.6.16]: https://github.com/rhysd/actionlint/compare/v1.6.15...v1.6.16
 [v1.6.15]: https://github.com/rhysd/actionlint/compare/v1.6.14...v1.6.15
 [v1.6.14]: https://github.com/rhysd/actionlint/compare/v1.6.13...v1.6.14
