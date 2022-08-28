@@ -123,7 +123,7 @@ func (p *parser) parseExpression(n *yaml.Node, expecting string) *String {
 		p.missingExpression(n, expecting)
 		return nil
 	}
-	if strings.Count(n.Value, "${{") != 1 || strings.Count(n.Value, "}}") != 1 {
+	if strings.Count(n.Value, "${{") != 1 {
 		p.missingExpression(n, expecting)
 		return nil
 	}
@@ -135,7 +135,7 @@ func (p *parser) mayParseExpression(n *yaml.Node) *String {
 		return nil
 	}
 	s := strings.TrimSpace(n.Value)
-	if !strings.HasPrefix(s, "${{") || !strings.HasSuffix(s, "}}") || strings.Count(n.Value, "${{") != 1 || strings.Count(n.Value, "}}") != 1 {
+	if !strings.HasPrefix(s, "${{") || !strings.HasSuffix(s, "}}") || strings.Count(n.Value, "${{") != 1 {
 		return nil
 	}
 	return newString(n)

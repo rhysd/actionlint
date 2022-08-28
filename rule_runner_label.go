@@ -193,7 +193,7 @@ func (rule *RuleRunnerLabel) tryToGetLabelsInMatrix(l string, m *Matrix) []*Stri
 	l = strings.TrimSpace(l)
 
 	// Only when the form of "${{...}}", evaluate the expression
-	if strings.Count(l, "${{") != 1 || strings.Count(l, "}}") != 1 || !strings.HasPrefix(l, "${{") || !strings.HasSuffix(l, "}}") {
+	if strings.Count(l, "${{") != 1 || !strings.HasPrefix(l, "${{") || !strings.HasSuffix(l, "}}") {
 		return nil
 	}
 
