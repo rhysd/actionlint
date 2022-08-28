@@ -997,7 +997,6 @@ func (p *parser) parseStep(n *yaml.Node) *Step {
 					}
 				}
 			}
-			exec.WorkingDirectory = workDir
 			ret.Exec = exec
 		case "run", "shell":
 			var exec *ExecRun
@@ -1020,8 +1019,8 @@ func (p *parser) parseStep(n *yaml.Node) *Step {
 			ret.Exec = exec
 		case "working-directory":
 			workDir = p.parseString(kv.val, false)
-			if ret.Exec != nil {
-				ret.Exec.SetWorkingDir(workDir)
+			if e, ok := ret.Exec.(*ExecRun); ok {
+				e.WorkingDirectory = workDir
 			}
 		default:
 			p.unexpectedKey(kv.key, "step", []string{
@@ -1044,6 +1043,9 @@ func (p *parser) parseStep(n *yaml.Node) *Step {
 	case *ExecAction:
 		if e.Uses == nil {
 			p.error(n, "\"uses\" is required to run action in step")
+		}
+		if workDir != nil {
+			p.errorAt(workDir.Pos, "\"working-directory\" is not available with \"uses\". it is only available with \"run\"")
 		}
 	case *ExecRun:
 		if e.Run == nil {

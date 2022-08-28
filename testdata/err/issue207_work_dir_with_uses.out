@@ -1,0 +1,1 @@
+test.yaml:8:28: "working-directory" is not available with "uses". it is only available with "run" [syntax-check]
