@@ -114,7 +114,7 @@ func (p *parser) checkString(n *yaml.Node, allowEmpty bool) bool {
 }
 
 func (p *parser) missingExpression(n *yaml.Node, expecting string) {
-	p.errorf(n, "expecting a string with ${{...}} expression or %s, but found plain text node", expecting)
+	p.errorf(n, "expecting a single ${{...}} expression or %s, but found plain text node", expecting)
 }
 
 func (p *parser) parseExpression(n *yaml.Node, expecting string) *String {

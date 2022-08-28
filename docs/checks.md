@@ -157,7 +157,7 @@ jobs:
 Output:
 
 ```
-test.yaml:6:18: expecting a string with ${{...}} expression or boolean literal "true" or "false", but found plain text node [syntax-check]
+test.yaml:6:18: expecting a single ${{...}} expression or boolean literal "true" or "false", but found plain text node [syntax-check]
   |
 6 |       fail-fast: off
   |                  ^~~
@@ -165,7 +165,7 @@ test.yaml:8:21: expected scalar node for integer value but found scalar node wit
   |
 8 |       max-parallel: 1.5
   |                     ^~~
-test.yaml:13:26: expecting a string with ${{...}} expression or float number literal, but found plain text node [syntax-check]
+test.yaml:13:26: expecting a single ${{...}} expression or float number literal, but found plain text node [syntax-check]
    |
 13 |         timeout-minutes: two minutes
    |                          ^~~
