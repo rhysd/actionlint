@@ -795,7 +795,7 @@ func (rule *RuleExpression) populateDependantNeedsTypes(out *ObjectType, job *Jo
 			"result":  StringType{},
 		})
 
-		rule.populateDependantNeedsTypes(out, j, root) // Add necessary needs props recursively
+		// Do not collect outputs type from parent of parent recursively. (#151)
 	}
 }
 

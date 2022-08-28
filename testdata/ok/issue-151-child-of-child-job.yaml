@@ -1,0 +1,26 @@
+name: Test
+
+on: push
+
+jobs:
+  first:
+    runs-on: ubuntu-latest
+    outputs:
+      first: 'output from parent'
+    steps:
+      - run: echo 'first'
+
+  second:
+    needs: [first]
+    runs-on: ubuntu-latest
+    outputs:
+      second: 'output from second'
+    steps:
+      - run: echo 'second'
+
+  third:
+    needs: [first, second]
+    runs-on: ubuntu-latest
+    steps:
+      - run: echo '${{ toJSON(needs.second.outputs) }}'
+      - run: echo '${{ toJSON(needs.first.outputs) }}'
