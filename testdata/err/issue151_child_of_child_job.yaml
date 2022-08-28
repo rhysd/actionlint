@@ -24,3 +24,10 @@ jobs:
     steps:
       - run: echo '${{ toJSON(needs.second.outputs) }}'
       - run: echo '${{ toJSON(needs.first.outputs) }}'
+
+  third-ok:
+    needs: [first, second]
+    runs-on: ubuntu-latest
+    steps:
+      - run: echo '${{ toJSON(needs.second.outputs) }}'
+      - run: echo '${{ toJSON(needs.first.outputs) }}'
