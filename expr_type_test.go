@@ -384,18 +384,37 @@ func TestExprTypeStringize(t *testing.T) {
 			want: "{foo: string}",
 		},
 		{
-			what: "non-strict object",
+			what: "loose object",
 			ty: NewObjectType(map[string]ExprType{
 				"foo": StringType{},
 			}),
 			want: "object",
 		},
 		{
-			what: "strict props object",
+			what: "strict object",
 			ty: NewStrictObjectType(map[string]ExprType{
 				"foo": StringType{},
 			}),
 			want: "{foo: string}",
+		},
+		{
+			what: "multiple props object",
+			ty: NewStrictObjectType(map[string]ExprType{
+				"foo": StringType{},
+				"bar": NumberType{},
+			}),
+			want: "{bar: number; foo: string}",
+		},
+		{
+			what: "nested objects",
+			ty: NewStrictObjectType(map[string]ExprType{
+				"foo": StringType{},
+				"nested": NewStrictObjectType(map[string]ExprType{
+					"foo": StringType{},
+					"bar": NumberType{},
+				}),
+			}),
+			want: "{foo: string; nested: {bar: number; foo: string}}",
 		},
 		{
 			what: "array",
@@ -403,12 +422,12 @@ func TestExprTypeStringize(t *testing.T) {
 			want: "array<any>",
 		},
 		{
-			what: "nested array",
+			what: "nested arrays",
 			ty:   &ArrayType{Elem: &ArrayType{BoolType{}, true}},
 			want: "array<array<bool>>",
 		},
 		{
-			what: "object",
+			what: "array nested in object",
 			ty: NewStrictObjectType(map[string]ExprType{
 				"foo": &ArrayType{
 					Elem: NewStrictObjectType(map[string]ExprType{

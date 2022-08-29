@@ -2,6 +2,7 @@ package actionlint
 
 import (
 	"fmt"
+	"sort"
 	"strings"
 )
 
@@ -249,10 +250,27 @@ func (ty *ObjectType) String() string {
 	}
 
 	ps := make([]string, 0, len(ty.Props))
-	for n, t := range ty.Props {
-		ps = append(ps, fmt.Sprintf("%s: %s", n, t.String()))
+	for n := range ty.Props {
+		ps = append(ps, n)
 	}
-	return fmt.Sprintf("{%s}", strings.Join(ps, "; "))
+	sort.Strings(ps)
+
+	var b strings.Builder
+	b.WriteByte('{')
+	first := true
+	for _, p := range ps {
+		if first {
+			first = false
+		} else {
+			b.WriteString("; ")
+		}
+		b.WriteString(p)
+		b.WriteString(": ")
+		b.WriteString(ty.Props[p].String())
+	}
+	b.WriteByte('}')
+
+	return b.String()
 }
 
 // Assignable returns if other type can be assignable to the type.
