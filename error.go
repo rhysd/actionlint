@@ -39,6 +39,10 @@ func (e *Error) Error() string {
 	return fmt.Sprintf("%s:%d:%d: %s [%s]", e.Filepath, e.Line, e.Column, e.Message, e.Kind)
 }
 
+func (e *Error) String() string {
+	return e.Error()
+}
+
 func errorAt(pos *Pos, kind string, msg string) *Error {
 	return &Error{
 		Message: msg,

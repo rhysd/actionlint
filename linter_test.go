@@ -111,7 +111,7 @@ func checkErrors(t *testing.T, outfile string, errs []*Error) {
 	}
 
 	if len(errs) != len(expected) {
-		t.Fatalf("%d errors are expected but actually got %d errors: %# v", len(expected), len(errs), errs)
+		t.Fatalf("%d errors are expected but actually got %d errors: %v", len(expected), len(errs), errs)
 	}
 
 	sort.Sort(ByErrorPosition(errs))

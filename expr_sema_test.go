@@ -1097,7 +1097,7 @@ func TestExprSemanticsCheckError(t *testing.T) {
 			}
 			_, errs := c.Check(e)
 			if len(errs) != len(tc.expected) {
-				t.Fatalf("semantics check should report %d errors but got %d errors %#v", len(tc.expected), len(errs), errs)
+				t.Fatalf("semantics check should report %d errors but got %d errors: %v", len(tc.expected), len(errs), errs)
 			}
 		LoopErrs:
 			for _, err := range errs {

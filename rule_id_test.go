@@ -58,7 +58,7 @@ func TestCheckInvalidJobNames(t *testing.T) {
 				}
 				errs := r.Errs()
 				if len(errs) != 1 {
-					t.Fatalf("Wanted exactly one error but got %d errors: %#v", len(errs), errs)
+					t.Fatalf("Wanted exactly one error but got %d errors: %v", len(errs), errs)
 				}
 				msg := errs[0].Error()
 				if !strings.Contains(msg, tc.expected) {

@@ -59,10 +59,10 @@ func TestValidateGlobOK(t *testing.T) {
 	for _, input := range testCases {
 		t.Run(input, func(t *testing.T) {
 			if errs := ValidateRefGlob(input); len(errs) > 0 {
-				t.Errorf("ref glob %q caused errors: %#v", input, errs)
+				t.Errorf("ref glob %q caused %d errors: %v", input, len(errs), errs)
 			}
 			if errs := ValidatePathGlob(input); len(errs) > 0 {
-				t.Errorf("path glob %q caused errors: %#v", input, errs)
+				t.Errorf("path glob %q caused %d errors: %v", input, len(errs), errs)
 			}
 		})
 	}
@@ -97,7 +97,7 @@ func TestValidateGlobPathOnlyOK(t *testing.T) {
 	for _, input := range testCases {
 		t.Run(input, func(t *testing.T) {
 			if errs := ValidatePathGlob(input); len(errs) > 0 {
-				t.Fatalf("path glob %q caused errors: %#v", input, errs)
+				t.Fatalf("path glob %q caused errors: %v", input, errs)
 			}
 		})
 	}
@@ -377,7 +377,7 @@ func TestValidateGlobErrorColumn(t *testing.T) {
 			errs := ValidateRefGlob(tc.input)
 
 			if len(errs) != 1 {
-				t.Fatalf("wanted 1 error from %q but got %d errors: %#v", tc.input, len(errs), errs)
+				t.Fatalf("wanted 1 error from %q but got %d errors: %v", tc.input, len(errs), errs)
 			}
 
 			want, have := tc.col, errs[0].Column

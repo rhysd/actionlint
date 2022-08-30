@@ -18,3 +18,7 @@ type ExprError struct {
 func (e *ExprError) Error() string {
 	return fmt.Sprintf("%d:%d:%d: %s", e.Line, e.Column, e.Offset, e.Message)
 }
+
+func (e *ExprError) String() string {
+	return e.Error()
+}

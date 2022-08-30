@@ -33,6 +33,10 @@ func (err *InvalidGlobPattern) Error() string {
 	return fmt.Sprintf("%d: %s", err.Column, err.Message)
 }
 
+func (err *InvalidGlobPattern) String() string {
+	return err.Error()
+}
+
 type globValidator struct {
 	isRef bool
 	prec  bool
