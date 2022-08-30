@@ -7,7 +7,6 @@ on:
         default: https
         type: string
       host:
-        # ERROR: Missing description
         default: example.com
         type: string
       port:

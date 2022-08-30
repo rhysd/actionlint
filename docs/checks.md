@@ -1942,7 +1942,6 @@ on:
         default: https
         type: string
       host:
-        # ERROR: Missing description
         default: example.com
         type: string
       port:
@@ -1970,21 +1969,17 @@ jobs:
 Output:
 
 ```
-test.yaml:9:7: "description" is missing at "host" input of workflow_call event [syntax-check]
-  |
-9 |       host:
-  |       ^~~~~
-test.yaml:16:18: input of workflow_call event "port" is typed as number but its default value ":1234" cannot be parsed as a float number: strconv.ParseFloat: parsing ":1234": invalid syntax [events]
+test.yaml:15:18: input of workflow_call event "port" is typed as number but its default value ":1234" cannot be parsed as a float number: strconv.ParseFloat: parsing ":1234": invalid syntax [events]
    |
-16 |         default: ':1234'
+15 |         default: ':1234'
    |                  ^~~~~~~
-test.yaml:21:15: invalid value "object" for input type of workflow_call event. it must be one of "boolean", "number", or "string" [syntax-check]
+test.yaml:20:15: invalid value "object" for input type of workflow_call event. it must be one of "boolean", "number", or "string" [syntax-check]
    |
-21 |         type: object
+20 |         type: object
    |               ^~~~~~
-test.yaml:26:18: input "path" of workflow_call event has the default value "", but it is also required. if an input is marked as required, its default value will never be used [events]
+test.yaml:25:18: input "path" of workflow_call event has the default value "", but it is also required. if an input is marked as required, its default value will never be used [events]
    |
-26 |         default: ''
+25 |         default: ''
    |                  ^~
 ```
 

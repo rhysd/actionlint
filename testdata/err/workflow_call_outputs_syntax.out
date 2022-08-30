@@ -1,6 +1,4 @@
-test.yaml:4:7: "description" is missing at "missing-description" output of workflow_call event [syntax-check]
 test.yaml:6:7: "value" is missing at "missing-value" output of workflow_call event [syntax-check]
-test.yaml:8:7: "description" is missing at "missing-all" output of workflow_call event [syntax-check]
 test.yaml:8:7: "value" is missing at "missing-all" output of workflow_call event [syntax-check]
 test.yaml:12:9: unexpected key "unknown-section" for "outputs at workflow_call event" section. expected one of "description", "value" [syntax-check]
 test.yaml:16:7: key "duplicate-key" is duplicated in "outputs" section. previously defined at line:13,col:7. note that key names are case insensitive [syntax-check]

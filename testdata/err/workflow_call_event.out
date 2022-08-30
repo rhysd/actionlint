@@ -1,7 +1,5 @@
-test.yaml:5:7: "description" is missing at "input0" input of workflow_call event [syntax-check]
 test.yaml:5:7: "type" is missing at "input0" input of workflow_call event [syntax-check]
 test.yaml:7:7: "type" is missing at "input1" input of workflow_call event [syntax-check]
-test.yaml:10:7: "description" is missing at "input2" input of workflow_call event [syntax-check]
 test.yaml:15:15: invalid value "unknown" for input type of workflow_call event. it must be one of "boolean", "number", or "string" [syntax-check]
 test.yaml:17:7: "type" is missing at "input4" input of workflow_call event [syntax-check]
 test.yaml:19:19: expecting a single ${{...}} expression or boolean literal "true" or "false", but found plain text node [syntax-check]
