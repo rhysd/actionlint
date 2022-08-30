@@ -1,0 +1,23 @@
+on:
+  workflow_call:
+    inputs:
+      username:
+        required: true
+        type: string
+    secrets:
+      token:
+        required: true
+    outputs:
+      firstword:
+        value: ${{ jobs.example_job.outputs.output1 }}
+
+jobs:
+  example_job:
+    runs-on: ubuntu-latest
+    outputs:
+      output1: ${{ steps.step1.outputs.firstword }}
+    steps:
+      - id: step1
+        run: echo "::set-output name=firstword::hello, ${{ inputs.username }}"
+        env:
+          TOKEN: ${{ secrets.token }}

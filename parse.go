@@ -492,9 +492,6 @@ func (p *parser) parseWorkflowCallEvent(pos *Pos, n *yaml.Node) *WorkflowCallEve
 					}
 				}
 
-				if input.Description == nil {
-					p.errorfAt(name.Pos, "\"description\" is missing at %q input of workflow_call event", name.Value)
-				}
 				if !sawType {
 					p.errorfAt(name.Pos, "\"type\" is missing at %q input of workflow_call event", name.Value)
 				}
@@ -536,9 +533,6 @@ func (p *parser) parseWorkflowCallEvent(pos *Pos, n *yaml.Node) *WorkflowCallEve
 					default:
 						p.unexpectedKey(attr.key, "outputs at workflow_call event", []string{"description", "value"})
 					}
-				}
-				if output.Description == nil {
-					p.errorfAt(name.Pos, "\"description\" is missing at %q output of workflow_call event", name.Value)
 				}
 				if output.Value == nil {
 					p.errorfAt(name.Pos, "\"value\" is missing at %q output of workflow_call event", name.Value)
