@@ -225,7 +225,7 @@ func TestErrorPrettyPrint(t *testing.T) {
 	}
 }
 
-func TestErrorSortByErrorPosition(t *testing.T) {
+func TestErrorSortErrosByPosition(t *testing.T) {
 	testCases := [][]struct {
 		line int
 		col  int
@@ -267,6 +267,38 @@ func TestErrorSortByErrorPosition(t *testing.T) {
 				}
 			}
 		})
+	}
+}
+
+func TestErrorSortErrosByFile(t *testing.T) {
+	errs := []*Error{
+		{
+			Filepath: "path/to/C.txt",
+			Line:     1,
+			Column:   2,
+		},
+		{
+			Filepath: "path/to/A.txt",
+			Line:     2,
+			Column:   4,
+		},
+		{
+			Filepath: "path/to/B.txt",
+			Line:     3,
+			Column:   6,
+		},
+	}
+
+	sort.Sort(ByErrorPosition(errs))
+
+	for i, want := range []string{
+		"path/to/A.txt",
+		"path/to/B.txt",
+		"path/to/C.txt",
+	} {
+		if have := errs[i].Filepath; have != want {
+			t.Errorf("Errors were not sorted correctly. expected %q for errs[%d] but got %q: %v", want, i, have, errs)
+		}
 	}
 }
 
@@ -495,5 +527,19 @@ func TestErrorFormatterPrintJSONEncodeError(t *testing.T) {
 	want := "could not encode template value into JSON"
 	if !strings.Contains(err.Error(), want) {
 		t.Fatalf("%q is not contained in error message %q", want, err.Error())
+	}
+}
+
+func TestErrorString(t *testing.T) {
+	err := &Error{
+		Message: "this is message",
+		Line:    1,
+		Column:  2,
+		Kind:    "test",
+	}
+	want := err.Error()
+	have := err.String()
+	if want != have {
+		t.Fatalf("wanted %q but have %q", want, have)
 	}
 }
