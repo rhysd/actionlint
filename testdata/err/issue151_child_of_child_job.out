@@ -1,1 +1,1 @@
-/test\.yaml:26:31: property "first" is not defined in object type {second: {.*outputs: {second: string}.*}} \[expression\]/
+test.yaml:26:31: property "first" is not defined in object type {second: {outputs: {second: string}; result: string}} [expression]

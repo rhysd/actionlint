@@ -1,5 +1,5 @@
-/test\.yaml:21:24: property "select" is not defined in object type {.*boolean: bool.*} \[expression\]/
-/test\.yaml:22:24: property "select" is not defined in object type {.*boolean: string.*} \[expression\]/
+test.yaml:21:24: property "select" is not defined in object type {boolean: bool; choice: string; environment: string; string: string} [expression]
+test.yaml:22:24: property "select" is not defined in object type {boolean: string; choice: string; environment: string; string: string} [expression]
 test.yaml:24:31: property access of object must be type of string but got "bool" [expression]
 test.yaml:28:39: index access of array must be type of number but got "string" [expression]
 test.yaml:29:39: index access of array must be type of number but got "string" [expression]

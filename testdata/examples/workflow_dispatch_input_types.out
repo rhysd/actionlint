@@ -2,6 +2,6 @@ test.yaml:6:15: input type of workflow_dispatch event must be one of "string", "
 test.yaml:8:7: input type of "kind" is "choice" but "options" is not set [events]
 test.yaml:16:18: default value "Chobi" of "name" input is not included in its options "\"Tama\", \"Mike\"" [events]
 test.yaml:22:18: type of "verbose" input is "boolean". its default value "yes" must be "true" or "false" [events]
-/test\.yaml:29:24: property "massage" is not defined in object type {.+} \[expression\]/
+test.yaml:29:24: property "massage" is not defined in object type {id: any; kind: string; message: string; name: string; verbose: bool} [expression]
 test.yaml:31:28: property access of object must be type of string but got "bool" [expression]
-/test\.yaml:33:24: property "massage" is not defined in object type {.+} \[expression\]/
+test.yaml:33:24: property "massage" is not defined in object type {id: string; kind: string; message: string; name: string; verbose: string} [expression]
