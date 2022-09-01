@@ -132,7 +132,7 @@ func (rule *RuleAction) checkDockerAction(uri string, exec *ExecAction) {
 func (rule *RuleAction) checkLocalAction(path string, action *ExecAction) {
 	meta, err := rule.cache.FindMetadata(path)
 	if err != nil {
-		rule.errorf(action.Uses.Pos, "error while parsing local action metadata: %s", err)
+		rule.error(action.Uses.Pos, err.Error())
 		return
 	}
 	if meta == nil {

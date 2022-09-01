@@ -112,6 +112,7 @@ func (c *LocalActionsCache) FindMetadata(spec string) (*ActionMetadata, error) {
 	dir := filepath.Join(c.proj.RootDir(), filepath.FromSlash(spec))
 	b, ok := c.readLocalActionMetadataFile(dir)
 	if !ok {
+		c.debug("No action metadata found in %s", dir)
 		// Remember action was not found
 		c.writeCache(spec, nil)
 		// Do not complain about the action does not exist (#25, #40).
@@ -124,7 +125,7 @@ func (c *LocalActionsCache) FindMetadata(spec string) (*ActionMetadata, error) {
 	if err := yaml.Unmarshal(b, &meta); err != nil {
 		c.writeCache(spec, nil) // Remember action was invalid
 		msg := strings.ReplaceAll(err.Error(), "\n", " ")
-		return nil, fmt.Errorf("action.yml in %q is invalid: %s", dir, msg)
+		return nil, fmt.Errorf("could not parse action metadata in %q: %s", dir, msg)
 	}
 
 	c.debug("New metadata parsed from action %s: %v", dir, &meta)

@@ -215,7 +215,7 @@ func TestLocalActionsBrokenMetadata(t *testing.T) {
 	if err == nil {
 		t.Fatal("error was not returned", m)
 	}
-	if !strings.Contains(err.Error(), "invalid: yaml: line 2:") {
+	if !strings.Contains(err.Error(), "could not parse action metadata") {
 		t.Fatal("unexpected error:", err)
 	}
 
@@ -268,7 +268,7 @@ func TestLocalActionsConcurrentFailures(t *testing.T) {
 	if err == nil {
 		t.Fatal("error did not occur", err)
 	}
-	if !strings.Contains(err.Error(), " is invalid: yaml:") {
+	if !strings.Contains(err.Error(), "could not parse action metadata") {
 		t.Fatal("unexpected error:", err)
 	}
 }
@@ -361,7 +361,7 @@ func TestLocalActionsConcurrentMultipleMetadataAndFailures(t *testing.T) {
 	if err == nil {
 		t.Fatal("error did not occur", err)
 	}
-	if !strings.Contains(err.Error(), " is invalid: yaml:") {
+	if !strings.Contains(err.Error(), "could not parse action metadata") {
 		t.Fatal("unexpected error:", err)
 	}
 

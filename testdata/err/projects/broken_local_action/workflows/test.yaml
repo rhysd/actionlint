@@ -1,0 +1,9 @@
+on: push
+
+jobs:
+  test:
+    runs-on: ubuntu-18.04
+    steps:
+      - uses: ./action/broken
+        with:
+          hello: world
