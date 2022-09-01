@@ -110,10 +110,14 @@ func (c *LocalActionsCache) FindMetadata(spec string) (*ActionMetadata, error) {
 	}
 
 	dir := filepath.Join(c.proj.RootDir(), filepath.FromSlash(spec))
-	b, err := c.readLocalActionMetadataFile(dir)
-	if err != nil {
-		c.writeCache(spec, nil) // Remember action was not found
-		return nil, err
+	b, ok := c.readLocalActionMetadataFile(dir)
+	if !ok {
+		// Remember action was not found
+		c.writeCache(spec, nil)
+		// Do not complain about the action does not exist (#25, #40).
+		// It seems a common pattern that the local action does not exist in the repository
+		// (e.g. Git submodule) and it is cloned at running workflow (due to a private repository).
+		return nil, nil
 	}
 
 	var meta ActionMetadata
@@ -129,22 +133,17 @@ func (c *LocalActionsCache) FindMetadata(spec string) (*ActionMetadata, error) {
 	return &meta, nil
 }
 
-func (c *LocalActionsCache) readLocalActionMetadataFile(dir string) ([]byte, error) {
+func (c *LocalActionsCache) readLocalActionMetadataFile(dir string) ([]byte, bool) {
 	for _, p := range []string{
 		filepath.Join(dir, "action.yaml"),
 		filepath.Join(dir, "action.yml"),
 	} {
 		if b, err := os.ReadFile(p); err == nil {
-			return b, nil
+			return b, true
 		}
 	}
 
-	if c.cwd != "" {
-		if p, err := filepath.Rel(c.cwd, dir); err == nil {
-			dir = p
-		}
-	}
-	return nil, fmt.Errorf("neither action.yaml nor action.yml is found in directory \"%s\"", dir)
+	return nil, false
 }
 
 // LocalActionsCacheFactory is a factory to create LocalActionsCache instances. LocalActionsCache

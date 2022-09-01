@@ -127,16 +127,40 @@ func TestLocalActionsFindConcurrently(t *testing.T) {
 	}
 }
 
-func TestLocalActionsProjectIsNil(t *testing.T) {
-	c := NewLocalActionsCache(nil, "", nil)
-	for _, spec := range []string{"./action-yml", "this-action-does-not-exit"} {
-		m, err := c.FindMetadata(spec)
-		if err != nil {
-			t.Fatal(spec, "error occurred:", err)
-		}
-		if m != nil {
-			t.Fatal(spec, "metadata was parsed", m)
-		}
+func TestLocalActionsParsingSkipped(t *testing.T) {
+	tests := []struct {
+		what string
+		proj *Project
+		spec string
+	}{
+		{
+			what: "project is nil",
+			proj: nil,
+			spec: "./action",
+		},
+		{
+			what: "not a local action",
+			proj: &Project{"", nil},
+			spec: "actions/checkout@v3",
+		},
+		{
+			what: "action does not exist (#25, #40)",
+			proj: &Project{filepath.Join("testdata", "action_metadata"), nil},
+			spec: "./this-action-does-not-exist",
+		},
+	}
+
+	for _, tc := range tests {
+		t.Run(tc.what, func(t *testing.T) {
+			c := NewLocalActionsCache(tc.proj, "", nil)
+			m, err := c.FindMetadata(tc.spec)
+			if err != nil {
+				t.Fatal(tc.spec, "error occurred:", err)
+			}
+			if m != nil {
+				t.Fatal(tc.spec, "metadata was parsed", m)
+			}
+		})
 	}
 }
 
@@ -184,55 +208,33 @@ func TestLocalActionsLogCacheHit(t *testing.T) {
 
 // Error cases
 
-func TestLocalActionsFailures(t *testing.T) {
+func TestLocalActionsBrokenMetadata(t *testing.T) {
 	proj := &Project{filepath.Join("testdata", "action_metadata"), nil}
-
-	testCases := []struct {
-		what string
-		spec string
-		want string
-	}{
-		{
-			what: "file not found",
-			spec: "./this-action-does-not-exist",
-			want: "neither action.yaml nor action.yml is found in directory",
-		},
-		{
-			what: "broken metadata YAML",
-			spec: "./broken",
-			want: "invalid: yaml: line 2:",
-		},
+	c := NewLocalActionsCache(proj, "", nil)
+	m, err := c.FindMetadata("./broken")
+	if err == nil {
+		t.Fatal("error was not returned", m)
+	}
+	if !strings.Contains(err.Error(), "invalid: yaml: line 2:") {
+		t.Fatal("unexpected error:", err)
 	}
 
-	for _, tc := range testCases {
-		t.Run(tc.what, func(t *testing.T) {
-			c := NewLocalActionsCache(proj, "", nil)
-			m, err := c.FindMetadata(tc.spec)
-			if err == nil {
-				t.Fatal("error was not returned", m)
-			}
-			if !strings.Contains(err.Error(), tc.want) {
-				t.Fatal("unexpected error:", err)
-			}
+	// Second try does not return error, but metadata is also nil not to show the same error from
+	// multiple rules.
+	m, err = c.FindMetadata("./broken")
+	if err != nil {
+		t.Fatal("error was returned at second try", err)
+	}
+	if m != nil {
+		t.Fatal("metadata was not nil even if it does not exist", m)
+	}
 
-			// Second try does not return error, but metadata is also nil not to show the same error from
-			// multiple rules.
-			m, err = c.FindMetadata(tc.spec)
-			if err != nil {
-				t.Fatal("error was returned at second try", err)
-			}
-			if m != nil {
-				t.Fatal("metadata was not nil even if it does not exist", m)
-			}
-
-			m, ok := c.cache[tc.spec]
-			if !ok {
-				t.Fatal("error was not cached", c.cache)
-			}
-			if m != nil {
-				t.Fatal("metadata should be nil when it caused an error", c.cache)
-			}
-		})
+	m, ok := c.cache["./broken"]
+	if !ok {
+		t.Fatal("error was not cached", c.cache)
+	}
+	if m != nil {
+		t.Fatal("metadata should be nil when it caused an error", c.cache)
 	}
 }
 
@@ -244,7 +246,7 @@ func TestLocalActionsConcurrentFailures(t *testing.T) {
 
 	for i := 0; i < n; i++ {
 		go func() {
-			_, err := c.FindMetadata("./this-action-does-not-exist")
+			_, err := c.FindMetadata("./broken")
 			errC <- err
 		}()
 	}
@@ -266,7 +268,7 @@ func TestLocalActionsConcurrentFailures(t *testing.T) {
 	if err == nil {
 		t.Fatal("error did not occur", err)
 	}
-	if !strings.Contains(err.Error(), "neither action.yaml nor action.yml is found in directory") {
+	if !strings.Contains(err.Error(), " is invalid: yaml:") {
 		t.Fatal("unexpected error:", err)
 	}
 }
@@ -279,12 +281,12 @@ func TestLocalActionsConcurrentMultipleMetadataAndFailures(t *testing.T) {
 		"./action-yml",
 		"./action-yaml",
 		"./action-yml",
-		"./this-action-does-not-exist",
+		"./broken",
 		"./action-yaml",
 		"./action-yaml",
-		"./this-action-does-not-exist",
+		"./broken",
 		"./action-yml",
-		"./this-action-does-not-exist",
+		"./broken",
 		"./action-yaml",
 	}
 
@@ -335,7 +337,7 @@ func TestLocalActionsConcurrentMultipleMetadataAndFailures(t *testing.T) {
 
 	numErrs := 0
 	for _, in := range inputs {
-		if in == "./this-action-does-not-exist" {
+		if in == "./broken" {
 			numErrs++
 		}
 	}
@@ -359,7 +361,7 @@ func TestLocalActionsConcurrentMultipleMetadataAndFailures(t *testing.T) {
 	if err == nil {
 		t.Fatal("error did not occur", err)
 	}
-	if !strings.Contains(err.Error(), "neither action.yaml nor action.yml is found in directory") {
+	if !strings.Contains(err.Error(), " is invalid: yaml:") {
 		t.Fatal("unexpected error:", err)
 	}
 
