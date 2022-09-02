@@ -134,6 +134,19 @@ func (c *LocalReusableWorkflowCache) FindMetadata(spec string) (*ReusableWorkflo
 		c.writeCache(spec, nil) // Remember the workflow file was not found
 	}
 
+	m, err := parseReusableWorkflowMetadata(src)
+	if err != nil {
+		c.writeCache(spec, nil) // Remember the workflow file was invalid
+		msg := strings.ReplaceAll(err.Error(), "\n", " ")
+		return nil, fmt.Errorf("reusable workflow file %q is invalid: %s", file, msg)
+	}
+
+	c.debug("New reusable workflow metadata at %s: %v", file, m)
+	c.writeCache(spec, m)
+	return m, nil
+}
+
+func parseReusableWorkflowMetadata(src []byte) (*ReusableWorkflowMetadata, error) {
 	type workflow struct {
 		On struct {
 			WorkflowCall *ReusableWorkflowMetadata `yaml:"workflow_call"`
@@ -142,12 +155,18 @@ func (c *LocalReusableWorkflowCache) FindMetadata(spec string) (*ReusableWorkflo
 
 	var w workflow
 	if err := yaml.Unmarshal(src, &w); err != nil {
-		c.writeCache(spec, nil) // Remember the workflow file was invalid
-		msg := strings.ReplaceAll(err.Error(), "\n", " ")
-		return nil, fmt.Errorf("reusable workflow file %q is invalid: %s", file, msg)
+		type workflowEventAsValue struct {
+			On struct {
+				WorkflowCall *ReusableWorkflowMetadata `yaml:"workflow_call"`
+			} `yaml:"on"`
+		}
+		return nil, err
 	}
-
-	c.debug("New reusable workflow metadata at %s: %v", file, w.On.WorkflowCall)
-	c.writeCache(spec, w.On.WorkflowCall)
+	if w.On.WorkflowCall == nil {
+		// When the workflow call is empty like:
+		//   on:
+		//     workflow_call:
+		return &ReusableWorkflowMetadata{}, nil
+	}
 	return w.On.WorkflowCall, nil
 }
