@@ -40,6 +40,11 @@ func TestConfigParseOK(t *testing.T) {
 			input:  "self-hosted-runner:\n  labels: [foo, bar]",
 			labels: []string{"foo", "bar"},
 		},
+		{
+			what:   "enforce empty permissions",
+			input:  "enforce_empty_permissions: true \n",
+			labels: nil,
+		},
 	}
 
 	for _, tc := range testCases {
