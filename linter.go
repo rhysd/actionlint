@@ -289,7 +289,7 @@ func (l *Linter) LintFiles(filepaths []string, project *Project) ([]*Error, erro
 	proc := newConcurrentProcess(runtime.NumCPU())
 	sema := semaphore.NewWeighted(int64(runtime.NumCPU()))
 	ctx := context.Background()
-	factory := NewLocalActionsCacheFactory(l.cwd, l.debugWriter())
+	factory := NewLocalActionsCacheFactory(l.debugWriter())
 
 	type workspace struct {
 		path string
@@ -393,7 +393,7 @@ func (l *Linter) LintFile(path string, project *Project) ([]*Error, error) {
 	}
 
 	proc := newConcurrentProcess(runtime.NumCPU())
-	localActions := NewLocalActionsCache(project, l.cwd, l.debugWriter())
+	localActions := NewLocalActionsCache(project, l.debugWriter())
 	errs, err := l.check(path, src, project, proc, localActions)
 	proc.wait()
 	if err != nil {
@@ -415,7 +415,7 @@ func (l *Linter) LintFile(path string, project *Project) ([]*Error, error) {
 // based on path parameter.
 func (l *Linter) Lint(path string, content []byte, project *Project) ([]*Error, error) {
 	proc := newConcurrentProcess(runtime.NumCPU())
-	localActions := NewLocalActionsCache(project, l.cwd, l.debugWriter())
+	localActions := NewLocalActionsCache(project, l.debugWriter())
 	errs, err := l.check(path, content, project, proc, localActions)
 	proc.wait()
 	if err != nil {

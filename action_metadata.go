@@ -58,16 +58,14 @@ type LocalActionsCache struct {
 	mu    sync.RWMutex
 	proj  *Project // might be nil
 	cache map[string]*ActionMetadata
-	cwd   string
 	dbg   io.Writer
 }
 
 // NewLocalActionsCache creates new LocalActionsCache instance for the given project.
-func NewLocalActionsCache(proj *Project, cwd string, dbg io.Writer) *LocalActionsCache {
+func NewLocalActionsCache(proj *Project, dbg io.Writer) *LocalActionsCache {
 	return &LocalActionsCache{
 		proj:  proj,
 		cache: map[string]*ActionMetadata{},
-		cwd:   cwd,
 		dbg:   dbg,
 	}
 }
@@ -152,7 +150,6 @@ func (c *LocalActionsCache) readLocalActionMetadataFile(dir string) ([]byte, boo
 // instance per repository (project).
 type LocalActionsCacheFactory struct {
 	caches map[string]*LocalActionsCache
-	cwd    string
 	dbg    io.Writer
 }
 
@@ -164,12 +161,12 @@ func (f *LocalActionsCacheFactory) GetCache(p *Project) *LocalActionsCache {
 	if c, ok := f.caches[r]; ok {
 		return c
 	}
-	c := NewLocalActionsCache(p, f.cwd, f.dbg)
+	c := NewLocalActionsCache(p, f.dbg)
 	f.caches[r] = c
 	return c
 }
 
 // NewLocalActionsCacheFactory creates a new LocalActionsCacheFactory instance.
-func NewLocalActionsCacheFactory(cwd string, dbg io.Writer) *LocalActionsCacheFactory {
-	return &LocalActionsCacheFactory{map[string]*LocalActionsCache{}, cwd, dbg}
+func NewLocalActionsCacheFactory(dbg io.Writer) *LocalActionsCacheFactory {
+	return &LocalActionsCacheFactory{map[string]*LocalActionsCache{}, dbg}
 }
