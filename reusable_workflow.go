@@ -132,6 +132,7 @@ func (c *LocalReusableWorkflowCache) FindMetadata(spec string) (*ReusableWorkflo
 	if err != nil {
 		c.debug("File %q was not found: %s", file, err.Error())
 		c.writeCache(spec, nil) // Remember the workflow file was not found
+		return nil, nil
 	}
 
 	m, err := parseReusableWorkflowMetadata(src)
@@ -191,4 +192,12 @@ func parseReusableWorkflowMetadata(src []byte) (*ReusableWorkflowMetadata, error
 	}
 
 	return nil, fmt.Errorf("\"workflow_call\" event trigger is not found in \"on:\" at line:%d, column:%d", n.Line, n.Column)
+}
+
+func NewLocalReusableWorkflowCache(proj *Project, dbg io.Writer) *LocalReusableWorkflowCache {
+	return &LocalReusableWorkflowCache{
+		proj:  proj,
+		cache: map[string]*ReusableWorkflowMetadata{},
+		dbg:   dbg,
+	}
 }

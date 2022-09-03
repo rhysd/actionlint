@@ -2,6 +2,7 @@ package actionlint
 
 import (
 	"fmt"
+	"path/filepath"
 	"strings"
 	"testing"
 
@@ -315,6 +316,133 @@ func TestReusableWorkflowUnmarshalEventNotFound(t *testing.T) {
 			loc := fmt.Sprintf("line:%d, column:%d", tc.line, tc.col)
 			if !strings.Contains(msg, loc) {
 				t.Fatalf("location is not %q: %s", loc, msg)
+			}
+		})
+	}
+}
+
+var testReusableWorkflowWantedMetadata *ReusableWorkflowMetadata = &ReusableWorkflowMetadata{
+	Inputs: map[string]*ReusableWorkflowMetadataInput{
+		"input1": {Type: StringType{}},
+		"input2": {Type: BoolType{}, Required: true},
+	},
+	Outputs: map[string]struct{}{
+		"output1": {},
+	},
+	Secrets: map[string]ReusableWorkflowMetadataSecretRequired{
+		"secret1": false,
+		"secret2": true,
+	},
+}
+
+func TestReusableWorkflowCacheFindMetadataOK(t *testing.T) {
+	proj := &Project{filepath.Join("testdata", "reusable_workflow_metadata"), nil}
+	c := NewLocalReusableWorkflowCache(proj, nil)
+
+	m, err := c.FindMetadata("./ok.yaml")
+	if err != nil {
+		t.Fatal(err)
+	}
+	if !cmp.Equal(m, testReusableWorkflowWantedMetadata) {
+		t.Fatal(cmp.Diff(m, testReusableWorkflowWantedMetadata))
+	}
+
+	m2, err := c.FindMetadata("./ok.yaml")
+	if err != nil {
+		t.Fatal(err)
+	}
+	if m != m2 {
+		t.Error("metadata is not cached")
+	}
+}
+
+func TestReusableWorkflowCacheFindMetadataError(t *testing.T) {
+	tests := []struct {
+		what string
+		spec string
+		want string
+	}{
+		{
+			what: "broken workflow",
+			spec: "./broken.yaml",
+			want: " is invalid: yaml:",
+		},
+		{
+			what: "no hook",
+			spec: "./no_hook.yaml",
+			want: "\"workflow_call\" event trigger is not found in \"on:\"",
+		},
+		{
+			what: "no on",
+			spec: "./no_on.yaml",
+			want: "\"on:\" is not found",
+		},
+	}
+
+	for _, tc := range tests {
+		t.Run(tc.what, func(t *testing.T) {
+			proj := &Project{filepath.Join("testdata", "reusable_workflow_metadata"), nil}
+			c := NewLocalReusableWorkflowCache(proj, nil)
+			_, err := c.FindMetadata(tc.spec)
+			if err == nil {
+				t.Fatal("no error happened")
+			}
+			msg := err.Error()
+			if !strings.Contains(msg, tc.want) {
+				t.Fatalf("unexpected error. wanted %q but got %q", tc.want, msg)
+			}
+			// Trying to find metadata with the same spec later returns nil to avoid duplicate errors
+			m, err := c.FindMetadata(tc.spec)
+			if err != nil {
+				t.Fatal("error happens when finding metadata again:", err)
+			}
+			if m != nil {
+				t.Fatal("nil is not cached:", m)
+			}
+		})
+	}
+}
+
+func TestReusableWorkflowCacheFindMetadataSkipParsing(t *testing.T) {
+	p := &Project{filepath.Join("testdata", "reusable_workflow_metadata"), nil}
+	tests := []struct {
+		what string
+		proj *Project
+		spec string
+	}{
+		{
+			what: "no project",
+			proj: nil,
+			spec: "./ok.yaml",
+		},
+		{
+			what: "not existing workflow",
+			proj: p,
+			spec: "./this-workflow-does-not-exist.yaml",
+		},
+		{
+			what: "external workflow",
+			proj: p,
+			spec: "repo/owner/workflow@main",
+		},
+	}
+
+	for _, tc := range tests {
+		t.Run(tc.what, func(t *testing.T) {
+			c := NewLocalReusableWorkflowCache(tc.proj, nil)
+			m, err := c.FindMetadata(tc.spec)
+			if err != nil {
+				t.Fatal(err)
+			}
+			if m != nil {
+				t.Fatal("metadata should be nil:", m)
+			}
+			m, err = c.FindMetadata(tc.spec)
+			if err != nil {
+				t.Fatal(err)
+			}
+			if m != nil {
+				t.Fatal("nil is not cached:", m)
 			}
 		})
 	}
