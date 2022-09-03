@@ -148,25 +148,47 @@ func (c *LocalReusableWorkflowCache) FindMetadata(spec string) (*ReusableWorkflo
 
 func parseReusableWorkflowMetadata(src []byte) (*ReusableWorkflowMetadata, error) {
 	type workflow struct {
-		On struct {
-			WorkflowCall *ReusableWorkflowMetadata `yaml:"workflow_call"`
-		} `yaml:"on"`
+		On yaml.Node `yaml:"on"`
 	}
 
 	var w workflow
 	if err := yaml.Unmarshal(src, &w); err != nil {
-		type workflowEventAsValue struct {
-			On struct {
-				WorkflowCall *ReusableWorkflowMetadata `yaml:"workflow_call"`
-			} `yaml:"on"`
-		}
 		return nil, err
 	}
-	if w.On.WorkflowCall == nil {
-		// When the workflow call is empty like:
-		//   on:
-		//     workflow_call:
-		return &ReusableWorkflowMetadata{}, nil
+
+	n := &w.On
+	if n.Line == 0 && n.Column == 0 {
+		return nil, fmt.Errorf("\"on:\" is not found")
 	}
-	return w.On.WorkflowCall, nil
+
+	switch n.Kind {
+	case yaml.MappingNode:
+		// on:
+		//   workflow_call:
+		for i := 0; i < len(n.Content); i += 2 {
+			k := strings.ToLower(n.Content[i].Value)
+			if k == "workflow_call" {
+				var m ReusableWorkflowMetadata
+				if err := n.Content[i+1].Decode(&m); err != nil {
+					return nil, err
+				}
+				return &m, nil
+			}
+		}
+	case yaml.ScalarNode:
+		// on: workflow_call
+		if v := strings.ToLower(n.Value); v == "workflow_call" {
+			return &ReusableWorkflowMetadata{}, nil
+		}
+	case yaml.SequenceNode:
+		// on: [workflow_call]
+		for _, c := range n.Content {
+			e := strings.ToLower(c.Value)
+			if e == "workflow_call" {
+				return &ReusableWorkflowMetadata{}, nil
+			}
+		}
+	}
+
+	return nil, fmt.Errorf("\"workflow_call\" event trigger is not found in \"on:\" at line:%d, column:%d", n.Line, n.Column)
 }
