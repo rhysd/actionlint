@@ -289,7 +289,9 @@ func (l *Linter) LintFiles(filepaths []string, project *Project) ([]*Error, erro
 	proc := newConcurrentProcess(runtime.NumCPU())
 	sema := semaphore.NewWeighted(int64(runtime.NumCPU()))
 	ctx := context.Background()
-	factory := NewLocalActionsCacheFactory(l.debugWriter())
+	dbg := l.debugWriter()
+	acf := NewLocalActionsCacheFactory(dbg)
+	rwcf := NewLocalReusableWorkflowCacheFactory(cwd, dbg)
 
 	type workspace struct {
 		path string
@@ -312,7 +314,8 @@ func (l *Linter) LintFiles(filepaths []string, project *Project) ([]*Error, erro
 			// Before entering goroutine, resolve project instance.
 			p = l.projects.At(w.path)
 		}
-		c := factory.GetCache(p) // #173
+		ac := acf.GetCache(p) // #173
+		rwc := rwcf.GetCache(p)
 
 		eg.Go(func() error {
 			// Bound concurrency on reading files to avoid "too many files to open" error (issue #3)
@@ -328,7 +331,7 @@ func (l *Linter) LintFiles(filepaths []string, project *Project) ([]*Error, erro
 					w.path = r // Use relative path if possible
 				}
 			}
-			errs, err := l.check(w.path, src, p, proc, c)
+			errs, err := l.check(w.path, src, p, proc, ac, rwc)
 			if err != nil {
 				return fmt.Errorf("fatal error while checking %s: %w", w.path, err)
 			}
@@ -393,8 +396,10 @@ func (l *Linter) LintFile(path string, project *Project) ([]*Error, error) {
 	}
 
 	proc := newConcurrentProcess(runtime.NumCPU())
-	localActions := NewLocalActionsCache(project, l.debugWriter())
-	errs, err := l.check(path, src, project, proc, localActions)
+	dbg := l.debugWriter()
+	localActions := NewLocalActionsCache(project, dbg)
+	localReusableWorkflows := NewLocalReusableWorkflowCache(project, l.cwd, dbg)
+	errs, err := l.check(path, src, project, proc, localActions, localReusableWorkflows)
 	proc.wait()
 	if err != nil {
 		return nil, err
@@ -415,8 +420,10 @@ func (l *Linter) LintFile(path string, project *Project) ([]*Error, error) {
 // based on path parameter.
 func (l *Linter) Lint(path string, content []byte, project *Project) ([]*Error, error) {
 	proc := newConcurrentProcess(runtime.NumCPU())
-	localActions := NewLocalActionsCache(project, l.debugWriter())
-	errs, err := l.check(path, content, project, proc, localActions)
+	dbg := l.debugWriter()
+	localActions := NewLocalActionsCache(project, dbg)
+	localReusableWorkflows := NewLocalReusableWorkflowCache(project, l.cwd, dbg)
+	errs, err := l.check(path, content, project, proc, localActions, localReusableWorkflows)
 	proc.wait()
 	if err != nil {
 		return nil, err
@@ -429,7 +436,14 @@ func (l *Linter) Lint(path string, content []byte, project *Project) ([]*Error, 
 	return errs, nil
 }
 
-func (l *Linter) check(path string, content []byte, project *Project, proc *concurrentProcess, localActions *LocalActionsCache) ([]*Error, error) {
+func (l *Linter) check(
+	path string,
+	content []byte,
+	project *Project,
+	proc *concurrentProcess,
+	localActions *LocalActionsCache,
+	localReusableWorkflows *LocalReusableWorkflowCache,
+) ([]*Error, error) {
 	// Note: This method is called to check multiple files in parallel.
 	// It must be thread safe assuming fields of Linter are not modified while running.
 
@@ -486,7 +500,7 @@ func (l *Linter) check(path string, content []byte, project *Project, proc *conc
 			NewRuleID(),
 			NewRuleGlob(),
 			NewRulePermissions(),
-			NewRuleWorkflowCall(),
+			NewRuleWorkflowCall(path, localReusableWorkflows),
 			NewRuleExpression(localActions),
 		}
 		if l.shellcheck != "" {
