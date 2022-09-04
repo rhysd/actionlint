@@ -51,6 +51,16 @@ type Bool struct {
 	Pos *Pos
 }
 
+func (b *Bool) String() string {
+	if b.Expression != nil {
+		return b.Expression.Value
+	}
+	if b.Value {
+		return "true"
+	}
+	return "false"
+}
+
 // Int represents generic integer value in YAML file with position.
 type Int struct {
 	// Value is a raw value of the integer string.

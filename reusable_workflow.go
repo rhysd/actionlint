@@ -84,6 +84,7 @@ type LocalReusableWorkflowCache struct {
 	mu    sync.RWMutex
 	proj  *Project // maybe nil
 	cache map[string]*ReusableWorkflowMetadata
+	cwd   string
 	dbg   io.Writer
 }
 
@@ -147,6 +148,83 @@ func (c *LocalReusableWorkflowCache) FindMetadata(spec string) (*ReusableWorkflo
 	return m, nil
 }
 
+func (c *LocalReusableWorkflowCache) convWorkflowPathToSpec(p string) (string, bool) {
+	if c.proj == nil {
+		return "", false
+	}
+	if !filepath.IsAbs(p) {
+		p = filepath.Join(c.cwd, p)
+	}
+	r := c.proj.RootDir()
+	if !strings.HasPrefix(p, r) {
+		return "", false
+	}
+	p, err := filepath.Rel(r, p)
+	if err != nil {
+		return "", false // Unreachable
+	}
+	p = filepath.ToSlash(p)
+	if !strings.HasPrefix(p, "./") {
+		p = "./" + p
+	}
+	return p, true
+}
+
+// While calling this method, the 'event' parameter must not be modified for thread safety. As far
+// as it is met, this method is thread safe.
+func (c *LocalReusableWorkflowCache) WriteWorkflowCallEvent(wpath string, event *WorkflowCallEvent) {
+	// Convert workflow path to workflow call spec
+	spec, ok := c.convWorkflowPathToSpec(wpath)
+	if !ok {
+		return
+	}
+	c.debug("Workflow call spec from workflow path %s: %s", wpath, spec)
+
+	c.mu.RLock()
+	_, ok = c.cache[spec]
+	c.mu.RUnlock()
+	if ok {
+		return
+	}
+
+	m := &ReusableWorkflowMetadata{
+		Inputs:  map[string]*ReusableWorkflowMetadataInput{},
+		Outputs: map[string]struct{}{},
+		Secrets: map[string]ReusableWorkflowMetadataSecretRequired{},
+	}
+
+	for n, i := range event.Inputs {
+		var t ExprType = AnyType{}
+		switch i.Type {
+		case WorkflowCallEventInputTypeBoolean:
+			t = BoolType{}
+		case WorkflowCallEventInputTypeNumber:
+			t = NumberType{}
+		case WorkflowCallEventInputTypeString:
+			t = StringType{}
+		}
+		m.Inputs[n.Value] = &ReusableWorkflowMetadataInput{
+			Type:     t,
+			Required: i.Required != nil && i.Required.Value && i.Default == nil,
+		}
+	}
+
+	for n := range event.Outputs {
+		m.Outputs[n.Value] = struct{}{}
+	}
+
+	for n, s := range event.Secrets {
+		r := s.Required != nil && s.Required.Value
+		m.Secrets[n.Value] = ReusableWorkflowMetadataSecretRequired(r)
+	}
+
+	c.mu.Lock()
+	c.cache[spec] = m
+	c.mu.Unlock()
+
+	c.debug("Workflow call metadata from workflow %s: %v", wpath, m)
+}
+
 func parseReusableWorkflowMetadata(src []byte) (*ReusableWorkflowMetadata, error) {
 	type workflow struct {
 		On yaml.Node `yaml:"on"`
@@ -194,10 +272,11 @@ func parseReusableWorkflowMetadata(src []byte) (*ReusableWorkflowMetadata, error
 	return nil, fmt.Errorf("\"workflow_call\" event trigger is not found in \"on:\" at line:%d, column:%d", n.Line, n.Column)
 }
 
-func NewLocalReusableWorkflowCache(proj *Project, dbg io.Writer) *LocalReusableWorkflowCache {
+func NewLocalReusableWorkflowCache(proj *Project, cwd string, dbg io.Writer) *LocalReusableWorkflowCache {
 	return &LocalReusableWorkflowCache{
 		proj:  proj,
 		cache: map[string]*ReusableWorkflowMetadata{},
+		cwd:   cwd,
 		dbg:   dbg,
 	}
 }
