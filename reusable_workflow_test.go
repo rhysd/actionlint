@@ -706,3 +706,108 @@ func TestReusableWorkflowMetadataFromASTNodeDoNothing(t *testing.T) {
 		t.Fatalf("Metadata was not cached for ./dir/workflow.yaml %v vs %v", m1, m2)
 	}
 }
+
+func TestReusableWorkflowMetadataCacheFindOneMetadataConcurrently(t *testing.T) {
+	n := 10
+	cwd := filepath.Join("testdata", "reusable_workflow_metadata")
+	proj := &Project{cwd, nil}
+	c := NewLocalReusableWorkflowCache(proj, cwd, nil)
+	ret := make(chan *ReusableWorkflowMetadata)
+	err := make(chan error)
+
+	for i := 0; i < n; i++ {
+		go func() {
+			m, e := c.FindMetadata("./ok.yaml")
+			if e != nil {
+				err <- e
+				return
+			}
+			ret <- m
+		}()
+	}
+
+	ms := []*ReusableWorkflowMetadata{}
+	errs := []error{}
+	for i := 0; i < n; i++ {
+		select {
+		case m := <-ret:
+			ms = append(ms, m)
+		case e := <-err:
+			errs = append(errs, e)
+		}
+	}
+
+	if len(errs) != 0 {
+		t.Fatal("Error occurred:", errs)
+	}
+
+	for _, m := range ms {
+		if !cmp.Equal(testReusableWorkflowWantedMetadata, m) {
+			t.Fatal(cmp.Diff(testReusableWorkflowWantedMetadata, m))
+		}
+	}
+
+	if len(c.cache) != 1 {
+		t.Errorf("Unexpected %d caches are stored: %v", len(c.cache), c.cache)
+	}
+	m, ok := c.readCache("./ok.yaml")
+	if !ok {
+		t.Fatal("Cache did not exist")
+	}
+	if m == nil {
+		t.Fatal("nil is stored in cache")
+	}
+}
+
+func TestReusableWorkflowMetadataCacheWriteFromFileAndASTNodeConcurrently(t *testing.T) {
+	n := 10
+	cwd := filepath.Join("testdata", "reusable_workflow_metadata")
+	proj := &Project{cwd, nil}
+	c := NewLocalReusableWorkflowCache(proj, cwd, nil)
+	ret := make(chan struct{})
+	err := make(chan error)
+
+	fromFile := func() {
+		if _, e := c.FindMetadata("./ok.yaml"); e != nil {
+			err <- e
+			return
+		}
+		ret <- struct{}{}
+	}
+	fromNode := func() {
+		c.WriteWorkflowCallEvent("workflow.yaml", &WorkflowCallEvent{})
+		if _, ok := c.readCache("./workflow.yaml"); !ok {
+			err <- fmt.Errorf("Cache was not created from WorkflowCallEvent")
+			return
+		}
+		ret <- struct{}{}
+	}
+
+	for i := 0; i < n/2; i++ {
+		go fromFile()
+		go fromNode()
+	}
+
+	errs := []error{}
+	for i := 0; i < n; i++ {
+		select {
+		case <-ret:
+		case e := <-err:
+			errs = append(errs, e)
+		}
+	}
+
+	if len(errs) != 0 {
+		t.Fatal("Error occurred:", errs)
+	}
+
+	if len(c.cache) != 2 {
+		t.Errorf("Size of cache should be 2 but got %d: %v", len(c.cache), c.cache)
+	}
+	if _, ok := c.cache["./ok.yaml"]; !ok {
+		t.Error("Cache for ./ok.yaml was not created", c.cache)
+	}
+	if _, ok := c.cache["./workflow.yaml"]; !ok {
+		t.Error("Cache for WorkflowCallEvent was not created", c.cache)
+	}
+}
