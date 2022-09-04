@@ -811,3 +811,22 @@ func TestReusableWorkflowMetadataCacheWriteFromFileAndASTNodeConcurrently(t *tes
 		t.Error("Cache for WorkflowCallEvent was not created", c.cache)
 	}
 }
+
+func TestReusableWorkflowCacheFactory(t *testing.T) {
+	cwd := filepath.Join("path", "to", "project1")
+	f := NewLocalReusableWorkflowCacheFactory(cwd, nil)
+
+	p1 := &Project{cwd, nil}
+	c1 := f.GetCache(p1)
+
+	p2 := &Project{filepath.Join("path", "to", "project2"), nil}
+	c2 := f.GetCache(p2)
+	if c1 == c2 {
+		t.Errorf("Different cache was not created: %v", c1)
+	}
+
+	c3 := f.GetCache(p1)
+	if c1 != c3 {
+		t.Errorf("Same cache was not used: %v vs %v", c1, c3)
+	}
+}

@@ -170,8 +170,12 @@ func (c *LocalReusableWorkflowCache) convWorkflowPathToSpec(p string) (string, b
 	return p, true
 }
 
-// While calling this method, the 'event' parameter must not be modified for thread safety. As far
-// as it is met, this method is thread safe.
+// WriteWorkflowCallEvent writes reusable workflow metadata by converting from WorkflowCallEvent AST
+// node. The 'wpath' parameter is a path to the workflow file of the AST, which is a relative to the
+// project root directory or an absolute path.
+// This method does nothing when (1) no project is set, (2) it could not convert the workflow path
+// to workflow call spec, (3) some cache for the workflow is already existing.
+// This method is thread safe.
 func (c *LocalReusableWorkflowCache) WriteWorkflowCallEvent(wpath string, event *WorkflowCallEvent) {
 	// Convert workflow path to workflow call spec
 	spec, ok := c.convWorkflowPathToSpec(wpath)
@@ -272,6 +276,9 @@ func parseReusableWorkflowMetadata(src []byte) (*ReusableWorkflowMetadata, error
 	return nil, fmt.Errorf("\"workflow_call\" event trigger is not found in \"on:\" at line:%d, column:%d", n.Line, n.Column)
 }
 
+// NewLocalReusableWorkflowCache creates a new LocalReusableWorkflowCache instance for the given
+// project. 'cwd' is a current working directory as an absolute file path. The 'Local' means that
+// the cache instance is project-local. It is not available accross multiple projects.
 func NewLocalReusableWorkflowCache(proj *Project, cwd string, dbg io.Writer) *LocalReusableWorkflowCache {
 	return &LocalReusableWorkflowCache{
 		proj:  proj,
@@ -279,4 +286,30 @@ func NewLocalReusableWorkflowCache(proj *Project, cwd string, dbg io.Writer) *Lo
 		cwd:   cwd,
 		dbg:   dbg,
 	}
+}
+
+// LocalReusableWorkflowCacheFactory is a factory object to create a LocalReusableWorkflowCache
+// instance per project.
+type LocalReusableWorkflowCacheFactory struct {
+	caches map[string]*LocalReusableWorkflowCache
+	cwd    string
+	dbg    io.Writer
+}
+
+// NewLocalReusableWorkflowCacheFactory creates a new LocalReusableWorkflowCacheFactory instance.
+func NewLocalReusableWorkflowCacheFactory(cwd string, dbg io.Writer) *LocalReusableWorkflowCacheFactory {
+	return &LocalReusableWorkflowCacheFactory{map[string]*LocalReusableWorkflowCache{}, cwd, dbg}
+}
+
+// GetCache returns a new or existing LocalReusableWorkflowCache instance per project. When a instance
+// was already created for the project, this method returns the existing instance. Otherwise it creates
+// a new instance and returns it.
+func (f *LocalReusableWorkflowCacheFactory) GetCache(p *Project) *LocalReusableWorkflowCache {
+	r := p.RootDir()
+	if c, ok := f.caches[r]; ok {
+		return c
+	}
+	c := NewLocalReusableWorkflowCache(p, f.cwd, f.dbg)
+	f.caches[r] = c
+	return c
 }
