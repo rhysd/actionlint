@@ -1,6 +1,7 @@
 package actionlint
 
 import (
+	"fmt"
 	"strings"
 )
 
@@ -91,7 +92,19 @@ func (rule *RuleWorkflowCall) checkWorkflowCallUsesLocal(call *WorkflowCall) {
 	}
 	for n, i := range call.Inputs {
 		if _, ok := m.Inputs[n]; !ok {
-			rule.errorf(i.Name.Pos, "input %q is not defined in %q reusable workflow", n, u.Value)
+			note := "no input is defined"
+			if len(m.Inputs) > 0 {
+				i := make([]string, 0, len(m.Inputs))
+				for n := range m.Inputs {
+					i = append(i, n)
+				}
+				if len(i) == 1 {
+					note = fmt.Sprintf("defined input is %q", i[0])
+				} else {
+					note = "defined inputs are " + sortedQuotes(i)
+				}
+			}
+			rule.errorf(i.Name.Pos, "input %q is not defined in %q reusable workflow. %s", n, u.Value, note)
 		}
 	}
 
@@ -106,7 +119,19 @@ func (rule *RuleWorkflowCall) checkWorkflowCallUsesLocal(call *WorkflowCall) {
 		}
 		for n, s := range call.Secrets {
 			if _, ok := m.Secrets[n]; !ok {
-				rule.errorf(s.Name.Pos, "secret %q is not defined in %q reusable workflow", n, u.Value)
+				note := "no secret is defined"
+				if len(m.Secrets) > 0 {
+					s := make([]string, 0, len(m.Secrets))
+					for n := range m.Secrets {
+						s = append(s, n)
+					}
+					if len(s) == 1 {
+						note = fmt.Sprintf("defined secret is %q", s[0])
+					} else {
+						note = "defined secrets are " + sortedQuotes(s)
+					}
+				}
+				rule.errorf(s.Name.Pos, "secret %q is not defined in %q reusable workflow. %s", n, u.Value, note)
 			}
 		}
 	}

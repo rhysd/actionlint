@@ -215,9 +215,16 @@ func TestRuleWorkflowCallCheckReusableWorkflowCall(t *testing.T) {
 			inputs:  []string{"required_input", "unknown_input"},
 			secrets: []string{"required_secret", "unknown_secret"},
 			errs: []string{
-				"input \"unknown_input\" is not defined",
-				"secret \"unknown_secret\" is not defined",
+				"input \"unknown_input\" is not defined in \"./workflow.yaml\" reusable workflow. defined inputs are \"optional_input\", \"required_input\"",
+				"secret \"unknown_secret\" is not defined in \"./workflow.yaml\" reusable workflow. defined secrets are \"optional_secret\", \"required_secret\"",
 			},
+		},
+		{
+			what:           "inherit secrets",
+			uses:           "./workflow.yaml",
+			inputs:         []string{"required_input"},
+			secrets:        []string{"unknown_secret", "optional_secret"},
+			inheritSecrets: true,
 		},
 		{
 			what:    "read workflow",
