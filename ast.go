@@ -31,6 +31,15 @@ func (p *Pos) IsBefore(other *Pos) bool {
 	return p.Col < other.Col
 }
 
+// IsTopLevel returns true if we are on the top level of the yaml
+// for example:
+// name: Test
+// on: push
+// `on` and `name` are on the top level
+func (p *Pos) IsTopLevel() bool {
+	return p.Col == 1
+}
+
 // String represents generic string value in YAML file with position.
 type String struct {
 	// Value is a raw value of the string.

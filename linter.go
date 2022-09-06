@@ -459,7 +459,7 @@ func (l *Linter) check(path string, content []byte, project *Project, proc *conc
 		l.debug("No config was found")
 	}
 
-	w, all := Parse(content)
+	w, all := Parse(content, cfg)
 
 	if l.logLevel >= LogLevelVerbose {
 		elapsed := time.Since(start)

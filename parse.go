@@ -624,9 +624,16 @@ func (p *parser) parseEvents(pos *Pos, n *yaml.Node) []Event {
 }
 
 // https://docs.github.com/en/actions/learn-github-actions/workflow-syntax-for-github-actions#permissions
-func (p *parser) parsePermissions(pos *Pos, n *yaml.Node) *Permissions {
+func (p *parser) parsePermissions(pos *Pos, n *yaml.Node, config *Config) *Permissions {
 	ret := &Permissions{Pos: pos}
 
+	if config != nil && config.EnforceEmptyPermissions && pos.IsTopLevel() {
+		if !isNull(n) {
+			p.errorf(n, "expected empty Permissions. If this is a mistake, please disable "+
+				"enforce_empty_permissions in the config file.")
+		}
+		return ret
+	}
 	if n.Kind == yaml.ScalarNode {
 		ret.All = p.parseString(n, false)
 	} else {
@@ -640,7 +647,6 @@ func (p *parser) parsePermissions(pos *Pos, n *yaml.Node) *Permissions {
 		}
 		ret.Scopes = scopes
 	}
-
 	return ret
 }
 
@@ -1070,7 +1076,7 @@ func (p *parser) parseSteps(n *yaml.Node) []*Step {
 }
 
 // https://docs.github.com/en/actions/learn-github-actions/workflow-syntax-for-github-actions#jobsjob_id
-func (p *parser) parseJob(id *String, n *yaml.Node) *Job {
+func (p *parser) parseJob(id *String, n *yaml.Node, config *Config) *Job {
 	ret := &Job{ID: id, Pos: id.Pos}
 	call := &WorkflowCall{}
 
@@ -1112,7 +1118,7 @@ func (p *parser) parseJob(id *String, n *yaml.Node) *Job {
 			}
 			stepsOnlyKey = k
 		case "permissions":
-			ret.Permissions = p.parsePermissions(k.Pos, v)
+			ret.Permissions = p.parsePermissions(k.Pos, v, config)
 		case "environment":
 			ret.Environment = p.parseEnvironment(k.Pos, v)
 			stepsOnlyKey = k
@@ -1243,18 +1249,18 @@ func (p *parser) parseJob(id *String, n *yaml.Node) *Job {
 }
 
 // https://docs.github.com/en/actions/learn-github-actions/workflow-syntax-for-github-actions#jobs
-func (p *parser) parseJobs(n *yaml.Node) map[string]*Job {
+func (p *parser) parseJobs(n *yaml.Node, config *Config) map[string]*Job {
 	jobs := p.parseSectionMapping("jobs", n, false)
 	ret := make(map[string]*Job, len(jobs))
 	for _, kv := range jobs {
 		id, job := kv.key, kv.val
-		ret[id.Value] = p.parseJob(id, job)
+		ret[id.Value] = p.parseJob(id, job, config)
 	}
 	return ret
 }
 
 // https://docs.github.com/en/actions/learn-github-actions/workflow-syntax-for-github-actions
-func (p *parser) parse(n *yaml.Node) *Workflow {
+func (p *parser) parse(n *yaml.Node, config *Config) *Workflow {
 	w := &Workflow{}
 
 	if len(n.Content) == 0 {
@@ -1270,7 +1276,7 @@ func (p *parser) parse(n *yaml.Node) *Workflow {
 		case "on":
 			w.On = p.parseEvents(k.Pos, v)
 		case "permissions":
-			w.Permissions = p.parsePermissions(k.Pos, v)
+			w.Permissions = p.parsePermissions(k.Pos, v, config)
 		case "env":
 			w.Env = p.parseEnv(v)
 		case "defaults":
@@ -1278,7 +1284,7 @@ func (p *parser) parse(n *yaml.Node) *Workflow {
 		case "concurrency":
 			w.Concurrency = p.parseConcurrency(k.Pos, v)
 		case "jobs":
-			w.Jobs = p.parseJobs(v)
+			w.Jobs = p.parseJobs(v, config)
 		default:
 			p.unexpectedKey(k, "workflow", []string{
 				"name",
@@ -1332,7 +1338,7 @@ func handleYAMLError(err error) []*Error {
 // Parse parses given source as byte sequence into workflow syntax tree. It returns all errors
 // detected while parsing the input. It means that detecting one error does not stop parsing. Even
 // if one or more errors are detected, parser will try to continue parsing and finding more errors.
-func Parse(b []byte) (*Workflow, []*Error) {
+func Parse(b []byte, config *Config) (*Workflow, []*Error) {
 	var n yaml.Node
 
 	if err := yaml.Unmarshal(b, &n); err != nil {
@@ -1343,7 +1349,7 @@ func Parse(b []byte) (*Workflow, []*Error) {
 	// dumpYAML(&n, 0)
 
 	p := &parser{}
-	w := p.parse(&n)
+	w := p.parse(&n, config)
 
 	return w, p.errors
 }
