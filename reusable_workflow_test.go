@@ -425,6 +425,11 @@ func TestReusableWorkflowCacheFindMetadataSkipParsing(t *testing.T) {
 			proj: p,
 			spec: "repo/owner/workflow@main",
 		},
+		{
+			what: "template placeholder",
+			proj: p,
+			spec: "./${{ some_expression }}.yaml",
+		},
 	}
 
 	for _, tc := range tests {

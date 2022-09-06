@@ -119,7 +119,7 @@ func (c *LocalReusableWorkflowCache) writeCache(key string, val *ReusableWorkflo
 //
 // Calling this method is thread-safe.
 func (c *LocalReusableWorkflowCache) FindMetadata(spec string) (*ReusableWorkflowMetadata, error) {
-	if c.proj == nil || !strings.HasPrefix(spec, "./") {
+	if c.proj == nil || !strings.HasPrefix(spec, "./") || strings.Contains(spec, "${{") {
 		return nil, nil
 	}
 
