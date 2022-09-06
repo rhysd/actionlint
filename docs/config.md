@@ -19,9 +19,10 @@ actionlint -init-config
 vim .github/actionlint.yaml
 ```
 
-Currently only one item can be configured.
+Currently only two items can be configured.
 
 ```yaml
+enforce_empty_permissions: false
 self-hosted-runner:
   # Labels of self-hosted runner in array of string
   labels:
@@ -29,7 +30,7 @@ self-hosted-runner:
     - windows-latest-xl
     - linux-multi-gpu
 ```
-
+- `enforce_empty_permissions`: Enforces empty permissions at top level
 - `self-hosted-runner`: Configuration for your self-hosted runner environment
   - `labels`: Label names added to your self-hosted runners as list of string
 
