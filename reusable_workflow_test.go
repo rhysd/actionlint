@@ -365,7 +365,7 @@ func TestReusableWorkflowCacheFindMetadataError(t *testing.T) {
 		{
 			what: "broken workflow",
 			spec: "./broken.yaml",
-			want: " is invalid: yaml:",
+			want: "error while parsing reusable workflow \"./broken.yaml\"",
 		},
 		{
 			what: "no hook",

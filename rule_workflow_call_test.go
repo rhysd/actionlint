@@ -236,7 +236,7 @@ func TestRuleWorkflowCallCheckReusableWorkflowCall(t *testing.T) {
 			what: "read broken workflow",
 			uses: "./broken.yaml", // Defined in testdata/reusable_workflow_metadata/broken.yaml
 			errs: []string{
-				"error while checking reusable workflow call \"./broken.yaml\"",
+				"error while parsing reusable workflow \"./broken.yaml\"",
 			},
 		},
 	}

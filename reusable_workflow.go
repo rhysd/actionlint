@@ -140,7 +140,7 @@ func (c *LocalReusableWorkflowCache) FindMetadata(spec string) (*ReusableWorkflo
 	if err != nil {
 		c.writeCache(spec, nil) // Remember the workflow file was invalid
 		msg := strings.ReplaceAll(err.Error(), "\n", " ")
-		return nil, fmt.Errorf("reusable workflow file %q is invalid: %s", file, msg)
+		return nil, fmt.Errorf("error while parsing reusable workflow %q: %s", spec, msg)
 	}
 
 	c.debug("New reusable workflow metadata at %s: %v", file, m)

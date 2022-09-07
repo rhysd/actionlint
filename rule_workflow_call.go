@@ -74,7 +74,7 @@ func (rule *RuleWorkflowCall) checkWorkflowCallUsesLocal(call *WorkflowCall) {
 	u := call.Uses
 	m, err := rule.cache.FindMetadata(u.Value)
 	if err != nil {
-		rule.errorf(u.Pos, "error while checking reusable workflow call %q: %s", u.Value, err.Error())
+		rule.error(u.Pos, err.Error())
 		return
 	}
 	if m == nil {

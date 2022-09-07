@@ -501,7 +501,7 @@ func (l *Linter) check(
 			NewRuleGlob(),
 			NewRulePermissions(),
 			NewRuleWorkflowCall(path, localReusableWorkflows),
-			NewRuleExpression(localActions),
+			NewRuleExpression(localActions, localReusableWorkflows),
 		}
 		if l.shellcheck != "" {
 			r, err := NewRuleShellcheck(l.shellcheck, proc)
