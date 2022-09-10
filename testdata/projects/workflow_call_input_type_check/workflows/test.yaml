@@ -1,0 +1,23 @@
+on: push
+
+jobs:
+  caller1:
+    uses: ./workflows/reusable.yaml
+    with:
+      # Note: any value can be converted into bool
+      str_input: null
+      num_input: false
+      bool_input: 'foo!'
+      broken_input: null
+  caller2:
+    uses: ./workflows/reusable.yaml
+    with:
+      str_input: ${{ true }}
+      num_input: ${{ 'foo' }}
+      broken_input: 42
+  caller3:
+    uses: ./workflows/reusable.yaml
+    with:
+      str_input:
+      num_input:
+      broken_input: 'hello'

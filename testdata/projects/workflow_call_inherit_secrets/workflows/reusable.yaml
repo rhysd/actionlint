@@ -1,0 +1,14 @@
+on:
+  workflow_call:
+    secrets:
+      bar:
+        required: false
+      piyo:
+        required: true
+      foo:
+
+jobs:
+  callee:
+    runs-on: ubuntu-latest
+    steps:
+      - run: hello

@@ -110,11 +110,15 @@ func checkErrors(t *testing.T, outfile string, errs []*Error) {
 		}
 	}
 
-	if len(errs) != len(expected) {
-		t.Fatalf("%d errors are expected but actually got %d errors: %v", len(expected), len(errs), errs)
-	}
-
 	sort.Sort(ByErrorPosition(errs))
+
+	if len(errs) != len(expected) {
+		ms := make([]string, 0, len(errs))
+		for _, err := range errs {
+			ms = append(ms, err.Error())
+		}
+		t.Fatalf("%d errors are expected but actually got %d errors:\n%v", len(expected), len(errs), strings.Join(ms, "\n"))
+	}
 
 	for i := 0; i < len(errs); i++ {
 		errs[i].Filepath = filepath.ToSlash(errs[i].Filepath) // For Windows
@@ -195,8 +199,8 @@ func TestLinterLintError(t *testing.T) {
 	}
 }
 
-func TestLinterLintProjectError(t *testing.T) {
-	root := filepath.Join("testdata", "err", "projects")
+func TestLinterLintProject(t *testing.T) {
+	root := filepath.Join("testdata", "projects")
 	entries, err := os.ReadDir(root)
 	if err != nil {
 		panic(err)
@@ -208,7 +212,7 @@ func TestLinterLintProjectError(t *testing.T) {
 		}
 
 		name := info.Name()
-		t.Run("err/"+name, func(t *testing.T) {
+		t.Run("project/"+name, func(t *testing.T) {
 			repo := filepath.Join(root, name)
 			opts := LinterOptions{
 				WorkingDir: repo,
