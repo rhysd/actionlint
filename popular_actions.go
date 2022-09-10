@@ -865,6 +865,7 @@ var PopularActions = map[string]*ActionMetadata{
 			"settings-path":      false,
 		},
 		Outputs: map[string]struct{}{
+			"cache-hit":    {},
 			"distribution": {},
 			"path":         {},
 			"version":      {},
@@ -2866,6 +2867,13 @@ var PopularActions = map[string]*ActionMetadata{
 			"cache-path":      false,
 			"channel":         false,
 			"flutter-version": false,
+		},
+		Outputs: map[string]struct{}{
+			"architecture": {},
+			"cache-key":    {},
+			"cache-path":   {},
+			"channel":      {},
+			"version":      {},
 		},
 	},
 	"treosh/lighthouse-ci-action@v1": {
