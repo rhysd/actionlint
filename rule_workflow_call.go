@@ -84,7 +84,7 @@ func (rule *RuleWorkflowCall) checkWorkflowCallUsesLocal(call *WorkflowCall) {
 
 	// Validate inputs
 	for n, i := range m.Inputs {
-		if i.Required {
+		if i != nil && i.Required {
 			if _, ok := call.Inputs[n]; !ok {
 				rule.errorf(u.Pos, "input %q is required by %q reusable workflow", n, u.Value)
 			}

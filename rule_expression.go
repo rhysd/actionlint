@@ -514,7 +514,7 @@ func (rule *RuleExpression) checkWorkflowCall(c *WorkflowCall) {
 		}
 
 		mi, ok := m.Inputs[n]
-		if !ok {
+		if !ok || mi == nil {
 			continue
 		}
 		if _, ok := mi.Type.(AnyType); ok {
