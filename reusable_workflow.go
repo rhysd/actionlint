@@ -131,9 +131,8 @@ func (c *LocalReusableWorkflowCache) FindMetadata(spec string) (*ReusableWorkflo
 	file := filepath.Join(c.proj.RootDir(), filepath.FromSlash(spec))
 	src, err := os.ReadFile(file)
 	if err != nil {
-		c.debug("File %q was not found: %s", file, err.Error())
 		c.writeCache(spec, nil) // Remember the workflow file was not found
-		return nil, nil
+		return nil, fmt.Errorf("could not read reusable workflow file for %q: %w", spec, err)
 	}
 
 	m, err := parseReusableWorkflowMetadata(src)

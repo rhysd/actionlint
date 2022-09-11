@@ -5,4 +5,4 @@ jobs:
     concurrency:
       group: some-group
       cancel-in-progress: true
-    uses: ./path/to/workflow.yaml
+    uses: ./workflows/reusable.yaml

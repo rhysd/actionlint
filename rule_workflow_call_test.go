@@ -198,6 +198,9 @@ func TestRuleWorkflowCallCheckReusableWorkflowCall(t *testing.T) {
 			uses:    "./unknown-workflow.yaml",
 			inputs:  []string{"aaa", "bbb"},
 			secrets: []string{"xxx", "yyy"},
+			errs: []string{
+				"could not read reusable workflow file for \"./unknown-workflow.yaml\":",
+			},
 		},
 		{
 			what:    "missing required input and secret",
@@ -238,6 +241,16 @@ func TestRuleWorkflowCallCheckReusableWorkflowCall(t *testing.T) {
 			errs: []string{
 				"error while parsing reusable workflow \"./broken.yaml\"",
 			},
+		},
+		{
+			what: "external workflow call with no input and no secret",
+			uses: "owner/repo/path/to/workflow@main",
+		},
+		{
+			what:    "external workflow call with inputs and secrets",
+			uses:    "owner/repo/path/to/workflow@main",
+			inputs:  []string{"aaa", "bbb"},
+			secrets: []string{"xxx", "yyy"},
 		},
 	}
 

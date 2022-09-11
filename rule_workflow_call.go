@@ -62,6 +62,13 @@ func (rule *RuleWorkflowCall) VisitJobPre(n *Job) error {
 		return nil
 	}
 
+	if strings.HasPrefix(u.Value, "./") {
+		// When the specification is invalid and it is local reusable workflow call, remember it caused
+		// an error by setting `nil` to cache. This can prevent redundant 'could not read workflow call'
+		// error.
+		rule.cache.writeCache(u.Value, nil)
+	}
+
 	rule.errorf(
 		u.Pos,
 		"reusable workflow call %q at \"uses\" is not following the format \"owner/repo/path/to/workflow.yml@ref\" nor \"./path/to/workflow.yml\". see https://docs.github.com/en/actions/learn-github-actions/reusing-workflows for more details",

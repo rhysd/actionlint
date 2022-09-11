@@ -377,6 +377,11 @@ func TestReusableWorkflowCacheFindMetadataError(t *testing.T) {
 			spec: "./no_on.yaml",
 			want: "\"on:\" is not found",
 		},
+		{
+			what: "not existing workflow",
+			spec: "./this-workflow-does-not-exist.yaml",
+			want: "could not read reusable workflow file for \"./this-workflow-does-not-exist.yaml\":",
+		},
 	}
 
 	for _, tc := range tests {
@@ -414,11 +419,6 @@ func TestReusableWorkflowCacheFindMetadataSkipParsing(t *testing.T) {
 			what: "no project",
 			proj: nil,
 			spec: "./ok.yaml",
-		},
-		{
-			what: "not existing workflow",
-			proj: p,
-			spec: "./this-workflow-does-not-exist.yaml",
 		},
 		{
 			what: "external workflow",
