@@ -235,7 +235,7 @@ func parseReusableWorkflowMetadata(src []byte) (*ReusableWorkflowMetadata, error
 
 	var w workflow
 	if err := yaml.Unmarshal(src, &w); err != nil {
-		return nil, err
+		return nil, err // Unreachable
 	}
 
 	n := &w.On

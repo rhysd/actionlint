@@ -382,6 +382,16 @@ func TestReusableWorkflowCacheFindMetadataError(t *testing.T) {
 			spec: "./this-workflow-does-not-exist.yaml",
 			want: "could not read reusable workflow file for \"./this-workflow-does-not-exist.yaml\":",
 		},
+		{
+			what: "broken inputs",
+			spec: "./broken_inputs.yaml",
+			want: "error while parsing reusable workflow \"./broken_inputs.yaml\"",
+		},
+		{
+			what: "broken secrets",
+			spec: "./broken_secrets.yaml",
+			want: "error while parsing reusable workflow \"./broken_secrets.yaml\"",
+		},
 	}
 
 	for _, tc := range tests {
