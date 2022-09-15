@@ -1,0 +1,18 @@
+on: push
+
+jobs:
+  # Check required inputs and secrets
+  missing-required:
+    uses: ./.github/workflows/reusable.yaml
+
+  # Check types of inputs defined in reusable workflow
+  type-checks:
+    uses: ./.github/workflows/reusable.yaml
+    with:
+      name: rhysd
+      # ERROR: Cannot assign bool value to number input
+      id: true
+      # ERROR: Cannot assign null to string input. If you want to pass string "null", use ${{ 'null' }}
+      message: null
+    secrets:
+      password: passw0rd
