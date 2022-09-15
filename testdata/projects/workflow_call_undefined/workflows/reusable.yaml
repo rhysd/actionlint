@@ -1,0 +1,16 @@
+on:
+  workflow_call:
+    inputs:
+      foo:
+        type: string
+    outputs:
+      bar:
+        value: 'hello'
+    secrets:
+      piyo:
+
+jobs:
+  test:
+    runs-on: ubuntu-latest
+    steps:
+      - run: 'bye'

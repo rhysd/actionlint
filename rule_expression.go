@@ -27,10 +27,11 @@ type RuleExpression struct {
 	jobsTy           *ObjectType
 	workflow         *Workflow
 	localActions     *LocalActionsCache
+	localWorkflows   *LocalReusableWorkflowCache
 }
 
 // NewRuleExpression creates new RuleExpression instance.
-func NewRuleExpression(cache *LocalActionsCache) *RuleExpression {
+func NewRuleExpression(actionsCache *LocalActionsCache, workflowCache *LocalReusableWorkflowCache) *RuleExpression {
 	return &RuleExpression{
 		RuleBase:         RuleBase{name: "expression"},
 		matrixTy:         nil,
@@ -41,7 +42,8 @@ func NewRuleExpression(cache *LocalActionsCache) *RuleExpression {
 		dispatchInputsTy: nil,
 		jobsTy:           nil,
 		workflow:         nil,
-		localActions:     cache,
+		localActions:     actionsCache,
+		localWorkflows:   workflowCache,
 	}
 }
 
@@ -313,6 +315,27 @@ func (rule *RuleExpression) getActionOutputsType(spec *String) *ObjectType {
 	return NewMapObjectType(StringType{})
 }
 
+func (rule *RuleExpression) getWorkflowCallOutputsType(call *WorkflowCall) *ObjectType {
+	if call.Uses == nil {
+		return NewMapObjectType(StringType{})
+	}
+
+	m, err := rule.localWorkflows.FindMetadata(call.Uses.Value)
+	if err != nil {
+		rule.error(call.Uses.Pos, err.Error())
+		return NewMapObjectType(StringType{})
+	}
+	if m == nil {
+		return NewMapObjectType(StringType{})
+	}
+
+	p := make(map[string]ExprType, len(m.Outputs))
+	for n := range m.Outputs {
+		p[n] = StringType{}
+	}
+	return NewStrictObjectType(p)
+}
+
 func (rule *RuleExpression) checkOneExpression(s *String, what string) ExprType {
 	// checkString is not available since it checks types for embedding values into a string
 	if s == nil {
@@ -475,10 +498,62 @@ func (rule *RuleExpression) checkWorkflowCall(c *WorkflowCall) {
 	if c == nil || c.Uses == nil {
 		return
 	}
+
 	rule.checkStringNoEnv(c.Uses)
-	for _, i := range c.Inputs {
-		rule.checkString(i.Value)
+
+	m, err := rule.localWorkflows.FindMetadata(c.Uses.Value)
+	if err != nil {
+		rule.error(c.Uses.Pos, err.Error())
 	}
+
+	for n, i := range c.Inputs {
+		ts := rule.checkString(i.Value)
+
+		if m == nil {
+			continue
+		}
+
+		mi, ok := m.Inputs[n]
+		if !ok || mi == nil {
+			continue
+		}
+		if _, ok := mi.Type.(AnyType); ok {
+			continue
+		}
+
+		v := strings.TrimSpace(i.Value.Value)
+
+		var ty ExprType = StringType{}
+		switch len(ts) {
+		case 0:
+			switch v {
+			case "null":
+				ty = NullType{}
+			case "true", "false":
+				ty = BoolType{}
+			default:
+				if _, err := strconv.ParseFloat(v, 64); err == nil {
+					ty = NumberType{}
+				}
+			}
+		case 1:
+			if strings.HasPrefix(v, "${{") && strings.HasSuffix(v, "}}") {
+				ty = ts[0].ty
+			}
+		}
+
+		if !mi.Type.Assignable(ty) {
+			rule.errorf(
+				i.Value.Pos,
+				"input %q is typed as %s by reusable workflow %q. %s value cannot be assigned",
+				n,
+				mi.Type.String(),
+				c.Uses.Value,
+				ty.String(),
+			)
+		}
+	}
+
 	for _, s := range c.Secrets {
 		rule.checkString(s.Value)
 	}
@@ -785,9 +860,7 @@ func (rule *RuleExpression) populateDependantNeedsTypes(out *ObjectType, job *Jo
 				outputs.Props[name] = StringType{}
 			}
 		} else {
-			// When the outputs are the result of reusable workflow call, their names are not defined in the job's
-			// configuration (instead, they are defined in the reusable workflow). Fall back to a loose object. (#121)
-			outputs = NewEmptyObjectType()
+			outputs = rule.getWorkflowCallOutputsType(j.WorkflowCall)
 		}
 
 		out.Props[i] = NewStrictObjectType(map[string]ExprType{

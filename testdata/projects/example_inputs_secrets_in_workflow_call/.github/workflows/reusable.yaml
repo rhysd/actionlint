@@ -1,0 +1,20 @@
+# .github/workflows/reusable.yaml
+on:
+  workflow_call:
+    inputs:
+      name:
+        type: string
+        required: true
+      id:
+        type: number
+      message:
+        type: string
+    secrets:
+      password:
+        required: true
+
+jobs:
+  test:
+    runs-on: ubuntu-latest
+    steps:
+      - run: echo '${{ outputs.required_input }}'

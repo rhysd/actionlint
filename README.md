@@ -11,12 +11,13 @@ Features:
 - **Strong type check for `${{ }}` expressions** to catch several semantic errors like access to not existing property,
   type mismatches, ...
 - **Actions usage check** to check that inputs at `with:` and outputs in `steps.{id}.outputs` are correct
+- **Reusable workflow check** to check inputs/outputs/secrets of reusable workflows and workflow calls
 - **[shellcheck][] and [pyflakes][] integrations** for scripts at `run:`
 - **Security checks**; [script injection][script-injection-doc] by untrusted inputs, hard-coded credentials
 - **Other several useful checks**; [glob syntax][filter-pattern-doc] validation, dependencies check for `needs:`,
   runner label validation, cron syntax validation, ...
 
-See [the document](docs/checks.md) for full list of checks done by actionlint.
+See [the full list](docs/checks.md) of checks done by actionlint.
 
 <img src="https://github.com/rhysd/ss/blob/master/actionlint/main.gif?raw=true" alt="actionlint reports 7 errors" width="806" height="492"/>
 
