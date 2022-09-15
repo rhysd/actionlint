@@ -1925,10 +1925,17 @@ actionlint checks permission scopes and access levels in a workflow are correct.
 
 [Reusable workflows][reusable-workflow-doc] is a feature to call a workflow from another workflow.
 
-As of now, the integrity between a workflow caller and a workflow callee is not checked. actionlint does only the syntax check
-and very basic validations.
+actionlint does several checks for both workflow calls (caller) and reusable workflows (callee):
 
-### Check input definitions of `workflow_call` event
+- syntax of workflow calls and reusable workflows
+- type checks for inputs (respecting `type:` field of each input) in both workflow calls and reusable workflows
+- type checks for `inputs`, `outputs` and `secrets` context objects in reusable workflows
+- optional/required inputs and secrets at `uses:` in workflow calls
+- type checks for `outputs` objects used by downstream jobs of workflow calls
+
+These checkes are described in this section.
+
+### Check input definitions of `workflow_call` event in reusable workflow
 
 Example input:
 
@@ -1988,7 +1995,7 @@ test.yaml:25:18: input "path" of workflow_call event has the default value "", b
 Unlike inputs of action, inputs of a workflow must specify their types. actionlint validates input types and checks the default
 values are correctly typed. For more details, see [the official document][create-reusable-workflow-doc].
 
-### Check reusable workflow call syntax
+### Check workflow call syntax
 
 Example input:
 
@@ -2138,7 +2145,7 @@ jobs:
 
 this workflow causes 'no such secret' error at `secrets.FOO`.
 
-### Check outputs of reusable workflow
+### Check outputs in reusable workflow
 
 Example input:
 
@@ -2174,6 +2181,144 @@ test.yaml:6:20: property "imagetag" is not defined in object type {image_tag: st
 Outputs of a reusable workflow can be defined at `on.workflow_call.outputs` as described in [the document][reusable-workflow-outputs].
 The `jobs` context is available to define an output value to refer the outputs of jobs in the workflow. actionlint checks
 the context is used correctly.
+
+### Check inputs and secrets in workflow call
+
+Example reusable workflow:
+
+```yaml
+# .github/workflows/reusable.yaml
+on:
+  workflow_call:
+    inputs:
+      name:
+        type: string
+        required: true
+      id:
+        type: number
+      message:
+        type: string
+    secrets:
+      password:
+        required: true
+
+jobs:
+  test:
+    runs-on: ubuntu-latest
+    steps:
+      - run: echo '${{ outputs.required_input }}'
+```
+
+Example input:
+
+```yaml
+on: push
+
+jobs:
+  # Check required inputs and secrets
+  missing-required:
+    uses: ./.github/workflows/reusable.yaml
+
+  # Check types of inputs defined in reusable workflow
+  type-checks:
+    uses: ./.github/workflows/reusable.yaml
+    with:
+      name: rhysd
+      # ERROR: Cannot assign bool value to number input
+      id: true
+      # ERROR: Cannot assign null to string input. If you want to pass string "null", use ${{ 'null' }}
+      message: null
+    secrets:
+      password: passw0rd
+```
+
+Output:
+
+```
+test.yaml:6:11: input "name" is required by "./.github/workflows/reusable.yaml" reusable workflow [workflow-call]
+  |
+6 |     uses: ./.github/workflows/reusable.yaml
+  |           ^~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+test.yaml:6:11: secret "password" is required by "./.github/workflows/reusable.yaml" reusable workflow [workflow-call]
+  |
+6 |     uses: ./.github/workflows/reusable.yaml
+  |           ^~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+test.yaml:14:11: input "id" is typed as number by reusable workflow "./.github/workflows/reusable.yaml". bool value cannot be assigned [expression]
+   |
+14 |       id: true
+   |           ^~~~
+test.yaml:16:16: input "message" is typed as string by reusable workflow "./.github/workflows/reusable.yaml". null value cannot be assigned [expression]
+   |
+16 |       message: null
+   |                ^~~~
+```
+
+Reusable workflows can define required inputs and secrets. When they are missing in a workflow call, actionlint reports an error.
+
+And reusable workflows must define types of their inputs by `type:` field. Workflow calls pass constants (`input: 42`) or
+expressions (`inputs: ${{ ... }}`) to the inputs or secrets. actionlint checks types of values passed to inputs in workflow call.
+When a type of input doesn't match to its definition, actionlint reports an error.
+
+Note that this check only works with local reusable workflow (it starts with `./`).
+
+### Check outputs of workflow call in downstream jobs
+
+Example reusable workflow:
+
+```yaml
+# .github/workflows/get-build-info.yaml
+on:
+  workflow_call:
+    outputs:
+      version:
+        value: ${{ outputs.version }}
+        description: version of software
+
+jobs:
+  test:
+    runs-on: ubuntu-latest
+    outputs:
+      version: ${{ steps.get_version.outputs.version }}
+    steps:
+      - run: ...
+        id: get_version
+```
+
+Example input:
+
+```yaml
+on: push
+
+jobs:
+  get_build_info:
+    uses: ./.github/workflows/get-build-info.yaml
+  downstream:
+    needs: [get_build_info]
+    runs-on: ubuntu-latest
+    steps:
+      # OK. `version` is defined in the reusable workflow
+      - run: echo '${{ needs.get_build_info.outputs.version }}'
+      # ERROR: `tag` is not defined in the reusable workflow
+      - run: echo '${{ needs.get_build_info.outputs.tag }}'
+```
+
+Output:
+
+```
+test.yaml:13:24: property "tag" is not defined in object type {version: string} [expression]
+   |
+13 |       - run: echo '${{ needs.get_build_info.outputs.tag }}'
+   |                        ^~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+```
+
+Outputs of workflow call are set to the job's outputs object. They can be accessed by downstream jobs specified with `needs:`.
+What outputs are set is defined in the reusable workflow. actionlint types outputs objects from workflow calls and check the
+object types in downstream jobs.
+
+In the above example, `get-build-info.yaml` has one output `version`. actionlint types the outputs object of workflow call job
+as `{version: string}`. In the downstream job, actionlint can report an error at undefined key `tag` in the object.
+
+Note that this check only works with local reusable workflow (starting with `./`).
 
 <a name="id-naming-convention"></a>
 ## ID naming convention
