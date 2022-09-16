@@ -127,7 +127,12 @@ func ContextAvailability(key string) ([]string, []string) {
 	fmt.Fprintln(buf, "	default: return []string{}, []string{}\n	}\n}")
 	dbg.Println("Parsed", count, "table rows")
 
-	fmt.Fprintln(buf, `// SpecialFunctionNames is ....`)
+	fmt.Fprintln(buf, `// SpecialFunctionNames is a map from special function name to available workflow keys.
+// Some functions are only available at specific positions. This variable is useful when you want to
+// know which functions are special and what workflow keys support them.
+//
+// This function was generated from https://docs.github.com/en/actions/learn-github-actions/contexts#context-availability.
+// See the script for more details: https://github.com/rhysd/actionlint/blob/main/scripts/generate-context-availability/`)
 	fmt.Fprintf(buf, "var SpecialFunctionNames = %#v\n", funcs)
 
 	formatted, err := format.Source(buf.Bytes())

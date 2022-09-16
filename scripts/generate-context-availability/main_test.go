@@ -92,12 +92,12 @@ func TestErrorGenerate(t *testing.T) {
 	}
 }
 
-var testDummyError = errors.New("dummy write error")
+var errTestDummy = errors.New("dummy write error")
 
 type testErrorWriter struct{}
 
 func (w testErrorWriter) Write(b []byte) (int, error) {
-	return 0, testDummyError
+	return 0, errTestDummy
 }
 
 func TestWriteError(t *testing.T) {

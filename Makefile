@@ -23,9 +23,9 @@ test: .testtimestamp
 
 lint: .staticchecktimestamp
 
-popular_actions.go all_webhooks.go: scripts/generate-popular-actions/main.go scripts/generate-webhook-events/main.go
+popular_actions.go all_webhooks.go: scripts/generate-popular-actions/main.go scripts/generate-webhook-events/main.go scripts/generate-context-availability/main.go
 ifdef SKIP_GO_GENERATE
-	touch popular_actions.go all_webhooks.go
+	touch popular_actions.go all_webhooks.go context_availability.go
 else
 	go generate
 endif

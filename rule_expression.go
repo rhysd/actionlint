@@ -6,6 +6,8 @@ import (
 	"strings"
 )
 
+//go:generate go run ./scripts/generate-context-availability ./context_availability.go
+
 type typedExpr struct {
 	ty  ExprType
 	pos Pos
