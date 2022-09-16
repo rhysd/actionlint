@@ -240,7 +240,7 @@ var BuiltinGlobalVariableTypes = map[string]ExprType{
 			NewStrictObjectType(map[string]ExprType{
 				"id":      StringType{}, // job.services.<service id>.id
 				"network": StringType{},
-				"ports":   NewEmptyObjectType(),
+				"ports":   NewMapObjectType(StringType{}),
 			}),
 		),
 		"status": StringType{},
@@ -254,8 +254,8 @@ var BuiltinGlobalVariableTypes = map[string]ExprType{
 		"arch":       StringType{},
 		"temp":       StringType{},
 		"tool_cache": StringType{},
-		// These are not documented but actually exist
-		"workspace": StringType{},
+		"debug":      StringType{},
+		"workspace":  StringType{},
 	}),
 	// https://docs.github.com/en/actions/learn-github-actions/contexts#secrets-context
 	"secrets": NewMapObjectType(StringType{}),
