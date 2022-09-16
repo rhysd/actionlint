@@ -42,7 +42,7 @@ func ContextAvailability(key string) ([]string, []string) {
 	case "jobs.<job_id>.runs-on":
 		return []string{"github", "needs", "strategy", "matrix", "inputs"}, []string{}
 	case "jobs.<job_id>.secrets.<secrets_id>":
-		return []string{"github", "needs", ""}, []string{}
+		return []string{"github", "needs", "strategy", "matrix", "secrets", "inputs"}, []string{}
 	case "jobs.<job_id>.services":
 		return []string{"github", "needs", "strategy", "matrix", "inputs"}, []string{}
 	case "jobs.<job_id>.services.<service_id>.credentials":
@@ -70,9 +70,9 @@ func ContextAvailability(key string) ([]string, []string) {
 	case "jobs.<job_id>.timeout-minutes":
 		return []string{"github", "needs", "strategy", "matrix", "inputs"}, []string{}
 	case "jobs.<job_id>.with.<with_id>":
-		return []string{"github", "needs"}, []string{}
+		return []string{"github", "needs", "strategy", "matrix", "inputs"}, []string{}
 	case "on.workflow_call.inputs.<inputs_id>.default":
-		return []string{"github"}, []string{}
+		return []string{"github", "inputs"}, []string{}
 	case "on.workflow_call.outputs.<output_id>.value":
 		return []string{"github", "jobs", "inputs"}, []string{}
 	default:

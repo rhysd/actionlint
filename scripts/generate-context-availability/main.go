@@ -20,7 +20,7 @@ import (
 )
 
 var dbg = log.New(io.Discard, "", log.LstdFlags)
-var reReplaceholder = regexp.MustCompile("{% .+ %}")
+var reReplaceholder = regexp.MustCompile("{%[^%]+%}")
 
 func parseContextAvailabilityTable(src []byte) (*extast.Table, bool) {
 	md := goldmark.New(goldmark.WithExtensions(extension.Table))
