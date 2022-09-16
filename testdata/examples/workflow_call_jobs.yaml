@@ -14,3 +14,6 @@ jobs:
     runs-on: ubuntu-latest
     steps:
       - run: echo hello
+  job4:
+    # ERROR: This workflow does not exist
+    uses: ./.github/workflows/not-existing.yml

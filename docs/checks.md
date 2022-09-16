@@ -2016,6 +2016,9 @@ jobs:
     runs-on: ubuntu-latest
     steps:
       - run: echo hello
+  job4:
+    # ERROR: This workflow does not exist
+    uses: ./.github/workflows/not-existing.yml
 ```
 
 Output:
@@ -2033,9 +2036,13 @@ test.yaml:12:5: "with" is only available for a reusable workflow call with "uses
    |
 12 |     with:
    |     ^~~~~
+test.yaml:19:11: could not read reusable workflow file for "./.github/workflows/not-existing.yml": open /path/to/.github/workflows/not-existing.yml: no such file or directory [workflow-call]
+   |
+19 |     uses: ./.github/workflows/not-existing.yml
+   |           ^~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 ```
 
-[Playground](https://rhysd.github.io/actionlint#eJx9jTEOwjAMRfeewhdoo8KWiasklUsKaRzFNlFvT9sIxMT0Pbz3TMlCVg7dgzzbDmDf8VgAZWQLVBMWUzCTyU6CETKVynOOVIdtjbfXeMJFE/e0x9RrEu2jE2RpvctvbzDDfZGg/pthMy1nanVLasa1GXUH2wUwE1nwrvz/BsCCmT9Sf5AWcAoEAWOkN6pqSm4=)
+[Playground](https://rhysd.github.io/actionlint#eJyFjkESwiAMRfeeIhdomaorVl4FOmlBKWFIEL29bRkdV7r6Wfz38ilqSIXd4UqW9QFgzWFLgMLIGqhGzCpjIpWMOCWkKuXbFKj2zyVc7sNeziVyR6us2BKldMEIsjTf8dvXq3724or9aFiNflctxsdGnBpR12K7ACYiDdbk398AWDDxG+q2pgYcHYHDEKjpz/8GRZIOH57Fx3mb9gJtJVzI)
 
 When calling an external workflow, [only specific keys are available][reusable-workflow-call-keys] at job configuration.
 For example, `secrets:` is not available when running steps in a normal job. And `runs-on:` is not available when calling
@@ -2044,6 +2051,9 @@ to call a reusable workflow or to run steps in a normal job.
 
 And the workflow syntax at `uses:` must follow the format `owner/repo/path/to/workflow.yml@ref` as described in
 [the official document][create-reusable-workflow-doc]. actionlint checks if the value follows the format.
+
+actionlint also validates the called workflow file is actually existing when it is a local workflow (starting with `./`).
+actionlint reports an error when it does not exist.
 
 ### Check types of `inputs.*` and `secrets.*` in reusable workflow
 
