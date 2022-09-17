@@ -50,21 +50,21 @@ func ContextAvailability(key string) ([]string, []string) {
 	case "jobs.<job_id>.services.<service_id>.env.<env_id>":
 		return []string{"github", "needs", "strategy", "matrix", "job", "runner", "env", "secrets", "inputs"}, []string{}
 	case "jobs.<job_id>.steps.continue-on-error":
-		return []string{"github", "needs", "strategy", "matrix", "job", "runner", "env", "secrets", "steps", "inputs"}, []string{"hashFiles"}
+		return []string{"github", "needs", "strategy", "matrix", "job", "runner", "env", "secrets", "steps", "inputs"}, []string{"hashfiles"}
 	case "jobs.<job_id>.steps.env":
-		return []string{"github", "needs", "strategy", "matrix", "job", "runner", "env", "secrets", "steps", "inputs"}, []string{"hashFiles"}
+		return []string{"github", "needs", "strategy", "matrix", "job", "runner", "env", "secrets", "steps", "inputs"}, []string{"hashfiles"}
 	case "jobs.<job_id>.steps.if":
-		return []string{"github", "needs", "strategy", "matrix", "job", "runner", "env", "steps", "inputs"}, []string{"always", "cancelled", "success", "failure", "hashFiles"}
+		return []string{"github", "needs", "strategy", "matrix", "job", "runner", "env", "steps", "inputs"}, []string{"always", "cancelled", "success", "failure", "hashfiles"}
 	case "jobs.<job_id>.steps.name":
-		return []string{"github", "needs", "strategy", "matrix", "job", "runner", "env", "secrets", "steps", "inputs"}, []string{"hashFiles"}
+		return []string{"github", "needs", "strategy", "matrix", "job", "runner", "env", "secrets", "steps", "inputs"}, []string{"hashfiles"}
 	case "jobs.<job_id>.steps.run":
-		return []string{"github", "needs", "strategy", "matrix", "job", "runner", "env", "secrets", "steps", "inputs"}, []string{"hashFiles"}
+		return []string{"github", "needs", "strategy", "matrix", "job", "runner", "env", "secrets", "steps", "inputs"}, []string{"hashfiles"}
 	case "jobs.<job_id>.steps.timeout-minutes":
-		return []string{"github", "needs", "strategy", "matrix", "job", "runner", "env", "secrets", "steps", "inputs"}, []string{"hashFiles"}
+		return []string{"github", "needs", "strategy", "matrix", "job", "runner", "env", "secrets", "steps", "inputs"}, []string{"hashfiles"}
 	case "jobs.<job_id>.steps.with":
-		return []string{"github", "needs", "strategy", "matrix", "job", "runner", "env", "secrets", "steps", "inputs"}, []string{"hashFiles"}
+		return []string{"github", "needs", "strategy", "matrix", "job", "runner", "env", "secrets", "steps", "inputs"}, []string{"hashfiles"}
 	case "jobs.<job_id>.steps.working-directory":
-		return []string{"github", "needs", "strategy", "matrix", "job", "runner", "env", "secrets", "steps", "inputs"}, []string{"hashFiles"}
+		return []string{"github", "needs", "strategy", "matrix", "job", "runner", "env", "secrets", "steps", "inputs"}, []string{"hashfiles"}
 	case "jobs.<job_id>.strategy":
 		return []string{"github", "needs", "inputs"}, []string{}
 	case "jobs.<job_id>.timeout-minutes":
@@ -86,4 +86,4 @@ func ContextAvailability(key string) ([]string, []string) {
 //
 // This function was generated from https://docs.github.com/en/actions/learn-github-actions/contexts#context-availability.
 // See the script for more details: https://github.com/rhysd/actionlint/blob/main/scripts/generate-context-availability/
-var SpecialFunctionNames = map[string][]string{"always": []string{"jobs.<job_id>.if", "jobs.<job_id>.steps.if"}, "cancelled": []string{"jobs.<job_id>.if", "jobs.<job_id>.steps.if"}, "failure": []string{"jobs.<job_id>.if", "jobs.<job_id>.steps.if"}, "hashFiles": []string{"jobs.<job_id>.steps.continue-on-error", "jobs.<job_id>.steps.env", "jobs.<job_id>.steps.if", "jobs.<job_id>.steps.name", "jobs.<job_id>.steps.run", "jobs.<job_id>.steps.timeout-minutes", "jobs.<job_id>.steps.with", "jobs.<job_id>.steps.working-directory"}, "success": []string{"jobs.<job_id>.if", "jobs.<job_id>.steps.if"}}
+var SpecialFunctionNames = map[string][]string{"always": []string{"jobs.<job_id>.if", "jobs.<job_id>.steps.if"}, "cancelled": []string{"jobs.<job_id>.if", "jobs.<job_id>.steps.if"}, "failure": []string{"jobs.<job_id>.if", "jobs.<job_id>.steps.if"}, "hashfiles": []string{"jobs.<job_id>.steps.continue-on-error", "jobs.<job_id>.steps.env", "jobs.<job_id>.steps.if", "jobs.<job_id>.steps.name", "jobs.<job_id>.steps.run", "jobs.<job_id>.steps.timeout-minutes", "jobs.<job_id>.steps.with", "jobs.<job_id>.steps.working-directory"}, "success": []string{"jobs.<job_id>.if", "jobs.<job_id>.steps.if"}}

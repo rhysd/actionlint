@@ -64,7 +64,7 @@ func split(text string) []string {
 
 	ss := strings.Split(text, ",")
 	for i, s := range ss {
-		ss[i] = strings.TrimSpace(s)
+		ss[i] = strings.ToLower(strings.TrimSpace(s))
 	}
 	return ss
 }
