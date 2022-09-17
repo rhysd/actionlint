@@ -10,16 +10,18 @@ import (
 
 func TestExprSemanticsCheckOK(t *testing.T) {
 	testCases := []struct {
-		what     string
-		input    string
-		expected ExprType
-		funcs    map[string][]*FuncSignature
-		matrix   *ObjectType
-		steps    *ObjectType
-		needs    *ObjectType
-		inputs   *ObjectType
-		secrets  *ObjectType
-		jobs     *ObjectType
+		what          string
+		input         string
+		expected      ExprType
+		funcs         map[string][]*FuncSignature
+		matrix        *ObjectType
+		steps         *ObjectType
+		needs         *ObjectType
+		inputs        *ObjectType
+		secrets       *ObjectType
+		jobs          *ObjectType
+		availContexts []string
+		availSPFuncs  []string
 	}{
 		{
 			what:     "null",
@@ -613,6 +615,41 @@ func TestExprSemanticsCheckOK(t *testing.T) {
 				"some_job": NewEmptyObjectType(),
 			}),
 		},
+		{
+			what:          "available context",
+			input:         "strategy.fail-fast",
+			expected:      BoolType{},
+			availContexts: []string{"strategy"},
+		},
+		{
+			what:          "available contexts",
+			input:         "strategy.fail-fast",
+			expected:      BoolType{},
+			availContexts: []string{"matrix", "strategy"},
+		},
+		{
+			what:         "special function",
+			input:        "success()",
+			expected:     BoolType{},
+			availSPFuncs: []string{"success"},
+		},
+		{
+			what:         "non-special function",
+			input:        "fromJSON('{}')",
+			expected:     AnyType{},
+			availSPFuncs: []string{"always"},
+		},
+		{
+			what:         "case-insensitive special function name",
+			input:        "hashFiles('aaa.txt')",
+			expected:     StringType{},
+			availSPFuncs: []string{"hashfiles"},
+		},
+	}
+
+	allSPFuncs := []string{}
+	for f := range SpecialFunctionNames {
+		allSPFuncs = append(allSPFuncs, f)
 	}
 
 	for _, tc := range testCases {
@@ -644,6 +681,14 @@ func TestExprSemanticsCheckOK(t *testing.T) {
 			}
 			if tc.jobs != nil {
 				c.UpdateJobs(tc.jobs)
+			}
+			if len(tc.availContexts) > 0 {
+				c.SetContextAvailability(tc.availContexts)
+			}
+			if len(tc.availSPFuncs) > 0 {
+				c.SetSpecialFunctionAvailability(tc.availSPFuncs)
+			} else {
+				c.SetSpecialFunctionAvailability(allSPFuncs)
 			}
 			ty, errs := c.Check(e)
 			if len(errs) > 0 {
@@ -695,6 +740,8 @@ func TestExprSemanticsCheckError(t *testing.T) {
 		steps    *ObjectType
 		needs    *ObjectType
 		noEnv    bool
+		availCtx []string
+		availSP  []string
 	}{
 		{
 			what:  "undefined variable",
@@ -1069,6 +1116,51 @@ func TestExprSemanticsCheckError(t *testing.T) {
 			},
 			noEnv: true,
 		},
+		{
+			what:  "available context",
+			input: "env.FOO",
+			expected: []string{
+				"context \"env\" is not allowed here. available context is \"github\"",
+			},
+			availCtx: []string{"github"},
+		},
+		{
+			what:  "available contexts",
+			input: "github.event.labels",
+			expected: []string{
+				"context \"github\" is not allowed here. available contexts are \"env\", \"matrix\"",
+			},
+			availCtx: []string{"matrix", "env"},
+		},
+		{
+			what:  "no special function allowed",
+			input: "success()",
+			expected: []string{
+				"calling function \"success\" is not allowed here. \"success\" is only available in ",
+			},
+			availSP: []string{},
+		},
+		{
+			what:  "special function",
+			input: "always()",
+			expected: []string{
+				"calling function \"always\" is not allowed here. \"always\" is only available in ",
+			},
+			availSP: []string{"fail", "success"},
+		},
+		{
+			what:  "case-insensitive special function name",
+			input: "hashFiles('aaa.txt')",
+			expected: []string{
+				"calling function \"hashFiles\" is not allowed here. \"hashFiles\" is only available in ",
+			},
+			availSP: []string{"fail"},
+		},
+	}
+
+	allSP := []string{}
+	for f := range SpecialFunctionNames {
+		allSP = append(allSP, f)
 	}
 
 	for _, tc := range testCases {
@@ -1094,6 +1186,14 @@ func TestExprSemanticsCheckError(t *testing.T) {
 			}
 			if tc.noEnv {
 				c.NoEnv()
+			}
+			if tc.availCtx != nil {
+				c.SetContextAvailability(tc.availCtx)
+			}
+			if tc.availSP != nil {
+				c.SetSpecialFunctionAvailability(tc.availSP)
+			} else {
+				c.SetSpecialFunctionAvailability(allSP)
 			}
 			_, errs := c.Check(e)
 			if len(errs) != len(tc.expected) {
