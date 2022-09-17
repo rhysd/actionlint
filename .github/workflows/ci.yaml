@@ -93,7 +93,7 @@ jobs:
         run: |
           go install honnef.co/go/tools/cmd/staticcheck@latest
           echo "$(go env GOPATH)/bin" >> "$GITHUB_PATH"
-      - run: make lint
+      - run: make lint SKIP_GO_GENERATE=true
       - name: Lint bash scripts
         run: shellcheck ./scripts/download-actionlint.bash ./playground/post-install.bash ./playground/deploy.bash
   docker:
