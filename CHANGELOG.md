@@ -1,7 +1,110 @@
+<a name="v1.6.18"></a>
+# [v1.6.18](https://github.com/rhysd/actionlint/releases/tag/v1.6.18) - 17 Sep 2022
+
+- This release much enhances checks for local reusable workflow calls. Note that these checks are done for local reusable workflows (starting with `./`). ([#179](https://github.com/rhysd/actionlint/issues/179)).
+  - Detect missing required inputs/secrets and undefined inputs/secrets at `jobs.<job_id>.with` and `jobs.<job_id>.secrets`. See [the document](https://github.com/rhysd/actionlint/blob/main/docs/checks.md#check-inputs-and-secrets-in-workflow-call) for more details.
+    ```yaml
+    # .github/workflows/reusable.yml
+    on:
+      workflow_call:
+        inputs:
+          name:
+            type: string
+            required: true
+        secrets:
+          password:
+            required: true
+    ...
+
+    # .github/workflows/test.yml
+    ...
+
+    jobs:
+      missing-required:
+        uses: ./.github/workflows/reusable.yml
+        with:
+          # ERROR: Undefined input "user"
+          user: rhysd
+          # ERROR: Required input "name" is missing
+        secrets:
+          # ERROR: Undefined secret "credentials"
+          credentials: my-token
+          # ERROR: Required secret "password" is missing
+    ```
+  - Type check for reusable workflow inputs at `jobs.<job_id>.with`. Types are defined at `on.workflow_call.inputs.<name>.type` in reusable workflow. actionlint checks types of expressions in workflow calls. See [the document](https://github.com/rhysd/actionlint/blob/main/docs/checks.md#check-inputs-and-secrets-in-workflow-call) for more details.
+    ```yaml
+    # .github/workflows/reusable.yml
+    on:
+      workflow_call:
+        inputs:
+          id:
+            type: number
+          message:
+            type: string
+    ...
+
+    # .github/workflows/test.yml
+    ...
+
+    jobs:
+      type-checks:
+        uses: ./.github/workflows/reusable.yml
+        with:
+          # ERROR: Cannot assign string value to number input. format() returns string value
+          id: ${{ format('runner name is {0}', runner.name) }}
+          # ERROR: Cannot assign null to string input. If you want to pass string "null", use ${{ 'null' }}
+          message: null
+    ```
+  - Detect local reusable workflow which does not exist at `jobs.<job_id>.uses`. See [the document](https://github.com/rhysd/actionlint/blob/main/docs/checks.md#check-workflow-call-syntax) for more details.
+    ```yaml
+    jobs:
+      test:
+        # ERROR: This workflow file does not exist
+        with: ./.github/workflows/does-not-exist.yml
+    ```
+  - Check `needs.<job_id>.outputs.<output_id>` in downstream jobs of workflow call jobs. The outputs object is now typed strictly based on `on.workflow_call.outputs.<name>` in the called reusable workflow. See [the document](https://github.com/rhysd/actionlint/blob/main/docs/checks.md#check-outputs-of-workflow-call-in-downstream-jobs) for more details.
+    ```yaml
+    # .github/workflows/get-build-info.yml
+    on:
+      workflow_call:
+        outputs:
+          version:
+            value: ...
+            description: version of software
+    ...
+
+    # .github/workflows/test.yml
+    ...
+
+    jobs:
+      # This job's outputs object is typed as {version: string}
+      get_build_info:
+        uses: ./.github/workflows/get-build-info.yml
+      downstream:
+        needs: [get_build_info]
+        runs-on: ubuntu-latest
+        steps:
+          # OK. `version` is defined in the reusable workflow
+          - run: echo '${{ needs.get_build_info.outputs.version }}'
+          # ERROR: `tag` is not defined in the reusable workflow
+          - run: echo '${{ needs.get_build_info.outputs.tag }}'
+    ```
+- Add missing properties in contexts and improve types of some properties looking at [the official contexts document](https://docs.github.com/en/actions/learn-github-actions/contexts#github-context).
+  - `github.action_status`
+  - `runner.debug`
+  - `services.<service_id>.ports`
+- Fix `on.workflow_call.inputs.<name>.description` and `on.workflow_call.secrets.<name>.description` were incorrectly mandatory. They are actually optional.
+- Report an error when parsing `action.yml` in local action. It was ignored in previous versions.
+- Sort the order of properties in a object type displayed in error message. In previous versions, actionlint sometimes displays `{a: true, b: string}` otherwise it displays `{b: string, a: true}` for the same object type. This randomness was caused by random iteration of map values in Go.
+- Update popular actions data set to the latest.
+
+[Changes][v1.6.18]
+
+
 <a name="v1.6.17"></a>
 # [v1.6.17](https://github.com/rhysd/actionlint/releases/tag/v1.6.17) - 28 Aug 2022
 
-- Workflow calls are available in matrix jobs. See [the official announcement](https://github.blog/changelog/2022-08-22-github-actions-improvements-to-reusable-workflows-2/) for more details. ([#197](https://github.com/rhysd/actionlint/issues/197))
+- Allow workflow calls are available in matrix jobs. See [the official announcement](https://github.blog/changelog/2022-08-22-github-actions-improvements-to-reusable-workflows-2/) for more details. ([#197](https://github.com/rhysd/actionlint/issues/197))
   ```yaml
   jobs:
     ReuseableMatrixJobForDeployment:
@@ -12,13 +115,13 @@
       with:
         target: ${{ matrix.target }}
   ```
-- Workflow calls can be nested. See [the official announcement](https://github.blog/changelog/2022-08-22-github-actions-improvements-to-reusable-workflows-2/) for more details. ([#201](https://github.com/rhysd/actionlint/issues/201))
+- Allow nested workflow calls. See [the official announcement](https://github.blog/changelog/2022-08-22-github-actions-improvements-to-reusable-workflows-2/) for more details. ([#201](https://github.com/rhysd/actionlint/issues/201))
   ```yaml
   on: workflow_call
 
   jobs:
     call-another-reusable:
-      uses: octo-org/example-repo/.github/workflows/another-reusable.yml@v1
+      uses: path/to/another-reusable.yml@v1
   ```
 - Fix job outputs should be passed to `needs.*.outputs` of only direct children. Until v1.6.16, they are passed to any downstream jobs. ([#151](https://github.com/rhysd/actionlint/issues/151))
   ```yaml
@@ -51,7 +154,9 @@
     third:
       needs: [first, second]
       runs-on: ubuntu-latest
-      steps: ...
+      steps:
+        # OK
+        -  echo '${{ toJSON(needs.first.outputs) }}'
   ```
 - Fix `}}` in string literals are detected as end marker of placeholder `${{ }}`. ([#205](https://github.com/rhysd/actionlint/issues/205))
   ```yaml
@@ -150,6 +255,7 @@
   ```yaml
   if: ${{ x == "foo" }}
   ```
+- Add support for [`merge_group` workflow trigger](https://github.blog/changelog/2022-08-18-merge-group-webhook-event-and-github-actions-workflow-trigger/).
 - Add official actions to manage GitHub Pages to popular actions data set.
   - `actions/configure-pages@v1`
   - `actions/deploy-pages@v1`
@@ -1043,6 +1149,7 @@ See documentation for more details:
 [Changes][v1.0.0]
 
 
+[v1.6.18]: https://github.com/rhysd/actionlint/compare/v1.6.17...v1.6.18
 [v1.6.17]: https://github.com/rhysd/actionlint/compare/v1.6.16...v1.6.17
 [v1.6.16]: https://github.com/rhysd/actionlint/compare/v1.6.15...v1.6.16
 [v1.6.15]: https://github.com/rhysd/actionlint/compare/v1.6.14...v1.6.15
