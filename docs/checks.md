@@ -1930,7 +1930,7 @@ actionlint does several checks for both workflow calls (caller) and reusable wor
 - syntax of workflow calls and reusable workflows
 - type checks for inputs (respecting `type:` field of each input) in both workflow calls and reusable workflows
 - type checks for `inputs`, `outputs` and `secrets` context objects in reusable workflows
-- optional/required inputs and secrets at `uses:` in workflow calls
+- optional/required/undefined inputs and secrets at `uses:` in workflow calls
 - type checks for `outputs` objects used by downstream jobs of workflow calls
 
 These checkes are described in this section.
@@ -2225,9 +2225,17 @@ Example input:
 on: push
 
 jobs:
-  # Check required inputs and secrets
+  # Check required/undefined inputs and secrets
   missing-required:
     uses: ./.github/workflows/reusable.yaml
+    with:
+      # ERROR: Undefined input
+      user: rhysd
+      # ERROR: Required input "name" is missing
+    secrets:
+      # ERROR: Undefined secret
+      credentials: my-token
+      # ERROR: Required secret "password" is missing
 
   # Check types of inputs defined in reusable workflow
   type-checks:
@@ -2239,7 +2247,7 @@ jobs:
       # ERROR: Cannot assign null to string input. If you want to pass string "null", use ${{ 'null' }}
       message: null
     secrets:
-      password: passw0rd
+      password: p@ssw0rd
 ```
 
 Output:
@@ -2253,17 +2261,26 @@ test.yaml:6:11: secret "password" is required by "./.github/workflows/reusable.y
   |
 6 |     uses: ./.github/workflows/reusable.yaml
   |           ^~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
-test.yaml:14:11: input "id" is typed as number by reusable workflow "./.github/workflows/reusable.yaml". bool value cannot be assigned [expression]
+test.yaml:9:7: input "user" is not defined in "./.github/workflows/reusable.yaml" reusable workflow. defined inputs are "id", "message", "name" [workflow-call]
+  |
+9 |       user: rhysd
+  |       ^~~~~
+test.yaml:13:7: secret "credentials" is not defined in "./.github/workflows/reusable.yaml" reusable workflow. defined secret is "password" [workflow-call]
    |
-14 |       id: true
+13 |       credentials: my-token
+   |       ^~~~~~~~~~~~
+test.yaml:22:11: input "id" is typed as number by reusable workflow "./.github/workflows/reusable.yaml". bool value cannot be assigned [expression]
+   |
+22 |       id: true
    |           ^~~~
-test.yaml:16:16: input "message" is typed as string by reusable workflow "./.github/workflows/reusable.yaml". null value cannot be assigned [expression]
+test.yaml:24:16: input "message" is typed as string by reusable workflow "./.github/workflows/reusable.yaml". null value cannot be assigned [expression]
    |
-16 |       message: null
+24 |       message: null
    |                ^~~~
 ```
 
-Reusable workflows can define required inputs and secrets. When they are missing in a workflow call, actionlint reports an error.
+Reusable workflows can define required/optional inputs and secrets. When they are missing or some undefined input is used in a
+workflow call, actionlint reports an error.
 
 And reusable workflows must define types of their inputs by `type:` field. Workflow calls pass constants (`input: 42`) or
 expressions (`inputs: ${{ ... }}`) to the inputs or secrets. actionlint checks types of values passed to inputs in workflow call.

@@ -1,9 +1,17 @@
 on: push
 
 jobs:
-  # Check required inputs and secrets
+  # Check required/undefined inputs and secrets
   missing-required:
     uses: ./.github/workflows/reusable.yaml
+    with:
+      # ERROR: Undefined input
+      user: rhysd
+      # ERROR: Required input "name" is missing
+    secrets:
+      # ERROR: Undefined secret
+      credentials: my-token
+      # ERROR: Required secret "password" is missing
 
   # Check types of inputs defined in reusable workflow
   type-checks:
@@ -15,4 +23,4 @@ jobs:
       # ERROR: Cannot assign null to string input. If you want to pass string "null", use ${{ 'null' }}
       message: null
     secrets:
-      password: passw0rd
+      password: p@ssw0rd
