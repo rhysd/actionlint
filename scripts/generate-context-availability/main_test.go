@@ -76,6 +76,7 @@ func TestErrorGenerate(t *testing.T) {
 		{"no_heading.md", "no \"Context availability\" table was found"},
 		{"no_table.md", "no \"Context availability\" table was found"},
 		{"broken_table.md", "expected 3 rows in table but got"},
+		{"else_directive.md", "cannot strip template directives since it contains {% else %}"},
 	}
 
 	for _, tc := range testCases {
@@ -87,6 +88,30 @@ func TestErrorGenerate(t *testing.T) {
 			}
 			if !strings.Contains(stderr, tc.want) {
 				t.Fatalf("wanted %q in stderr %q", tc.want, stderr)
+			}
+		})
+	}
+}
+
+func TestStripAndUnescape(t *testing.T) {
+	tests := []struct {
+		input string
+		want  string
+	}{
+		{"", ""},
+		{"foo, bar", "foo, bar"},
+		{"&lt;hello&gt;", "<hello>"},
+		{"aaa{% ifhoge ... %}, foo, bar{% endif %}, bbb", "aaa, foo, bar, bbb"},
+	}
+
+	for _, tc := range tests {
+		t.Run(tc.input, func(t *testing.T) {
+			have, err := stripAndUnescape(tc.input)
+			if err != nil {
+				t.Fatal(err)
+			}
+			if have != tc.want {
+				t.Fatalf("wanted %q but got %q", tc.want, have)
 			}
 		})
 	}

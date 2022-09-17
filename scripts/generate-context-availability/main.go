@@ -69,6 +69,14 @@ func split(text string) []string {
 	return ss
 }
 
+func stripAndUnescape(s string) (string, error) {
+	if strings.Contains(s, "{% else %}") {
+		return "", fmt.Errorf("cannot strip template directives since it contains {%% else %%}: %s", s)
+	}
+	s = reReplaceholder.ReplaceAllString(s, "")
+	return html.UnescapeString(s), nil
+}
+
 func generate(src []byte, out io.Writer) error {
 	t, ok := parseContextAvailabilityTable(src)
 	if !ok {
@@ -108,8 +116,11 @@ func ContextAvailability(key string) ([]string, []string) {
 		}
 
 		for i, c := range cs {
-			c = reReplaceholder.ReplaceAllString(c, "")
-			cs[i] = html.UnescapeString(c)
+			c, err := stripAndUnescape(c)
+			if err != nil {
+				return err
+			}
+			cs[i] = c
 		}
 
 		key := cs[0]
