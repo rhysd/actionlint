@@ -6,14 +6,14 @@ import (
 )
 
 func TestContextAvailability(t *testing.T) {
-	for _, key := range []string{"jobs.<job_id>.steps.with", "jobs.<job_id>.steps.if"} {
+	for _, key := range allWorkflowKeys {
 		t.Run(key, func(t *testing.T) {
 			ctx, sp := ContextAvailability(key)
-			if len(ctx) == 0 {
-				t.Error("no context was returned")
+			if ctx == nil || sp == nil {
+				t.Error("workflow key has not availability info:", key)
 			}
-			if len(sp) == 0 {
-				t.Error("no special function name was returned")
+			if len(ctx) == 0 {
+				t.Error("no context is available for key", key)
 			}
 
 			r := regexp.MustCompile(`^[a-z][a-z0-9_]*$`)

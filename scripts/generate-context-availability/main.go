@@ -10,6 +10,7 @@ import (
 	"net/http"
 	"os"
 	"regexp"
+	"sort"
 	"strings"
 
 	"github.com/yuin/goldmark"
@@ -66,6 +67,7 @@ func split(text string) []string {
 	for i, s := range ss {
 		ss[i] = strings.ToLower(strings.TrimSpace(s))
 	}
+	sort.Strings(ss)
 	return ss
 }
 
@@ -101,7 +103,7 @@ package actionlint
 func ContextAvailability(key string) ([]string, []string) {
 	switch key {`)
 
-	count := 0
+	keys := []string{}
 	for n := t.FirstChild(); n != nil; n = n.NextSibling() {
 		r, ok := n.(*extast.TableRow)
 		if !ok {
@@ -112,6 +114,7 @@ func ContextAvailability(key string) ([]string, []string) {
 			return fmt.Errorf("expected 3 rows in table but got %v", cs)
 		}
 		if cs[0] == "{% else %}" {
+			dbg.Println("Found {% else %} directive. Breaking from loop of rows")
 			break
 		}
 
@@ -133,10 +136,10 @@ func ContextAvailability(key string) ([]string, []string) {
 
 		fmt.Fprintf(buf, "	case %q: return %#v, %#v\n", key, ctx, sp)
 		dbg.Println("Parsed table row:", key)
-		count++
+		keys = append(keys, key)
 	}
-	fmt.Fprintln(buf, "	default: return []string{}, []string{}\n	}\n}")
-	dbg.Println("Parsed", count, "table rows")
+	fmt.Fprintln(buf, "	default: return nil, nil\n	}\n}")
+	dbg.Println("Parsed", len(keys), "table rows")
 
 	fmt.Fprintln(buf, `// SpecialFunctionNames is a map from special function name to available workflow keys.
 // Some functions are only available at specific positions. This variable is useful when you want to
@@ -145,6 +148,10 @@ func ContextAvailability(key string) ([]string, []string) {
 // This function was generated from https://docs.github.com/en/actions/learn-github-actions/contexts#context-availability.
 // See the script for more details: https://github.com/rhysd/actionlint/blob/main/scripts/generate-context-availability/`)
 	fmt.Fprintf(buf, "var SpecialFunctionNames = %#v\n", funcs)
+
+	// This variabel is for unit tests
+	sort.Strings(keys)
+	fmt.Fprintf(buf, "\nvar allWorkflowKeys = %#v\n", keys)
 
 	formatted, err := format.Source(buf.Bytes())
 	if err != nil {
