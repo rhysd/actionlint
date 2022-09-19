@@ -119,14 +119,6 @@ npm run serve
 git push
 ```
 
-## Inspect workflow AST
-
-Please use [actionlint-workflow-ast](./scripts/actionlint-workflow-ast) script.
-
-```sh
-go run ./scripts/actionlint-workflow-ast /path/to/workflow.yaml
-```
-
 ## Maintain `popular_actions.go`
 
 [`popular_actions.go`](./popular_actions.go) is generated automatically with `go generate`. The command runs

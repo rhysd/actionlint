@@ -49,9 +49,6 @@ man: man/actionlint.1
 bench:
 	go test -bench Lint -benchmem
 
-actionlint-workflow-ast: scripts/actionlint-workflow-ast/main.go
-	go build ./scripts/actionlint-workflow-ast/
-
 .github/actionlint-matcher.json: scripts/generate-actionlint-matcher/object.js
 	node ./scripts/generate-actionlint-matcher/main.js .github/actionlint-matcher.json
 
