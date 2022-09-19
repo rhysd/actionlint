@@ -1,4 +1,4 @@
-test.yaml:9:13: undefined variable "env". available variables are "github", "inputs", "job", "matrix", "needs", "runner", "secrets", "steps", "strategy" [expression]
-test.yaml:14:9: undefined variable "env". available variables are "github", "inputs", "job", "matrix", "needs", "runner", "secrets", "steps", "strategy" [expression]
-test.yaml:19:13: undefined variable "env". available variables are "github", "inputs", "job", "matrix", "needs", "runner", "secrets", "steps", "strategy" [expression]
-test.yaml:22:9: undefined variable "env". available variables are "github", "inputs", "job", "matrix", "needs", "runner", "secrets", "steps", "strategy" [expression]
+test.yaml:9:13: context "env" is not allowed here. available contexts are "github", "inputs", "needs". see https://docs.github.com/en/actions/learn-github-actions/contexts#context-availability for more details [expression]
+test.yaml:14:9: context "env" is not allowed here. available contexts are "github", "inputs", "needs". see https://docs.github.com/en/actions/learn-github-actions/contexts#context-availability for more details [expression]
+test.yaml:19:13: context "env" is not allowed here. available contexts are "github", "inputs", "needs". see https://docs.github.com/en/actions/learn-github-actions/contexts#context-availability for more details [expression]
+test.yaml:22:9: context "env" is not allowed here. available contexts are "github", "inputs", "needs". see https://docs.github.com/en/actions/learn-github-actions/contexts#context-availability for more details [expression]

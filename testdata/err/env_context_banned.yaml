@@ -13,9 +13,6 @@ jobs:
       # 'env:' at job level cannot refer 'env' context
       ERROR2: ${{ env.PATH }}
     steps:
-      # 'uses:' and 'id:' cause errors
-      - uses: test/${{ env.FOO }}@main
-        id: foo-${{ env.FOO }}
       # 'env:' at step level can refer 'env' context
       - run: echo "$BAR"
         env:

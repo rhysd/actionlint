@@ -3,7 +3,7 @@ jobs:
   test:
     strategy:
       # OK: Expanding object value
-      matrix: ${{ fromJSON(env.MATRIX_VALUES) }}
+      matrix: ${{ fromJSON(github.event.labels) }}
     runs-on: ubuntu-latest
     steps:
       - uses: actions/cache@v1
