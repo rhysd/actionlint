@@ -451,7 +451,7 @@ func (sema *ExprSemanticsChecker) checkAvailableContext(n *VariableNode) {
 		"context %q is not allowed here. available %s %s. see https://docs.github.com/en/actions/learn-github-actions/contexts#context-availability for more details",
 		n.Name,
 		s,
-		sortedQuotes(sema.availableContexts),
+		quotes(sema.availableContexts),
 	)
 }
 
@@ -489,7 +489,7 @@ func (sema *ExprSemanticsChecker) checkSpecialFunctionAvailability(n *FuncCallNo
 		"calling function %q is not allowed here. %q is only available in %s. see https://docs.github.com/en/actions/learn-github-actions/contexts#context-availability for more details",
 		n.Callee,
 		n.Callee,
-		sortedQuotes(allowed),
+		quotes(allowed),
 	)
 }
 

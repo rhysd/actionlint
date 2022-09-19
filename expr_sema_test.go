@@ -1130,7 +1130,7 @@ func TestExprSemanticsCheckError(t *testing.T) {
 			expected: []string{
 				"context \"github\" is not allowed here. available contexts are \"env\", \"matrix\"",
 			},
-			availCtx: []string{"matrix", "env"},
+			availCtx: []string{"env", "matrix"},
 		},
 		{
 			what:  "no special function allowed",
