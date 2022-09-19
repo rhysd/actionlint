@@ -128,7 +128,7 @@ func (rule *RuleExpression) VisitWorkflowPre(n *Workflow) error {
 		}
 	}
 
-	rule.checkEnv(n.Env, true, "env")
+	rule.checkEnv(n.Env, "env")
 
 	rule.checkDefaults(n.Defaults, "")
 	rule.checkConcurrency(n.Concurrency, "concurrency")
@@ -186,10 +186,10 @@ func (rule *RuleExpression) VisitJobPre(n *Job) error {
 
 	rule.checkConcurrency(n.Concurrency, "jobs.<job_id>.concurrency")
 
-	rule.checkEnv(n.Env, true, "jobs.<job_id>.env")
+	rule.checkEnv(n.Env, "jobs.<job_id>.env")
 
 	rule.checkDefaults(n.Defaults, "jobs.<job_id>.defaults.run")
-	rule.checkIfCondition(n.If, true, "jobs.<job_id>.if")
+	rule.checkIfCondition(n.If, "jobs.<job_id>.if")
 
 	if n.Strategy != nil {
 		if n.Strategy.Matrix != nil {
@@ -241,7 +241,7 @@ func (rule *RuleExpression) VisitJobPost(n *Job) error {
 // VisitStep is callback when visiting Step node.
 func (rule *RuleExpression) VisitStep(n *Step) error {
 	rule.checkString(n.Name, "jobs.<job_id>.steps.name")
-	rule.checkIfCondition(n.If, false, "jobs.<job_id>.steps.if")
+	rule.checkIfCondition(n.If, "jobs.<job_id>.steps.if")
 
 	var spec *String
 	switch e := n.Exec.(type) {
@@ -250,7 +250,7 @@ func (rule *RuleExpression) VisitStep(n *Step) error {
 		rule.checkString(e.Shell, "")
 		rule.checkString(e.WorkingDirectory, "jobs.<job_id>.steps.working-directory")
 	case *ExecAction:
-		rule.checkStringNoEnv(e.Uses, "")
+		rule.checkString(e.Uses, "")
 		for n, i := range e.Inputs {
 			if e.Uses != nil && strings.HasPrefix(e.Uses.Value, "actions/github-script@") && n == "script" {
 				rule.checkScriptString(i.Value, "jobs.<job_id>.steps.with")
@@ -263,7 +263,7 @@ func (rule *RuleExpression) VisitStep(n *Step) error {
 		spec = e.Uses
 	}
 
-	rule.checkEnv(n.Env, false, "jobs.<job_id>.steps.env") // env: at step level can refer 'env' context (#158)
+	rule.checkEnv(n.Env, "jobs.<job_id>.steps.env") // env: at step level can refer 'env' context (#158)
 	rule.checkBool(n.ContinueOnError, "jobs.<job_id>.steps.continue-on-error")
 	rule.checkFloat(n.TimeoutMinutes, "jobs.<job_id>.steps.timeout-minutes")
 
@@ -271,7 +271,7 @@ func (rule *RuleExpression) VisitStep(n *Step) error {
 		// Step ID is case insensitive
 		id := strings.ToLower(n.ID.Value)
 		if strings.Contains(id, "${{") && strings.Contains(id, "}}") {
-			rule.checkStringNoEnv(n.ID, "")
+			rule.checkString(n.ID, "")
 			rule.stepsTy.Loose()
 		}
 		rule.stepsTy.Props[id] = NewStrictObjectType(map[string]ExprType{
@@ -345,7 +345,7 @@ func (rule *RuleExpression) checkOneExpression(s *String, what, workflowKey stri
 		return nil
 	}
 
-	ts, ok := rule.checkExprsIn(s.Value, s.Pos, s.Quoted, false, false, workflowKey)
+	ts, ok := rule.checkExprsIn(s.Value, s.Pos, s.Quoted, false, workflowKey)
 	if !ok {
 		return nil
 	}
@@ -446,18 +446,14 @@ func (rule *RuleExpression) checkMatrixCombinations(cs *MatrixCombinations, what
 	}
 }
 
-func (rule *RuleExpression) checkEnv(env *Env, noEnv bool, workflowKey string) {
+func (rule *RuleExpression) checkEnv(env *Env, workflowKey string) {
 	if env == nil {
 		return
 	}
 
 	if env.Vars != nil {
 		for _, e := range env.Vars {
-			if noEnv {
-				rule.checkStringNoEnv(e.Value, workflowKey)
-			} else {
-				rule.checkString(e.Value, workflowKey)
-			}
+			rule.checkString(e.Value, workflowKey)
 		}
 		return
 	}
@@ -479,7 +475,7 @@ func (rule *RuleExpression) checkContainer(c *Container, workflowKey, childWorkf
 		rule.checkString(c.Credentials.Username, childWorkflowKey+".credentials") // e.g. jobs.<job_id>.container.credentials
 		rule.checkString(c.Credentials.Password, childWorkflowKey)
 	}
-	rule.checkEnv(c.Env, false, workflowKey+".env.<env_id>") // e.g. jobs.<job_id>.container.env.<env_id>
+	rule.checkEnv(c.Env, workflowKey+".env.<env_id>") // e.g. jobs.<job_id>.container.env.<env_id>
 	rule.checkStrings(c.Ports, workflowKey)
 	rule.checkStrings(c.Volumes, workflowKey)
 	rule.checkString(c.Options, workflowKey)
@@ -506,7 +502,7 @@ func (rule *RuleExpression) checkWorkflowCall(c *WorkflowCall) {
 		return
 	}
 
-	rule.checkStringNoEnv(c.Uses, "")
+	rule.checkString(c.Uses, "")
 
 	m, err := rule.localWorkflows.FindMetadata(c.Uses.Value)
 	if err != nil {
@@ -579,7 +575,7 @@ func (rule *RuleExpression) checkStrings(ss []*String, workflowKey string) {
 	}
 }
 
-func (rule *RuleExpression) checkIfCondition(str *String, noEnv bool, workflowKey string) {
+func (rule *RuleExpression) checkIfCondition(str *String, workflowKey string) {
 	if str == nil {
 		return
 	}
@@ -608,13 +604,7 @@ func (rule *RuleExpression) checkIfCondition(str *String, noEnv bool, workflowKe
 
 	var condTy ExprType
 	if strings.Contains(str.Value, "${{") && strings.Contains(str.Value, "}}") {
-		var ts []typedExpr
-
-		if noEnv {
-			ts = rule.checkStringNoEnv(str, workflowKey)
-		} else {
-			ts = rule.checkString(str, workflowKey)
-		}
+		ts := rule.checkString(str, workflowKey)
 
 		if len(ts) == 1 {
 			s := strings.TrimSpace(str.Value)
@@ -633,7 +623,7 @@ func (rule *RuleExpression) checkIfCondition(str *String, noEnv bool, workflowKe
 			return
 		}
 
-		if ty, ok := rule.checkSemanticsOfExprNode(expr, line, col, false, noEnv, workflowKey); ok {
+		if ty, ok := rule.checkSemanticsOfExprNode(expr, line, col, false, workflowKey); ok {
 			condTy = ty
 		}
 	}
@@ -657,7 +647,7 @@ func (rule *RuleExpression) checkString(str *String, workflowKey string) []typed
 		return nil
 	}
 
-	ts, ok := rule.checkExprsIn(str.Value, str.Pos, str.Quoted, false, false, workflowKey)
+	ts, ok := rule.checkExprsIn(str.Value, str.Pos, str.Quoted, false, workflowKey)
 	if !ok {
 		return nil
 	}
@@ -671,34 +661,12 @@ func (rule *RuleExpression) checkScriptString(str *String, workflowKey string) {
 		return
 	}
 
-	ts, ok := rule.checkExprsIn(str.Value, str.Pos, str.Quoted, true, false, workflowKey)
+	ts, ok := rule.checkExprsIn(str.Value, str.Pos, str.Quoted, true, workflowKey)
 	if !ok {
 		return
 	}
 
 	rule.checkTemplateEvaluatedType(ts)
-}
-
-// When checking 'id:' or 'uses:' or 'env:' at toplevel or 'env:' at job level, 'env' context cannot
-// be referred. (#158)
-//
-// > Variables in the env map cannot be defined in terms of other variables in the map.
-// https://docs.github.com/en/actions/using-workflows/workflow-syntax-for-github-actions#env
-//
-// > You can use the env context in the value of any key in a step except for the id and uses keys.
-// https://docs.github.com/en/actions/learn-github-actions/contexts#env-context
-func (rule *RuleExpression) checkStringNoEnv(str *String, workflowKey string) []typedExpr {
-	if str == nil {
-		return nil
-	}
-
-	ts, ok := rule.checkExprsIn(str.Value, str.Pos, str.Quoted, false, true, workflowKey)
-	if !ok {
-		return nil
-	}
-
-	rule.checkTemplateEvaluatedType(ts)
-	return ts
 }
 
 func (rule *RuleExpression) checkBool(b *Bool, workflowKey string) {
@@ -733,7 +701,7 @@ func (rule *RuleExpression) checkFloat(f *Float, workflowKey string) {
 	rule.checkNumberExpression(f.Expression, "float number value", workflowKey)
 }
 
-func (rule *RuleExpression) checkExprsIn(s string, pos *Pos, quoted bool, checkUntrusted, noEnv bool, workflowKey string) ([]typedExpr, bool) {
+func (rule *RuleExpression) checkExprsIn(s string, pos *Pos, quoted, checkUntrusted bool, workflowKey string) ([]typedExpr, bool) {
 	// TODO: Line number is not correct when the string contains newlines.
 
 	line, col := pos.Line, pos.Col
@@ -753,7 +721,7 @@ func (rule *RuleExpression) checkExprsIn(s string, pos *Pos, quoted bool, checkU
 		offset += start
 		col := col + offset
 
-		ty, offsetAfter, ok := rule.checkSemantics(s, line, col, checkUntrusted, noEnv, workflowKey)
+		ty, offsetAfter, ok := rule.checkSemantics(s, line, col, checkUntrusted, workflowKey)
 		if !ok {
 			return nil, false
 		}
@@ -780,7 +748,7 @@ func (rule *RuleExpression) checkRawYAMLValue(v RawYAMLValue) {
 			rule.checkRawYAMLValue(v)
 		}
 	case *RawYAMLString:
-		rule.checkExprsIn(v.Value, v.Pos(), false, false, false, "jobs.<job_id>.strategy")
+		rule.checkExprsIn(v.Value, v.Pos(), false, false, "jobs.<job_id>.strategy")
 	default:
 		panic("unreachable")
 	}
@@ -791,7 +759,7 @@ func (rule *RuleExpression) exprError(err *ExprError, lineBase, colBase int) {
 	rule.error(pos, err.Message)
 }
 
-func (rule *RuleExpression) checkSemanticsOfExprNode(expr ExprNode, line, col int, checkUntrusted, noEnv bool, workflowKey string) (ExprType, bool) {
+func (rule *RuleExpression) checkSemanticsOfExprNode(expr ExprNode, line, col int, checkUntrusted bool, workflowKey string) (ExprType, bool) {
 	c := NewExprSemanticsChecker(checkUntrusted)
 	if rule.matrixTy != nil {
 		c.UpdateMatrix(rule.matrixTy)
@@ -814,9 +782,6 @@ func (rule *RuleExpression) checkSemanticsOfExprNode(expr ExprNode, line, col in
 	if rule.jobsTy != nil {
 		c.UpdateJobs(rule.jobsTy)
 	}
-	if noEnv {
-		c.NoEnv()
-	}
 	if workflowKey != "" {
 		ctx, sp := ContextAvailability(workflowKey)
 		if len(ctx) == 0 {
@@ -834,7 +799,7 @@ func (rule *RuleExpression) checkSemanticsOfExprNode(expr ExprNode, line, col in
 	return ty, len(errs) == 0
 }
 
-func (rule *RuleExpression) checkSemantics(src string, line, col int, checkUntrusted, noEnv bool, workflowKey string) (ExprType, int, bool) {
+func (rule *RuleExpression) checkSemantics(src string, line, col int, checkUntrusted bool, workflowKey string) (ExprType, int, bool) {
 	l := NewExprLexer(src)
 	p := NewExprParser()
 	expr, err := p.Parse(l)
@@ -842,7 +807,7 @@ func (rule *RuleExpression) checkSemantics(src string, line, col int, checkUntru
 		rule.exprError(err, line, col)
 		return nil, l.Offset(), false
 	}
-	t, ok := rule.checkSemanticsOfExprNode(expr, line, col, checkUntrusted, noEnv, workflowKey)
+	t, ok := rule.checkSemanticsOfExprNode(expr, line, col, checkUntrusted, workflowKey)
 	return t, l.Offset(), ok
 }
 

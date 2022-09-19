@@ -739,7 +739,6 @@ func TestExprSemanticsCheckError(t *testing.T) {
 		matrix   *ObjectType
 		steps    *ObjectType
 		needs    *ObjectType
-		noEnv    bool
 		availCtx []string
 		availSP  []string
 	}{
@@ -1109,14 +1108,6 @@ func TestExprSemanticsCheckError(t *testing.T) {
 			},
 		},
 		{
-			what:  "'env' context is not allowed",
-			input: "env.FOO",
-			expected: []string{
-				"undefined variable \"env\"",
-			},
-			noEnv: true,
-		},
-		{
 			what:  "available context",
 			input: "env.FOO",
 			expected: []string{
@@ -1183,9 +1174,6 @@ func TestExprSemanticsCheckError(t *testing.T) {
 			}
 			if tc.needs != nil {
 				c.UpdateNeeds(tc.needs)
-			}
-			if tc.noEnv {
-				c.NoEnv()
 			}
 			if tc.availCtx != nil {
 				c.SetContextAvailability(tc.availCtx)
