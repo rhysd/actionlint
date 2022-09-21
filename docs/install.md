@@ -75,6 +75,21 @@ directory automatically. This is a recommended way if you install actionlint in 
 bash <(curl https://raw.githubusercontent.com/rhysd/actionlint/main/scripts/download-actionlint.bash)
 ```
 
+When you need to install specific version of actionlint, please give the version to the 1st command line argument. The following
+example installs v1.6.17.
+
+```sh
+bash <(curl https://raw.githubusercontent.com/rhysd/actionlint/main/scripts/download-actionlint.bash) 1.6.17
+```
+
+This script downloads `actionlint` (or `actionlint.exe` on Windows) binary to the current working directory. When you need to put
+the downloaded binary to some other directory, please give the directory path to the 2nd command line argument. The following
+example installs the latest version to `/usr/bin`.
+
+```sh
+bash <(curl https://raw.githubusercontent.com/rhysd/actionlint/main/scripts/download-actionlint.bash) latest /usr/bin
+```
+
 For the usage of actionlint on GitHub Actions, see [the usage document](usage.md#on-github-actions).
 
 ## Docker image
