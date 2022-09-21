@@ -93,7 +93,7 @@ func (rule *RuleWorkflowCall) checkWorkflowCallUsesLocal(call *WorkflowCall) {
 	for n, i := range m.Inputs {
 		if i != nil && i.Required {
 			if _, ok := call.Inputs[n]; !ok {
-				rule.errorf(u.Pos, "input %q is required by %q reusable workflow", n, u.Value)
+				rule.errorf(u.Pos, "input %q is required by %q reusable workflow", i.Name, u.Value)
 			}
 		}
 	}
@@ -111,16 +111,16 @@ func (rule *RuleWorkflowCall) checkWorkflowCallUsesLocal(call *WorkflowCall) {
 					note = "defined inputs are " + sortedQuotes(i)
 				}
 			}
-			rule.errorf(i.Name.Pos, "input %q is not defined in %q reusable workflow. %s", n, u.Value, note)
+			rule.errorf(i.Name.Pos, "input %q is not defined in %q reusable workflow. %s", i.Name.Value, u.Value, note)
 		}
 	}
 
 	// Validate secrets
 	if !call.InheritSecrets {
-		for n, r := range m.Secrets {
-			if r {
+		for n, s := range m.Secrets {
+			if s.Required {
 				if _, ok := call.Secrets[n]; !ok {
-					rule.errorf(u.Pos, "secret %q is required by %q reusable workflow", n, u.Value)
+					rule.errorf(u.Pos, "secret %q is required by %q reusable workflow", s.Name, u.Value)
 				}
 			}
 		}
@@ -138,7 +138,7 @@ func (rule *RuleWorkflowCall) checkWorkflowCallUsesLocal(call *WorkflowCall) {
 						note = "defined secrets are " + sortedQuotes(s)
 					}
 				}
-				rule.errorf(s.Name.Pos, "secret %q is not defined in %q reusable workflow. %s", n, u.Value, note)
+				rule.errorf(s.Name.Pos, "secret %q is not defined in %q reusable workflow. %s", s.Name.Value, u.Value, note)
 			}
 		}
 	}

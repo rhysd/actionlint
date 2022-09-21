@@ -11,8 +11,10 @@ import (
 	"gopkg.in/yaml.v3"
 )
 
-// ReusableWorkflowMetadataInput is input metadata for validating local reusable workflow file.
+// ReusableWorkflowMetadataInput is an input metadata for validating local reusable workflow file.
 type ReusableWorkflowMetadataInput struct {
+	// Name is a name of the input defined in the reusable workflow.
+	Name string
 	// Required is true when 'required' field of the input is set to true and no default value is set.
 	Required bool
 	// Type is a type of the input. When the input type is unknown, 'any' type is set.
@@ -47,23 +49,112 @@ func (input *ReusableWorkflowMetadataInput) UnmarshalYAML(n *yaml.Node) error {
 	return nil
 }
 
-// ReusableWorkflowMetadataSecretRequired is metadata to indicate a secret of reusable workflow is
-// required or not.
-type ReusableWorkflowMetadataSecretRequired bool
+// ReusableWorkflowMetadataInputs is a map from input name to reusable wokflow input metadata. The
+// keys are in lower case since input names of workflow calls are case insensitive.
+type ReusableWorkflowMetadataInputs map[string]*ReusableWorkflowMetadataInput
 
 // UnmarshalYAML implements yaml.Unmarshaler.
-func (required *ReusableWorkflowMetadataSecretRequired) UnmarshalYAML(n *yaml.Node) error {
-	type metadata struct {
-		Required bool `yaml:"required"`
+func (inputs *ReusableWorkflowMetadataInputs) UnmarshalYAML(n *yaml.Node) error {
+	if n.Kind != yaml.MappingNode {
+		return fmt.Errorf(
+			"yaml: on.workflow_call.inputs must be mapping node but found %s node at line:%d, col:%d",
+			nodeKindName(n.Kind),
+			n.Line,
+			n.Column,
+		)
 	}
 
-	var md metadata
-	if err := n.Decode(&md); err != nil {
-		return err
+	md := make(ReusableWorkflowMetadataInputs, len(n.Content)/2)
+	for i := 0; i < len(n.Content); i += 2 {
+		k, v := n.Content[i], n.Content[i+1]
+
+		var m ReusableWorkflowMetadataInput
+		if err := v.Decode(&m); err != nil {
+			return err
+		}
+		m.Name = k.Value
+		if m.Type == nil {
+			m.Type = AnyType{} // Reach here when `v` is null node
+		}
+
+		md[strings.ToLower(k.Value)] = &m
 	}
 
-	*required = ReusableWorkflowMetadataSecretRequired(md.Required)
+	*inputs = md
+	return nil
+}
 
+// ReusableWorkflowMetadataSecret is a secret metadata for validating local reusable workflow file.
+type ReusableWorkflowMetadataSecret struct {
+	// Name is a name of the secret in the reusable workflow.
+	Name string
+	// Required indicates wether the secret is required by its reusable workflow. When this value is
+	// true, workflow calls must set this secret unless secrets are not inherited.
+	Required bool `yaml:"required"`
+}
+
+// ReusableWorkflowMetadataSecrets is a map from secret name to reusable wokflow secret metadata.
+// The keys are in lower case since secret names of workflow calls are case insensitive.
+type ReusableWorkflowMetadataSecrets map[string]*ReusableWorkflowMetadataSecret
+
+// UnmarshalYAML implements yaml.Unmarshaler.
+func (secrets *ReusableWorkflowMetadataSecrets) UnmarshalYAML(n *yaml.Node) error {
+	if n.Kind != yaml.MappingNode {
+		return fmt.Errorf(
+			"yaml: on.workflow_call.secrets must be mapping node but found %s node at line:%d, col:%d",
+			nodeKindName(n.Kind),
+			n.Line,
+			n.Column,
+		)
+	}
+
+	md := make(ReusableWorkflowMetadataSecrets, len(n.Content)/2)
+	for i := 0; i < len(n.Content); i += 2 {
+		k, v := n.Content[i], n.Content[i+1]
+
+		var s ReusableWorkflowMetadataSecret
+		if err := v.Decode(&s); err != nil {
+			return err
+		}
+		s.Name = k.Value
+
+		md[strings.ToLower(k.Value)] = &s
+	}
+
+	*secrets = md
+	return nil
+}
+
+// ReusableWorkflowMetadataOutput is an output metadata for validating local reusable workflow file.
+type ReusableWorkflowMetadataOutput struct {
+	// Name is a name of the output in the reusable workflow.
+	Name string
+}
+
+// ReusableWorkflowMetadataOutputs is a map from output name to reusable wokflow output metadata.
+// The keys are in lower case since output names of workflow calls are case insensitive.
+type ReusableWorkflowMetadataOutputs map[string]*ReusableWorkflowMetadataOutput
+
+// UnmarshalYAML implements yaml.Unmarshaler.
+func (outputs *ReusableWorkflowMetadataOutputs) UnmarshalYAML(n *yaml.Node) error {
+	if n.Kind != yaml.MappingNode {
+		return fmt.Errorf(
+			"yaml: on.workflow_call.outputs must be mapping node but found %s node at line:%d, col:%d",
+			nodeKindName(n.Kind),
+			n.Line,
+			n.Column,
+		)
+	}
+
+	md := make(ReusableWorkflowMetadataOutputs, len(n.Content))
+	for i := 0; i < len(n.Content); i += 2 {
+		k := n.Content[i]
+		md[strings.ToLower(k.Value)] = &ReusableWorkflowMetadataOutput{
+			Name: k.Value,
+		}
+	}
+
+	*outputs = md
 	return nil
 }
 
@@ -71,9 +162,9 @@ func (required *ReusableWorkflowMetadataSecretRequired) UnmarshalYAML(n *yaml.No
 // contain all metadata from YAML file. It only contains metadata which is necessary to validate
 // reusable workflow files by actionlint.
 type ReusableWorkflowMetadata struct {
-	Inputs  map[string]*ReusableWorkflowMetadataInput         `yaml:"inputs"`
-	Outputs map[string]struct{}                               `yaml:"outputs"`
-	Secrets map[string]ReusableWorkflowMetadataSecretRequired `yaml:"secrets"`
+	Inputs  ReusableWorkflowMetadataInputs  `yaml:"inputs"`
+	Outputs ReusableWorkflowMetadataOutputs `yaml:"outputs"`
+	Secrets ReusableWorkflowMetadataSecrets `yaml:"secrets"`
 }
 
 // LocalReusableWorkflowCache is a cache for local reusable workflow metadata files. It avoids find/read/parse
@@ -191,9 +282,9 @@ func (c *LocalReusableWorkflowCache) WriteWorkflowCallEvent(wpath string, event 
 	}
 
 	m := &ReusableWorkflowMetadata{
-		Inputs:  map[string]*ReusableWorkflowMetadataInput{},
-		Outputs: map[string]struct{}{},
-		Secrets: map[string]ReusableWorkflowMetadataSecretRequired{},
+		Inputs:  ReusableWorkflowMetadataInputs{},
+		Outputs: ReusableWorkflowMetadataOutputs{},
+		Secrets: ReusableWorkflowMetadataSecrets{},
 	}
 
 	for n, i := range event.Inputs {
@@ -206,19 +297,25 @@ func (c *LocalReusableWorkflowCache) WriteWorkflowCallEvent(wpath string, event 
 		case WorkflowCallEventInputTypeString:
 			t = StringType{}
 		}
-		m.Inputs[n.Value] = &ReusableWorkflowMetadataInput{
+		m.Inputs[strings.ToLower(n.Value)] = &ReusableWorkflowMetadataInput{
 			Type:     t,
 			Required: i.Required != nil && i.Required.Value && i.Default == nil,
+			Name:     n.Value,
 		}
 	}
 
 	for n := range event.Outputs {
-		m.Outputs[n.Value] = struct{}{}
+		m.Outputs[strings.ToLower(n.Value)] = &ReusableWorkflowMetadataOutput{
+			Name: n.Value,
+		}
 	}
 
 	for n, s := range event.Secrets {
 		r := s.Required != nil && s.Required.Value
-		m.Secrets[n.Value] = ReusableWorkflowMetadataSecretRequired(r)
+		m.Secrets[strings.ToLower(n.Value)] = &ReusableWorkflowMetadataSecret{
+			Required: r,
+			Name:     n.Value,
+		}
 	}
 
 	c.mu.Lock()

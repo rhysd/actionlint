@@ -136,14 +136,14 @@ func TestRuleWorkflowCallWriteEventNodeToMetadataCache(t *testing.T) {
 	}
 
 	want := &ReusableWorkflowMetadata{
-		Inputs: map[string]*ReusableWorkflowMetadataInput{
-			"input1": {Type: StringType{}},
+		Inputs: ReusableWorkflowMetadataInputs{
+			"input1": {"input1", false, StringType{}},
 		},
-		Outputs: map[string]struct{}{
-			"output1": {},
+		Outputs: ReusableWorkflowMetadataOutputs{
+			"output1": {"output1"},
 		},
-		Secrets: map[string]ReusableWorkflowMetadataSecretRequired{
-			"secret1": false,
+		Secrets: ReusableWorkflowMetadataSecrets{
+			"secret1": {"secret1", false},
 		},
 	}
 
@@ -154,19 +154,16 @@ func TestRuleWorkflowCallWriteEventNodeToMetadataCache(t *testing.T) {
 
 func TestRuleWorkflowCallCheckReusableWorkflowCall(t *testing.T) {
 	metadata := &ReusableWorkflowMetadata{
-		Inputs: map[string]*ReusableWorkflowMetadataInput{
-			"optional_input": {Type: StringType{}},
-			"required_input": {
-				Type:     StringType{},
-				Required: true,
-			},
+		Inputs: ReusableWorkflowMetadataInputs{
+			"optional_input": {"optional_input", false, StringType{}},
+			"required_input": {"required_input", true, StringType{}},
 		},
-		Outputs: map[string]struct{}{
-			"output": {},
+		Outputs: ReusableWorkflowMetadataOutputs{
+			"output": {"output"},
 		},
-		Secrets: map[string]ReusableWorkflowMetadataSecretRequired{
-			"optional_secret": false,
-			"required_secret": true,
+		Secrets: ReusableWorkflowMetadataSecrets{
+			"optional_secret": {"optional_secret", false},
+			"required_secret": {"required_secret", true},
 		},
 	}
 	cwd := filepath.Join("testdata", "reusable_workflow_metadata")

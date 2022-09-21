@@ -30,16 +30,14 @@ func TestReusableWorkflowUnmarshalOK(t *testing.T) {
 			      x:
 			`,
 			want: &ReusableWorkflowMetadata{
-				Inputs: map[string]*ReusableWorkflowMetadataInput{
-					"i": {
-						Type: StringType{},
-					},
+				Inputs: ReusableWorkflowMetadataInputs{
+					"i": {"i", false, StringType{}},
 				},
-				Outputs: map[string]struct{}{
-					"o": {},
+				Outputs: ReusableWorkflowMetadataOutputs{
+					"o": {"o"},
 				},
-				Secrets: map[string]ReusableWorkflowMetadataSecretRequired{
-					"x": false,
+				Secrets: ReusableWorkflowMetadataSecrets{
+					"x": {"x", false},
 				},
 			},
 		},
@@ -96,32 +94,20 @@ func TestReusableWorkflowUnmarshalOK(t *testing.T) {
 			        type: string
 			        default: abc
 			        requried: true
+			      i:
+			        required: true
 			`,
 			want: &ReusableWorkflowMetadata{
-				Inputs: map[string]*ReusableWorkflowMetadataInput{
-					"a": {
-						Type: StringType{},
-					},
-					"b": {
-						Type: NumberType{},
-					},
-					"c": {
-						Type: BoolType{},
-					},
-					"d": nil,
-					"e": {
-						Type: StringType{},
-					},
-					"f": {
-						Type:     StringType{},
-						Required: true,
-					},
-					"g": {
-						Type: StringType{},
-					},
-					"h": {
-						Type: StringType{},
-					},
+				Inputs: ReusableWorkflowMetadataInputs{
+					"a": {"a", false, StringType{}},
+					"b": {"b", false, NumberType{}},
+					"c": {"c", false, BoolType{}},
+					"d": {"d", false, AnyType{}},
+					"e": {"e", false, StringType{}},
+					"f": {"f", true, StringType{}},
+					"g": {"g", false, StringType{}},
+					"h": {"h", false, StringType{}},
+					"i": {"i", true, AnyType{}},
 				},
 				Outputs: nil,
 				Secrets: nil,
@@ -142,16 +128,14 @@ func TestReusableWorkflowUnmarshalOK(t *testing.T) {
 			      x:
 			`,
 			want: &ReusableWorkflowMetadata{
-				Inputs: map[string]*ReusableWorkflowMetadataInput{
-					"i": {
-						Type: StringType{},
-					},
+				Inputs: ReusableWorkflowMetadataInputs{
+					"i": {"i", false, StringType{}},
 				},
-				Outputs: map[string]struct{}{
-					"o": {},
+				Outputs: ReusableWorkflowMetadataOutputs{
+					"o": {"o"},
 				},
-				Secrets: map[string]ReusableWorkflowMetadataSecretRequired{
-					"x": false,
+				Secrets: ReusableWorkflowMetadataSecrets{
+					"x": {"x", false},
 				},
 			},
 		},
@@ -170,10 +154,10 @@ func TestReusableWorkflowUnmarshalOK(t *testing.T) {
 			want: &ReusableWorkflowMetadata{
 				Inputs:  nil,
 				Outputs: nil,
-				Secrets: map[string]ReusableWorkflowMetadataSecretRequired{
-					"x": false,
-					"y": false,
-					"z": true,
+				Secrets: ReusableWorkflowMetadataSecrets{
+					"x": {"x", false},
+					"y": {"y", false},
+					"z": {"z", true},
 				},
 			},
 		},
@@ -322,16 +306,16 @@ func TestReusableWorkflowUnmarshalEventNotFound(t *testing.T) {
 }
 
 var testReusableWorkflowWantedMetadata *ReusableWorkflowMetadata = &ReusableWorkflowMetadata{
-	Inputs: map[string]*ReusableWorkflowMetadataInput{
-		"input1": {Type: StringType{}},
-		"input2": {Type: BoolType{}, Required: true},
+	Inputs: ReusableWorkflowMetadataInputs{
+		"input1": {"input1", false, StringType{}},
+		"input2": {"input2", true, BoolType{}},
 	},
-	Outputs: map[string]struct{}{
-		"output1": {},
+	Outputs: ReusableWorkflowMetadataOutputs{
+		"output1": {"output1"},
 	},
-	Secrets: map[string]ReusableWorkflowMetadataSecretRequired{
-		"secret1": false,
-		"secret2": true,
+	Secrets: ReusableWorkflowMetadataSecrets{
+		"secret1": {"secret1", false},
+		"secret2": {"secret2", true},
 	},
 }
 
@@ -524,7 +508,7 @@ func TestReusableWorkflowMetadataFromASTNodeInputs(t *testing.T) {
 	tests := []struct {
 		what   string
 		inputs map[string]*WorkflowCallEventInput
-		want   map[string]*ReusableWorkflowMetadataInput
+		want   ReusableWorkflowMetadataInputs
 	}{
 		{
 			what: "type of inputs",
@@ -534,11 +518,11 @@ func TestReusableWorkflowMetadataFromASTNodeInputs(t *testing.T) {
 				"bool_input":    {Type: WorkflowCallEventInputTypeBoolean},
 				"unknown_input": {},
 			},
-			want: map[string]*ReusableWorkflowMetadataInput{
-				"string_input":  {Type: StringType{}},
-				"number_input":  {Type: NumberType{}},
-				"bool_input":    {Type: BoolType{}},
-				"unknown_input": {Type: AnyType{}},
+			want: ReusableWorkflowMetadataInputs{
+				"string_input":  {"string_input", false, StringType{}},
+				"number_input":  {"number_input", false, NumberType{}},
+				"bool_input":    {"bool_input", false, BoolType{}},
+				"unknown_input": {"unknown_input", false, AnyType{}},
 			},
 		},
 		{
@@ -558,18 +542,18 @@ func TestReusableWorkflowMetadataFromASTNodeInputs(t *testing.T) {
 					},
 				},
 			},
-			want: map[string]*ReusableWorkflowMetadataInput{
-				"unspecified":          {Required: false, Type: AnyType{}},
-				"not_required":         {Required: false, Type: AnyType{}},
-				"required":             {Required: true, Type: AnyType{}},
-				"required_but_default": {Required: false, Type: AnyType{}},
-				"expression":           {Required: false, Type: AnyType{}},
+			want: ReusableWorkflowMetadataInputs{
+				"unspecified":          {"unspecified", false, AnyType{}},
+				"not_required":         {"not_required", false, AnyType{}},
+				"required":             {"required", true, AnyType{}},
+				"required_but_default": {"required_but_default", false, AnyType{}},
+				"expression":           {"expression", false, AnyType{}},
 			},
 		},
 		{
 			what:   "empty",
 			inputs: map[string]*WorkflowCallEventInput{},
-			want:   map[string]*ReusableWorkflowMetadataInput{},
+			want:   ReusableWorkflowMetadataInputs{},
 		},
 	}
 
@@ -626,9 +610,9 @@ func TestReusableWorkflowMetadataFromASTNodeOutputs(t *testing.T) {
 				t.Fatal("Event was not converted to event")
 			}
 
-			want := map[string]struct{}{}
+			want := ReusableWorkflowMetadataOutputs{}
 			for _, o := range outputs {
-				want[o] = struct{}{}
+				want[o] = &ReusableWorkflowMetadataOutput{o}
 			}
 
 			if !cmp.Equal(m.Outputs, want) {
@@ -674,9 +658,12 @@ func TestReusableWorkflowMetadataFromASTNodeSecrets(t *testing.T) {
 				t.Fatal("Event was not converted to event")
 			}
 
-			want := map[string]ReusableWorkflowMetadataSecretRequired{}
+			want := ReusableWorkflowMetadataSecrets{}
 			for n, r := range secrets {
-				want[n] = ReusableWorkflowMetadataSecretRequired(r != nil && r.Value)
+				want[n] = &ReusableWorkflowMetadataSecret{
+					Name:     n,
+					Required: r != nil && r.Value,
+				}
 			}
 
 			if !cmp.Equal(m.Secrets, want) {

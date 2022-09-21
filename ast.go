@@ -762,9 +762,11 @@ type WorkflowCallSecret struct {
 type WorkflowCall struct {
 	// Uses is a workflow specification to be called. This field is mandatory.
 	Uses *String
-	// Inputs is a map from input name to input value at 'with:'.
+	// Inputs is a map from input name to input value at 'with:'. Keys are in lower case since input names
+	// are case-insensitive.
 	Inputs map[string]*WorkflowCallInput
-	// Secrets is a map from secret name to secret value at 'secrets:'.
+	// Secrets is a map from secret name to secret value at 'secrets:'. Keys are in lower case since input
+	// names are case-insensitive.
 	Secrets map[string]*WorkflowCallSecret
 	// InheritSecrets is true when 'secrets: inherit' is specified. In this case, Secrets must be empty.
 	// https://docs.github.com/en/actions/using-workflows/workflow-syntax-for-github-actions#onworkflow_callsecretsinherit
