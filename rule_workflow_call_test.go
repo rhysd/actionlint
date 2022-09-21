@@ -1,6 +1,7 @@
 package actionlint
 
 import (
+	"fmt"
 	"path/filepath"
 	"sort"
 	"strings"
@@ -153,22 +154,41 @@ func TestRuleWorkflowCallWriteEventNodeToMetadataCache(t *testing.T) {
 }
 
 func TestRuleWorkflowCallCheckReusableWorkflowCall(t *testing.T) {
-	metadata := &ReusableWorkflowMetadata{
-		Inputs: ReusableWorkflowMetadataInputs{
-			"optional_input": {"optional_input", false, StringType{}},
-			"required_input": {"required_input", true, StringType{}},
-		},
-		Outputs: ReusableWorkflowMetadataOutputs{
-			"output": {"output"},
-		},
-		Secrets: ReusableWorkflowMetadataSecrets{
-			"optional_secret": {"optional_secret", false},
-			"required_secret": {"required_secret", true},
-		},
-	}
 	cwd := filepath.Join("testdata", "reusable_workflow_metadata")
 	cache := NewLocalReusableWorkflowCache(&Project{cwd, nil}, cwd, nil)
-	cache.writeCache("./workflow.yaml", metadata)
+
+	for i, md := range []*ReusableWorkflowMetadata{
+		// workflow0.yaml
+		{
+			Inputs: ReusableWorkflowMetadataInputs{
+				"optional_input": {"optional_input", false, StringType{}},
+				"required_input": {"required_input", true, StringType{}},
+			},
+			Outputs: ReusableWorkflowMetadataOutputs{
+				"output": {"output"},
+			},
+			Secrets: ReusableWorkflowMetadataSecrets{
+				"optional_secret": {"optional_secret", false},
+				"required_secret": {"required_secret", true},
+			},
+		},
+		// workflow1.yaml: Inputs and outputs in upper case (#216)
+		{
+			Inputs: ReusableWorkflowMetadataInputs{
+				"optional_input": {"OPTIONAL_INPUT", false, StringType{}},
+				"required_input": {"REQUIRED_INPUT", true, StringType{}},
+			},
+			Outputs: ReusableWorkflowMetadataOutputs{
+				"output": {"OUTPUT"},
+			},
+			Secrets: ReusableWorkflowMetadataSecrets{
+				"optional_secret": {"OPTIONAL_SECRET", false},
+				"required_secret": {"REQUIRED_SECRET", true},
+			},
+		},
+	} {
+		cache.writeCache(fmt.Sprintf("./workflow%d.yaml", i), md)
+	}
 
 	tests := []struct {
 		what           string
@@ -180,13 +200,13 @@ func TestRuleWorkflowCallCheckReusableWorkflowCall(t *testing.T) {
 	}{
 		{
 			what:    "all",
-			uses:    "./workflow.yaml",
+			uses:    "./workflow0.yaml",
 			inputs:  []string{"optional_input", "required_input"},
 			secrets: []string{"optional_secret", "required_secret"},
 		},
 		{
 			what:    "only required",
-			uses:    "./workflow.yaml",
+			uses:    "./workflow0.yaml",
 			inputs:  []string{"required_input"},
 			secrets: []string{"required_secret"},
 		},
@@ -201,7 +221,7 @@ func TestRuleWorkflowCallCheckReusableWorkflowCall(t *testing.T) {
 		},
 		{
 			what:    "missing required input and secret",
-			uses:    "./workflow.yaml",
+			uses:    "./workflow0.yaml",
 			inputs:  []string{"optional_input"},
 			secrets: []string{"optional_secret"},
 			errs: []string{
@@ -211,17 +231,17 @@ func TestRuleWorkflowCallCheckReusableWorkflowCall(t *testing.T) {
 		},
 		{
 			what:    "undefined input and secret",
-			uses:    "./workflow.yaml",
+			uses:    "./workflow0.yaml",
 			inputs:  []string{"required_input", "unknown_input"},
 			secrets: []string{"required_secret", "unknown_secret"},
 			errs: []string{
-				"input \"unknown_input\" is not defined in \"./workflow.yaml\" reusable workflow. defined inputs are \"optional_input\", \"required_input\"",
-				"secret \"unknown_secret\" is not defined in \"./workflow.yaml\" reusable workflow. defined secrets are \"optional_secret\", \"required_secret\"",
+				"input \"unknown_input\" is not defined in \"./workflow0.yaml\" reusable workflow. defined inputs are \"optional_input\", \"required_input\"",
+				"secret \"unknown_secret\" is not defined in \"./workflow0.yaml\" reusable workflow. defined secrets are \"optional_secret\", \"required_secret\"",
 			},
 		},
 		{
 			what:           "inherit secrets",
-			uses:           "./workflow.yaml",
+			uses:           "./workflow0.yaml",
 			inputs:         []string{"required_input"},
 			secrets:        []string{"unknown_secret", "optional_secret"},
 			inheritSecrets: true,
@@ -249,6 +269,34 @@ func TestRuleWorkflowCallCheckReusableWorkflowCall(t *testing.T) {
 			inputs:  []string{"aaa", "bbb"},
 			secrets: []string{"xxx", "yyy"},
 		},
+		{
+			what:    "call in upper case and workflow in lower case",
+			uses:    "./workflow0.yaml",
+			inputs:  []string{"OPTIONAL_INPUT", "REQUIRED_INPUT"},
+			secrets: []string{"OPTIONAL_SECRET", "REQUIRED_SECRET"},
+		},
+		{
+			what:    "call in lower case and workflow in upper case",
+			uses:    "./workflow1.yaml",
+			inputs:  []string{"optional_input", "required_input"},
+			secrets: []string{"optional_secret", "required_secret"},
+		},
+		{
+			what:    "call in upper case and workflow in upper case",
+			uses:    "./workflow1.yaml",
+			inputs:  []string{"OPTIONAL_INPUT", "REQUIRED_INPUT"},
+			secrets: []string{"OPTIONAL_SECRET", "REQUIRED_SECRET"},
+		},
+		{
+			what:    "undefined upper input and secret",
+			uses:    "./workflow0.yaml",
+			inputs:  []string{"required_input", "UNKNOWN_INPUT"},
+			secrets: []string{"required_secret", "UNKNOWN_SECRET"},
+			errs: []string{
+				"input \"UNKNOWN_INPUT\" is not defined in \"./workflow0.yaml\"",
+				"secret \"UNKNOWN_SECRET\" is not defined in \"./workflow0.yaml\"",
+			},
+		},
 	}
 
 	for _, tc := range tests {
@@ -273,13 +321,13 @@ func TestRuleWorkflowCallCheckReusableWorkflowCall(t *testing.T) {
 				InheritSecrets: tc.inheritSecrets,
 			}
 			for _, i := range tc.inputs {
-				c.Inputs[i] = &WorkflowCallInput{
+				c.Inputs[strings.ToLower(i)] = &WorkflowCallInput{
 					Name:  &String{Value: i, Pos: &Pos{}},
 					Value: &String{Value: "", Pos: &Pos{}},
 				}
 			}
 			for _, s := range tc.secrets {
-				c.Secrets[s] = &WorkflowCallSecret{
+				c.Secrets[strings.ToLower(s)] = &WorkflowCallSecret{
 					Name:  &String{Value: s, Pos: &Pos{}},
 					Value: &String{Value: "", Pos: &Pos{}},
 				}

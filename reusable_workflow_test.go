@@ -194,6 +194,41 @@ func TestReusableWorkflowUnmarshalOK(t *testing.T) {
 				Secrets: nil,
 			},
 		},
+		{
+			what: "upper case",
+			src: `
+			on:
+			  workflow_call:
+			    inputs:
+			      MY_INPUT1:
+			        type: string
+			      MY_INPUT2:
+			        type: number
+			    outputs:
+			      MY_OUTPUT1:
+			        value: foo
+			      MY_OUTPUT2:
+			        value: foo
+			    secrets:
+			      MY_SECRET1:
+			      MY_SECRET2:
+			        required: true
+			`,
+			want: &ReusableWorkflowMetadata{
+				Inputs: ReusableWorkflowMetadataInputs{
+					"my_input1": {"MY_INPUT1", false, StringType{}},
+					"my_input2": {"MY_INPUT2", false, NumberType{}},
+				},
+				Outputs: ReusableWorkflowMetadataOutputs{
+					"my_output1": {"MY_OUTPUT1"},
+					"my_output2": {"MY_OUTPUT2"},
+				},
+				Secrets: ReusableWorkflowMetadataSecrets{
+					"my_secret1": {"MY_SECRET1", false},
+					"my_secret2": {"MY_SECRET2", true},
+				},
+			},
+		},
 	}
 
 	for _, tc := range tests {
@@ -555,6 +590,15 @@ func TestReusableWorkflowMetadataFromASTNodeInputs(t *testing.T) {
 			inputs: map[string]*WorkflowCallEventInput{},
 			want:   ReusableWorkflowMetadataInputs{},
 		},
+		{
+			what: "upper case input",
+			inputs: map[string]*WorkflowCallEventInput{
+				"MY_INPUT": {Type: WorkflowCallEventInputTypeString},
+			},
+			want: ReusableWorkflowMetadataInputs{
+				"my_input": {"MY_INPUT", false, StringType{}},
+			},
+		},
 	}
 
 	for _, tc := range tests {
@@ -592,6 +636,7 @@ func TestReusableWorkflowMetadataFromASTNodeOutputs(t *testing.T) {
 		{},
 		{"foo"},
 		{"a", "b", "c"},
+		{"A", "B", "C"},
 	}
 	for _, outputs := range tests {
 		t.Run(fmt.Sprintf("%s", outputs), func(t *testing.T) {
@@ -612,7 +657,7 @@ func TestReusableWorkflowMetadataFromASTNodeOutputs(t *testing.T) {
 
 			want := ReusableWorkflowMetadataOutputs{}
 			for _, o := range outputs {
-				want[o] = &ReusableWorkflowMetadataOutput{o}
+				want[strings.ToLower(o)] = &ReusableWorkflowMetadataOutput{o}
 			}
 
 			if !cmp.Equal(m.Outputs, want) {
@@ -640,6 +685,11 @@ func TestReusableWorkflowMetadataFromASTNodeSecrets(t *testing.T) {
 			"b": &Bool{Value: true, Pos: &Pos{}},
 			"c": nil,
 		},
+		{
+			"A": &Bool{Value: false, Pos: &Pos{}},
+			"B": &Bool{Value: true, Pos: &Pos{}},
+			"C": nil,
+		},
 	}
 	for _, secrets := range tests {
 		t.Run(fmt.Sprintf("%s", secrets), func(t *testing.T) {
@@ -660,7 +710,7 @@ func TestReusableWorkflowMetadataFromASTNodeSecrets(t *testing.T) {
 
 			want := ReusableWorkflowMetadataSecrets{}
 			for n, r := range secrets {
-				want[n] = &ReusableWorkflowMetadataSecret{
+				want[strings.ToLower(n)] = &ReusableWorkflowMetadataSecret{
 					Name:     n,
 					Required: r != nil && r.Value,
 				}
