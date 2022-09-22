@@ -1159,7 +1159,7 @@ func (p *parser) parseJob(id *String, n *yaml.Node) *Job {
 			with := p.parseSectionMapping("with", v, false)
 			call.Inputs = make(map[string]*WorkflowCallInput, len(with))
 			for _, i := range with {
-				call.Inputs[i.key.Value] = &WorkflowCallInput{
+				call.Inputs[strings.ToLower(i.key.Value)] = &WorkflowCallInput{
 					Name:  i.key,
 					Value: p.parseString(i.val, true),
 				}
@@ -1178,7 +1178,7 @@ func (p *parser) parseJob(id *String, n *yaml.Node) *Job {
 				secrets := p.parseSectionMapping("secrets", v, false)
 				call.Secrets = make(map[string]*WorkflowCallSecret, len(secrets))
 				for _, s := range secrets {
-					call.Secrets[s.key.Value] = &WorkflowCallSecret{
+					call.Secrets[strings.ToLower(s.key.Value)] = &WorkflowCallSecret{
 						Name:  s.key,
 						Value: p.parseString(s.val, true),
 					}

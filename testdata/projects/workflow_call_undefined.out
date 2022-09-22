@@ -1,3 +1,5 @@
 workflows/test.yaml:7:7: input "aaa" is not defined in "./workflows/reusable.yaml" reusable workflow. defined input is "foo" [workflow-call]
 workflows/test.yaml:10:7: secret "bbb" is not defined in "./workflows/reusable.yaml" reusable workflow. defined secret is "piyo" [workflow-call]
 workflows/test.yaml:17:24: property "ccc" is not defined in object type {bar: string} [expression]
+workflows/test.yaml:21:7: input "input1" is not defined in "./workflows/empty_reusable.yaml" reusable workflow. no input is defined [workflow-call]
+workflows/test.yaml:23:7: secret "secret1" is not defined in "./workflows/empty_reusable.yaml" reusable workflow. no secret is defined [workflow-call]

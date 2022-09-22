@@ -15,3 +15,9 @@ jobs:
     steps:
       - run: echo '${{ needs.caller.outputs.bar }} is existing'
       - run: echo '${{ needs.caller.outputs.ccc }} is not existing'
+  empty:
+    uses: ./workflows/empty_reusable.yaml
+    with:
+      input1: this is not existing
+    secrets:
+      secret1: this is not existing

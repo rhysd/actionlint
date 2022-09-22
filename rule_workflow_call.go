@@ -93,7 +93,7 @@ func (rule *RuleWorkflowCall) checkWorkflowCallUsesLocal(call *WorkflowCall) {
 	for n, i := range m.Inputs {
 		if i != nil && i.Required {
 			if _, ok := call.Inputs[n]; !ok {
-				rule.errorf(u.Pos, "input %q is required by %q reusable workflow", n, u.Value)
+				rule.errorf(u.Pos, "input %q is required by %q reusable workflow", i.Name, u.Value)
 			}
 		}
 	}
@@ -101,26 +101,26 @@ func (rule *RuleWorkflowCall) checkWorkflowCallUsesLocal(call *WorkflowCall) {
 		if _, ok := m.Inputs[n]; !ok {
 			note := "no input is defined"
 			if len(m.Inputs) > 0 {
-				i := make([]string, 0, len(m.Inputs))
-				for n := range m.Inputs {
-					i = append(i, n)
+				is := make([]string, 0, len(m.Inputs))
+				for _, i := range m.Inputs {
+					is = append(is, i.Name)
 				}
-				if len(i) == 1 {
-					note = fmt.Sprintf("defined input is %q", i[0])
+				if len(is) == 1 {
+					note = fmt.Sprintf("defined input is %q", is[0])
 				} else {
-					note = "defined inputs are " + sortedQuotes(i)
+					note = "defined inputs are " + sortedQuotes(is)
 				}
 			}
-			rule.errorf(i.Name.Pos, "input %q is not defined in %q reusable workflow. %s", n, u.Value, note)
+			rule.errorf(i.Name.Pos, "input %q is not defined in %q reusable workflow. %s", i.Name.Value, u.Value, note)
 		}
 	}
 
 	// Validate secrets
 	if !call.InheritSecrets {
-		for n, r := range m.Secrets {
-			if r {
+		for n, s := range m.Secrets {
+			if s.Required {
 				if _, ok := call.Secrets[n]; !ok {
-					rule.errorf(u.Pos, "secret %q is required by %q reusable workflow", n, u.Value)
+					rule.errorf(u.Pos, "secret %q is required by %q reusable workflow", s.Name, u.Value)
 				}
 			}
 		}
@@ -128,17 +128,17 @@ func (rule *RuleWorkflowCall) checkWorkflowCallUsesLocal(call *WorkflowCall) {
 			if _, ok := m.Secrets[n]; !ok {
 				note := "no secret is defined"
 				if len(m.Secrets) > 0 {
-					s := make([]string, 0, len(m.Secrets))
-					for n := range m.Secrets {
-						s = append(s, n)
+					ss := make([]string, 0, len(m.Secrets))
+					for _, s := range m.Secrets {
+						ss = append(ss, s.Name)
 					}
-					if len(s) == 1 {
-						note = fmt.Sprintf("defined secret is %q", s[0])
+					if len(ss) == 1 {
+						note = fmt.Sprintf("defined secret is %q", ss[0])
 					} else {
-						note = "defined secrets are " + sortedQuotes(s)
+						note = "defined secrets are " + sortedQuotes(ss)
 					}
 				}
-				rule.errorf(s.Name.Pos, "secret %q is not defined in %q reusable workflow. %s", n, u.Value, note)
+				rule.errorf(s.Name.Pos, "secret %q is not defined in %q reusable workflow. %s", s.Name.Value, u.Value, note)
 			}
 		}
 	}

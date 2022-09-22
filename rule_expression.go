@@ -546,7 +546,7 @@ func (rule *RuleExpression) checkWorkflowCall(c *WorkflowCall) {
 			rule.errorf(
 				i.Value.Pos,
 				"input %q is typed as %s by reusable workflow %q. %s value cannot be assigned",
-				n,
+				mi.Name,
 				mi.Type.String(),
 				c.Uses.Value,
 				ty.String(),
@@ -999,7 +999,7 @@ func (rule *RuleExpression) checkWorkflowCallOutputs(outputs map[*String]*Workfl
 		} else {
 			p := make(map[string]ExprType, len(j.Outputs))
 			for n := range j.Outputs {
-				p[n] = StringType{}
+				p[strings.ToLower(n)] = StringType{}
 			}
 			o = NewStrictObjectType(p)
 		}
