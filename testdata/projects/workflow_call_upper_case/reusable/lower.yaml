@@ -5,6 +5,11 @@ on:
         required: true
       my_input_2:
         required: true
+    outputs:
+      my_output_1:
+        value: ...
+      my_output_2:
+        value: ...
     secrets:
       my_secret_1:
         required: true

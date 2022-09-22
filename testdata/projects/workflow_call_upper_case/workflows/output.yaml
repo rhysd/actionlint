@@ -1,0 +1,35 @@
+on: push
+
+jobs:
+  upper:
+    uses: ./reusable/upper.yaml
+    with:
+      my_input_1: hello
+      my_input_2: world
+    secrets:
+      my_secret_1: hello
+      my_secret_2: world
+  lower:
+    uses: ./reusable/lower.yaml
+    with:
+      my_input_1: hello
+      my_input_2: world
+    secrets:
+      my_secret_1: hello
+      my_secret_2: world
+  downstream:
+    needs: [upper, lower]
+    runs-on: ubuntu-latest
+    steps:
+      - run: echo 'OK    ${{ needs.upper.outputs.my_output_1 }}'
+      - run: echo 'OK    ${{ needs.upper.outputs.MY_OUTPUT_1 }}'
+      - run: echo 'OK    ${{ needs.lower.outputs.my_output_1 }}'
+      - run: echo 'OK    ${{ needs.lower.outputs.MY_OUTPUT_1 }}'
+      - run: echo 'OK    ${{ needs.upper.outputs.my_output_2 }}'
+      - run: echo 'OK    ${{ needs.upper.outputs.MY_OUTPUT_2 }}'
+      - run: echo 'OK    ${{ needs.lower.outputs.my_output_2 }}'
+      - run: echo 'OK    ${{ needs.lower.outputs.MY_OUTPUT_2 }}'
+      - run: echo 'ERROR ${{ needs.upper.outputs.my_output_3 }}'
+      - run: echo 'ERROR ${{ needs.upper.outputs.MY_OUTPUT_3 }}'
+      - run: echo 'ERROR ${{ needs.lower.outputs.my_output_3 }}'
+      - run: echo 'ERROR ${{ needs.lower.outputs.MY_OUTPUT_3 }}'
