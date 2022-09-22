@@ -11,6 +11,16 @@ import (
 	"gopkg.in/yaml.v3"
 )
 
+func unexpectedNodeKind(where string, n *yaml.Node) error {
+	return fmt.Errorf(
+		"yaml: %s must be mapping node but %s node was found at line:%d, col:%d",
+		where,
+		nodeKindName(n.Kind),
+		n.Line,
+		n.Column,
+	)
+}
+
 // ReusableWorkflowMetadataInput is an input metadata for validating local reusable workflow file.
 type ReusableWorkflowMetadataInput struct {
 	// Name is a name of the input defined in the reusable workflow.
@@ -56,12 +66,7 @@ type ReusableWorkflowMetadataInputs map[string]*ReusableWorkflowMetadataInput
 // UnmarshalYAML implements yaml.Unmarshaler.
 func (inputs *ReusableWorkflowMetadataInputs) UnmarshalYAML(n *yaml.Node) error {
 	if n.Kind != yaml.MappingNode {
-		return fmt.Errorf(
-			"yaml: on.workflow_call.inputs must be mapping node but found %s node at line:%d, col:%d",
-			nodeKindName(n.Kind),
-			n.Line,
-			n.Column,
-		)
+		return unexpectedNodeKind("on.workflow_call.inputs", n)
 	}
 
 	md := make(ReusableWorkflowMetadataInputs, len(n.Content)/2)
@@ -100,12 +105,7 @@ type ReusableWorkflowMetadataSecrets map[string]*ReusableWorkflowMetadataSecret
 // UnmarshalYAML implements yaml.Unmarshaler.
 func (secrets *ReusableWorkflowMetadataSecrets) UnmarshalYAML(n *yaml.Node) error {
 	if n.Kind != yaml.MappingNode {
-		return fmt.Errorf(
-			"yaml: on.workflow_call.secrets must be mapping node but found %s node at line:%d, col:%d",
-			nodeKindName(n.Kind),
-			n.Line,
-			n.Column,
-		)
+		return unexpectedNodeKind("on.workflow_call.secrets", n)
 	}
 
 	md := make(ReusableWorkflowMetadataSecrets, len(n.Content)/2)
@@ -138,15 +138,10 @@ type ReusableWorkflowMetadataOutputs map[string]*ReusableWorkflowMetadataOutput
 // UnmarshalYAML implements yaml.Unmarshaler.
 func (outputs *ReusableWorkflowMetadataOutputs) UnmarshalYAML(n *yaml.Node) error {
 	if n.Kind != yaml.MappingNode {
-		return fmt.Errorf(
-			"yaml: on.workflow_call.outputs must be mapping node but found %s node at line:%d, col:%d",
-			nodeKindName(n.Kind),
-			n.Line,
-			n.Column,
-		)
+		return unexpectedNodeKind("on.workflow_call.outputs", n)
 	}
 
-	md := make(ReusableWorkflowMetadataOutputs, len(n.Content))
+	md := make(ReusableWorkflowMetadataOutputs, len(n.Content)/2)
 	for i := 0; i < len(n.Content); i += 2 {
 		k := n.Content[i]
 		md[strings.ToLower(k.Value)] = &ReusableWorkflowMetadataOutput{
