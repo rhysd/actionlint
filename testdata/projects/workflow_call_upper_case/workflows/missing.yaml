@@ -1,0 +1,9 @@
+on: push
+
+jobs:
+  upper:
+    uses: ./reusable/upper.yaml
+    with:
+      my_input_1: hello
+    secrets:
+      my_secret_1: hello
