@@ -1,3 +1,40 @@
+<a name="v1.6.19"></a>
+# [v1.6.19](https://github.com/rhysd/actionlint/releases/tag/v1.6.19) - 22 Sep 2022
+
+- Fix inputs, outputs, and secrets of reusable workflow should be in case-insensitive. ([#216](https://github.com/rhysd/actionlint/issues/216))
+  ```yaml
+  # .github/workflows/reusable.yaml
+  on:
+    workflow_call:
+      inputs:
+        INPUT_UPPER:
+          type: string
+        input_lower:
+          type: string
+      secrets:
+        SECRET_UPPER:
+        secret_lower:
+  ...
+
+  # .github/workflows/test.yaml
+  ...
+
+  jobs:
+    caller:
+      uses: ./.github/workflows/reusable.yaml
+      # Inputs and secrets are in case-insensitive. So all the followings should be OK
+      with:
+        input_upper: ...
+        INPUT_LOWER: ...
+      secrets:
+        secret_upper: ...
+        SECRET_LOWER: ...
+  ```
+- Describe [how to install specific version of `actionlint` binary with the download script](https://github.com/rhysd/actionlint/blob/main/docs/install.md#download-script) ([#218](https://github.com/rhysd/actionlint/issues/218))
+
+[Changes][v1.6.19]
+
+
 <a name="v1.6.18"></a>
 # [v1.6.18](https://github.com/rhysd/actionlint/releases/tag/v1.6.18) - 17 Sep 2022
 
@@ -94,8 +131,8 @@
   - `runner.debug`
   - `services.<service_id>.ports`
 - Fix `on.workflow_call.inputs.<name>.description` and `on.workflow_call.secrets.<name>.description` were incorrectly mandatory. They are actually optional.
-- Report an error when parsing `action.yml` in local action. It was ignored in previous versions.
-- Sort the order of properties in a object type displayed in error message. In previous versions, actionlint sometimes displays `{a: true, b: string}` otherwise it displays `{b: string, a: true}` for the same object type. This randomness was caused by random iteration of map values in Go.
+- Report parse errors when parsing `action.yml` in local actions. They were ignored in previous versions.
+- Sort the order of properties in an object type displayed in error message. In previous versions, actionlint sometimes displayed `{a: true, b: string}`, or it displayed `{b: string, a: true}` for the same object type. This randomness was caused by random iteration of map values in Go.
 - Update popular actions data set to the latest.
 
 [Changes][v1.6.18]
@@ -1149,6 +1186,7 @@ See documentation for more details:
 [Changes][v1.0.0]
 
 
+[v1.6.19]: https://github.com/rhysd/actionlint/compare/v1.6.18...v1.6.19
 [v1.6.18]: https://github.com/rhysd/actionlint/compare/v1.6.17...v1.6.18
 [v1.6.17]: https://github.com/rhysd/actionlint/compare/v1.6.16...v1.6.17
 [v1.6.16]: https://github.com/rhysd/actionlint/compare/v1.6.15...v1.6.16
