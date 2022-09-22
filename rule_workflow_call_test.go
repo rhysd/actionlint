@@ -186,6 +186,12 @@ func TestRuleWorkflowCallCheckReusableWorkflowCall(t *testing.T) {
 				"required_secret": {"REQUIRED_SECRET", true},
 			},
 		},
+		// workflow2.yaml: No input and secret are defined
+		{
+			Inputs:  ReusableWorkflowMetadataInputs{},
+			Outputs: ReusableWorkflowMetadataOutputs{},
+			Secrets: ReusableWorkflowMetadataSecrets{},
+		},
 	} {
 		cache.writeCache(fmt.Sprintf("./workflow%d.yaml", i), md)
 	}
@@ -295,6 +301,16 @@ func TestRuleWorkflowCallCheckReusableWorkflowCall(t *testing.T) {
 			errs: []string{
 				"input \"UNKNOWN_INPUT\" is not defined in \"./workflow0.yaml\"",
 				"secret \"UNKNOWN_SECRET\" is not defined in \"./workflow0.yaml\"",
+			},
+		},
+		{
+			what:    "no input and secret defined",
+			uses:    "./workflow2.yaml",
+			inputs:  []string{"unknown_input"},
+			secrets: []string{"unknown_secret"},
+			errs: []string{
+				"input \"unknown_input\" is not defined in \"./workflow2.yaml\" reusable workflow. no input is defined",
+				"secret \"unknown_secret\" is not defined in \"./workflow2.yaml\" reusable workflow. no secret is defined",
 			},
 		},
 	}

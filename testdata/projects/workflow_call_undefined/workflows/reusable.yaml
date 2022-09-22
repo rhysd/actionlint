@@ -13,4 +13,4 @@ jobs:
   test:
     runs-on: ubuntu-latest
     steps:
-      - run: 'bye'
+      - run: echo 'bye'
