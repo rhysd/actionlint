@@ -1,2 +1,2 @@
 test.yaml:3:3: "runs-on" section is missing in job "test" [syntax-check]
-test.yaml:6:3: key "test" is duplicated in "jobs" section. previously defined at line:3,col:3. note that key names are case insensitive [syntax-check]
+test.yaml:8:9: key "VERSION_NAME" is duplicated in "matrix" section. previously defined at line:7,col:9. note that key names are case insensitive [syntax-check]

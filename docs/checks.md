@@ -69,7 +69,7 @@ are simply ignored and don't affect workflow behavior. It means typo in keys is 
 actionlint can detect unexpected keys while parsing workflow syntax and report them as an error.
 
 <a name="check-missing-required-duplicate-keys"></a>
-## Missing required keys or key duplicates
+## Missing required keys and key duplicates
 
 Example input:
 
@@ -77,12 +77,14 @@ Example input:
 on: push
 jobs:
   test:
+    strategy:
+      # ERROR: Matrix name is duplicated. keys are case insensitive
+      matrix:
+        version_name: [v1, v2]
+        VERSION_NAME: [V1, V2]
+    # ERROR: runs-on is missing
     steps:
       - run: echo 'hello'
-  TEST:
-    runs-on: ubuntu-latest
-    steps:
-      - run: echo 'bye'
 ```
 
 Output:
@@ -92,13 +94,13 @@ test.yaml:3:3: "runs-on" section is missing in job "test" [syntax-check]
   |
 3 |   test:
   |   ^~~~~
-test.yaml:6:3: key "test" is duplicated in "jobs" section. previously defined at line:3,col:3. note that key names are case insensitive [syntax-check]
+test.yaml:8:9: key "version_name" is duplicated in "matrix" section. previously defined at line:7,col:9. note that key names are case insensitive [syntax-check]
   |
-6 |   TEST:
-  |   ^~~~~
+8 |         VERSION_NAME: [V1, V2]
+  |         ^~~~~~~~~~~~~
 ```
 
-[Playground](https://rhysd.github.io/actionlint#eJzLz7NSKCgtzuDKyk8qtuJSUChJLS4B0QoKxSWpBcUQpoKCrkJRKVBpanJGvoJ6RmpOTr46UCbENTgEogIoW6ybD1RRmlSaV1Kqm5MIMoiAOUmVqeoAYX8k5Q==)
+[Playground](https://rhysd.github.io/actionlint#eJzLz7NSKCgtzuDKyk8qtuJSUChJLS4B0QoKxSVFiSWp6ZUQnoJCbmJJUWYFjKegUJZaVJyZnxefl5ibaqUQXWaoo1BmFAuXDnMNCvb094v3c/R1BUqHAaXDoNLFJakFxTCDdBWKSoGOSE3OyFdQz0jNyclXBwA2byiy)
 
 Some mappings must include specific keys. For example, job mappings must include `runs-on:` and `steps:`.
 
@@ -1779,7 +1781,7 @@ test.yaml:10:13: step ID "STEP_ID" duplicates. previously defined at line:7,col:
    |
 10 |         id: STEP_ID
    |             ^~~~~~~
-test.yaml:12:3: key "test" is duplicated in "jobs" section. previously defined at line:3,col:3. note that key names are case insensitive [syntax-check]
+test.yaml:12:3: key "TEST" is duplicated in "jobs" section. previously defined at line:3,col:3. note that key names are case insensitive [syntax-check]
    |
 12 |   TEST:
    |   ^~~~~
@@ -1856,11 +1858,11 @@ jobs:
 Output:
 
 ```
-test.yaml:6:7: environment variable name "foo=bar" is invalid. '&', '=' and spaces should not be contained [env-var]
+test.yaml:6:7: environment variable name "FOO=BAR" is invalid. '&', '=' and spaces should not be contained [env-var]
   |
 6 |       FOO=BAR: foo
   |       ^~~~~~~~
-test.yaml:7:7: environment variable name "foo bar" is invalid. '&', '=' and spaces should not be contained [env-var]
+test.yaml:7:7: environment variable name "FOO BAR" is invalid. '&', '=' and spaces should not be contained [env-var]
   |
 7 |       FOO BAR: foo
   |       ^~~

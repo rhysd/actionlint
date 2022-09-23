@@ -1,9 +1,11 @@
 on: push
 jobs:
   test:
+    strategy:
+      # ERROR: Matrix name is duplicated. keys are case insensitive
+      matrix:
+        version_name: [v1, v2]
+        VERSION_NAME: [V1, V2]
+    # ERROR: runs-on is missing
     steps:
       - run: echo 'hello'
-  TEST:
-    runs-on: ubuntu-latest
-    steps:
-      - run: echo 'bye'

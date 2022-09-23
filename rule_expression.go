@@ -100,7 +100,7 @@ func (rule *RuleExpression) VisitWorkflowPre(n *Workflow) error {
 				default:
 					ty = AnyType{}
 				}
-				ity.Props[n.Value] = ty
+				ity.Props[strings.ToLower(n.Value)] = ty
 
 				rule.checkString(i.Description)
 				rule.checkString(i.Default)
@@ -113,7 +113,7 @@ func (rule *RuleExpression) VisitWorkflowPre(n *Workflow) error {
 			if e.Secrets != nil {
 				sty := NewEmptyStrictObjectType()
 				for n, s := range e.Secrets {
-					sty.Props[n.Value] = StringType{}
+					sty.Props[strings.ToLower(n.Value)] = StringType{}
 					rule.checkString(s.Description)
 				}
 				rule.secretsTy = sty
@@ -1068,7 +1068,7 @@ func typeOfActionOutputs(meta *ActionMetadata) *ObjectType {
 	}
 	props := make(map[string]ExprType, len(meta.Outputs))
 	for n := range meta.Outputs {
-		props[n] = StringType{}
+		props[strings.ToLower(n)] = StringType{}
 	}
 	return NewStrictObjectType(props)
 }

@@ -56,7 +56,8 @@ func (rule *RulePermissions) checkPermissions(p *Permissions) {
 		return
 	}
 
-	for n, p := range p.Scopes {
+	for _, p := range p.Scopes {
+		n := p.Name.Value // Permission names are case-sensitive
 		if _, ok := allPermissionScopes[n]; !ok {
 			ss := make([]string, 0, len(allPermissionScopes))
 			for s := range allPermissionScopes {

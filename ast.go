@@ -187,7 +187,7 @@ type DispatchInput struct {
 // WorkflowDispatchEvent is event on dispatching workflow manually.
 // https://docs.github.com/en/actions/learn-github-actions/events-that-trigger-workflows#workflow_dispatch
 type WorkflowDispatchEvent struct {
-	// Inputs is map from input names to input attributes.
+	// Inputs is map from input names to input attributes. Keys are in lower case since they are case insensitive.
 	Inputs map[string]*DispatchInput
 	// Pos is a position in source.
 	Pos *Pos
@@ -400,7 +400,7 @@ type Input struct {
 type ExecAction struct {
 	// https://docs.github.com/en/actions/learn-github-actions/workflow-syntax-for-github-actions#jobsjob_idstepsuses
 	Uses *String
-	// Inputs represents inputs to the action to execute in 'with' section
+	// Inputs represents inputs to the action to execute in 'with' section. Keys are in lower case since they are case-insensitive.
 	Inputs map[string]*Input
 	// Entrypoint represents optional 'entrypoint' field in 'with' section. Nil field means nothing specified
 	// https://docs.github.com/en/actions/learn-github-actions/workflow-syntax-for-github-actions#jobsjob_idstepswithentrypoint
@@ -442,7 +442,7 @@ type RawYAMLValue interface {
 
 // RawYAMLObject is raw YAML mapping value.
 type RawYAMLObject struct {
-	// Props is map from property names to their values.
+	// Props is map from property names to their values. Keys are in lower case since they are case-insensitive.
 	Props map[string]RawYAMLValue
 	pos   *Pos
 }
@@ -610,7 +610,7 @@ func (cs *MatrixCombinations) ContainsExpression() bool {
 // Matrix is matrix variations configuration of a job.
 // https://docs.github.com/en/actions/learn-github-actions/workflow-syntax-for-github-actions#jobsjob_idstrategymatrix
 type Matrix struct {
-	// Values stores mappings from name to values.
+	// Values stores mappings from name to values. Keys are in lower case since they are case-insensitive.
 	Rows map[string]*MatrixRow
 	// Include is list of combinations of matrix values and additional values on running matrix combinations.
 	// https://docs.github.com/en/actions/learn-github-actions/workflow-syntax-for-github-actions#example-including-additional-values-into-combinations
@@ -819,7 +819,7 @@ type Job struct {
 	ContinueOnError *Bool
 	// Container is container configuration to run the job.
 	Container *Container
-	// Services is map from service names to service configurations.
+	// Services is map from service names to service configurations. Keys are in lower case since they are case-insensitive.
 	// https://docs.github.com/en/actions/learn-github-actions/workflow-syntax-for-github-actions#jobsjob_idservices
 	Services map[string]*Service
 	// WorkflowCall is a workflow call by 'uses:'.
@@ -848,7 +848,7 @@ type Workflow struct {
 	// Concurrency is concurrency configuration of entire workflow. Each jobs also can their own
 	// concurrency configurations.
 	Concurrency *Concurrency
-	// Jobs is mappings from job ID to the job object
+	// Jobs is mappings from job ID to the job object. Keys are in lower case since they are case-insensitive.
 	Jobs map[string]*Job
 }
 
