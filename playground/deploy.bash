@@ -7,6 +7,9 @@ if [ ! -d .git ]; then
     exit 1
 fi
 
+echo "Ensuring gh-pages branch is up-to-date"
+git fetch -u origin gh-pages:gh-pages
+
 sha="$(git rev-parse HEAD)"
 echo "Deploying playground from ${sha}"
 
