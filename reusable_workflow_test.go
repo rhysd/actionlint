@@ -599,6 +599,15 @@ func TestReusableWorkflowMetadataFromASTNodeInputs(t *testing.T) {
 				"my_input": {"MY_INPUT", false, StringType{}},
 			},
 		},
+		{
+			what: "upper case inputs",
+			inputs: map[string]*WorkflowCallEventInput{
+				"MY_INPUT": {},
+			},
+			want: ReusableWorkflowMetadataInputs{
+				"my_input": {"MY_INPUT", false, AnyType{}},
+			},
+		},
 	}
 
 	for _, tc := range tests {
@@ -606,9 +615,10 @@ func TestReusableWorkflowMetadataFromASTNodeInputs(t *testing.T) {
 			cwd := filepath.Join("path", "to", "project")
 			proj := &Project{cwd, nil}
 			c := NewLocalReusableWorkflowCache(proj, cwd, nil)
-			e := &WorkflowCallEvent{Inputs: map[*String]*WorkflowCallEventInput{}}
+			e := &WorkflowCallEvent{Inputs: map[string]*WorkflowCallEventInput{}}
 			for n, i := range tc.inputs {
-				e.Inputs[&String{Value: n, Pos: &Pos{}}] = i
+				i.Name = &String{Value: n, Pos: &Pos{}}
+				e.Inputs[strings.ToLower(n)] = i
 			}
 
 			c.WriteWorkflowCallEvent(filepath.Join("foo", "test.yaml"), e)
@@ -643,9 +653,11 @@ func TestReusableWorkflowMetadataFromASTNodeOutputs(t *testing.T) {
 			cwd := filepath.Join("path", "to", "project")
 			proj := &Project{cwd, nil}
 			c := NewLocalReusableWorkflowCache(proj, cwd, nil)
-			e := &WorkflowCallEvent{Outputs: map[*String]*WorkflowCallEventOutput{}}
+			e := &WorkflowCallEvent{Outputs: map[string]*WorkflowCallEventOutput{}}
 			for _, o := range outputs {
-				e.Outputs[&String{Value: o, Pos: &Pos{}}] = &WorkflowCallEventOutput{}
+				e.Outputs[strings.ToLower(o)] = &WorkflowCallEventOutput{
+					Name: &String{Value: o, Pos: &Pos{}},
+				}
 			}
 
 			c.WriteWorkflowCallEvent(filepath.Join("foo", "test.yaml"), e)
@@ -696,9 +708,12 @@ func TestReusableWorkflowMetadataFromASTNodeSecrets(t *testing.T) {
 			cwd := filepath.Join("path", "to", "project")
 			proj := &Project{cwd, nil}
 			c := NewLocalReusableWorkflowCache(proj, cwd, nil)
-			e := &WorkflowCallEvent{Secrets: map[*String]*WorkflowCallEventSecret{}}
+			e := &WorkflowCallEvent{Secrets: map[string]*WorkflowCallEventSecret{}}
 			for n, r := range secrets {
-				e.Secrets[&String{Value: n, Pos: &Pos{}}] = &WorkflowCallEventSecret{Required: r}
+				e.Secrets[strings.ToLower(n)] = &WorkflowCallEventSecret{
+					Name:     &String{Value: n, Pos: &Pos{}},
+					Required: r,
+				}
 			}
 
 			c.WriteWorkflowCallEvent(filepath.Join("foo", "test.yaml"), e)

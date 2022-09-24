@@ -181,7 +181,7 @@ func (rule *RuleEvents) checkTypes(hook *String, types []*String, expected []str
 
 // https://docs.github.com/en/actions/learn-github-actions/reusing-workflows
 func (rule *RuleEvents) checkWorkflowCallEvent(event *WorkflowCallEvent) {
-	for n, i := range event.Inputs {
+	for _, i := range event.Inputs {
 		if i.Default == nil {
 			continue
 		}
@@ -191,7 +191,7 @@ func (rule *RuleEvents) checkWorkflowCallEvent(event *WorkflowCallEvent) {
 				rule.errorf(
 					i.Default.Pos,
 					"input of workflow_call event %q is typed as number but its default value %q cannot be parsed as a float number: %s",
-					n.Value,
+					i.Name.Value,
 					i.Default.Value,
 					err,
 				)
@@ -201,7 +201,7 @@ func (rule *RuleEvents) checkWorkflowCallEvent(event *WorkflowCallEvent) {
 				rule.errorf(
 					i.Default.Pos,
 					"input of workflow_call event %q is typed as boolean. its default value must be true or false but got %q",
-					n.Value,
+					i.Name.Value,
 					i.Default.Value,
 				)
 			}
@@ -210,7 +210,7 @@ func (rule *RuleEvents) checkWorkflowCallEvent(event *WorkflowCallEvent) {
 			rule.errorf(
 				i.Default.Pos,
 				"input %q of workflow_call event has the default value %q, but it is also required. if an input is marked as required, its default value will never be used",
-				n.Value,
+				i.Name.Value,
 				i.Default.Value,
 			)
 		}

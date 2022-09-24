@@ -100,7 +100,7 @@ func (rule *RuleExpression) VisitWorkflowPre(n *Workflow) error {
 				default:
 					ty = AnyType{}
 				}
-				ity.Props[strings.ToLower(n.Value)] = ty
+				ity.Props[n] = ty
 
 				rule.checkString(i.Description)
 				rule.checkString(i.Default)
@@ -113,7 +113,7 @@ func (rule *RuleExpression) VisitWorkflowPre(n *Workflow) error {
 			if e.Secrets != nil {
 				sty := NewEmptyStrictObjectType()
 				for n, s := range e.Secrets {
-					sty.Props[strings.ToLower(n.Value)] = StringType{}
+					sty.Props[n] = StringType{}
 					rule.checkString(s.Description)
 				}
 				rule.secretsTy = sty
@@ -985,7 +985,7 @@ func (rule *RuleExpression) guessTypeOfMatrixRow(r *MatrixRow) ExprType {
 	return ty
 }
 
-func (rule *RuleExpression) checkWorkflowCallOutputs(outputs map[*String]*WorkflowCallEventOutput, jobs map[string]*Job) {
+func (rule *RuleExpression) checkWorkflowCallOutputs(outputs map[string]*WorkflowCallEventOutput, jobs map[string]*Job) {
 	if len(outputs) == 0 || len(jobs) == 0 {
 		return
 	}
@@ -999,7 +999,7 @@ func (rule *RuleExpression) checkWorkflowCallOutputs(outputs map[*String]*Workfl
 		} else {
 			p := make(map[string]ExprType, len(j.Outputs))
 			for n := range j.Outputs {
-				p[strings.ToLower(n)] = StringType{}
+				p[n] = StringType{}
 			}
 			o = NewStrictObjectType(p)
 		}

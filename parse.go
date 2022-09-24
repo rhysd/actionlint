@@ -463,10 +463,10 @@ func (p *parser) parseWorkflowCallEvent(pos *Pos, n *yaml.Node) *WorkflowCallEve
 		switch kv.id {
 		case "inputs":
 			inputs := p.parseSectionMapping("inputs", kv.val, true)
-			ret.Inputs = make(map[*String]*WorkflowCallEventInput, len(inputs))
+			ret.Inputs = make(map[string]*WorkflowCallEventInput, len(inputs))
 			for _, kv := range inputs {
 				name, spec := kv.key, kv.val
-				input := &WorkflowCallEventInput{}
+				input := &WorkflowCallEventInput{Name: name}
 				sawType := false
 
 				for _, attr := range p.parseMapping("input of workflow_call event", spec, true) {
@@ -498,15 +498,14 @@ func (p *parser) parseWorkflowCallEvent(pos *Pos, n *yaml.Node) *WorkflowCallEve
 					p.errorfAt(name.Pos, "\"type\" is missing at %q input of workflow_call event", name.Value)
 				}
 
-				// TODO: Change keys to string
-				ret.Inputs[name] = input
+				ret.Inputs[kv.id] = input
 			}
 		case "secrets":
 			secrets := p.parseSectionMapping("secrets", kv.val, true)
-			ret.Secrets = make(map[*String]*WorkflowCallEventSecret, len(secrets))
+			ret.Secrets = make(map[string]*WorkflowCallEventSecret, len(secrets))
 			for _, kv := range secrets {
 				name, spec := kv.key, kv.val
-				secret := &WorkflowCallEventSecret{}
+				secret := &WorkflowCallEventSecret{Name: name}
 
 				for _, attr := range p.parseMapping("secret of workflow_call event", spec, true) {
 					switch attr.id {
@@ -519,15 +518,14 @@ func (p *parser) parseWorkflowCallEvent(pos *Pos, n *yaml.Node) *WorkflowCallEve
 					}
 				}
 
-				// TODO: Change keys to string
-				ret.Secrets[name] = secret
+				ret.Secrets[kv.id] = secret
 			}
 		case "outputs":
 			outputs := p.parseSectionMapping("outputs", kv.val, true)
-			ret.Outputs = make(map[*String]*WorkflowCallEventOutput, len(outputs))
+			ret.Outputs = make(map[string]*WorkflowCallEventOutput, len(outputs))
 			for _, kv := range outputs {
 				name, spec := kv.key, kv.val
-				output := &WorkflowCallEventOutput{}
+				output := &WorkflowCallEventOutput{Name: name}
 
 				for _, attr := range p.parseMapping("output of workflow_call event", spec, true) {
 					switch attr.id {
@@ -544,8 +542,7 @@ func (p *parser) parseWorkflowCallEvent(pos *Pos, n *yaml.Node) *WorkflowCallEve
 					p.errorfAt(name.Pos, "\"value\" is missing at %q output of workflow_call event", name.Value)
 				}
 
-				// TODO: Change keys to string
-				ret.Outputs[name] = output
+				ret.Outputs[kv.id] = output
 			}
 		default:
 			p.unexpectedKey(kv.key, "workflow_call", []string{"inputs", "secrets"})

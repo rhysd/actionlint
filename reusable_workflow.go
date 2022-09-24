@@ -292,24 +292,24 @@ func (c *LocalReusableWorkflowCache) WriteWorkflowCallEvent(wpath string, event 
 		case WorkflowCallEventInputTypeString:
 			t = StringType{}
 		}
-		m.Inputs[strings.ToLower(n.Value)] = &ReusableWorkflowMetadataInput{
+		m.Inputs[n] = &ReusableWorkflowMetadataInput{
 			Type:     t,
 			Required: i.Required != nil && i.Required.Value && i.Default == nil,
-			Name:     n.Value,
+			Name:     i.Name.Value,
 		}
 	}
 
-	for n := range event.Outputs {
-		m.Outputs[strings.ToLower(n.Value)] = &ReusableWorkflowMetadataOutput{
-			Name: n.Value,
+	for n, o := range event.Outputs {
+		m.Outputs[n] = &ReusableWorkflowMetadataOutput{
+			Name: o.Name.Value,
 		}
 	}
 
 	for n, s := range event.Secrets {
 		r := s.Required != nil && s.Required.Value
-		m.Secrets[strings.ToLower(n.Value)] = &ReusableWorkflowMetadataSecret{
+		m.Secrets[n] = &ReusableWorkflowMetadataSecret{
 			Required: r,
-			Name:     n.Value,
+			Name:     s.Name.Value,
 		}
 	}
 
