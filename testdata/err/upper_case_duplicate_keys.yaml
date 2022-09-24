@@ -1,0 +1,51 @@
+on:
+  workflow_call:
+    inputs:
+      foo:
+        type: string
+      FOO:
+        type: number
+    secrets:
+      foo:
+      FOO:
+    outputs:
+      foo:
+        value: ...
+      FOO:
+        value: ...
+
+env:
+  foo: ...
+  FOO: ...
+
+jobs:
+  test:
+    strategy:
+      matrix:
+        version_name: [v1, v2]
+        VERSION_NAME: [V1, V2]
+    runs-on: ubuntu-latest
+    RUNS-ON: UBUNTU-LATEST
+    container: foo:latest
+    services:
+      redis:
+        image: redis
+      REDIS:
+        image: redis2
+    steps:
+      - run: echo 'hello'
+        env:
+          FOO: ...
+          foo: ...
+      - uses: foo/bar@main
+        with:
+          foo: ...
+          FOO: ...
+  call:
+    uses: owner/repo@main
+    with:
+      foo_input: ...
+      FOO_input: ...
+    secrets:
+      foo_secret: ...
+      FOO_secret: ...
