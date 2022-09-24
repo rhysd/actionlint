@@ -66,7 +66,7 @@ func (rule *RuleExpression) VisitWorkflowPre(n *Workflow) error {
 			rule.checkStrings(e.Cron)
 		case *WorkflowDispatchEvent:
 			ity := NewEmptyStrictObjectType()
-			for _, i := range e.Inputs {
+			for n, i := range e.Inputs {
 				rule.checkString(i.Description)
 				rule.checkString(i.Default)
 				rule.checkBool(i.Required)
@@ -81,7 +81,7 @@ func (rule *RuleExpression) VisitWorkflowPre(n *Workflow) error {
 				default:
 					ty = AnyType{}
 				}
-				ity.Props[i.Name.Value] = ty
+				ity.Props[n] = ty
 			}
 			rule.dispatchInputsTy = ity
 		case *RepositoryDispatchEvent:
