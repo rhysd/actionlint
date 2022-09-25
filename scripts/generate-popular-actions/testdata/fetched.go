@@ -7,23 +7,23 @@ package actionlint
 var PopularActions = map[string]*ActionMetadata{
 	"rhysd/action-setup-vim@v1.2.7": {
 		Name: "Setup Vim",
-		Inputs: map[string]ActionMetadataInputRequired{
-			"neovim":  false,
-			"token":   false,
-			"version": false,
+		Inputs: ActionMetadataInputs{
+			"neovim":  {"neovim", false},
+			"token":   {"token", false},
+			"version": {"version", false},
 		},
-		Outputs: map[string]struct{}{
-			"executable": {},
+		Outputs: ActionMetadataOutputs{
+			"executable": {"executable"},
 		},
 	},
 	"rhysd/changelog-from-release/action@v2.2.2": {
 		Name: "Run changelog-from-release",
-		Inputs: map[string]ActionMetadataInputRequired{
-			"commit":       false,
-			"file":         true,
-			"github_token": true,
-			"push":         false,
-			"version":      false,
+		Inputs: ActionMetadataInputs{
+			"commit":       {"commit", false},
+			"file":         {"file", true},
+			"github_token": {"github_token", true},
+			"push":         {"push", false},
+			"version":      {"version", false},
 		},
 	},
 }

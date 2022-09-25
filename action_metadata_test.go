@@ -76,6 +76,24 @@ func TestLocalActionsFindMetadata(t *testing.T) {
 			}
 		}
 	})
+
+	t.Run("./uppercase", func(t *testing.T) {
+		want := testGetWantedActionMetadata()
+		for _, i := range want.Inputs {
+			i.Name = strings.ToUpper(i.Name)
+		}
+		for _, o := range want.Outputs {
+			o.Name = strings.ToUpper(o.Name)
+		}
+
+		have, err := c.FindMetadata("./uppercase")
+		if err != nil {
+			t.Fatal(err)
+		}
+		if !cmp.Equal(want, have) {
+			t.Fatal(cmp.Diff(want, have))
+		}
+	})
 }
 
 func TestLocalActionsFindConcurrently(t *testing.T) {

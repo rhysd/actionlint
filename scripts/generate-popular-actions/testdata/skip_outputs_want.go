@@ -7,10 +7,10 @@ package actionlint
 var PopularActions = map[string]*ActionMetadata{
 	"rhysd/action-setup-vim@v1": {
 		Name: "Setup Vim",
-		Inputs: map[string]ActionMetadataInputRequired{
-			"neovim":  false,
-			"token":   false,
-			"version": false,
+		Inputs: ActionMetadataInputs{
+			"neovim":  {"neovim", false},
+			"token":   {"token", false},
+			"version": {"version", false},
 		},
 		SkipOutputs: true,
 	},
