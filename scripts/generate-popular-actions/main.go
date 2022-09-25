@@ -642,16 +642,16 @@ var PopularActions = map[string]*ActionMetadata{
 		}
 
 		if len(meta.Inputs) > 0 && !skipInputs {
-			names := make([]string, 0, len(meta.Inputs))
+			ids := make([]string, 0, len(meta.Inputs))
 			for n := range meta.Inputs {
-				names = append(names, n)
+				ids = append(ids, n)
 			}
-			sort.Strings(names)
+			sort.Strings(ids)
 
-			fmt.Fprintf(b, "Inputs: map[string]ActionMetadataInputRequired{\n")
-			for _, name := range names {
-				required := meta.Inputs[name]
-				fmt.Fprintf(b, "%q: %v,\n", name, required)
+			fmt.Fprintf(b, "Inputs: ActionMetadataInputs{\n")
+			for _, id := range ids {
+				i := meta.Inputs[id]
+				fmt.Fprintf(b, "%q: {%q, %v},\n", id, i.Name, i.Required)
 			}
 			fmt.Fprintf(b, "},\n")
 		}
@@ -662,15 +662,16 @@ var PopularActions = map[string]*ActionMetadata{
 		}
 
 		if len(meta.Outputs) > 0 && !skipOutputs {
-			names := make([]string, 0, len(meta.Outputs))
+			ids := make([]string, 0, len(meta.Outputs))
 			for n := range meta.Outputs {
-				names = append(names, n)
+				ids = append(ids, n)
 			}
-			sort.Strings(names)
+			sort.Strings(ids)
 
-			fmt.Fprintf(b, "Outputs: map[string]struct{}{\n")
-			for _, name := range names {
-				fmt.Fprintf(b, "%q: {},\n", name)
+			fmt.Fprintf(b, "Outputs: ActionMetadataOutputs{\n")
+			for _, id := range ids {
+				o := meta.Outputs[id]
+				fmt.Fprintf(b, "%q: {%q},\n", id, o.Name)
 			}
 			fmt.Fprintf(b, "},\n")
 		}

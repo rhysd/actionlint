@@ -14,13 +14,13 @@ import (
 func testGetWantedActionMetadata() *ActionMetadata {
 	want := &ActionMetadata{
 		Name: "My action",
-		Inputs: map[string]ActionMetadataInputRequired{
-			"name":     false,
-			"message":  true,
-			"addition": false,
+		Inputs: ActionMetadataInputs{
+			"name":     {"name", false},
+			"message":  {"message", true},
+			"addition": {"addition", false},
 		},
-		Outputs: map[string]struct{}{
-			"user_id": {},
+		Outputs: ActionMetadataOutputs{
+			"user_id": {"user_id"},
 		},
 	}
 	return want
@@ -408,12 +408,12 @@ inputs:
     required: true`,
 			want: ActionMetadata{
 				Name: "Test",
-				Inputs: map[string]ActionMetadataInputRequired{
-					"input1": false,
-					"input2": false,
-					"input3": false,
-					"input4": false,
-					"input5": true,
+				Inputs: ActionMetadataInputs{
+					"input1": {"input1", false},
+					"input2": {"input2", false},
+					"input3": {"input3", false},
+					"input4": {"input4", false},
+					"input5": {"input5", true},
 				},
 			},
 		},
@@ -428,9 +428,9 @@ outputs:
 `,
 			want: ActionMetadata{
 				Name: "Test",
-				Outputs: map[string]struct{}{
-					"output1": {},
-					"output2": {},
+				Outputs: ActionMetadataOutputs{
+					"output1": {"output1"},
+					"output2": {"output2"},
 				},
 			},
 		},
@@ -459,7 +459,7 @@ func TestActionMetadataYAMLUnmarshalError(t *testing.T) {
 			what: "invalid inputs",
 			input: `name: Test
 inputs: "foo"`,
-			want: "into map[string]actionlint.ActionMetadataInputRequired",
+			want: "inputs must be mapping node",
 		},
 		{
 			what: "invalid inputs.*",
@@ -472,7 +472,7 @@ inputs:
 			what: "invalid outputs",
 			input: `name: Test
 outputs: "foo"`,
-			want: "into map[string]struct {}",
+			want: "outputs must be mapping node",
 		},
 	}
 
