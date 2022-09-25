@@ -256,6 +256,36 @@ func TestLocalActionsBrokenMetadata(t *testing.T) {
 	}
 }
 
+func TestLocalActionsDuplicateInputsOutputs(t *testing.T) {
+	proj := &Project{filepath.Join("testdata", "action_metadata"), nil}
+	c := NewLocalActionsCache(proj, nil)
+
+	for _, tc := range []struct {
+		spec string
+		want string
+	}{
+		{
+			spec: "./input-duplicate",
+			want: "input \"FOO\" is duplicated",
+		},
+		{
+			spec: "./output-duplicate",
+			want: "output \"FOO\" is duplicated",
+		},
+	} {
+		t.Run(tc.spec, func(t *testing.T) {
+			m, err := c.FindMetadata(tc.spec)
+			if err == nil {
+				t.Fatal("error was not returned", m)
+			}
+			msg := err.Error()
+			if !strings.Contains(msg, tc.want) {
+				t.Fatalf("error %q was expected to include %q", msg, tc.want)
+			}
+		})
+	}
+}
+
 func TestLocalActionsConcurrentFailures(t *testing.T) {
 	n := 10
 	proj := &Project{filepath.Join("testdata", "action_metadata"), nil}

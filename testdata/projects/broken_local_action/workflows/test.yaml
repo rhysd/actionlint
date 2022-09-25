@@ -4,6 +4,11 @@ jobs:
   test:
     runs-on: ubuntu-18.04
     steps:
-      - uses: ./action/broken
+      - uses: ./action/broken_input
         with:
           hello: world
+      - uses: ./action/broken_output
+      - uses: ./action/duplicate_input
+        with:
+          foo: ...
+      - uses: ./action/duplicate_output

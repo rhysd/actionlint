@@ -1,0 +1,8 @@
+name: test
+description: hello
+
+outputs:
+  foo:
+    description: ...
+  FOO:
+    description: ...

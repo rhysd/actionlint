@@ -1,1 +1,4 @@
-/workflows/test\.yaml:7:15: could not parse action metadata in ".+broken": yaml: .+ \[action\]/
+/workflows/test\.yaml:7:15: could not parse action metadata in ".+broken_input": yaml: .+ \[action\]/
+/workflows/test\.yaml:10:15: could not parse action metadata in ".+broken_output": yaml: outputs must be mapping node but scalar node was found at line:4, col:10 \[action\]/
+/workflows/test\.yaml:11:15: could not parse action metadata in ".+duplicate_input": input "FOO" is duplicated \[action\]/
+/workflows/test\.yaml:14:15: could not parse action metadata in ".+duplicate_output": output "FOO" is duplicated \[action\]/

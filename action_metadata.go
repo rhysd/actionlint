@@ -47,7 +47,12 @@ func (inputs *ActionMetadataInputs) UnmarshalYAML(n *yaml.Node) error {
 			return err
 		}
 
-		md[strings.ToLower(k)] = &ActionMetadataInput{k, m.Required && m.Default == nil}
+		id := strings.ToLower(k)
+		if _, ok := md[id]; ok {
+			return fmt.Errorf("input %q is duplicated", k)
+		}
+
+		md[id] = &ActionMetadataInput{k, m.Required && m.Default == nil}
 	}
 
 	*inputs = md
@@ -74,7 +79,11 @@ func (inputs *ActionMetadataOutputs) UnmarshalYAML(n *yaml.Node) error {
 	md := make(ActionMetadataOutputs, len(n.Content)/2)
 	for i := 0; i < len(n.Content); i += 2 {
 		k := n.Content[i].Value
-		md[strings.ToLower(k)] = &ActionMetadataOutput{k}
+		id := strings.ToLower(k)
+		if _, ok := md[id]; ok {
+			return fmt.Errorf("output %q is duplicated", k)
+		}
+		md[id] = &ActionMetadataOutput{k}
 	}
 
 	*inputs = md
