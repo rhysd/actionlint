@@ -195,8 +195,8 @@ var popularActions = []*action{
 	},
 	{
 		slug: "actions/stale",
-		tags: []string{"v1", "v2", "v3", "v4", "v5"},
-		next: "v6",
+		tags: []string{"v1", "v2", "v3", "v4", "v5", "v6"},
+		next: "v7",
 	},
 	{
 		slug: "actions/upload-artifact",
