@@ -8,8 +8,8 @@ var PopularActions = map[string]*ActionMetadata{
 	"rhysd/action-setup-vim@v1": {
 		Name:       "Setup Vim",
 		SkipInputs: true,
-		Outputs: map[string]struct{}{
-			"executable": {},
+		Outputs: ActionMetadataOutputs{
+			"executable": {"executable"},
 		},
 	},
 }

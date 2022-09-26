@@ -146,43 +146,36 @@ func (rule *RuleAction) checkLocalAction(path string, action *ExecAction) {
 
 func (rule *RuleAction) checkAction(meta *ActionMetadata, exec *ExecAction, describe func(*ActionMetadata) string) {
 	// Check specified inputs are defined in action's inputs spec
-Outer:
-	for name, val := range exec.Inputs {
-		// XXX: This is O(n) workaround for #31
-		for n := range meta.Inputs {
-			// Input name is in lower case because parser.go converts all keys into lower case.
-			// But keys of ActionMetadata.Inputs are as-is defined in action.yml.
-			if strings.EqualFold(n, name) {
-				continue Outer // found
+	for id, i := range exec.Inputs {
+		if _, ok := meta.Inputs[id]; !ok {
+			ns := make([]string, 0, len(meta.Inputs))
+			for _, i := range meta.Inputs {
+				ns = append(ns, i.Name)
 			}
+			rule.errorf(
+				i.Name.Pos,
+				"input %q is not defined in action %s. available inputs are %s",
+				i.Name.Value,
+				describe(meta),
+				sortedQuotes(ns),
+			)
 		}
-		ns := make([]string, 0, len(meta.Inputs))
-		for n := range meta.Inputs {
-			ns = append(ns, n)
-		}
-		rule.errorf(
-			val.Name.Pos,
-			"input %q is not defined in action %s. available inputs are %s",
-			name,
-			describe(meta),
-			sortedQuotes(ns),
-		)
 	}
 
 	// Check mandatory inputs are specified
-	for name, required := range meta.Inputs {
-		if required {
-			if _, ok := exec.Inputs[strings.ToLower(name)]; !ok {
+	for id, i := range meta.Inputs {
+		if i.Required {
+			if _, ok := exec.Inputs[id]; !ok {
 				ns := make([]string, 0, len(meta.Inputs))
-				for n, req := range meta.Inputs {
-					if req {
-						ns = append(ns, n)
+				for _, i := range meta.Inputs {
+					if i.Required {
+						ns = append(ns, i.Name)
 					}
 				}
 				rule.errorf(
 					exec.Uses.Pos,
 					"missing input %q which is required by action %s. all required inputs are %s",
-					name,
+					i.Name,
 					describe(meta),
 					sortedQuotes(ns),
 				)

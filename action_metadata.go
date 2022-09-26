@@ -13,22 +13,80 @@ import (
 
 //go:generate go run ./scripts/generate-popular-actions -s remote -f go ./popular_actions.go
 
-// ActionMetadataInputRequired represents if the action input is required to be set or not.
+// ActionMetadataInput is input metadata in "inputs" section in action.yml metadata file.
 // https://docs.github.com/en/actions/creating-actions/metadata-syntax-for-github-actions#inputs
-type ActionMetadataInputRequired bool
+type ActionMetadataInput struct {
+	// Name is a name of this input.
+	Name string `json:"name"`
+	// Required is true when this input is mandatory to run the action.
+	Required bool `json:"required"`
+}
+
+// ActionMetadataInputs is a map from input ID to its metadata. Keys are in lower case since input
+// names are case-insensitive.
+// https://docs.github.com/en/actions/creating-actions/metadata-syntax-for-github-actions#inputs
+type ActionMetadataInputs map[string]*ActionMetadataInput
 
 // UnmarshalYAML implements yaml.Unmarshaler.
-func (required *ActionMetadataInputRequired) UnmarshalYAML(n *yaml.Node) error {
-	// Name this local type for better error message on unmarshaling
+func (inputs *ActionMetadataInputs) UnmarshalYAML(n *yaml.Node) error {
+	if n.Kind != yaml.MappingNode {
+		return expectedMapping("inputs", n)
+	}
+
 	type actionInputMetadata struct {
 		Required bool    `yaml:"required"`
 		Default  *string `yaml:"default"`
 	}
-	var input actionInputMetadata
-	if err := n.Decode(&input); err != nil {
-		return err
+
+	md := make(ActionMetadataInputs, len(n.Content)/2)
+	for i := 0; i < len(n.Content); i += 2 {
+		k, v := n.Content[i].Value, n.Content[i+1]
+
+		var m actionInputMetadata
+		if err := v.Decode(&m); err != nil {
+			return err
+		}
+
+		id := strings.ToLower(k)
+		if _, ok := md[id]; ok {
+			return fmt.Errorf("input %q is duplicated", k)
+		}
+
+		md[id] = &ActionMetadataInput{k, m.Required && m.Default == nil}
 	}
-	*required = ActionMetadataInputRequired(input.Required && input.Default == nil)
+
+	*inputs = md
+	return nil
+}
+
+// ActionMetadataOutput is output metadata in "outputs" section in action.yml metadata file.
+// https://docs.github.com/en/actions/creating-actions/metadata-syntax-for-github-actions#outputs-for-composite-actions
+type ActionMetadataOutput struct {
+	Name string `json:"name"`
+}
+
+// ActionMetadataOutputs is a map from output ID to its metadata. Keys are in lower case since output
+// names are case-insensitive.
+// https://docs.github.com/en/actions/creating-actions/metadata-syntax-for-github-actions#outputs-for-composite-actions
+type ActionMetadataOutputs map[string]*ActionMetadataOutput
+
+// UnmarshalYAML implements yaml.Unmarshaler.
+func (inputs *ActionMetadataOutputs) UnmarshalYAML(n *yaml.Node) error {
+	if n.Kind != yaml.MappingNode {
+		return expectedMapping("outputs", n)
+	}
+
+	md := make(ActionMetadataOutputs, len(n.Content)/2)
+	for i := 0; i < len(n.Content); i += 2 {
+		k := n.Content[i].Value
+		id := strings.ToLower(k)
+		if _, ok := md[id]; ok {
+			return fmt.Errorf("output %q is duplicated", k)
+		}
+		md[id] = &ActionMetadataOutput{k}
+	}
+
+	*inputs = md
 	return nil
 }
 
@@ -38,10 +96,10 @@ type ActionMetadata struct {
 	// Name is "name" field of action.yaml
 	Name string `yaml:"name" json:"name"`
 	// Inputs is "inputs" field of action.yaml
-	Inputs map[string]ActionMetadataInputRequired `yaml:"inputs" json:"inputs"`
+	Inputs ActionMetadataInputs `yaml:"inputs" json:"inputs"`
 	// Outputs is "outputs" field of action.yaml. Key is name of output. Description is omitted
 	// since actionlint does not use it.
-	Outputs map[string]struct{} `yaml:"outputs" json:"outputs"`
+	Outputs ActionMetadataOutputs `yaml:"outputs" json:"outputs"`
 	// SkipInputs is flag to specify behavior of inputs check. When it is true, inputs for this
 	// action will not be checked.
 	SkipInputs bool `json:"skip_inputs"`
