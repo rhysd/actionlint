@@ -1284,6 +1284,8 @@ func (p *parser) parse(n *yaml.Node) *Workflow {
 			w.Concurrency = p.parseConcurrency(k.Pos, v)
 		case "jobs":
 			w.Jobs = p.parseJobs(v)
+		case "run-name":
+			w.RunName = p.parseString(v, false)
 		default:
 			p.unexpectedKey(k, "workflow", []string{
 				"name",
