@@ -1,0 +1,11 @@
+on: push
+
+permissions:
+  ACTIONS: read
+  CHECKS: write
+
+jobs:
+  test:
+    runs-on: ubuntu-latest
+    steps:
+      - run: echo hi
