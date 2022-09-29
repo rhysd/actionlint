@@ -63,25 +63,28 @@ func errorfAt(pos *Pos, kind string, format string, args ...interface{}) *Error 
 
 // GetTemplateFields fields for formatting this error with Go template.
 func (e *Error) GetTemplateFields(source []byte) *ErrorTemplateFields {
-	var snippet string
+	snippet := ""
+	end := e.Column
 	if len(source) > 0 && e.Line > 0 {
 		if l, ok := e.getLine(source); ok {
 			snippet = l
 			if len(l) >= e.Column-1 {
 				if i := e.getIndicator(l); i != "" {
 					snippet += "\n" + i
+					end = len(i) // Byte length can be used here because this line only contains ASCII
 				}
 			}
 		}
 	}
 
 	return &ErrorTemplateFields{
-		Message:  e.Message,
-		Filepath: e.Filepath,
-		Line:     e.Line,
-		Column:   e.Column,
-		Kind:     e.Kind,
-		Snippet:  snippet,
+		Message:   e.Message,
+		Filepath:  e.Filepath,
+		Line:      e.Line,
+		Column:    e.Column,
+		Kind:      e.Kind,
+		Snippet:   snippet,
+		EndColumn: end,
 	}
 }
 
@@ -191,6 +194,9 @@ type ErrorTemplateFields struct {
 	// Snippet is a code snippet and indicator to indicate where the error occurred.
 	// When encoding into JSON, this field may be omitted when the snippet is empty.
 	Snippet string `json:"snippet,omitempty"`
+	// EndColumn is a column number where the error indicator (^~~~~~~) ends. When no indicator
+	// can be shown, EndColumn is equal to Column.
+	EndColumn int `json:"end_column"`
 }
 
 func unescapeBackslash(s string) string {

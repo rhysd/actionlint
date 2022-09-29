@@ -306,23 +306,27 @@ func TestErrorGetTemplateFieldsOK(t *testing.T) {
 	testCases := []struct {
 		message string
 		column  int
+		endCol  int
 		source  string
 		snippet string
 	}{
 		{
 			message: "simple message with source",
 			column:  1,
+			endCol:  4,
 			source:  "this is source",
 			snippet: "this is source\n^~~~",
 		},
 		{
 			message: "simple message",
 			column:  1,
+			endCol:  1,
 			snippet: "",
 		},
 		{
 			message: "error at zero column",
 			column:  0,
+			endCol:  0,
 			source:  "this is source",
 			snippet: "this is source",
 		},
@@ -351,6 +355,9 @@ func TestErrorGetTemplateFieldsOK(t *testing.T) {
 			if f.Snippet != tc.snippet {
 				t.Fatalf("wanted %q but have %q", tc.snippet, f.Snippet)
 			}
+			if f.EndColumn != tc.endCol {
+				t.Fatalf("wanted %d but have %d", tc.endCol, f.EndColumn)
+			}
 		})
 	}
 }
@@ -367,20 +374,22 @@ func TestErrorGetTemplateFieldsColumnIsOutOfBounds(t *testing.T) {
 
 var testErrorTemplateFields = []*ErrorTemplateFields{
 	{
-		Message:  "message 1",
-		Filepath: "file1",
-		Line:     1,
-		Column:   2,
-		Snippet:  "snippet 1",
-		Kind:     "kind1",
+		Message:   "message 1",
+		Filepath:  "file1",
+		Line:      1,
+		Column:    2,
+		EndColumn: 3,
+		Snippet:   "snippet 1",
+		Kind:      "kind1",
 	},
 	{
-		Message:  "message 2",
-		Filepath: "file2",
-		Line:     3,
-		Column:   4,
-		Snippet:  "snippet 2",
-		Kind:     "kind2",
+		Message:   "message 2",
+		Filepath:  "file2",
+		Line:      3,
+		Column:    4,
+		EndColumn: 5,
+		Snippet:   "snippet 2",
+		Kind:      "kind2",
 	},
 }
 
@@ -396,6 +405,10 @@ func TestErrorPrintFormattedWithTemplateFields(t *testing.T) {
 		{
 			temp: "{{range $ = .}}({{$.Line}}, {{$.Column}}){{end}}",
 			want: "(1, 2)(3, 4)",
+		},
+		{
+			temp: "{{range $ = .}}[{{$.Column}}..{{$.EndColumn}}]{{end}}",
+			want: "[2..3][4..5]",
 		},
 		{
 			temp: "{{range $ = .}}{{json $.Snippet}}{{end}}",
