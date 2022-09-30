@@ -1,7 +1,41 @@
+<a name="v1.6.20"></a>
+# [v1.6.20](https://github.com/rhysd/actionlint/releases/tag/v1.6.20) - 30 Sep 2022
+
+- Support `run-name` which [GitHub introduced recently](https://github.blog/changelog/2022-09-26-github-actions-dynamic-names-for-workflow-runs/). It is a name of workflow run dynamically configured. See [the official document](https://docs.github.com/en/actions/using-workflows/workflow-syntax-for-github-actions#run-name) for more details. ([#220](https://github.com/rhysd/actionlint/issues/220))
+  ```yaml
+  on: push
+  run-name: Deploy by @${{ github.actor }}
+
+  jobs:
+    ...
+  ```
+- Add `end_column` property to JSON representation of error. The property indicates a column of the end position of `^~~~~~~` indicator in snippet. Note that `end_column` is equal to `column` when the indicator cannot be shown. ([#219](https://github.com/rhysd/actionlint/issues/219))
+  ```console
+  $ actionlint -format '{{json .}}' test.yaml | jq
+  [
+    {
+      "message": "property \"unknown_prop\" is not defined in object type {arch: string; debug: string; name: string; os: string; temp: string; tool_cache: string; workspace: string}",
+      "filepath": "test.yaml",
+      "line": 7,
+      "column": 23,
+      "kind": "expression",
+      "snippet": "      - run: echo ${{ runner.unknown_prop }}\n                      ^~~~~~~~~~~~~~~~~~~",
+      "end_column": 41
+    }
+  ]
+  ```
+- Overhaul the workflow parser to parse workflow keys in case-insensitive. This is a work derived from the fix of [#216](https://github.com/rhysd/actionlint/issues/216). Now the parser parses all workflow keys in case-insensitive way correctly. Note that permission names at `permissions:` are exceptionally case-sensitive.
+  - This fixes properties of `inputs` for `workflow_dispatch` are not case-insensitive.
+  - This fixes inputs and outputs of local actions are not handled in case-insensitive way.
+- Update popular actions data set. `actions/stale@v6` was newly added.
+
+[Changes][v1.6.20]
+
+
 <a name="v1.6.19"></a>
 # [v1.6.19](https://github.com/rhysd/actionlint/releases/tag/v1.6.19) - 22 Sep 2022
 
-- Fix inputs, outputs, and secrets of reusable workflow should be in case-insensitive. ([#216](https://github.com/rhysd/actionlint/issues/216))
+- Fix inputs, outputs, and secrets of reusable workflow should be case-insensitive. ([#216](https://github.com/rhysd/actionlint/issues/216))
   ```yaml
   # .github/workflows/reusable.yaml
   on:
@@ -22,7 +56,7 @@
   jobs:
     caller:
       uses: ./.github/workflows/reusable.yaml
-      # Inputs and secrets are in case-insensitive. So all the followings should be OK
+      # Inputs and secrets are case-insensitive. So all the followings should be OK
       with:
         input_upper: ...
         INPUT_LOWER: ...
@@ -30,7 +64,7 @@
         secret_upper: ...
         SECRET_LOWER: ...
   ```
-- Describe [how to install specific version of `actionlint` binary with the download script](https://github.com/rhysd/actionlint/blob/main/docs/install.md#download-script) ([#218](https://github.com/rhysd/actionlint/issues/218))
+- Describe [how to install specific version of `actionlint` binary with the download script](https://github.com/rhysd/actionlint/blob/main/docs/install.md#download-script). ([#218](https://github.com/rhysd/actionlint/issues/218))
 
 [Changes][v1.6.19]
 
@@ -1186,6 +1220,7 @@ See documentation for more details:
 [Changes][v1.0.0]
 
 
+[v1.6.20]: https://github.com/rhysd/actionlint/compare/v1.6.19...v1.6.20
 [v1.6.19]: https://github.com/rhysd/actionlint/compare/v1.6.18...v1.6.19
 [v1.6.18]: https://github.com/rhysd/actionlint/compare/v1.6.17...v1.6.18
 [v1.6.17]: https://github.com/rhysd/actionlint/compare/v1.6.16...v1.6.17
