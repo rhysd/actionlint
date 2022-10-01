@@ -170,8 +170,8 @@ var popularActions = []*action{
 		next: "v5"}, // v1 does not exist
 	{
 		slug: "actions/setup-dotnet",
-		tags: []string{"v1", "v2"},
-		next: "v3",
+		tags: []string{"v1", "v2", "v3"},
+		next: "v4",
 	},
 	{
 		slug: "actions/setup-go",

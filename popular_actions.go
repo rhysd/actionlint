@@ -773,6 +773,20 @@ var PopularActions = map[string]*ActionMetadata{
 			"source-url":         {"source-url", false},
 		},
 	},
+	"actions/setup-dotnet@v3": {
+		Name: "Setup .NET Core SDK",
+		Inputs: ActionMetadataInputs{
+			"config-file":      {"config-file", false},
+			"dotnet-quality":   {"dotnet-quality", false},
+			"dotnet-version":   {"dotnet-version", false},
+			"global-json-file": {"global-json-file", false},
+			"owner":            {"owner", false},
+			"source-url":       {"source-url", false},
+		},
+		Outputs: ActionMetadataOutputs{
+			"dotnet-version": {"dotnet-version"},
+		},
+	},
 	"actions/setup-go@v1": {
 		Name: "Setup Go environment",
 		Inputs: ActionMetadataInputs{
