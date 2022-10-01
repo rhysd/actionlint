@@ -127,6 +127,10 @@ func ContextAvailability(key string) ([]string, []string) {
 		}
 
 		key := cs[0]
+		if key == "" {
+			dbg.Printf("Skip empty key at %q\n", r.Text(src))
+			continue
+		}
 		ctx := split(cs[1])
 		sp := split(cs[2])
 
