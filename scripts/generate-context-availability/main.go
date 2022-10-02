@@ -11,6 +11,7 @@ import (
 	"os"
 	"regexp"
 	"sort"
+	"strconv"
 	"strings"
 
 	"github.com/yuin/goldmark"
@@ -22,6 +23,36 @@ import (
 
 var dbg = log.New(io.Discard, "", log.LstdFlags)
 var reReplaceholder = regexp.MustCompile("{%[^%]+%}")
+
+type switchCase struct {
+	ctx  []string
+	sp   []string
+	cond []string
+}
+type switchCases map[string]*switchCase
+
+func (cs switchCases) Add(key string, ctx []string, sp []string) {
+	k := strings.Join(ctx, "_") + "__" + strings.Join(sp, "_")
+	if c, ok := cs[k]; ok {
+		c.cond = append(c.cond, key)
+	} else {
+		sort.Strings(ctx)
+		sort.Strings(sp)
+		cs[k] = &switchCase{ctx, sp, []string{key}}
+	}
+}
+
+func (cs switchCases) ForEach(pred func(c *switchCase)) {
+	ids := make([]string, 0, len(cs))
+	for id, c := range cs {
+		sort.Strings(c.cond)
+		ids = append(ids, id)
+	}
+	sort.Strings(ids)
+	for _, id := range ids {
+		pred(cs[id])
+	}
+}
 
 func parseContextAvailabilityTable(src []byte) (*extast.Table, bool) {
 	md := goldmark.New(goldmark.WithExtensions(extension.Table))
@@ -104,6 +135,7 @@ func ContextAvailability(key string) ([]string, []string) {
 	switch key {`)
 
 	keys := []string{}
+	cases := switchCases{}
 	for n := t.FirstChild(); n != nil; n = n.NextSibling() {
 		r, ok := n.(*extast.TableRow)
 		if !ok {
@@ -128,7 +160,7 @@ func ContextAvailability(key string) ([]string, []string) {
 
 		key := cs[0]
 		if key == "" {
-			dbg.Printf("Skip empty key at %q\n", r.Text(src))
+			dbg.Printf("Skip %q due to empty key\n", r.Text(src))
 			continue
 		}
 		ctx := split(cs[1])
@@ -138,10 +170,19 @@ func ContextAvailability(key string) ([]string, []string) {
 			funcs[s] = append(funcs[s], key)
 		}
 
-		fmt.Fprintf(buf, "	case %q: return %#v, %#v\n", key, ctx, sp)
-		dbg.Println("Parsed table row:", key)
+		dbg.Println("Parsed table row:", key, ctx, sp)
 		keys = append(keys, key)
+		cases.Add(key, ctx, sp)
 	}
+
+	cases.ForEach(func(c *switchCase) {
+		qs := make([]string, 0, len(c.cond))
+		for _, c := range c.cond {
+			qs = append(qs, strconv.Quote(c))
+		}
+		fmt.Fprintf(buf, "	case %s: return %#v, %#v\n", strings.Join(qs, ","), c.ctx, c.sp)
+	})
+
 	fmt.Fprintln(buf, "	default: return nil, nil\n	}\n}")
 	dbg.Println("Parsed", len(keys), "table rows")
 
@@ -155,7 +196,7 @@ func ContextAvailability(key string) ([]string, []string) {
 
 	// This variabel is for unit tests
 	sort.Strings(keys)
-	fmt.Fprintf(buf, "\nvar allWorkflowKeys = %#v\n", keys)
+	fmt.Fprintf(buf, "\n// For test\nvar allWorkflowKeys = %#v\n", keys)
 
 	formatted, err := format.Source(buf.Bytes())
 	if err != nil {

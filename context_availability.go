@@ -11,72 +11,34 @@ package actionlint
 // See the script for more details: https://github.com/rhysd/actionlint/blob/main/scripts/generate-context-availability/
 func ContextAvailability(key string) ([]string, []string) {
 	switch key {
-	case "run-name":
-		return []string{"github", "inputs"}, []string{}
-	case "concurrency":
-		return []string{"github", "inputs"}, []string{}
-	case "env":
-		return []string{"github", "inputs", "secrets"}, []string{}
-	case "jobs.<job_id>.concurrency":
-		return []string{"github", "inputs", "matrix", "needs", "strategy"}, []string{}
-	case "jobs.<job_id>.container":
-		return []string{"env", "github", "inputs", "matrix", "needs", "secrets", "strategy"}, []string{}
-	case "jobs.<job_id>.container.credentials":
-		return []string{"env", "github", "inputs", "matrix", "needs", "secrets", "strategy"}, []string{}
-	case "jobs.<job_id>.container.env.<env_id>":
-		return []string{"env", "github", "inputs", "job", "matrix", "needs", "runner", "secrets", "strategy"}, []string{}
-	case "jobs.<job_id>.continue-on-error":
-		return []string{"github", "inputs", "matrix", "needs", "strategy"}, []string{}
-	case "jobs.<job_id>.defaults.run":
-		return []string{"env", "github", "inputs", "matrix", "needs", "strategy"}, []string{}
-	case "jobs.<job_id>.env":
-		return []string{"github", "inputs", "matrix", "needs", "secrets", "strategy"}, []string{}
-	case "jobs.<job_id>.environment":
-		return []string{"github", "inputs", "matrix", "needs", "strategy"}, []string{}
-	case "jobs.<job_id>.environment.url":
-		return []string{"env", "github", "inputs", "job", "matrix", "needs", "runner", "steps", "strategy"}, []string{}
-	case "jobs.<job_id>.if":
-		return []string{"github", "inputs", "needs"}, []string{"always", "cancelled", "failure", "success"}
-	case "jobs.<job_id>.name":
-		return []string{"github", "inputs", "matrix", "needs", "strategy"}, []string{}
 	case "jobs.<job_id>.outputs.<output_id>":
 		return []string{"env", "github", "inputs", "job", "matrix", "needs", "runner", "secrets", "steps", "strategy"}, []string{}
-	case "jobs.<job_id>.runs-on":
-		return []string{"github", "inputs", "matrix", "needs", "strategy"}, []string{}
-	case "jobs.<job_id>.secrets.<secrets_id>":
-		return []string{"github", "inputs", "matrix", "needs", "secrets", "strategy"}, []string{}
-	case "jobs.<job_id>.services":
-		return []string{"github", "inputs", "matrix", "needs", "strategy"}, []string{}
-	case "jobs.<job_id>.services.<service_id>.credentials":
-		return []string{"env", "github", "inputs", "matrix", "needs", "secrets", "strategy"}, []string{}
-	case "jobs.<job_id>.services.<service_id>.env.<env_id>":
+	case "jobs.<job_id>.steps.continue-on-error", "jobs.<job_id>.steps.env", "jobs.<job_id>.steps.name", "jobs.<job_id>.steps.run", "jobs.<job_id>.steps.timeout-minutes", "jobs.<job_id>.steps.with", "jobs.<job_id>.steps.working-directory":
+		return []string{"env", "github", "inputs", "job", "matrix", "needs", "runner", "secrets", "steps", "strategy"}, []string{"hashfiles"}
+	case "jobs.<job_id>.container.env.<env_id>", "jobs.<job_id>.services.<service_id>.env.<env_id>":
 		return []string{"env", "github", "inputs", "job", "matrix", "needs", "runner", "secrets", "strategy"}, []string{}
-	case "jobs.<job_id>.steps.continue-on-error":
-		return []string{"env", "github", "inputs", "job", "matrix", "needs", "runner", "secrets", "steps", "strategy"}, []string{"hashfiles"}
-	case "jobs.<job_id>.steps.env":
-		return []string{"env", "github", "inputs", "job", "matrix", "needs", "runner", "secrets", "steps", "strategy"}, []string{"hashfiles"}
+	case "jobs.<job_id>.environment.url":
+		return []string{"env", "github", "inputs", "job", "matrix", "needs", "runner", "steps", "strategy"}, []string{}
 	case "jobs.<job_id>.steps.if":
 		return []string{"env", "github", "inputs", "job", "matrix", "needs", "runner", "steps", "strategy"}, []string{"always", "cancelled", "failure", "hashfiles", "success"}
-	case "jobs.<job_id>.steps.name":
-		return []string{"env", "github", "inputs", "job", "matrix", "needs", "runner", "secrets", "steps", "strategy"}, []string{"hashfiles"}
-	case "jobs.<job_id>.steps.run":
-		return []string{"env", "github", "inputs", "job", "matrix", "needs", "runner", "secrets", "steps", "strategy"}, []string{"hashfiles"}
-	case "jobs.<job_id>.steps.timeout-minutes":
-		return []string{"env", "github", "inputs", "job", "matrix", "needs", "runner", "secrets", "steps", "strategy"}, []string{"hashfiles"}
-	case "jobs.<job_id>.steps.with":
-		return []string{"env", "github", "inputs", "job", "matrix", "needs", "runner", "secrets", "steps", "strategy"}, []string{"hashfiles"}
-	case "jobs.<job_id>.steps.working-directory":
-		return []string{"env", "github", "inputs", "job", "matrix", "needs", "runner", "secrets", "steps", "strategy"}, []string{"hashfiles"}
-	case "jobs.<job_id>.strategy":
-		return []string{"github", "inputs", "needs"}, []string{}
-	case "jobs.<job_id>.timeout-minutes":
-		return []string{"github", "inputs", "matrix", "needs", "strategy"}, []string{}
-	case "jobs.<job_id>.with.<with_id>":
-		return []string{"github", "inputs", "matrix", "needs", "strategy"}, []string{}
-	case "on.workflow_call.inputs.<inputs_id>.default":
+	case "jobs.<job_id>.container", "jobs.<job_id>.container.credentials", "jobs.<job_id>.services.<service_id>.credentials":
+		return []string{"env", "github", "inputs", "matrix", "needs", "secrets", "strategy"}, []string{}
+	case "jobs.<job_id>.defaults.run":
+		return []string{"env", "github", "inputs", "matrix", "needs", "strategy"}, []string{}
+	case "concurrency", "on.workflow_call.inputs.<inputs_id>.default", "run-name":
 		return []string{"github", "inputs"}, []string{}
 	case "on.workflow_call.outputs.<output_id>.value":
 		return []string{"github", "inputs", "jobs"}, []string{}
+	case "jobs.<job_id>.env", "jobs.<job_id>.secrets.<secrets_id>":
+		return []string{"github", "inputs", "matrix", "needs", "secrets", "strategy"}, []string{}
+	case "jobs.<job_id>.concurrency", "jobs.<job_id>.continue-on-error", "jobs.<job_id>.environment", "jobs.<job_id>.name", "jobs.<job_id>.runs-on", "jobs.<job_id>.services", "jobs.<job_id>.timeout-minutes", "jobs.<job_id>.with.<with_id>":
+		return []string{"github", "inputs", "matrix", "needs", "strategy"}, []string{}
+	case "jobs.<job_id>.strategy":
+		return []string{"github", "inputs", "needs"}, []string{}
+	case "jobs.<job_id>.if":
+		return []string{"github", "inputs", "needs"}, []string{"always", "cancelled", "failure", "success"}
+	case "env":
+		return []string{"github", "inputs", "secrets"}, []string{}
 	default:
 		return nil, nil
 	}
@@ -90,4 +52,5 @@ func ContextAvailability(key string) ([]string, []string) {
 // See the script for more details: https://github.com/rhysd/actionlint/blob/main/scripts/generate-context-availability/
 var SpecialFunctionNames = map[string][]string{"always": []string{"jobs.<job_id>.if", "jobs.<job_id>.steps.if"}, "cancelled": []string{"jobs.<job_id>.if", "jobs.<job_id>.steps.if"}, "failure": []string{"jobs.<job_id>.if", "jobs.<job_id>.steps.if"}, "hashfiles": []string{"jobs.<job_id>.steps.continue-on-error", "jobs.<job_id>.steps.env", "jobs.<job_id>.steps.if", "jobs.<job_id>.steps.name", "jobs.<job_id>.steps.run", "jobs.<job_id>.steps.timeout-minutes", "jobs.<job_id>.steps.with", "jobs.<job_id>.steps.working-directory"}, "success": []string{"jobs.<job_id>.if", "jobs.<job_id>.steps.if"}}
 
+// For test
 var allWorkflowKeys = []string{"concurrency", "env", "jobs.<job_id>.concurrency", "jobs.<job_id>.container", "jobs.<job_id>.container.credentials", "jobs.<job_id>.container.env.<env_id>", "jobs.<job_id>.continue-on-error", "jobs.<job_id>.defaults.run", "jobs.<job_id>.env", "jobs.<job_id>.environment", "jobs.<job_id>.environment.url", "jobs.<job_id>.if", "jobs.<job_id>.name", "jobs.<job_id>.outputs.<output_id>", "jobs.<job_id>.runs-on", "jobs.<job_id>.secrets.<secrets_id>", "jobs.<job_id>.services", "jobs.<job_id>.services.<service_id>.credentials", "jobs.<job_id>.services.<service_id>.env.<env_id>", "jobs.<job_id>.steps.continue-on-error", "jobs.<job_id>.steps.env", "jobs.<job_id>.steps.if", "jobs.<job_id>.steps.name", "jobs.<job_id>.steps.run", "jobs.<job_id>.steps.timeout-minutes", "jobs.<job_id>.steps.with", "jobs.<job_id>.steps.working-directory", "jobs.<job_id>.strategy", "jobs.<job_id>.timeout-minutes", "jobs.<job_id>.with.<with_id>", "on.workflow_call.inputs.<inputs_id>.default", "on.workflow_call.outputs.<output_id>.value", "run-name"}
