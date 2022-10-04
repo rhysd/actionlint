@@ -363,6 +363,10 @@ repos:
 [Linter extension][vsc-extension] for [VS Code][vscode] is available. The extension automatically detects `.github/workflows`
 directory, runs `actionlint` command, and reports errors in the code editor while editing workflow files.
 
+### Nova
+
+[Nova.app][nova] is a MacOS only editor and IDE. The [Actionlint for Nova][nova-extension] allows you to get inline feedback while editing actions.
+
 ---
 
 [Checks](checks.md) | [Installation](install.md) | [Configuration](config.md) | [Go API](api.md) | [References](reference.md)
@@ -382,3 +386,5 @@ directory, runs `actionlint` command, and reports errors in the code editor whil
 [docker-image]: https://hub.docker.com/r/rhysd/actionlint
 [vsc-extension]: https://marketplace.visualstudio.com/items?itemName=arahata.linter-actionlint
 [vscode]: https://code.visualstudio.com/
+[nova-extension]: https://extensions.panic.com/extensions/org.netwrk/org.netwrk.actionlint/
+[nova]: https://nova.app
