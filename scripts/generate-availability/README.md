@@ -1,7 +1,7 @@
-generate-context-availability
-=============================
+generate-availability
+=====================
 
-This is a script for generating [`context_availability.go`](../../context_availability.go).
+This is a script for generating [`availability.go`](../../availability.go).
 
 It does:
 
@@ -22,23 +22,23 @@ To check these limitations by actionlint, we maintain a table to map workflow ke
 ## Usage
 
 ```
-generate-context-availability [[srcfile] dstfile]
+generate-availability [[srcfile] dstfile]
 ```
 
 For generating the source at root directory of this repository:
 
 ```sh
-go run ./scripts/generate-context-availability ./context_availability.go
+go run ./scripts/generate-availability ./availability.go
 ```
 
 Read local file instead of fetching it from remote:
 
 ```sh
-go run ./scripts/generate-context-availability /path/to/contexts.md ./context_availability.go
+go run ./scripts/generate-availability /path/to/contexts.md ./availability.go
 ```
 
 For debugging, specifying `-` to `dstfile` outputs the generated source to stdout:
 
 ```sh
-go run ./scripts/generate-context-availability -
+go run ./scripts/generate-availability -
 ```

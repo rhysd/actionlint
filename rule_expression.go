@@ -6,7 +6,7 @@ import (
 	"strings"
 )
 
-//go:generate go run ./scripts/generate-context-availability ./context_availability.go
+//go:generate go run ./scripts/generate-availability ./availability.go
 
 type typedExpr struct {
 	ty  ExprType
@@ -783,7 +783,7 @@ func (rule *RuleExpression) checkSemanticsOfExprNode(expr ExprNode, line, col in
 		c.UpdateJobs(rule.jobsTy)
 	}
 	if workflowKey != "" {
-		ctx, sp := ContextAvailability(workflowKey)
+		ctx, sp := WorkflowKeyAvailability(workflowKey)
 		if len(ctx) == 0 {
 			rule.debug("No context avaiability was found for workflow key %q", workflowKey)
 		}

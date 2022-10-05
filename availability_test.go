@@ -5,10 +5,10 @@ import (
 	"testing"
 )
 
-func TestContextAvailability(t *testing.T) {
+func TestWorkflowKeyAvailability(t *testing.T) {
 	for _, key := range allWorkflowKeys {
 		t.Run(key, func(t *testing.T) {
-			ctx, sp := ContextAvailability(key)
+			ctx, sp := WorkflowKeyAvailability(key)
 			if ctx == nil || sp == nil {
 				t.Error("workflow key has not availability info:", key)
 			}
@@ -44,7 +44,7 @@ func TestContextAvailability(t *testing.T) {
 		})
 	}
 
-	ctx, sp := ContextAvailability("unknown.workflow.key")
+	ctx, sp := WorkflowKeyAvailability("unknown.workflow.key")
 	if len(ctx) != 0 {
 		t.Error("some context was returned", ctx)
 	}
