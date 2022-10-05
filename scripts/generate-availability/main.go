@@ -32,7 +32,7 @@ type switchCase struct {
 type switchCases map[string]*switchCase
 
 func (cs switchCases) Add(key string, ctx []string, sp []string) {
-	k := strings.Join(ctx, "_") + "__" + strings.Join(sp, "_")
+	k := strings.Join(ctx, "🐶") + "🐱" + strings.Join(sp, "🐶")
 	if c, ok := cs[k]; ok {
 		c.cond = append(c.cond, key)
 	} else {
