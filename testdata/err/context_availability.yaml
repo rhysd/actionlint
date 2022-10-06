@@ -1,0 +1,199 @@
+# env
+env:
+  # OK
+  FOO: ${{ secrets.FOO }}
+  # ERROR
+  BAR: ${{ env.BAR }}
+
+# concurrency
+concurrency:
+  # ERROR at env
+  group: ${{ github.ref }}-${{ env.FOO }}
+  cancel-in-progress: true
+
+on:
+  workflow_call:
+    inputs:
+      # on.workflow_call.inputs.<inputs_id>.default
+      foo:
+        type: string
+        # ERROR
+        default: ${{ env.FOO }}
+      bar:
+        type: string
+        # OK
+        default: ${{ github.actor }}
+      timeout:
+        type: number
+      bool:
+        type: boolean
+    outputs:
+      # on.workflow_call.outputs.<output_id>.value
+      aaa:
+        # OK
+        value: ${{ inputs.foo }}
+      bbb:
+        # ERROR
+        value: ${{ env.FOO }}
+
+jobs:
+  test:
+    # jobs.<job_id>.concurrency
+    concurrency:
+      # ERROR
+      group: ${{ github.ref }}-${{ env.FOO }}
+      cancel-in-progress: true
+    container:
+      # jobs.<job_id>.container
+      # OK
+      image: ${{ env.IMAGE_NAME }}:14.16
+      # jobs.<job_id>.container.credentials
+      credentials:
+        # ERROR
+        username: ${{ runner.os }}
+        # OK
+        password: ${{ env.FOO }}
+      # jobs.<job_id>.container.env.<env_id>
+      env:
+        # OK
+        RUNNER_NAME: ${{ runner.name }}
+        # OK
+        ENV_FOO: ${{ env.FOO }}
+      # jobs.<job_id>.container
+      # ERROR
+      options: ${{ runner.name }}
+    # jobs.<job_id>.continue-on-error
+    # ERROR at env
+    continue-on-error: ${{ inputs.foo || env.FOO == '' }}
+    defaults:
+      # jobs.<job_id>.defaults.run
+      run:
+        # OK
+        shell: ${{ env.SHELL }}
+        # ERROR
+        working-directory: ${{ runner.temp }}
+    # jobs.<job_id>.env
+    env:
+      # ERROR
+      OUTER: ${{ env.XXX }}
+      # ERROR
+      NAME: ${{ runner.name }}
+      # OK
+      BAR: ${{ inputs.bar }}
+    # jobs.<job_id>.environment
+    environment:
+      # ERROR
+      name: ${{ runner.name }}
+      # jobs.<job_id>.environment.url
+      # ERROR at secrets
+      url: ${{ secrets.URL }}-${{ runner.os }}
+    # jobs.<job_id>.if
+    # ERROR at env
+    if: ${{ github.ref == env.REF }}
+    # jobs.<job_id>.name
+    # ERROR at runner
+    name: ${{ runner.name }} by ${{ github.actor }}
+    # jobs.<job_id>.outputs.<output_id>
+    outputs:
+      # OK
+      foo: ${{ runner.name }}-${{ env.FOO }}-${{ steps.hoge.conclusion }}
+    # jobs.<job_id>.runs-on
+    # ERROR at both runner and env
+    runs-on: ${{ runner.OS }}-${{ env.SUFFIX }}
+    # jobs.<job_id>.services
+    services:
+      nginx:
+        # ERROR
+        image: ${{ env.IMAGE_NAME }}
+        # jobs.<job_id>.services.<service_id>.credentials
+        credentials:
+          # ERROR
+          username: ${{ runner.name }}
+          # OK
+          password: ${{ env.MY_PASSWORD }}
+        # jobs.<job_id>.services.<service_id>.env.<env_id>
+        env:
+          # OK
+          RUNNER: ${{ runner.name }}
+    # jobs.<job_id>.strategy
+    strategy:
+      matrix:
+        fooo:
+          # ERROR
+          - ${{ env.OS }}
+          # OK
+          - ${{ inputs.foo }}
+          # OK
+          - ${{ github.ref }}
+        include:
+          # ERROR
+          - fooo: ${{ env.OS }}
+            # OK
+            inc: ${{ inputs.foo }}
+        exclude:
+          # ERROR
+          - fooo: ${{ env.OS }}
+      # ERROR
+      fail-fast: ${{ env.SHOULD_FAIL }}
+      # ERROR
+      max-parallel: ${{ env.MAX_PAR }}
+    # jobs.<job_id>.timeout-minutes
+    # ERROR
+    timeout-minutes: ${{ env.TIMEOUT }}
+    steps:
+      - id: hoge
+        # jobs.<job_id>.steps.continue-on-error
+        # OK
+        continue-on-error: ${{ inputs.bool }}
+        # jobs.<job_id>.steps.env
+        env:
+          # OK
+          RUNNER: ${{ runner.name }}
+          # OK
+          FOO: ${{ env.FOO }}
+        # jobs.<job_id>.steps.if
+        # ERROR at secrets
+        if: ${{ env.MY_PASSWORD == secrets.PASSWORD }}
+        # jobs.<job_id>.steps.name
+        # OK
+        name: ${{ env.VERSION }} on ${{ runner.name }}
+        # jobs.<job_id>.steps.run
+        # OK
+        run: echo 'Name is ${{ runner.name }}'
+        # jobs.<job_id>.steps.timeout-minutes
+        # OK
+        timeout-minutes: ${{ inputs.timeout }}
+        # jobs.<job_id>.steps.working-directory
+        # OK
+        working-directory: ${{ runner.temp }}
+      - uses: owner/repo@ref
+        # jobs.<job_id>.steps.with
+        with:
+          # OK
+          message: '${{ job.container.id }} is running on ${{ runner.os }}'
+  caller:
+    uses: owner/repo/workflow.yml@main
+    # jobs.<job_id>.with.<with_id>
+    with:
+      # ERROR
+      some-input: ${{ env.HELLO }}
+      # OK
+      outer: ${{ inputs.foo }}
+    # jobs.<job_id>.secrets.<secrets_id>
+    # ERROR
+    secrets:
+      password: ${{ env.MY_PASSWORD }}
+  concurrency-2:
+    # jobs.<job_id>.concurrency
+    # ERROR at env
+    concurrency: ${{ github.ref }}-${{ env.FOO }}
+    runs-on: ubuntu-latest
+    steps:
+      - run: echo hi
+  environment-2:
+    # jobs.<job_id>.environment
+    # ERROR
+    environment: ${{ runner.name }}
+    runs-on: ubuntu-latest
+    steps:
+      - run: echo hi
