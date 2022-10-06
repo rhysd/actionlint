@@ -72,6 +72,11 @@ func (rule *RuleShellName) checkShellName(node *String) {
 		return
 	}
 
+	// Ignore dynamic shell name
+	if strings.Contains(node.Value, "${{") {
+		return
+	}
+
 	name := strings.ToLower(node.Value)
 	available := getAvailableShellNames(rule.platform)
 
