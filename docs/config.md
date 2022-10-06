@@ -9,7 +9,7 @@ cases.
 
 ## Configuration file
 
-Configuration file `actionlint.yaml` or `actionlint.yml` can be put in `.github` directory.
+Configuration file `actionlint.yaml` or `actionlint.yml` can be put in `.github` directory. When using [Super-Linter](https://github.com/github/super-linter), the file should be placed in the `.github/linters` directory.
 
 You don't need to write the first configuration file by your hand. `actionlint` command can generate a default configuration
 with `-init-config` flag.
