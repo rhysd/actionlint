@@ -1,1 +1,1 @@
-test.yaml:0:0: workflow is empty [syntax-check]
+test.yaml:1:1: workflow is empty [syntax-check]

@@ -1262,6 +1262,13 @@ func (p *parser) parseJobs(n *yaml.Node) map[string]*Job {
 func (p *parser) parse(n *yaml.Node) *Workflow {
 	w := &Workflow{}
 
+	if n.Line == 0 {
+		n.Line = 1
+	}
+	if n.Column == 0 {
+		n.Column = 1
+	}
+
 	if len(n.Content) == 0 {
 		p.error(n, "workflow is empty")
 		return w
