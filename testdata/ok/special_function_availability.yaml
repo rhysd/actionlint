@@ -1,0 +1,59 @@
+# Check using special functions at appropriate places doesn't cause any error
+# https://docs.github.com/en/actions/learn-github-actions/contexts
+
+on: push
+
+jobs:
+  # jobs.<job_id>.if
+  if-always:
+    runs-on: ubuntu-latest
+    if: always()
+    steps:
+      - run: echo ...
+  if-cancelled:
+    runs-on: ubuntu-latest
+    if: cancelled()
+    steps:
+      - run: echo ...
+  if-success:
+    runs-on: ubuntu-latest
+    if: success()
+    steps:
+      - run: echo ...
+  if-failure:
+    runs-on: ubuntu-latest
+    if: failure()
+    steps:
+      - run: echo ...
+  test:
+    runs-on: ubuntu-latest
+    steps:
+      -
+        # jobs.<job_id>.steps.run
+        run: echo "${{ hashFiles('...') }}"
+        # jobs.<job_id>.steps.name
+        name: ${{ hashFiles('...') }}
+        # jobs.<job_id>.steps.continue-on-error
+        continue-on-error: ${{ hashFiles('...') != '' }}
+        # jobs.<job_id>.steps.env
+        env:
+          FOO: ${{ hashFiles('...') }}
+        # jobs.<job_id>.steps.timeout-minutes
+        timeout-minutes: ${{ fromJSON(hashFiles('...')) }}
+        # jobs.<job_id>.steps.working-directory
+        working-directory: ${{ hashFiles('...') }}
+      - uses: owner/repo@ref
+        # jobs.<job_id>.steps.with
+        with:
+          foo: ${{ hashFiles('...') }}
+      # jobs.<job_id>.steps.if
+      - run: echo ...
+        if: always()
+      - run: echo ...
+        if: cancelled()
+      - run: echo ...
+        if: success()
+      - run: echo ...
+        if: failure()
+      - run: echo ...
+        if: hashFiles('...') == ''
