@@ -1,0 +1,7 @@
+# issue #232
+
+jobs:
+  test:
+    runs-on: ubuntu-latest
+    steps:
+      - run: echo hi

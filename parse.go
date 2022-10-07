@@ -1263,7 +1263,7 @@ func (p *parser) parse(n *yaml.Node) *Workflow {
 	w := &Workflow{}
 
 	if len(n.Content) == 0 {
-		p.error(n, "\"jobs\" section is missing in workflow")
+		p.error(n, "workflow is empty")
 		return w
 	}
 
@@ -1300,6 +1300,9 @@ func (p *parser) parse(n *yaml.Node) *Workflow {
 		}
 	}
 
+	if len(w.On) == 0 {
+		p.error(n, "\"on\" section is missing in workflow")
+	}
 	if w.Jobs == nil {
 		p.error(n, "\"jobs\" section is missing in workflow")
 	}
