@@ -1289,6 +1289,7 @@ func (p *parser) parse(n *yaml.Node) *Workflow {
 		default:
 			p.unexpectedKey(k, "workflow", []string{
 				"name",
+				"run-name",
 				"on",
 				"permissions",
 				"env",
