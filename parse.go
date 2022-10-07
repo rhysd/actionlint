@@ -572,9 +572,13 @@ func (p *parser) parseEvents(pos *Pos, n *yaml.Node) []Event {
 				&WorkflowCallEvent{Pos: posAt(n)},
 			}
 		default:
+			h := p.parseString(n, false)
+			if h.Value == "" {
+				return []Event{}
+			}
 			return []Event{
 				&WebhookEvent{
-					Hook: p.parseString(n, false),
+					Hook: h,
 					Pos:  posAt(n),
 				},
 			}
@@ -1307,7 +1311,7 @@ func (p *parser) parse(n *yaml.Node) *Workflow {
 		}
 	}
 
-	if len(w.On) == 0 {
+	if w.On == nil {
 		p.error(n, "\"on\" section is missing in workflow")
 	}
 	if w.Jobs == nil {
