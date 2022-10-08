@@ -38,5 +38,5 @@ var AllWebhookTypes = map[string][]string{
 	"status":                      {},
 	"watch":                       {"started"},
 	"workflow_dispatch":           {},
-	"workflow_run":                {"completed", "requested"},
+	"workflow_run":                {"completed", "requested", "in_progress"},
 }

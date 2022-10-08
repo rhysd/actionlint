@@ -2443,6 +2443,7 @@ var PopularActions = map[string]*ActionMetadata{
 			"repo":                       {"repo", false},
 			"tag":                        {"tag", false},
 			"token":                      {"token", false},
+			"updateonlyunreleased":       {"updateOnlyUnreleased", false},
 		},
 		Outputs: ActionMetadataOutputs{
 			"html_url":   {"html_url"},
