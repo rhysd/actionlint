@@ -6,7 +6,6 @@
 /test\.yaml:53:23: context "runner" is not allowed here\. .+ \[expression\]/
 /test\.yaml:64:20: context "runner" is not allowed here\. .+ \[expression\]/
 /test\.yaml:67:42: context "env" is not allowed here\. .+ \[expression\]/
-test.yaml:72:16: shell name "${{ env.SHELL }}" is invalid. available names are "bash", "cmd", "powershell", "pwsh", "python", "sh" [shell-name]
 /test\.yaml:74:32: context "runner" is not allowed here\. .+ \[expression\]/
 /test\.yaml:78:18: context "env" is not allowed here\. .+ \[expression\]/
 /test\.yaml:80:17: context "runner" is not allowed here\. .+ \[expression\]/

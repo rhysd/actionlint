@@ -68,7 +68,7 @@ func (rule *RuleExpression) VisitWorkflowPre(n *Workflow) error {
 			rule.checkStrings(e.Cron, "")
 		case *WorkflowDispatchEvent:
 			ity := NewEmptyStrictObjectType()
-			for _, i := range e.Inputs {
+			for id, i := range e.Inputs {
 				rule.checkString(i.Description, "")
 				rule.checkString(i.Default, "")
 				rule.checkBool(i.Required, "")
@@ -83,7 +83,7 @@ func (rule *RuleExpression) VisitWorkflowPre(n *Workflow) error {
 				default:
 					ty = AnyType{}
 				}
-				ity.Props[n] = ty
+				ity.Props[id] = ty
 			}
 			rule.dispatchInputsTy = ity
 		case *RepositoryDispatchEvent:
@@ -114,8 +114,8 @@ func (rule *RuleExpression) VisitWorkflowPre(n *Workflow) error {
 			// exist. When `e.Secrets` is an empty map, `secrets:` exists but it has no child.
 			if e.Secrets != nil {
 				sty := NewEmptyStrictObjectType()
-				for n, s := range e.Secrets {
-					sty.Props[n.Value] = StringType{}
+				for id, s := range e.Secrets {
+					sty.Props[id] = StringType{}
 					rule.checkString(s.Description, "")
 				}
 				rule.secretsTy = sty
