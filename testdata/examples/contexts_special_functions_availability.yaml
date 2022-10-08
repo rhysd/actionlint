@@ -1,0 +1,26 @@
+on: push
+
+env:
+  FOO: some value
+
+jobs:
+  test:
+    strategy:
+      matrix:
+        directory:
+          # OK: 'github' context is available here
+          - ${{ github.workflow }}
+          # ERROR: 'runner' context is not available here
+          - ${{ runner.temp }}
+    runs-on: ubuntu-latest
+    # OK: 'success()' function is available here
+    if: success()
+    env:
+      # ERROR: 'env' context is not available here
+      FOO: ${{ env.FOO }}
+    steps:
+      # ERROR: 'success()' function is not available here
+      - run: echo 'Success? ${{ success() }}'
+        env:
+          # OK: 'env' context is available here
+          FOO: ${{ env.FOO }}
