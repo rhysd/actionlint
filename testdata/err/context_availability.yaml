@@ -1,3 +1,7 @@
+# run-name
+# ERROR at env
+run-name: ${{ github.actor}} ${{ env.GITHUB_ACTOR }}
+
 # env
 env:
   # OK
