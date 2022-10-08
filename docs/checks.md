@@ -35,6 +35,7 @@ List of checks:
 - [Permissions](#permissions)
 - [Reusable workflows](#check-reusable-workflows)
 - [ID naming convention](#id-naming-convention)
+- [Contexts and special functions availability](#ctx-spfunc-availability)
 
 Note that actionlint focuses on catching mistakes in workflow files. If you want some general code style checks, please consider
 using a general YAML checker like [yamllint][].
@@ -2403,6 +2404,76 @@ test.yaml:17:3: invalid job ID "2d-game". job ID must start with a letter or _ a
 IDs must start with a letter or `_` and contain only alphanumeric characters, `-` or `_`. actionlint checks the naming
 convention, and reports invalid IDs as errors.
 
+<a name="ctx-spfunc-availability"></a>
+## Contexts and special functions availability
+
+Example input:
+
+```yaml
+on: push
+
+env:
+  FOO: some value
+
+jobs:
+  test:
+    strategy:
+      matrix:
+        directory:
+          # OK: 'github' context is available here
+          - ${{ github.workflow }}
+          # ERROR: 'runner' context is not available here
+          - ${{ runner.temp }}
+    runs-on: ubuntu-latest
+    # OK: 'success()' function is available here
+    if: success()
+    env:
+      # ERROR: 'env' context is not available here
+      FOO: ${{ env.FOO }}
+    steps:
+      # ERROR: 'success()' function is not available here
+      - run: echo 'Success? ${{ success() }}'
+        env:
+          # OK: 'env' context is available here
+          FOO: ${{ env.FOO }}
+```
+
+Output:
+
+```
+test.yaml:14:17: context "runner" is not allowed here. available contexts are "github", "inputs", "needs". see https://docs.github.com/en/actions/learn-github-actions/contexts#context-availability for more details [expression]
+   |
+14 |           - ${{ runner.temp }}
+   |                 ^~~~~~~~~~~
+test.yaml:20:16: context "env" is not allowed here. available contexts are "github", "inputs", "matrix", "needs", "secrets", "strategy". see https://docs.github.com/en/actions/learn-github-actions/contexts#context-availability for more details [expression]
+   |
+20 |       FOO: ${{ env.FOO }}
+   |                ^~~~~~~
+test.yaml:23:33: calling function "success" is not allowed here. "success" is only available in "jobs.<job_id>.if", "jobs.<job_id>.steps.if". see https://docs.github.com/en/actions/learn-github-actions/contexts#context-availability for more details [expression]
+   |
+23 |       - run: echo 'Success? ${{ success() }}'
+   |                                 ^~~~~~~~~
+```
+
+[Playground](https://rhysd.github.io/actionlint#eJx1j0EOgjAQRfc9xV+YqAs4ABt3bll4AsBRUGhJZwoSwt1tUdDE2E0z/8+8+WN0gtZxqRTpLlHAMU0TsGkIXVY7Uupmcg6GEEv4ARabCV2HVwU0mdjqsVTAubJUiLHDRwIibMYR10pKl8e9sfdLbXpM00+LdVqTjYWadrG9xJHxSV3utLiozkKY2aouPq0rCmLe7WflfUd48y2B6bXYFwuPhVpemqKAT0BFabA9vVCHeWrl+rntmvOL/2fHEzEUXuU=)
+
+Some contexts are only available in some places. For example, `env` context is not available at `jobs.<job_id>.env` but it is
+available at `jobs.<job_id>.steps.env`.
+
+Similarly, some special functions are only available in some places. For example, `success()`, `failure()`, `always()`, and
+`cancelled()` are only available at `if` section. At the time of writing, the following functions are special.
+
+- `hashFiles()`
+- `always()`
+- `success()`
+- `failure()`
+- `cancelled()`
+
+[The official contexts document][availability-doc] describes which contexts and special functions are available at which workflow keys.
+
+actionlint checks these contexts and special functions are used correctly. It reports an error when some context or special function is
+not available.
+
 ---
 
 [Installation](install.md) | [Usage](usage.md) | [Configuration](config.md) | [Go API](api.md) | [References](reference.md)
@@ -2451,3 +2522,4 @@ convention, and reports invalid IDs as errors.
 [reusable-workflow-outputs]: https://docs.github.com/en/actions/using-workflows/reusing-workflows#using-outputs-from-a-reusable-workflow
 [inherit-secrets-announce]: https://github.blog/changelog/2022-05-03-github-actions-simplify-using-secrets-with-reusable-workflows/
 [specific-paths-doc]: https://docs.github.com/en/actions/using-workflows/triggering-a-workflow#using-filters-to-target-specific-paths-for-pull-request-or-push-events
+[availability-doc]: https://docs.github.com/en/actions/learn-github-actions/contexts#context-availability

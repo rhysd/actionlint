@@ -1,0 +1,8 @@
+/test\.yaml:11:17: calling function "always" is not allowed here\. "always" is only available in .+ \[expression\]/
+/test\.yaml:12:17: calling function "cancelled" is not allowed here\. "cancelled" is only available in .+ \[expression\]/
+/test\.yaml:13:17: calling function "success" is not allowed here\. "success" is only available in .+ \[expression\]/
+/test\.yaml:14:17: calling function "failure" is not allowed here\. "failure" is only available in .+ \[expression\]/
+/test\.yaml:15:17: calling function "hashFiles" is not allowed here\. "hashFiles" is only available in .+ \[expression\]/
+/test\.yaml:17:17: calling function "hashfiles" is not allowed here\. "hashfiles" is only available in .+ \[expression\]/
+/test\.yaml:20:13: calling function "hashFiles" is not allowed here\. "hashFiles" is only available in .+ \[expression\]/
+/test\.yaml:23:33: calling function "success" is not allowed here\. "success" is only available in .+ \[expression\]/

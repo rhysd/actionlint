@@ -36,12 +36,11 @@ func (b *quotesBuilder) build() string {
 	return b.builder.String()
 }
 
-func sortedQuotes(ss []string) string {
+func quotes(ss []string) string {
 	l := len(ss)
 	if l == 0 {
 		return ""
 	}
-	sort.Strings(ss)
 	n, max := 0, 0
 	for _, s := range ss {
 		m := len(s) + 2 // 2 for delims
@@ -58,6 +57,11 @@ func sortedQuotes(ss []string) string {
 		b.append(s)
 	}
 	return b.build()
+}
+
+func sortedQuotes(ss []string) string {
+	sort.Strings(ss)
+	return quotes(ss)
 }
 
 func quotesAll(sss ...[]string) string {

@@ -284,12 +284,14 @@ var BuiltinGlobalVariableTypes = map[string]ExprType{
 // - https://docs.github.com/en/actions/learn-github-actions/contexts
 // - https://docs.github.com/en/actions/learn-github-actions/expressions
 type ExprSemanticsChecker struct {
-	funcs           map[string][]*FuncSignature
-	vars            map[string]ExprType
-	errs            []*ExprError
-	varsCopied      bool
-	githubVarCopied bool
-	untrusted       *UntrustedInputChecker
+	funcs                 map[string][]*FuncSignature
+	vars                  map[string]ExprType
+	errs                  []*ExprError
+	varsCopied            bool
+	githubVarCopied       bool
+	untrusted             *UntrustedInputChecker
+	availableContexts     []string
+	availableSpecialFuncs []string
 }
 
 // NewExprSemanticsChecker creates new ExprSemanticsChecker instance. When checkUntrustedInput is
@@ -415,12 +417,80 @@ func (sema *ExprSemanticsChecker) UpdateJobs(ty *ObjectType) {
 	sema.vars["jobs"] = ty
 }
 
-// NoEnv deletes 'env' context from global scope. This method is useful when checking expressions
-// in a template where 'env' context is banned ('id:', 'uses:', and 'env' at toplevel or job level).
-// See #158 for more details.
-func (sema *ExprSemanticsChecker) NoEnv() {
-	sema.ensureVarsCopied()
-	delete(sema.vars, "env")
+// SetContextAvailability sets available context names while semantics checks. Some contexts limit
+// where they can be used.
+// https://docs.github.com/en/actions/learn-github-actions/contexts#context-availability
+//
+// Elements of 'avail' parameter must be in lower case to check context names in case-insensitive.
+//
+// If this method is not called before checks, ExprSemanticsChecker considers any contexts are
+// available by default.
+// Available contexts for workflow keys can be obtained from actionlint.ContextAvailability.
+func (sema *ExprSemanticsChecker) SetContextAvailability(avail []string) {
+	sema.availableContexts = avail
+}
+
+func (sema *ExprSemanticsChecker) checkAvailableContext(n *VariableNode) {
+	if len(sema.availableContexts) == 0 {
+		return
+	}
+
+	ctx := strings.ToLower(n.Name)
+	for _, c := range sema.availableContexts {
+		if c == ctx {
+			return
+		}
+	}
+
+	s := "contexts are"
+	if len(sema.availableContexts) == 1 {
+		s = "context is"
+	}
+	sema.errorf(
+		n,
+		"context %q is not allowed here. available %s %s. see https://docs.github.com/en/actions/learn-github-actions/contexts#context-availability for more details",
+		n.Name,
+		s,
+		quotes(sema.availableContexts),
+	)
+}
+
+// SetSpecialFunctionAvailability sets names of available special functions while semantics checks.
+// Some functions limit where they can be used.
+// https://docs.github.com/en/actions/learn-github-actions/contexts#context-availability
+//
+// Elements of 'avail' parameter must be in lower case to check function names in case-insensitive.
+//
+// If this method is not called before checks, ExprSemanticsChecker considers no special function is
+// allowed by default. Allowed functions can be obtained from actionlint.SpecialFunctionNames global
+// constant.
+//
+// Available function names for workflow keys can be obtained from actionlint.ContextAvailability.
+func (sema *ExprSemanticsChecker) SetSpecialFunctionAvailability(avail []string) {
+	sema.availableSpecialFuncs = avail
+}
+
+func (sema *ExprSemanticsChecker) checkSpecialFunctionAvailability(n *FuncCallNode) {
+	f := strings.ToLower(n.Callee)
+
+	allowed, ok := SpecialFunctionNames[f]
+	if !ok {
+		return // This function is not special
+	}
+
+	for _, sp := range sema.availableSpecialFuncs {
+		if sp == f {
+			return
+		}
+	}
+
+	sema.errorf(
+		n,
+		"calling function %q is not allowed here. %q is only available in %s. see https://docs.github.com/en/actions/learn-github-actions/contexts#context-availability for more details",
+		n.Callee,
+		n.Callee,
+		quotes(allowed),
+	)
 }
 
 func (sema *ExprSemanticsChecker) visitUntrustedCheckerOnLeaveNode(n ExprNode) {
@@ -440,6 +510,7 @@ func (sema *ExprSemanticsChecker) checkVariable(n *VariableNode) ExprType {
 		return AnyType{}
 	}
 
+	sema.checkAvailableContext(n)
 	return v
 }
 
@@ -639,6 +710,9 @@ func checkFuncSignature(n *FuncCallNode, sig *FuncSignature, args []ExprType) *E
 }
 
 func (sema *ExprSemanticsChecker) checkBuiltinFunctionCall(n *FuncCallNode, sig *FuncSignature) {
+	sema.checkSpecialFunctionAvailability(n)
+
+	// Special checks for specific built-in functions
 	switch n.Callee {
 	case "format":
 		lit, ok := n.Args[0].(*StringNode)

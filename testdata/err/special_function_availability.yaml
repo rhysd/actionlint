@@ -1,0 +1,23 @@
+# Check https://docs.github.com/en/actions/learn-github-actions/contexts
+
+on: push
+
+jobs:
+  test:
+    strategy:
+      matrix:
+        # All special functions are banned by default
+        errors:
+          - ${{ always() }}
+          - ${{ cancelled() }}
+          - ${{ success() }}
+          - ${{ failure() }}
+          - ${{ hashFiles('...') }}
+          # case insensitive
+          - ${{ hashfiles('...') }}
+    runs-on: ubuntu-latest
+    # jobs.<job_id>.if does not allow hashFiles
+    if: ${{ hashFiles('...') }}
+    steps:
+      # jobs.<job_id>.steps.run only allows hashFiles
+      - run: echo 'success? ${{ success() }}'
