@@ -1,7 +1,7 @@
 on: push
 
 env:
-  FOO: some value
+  NAME: rhysd
 
 jobs:
   test:
@@ -13,14 +13,14 @@ jobs:
           # ERROR: 'runner' context is not available here
           - ${{ runner.temp }}
     runs-on: ubuntu-latest
-    # OK: 'success()' function is available here
-    if: success()
     env:
       # ERROR: 'env' context is not available here
-      FOO: ${{ env.FOO }}
+      NAME: ${{ env.NAME }}
     steps:
-      # ERROR: 'success()' function is not available here
-      - run: echo 'Success? ${{ success() }}'
-        env:
+      - env:
           # OK: 'env' context is available here
-          FOO: ${{ env.FOO }}
+          NAME: ${{ env.NAME }}
+        # ERROR: 'success()' function is not available here
+        run: echo 'Success? ${{ success() }}'
+        # OK: 'success()' function is available here
+        if: success()

@@ -2413,7 +2413,7 @@ Example input:
 on: push
 
 env:
-  FOO: some value
+  NAME: rhysd
 
 jobs:
   test:
@@ -2425,17 +2425,17 @@ jobs:
           # ERROR: 'runner' context is not available here
           - ${{ runner.temp }}
     runs-on: ubuntu-latest
-    # OK: 'success()' function is available here
-    if: success()
     env:
       # ERROR: 'env' context is not available here
-      FOO: ${{ env.FOO }}
+      NAME: ${{ env.NAME }}
     steps:
-      # ERROR: 'success()' function is not available here
-      - run: echo 'Success? ${{ success() }}'
-        env:
+      - env:
           # OK: 'env' context is available here
-          FOO: ${{ env.FOO }}
+          NAME: ${{ env.NAME }}
+        # ERROR: 'success()' function is not available here
+        run: echo 'Success? ${{ success() }}'
+        # OK: 'success()' function is available here
+        if: success()
 ```
 
 Output:
@@ -2445,23 +2445,24 @@ test.yaml:14:17: context "runner" is not allowed here. available contexts are "g
    |
 14 |           - ${{ runner.temp }}
    |                 ^~~~~~~~~~~
-test.yaml:20:16: context "env" is not allowed here. available contexts are "github", "inputs", "matrix", "needs", "secrets", "strategy". see https://docs.github.com/en/actions/learn-github-actions/contexts#context-availability for more details [expression]
+test.yaml:18:17: context "env" is not allowed here. available contexts are "github", "inputs", "matrix", "needs", "secrets", "strategy". see https://docs.github.com/en/actions/learn-github-actions/contexts#context-availability for more details [expression]
    |
-20 |       FOO: ${{ env.FOO }}
-   |                ^~~~~~~
-test.yaml:23:33: calling function "success" is not allowed here. "success" is only available in "jobs.<job_id>.if", "jobs.<job_id>.steps.if". see https://docs.github.com/en/actions/learn-github-actions/contexts#context-availability for more details [expression]
+18 |       NAME: ${{ env.NAME }}
+   |                 ^~~~~~~~
+test.yaml:24:33: calling function "success" is not allowed here. "success" is only available in "jobs.<job_id>.if", "jobs.<job_id>.steps.if". see https://docs.github.com/en/actions/learn-github-actions/contexts#context-availability for more details [expression]
    |
-23 |       - run: echo 'Success? ${{ success() }}'
+24 |         run: echo 'Success? ${{ success() }}'
    |                                 ^~~~~~~~~
 ```
 
-[Playground](https://rhysd.github.io/actionlint#eJx1j0EOgjAQRfc9xV+YqAs4ABt3bll4AsBRUGhJZwoSwt1tUdDE2E0z/8+8+WN0gtZxqRTpLlHAMU0TsGkIXVY7Uupmcg6GEEv4ARabCV2HVwU0mdjqsVTAubJUiLHDRwIibMYR10pKl8e9sfdLbXpM00+LdVqTjYWadrG9xJHxSV3utLiozkKY2aouPq0rCmLe7WflfUd48y2B6bXYFwuPhVpemqKAT0BFabA9vVCHeWrl+rntmvOL/2fHEzEUXuU=)
+[Playground](https://rhysd.github.io/actionlint#eJx9jkEOgjAURPc9xSxM1AUcoBvjwqVuPAGUr6DQkv5flRDvLhVRExO7aWbmTTvOarSBS6XIXrQCduvtRsOXHRdKnVzO0RRiiTfA4jOhYzcqoMnEV7dJAUXlyYjz3ccCEsz6HsdKypCnV+fPh9pdcb//ID5YSz4VatopHixO3LAy5MFKSOosjnlGr8XxjKvjE4OZRjX1WajlCUu+O/97r781yJQO830whphXT5ZHsVgO8PxNVwf9SR5WsV7P)
 
 Some contexts are only available in some places. For example, `env` context is not available at `jobs.<job_id>.env` but it is
 available at `jobs.<job_id>.steps.env`.
 
-Similarly, some special functions are only available in some places. For example, `success()`, `failure()`, `always()`, and
-`cancelled()` are only available at `if` section. At the time of writing, the following functions are special.
+Similarly, some status functions are special since they limit where they can be called. For example, `success()`, `failure()`,
+`always()`, and `cancelled()` are only available at `if:` section. At the time of writing this document, the following functions
+are special.
 
 - `hashFiles()`
 - `always()`
@@ -2469,10 +2470,11 @@ Similarly, some special functions are only available in some places. For example
 - `failure()`
 - `cancelled()`
 
-[The official contexts document][availability-doc] describes which contexts and special functions are available at which workflow keys.
+[The official contexts document][availability-doc] describes which contexts and special functions are available at which workflow
+keys.
 
-actionlint checks these contexts and special functions are used correctly. It reports an error when some context or special function is
-not available.
+actionlint checks if these contexts and special functions are used correctly. It reports an error when it finds that some context
+or special function is not available in your workflow.
 
 ---
 
