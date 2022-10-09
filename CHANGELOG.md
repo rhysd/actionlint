@@ -1,3 +1,66 @@
+<a name="v1.6.21"></a>
+# [v1.6.21](https://github.com/rhysd/actionlint/releases/tag/v1.6.21) - 09 Oct 2022
+
+- Check contexts availability. Some contexts limit where they can be used. For example, `jobs.<job_id>.env` workflow key does not allow accessing `env` context, but `jobs.<job_id>.steps.env` allows. See [the official document](https://docs.github.com/en/actions/learn-github-actions/contexts#context-availability) for the complete list of contexts availability. ([#180](https://github.com/rhysd/actionlint/issues/180))
+  ```yaml
+  ...
+
+  env:
+    TOPLEVEL: ...
+
+  jobs:
+    test:
+      runs-on: ubuntu-latest
+      env:
+        # ERROR: 'env' context is not available here
+        JOB_LEVEL: ${{ env.TOPLEVEL }}
+      steps:
+        - env:
+            # OK: 'env' context is available here
+            STEP_LEVEL: ${{ env.TOPLEVEL }}
+          ...
+  ```
+  actionlint reports the context is not available and what contexts are available as follows:
+  ```
+  test.yaml:11:22: context "env" is not allowed here. available contexts are "github", "inputs", "matrix", "needs", "secrets", "strategy". see https://docs.github.com/en/actions/learn-github-actions/contexts#context-availability for more details [expression]
+     |
+  11 |       JOB_LEVEL: ${{ env.TOPLEVEL }}
+     |                      ^~~~~~~~~~~~
+  ```
+- Check special functions availability. Some functions limit where they can be used. For example, status functions like `success()` or `failure()` are only available in conditions of `if:`. See [the official document](https://docs.github.com/en/actions/learn-github-actions/contexts#context-availability) for the complete list of special functions availability. ([#214](https://github.com/rhysd/actionlint/issues/214))
+  ```yaml
+  ...
+
+  steps:
+    # ERROR: 'success()' function is not available here
+    - run: echo 'Success? ${{ success() }}'
+      # OK: 'success()' function is available here
+      if: success()
+  ```
+  actionlint reports `success()` is not available and where the function is available as follows:
+  ```
+  test.yaml:8:33: calling function "success" is not allowed here. "success" is only available in "jobs.<job_id>.if", "jobs.<job_id>.steps.if". see https://docs.github.com/en/actions/learn-github-actions/contexts#context-availability for more details [expression]
+    |
+  8 |       - run: echo 'Success? ${{ success() }}'
+    |                                 ^~~~~~~~~
+  ```
+- Fix `inputs` context is not available in `run-name:` section. ([#223](https://github.com/rhysd/actionlint/issues/223))
+- Allow dynamic shell configuration like `shell: ${{ env.SHELL }}`.
+- Fix no error is reported when `on:` does not exist at toplevel. ([#232](https://github.com/rhysd/actionlint/issues/232))
+- Fix an error position is not correct when the error happens at root node of workflow AST.
+- Fix an incorrect empty event is parsed when `on:` section is empty.
+- Fix the error message when parsing an unexpected key on toplevel. ([#231](https://github.com/rhysd/actionlint/issues/231), thanks [@norwd](https://github.com/norwd))
+- Add `in_progress` type to `workflow_run` webhook event trigger.
+- Describe [the actionlint extension](https://extensions.panic.com/extensions/org.netwrk/org.netwrk.actionlint/) for [Nova.app](https://nova.app) in [the usage document](https://github.com/rhysd/actionlint/blob/main/docs/usage.md#nova). ([#222](https://github.com/rhysd/actionlint/issues/222), thanks [@jbergstroem](https://github.com/jbergstroem))
+- Note [Super-Linter](https://github.com/github/super-linter) uses a different place for configuration file. ([#227](https://github.com/rhysd/actionlint/issues/227), thanks [@per-oestergaard](https://github.com/per-oestergaard))
+- Add `actions/setup-dotnet@v3` to popular actions data set.
+- [`generate-availability` script](https://github.com/rhysd/actionlint/tree/main/scripts/generate-availability) was created to scrape the information about contexts and special functions availability from the official document. The information is available through `actionlint.WorkflowKeyAvailability()` Go API. This script is run once a week on CI to keep the information up-to-date.
+
+
+
+[Changes][v1.6.21]
+
+
 <a name="v1.6.20"></a>
 # [v1.6.20](https://github.com/rhysd/actionlint/releases/tag/v1.6.20) - 30 Sep 2022
 
@@ -25,8 +88,8 @@
   ]
   ```
 - Overhaul the workflow parser to parse workflow keys in case-insensitive. This is a work derived from the fix of [#216](https://github.com/rhysd/actionlint/issues/216). Now the parser parses all workflow keys in case-insensitive way correctly. Note that permission names at `permissions:` are exceptionally case-sensitive.
-  - This fixes properties of `inputs` for `workflow_dispatch` are not case-insensitive.
-  - This fixes inputs and outputs of local actions are not handled in case-insensitive way.
+  - This fixes properties of `inputs` for `workflow_dispatch` were not case-insensitive.
+  - This fixes inputs and outputs of local actions were not handled in case-insensitive way.
 - Update popular actions data set. `actions/stale@v6` was newly added.
 
 [Changes][v1.6.20]
@@ -1220,6 +1283,7 @@ See documentation for more details:
 [Changes][v1.0.0]
 
 
+[v1.6.21]: https://github.com/rhysd/actionlint/compare/v1.6.20...v1.6.21
 [v1.6.20]: https://github.com/rhysd/actionlint/compare/v1.6.19...v1.6.20
 [v1.6.19]: https://github.com/rhysd/actionlint/compare/v1.6.18...v1.6.19
 [v1.6.18]: https://github.com/rhysd/actionlint/compare/v1.6.17...v1.6.18
