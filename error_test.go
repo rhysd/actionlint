@@ -225,7 +225,7 @@ func TestErrorPrettyPrint(t *testing.T) {
 	}
 }
 
-func TestErrorSortErrosByPosition(t *testing.T) {
+func TestErrorSortErrorsByPosition(t *testing.T) {
 	testCases := [][]struct {
 		line int
 		col  int
@@ -270,7 +270,7 @@ func TestErrorSortErrosByPosition(t *testing.T) {
 	}
 }
 
-func TestErrorSortErrosByFile(t *testing.T) {
+func TestErrorSortErrorsByFile(t *testing.T) {
 	errs := []*Error{
 		{
 			Filepath: "path/to/C.txt",

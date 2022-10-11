@@ -93,8 +93,8 @@ func (inputs *ReusableWorkflowMetadataInputs) UnmarshalYAML(n *yaml.Node) error 
 type ReusableWorkflowMetadataSecret struct {
 	// Name is a name of the secret in the reusable workflow.
 	Name string
-	// Required indicates wether the secret is required by its reusable workflow. When this value is
-	// true, workflow calls must set this secret unless secrets are not inherited.
+	// Required indicates whether the secret is required by its reusable workflow. When this value
+	// is true, workflow calls must set this secret unless secrets are not inherited.
 	Required bool `yaml:"required"`
 }
 
@@ -369,7 +369,7 @@ func parseReusableWorkflowMetadata(src []byte) (*ReusableWorkflowMetadata, error
 
 // NewLocalReusableWorkflowCache creates a new LocalReusableWorkflowCache instance for the given
 // project. 'cwd' is a current working directory as an absolute file path. The 'Local' means that
-// the cache instance is project-local. It is not available accross multiple projects.
+// the cache instance is project-local. It is not available across multiple projects.
 func NewLocalReusableWorkflowCache(proj *Project, cwd string, dbg io.Writer) *LocalReusableWorkflowCache {
 	return &LocalReusableWorkflowCache{
 		proj:  proj,

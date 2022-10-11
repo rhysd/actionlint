@@ -93,7 +93,7 @@ func TestReusableWorkflowUnmarshalOK(t *testing.T) {
 			      h:
 			        type: string
 			        default: abc
-			        requried: true
+			        required: true
 			      i:
 			        required: true
 			`,

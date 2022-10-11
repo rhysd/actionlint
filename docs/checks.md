@@ -1936,7 +1936,7 @@ actionlint does several checks for both workflow calls (caller) and reusable wor
 - optional/required/undefined inputs and secrets at `uses:` in workflow calls
 - type checks for `outputs` objects used by downstream jobs of workflow calls
 
-These checkes are described in this section.
+These checks are described in this section.
 
 ### Check input definitions of `workflow_call` event in reusable workflow
 

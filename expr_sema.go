@@ -608,7 +608,7 @@ func (sema *ExprSemanticsChecker) checkArrayDeref(n *ArrayDerefNode) ExprType {
 }
 
 func (sema *ExprSemanticsChecker) checkIndexAccess(n *IndexAccessNode) ExprType {
-	// Note: Index must be visted before Index to make UntrustedInputChecker work correctly even if
+	// Note: Index must be visited before Index to make UntrustedInputChecker work correctly even if
 	// the expression has some nest like foo[aaa.bbb].bar. Nest happens in top-down order and
 	// properties/indices access check is done in bottom-up order. So, as far as we visit nested
 	// index nodes before visiting operand, the index is recursively checked first.
@@ -835,7 +835,7 @@ func (sema *ExprSemanticsChecker) check(expr ExprNode) ExprType {
 	}
 }
 
-// Check checks sematics of given expression syntax tree. It returns the type of the expression as
+// Check checks semantics of given expression syntax tree. It returns the type of the expression as
 // the first return value when the check was successfully done. And it returns all errors found
 // while checking the expression as the second return value.
 func (sema *ExprSemanticsChecker) Check(expr ExprNode) (ExprType, []*ExprError) {
