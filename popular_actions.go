@@ -195,7 +195,6 @@ var PopularActions = map[string]*ActionMetadata{
 			"tag":              {"tag", false},
 			"target-folder":    {"target-folder", false},
 			"token":            {"token", false},
-			"workspace":        {"workspace", false},
 		},
 		Outputs: ActionMetadataOutputs{
 			"deployment-status": {"deployment-status"},
@@ -515,6 +514,7 @@ var PopularActions = map[string]*ActionMetadata{
 		Inputs: ActionMetadataInputs{
 			"clean":               {"clean", false},
 			"fetch-depth":         {"fetch-depth", false},
+			"github-server-url":   {"github-server-url", false},
 			"lfs":                 {"lfs", false},
 			"path":                {"path", false},
 			"persist-credentials": {"persist-credentials", false},
@@ -1847,6 +1847,7 @@ var PopularActions = map[string]*ActionMetadata{
 			"endpoint":  {"endpoint"},
 			"flags":     {"flags"},
 			"name":      {"name"},
+			"nodes":     {"nodes"},
 			"platforms": {"platforms"},
 			"status":    {"status"},
 		},
@@ -2954,11 +2955,11 @@ var PopularActions = map[string]*ActionMetadata{
 			"flutter-version": {"flutter-version", false},
 		},
 		Outputs: ActionMetadataOutputs{
-			"architecture": {"architecture"},
-			"cache-key":    {"cache-key"},
-			"cache-path":   {"cache-path"},
-			"channel":      {"channel"},
-			"version":      {"version"},
+			"architecture": {"ARCHITECTURE"},
+			"cache-key":    {"CACHE-KEY"},
+			"cache-path":   {"CACHE-PATH"},
+			"channel":      {"CHANNEL"},
+			"version":      {"VERSION"},
 		},
 	},
 	"treosh/lighthouse-ci-action@v1": {
