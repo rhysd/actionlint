@@ -49,7 +49,7 @@ jobs:
       - name: Get tag name
         id: tag
         run: |
-          echo "::set-output name=name::${GITHUB_REF#refs/tags/v}"
+          echo "name=${GITHUB_REF#refs/tags/v}" >> "$GITHUB_OUTPUT"
       - name: Set up QEMU
         uses: docker/setup-qemu-action@v2
       - name: Set up Docker Buildx

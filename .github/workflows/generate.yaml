@@ -29,10 +29,10 @@ jobs:
       - run: go generate
       - run: |
           if git diff-files --quiet; then
-            echo '::set-output name=pr::false'
+            echo "pr=false" >> "$GITHUB_OUTPUT"
           else
             git diff
-            echo '::set-output name=pr::true'
+            echo "pr=true" >> "$GITHUB_OUTPUT"
           fi
         id: diff
       - uses: peter-evans/create-pull-request@v3
