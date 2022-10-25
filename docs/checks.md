@@ -443,7 +443,7 @@ jobs:
       # ERROR: Access undefined step outputs
       - run: echo '${{ steps.get_value.outputs.name }}'
       # Outputs are set here
-      - run: echo '::set-output name=foo::value'
+      - run: echo "foo=value" >> "$GITHUB_OUTPUT"
         id: get_value
       # OK
       - run: echo '${{ steps.get_value.outputs.name }}'
