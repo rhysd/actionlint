@@ -1,0 +1,12 @@
+on: push
+
+jobs:
+  test:
+    runs-on: ubuntu-latest
+    steps:
+      # ERROR: 'set-output' workflow command was deprecated
+      - run: echo '::set-output name=foo::bar'
+      # OK: Use this instead
+      - run: echo "foo=bar" >> "$GITHUB_OUTPUT"
+      # OK: 'debug' command is not deprecated
+      - run: echo "::debug::Set the Octocat variable"

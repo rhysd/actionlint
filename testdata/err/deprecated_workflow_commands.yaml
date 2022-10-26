@@ -1,0 +1,20 @@
+on: push
+
+jobs:
+  test:
+    runs-on: ubuntu-latest
+    steps:
+      # ERROR
+      - run: echo '::set-output name=foo::bar'
+      - run: echo '::save-state name=foo::bar'
+      - run: echo '::set-env name=foo::bar'
+      - run: echo '::add-path::/path/to/foo'
+      # OK
+      - run: echo "::debug::Set the Octocat variable"
+      - run: echo "::notice file=app.js,line=1,col=5,endColumn=7::Missing semicolon"
+      - run: echo "::warning file=app.js,line=1,col=5,endColumn=7::Missing semicolon"
+      - run: echo "::error file=app.js,line=1,col=5,endColumn=7::Missing semicolon"
+      - run: echo "::group::My title"
+      - run: echo "::endgroup::"
+      - run: echo "::add-mask::Mona The Octocat"
+      - run: echo "::stop-commands::hogehoge"
