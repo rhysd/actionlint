@@ -1,0 +1,4 @@
+test.yaml:8:14: workflow command "set-output" was deprecated. use `echo "{name}={value}" >> $GITHUB_OUTPUT` instead: https://docs.github.com/en/actions/using-workflows/workflow-commands-for-github-actions [deprecated-commands]
+test.yaml:9:14: workflow command "save-state" was deprecated. use `echo "{name}={value}" >> $GITHUB_STATE` instead: https://docs.github.com/en/actions/using-workflows/workflow-commands-for-github-actions [deprecated-commands]
+test.yaml:10:14: workflow command "set-env" was deprecated. use `echo "{name}={value}" >> $GITHUB_ENV` instead: https://docs.github.com/en/actions/using-workflows/workflow-commands-for-github-actions [deprecated-commands]
+test.yaml:11:14: workflow command "add-path" was deprecated. use `echo "{path}" >> $GITHUB_PATH` instead: https://docs.github.com/en/actions/using-workflows/workflow-commands-for-github-actions [deprecated-commands]

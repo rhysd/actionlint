@@ -132,5 +132,5 @@ echo "Done: $("${exe}" -version)"
 
 if [ -n "$GITHUB_ACTION" ]; then
     # On GitHub Actions, set executable path to output
-    echo "::set-output name=executable::${exe}"
+    echo "executable=${exe}" >> "$GITHUB_OUTPUT"
 fi

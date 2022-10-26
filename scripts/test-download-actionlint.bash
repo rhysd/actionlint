@@ -21,7 +21,7 @@ set -e
 # No arguments
 out="$(bash "$script")"
 if [ -n "$GITHUB_ACTION" ]; then
-    if [[ "$out" != *"::set-output name=executable::"* ]]; then
+    if [[ "$out" != *"executable="* ]]; then
         echo "'executable' step output is not set: '${out}'" >&2
     fi
 fi
