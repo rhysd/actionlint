@@ -36,6 +36,7 @@ List of checks:
 - [Reusable workflows](#check-reusable-workflows)
 - [ID naming convention](#id-naming-convention)
 - [Contexts and special functions availability](#ctx-spfunc-availability)
+- [Deprecated workflow commands](#check-deprecated-workflow-commands)
 
 Note that actionlint focuses on catching mistakes in workflow files. If you want some general code style checks, please consider
 using a general YAML checker like [yamllint][].
@@ -2476,6 +2477,47 @@ keys.
 actionlint checks if these contexts and special functions are used correctly. It reports an error when it finds that some context
 or special function is not available in your workflow.
 
+<a name="#check-deprecated-workflow-commands"></a>
+## Check deprecated workflow commands
+
+Example input:
+
+```yaml
+on: push
+
+jobs:
+  test:
+    runs-on: ubuntu-latest
+    steps:
+      # ERROR: 'set-output' workflow command was deprecated
+      - run: echo '::set-output name=foo::bar'
+      # OK: Use this instead
+      - run: echo "foo=bar" >> "$GITHUB_OUTPUT"
+      # OK: 'debug' command is not deprecated
+      - run: echo "::debug::Set the Octocat variable"
+```
+
+Output:
+
+```
+test.yaml:8:14: workflow command "set-output" was deprecated. use `echo "{name}={value}" >> $GITHUB_OUTPUT` instead: https://docs.github.com/en/actions/using-workflows/workflow-commands-for-github-actions [deprecated-commands]
+  |
+8 |       - run: echo '::set-output name=foo::bar'
+  |              ^~~~
+```
+
+[Playground](https://rhysd.github.io/actionlint#eJxtyjEOgkAQRuGeU/zZmFDtBSaBwkatMBFqs4ujaHCHsDOeX9CW6hXvk0SYLA9F8ZKYqQCUs64FZkvZywIsWlLzY1jfb2XlKf8V4FdJ4H4QlESZ1YvpZIoU3lzdRYhimMsN7pZZLc+hruF2h1N77PbXpmvPXeu2PNGNoz2ILqzQgdH0Kn1QfML8DHFk9wXMjT7o)
+
+GitHub deprecated the following workflow commands.
+
+- [`set-output`][deprecate-set-output-save-state]
+- [`save-state`][deprecate-set-output-save-state]
+- [`set-env`][deprecate-set-env-add-path]
+- [`add-path`][deprecate-set-env-add-path]
+
+actionlint detects these commands are used in `run:` and reports them as errors suggesting alternatives. See
+[the official document][workflow-commands-doc] for the comprehensive list of workflow commands to know the usage.
+
 ---
 
 [Installation](install.md) | [Usage](usage.md) | [Configuration](config.md) | [Go API](api.md) | [References](reference.md)
@@ -2525,3 +2567,6 @@ or special function is not available in your workflow.
 [inherit-secrets-announce]: https://github.blog/changelog/2022-05-03-github-actions-simplify-using-secrets-with-reusable-workflows/
 [specific-paths-doc]: https://docs.github.com/en/actions/using-workflows/triggering-a-workflow#using-filters-to-target-specific-paths-for-pull-request-or-push-events
 [availability-doc]: https://docs.github.com/en/actions/learn-github-actions/contexts#context-availability
+[deprecate-set-output-save-state]: https://github.blog/changelog/2022-10-11-github-actions-deprecating-save-state-and-set-output-commands/
+[deprecate-set-env-add-path]: https://github.blog/changelog/2020-10-01-github-actions-deprecating-set-env-and-add-path-commands/
+[workflow-commands-doc]: https://docs.github.com/en/actions/using-workflows/workflow-commands-for-github-actions
