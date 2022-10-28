@@ -132,10 +132,10 @@ echo "Done: $("${exe}" -version)"
 
 if [ -n "$GITHUB_ACTION" ]; then
     # On GitHub Actions, set executable path to output
-    if [ "${GITHUB_API_URL}" = "https://api.github.com" ]; then
+    if [ -n "${GITHUB_OUTPUT}" ]; then
         echo "executable=${exe}" >> "$GITHUB_OUTPUT"
     else
-        # GitHub Enterprise have not introduced the new set-output command yet (see #240)
+        # GitHub Enterprise instance may not introduce the new set-output command yet (see #240)
         echo "::set-output name=executable::${exe}"
     fi
 fi
