@@ -242,6 +242,8 @@ type WorkflowCallEventInput struct {
 	// Type of the input, which must be one of 'boolean', 'number' or 'string'. This property is required.
 	// https://docs.github.com/en/actions/learn-github-actions/workflow-syntax-for-github-actions#onworkflow_callinput_idtype
 	Type WorkflowCallEventInputType
+	// ID is an ID of the input. Input ID is in lower case because it is case-insensitive.
+	ID string
 }
 
 // IsRequired returns if the input is marked as required or not.
@@ -276,9 +278,10 @@ type WorkflowCallEventOutput struct {
 // WorkflowCallEvent is workflow_call event configuration.
 // https://docs.github.com/en/actions/learn-github-actions/events-that-trigger-workflows#workflow-reuse-events
 type WorkflowCallEvent struct {
-	// Inputs is a map from input name to input configuration. Keys are in lower case since they are case-insensitive.
+	// Inputs is an array of inputs of the workflow_call event. This value is not a map unlike other fields of this
+	// struct since its order is important when checking the default values of inputs.
 	// https://docs.github.com/en/actions/learn-github-actions/workflow-syntax-for-github-actions#onworkflow_callinputs
-	Inputs map[string]*WorkflowCallEventInput
+	Inputs []*WorkflowCallEventInput
 	// Secrets is a map from name of secret to secret configuration. When 'secrets' is omitted, nil is set to this
 	// field. Keys are in lower case since they are case-insensitive.
 	// https://docs.github.com/en/actions/learn-github-actions/workflow-syntax-for-github-actions#onworkflow_callsecrets

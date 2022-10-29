@@ -282,7 +282,7 @@ func (c *LocalReusableWorkflowCache) WriteWorkflowCallEvent(wpath string, event 
 		Secrets: ReusableWorkflowMetadataSecrets{},
 	}
 
-	for n, i := range event.Inputs {
+	for _, i := range event.Inputs {
 		var t ExprType = AnyType{}
 		switch i.Type {
 		case WorkflowCallEventInputTypeBoolean:
@@ -292,7 +292,7 @@ func (c *LocalReusableWorkflowCache) WriteWorkflowCallEvent(wpath string, event 
 		case WorkflowCallEventInputTypeString:
 			t = StringType{}
 		}
-		m.Inputs[n] = &ReusableWorkflowMetadataInput{
+		m.Inputs[i.ID] = &ReusableWorkflowMetadataInput{
 			Type:     t,
 			Required: i.Required != nil && i.Required.Value && i.Default == nil,
 			Name:     i.Name.Value,

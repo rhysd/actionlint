@@ -1,0 +1,2 @@
+test.yaml:7:22: property "input2" is not defined in object type {} [expression]
+test.yaml:15:22: property "input3" is not defined in object type {input1: string; input2: string} [expression]

@@ -104,10 +104,11 @@ func TestRuleWorkflowCallWriteEventNodeToMetadataCache(t *testing.T) {
 	w := &Workflow{
 		On: []Event{
 			&WorkflowCallEvent{
-				Inputs: map[string]*WorkflowCallEventInput{
-					"input1": {
+				Inputs: []*WorkflowCallEventInput{
+					{
 						Name: s("input1"),
 						Type: WorkflowCallEventInputTypeString,
+						ID:   "input1",
 					},
 				},
 				Outputs: map[string]*WorkflowCallEventOutput{

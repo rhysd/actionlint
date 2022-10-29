@@ -90,7 +90,25 @@ func (rule *RuleExpression) VisitWorkflowPre(n *Workflow) error {
 			rule.checkStrings(e.Types, "")
 		case *WorkflowCallEvent:
 			ity := NewEmptyStrictObjectType()
-			for n, i := range e.Inputs {
+
+			// Set `inputs` context object before checking inputs since input's default values can refer `inputs` context.
+			//   inputs:
+			//     input1:
+			//       type: string
+			//     input2:
+			//       type: string
+			//       default: ${{ inputs.input1 }}
+			rule.inputsTy = ity
+
+			for _, i := range e.Inputs {
+				rule.checkString(i.Description, "")
+				// Check default value before setting type to `ity` because refering myself should cause an error.
+				//   inputs:
+				//     recursive:
+				//       type: string
+				//       default: ${{ inputs.recursive }}
+				rule.checkString(i.Default, "on.workflow_call.inputs.<inputs_id>.default")
+
 				var ty ExprType
 				switch i.Type {
 				case WorkflowCallEventInputTypeBoolean:
@@ -102,12 +120,8 @@ func (rule *RuleExpression) VisitWorkflowPre(n *Workflow) error {
 				default:
 					ty = AnyType{}
 				}
-				ity.Props[n] = ty
-
-				rule.checkString(i.Description, "")
-				rule.checkString(i.Default, "on.workflow_call.inputs.<inputs_id>.default")
+				ity.Props[i.ID] = ty
 			}
-			rule.inputsTy = ity
 
 			// When no secret is passed, secrets may be inherited from a caller of the workflow.
 			// So `secrets` context must be typed as { string => string }. `e.Secrets` is nil when `secrets:` does not

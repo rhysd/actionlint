@@ -463,10 +463,10 @@ func (p *parser) parseWorkflowCallEvent(pos *Pos, n *yaml.Node) *WorkflowCallEve
 		switch kv.id {
 		case "inputs":
 			inputs := p.parseSectionMapping("inputs", kv.val, true)
-			ret.Inputs = make(map[string]*WorkflowCallEventInput, len(inputs))
+			ret.Inputs = make([]*WorkflowCallEventInput, 0, len(inputs))
 			for _, kv := range inputs {
 				name, spec := kv.key, kv.val
-				input := &WorkflowCallEventInput{Name: name}
+				input := &WorkflowCallEventInput{Name: name, ID: kv.id}
 				sawType := false
 
 				for _, attr := range p.parseMapping("input of workflow_call event", spec, true) {
@@ -498,7 +498,7 @@ func (p *parser) parseWorkflowCallEvent(pos *Pos, n *yaml.Node) *WorkflowCallEve
 					p.errorfAt(name.Pos, "\"type\" is missing at %q input of workflow_call event", name.Value)
 				}
 
-				ret.Inputs[kv.id] = input
+				ret.Inputs = append(ret.Inputs, input)
 			}
 		case "secrets":
 			secrets := p.parseSectionMapping("secrets", kv.val, true)

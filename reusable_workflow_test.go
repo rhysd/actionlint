@@ -615,10 +615,11 @@ func TestReusableWorkflowMetadataFromASTNodeInputs(t *testing.T) {
 			cwd := filepath.Join("path", "to", "project")
 			proj := &Project{cwd, nil}
 			c := NewLocalReusableWorkflowCache(proj, cwd, nil)
-			e := &WorkflowCallEvent{Inputs: map[string]*WorkflowCallEventInput{}}
+			e := &WorkflowCallEvent{Inputs: []*WorkflowCallEventInput{}}
 			for n, i := range tc.inputs {
 				i.Name = &String{Value: n, Pos: &Pos{}}
-				e.Inputs[strings.ToLower(n)] = i
+				i.ID = strings.ToLower(n)
+				e.Inputs = append(e.Inputs, i)
 			}
 
 			c.WriteWorkflowCallEvent(filepath.Join("foo", "test.yaml"), e)
