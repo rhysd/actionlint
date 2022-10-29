@@ -185,25 +185,28 @@ func (rule *RuleEvents) checkWorkflowCallEvent(event *WorkflowCallEvent) {
 		if i.Default == nil {
 			continue
 		}
-		switch i.Type {
-		case WorkflowCallEventInputTypeNumber:
-			if _, err := strconv.ParseFloat(i.Default.Value, 64); err != nil {
-				rule.errorf(
-					i.Default.Pos,
-					"input of workflow_call event %q is typed as number but its default value %q cannot be parsed as a float number: %s",
-					i.Name.Value,
-					i.Default.Value,
-					err,
-				)
-			}
-		case WorkflowCallEventInputTypeBoolean:
-			if d := strings.ToLower(i.Default.Value); d != "true" && d != "false" {
-				rule.errorf(
-					i.Default.Pos,
-					"input of workflow_call event %q is typed as boolean. its default value must be true or false but got %q",
-					i.Name.Value,
-					i.Default.Value,
-				)
+		// ${{ }} is available in the default value
+		if !strings.Contains(i.Default.Value, "${{") {
+			switch i.Type {
+			case WorkflowCallEventInputTypeNumber:
+				if _, err := strconv.ParseFloat(i.Default.Value, 64); err != nil {
+					rule.errorf(
+						i.Default.Pos,
+						"input of workflow_call event %q is typed as number but its default value %q cannot be parsed as a float number: %s",
+						i.Name.Value,
+						i.Default.Value,
+						err,
+					)
+				}
+			case WorkflowCallEventInputTypeBoolean:
+				if d := strings.ToLower(i.Default.Value); d != "true" && d != "false" {
+					rule.errorf(
+						i.Default.Pos,
+						"input of workflow_call event %q is typed as boolean. its default value must be true or false but got %q",
+						i.Name.Value,
+						i.Default.Value,
+					)
+				}
 			}
 		}
 		if i.IsRequired() {

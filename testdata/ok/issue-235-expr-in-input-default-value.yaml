@@ -1,0 +1,17 @@
+on:
+  workflow_call:
+    # Default value of input may contain ${{ }} (#235)
+    inputs:
+      input1:
+        type: string
+        default: ${{ github.event.repository.name }}
+      input2:
+        type: boolean
+        default: ${{ github.event.name != 'pull_request' }}
+
+jobs:
+  test:
+    runs-on: ubuntu-latest
+    steps:
+      - run: echo '${{ inputs.input1 }}'
+      - run: echo '${{ inputs.input2 }}'
