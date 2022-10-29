@@ -13,6 +13,22 @@ on:
         type: boolean
         # ERROR: Cannot refer myself
         default: ${{ inputs.input3 }}
+      input4:
+        type: boolean
+        # ERROR: Assign string to boolean
+        default: ${{ inputs.input1 }}
+      input5:
+        type: number
+        # ERROR: Assign string to number
+        default: ${{ inputs.input1 }}
+      input6:
+        type: boolean
+        # OK
+        default: ${{ inputs.input4 }}
+      input7:
+        type: number
+        # OK
+        default: ${{ inputs.input5 }}
 
 jobs:
   test:

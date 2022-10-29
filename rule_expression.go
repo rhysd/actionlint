@@ -13,6 +13,11 @@ type typedExpr struct {
 	pos Pos
 }
 
+func isExprAssigned(str *String) bool {
+	s := strings.TrimSpace(str.Value)
+	return strings.HasPrefix(s, "${{") && strings.HasSuffix(s, "}}")
+}
+
 // RuleExpression is a rule checker to check expression syntax in string values of workflow syntax.
 // It checks syntax and semantics of the expressions including type checks and functions/contexts
 // definitions. For more details see
@@ -107,16 +112,32 @@ func (rule *RuleExpression) VisitWorkflowPre(n *Workflow) error {
 				//     recursive:
 				//       type: string
 				//       default: ${{ inputs.recursive }}
-				rule.checkString(i.Default, "on.workflow_call.inputs.<inputs_id>.default")
+				ts := rule.checkString(i.Default, "on.workflow_call.inputs.<inputs_id>.default")
 
 				var ty ExprType
 				switch i.Type {
-				case WorkflowCallEventInputTypeBoolean:
-					ty = BoolType{}
 				case WorkflowCallEventInputTypeString:
 					ty = StringType{}
+				case WorkflowCallEventInputTypeBoolean:
+					ty = BoolType{}
+					if len(ts) == 1 && isExprAssigned(i.Default) {
+						switch ts[0].ty.(type) {
+						case BoolType, AnyType:
+							// ok
+						default:
+							rule.errorf(i.Default.Pos, "type of input %q must be bool but found type %s", i.Name.Value, ts[0].ty.String())
+						}
+					}
 				case WorkflowCallEventInputTypeNumber:
 					ty = NumberType{}
+					if len(ts) == 1 && isExprAssigned(i.Default) {
+						switch ts[0].ty.(type) {
+						case NumberType, AnyType:
+							// ok
+						default:
+							rule.errorf(i.Default.Pos, "type of input %q must be number but found type %s", i.Name.Value, ts[0].ty.String())
+						}
+					}
 				default:
 					ty = AnyType{}
 				}
@@ -556,7 +577,7 @@ func (rule *RuleExpression) checkWorkflowCall(c *WorkflowCall) {
 				}
 			}
 		case 1:
-			if strings.HasPrefix(v, "${{") && strings.HasSuffix(v, "}}") {
+			if isExprAssigned(i.Value) {
 				ty = ts[0].ty
 			}
 		}
@@ -623,8 +644,7 @@ func (rule *RuleExpression) checkIfCondition(str *String, workflowKey string) {
 		ts := rule.checkString(str, workflowKey)
 
 		if len(ts) == 1 {
-			s := strings.TrimSpace(str.Value)
-			if strings.HasPrefix(s, "${{") && strings.HasSuffix(s, "}}") {
+			if isExprAssigned(str) {
 				condTy = ts[0].ty
 			}
 		}

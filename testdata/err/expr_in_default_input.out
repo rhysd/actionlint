@@ -1,2 +1,4 @@
 test.yaml:7:22: property "input2" is not defined in object type {} [expression]
 test.yaml:15:22: property "input3" is not defined in object type {input1: string; input2: string} [expression]
+test.yaml:19:18: type of input "input4" must be bool but found type string [expression]
+test.yaml:23:18: type of input "input5" must be number but found type string [expression]
