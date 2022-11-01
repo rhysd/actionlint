@@ -1,7 +1,58 @@
+<a name="v1.6.22"></a>
+# [v1.6.22](https://github.com/rhysd/actionlint/releases/tag/v1.6.22) - 01 Nov 2022
+
+- Detect deprecated workflow commands such as [`set-output` or `save-state`](https://github.blog/changelog/2022-10-11-github-actions-deprecating-save-state-and-set-output-commands/). See [the document](https://github.com/rhysd/actionlint/blob/main/docs/checks.md#check-deprecated-workflow-commands) for more details. ([#234](https://github.com/rhysd/actionlint/issues/234))
+  ```yaml
+  # ERROR: This format of 'set-output' workflow command was deprecated
+  - run: echo '::set-output name=foo::bar'
+  ```
+- Fix that `${{ }}` expression at `on.workflow_call.inputs.<id>.default` caused an error. ([#235](https://github.com/rhysd/actionlint/issues/235))
+  ```yaml
+  on:
+    workflow_call:
+      inputs:
+        project:
+          type: string
+          # OK: The default value is generated dynamically
+          default: ${{ github.event.repository.name }}
+  ```
+- Improve type of `inputs` context to grow gradually while checking default values of inputs in `workflow_call` event.
+  ```yaml
+  on:
+    workflow_call:
+      inputs:
+        input1:
+          type: string
+          # ERROR: `input2` is not defined yet
+          default: ${{ inputs.input2 }}
+        input2:
+          type: string
+          # OK: `input1` was already defined above
+          default: ${{ inputs.input1 }}
+  ```
+- Check types of default values of workflow call inputs even if `${{ }}` expression is used.
+  ```yaml
+  on:
+    workflow_call:
+      inputs:
+        input1:
+          type: boolean
+        input2:
+          type: number
+          # ERROR: Boolean value cannot be assigned to number
+          default: ${{ inputs.input1 }}
+  ```
+- Fix the download script is broken since GHE server does not support the new `set-output` format yet. ([#240](https://github.com/rhysd/actionlint/issues/240))
+- Replace the deprecated `set-output` workflow command in our own workflows. ([#239](https://github.com/rhysd/actionlint/issues/239), thanks [@Mrtenz](https://github.com/Mrtenz))
+- Popular actions data set was updated to the latest as usual.
+
+[Changes][v1.6.22]
+
+
 <a name="v1.6.21"></a>
 # [v1.6.21](https://github.com/rhysd/actionlint/releases/tag/v1.6.21) - 09 Oct 2022
 
-- Check contexts availability. Some contexts limit where they can be used. For example, `jobs.<job_id>.env` workflow key does not allow accessing `env` context, but `jobs.<job_id>.steps.env` allows. See [the official document](https://docs.github.com/en/actions/learn-github-actions/contexts#context-availability) for the complete list of contexts availability. ([#180](https://github.com/rhysd/actionlint/issues/180))
+- [Check contexts availability](https://github.com/rhysd/actionlint/blob/main/docs/checks.md#ctx-spfunc-availability). Some contexts limit where they can be used. For example, `jobs.<job_id>.env` workflow key does not allow accessing `env` context, but `jobs.<job_id>.steps.env` allows. See [the official document](https://docs.github.com/en/actions/learn-github-actions/contexts#context-availability) for the complete list of contexts availability. ([#180](https://github.com/rhysd/actionlint/issues/180))
   ```yaml
   ...
 
@@ -27,7 +78,7 @@
   11 |       JOB_LEVEL: ${{ env.TOPLEVEL }}
      |                      ^~~~~~~~~~~~
   ```
-- Check special functions availability. Some functions limit where they can be used. For example, status functions like `success()` or `failure()` are only available in conditions of `if:`. See [the official document](https://docs.github.com/en/actions/learn-github-actions/contexts#context-availability) for the complete list of special functions availability. ([#214](https://github.com/rhysd/actionlint/issues/214))
+- [Check special functions availability](https://github.com/rhysd/actionlint/blob/main/docs/checks.md#ctx-spfunc-availability). Some functions limit where they can be used. For example, status functions like `success()` or `failure()` are only available in conditions of `if:`. See [the official document](https://docs.github.com/en/actions/learn-github-actions/contexts#context-availability) for the complete list of special functions availability. ([#214](https://github.com/rhysd/actionlint/issues/214))
   ```yaml
   ...
 
@@ -49,12 +100,12 @@
 - Fix no error is reported when `on:` does not exist at toplevel. ([#232](https://github.com/rhysd/actionlint/issues/232))
 - Fix an error position is not correct when the error happens at root node of workflow AST.
 - Fix an incorrect empty event is parsed when `on:` section is empty.
-- Fix the error message when parsing an unexpected key on toplevel. ([#231](https://github.com/rhysd/actionlint/issues/231), thanks [@norwd](https://github.com/norwd))
+- Fix the error message when parsing an unexpected key on toplevel. (thanks [@norwd](https://github.com/norwd), [#231](https://github.com/rhysd/actionlint/issues/231))
 - Add `in_progress` type to `workflow_run` webhook event trigger.
-- Describe [the actionlint extension](https://extensions.panic.com/extensions/org.netwrk/org.netwrk.actionlint/) for [Nova.app](https://nova.app) in [the usage document](https://github.com/rhysd/actionlint/blob/main/docs/usage.md#nova). ([#222](https://github.com/rhysd/actionlint/issues/222), thanks [@jbergstroem](https://github.com/jbergstroem))
-- Note [Super-Linter](https://github.com/github/super-linter) uses a different place for configuration file. ([#227](https://github.com/rhysd/actionlint/issues/227), thanks [@per-oestergaard](https://github.com/per-oestergaard))
+- Describe [the actionlint extension](https://extensions.panic.com/extensions/org.netwrk/org.netwrk.actionlint/) for [Nova.app](https://nova.app) in [the usage document](https://github.com/rhysd/actionlint/blob/main/docs/usage.md#nova). (thanks [@jbergstroem](https://github.com/jbergstroem), [#222](https://github.com/rhysd/actionlint/issues/222))
+- Note [Super-Linter](https://github.com/github/super-linter) uses a different place for configuration file. (thanks [@per-oestergaard](https://github.com/per-oestergaard), [#227](https://github.com/rhysd/actionlint/issues/227))
 - Add `actions/setup-dotnet@v3` to popular actions data set.
-- [`generate-availability` script](https://github.com/rhysd/actionlint/tree/main/scripts/generate-availability) was created to scrape the information about contexts and special functions availability from the official document. The information is available through `actionlint.WorkflowKeyAvailability()` Go API. This script is run once a week on CI to keep the information up-to-date.
+- [`generate-availability` script](https://github.com/rhysd/actionlint/tree/main/scripts/generate-availability) was created to scrape the information about contexts and special functions availability from the official document. The information can be used through [`actionlint.WorkflowKeyAvailability()`](https://pkg.go.dev/github.com/rhysd/actionlint#WorkflowKeyAvailability) Go API. This script is run once a week on CI to keep the information up-to-date.
 
 
 
@@ -1283,6 +1334,7 @@ See documentation for more details:
 [Changes][v1.0.0]
 
 
+[v1.6.22]: https://github.com/rhysd/actionlint/compare/v1.6.21...v1.6.22
 [v1.6.21]: https://github.com/rhysd/actionlint/compare/v1.6.20...v1.6.21
 [v1.6.20]: https://github.com/rhysd/actionlint/compare/v1.6.19...v1.6.20
 [v1.6.19]: https://github.com/rhysd/actionlint/compare/v1.6.18...v1.6.19
