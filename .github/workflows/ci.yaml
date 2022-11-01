@@ -16,7 +16,8 @@ jobs:
           brew install shellcheck python3
           pip3 install pyflakes
           shellcheck --version
-          pyflakes --version
+          # https://github.com/actions/runner-images/issues/6496
+          python3 -m pyflakes --version
         if: ${{ matrix.os == 'macos-latest' }}
       - name: Install dependencies on Linux
         run: |
