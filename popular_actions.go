@@ -257,11 +257,14 @@ var PopularActions = map[string]*ActionMetadata{
 	"Swatinem/rust-cache@v2": {
 		Name: "Rust Cache",
 		Inputs: ActionMetadataInputs{
-			"cache-on-failure": {"cache-on-failure", false},
-			"env-vars":         {"env-vars", false},
-			"key":              {"key", false},
-			"shared-key":       {"shared-key", false},
-			"workspaces":       {"workspaces", false},
+			"cache-directories": {"cache-directories", false},
+			"cache-on-failure":  {"cache-on-failure", false},
+			"cache-targets":     {"cache-targets", false},
+			"env-vars":          {"env-vars", false},
+			"key":               {"key", false},
+			"prefix-key":        {"prefix-key", false},
+			"shared-key":        {"shared-key", false},
+			"workspaces":        {"workspaces", false},
 		},
 		Outputs: ActionMetadataOutputs{
 			"cache-hit": {"cache-hit"},
