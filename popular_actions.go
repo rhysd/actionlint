@@ -1926,8 +1926,9 @@ var PopularActions = map[string]*ActionMetadata{
 			"gleam-version":            {"gleam-version", false},
 			"install-hex":              {"install-hex", false},
 			"install-rebar":            {"install-rebar", false},
-			"otp-version":              {"otp-version", true},
+			"otp-version":              {"otp-version", false},
 			"rebar3-version":           {"rebar3-version", false},
+			"version-file":             {"version-file", false},
 			"version-type":             {"version-type", false},
 		},
 		Outputs: ActionMetadataOutputs{
@@ -2930,6 +2931,7 @@ var PopularActions = map[string]*ActionMetadata{
 	"softprops/action-gh-release@v1": {
 		Name: "GH Release",
 		Inputs: ActionMetadataInputs{
+			"append_body":              {"append_body", false},
 			"body":                     {"body", false},
 			"body_path":                {"body_path", false},
 			"discussion_category_name": {"discussion_category_name", false},
@@ -2945,6 +2947,7 @@ var PopularActions = map[string]*ActionMetadata{
 			"token":                    {"token", false},
 		},
 		Outputs: ActionMetadataOutputs{
+			"assets":     {"assets"},
 			"id":         {"id"},
 			"upload_url": {"upload_url"},
 			"url":        {"url"},
