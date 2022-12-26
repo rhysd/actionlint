@@ -195,8 +195,8 @@ var popularActions = []*action{
 	},
 	{
 		slug: "actions/stale",
-		tags: []string{"v1", "v2", "v3", "v4", "v5", "v6"},
-		next: "v7",
+		tags: []string{"v1", "v2", "v3", "v4", "v5", "v6", "v7"},
+		next: "v8",
 	},
 	{
 		slug: "actions/upload-artifact",
@@ -245,8 +245,8 @@ var popularActions = []*action{
 	},
 	{
 		slug: "dessant/lock-threads",
-		tags: []string{"v2", "v3"},
-		next: "v4"}, // v1 does not exist
+		tags: []string{"v2", "v3", "v4"},
+		next: "v5"}, // v1 does not exist
 	{
 		slug: "docker/build-push-action",
 		tags: []string{"v1", "v2", "v3"},
@@ -332,8 +332,8 @@ var popularActions = []*action{
 	},
 	{
 		slug: "goreleaser/goreleaser-action",
-		tags: []string{"v1", "v2", "v3"},
-		next: "v4",
+		tags: []string{"v1", "v2", "v3", "v4"},
+		next: "v5",
 	},
 	{
 		slug: "gradle/wrapper-validation-action",
@@ -373,8 +373,8 @@ var popularActions = []*action{
 	},
 	{
 		slug: "nwtgck/actions-netlify",
-		tags: []string{"v1"},
-		next: "v2",
+		tags: []string{"v1", "v2"},
+		next: "v3",
 	},
 	{
 		slug: "octokit/request-action",
