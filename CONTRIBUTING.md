@@ -131,7 +131,7 @@ workflow. Runs can be checked [here](https://github.com/rhysd/actionlint/actions
 
 ## Maintain `all_webhooks.go`
 
-[`all_webhooks.go`(./all_webhooks.go) is a table all webhooks supported by GitHub Actions to trigger workflows. Note that
+[`all_webhooks.go`](./all_webhooks.go) is a table all webhooks supported by GitHub Actions to trigger workflows. Note that
 not all webhooks are supported by GitHub Actions.
 
 It is generated automatically with `go generate`. The command runs [`generate-webhook-events`](./scripts/generate-webhook-events)
