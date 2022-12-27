@@ -62,6 +62,11 @@ main {
   cursor: pointer;
 }
 
+.sticky {
+  position: sticky;
+  top: 0;
+}
+
 footer {
   margin-top: 32px;
 }
