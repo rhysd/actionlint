@@ -37,6 +37,29 @@ function usage() {
     echo '      $ bash download-actionlint.bash 1.6.9 /usr/bin' >&2
 }
 
+log() {
+    if [ "${GITHUB_ACTIONS}" ]
+    then
+        echo "::notice::$@"
+    else
+        echo "$@" 1>&2
+    fi
+}
+
+err() {
+    if [ "${GITHUB_ACTIONS}" ]
+    then
+        echo "::error::$@"
+    else
+        echo "$@" 1>&2
+    fi
+}
+
+die() {
+    err "$@"
+    exit 1
+}
+
 if [[ "$1" == "-h" || "$1" == "--help" ]]; then
     usage
     exit
