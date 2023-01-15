@@ -7,13 +7,23 @@ description: ":octocat: Static checker for GitHub Actions workflow files"
 #  icon: _
 #  color: _
 
+inputs:
+  color:
+    default: false
+    description: "Enable colorful output."
+
 runs:
   using: composite
   steps:
+    - name: "Report Invalid Color Input"
+      if: inputs.color != 'yes' && inputs.color != 'true' && inputs.color != 'no' && inputs.color != 'false'
+      shell: bash
+      run: echo "::warning::Invalid boolean value for color: ${{ format({0}, inputs.color) }}"
+
     - name: "Download Action Lint"
       shell: bash
       run: ${{ github.action_path }}/scripts/download-actionlint.bash latest ${{ runner.temp }}
 
     - name: "Run Action Lint"
       shell: bash
-      run: ${{ runner.temp }}/actionlint -color
+      run: ${{ runner.temp }}/actionlint ${{ inputs.color == 'yes' || inputs.color == 'true' && '-color' }}
