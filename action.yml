@@ -18,7 +18,7 @@ runs:
     - name: "Report Invalid Color Input"
       if: inputs.color != 'yes' && inputs.color != 'true' && inputs.color != 'no' && inputs.color != 'false'
       shell: bash
-      run: echo "::warning::Invalid boolean value for color: ${{ format('{0}', inputs.color) }}"
+      run: echo ${{ format('::warning::Invalid boolean value for color: {0}', inputs.color) }}
 
     - name: "Download Action Lint"
       shell: bash
