@@ -26,4 +26,4 @@ runs:
 
     - name: "Run Action Lint"
       shell: bash
-      run: ${{ runner.temp }}/actionlint ${{ inputs.color == 'yes' || inputs.color == 'true' && '-color' }}
+      run: ${{ runner.temp }}/actionlint ${{ (inputs.color == 'yes' || inputs.color == 'true') && '-color' || '' }}
