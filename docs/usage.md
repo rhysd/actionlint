@@ -309,6 +309,8 @@ jobs:
     steps:
       - uses: actions/checkout@v3
       - uses: reviewdog/action-actionlint@v1
+        with:
+          color: true
 ```
 
 <a name="problem-matchers"></a>
