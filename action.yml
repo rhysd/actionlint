@@ -1,7 +1,7 @@
 ---
 
 name: actionlint
-description: :octocat: Static checker for GitHub Actions workflow files
+description: ":octocat: Static checker for GitHub Actions workflow files"
 
 #branding: # https://docs.github.com/en/actions/creating-actions/metadata-syntax-for-github-actions#branding
 #  icon: _
