@@ -40,7 +40,7 @@ function usage() {
 log() {
     if [ "${GITHUB_ACTIONS}" ]
     then
-        echo "::notice::$@"
+        echo "::notice::$*"
     else
         echo "$@" 1>&2
     fi
@@ -49,14 +49,14 @@ log() {
 err() {
     if [ "${GITHUB_ACTIONS}" ]
     then
-        echo "::error::$@"
+        echo "::error::$*"
     else
         echo "$@" 1>&2
     fi
 }
 
 die() {
-    err "$@"
+    err "$*"
     exit 1
 }
 
