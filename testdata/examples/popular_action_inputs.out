@@ -1,2 +1,2 @@
 test.yaml:7:15: missing input "key" which is required by action "actions/cache@v3". all required inputs are "key", "path" [action]
-test.yaml:9:11: input "keys" is not defined in action "actions/cache@v3". available inputs are "key", "path", "restore-keys", "upload-chunk-size" [action]
+test.yaml:9:11: input "keys" is not defined in action "actions/cache@v3". available inputs are "enableCrossOsArchive", "key", "path", "restore-keys", "upload-chunk-size" [action]
