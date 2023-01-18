@@ -115,6 +115,11 @@ var popularActions = []*action{
 		next: "v2",
 	},
 	{
+		slug: "dtolnay/rust-toolchain",
+		tags: []string{"stable", "beta", "nightly"},
+		next: "",
+	},
+	{
 		slug: "actions-rs/clippy-check",
 		tags: []string{"v1"},
 		next: "v2",
@@ -146,8 +151,8 @@ var popularActions = []*action{
 	},
 	{
 		slug: "actions/delete-package-versions",
-		tags: []string{"v1", "v2", "v3"},
-		next: "v4",
+		tags: []string{"v1", "v2", "v3", "v4"},
+		next: "v5",
 	},
 	{
 		slug: "actions/download-artifact",
@@ -207,6 +212,11 @@ var popularActions = []*action{
 		slug: "actions/upload-pages-artifact",
 		tags: []string{"v1"},
 		next: "v2",
+	},
+	{
+		slug: "actions/dependency-review-action",
+		tags: []string{"v3"},
+		next: "v4",
 	},
 	{
 		slug: "aws-actions/configure-aws-credentials",

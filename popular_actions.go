@@ -117,6 +117,8 @@ var PopularActions = map[string]*ActionMetadata{
 	"EnricoMi/publish-unit-test-result-action@v2": {
 		Name: "Publish Test Results",
 		Inputs: ActionMetadataInputs{
+			"action_fail":                      {"action_fail", false},
+			"action_fail_on_inconclusive":      {"action_fail_on_inconclusive", false},
 			"check_name":                       {"check_name", false},
 			"check_run_annotations":            {"check_run_annotations", false},
 			"check_run_annotations_branch":     {"check_run_annotations_branch", false},
@@ -134,12 +136,14 @@ var PopularActions = map[string]*ActionMetadata{
 			"ignore_runs":                      {"ignore_runs", false},
 			"job_summary":                      {"job_summary", false},
 			"json_file":                        {"json_file", false},
+			"json_suite_details":               {"json_suite_details", false},
 			"json_test_case_results":           {"json_test_case_results", false},
 			"json_thousands_separator":         {"json_thousands_separator", false},
 			"junit_files":                      {"junit_files", false},
 			"nunit_files":                      {"nunit_files", false},
 			"pull_request_build":               {"pull_request_build", false},
 			"report_individual_runs":           {"report_individual_runs", false},
+			"report_suite_logs":                {"report_suite_logs", false},
 			"seconds_between_github_reads":     {"seconds_between_github_reads", false},
 			"seconds_between_github_writes":    {"seconds_between_github_writes", false},
 			"test_changes_limit":               {"test_changes_limit", false},
@@ -475,10 +479,11 @@ var PopularActions = map[string]*ActionMetadata{
 	"actions/cache@v3": {
 		Name: "Cache",
 		Inputs: ActionMetadataInputs{
-			"key":               {"key", true},
-			"path":              {"path", true},
-			"restore-keys":      {"restore-keys", false},
-			"upload-chunk-size": {"upload-chunk-size", false},
+			"enablecrossosarchive": {"enableCrossOsArchive", false},
+			"key":                  {"key", true},
+			"path":                 {"path", true},
+			"restore-keys":         {"restore-keys", false},
+			"upload-chunk-size":    {"upload-chunk-size", false},
 		},
 		Outputs: ActionMetadataOutputs{
 			"cache-hit": {"cache-hit"},
@@ -601,6 +606,37 @@ var PopularActions = map[string]*ActionMetadata{
 			"package-version-ids":              {"package-version-ids", false},
 			"repo":                             {"repo", false},
 			"token":                            {"token", false},
+		},
+	},
+	"actions/delete-package-versions@v4": {
+		Name: "Delete Package Versions",
+		Inputs: ActionMetadataInputs{
+			"delete-only-pre-release-versions": {"delete-only-pre-release-versions", false},
+			"ignore-versions":                  {"ignore-versions", false},
+			"min-versions-to-keep":             {"min-versions-to-keep", false},
+			"num-old-versions-to-delete":       {"num-old-versions-to-delete", false},
+			"owner":                            {"owner", false},
+			"package-name":                     {"package-name", true},
+			"package-type":                     {"package-type", true},
+			"package-version-ids":              {"package-version-ids", false},
+			"token":                            {"token", false},
+		},
+	},
+	"actions/dependency-review-action@v3": {
+		Name: "Dependency Review",
+		Inputs: ActionMetadataInputs{
+			"allow-ghsas":         {"allow-ghsas", false},
+			"allow-licenses":      {"allow-licenses", false},
+			"base-ref":            {"base-ref", false},
+			"config-file":         {"config-file", false},
+			"deny-licenses":       {"deny-licenses", false},
+			"external-repo-token": {"external-repo-token", false},
+			"fail-on-scopes":      {"fail-on-scopes", false},
+			"fail-on-severity":    {"fail-on-severity", false},
+			"head-ref":            {"head-ref", false},
+			"license-check":       {"license-check", false},
+			"repo-token":          {"repo-token", false},
+			"vulnerability-check": {"vulnerability-check", false},
 		},
 	},
 	"actions/deploy-pages@v1": {
@@ -1781,6 +1817,7 @@ var PopularActions = map[string]*ActionMetadata{
 		Inputs: ActionMetadataInputs{
 			"add-hosts":        {"add-hosts", false},
 			"allow":            {"allow", false},
+			"attests":          {"attests", false},
 			"build-args":       {"build-args", false},
 			"build-contexts":   {"build-contexts", false},
 			"builder":          {"builder", false},
@@ -1797,8 +1834,10 @@ var PopularActions = map[string]*ActionMetadata{
 			"no-cache-filters": {"no-cache-filters", false},
 			"outputs":          {"outputs", false},
 			"platforms":        {"platforms", false},
+			"provenance":       {"provenance", false},
 			"pull":             {"pull", false},
 			"push":             {"push", false},
+			"sbom":             {"sbom", false},
 			"secret-files":     {"secret-files", false},
 			"secrets":          {"secrets", false},
 			"shm-size":         {"shm-size", false},
@@ -2007,6 +2046,42 @@ var PopularActions = map[string]*ActionMetadata{
 		},
 		SkipOutputs: true,
 	},
+	"dtolnay/rust-toolchain@beta": {
+		Name: "rustup toolchain install",
+		Inputs: ActionMetadataInputs{
+			"components": {"components", false},
+			"target":     {"target", false},
+			"targets":    {"targets", false},
+			"toolchain":  {"toolchain", false},
+		},
+		Outputs: ActionMetadataOutputs{
+			"cachekey": {"cachekey"},
+		},
+	},
+	"dtolnay/rust-toolchain@nightly": {
+		Name: "rustup toolchain install",
+		Inputs: ActionMetadataInputs{
+			"components": {"components", false},
+			"target":     {"target", false},
+			"targets":    {"targets", false},
+			"toolchain":  {"toolchain", false},
+		},
+		Outputs: ActionMetadataOutputs{
+			"cachekey": {"cachekey"},
+		},
+	},
+	"dtolnay/rust-toolchain@stable": {
+		Name: "rustup toolchain install",
+		Inputs: ActionMetadataInputs{
+			"components": {"components", false},
+			"target":     {"target", false},
+			"targets":    {"targets", false},
+			"toolchain":  {"toolchain", false},
+		},
+		Outputs: ActionMetadataOutputs{
+			"cachekey": {"cachekey"},
+		},
+	},
 	"enriikke/gatsby-gh-pages-action@v2": {
 		Name: "Gatsby Publish",
 		Inputs: ActionMetadataInputs{
@@ -2026,6 +2101,7 @@ var PopularActions = map[string]*ActionMetadata{
 		Inputs: ActionMetadataInputs{
 			"disable_problem_matchers": {"disable_problem_matchers", false},
 			"elixir-version":           {"elixir-version", false},
+			"github-token":             {"github-token", false},
 			"gleam-version":            {"gleam-version", false},
 			"install-hex":              {"install-hex", false},
 			"install-rebar":            {"install-rebar", false},
@@ -2402,13 +2478,15 @@ var PopularActions = map[string]*ActionMetadata{
 	"haskell/actions/setup@v2": {
 		Name: "Setup Haskell",
 		Inputs: ActionMetadataInputs{
-			"cabal-version":   {"cabal-version", false},
-			"disable-matcher": {"disable-matcher", false},
-			"enable-stack":    {"enable-stack", false},
-			"ghc-version":     {"ghc-version", false},
-			"stack-no-global": {"stack-no-global", false},
-			"stack-setup-ghc": {"stack-setup-ghc", false},
-			"stack-version":   {"stack-version", false},
+			"cabal-update":          {"cabal-update", false},
+			"cabal-version":         {"cabal-version", false},
+			"disable-matcher":       {"disable-matcher", false},
+			"enable-stack":          {"enable-stack", false},
+			"ghc-version":           {"ghc-version", false},
+			"ghcup-release-channel": {"ghcup-release-channel", false},
+			"stack-no-global":       {"stack-no-global", false},
+			"stack-setup-ghc":       {"stack-setup-ghc", false},
+			"stack-version":         {"stack-version", false},
 		},
 		Outputs: ActionMetadataOutputs{
 			"cabal-exe":   {"cabal-exe"},
@@ -3349,6 +3427,12 @@ var PopularActions = map[string]*ActionMetadata{
 			"black_dir":                            {"black_dir", false},
 			"black_extensions":                     {"black_extensions", false},
 			"check_name":                           {"check_name", false},
+			"clang_format":                         {"clang_format", false},
+			"clang_format_args":                    {"clang_format_args", false},
+			"clang_format_auto_fix":                {"clang_format_auto_fix", false},
+			"clang_format_command_prefix":          {"clang_format_command_prefix", false},
+			"clang_format_dir":                     {"clang_format_dir", false},
+			"clang_format_extensions":              {"clang_format_extensions", false},
 			"commit":                               {"commit", false},
 			"commit_message":                       {"commit_message", false},
 			"continue_on_error":                    {"continue_on_error", false},
