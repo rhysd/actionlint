@@ -278,6 +278,8 @@ var BuiltinGlobalVariableTypes = map[string]ExprType{
 	// https://docs.github.com/en/actions/learn-github-actions/contexts#inputs-context
 	// https://docs.github.com/en/actions/learn-github-actions/reusing-workflows
 	"inputs": NewEmptyStrictObjectType(),
+	// https://docs.github.com/en/actions/learn-github-actions/contexts#vars-context
+	"vars": NewMapObjectType(StringType{}), // vars.<var_name>
 }
 
 // Semantics checker
