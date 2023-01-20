@@ -1,0 +1,2 @@
+test.yaml:8:24: receiver of object dereference "bar" must be type of object but got "string" [expression]
+test.yaml:9:20: object, array, and null values should not be evaluated in template with ${{ }} but evaluating the value of type {string => string} [expression]
