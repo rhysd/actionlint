@@ -133,7 +133,7 @@ func NewLinter(out io.Writer, opts *LinterOptions) (*Linter, error) {
 
 	var cfg *Config
 	if opts.ConfigFile != "" {
-		c, err := readConfigFile(opts.ConfigFile)
+		c, err := ReadConfigFile(opts.ConfigFile)
 		if err != nil {
 			return nil, err
 		}
@@ -461,7 +461,7 @@ func (l *Linter) check(
 	if l.defaultConfig != nil {
 		cfg = l.defaultConfig
 	} else if project != nil {
-		c, err := project.Config()
+		c, err := project.LoadConfig()
 		if err != nil {
 			return nil, err
 		}
@@ -533,6 +533,11 @@ func (l *Linter) check(
 			v.EnableDebug(dbg)
 			for _, r := range rules {
 				r.EnableDebug(dbg)
+			}
+		}
+		if cfg != nil {
+			for _, r := range rules {
+				r.SetConfig(cfg)
 			}
 		}
 

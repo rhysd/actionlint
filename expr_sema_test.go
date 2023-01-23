@@ -660,7 +660,7 @@ func TestExprSemanticsCheckOK(t *testing.T) {
 				t.Fatal("Parse error:", tc.input)
 			}
 
-			c := NewExprSemanticsChecker(false)
+			c := NewExprSemanticsChecker(false, nil)
 			if tc.funcs != nil {
 				c.funcs = tc.funcs
 			}
@@ -1162,7 +1162,7 @@ func TestExprSemanticsCheckError(t *testing.T) {
 				t.Fatal("Parse error:", tc.input)
 			}
 
-			c := NewExprSemanticsChecker(false)
+			c := NewExprSemanticsChecker(false, nil)
 			if tc.funcs != nil {
 				c.funcs = tc.funcs // Set functions for testing
 			}
@@ -1201,7 +1201,7 @@ func TestExprSemanticsCheckError(t *testing.T) {
 }
 
 func TestExprSemanticsCheckerUpdateMatrix(t *testing.T) {
-	c := NewExprSemanticsChecker(false)
+	c := NewExprSemanticsChecker(false, nil)
 	ty := NewEmptyObjectType()
 	prev := c.vars["matrix"]
 	c.UpdateMatrix(ty)
@@ -1216,7 +1216,7 @@ func TestExprSemanticsCheckerUpdateMatrix(t *testing.T) {
 }
 
 func TestExprSemanticsCheckerUpdateSteps(t *testing.T) {
-	c := NewExprSemanticsChecker(false)
+	c := NewExprSemanticsChecker(false, nil)
 	ty := NewEmptyObjectType()
 	prev := c.vars["steps"]
 	c.UpdateSteps(ty)
@@ -1232,7 +1232,7 @@ func TestExprSemanticsCheckerUpdateSteps(t *testing.T) {
 
 func TestExprSematincsCheckerUpdateDispatchInputsVarType(t *testing.T) {
 	ty := NewStrictObjectType(map[string]ExprType{"foo": NullType{}})
-	c := NewExprSemanticsChecker(false)
+	c := NewExprSemanticsChecker(false, nil)
 	c.UpdateDispatchInputs(ty)
 	o := c.vars["github"].(*ObjectType).Props["event"].(*ObjectType).Props["inputs"].(*ObjectType)
 	if _, ok := o.Props["foo"]; !ok {

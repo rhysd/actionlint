@@ -299,16 +299,18 @@ type ExprSemanticsChecker struct {
 	untrusted             *UntrustedInputChecker
 	availableContexts     []string
 	availableSpecialFuncs []string
+	configVars            []string
 }
 
 // NewExprSemanticsChecker creates new ExprSemanticsChecker instance. When checkUntrustedInput is
 // set to true, the checker will make use of possibly untrusted inputs error.
-func NewExprSemanticsChecker(checkUntrustedInput bool) *ExprSemanticsChecker {
+func NewExprSemanticsChecker(checkUntrustedInput bool, configVars []string) *ExprSemanticsChecker {
 	c := &ExprSemanticsChecker{
 		funcs:           BuiltinFuncSignatures,
 		vars:            BuiltinGlobalVariableTypes,
 		varsCopied:      false,
 		githubVarCopied: false,
+		configVars:      configVars,
 	}
 	if checkUntrustedInput {
 		c.untrusted = NewUntrustedInputChecker(BuiltinUntrustedInputs)
@@ -530,6 +532,9 @@ func (sema *ExprSemanticsChecker) checkObjectDeref(n *ObjectDerefNode) ExprType 
 			return t
 		}
 		if ty.Mapped != nil {
+			if v, ok := n.Receiver.(*VariableNode); ok && v.Name == "vars" {
+				sema.checkConfigVariables(n)
+			}
 			return ty.Mapped
 		}
 		if ty.IsStrict() {
@@ -569,6 +574,56 @@ func (sema *ExprSemanticsChecker) checkObjectDeref(n *ObjectDerefNode) ExprType 
 		sema.errorf(n, "receiver of object dereference %q must be type of object but got %q", n.Property, ty.String())
 		return AnyType{}
 	}
+}
+
+func (sema *ExprSemanticsChecker) checkConfigVariables(n *ObjectDerefNode) {
+	// https://docs.github.com/en/actions/learn-github-actions/variables#naming-conventions-for-configuration-variables
+	if strings.HasPrefix(n.Property, "github_") {
+		sema.errorf(
+			n,
+			"configuration variable name %q must not start with the GITHUB_ prefix (case insensitive). note: see the convention at https://docs.github.com/en/actions/learn-github-actions/variables#naming-conventions-for-configuration-variables",
+			n.Property,
+		)
+		return
+	}
+	for _, r := range n.Property {
+		// Note: `n.Property` was already converted to lower case by parser
+		// Note: First character cannot be number, but it was already checked by parser
+		if '0' <= r && r <= '9' || 'a' <= r && r <= 'z' || r == '_' {
+			continue
+		}
+		sema.errorf(
+			n,
+			"configuration variable name %q can only contain alphabets, decimal numbers, and '_'. note: see the convention at https://docs.github.com/en/actions/learn-github-actions/variables#naming-conventions-for-configuration-variables",
+			n.Property,
+		)
+		return
+	}
+
+	if sema.configVars == nil {
+		return
+	}
+	if len(sema.configVars) == 0 {
+		sema.errorf(
+			n,
+			"no configuration variable is allowed since the variables list is empty in actionlint.yaml. you may forget adding the variable %q to the list",
+			n.Property,
+		)
+		return
+	}
+
+	for _, v := range sema.configVars {
+		if strings.EqualFold(v, n.Property) {
+			return
+		}
+	}
+
+	sema.errorf(
+		n,
+		"undefined configuration variable %q. defined configuration variables in actionlint.yaml are %s",
+		n.Property,
+		sortedQuotes(sema.configVars),
+	)
 }
 
 func (sema *ExprSemanticsChecker) checkArrayDeref(n *ArrayDerefNode) ExprType {

@@ -10,6 +10,7 @@ project directory.
 
 ```
 ├── some_project
+│   ├── actionlint.yaml
 │   ├── action
 │   │   └── action1.yaml
 │   └── workflows

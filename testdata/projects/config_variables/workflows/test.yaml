@@ -1,0 +1,14 @@
+on: push
+
+jobs:
+  test:
+    runs-on: ubuntu-latest
+    steps:
+      # These are listed
+      - run: echo '${{ vars.FOO }}'
+      - run: echo '${{ vars.WOO }}'
+      # Name is case-insensitive
+      - run: echo '${{ vars.foo }}'
+      - run: echo '${{ vars.Foo }}'
+      # ERROR: Undefined var
+      - run: echo '${{ vars.PIYO }}'
