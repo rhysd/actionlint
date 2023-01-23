@@ -58,17 +58,18 @@ func (r *RuleBase) Name() string {
 }
 
 // EnableDebug enables debug output from the rule. Given io.Writer instance is used to print debug
-// information to console
+// information to console.
 func (r *RuleBase) EnableDebug(out io.Writer) {
 	r.dbg = out
 }
 
-// SetConfig sets user configuration to the rule.
+// SetConfig populates user configuration of actionlint to the rule. When no config is set, rules
+// should behave as if the default configuration is set.
 func (r *RuleBase) SetConfig(cfg *Config) {
 	r.config = cfg
 }
 
-// Rule is an interface which all rule structs must meet
+// Rule is an interface which all rule structs must meet.
 type Rule interface {
 	Pass
 	Errs() []*Error

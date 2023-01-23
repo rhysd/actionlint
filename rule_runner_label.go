@@ -79,7 +79,6 @@ var defaultRunnerOSCompats = map[string]runnerOSCompat{
 // https://docs.github.com/en/actions/hosting-your-own-runners/using-self-hosted-runners-in-a-workflow .
 type RuleRunnerLabel struct {
 	RuleBase
-	knownLabels []string
 	// Note: Using only one compatibility integer is enough to check compatibility. But we remember
 	// all past compatibility values here for better error message. If accumulating all compatibility
 	// values into one integer, we can no longer know what labels are conflicting.
@@ -87,11 +86,10 @@ type RuleRunnerLabel struct {
 }
 
 // NewRuleRunnerLabel creates new RuleRunnerLabel instance.
-func NewRuleRunnerLabel(labels []string) *RuleRunnerLabel {
+func NewRuleRunnerLabel() *RuleRunnerLabel {
 	return &RuleRunnerLabel{
-		RuleBase:    RuleBase{name: "runner-label"},
-		knownLabels: labels,
-		compats:     nil,
+		RuleBase: RuleBase{name: "runner-label"},
+		compats:  nil,
 	}
 }
 
@@ -165,7 +163,8 @@ func (rule *RuleRunnerLabel) verifyRunnerLabel(label *String) runnerOSCompat {
 		}
 	}
 
-	for _, k := range rule.knownLabels {
+	known := rule.getKnownLabels()
+	for _, k := range known {
 		if strings.EqualFold(l, k) {
 			return compatInvalid
 		}
@@ -179,7 +178,7 @@ func (rule *RuleRunnerLabel) verifyRunnerLabel(label *String) runnerOSCompat {
 			allGitHubHostedRunnerLabels,
 			selfHostedRunnerPresetOtherLabels,
 			selfHostedRunnerPresetOSLabels,
-			rule.knownLabels,
+			known,
 		),
 	)
 
@@ -279,4 +278,11 @@ func (rule *RuleRunnerLabel) checkCombiCompat(comps []runnerOSCompat, labels []*
 			}
 		}
 	}
+}
+
+func (rule *RuleRunnerLabel) getKnownLabels() []string {
+	if rule.config == nil {
+		return nil
+	}
+	return rule.config.SelfHostedRunner.Labels
 }

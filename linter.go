@@ -483,16 +483,11 @@ func (l *Linter) check(
 	if w != nil {
 		dbg := l.debugWriter()
 
-		var labels []string
-		if cfg != nil {
-			labels = cfg.SelfHostedRunner.Labels
-		}
-
 		rules := []Rule{
 			NewRuleMatrix(),
 			NewRuleCredentials(),
 			NewRuleShellName(),
-			NewRuleRunnerLabel(labels),
+			NewRuleRunnerLabel(),
 			NewRuleEvents(),
 			NewRuleJobNeeds(),
 			NewRuleAction(localActions),
