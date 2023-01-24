@@ -1,0 +1,19 @@
+on: push
+
+jobs:
+  ok1:
+    runs-on: ubuntu-latest
+    steps:
+      - run: echo
+  ok2:
+    runs-on: label1
+    steps:
+      - run: echo
+  ok3:
+    runs-on: label2
+    steps:
+      - run: echo
+  err:
+    runs-on: label3
+    steps:
+      - run: echo
