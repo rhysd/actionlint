@@ -796,7 +796,11 @@ func (rule *RuleExpression) exprError(err *ExprError, lineBase, colBase int) {
 }
 
 func (rule *RuleExpression) checkSemanticsOfExprNode(expr ExprNode, line, col int, checkUntrusted bool, workflowKey string) (ExprType, bool) {
-	c := NewExprSemanticsChecker(checkUntrusted)
+	var v []string
+	if rule.config != nil {
+		v = rule.config.ConfigVariables
+	}
+	c := NewExprSemanticsChecker(checkUntrusted, v)
 	if rule.matrixTy != nil {
 		c.UpdateMatrix(rule.matrixTy)
 	}

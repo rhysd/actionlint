@@ -8,9 +8,10 @@ import (
 // RuleBase is a struct to be a base of rule structs. Embed this struct to define default methods
 // automatically
 type RuleBase struct {
-	name string
-	errs []*Error
-	dbg  io.Writer
+	name   string
+	errs   []*Error
+	dbg    io.Writer
+	config *Config
 }
 
 // VisitStep is callback when visiting Step node.
@@ -57,15 +58,22 @@ func (r *RuleBase) Name() string {
 }
 
 // EnableDebug enables debug output from the rule. Given io.Writer instance is used to print debug
-// information to console
+// information to console.
 func (r *RuleBase) EnableDebug(out io.Writer) {
 	r.dbg = out
 }
 
-// Rule is an interface which all rule structs must meet
+// SetConfig populates user configuration of actionlint to the rule. When no config is set, rules
+// should behave as if the default configuration is set.
+func (r *RuleBase) SetConfig(cfg *Config) {
+	r.config = cfg
+}
+
+// Rule is an interface which all rule structs must meet.
 type Rule interface {
 	Pass
 	Errs() []*Error
 	Name() string
 	EnableDebug(out io.Writer)
+	SetConfig(cfg *Config)
 }
