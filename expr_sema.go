@@ -398,10 +398,7 @@ func (sema *ExprSemanticsChecker) UpdateSecrets(ty *ObjectType) {
 // UpdateInputs updates 'inputs' context object to given object type.
 func (sema *ExprSemanticsChecker) UpdateInputs(ty *ObjectType) {
 	sema.ensureVarsCopied()
-	o, ok := sema.vars["inputs"].(*ObjectType)
-	if !ok {
-		return // Type of `inputs` may be `any` as the result of `Merge` method call
-	}
+	o := sema.vars["inputs"].(*ObjectType)
 	if len(o.Props) == 0 && o.IsStrict() {
 		sema.vars["inputs"] = ty
 		return

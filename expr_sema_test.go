@@ -1,6 +1,7 @@
 package actionlint
 
 import (
+	"fmt"
 	"strings"
 	"testing"
 	"unicode"
@@ -1300,6 +1301,62 @@ func TestExprSematincsCheckerUpdateDispatchInputsVarType(t *testing.T) {
 	o = BuiltinGlobalVariableTypes["github"].(*ObjectType).Props["event"].(*ObjectType)
 	if _, ok := o.Props["inputs"]; ok {
 		t.Error("Global github.event.inputs exists", o)
+	}
+}
+
+func TestExprSemanticsCheckerUpdateInputsMultipleTimes(t *testing.T) {
+	tests := []struct {
+		first  *ObjectType
+		second *ObjectType
+		want   *ObjectType
+	}{
+		{
+			first: NewStrictObjectType(map[string]ExprType{
+				"foo": StringType{},
+			}),
+			second: NewStrictObjectType(map[string]ExprType{
+				"bar": NumberType{},
+			}),
+			want: NewStrictObjectType(map[string]ExprType{
+				"foo": StringType{},
+				"bar": NumberType{},
+			}),
+		},
+		{
+			first: NewStrictObjectType(map[string]ExprType{
+				"foo": StringType{},
+			}),
+			second: NewStrictObjectType(map[string]ExprType{
+				"foo": StringType{},
+			}),
+			want: NewStrictObjectType(map[string]ExprType{
+				"foo": StringType{},
+			}),
+		},
+		{
+			first: NewStrictObjectType(map[string]ExprType{
+				"foo": BoolType{},
+			}),
+			second: NewStrictObjectType(map[string]ExprType{
+				"foo": NumberType{},
+			}),
+			want: NewStrictObjectType(map[string]ExprType{
+				"foo": AnyType{},
+			}),
+		},
+	}
+
+	for _, tc := range tests {
+		name := fmt.Sprintf("%v then %v", tc.first, tc.second)
+		t.Run(name, func(t *testing.T) {
+			c := NewExprSemanticsChecker(false, nil)
+			c.UpdateInputs(tc.first)
+			c.UpdateDispatchInputs(tc.second)
+			have := c.vars["inputs"]
+			if !cmp.Equal(have, tc.want) {
+				t.Fatal("Merged `inputs` type is unexpected", have, "v.s.", tc.want)
+			}
+		})
 	}
 }
 
