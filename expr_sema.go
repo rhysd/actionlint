@@ -398,7 +398,17 @@ func (sema *ExprSemanticsChecker) UpdateSecrets(ty *ObjectType) {
 // UpdateInputs updates 'inputs' context object to given object type.
 func (sema *ExprSemanticsChecker) UpdateInputs(ty *ObjectType) {
 	sema.ensureVarsCopied()
-	sema.vars["inputs"] = ty
+	o, ok := sema.vars["inputs"].(*ObjectType)
+	if !ok {
+		return // Type of `inputs` may be `any` as the result of `Merge` method call
+	}
+	if len(o.Props) == 0 && o.IsStrict() {
+		sema.vars["inputs"] = ty
+		return
+	}
+	// When both `workflow_call` and `workflow_dispatch` are the triggers of the workflow, `inputs` context can be used
+	// by both events. To cover both cases, merge `inputs` contexts into one object type. (#263)
+	sema.vars["inputs"] = o.Merge(ty)
 }
 
 // UpdateDispatchInputs updates 'github.event.inputs' and 'inputs' objects to given object type.
