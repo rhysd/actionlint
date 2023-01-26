@@ -569,6 +569,21 @@ var PopularActions = map[string]*ActionMetadata{
 			"origin":    {"origin"},
 		},
 	},
+	"actions/configure-pages@v3": {
+		Name: "Configure GitHub Pages",
+		Inputs: ActionMetadataInputs{
+			"enablement":            {"enablement", false},
+			"generator_config_file": {"generator_config_file", false},
+			"static_site_generator": {"static_site_generator", false},
+			"token":                 {"token", false},
+		},
+		Outputs: ActionMetadataOutputs{
+			"base_path": {"base_path"},
+			"base_url":  {"base_url"},
+			"host":      {"host"},
+			"origin":    {"origin"},
+		},
+	},
 	"actions/delete-package-versions@v1": {
 		Name: "Delete Package Versions",
 		Inputs: ActionMetadataInputs{
@@ -3543,6 +3558,12 @@ var PopularActions = map[string]*ActionMetadata{
 			"swiftlint_command_prefix":             {"swiftlint_command_prefix", false},
 			"swiftlint_dir":                        {"swiftlint_dir", false},
 			"swiftlint_extensions":                 {"swiftlint_extensions", false},
+			"tsc":                                  {"tsc", false},
+			"tsc_args":                             {"tsc_args", false},
+			"tsc_auto_fix":                         {"tsc_auto_fix", false},
+			"tsc_command_prefix":                   {"tsc_command_prefix", false},
+			"tsc_dir":                              {"tsc_dir", false},
+			"tsc_extensions":                       {"tsc_extensions", false},
 			"xo":                                   {"xo", false},
 			"xo_args":                              {"xo_args", false},
 			"xo_auto_fix":                          {"xo_auto_fix", false},
