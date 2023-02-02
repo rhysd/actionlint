@@ -16,6 +16,11 @@ type Config struct {
 		// Labels is label names for self-hosted runner.
 		Labels []string `yaml:"labels"`
 	} `yaml:"self-hosted-runner"`
+	// DisallowedLabels is configuration for disallowed runner labels.
+	DisallowedRunner struct {
+		// Labels is label names for runners.
+		Labels []string `yaml:"labels"`
+	} `yaml:"disallowed-runner"`
 	// ConfigVariables is names of configuration variables used in the checked workflows. When this value is nil,
 	// property names of `vars` context will not be checked. Otherwise actionlint will report a name which is not
 	// listed here as undefined config variables.

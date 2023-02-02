@@ -40,6 +40,21 @@ func TestConfigParseOK(t *testing.T) {
 			input:  "self-hosted-runner:\n  labels: [foo, bar]",
 			labels: []string{"foo", "bar"},
 		},
+		{
+			what:   "null disallowed-runner labels",
+			input:  "disallowed-runner:\n  labels:",
+			labels: nil,
+		},
+		{
+			what:   "empty disallowed-runner labels",
+			input:  "disallowed-runner:\n  labels: []",
+			labels: []string{},
+		},
+		{
+			what:   "disallowed-runner labels",
+			input:  "disallowed-runner:\n  labels: [foo, bar]",
+			labels: []string{"foo", "bar"},
+		},
 	}
 
 	for _, tc := range testCases {
@@ -49,8 +64,13 @@ func TestConfigParseOK(t *testing.T) {
 				t.Fatal(err)
 			}
 
-			if !cmp.Equal(c.SelfHostedRunner.Labels, tc.labels) {
-				t.Fatal(cmp.Diff(c.SelfHostedRunner.Labels, tc.labels))
+			if !cmp.Equal(c.SelfHostedRunner.Labels, tc.labels) && !cmp.Equal(c.DisallowedRunner.Labels, tc.labels) {
+				if !cmp.Equal(c.SelfHostedRunner.Labels, tc.labels) {
+					t.Fatal(cmp.Diff(c.SelfHostedRunner.Labels, tc.labels))
+				}
+				if !cmp.Equal(c.SelfHostedRunner.Labels, tc.labels) {
+					t.Fatal(cmp.Diff(c.SelfHostedRunner.Labels, tc.labels))
+				}
 			}
 		})
 	}

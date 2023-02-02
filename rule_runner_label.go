@@ -170,6 +170,19 @@ func (rule *RuleRunnerLabel) verifyRunnerLabel(label *String) runnerOSCompat {
 		}
 	}
 
+	disallowed := rule.getDisallowedRunnerLabels()
+	for _, k := range disallowed {
+		if l == k {
+			rule.errorf(
+				label.Pos,
+				"label %q is not allowed. unavailable labels are %s",
+				label.Value,
+				quotesAll(disallowed),
+			)
+			return compatInvalid
+		}
+	}
+
 	rule.errorf(
 		label.Pos,
 		"label %q is unknown. available labels are %s. if it is a custom label for self-hosted runner, set list of labels in actionlint.yaml config file",
@@ -285,4 +298,11 @@ func (rule *RuleRunnerLabel) getKnownLabels() []string {
 		return nil
 	}
 	return rule.config.SelfHostedRunner.Labels
+}
+
+func (rule *RuleRunnerLabel) getDisallowedRunnerLabels() []string {
+	if rule.config == nil {
+		return nil
+	}
+	return rule.config.DisallowedRunner.Labels
 }

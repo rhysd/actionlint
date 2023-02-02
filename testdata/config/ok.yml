@@ -2,3 +2,7 @@ self-hosted-runner:
   labels:
     - foo
     - bar
+disallowed-runner:
+  labels:
+    - foo
+    - bar
