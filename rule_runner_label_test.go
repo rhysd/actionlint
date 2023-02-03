@@ -7,11 +7,12 @@ import (
 
 func TestRuleRunnerLabelCheckLabels(t *testing.T) {
 	testCases := []struct {
-		what   string
-		labels []string
-		matrix []string
-		known  []string
-		errs   []string
+		what       string
+		labels     []string
+		matrix     []string
+		known      []string
+		disallowed []string
+		errs       []string
 	}{
 		// Normal cases
 		{
@@ -195,6 +196,12 @@ func TestRuleRunnerLabelCheckLabels(t *testing.T) {
 				`label "macos-latest" conflicts with label "windows-latest"`,
 			},
 		},
+		{
+			what:       "disallowed label",
+			disallowed: []string{"self-hosted"},
+			labels:     []string{"self-hosted"},
+			errs:       []string{`"self-hosted" is not allowed`},
+		},
 		// TODO: Add error tests for 'include:'
 	}
 
@@ -234,6 +241,7 @@ func TestRuleRunnerLabelCheckLabels(t *testing.T) {
 			rule := NewRuleRunnerLabel()
 			cfg := Config{}
 			cfg.SelfHostedRunner.Labels = tc.known
+			cfg.DisallowedRunner.Labels = tc.disallowed
 			rule.SetConfig(&cfg)
 			if err := rule.VisitJobPre(node); err != nil {
 				t.Fatal(err)

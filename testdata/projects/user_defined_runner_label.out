@@ -1,1 +1,3 @@
 /workflows/test\.yaml:17:14: label "label3" is unknown\. .+\[runner-label\]/
+/workflows/test\.yaml:21:14: label "disallowed1" is not allowed\. .+\[runner-label\]/
+/workflows/test\.yaml:25:14: label "disallowed2" is not allowed\. .+\[runner-label\]/

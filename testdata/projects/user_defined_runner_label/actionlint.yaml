@@ -1,5 +1,5 @@
 self-hosted-runner:
   labels: ['label1', 'label2']
 disallowed-runner:
-  labels: ['label1', 'label2']
+  labels: ['disallowed1', 'disallowed2']
 config-variables: null

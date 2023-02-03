@@ -13,7 +13,15 @@ jobs:
     runs-on: label2
     steps:
       - run: echo
-  err:
+  err1:
     runs-on: label3
+    steps:
+      - run: echo
+  err2:
+    runs-on: "disallowed1"
+    steps:
+      - run: echo
+  err3:
+    runs-on: "disallowed2"
     steps:
       - run: echo
