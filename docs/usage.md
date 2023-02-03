@@ -320,6 +320,38 @@ When you change your workflow and the changed line causes a new error, CI will a
 
 <img src="https://github.com/rhysd/ss/blob/master/actionlint/problem-matcher.png?raw=true" alt="annotation by Problem Matchers" width="715" height="221"/>
 
+### trunk
+
+[trunk](https://docs.trunk.io/docs) is an extendable superlinter with a builtin language server and preexisting issue detection. Actionlint is integrated [here](https://github.com/trunk-io/plugins).
+
+Once you have [initialized trunk in your repo](https://docs.trunk.io/docs/check-get-started), to enable at the latest actionlint version, just run:
+
+```bash
+trunk check enable actionlint
+```
+
+or if you'd like a specific version:
+```bash
+trunk check enable actionlint@1.6.23
+```
+
+or modify `.trunk/trunk.yaml` in your repo to contain:
+```yaml
+lint:
+  enabled:
+    - actionlint@1.6.23
+```
+
+Then just run:
+```bash
+trunk check
+```
+
+and it will check your modified files via actionlint, if applicable, and show you the results. Trunk also will detect preexisting issues and highlight only the newly added actionlint issues. For more information, check the [trunk docs](https://docs.trunk.io/docs/check).
+
+You can also see actionlint issues inline in VS Code via the [Trunk VS Code extension](https://marketplace.visualstudio.com/items?itemName=trunk.io).
+
+
 ### super-linter
 
 [super-linter][] is a Bash script for a simple combination of various linters, provided by GitHub. It has support for actionlint.
