@@ -157,6 +157,19 @@ func (rule *RuleRunnerLabel) verifyRunnerLabel(label *String) runnerOSCompat {
 		return c
 	}
 
+	disallowed := rule.getDisallowedRunnerLabels()
+	for _, f := range disallowed {
+		if strings.EqualFold(l, f) {
+			rule.errorf(
+				label.Pos,
+				"label %q is not allowed. disallowed labels are %s",
+				label.Value,
+				quotesAll(disallowed),
+			)
+			return compatInvalid
+		}
+	}
+
 	for _, p := range selfHostedRunnerPresetOtherLabels {
 		if strings.EqualFold(l, p) {
 			return compatInvalid
@@ -166,19 +179,6 @@ func (rule *RuleRunnerLabel) verifyRunnerLabel(label *String) runnerOSCompat {
 	known := rule.getKnownLabels()
 	for _, k := range known {
 		if strings.EqualFold(l, k) {
-			return compatInvalid
-		}
-	}
-
-	disallowed := rule.getDisallowedRunnerLabels()
-	for _, k := range disallowed {
-		if l == k {
-			rule.errorf(
-				label.Pos,
-				"label %q is not allowed. unavailable labels are %s",
-				label.Value,
-				quotesAll(disallowed),
-			)
 			return compatInvalid
 		}
 	}
