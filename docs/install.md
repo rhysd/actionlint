@@ -21,6 +21,14 @@ choco install actionlint
 scoop install actionlint
 ```
 
+### [Winget](https://learn.microsoft.com/en-us/windows/package-manager/)
+
+[`actionlint`](https://github.com/microsoft/winget-pkgs/tree/master/manifests/r/rhysd/actionlint) is available in the winget-pkgs repo:
+
+```powershell
+winget install actionlint
+```
+
 ## Linux
 
 ### [AUR](https://aur.archlinux.org/)
