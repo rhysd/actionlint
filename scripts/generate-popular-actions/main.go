@@ -259,8 +259,8 @@ var popularActions = []*action{
 		next: "v5"}, // v1 does not exist
 	{
 		slug: "docker/build-push-action",
-		tags: []string{"v1", "v2", "v3"},
-		next: "v4",
+		tags: []string{"v1", "v2", "v3", "v4"},
+		next: "v5",
 	},
 	{
 		slug: "docker/login-action",

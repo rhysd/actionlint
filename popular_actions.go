@@ -480,6 +480,7 @@ var PopularActions = map[string]*ActionMetadata{
 		Name: "Cache",
 		Inputs: ActionMetadataInputs{
 			"enablecrossosarchive": {"enableCrossOsArchive", false},
+			"fail-on-cache-miss":   {"fail-on-cache-miss", false},
 			"key":                  {"key", true},
 			"path":                 {"path", true},
 			"restore-keys":         {"restore-keys", false},
@@ -1867,6 +1868,46 @@ var PopularActions = map[string]*ActionMetadata{
 			"metadata": {"metadata"},
 		},
 	},
+	"docker/build-push-action@v4": {
+		Name: "Build and push Docker images",
+		Inputs: ActionMetadataInputs{
+			"add-hosts":        {"add-hosts", false},
+			"allow":            {"allow", false},
+			"attests":          {"attests", false},
+			"build-args":       {"build-args", false},
+			"build-contexts":   {"build-contexts", false},
+			"builder":          {"builder", false},
+			"cache-from":       {"cache-from", false},
+			"cache-to":         {"cache-to", false},
+			"cgroup-parent":    {"cgroup-parent", false},
+			"context":          {"context", false},
+			"file":             {"file", false},
+			"github-token":     {"github-token", false},
+			"labels":           {"labels", false},
+			"load":             {"load", false},
+			"network":          {"network", false},
+			"no-cache":         {"no-cache", false},
+			"no-cache-filters": {"no-cache-filters", false},
+			"outputs":          {"outputs", false},
+			"platforms":        {"platforms", false},
+			"provenance":       {"provenance", false},
+			"pull":             {"pull", false},
+			"push":             {"push", false},
+			"sbom":             {"sbom", false},
+			"secret-files":     {"secret-files", false},
+			"secrets":          {"secrets", false},
+			"shm-size":         {"shm-size", false},
+			"ssh":              {"ssh", false},
+			"tags":             {"tags", false},
+			"target":           {"target", false},
+			"ulimit":           {"ulimit", false},
+		},
+		Outputs: ActionMetadataOutputs{
+			"digest":   {"digest"},
+			"imageid":  {"imageid"},
+			"metadata": {"metadata"},
+		},
+	},
 	"docker/login-action@v1": {
 		Name: "Docker Login",
 		Inputs: ActionMetadataInputs{
@@ -2071,6 +2112,7 @@ var PopularActions = map[string]*ActionMetadata{
 		},
 		Outputs: ActionMetadataOutputs{
 			"cachekey": {"cachekey"},
+			"name":     {"name"},
 		},
 	},
 	"dtolnay/rust-toolchain@nightly": {
@@ -2083,6 +2125,7 @@ var PopularActions = map[string]*ActionMetadata{
 		},
 		Outputs: ActionMetadataOutputs{
 			"cachekey": {"cachekey"},
+			"name":     {"name"},
 		},
 	},
 	"dtolnay/rust-toolchain@stable": {
@@ -2095,6 +2138,7 @@ var PopularActions = map[string]*ActionMetadata{
 		},
 		Outputs: ActionMetadataOutputs{
 			"cachekey": {"cachekey"},
+			"name":     {"name"},
 		},
 	},
 	"enriikke/gatsby-gh-pages-action@v2": {

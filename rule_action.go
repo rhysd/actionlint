@@ -74,7 +74,6 @@ func (rule *RuleAction) checkRepoAction(spec string, exec *ExecAction) {
 	repo := s
 	if idx := strings.IndexRune(s, '/'); idx >= 0 {
 		repo = s[:idx]
-		// path = s[idx+1:]
 	}
 
 	if owner == "" || repo == "" || ref == "" {
