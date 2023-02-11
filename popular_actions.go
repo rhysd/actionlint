@@ -140,6 +140,7 @@ var PopularActions = map[string]*ActionMetadata{
 			"json_test_case_results":           {"json_test_case_results", false},
 			"json_thousands_separator":         {"json_thousands_separator", false},
 			"junit_files":                      {"junit_files", false},
+			"large_files":                      {"large_files", false},
 			"nunit_files":                      {"nunit_files", false},
 			"pull_request_build":               {"pull_request_build", false},
 			"report_individual_runs":           {"report_individual_runs", false},
