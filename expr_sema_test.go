@@ -1,6 +1,7 @@
 package actionlint
 
 import (
+	"fmt"
 	"strings"
 	"testing"
 	"unicode"
@@ -22,6 +23,7 @@ func TestExprSemanticsCheckOK(t *testing.T) {
 		jobs          *ObjectType
 		availContexts []string
 		availSPFuncs  []string
+		configVars    []string
 	}{
 		{
 			what:     "null",
@@ -645,6 +647,23 @@ func TestExprSemanticsCheckOK(t *testing.T) {
 			expected:     StringType{},
 			availSPFuncs: []string{"hashfiles"},
 		},
+		{
+			what:     "configuration variable",
+			input:    "vars.SOME_VARIABLE",
+			expected: StringType{},
+		},
+		{
+			what:       "known configuration variable",
+			input:      "vars.SOME_VARIABLE",
+			expected:   StringType{},
+			configVars: []string{"SOME_VARIABLE"},
+		},
+		{
+			what:       "configuration variable name is case insensitive",
+			input:      "vars.SOME_VARIABLE",
+			expected:   StringType{},
+			configVars: []string{"some_variable"},
+		},
 	}
 
 	allSPFuncs := []string{}
@@ -660,7 +679,7 @@ func TestExprSemanticsCheckOK(t *testing.T) {
 				t.Fatal("Parse error:", tc.input)
 			}
 
-			c := NewExprSemanticsChecker(false)
+			c := NewExprSemanticsChecker(false, nil)
 			if tc.funcs != nil {
 				c.funcs = tc.funcs
 			}
@@ -732,15 +751,16 @@ func TestExprBuiltinFunctionSignatures(t *testing.T) {
 
 func TestExprSemanticsCheckError(t *testing.T) {
 	testCases := []struct {
-		what     string
-		input    string
-		expected []string
-		funcs    map[string][]*FuncSignature
-		matrix   *ObjectType
-		steps    *ObjectType
-		needs    *ObjectType
-		availCtx []string
-		availSP  []string
+		what       string
+		input      string
+		expected   []string
+		funcs      map[string][]*FuncSignature
+		matrix     *ObjectType
+		steps      *ObjectType
+		needs      *ObjectType
+		availCtx   []string
+		availSP    []string
+		configVars []string
 	}{
 		{
 			what:  "undefined variable",
@@ -1147,6 +1167,36 @@ func TestExprSemanticsCheckError(t *testing.T) {
 			},
 			availSP: []string{"fail"},
 		},
+		{
+			what:  "no configuration variable is allowed",
+			input: "vars.UNKNOWN_VARIABLE",
+			expected: []string{
+				"no configuration variable is allowed since the variables list is empty",
+			},
+			configVars: []string{},
+		},
+		{
+			what:  "unknown configuration variable",
+			input: "vars.UNKNOWN_VARIABLE",
+			expected: []string{
+				"undefined configuration variable \"unknown_variable\".",
+			},
+			configVars: []string{"FOO_BAR"},
+		},
+		{
+			what:  "config variable naming convention",
+			input: "vars.FOO-BAR",
+			expected: []string{
+				"configuration variable name \"foo-bar\" can only contain alphabets, decimal numbers, and '_'.",
+			},
+		},
+		{
+			what:  "config variable name cannot start with GITHUB_",
+			input: "vars.GITHUB_FOOOOOOOO",
+			expected: []string{
+				"must not start with the GITHUB_ prefix",
+			},
+		},
 	}
 
 	allSP := []string{}
@@ -1162,7 +1212,7 @@ func TestExprSemanticsCheckError(t *testing.T) {
 				t.Fatal("Parse error:", tc.input)
 			}
 
-			c := NewExprSemanticsChecker(false)
+			c := NewExprSemanticsChecker(false, tc.configVars)
 			if tc.funcs != nil {
 				c.funcs = tc.funcs // Set functions for testing
 			}
@@ -1201,7 +1251,7 @@ func TestExprSemanticsCheckError(t *testing.T) {
 }
 
 func TestExprSemanticsCheckerUpdateMatrix(t *testing.T) {
-	c := NewExprSemanticsChecker(false)
+	c := NewExprSemanticsChecker(false, nil)
 	ty := NewEmptyObjectType()
 	prev := c.vars["matrix"]
 	c.UpdateMatrix(ty)
@@ -1216,7 +1266,7 @@ func TestExprSemanticsCheckerUpdateMatrix(t *testing.T) {
 }
 
 func TestExprSemanticsCheckerUpdateSteps(t *testing.T) {
-	c := NewExprSemanticsChecker(false)
+	c := NewExprSemanticsChecker(false, nil)
 	ty := NewEmptyObjectType()
 	prev := c.vars["steps"]
 	c.UpdateSteps(ty)
@@ -1232,7 +1282,7 @@ func TestExprSemanticsCheckerUpdateSteps(t *testing.T) {
 
 func TestExprSematincsCheckerUpdateDispatchInputsVarType(t *testing.T) {
 	ty := NewStrictObjectType(map[string]ExprType{"foo": NullType{}})
-	c := NewExprSemanticsChecker(false)
+	c := NewExprSemanticsChecker(false, nil)
 	c.UpdateDispatchInputs(ty)
 	o := c.vars["github"].(*ObjectType).Props["event"].(*ObjectType).Props["inputs"].(*ObjectType)
 	if _, ok := o.Props["foo"]; !ok {
@@ -1251,6 +1301,62 @@ func TestExprSematincsCheckerUpdateDispatchInputsVarType(t *testing.T) {
 	o = BuiltinGlobalVariableTypes["github"].(*ObjectType).Props["event"].(*ObjectType)
 	if _, ok := o.Props["inputs"]; ok {
 		t.Error("Global github.event.inputs exists", o)
+	}
+}
+
+func TestExprSemanticsCheckerUpdateInputsMultipleTimes(t *testing.T) {
+	tests := []struct {
+		first  *ObjectType
+		second *ObjectType
+		want   *ObjectType
+	}{
+		{
+			first: NewStrictObjectType(map[string]ExprType{
+				"foo": StringType{},
+			}),
+			second: NewStrictObjectType(map[string]ExprType{
+				"bar": NumberType{},
+			}),
+			want: NewStrictObjectType(map[string]ExprType{
+				"foo": StringType{},
+				"bar": NumberType{},
+			}),
+		},
+		{
+			first: NewStrictObjectType(map[string]ExprType{
+				"foo": StringType{},
+			}),
+			second: NewStrictObjectType(map[string]ExprType{
+				"foo": StringType{},
+			}),
+			want: NewStrictObjectType(map[string]ExprType{
+				"foo": StringType{},
+			}),
+		},
+		{
+			first: NewStrictObjectType(map[string]ExprType{
+				"foo": BoolType{},
+			}),
+			second: NewStrictObjectType(map[string]ExprType{
+				"foo": NumberType{},
+			}),
+			want: NewStrictObjectType(map[string]ExprType{
+				"foo": AnyType{},
+			}),
+		},
+	}
+
+	for _, tc := range tests {
+		name := fmt.Sprintf("%v then %v", tc.first, tc.second)
+		t.Run(name, func(t *testing.T) {
+			c := NewExprSemanticsChecker(false, nil)
+			c.UpdateInputs(tc.first)
+			c.UpdateDispatchInputs(tc.second)
+			have := c.vars["inputs"]
+			if !cmp.Equal(have, tc.want) {
+				t.Fatal("Merged `inputs` type is unexpected", have, "v.s.", tc.want)
+			}
+		})
 	}
 }
 

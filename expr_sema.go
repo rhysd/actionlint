@@ -194,39 +194,45 @@ var BuiltinFuncSignatures = map[string][]*FuncSignature{
 var BuiltinGlobalVariableTypes = map[string]ExprType{
 	// https://docs.github.com/en/actions/learn-github-actions/contexts#github-context
 	"github": NewStrictObjectType(map[string]ExprType{
-		"action":            StringType{},
-		"action_path":       StringType{},
-		"action_ref":        StringType{},
-		"action_repository": StringType{},
-		"action_status":     StringType{},
-		"actor":             StringType{},
-		"api_url":           StringType{},
-		"base_ref":          StringType{},
-		"env":               StringType{},
-		"event":             NewEmptyObjectType(), // Note: Stricter type check for this payload would be possible
-		"event_name":        StringType{},
-		"event_path":        StringType{},
-		"graphql_url":       StringType{},
-		"head_ref":          StringType{},
-		"job":               StringType{},
-		"ref":               StringType{},
-		"ref_name":          StringType{},
-		"ref_protected":     StringType{},
-		"ref_type":          StringType{},
-		"path":              StringType{},
-		"repository":        StringType{},
-		"repository_owner":  StringType{},
-		"repositoryurl":     StringType{}, // repositoryUrl
-		"retention_days":    NumberType{},
-		"run_id":            StringType{},
-		"run_number":        StringType{},
-		"run_attempt":       StringType{},
-		"server_url":        StringType{},
-		"sha":               StringType{},
-		"token":             StringType{},
-		"triggering_actor":  StringType{},
-		"workflow":          StringType{},
-		"workspace":         StringType{},
+		"action":              StringType{},
+		"action_path":         StringType{},
+		"action_ref":          StringType{},
+		"action_repository":   StringType{},
+		"action_status":       StringType{},
+		"actor":               StringType{},
+		"actor_id":            StringType{},
+		"api_url":             StringType{},
+		"base_ref":            StringType{},
+		"env":                 StringType{},
+		"event":               NewEmptyObjectType(), // Note: Stricter type check for this payload would be possible
+		"event_name":          StringType{},
+		"event_path":          StringType{},
+		"graphql_url":         StringType{},
+		"head_ref":            StringType{},
+		"job":                 StringType{},
+		"job_workflow_sha":    StringType{},
+		"ref":                 StringType{},
+		"ref_name":            StringType{},
+		"ref_protected":       StringType{},
+		"ref_type":            StringType{},
+		"path":                StringType{},
+		"repository":          StringType{},
+		"repository_id":       StringType{},
+		"repository_owner":    StringType{},
+		"repository_owner_id": StringType{},
+		"repositoryurl":       StringType{}, // repositoryUrl
+		"retention_days":      NumberType{},
+		"run_id":              StringType{},
+		"run_number":          StringType{},
+		"run_attempt":         StringType{},
+		"server_url":          StringType{},
+		"sha":                 StringType{},
+		"token":               StringType{},
+		"triggering_actor":    StringType{},
+		"workflow":            StringType{},
+		"workflow_ref":        StringType{},
+		"workflow_sha":        StringType{},
+		"workspace":           StringType{},
 	}),
 	// https://docs.github.com/en/actions/learn-github-actions/contexts#env-context
 	"env": NewMapObjectType(StringType{}), // env.<env_name>
@@ -255,7 +261,6 @@ var BuiltinGlobalVariableTypes = map[string]ExprType{
 		"temp":       StringType{},
 		"tool_cache": StringType{},
 		"debug":      StringType{},
-		"workspace":  StringType{},
 	}),
 	// https://docs.github.com/en/actions/learn-github-actions/contexts#secrets-context
 	"secrets": NewMapObjectType(StringType{}),
@@ -273,6 +278,8 @@ var BuiltinGlobalVariableTypes = map[string]ExprType{
 	// https://docs.github.com/en/actions/learn-github-actions/contexts#inputs-context
 	// https://docs.github.com/en/actions/learn-github-actions/reusing-workflows
 	"inputs": NewEmptyStrictObjectType(),
+	// https://docs.github.com/en/actions/learn-github-actions/contexts#vars-context
+	"vars": NewMapObjectType(StringType{}), // vars.<var_name>
 }
 
 // Semantics checker
@@ -292,16 +299,18 @@ type ExprSemanticsChecker struct {
 	untrusted             *UntrustedInputChecker
 	availableContexts     []string
 	availableSpecialFuncs []string
+	configVars            []string
 }
 
 // NewExprSemanticsChecker creates new ExprSemanticsChecker instance. When checkUntrustedInput is
 // set to true, the checker will make use of possibly untrusted inputs error.
-func NewExprSemanticsChecker(checkUntrustedInput bool) *ExprSemanticsChecker {
+func NewExprSemanticsChecker(checkUntrustedInput bool, configVars []string) *ExprSemanticsChecker {
 	c := &ExprSemanticsChecker{
 		funcs:           BuiltinFuncSignatures,
 		vars:            BuiltinGlobalVariableTypes,
 		varsCopied:      false,
 		githubVarCopied: false,
+		configVars:      configVars,
 	}
 	if checkUntrustedInput {
 		c.untrusted = NewUntrustedInputChecker(BuiltinUntrustedInputs)
@@ -389,7 +398,14 @@ func (sema *ExprSemanticsChecker) UpdateSecrets(ty *ObjectType) {
 // UpdateInputs updates 'inputs' context object to given object type.
 func (sema *ExprSemanticsChecker) UpdateInputs(ty *ObjectType) {
 	sema.ensureVarsCopied()
-	sema.vars["inputs"] = ty
+	o := sema.vars["inputs"].(*ObjectType)
+	if len(o.Props) == 0 && o.IsStrict() {
+		sema.vars["inputs"] = ty
+		return
+	}
+	// When both `workflow_call` and `workflow_dispatch` are the triggers of the workflow, `inputs` context can be used
+	// by both events. To cover both cases, merge `inputs` contexts into one object type. (#263)
+	sema.vars["inputs"] = o.Merge(ty)
 }
 
 // UpdateDispatchInputs updates 'github.event.inputs' and 'inputs' objects to given object type.
@@ -523,6 +539,9 @@ func (sema *ExprSemanticsChecker) checkObjectDeref(n *ObjectDerefNode) ExprType 
 			return t
 		}
 		if ty.Mapped != nil {
+			if v, ok := n.Receiver.(*VariableNode); ok && v.Name == "vars" {
+				sema.checkConfigVariables(n)
+			}
 			return ty.Mapped
 		}
 		if ty.IsStrict() {
@@ -562,6 +581,56 @@ func (sema *ExprSemanticsChecker) checkObjectDeref(n *ObjectDerefNode) ExprType 
 		sema.errorf(n, "receiver of object dereference %q must be type of object but got %q", n.Property, ty.String())
 		return AnyType{}
 	}
+}
+
+func (sema *ExprSemanticsChecker) checkConfigVariables(n *ObjectDerefNode) {
+	// https://docs.github.com/en/actions/learn-github-actions/variables#naming-conventions-for-configuration-variables
+	if strings.HasPrefix(n.Property, "github_") {
+		sema.errorf(
+			n,
+			"configuration variable name %q must not start with the GITHUB_ prefix (case insensitive). note: see the convention at https://docs.github.com/en/actions/learn-github-actions/variables#naming-conventions-for-configuration-variables",
+			n.Property,
+		)
+		return
+	}
+	for _, r := range n.Property {
+		// Note: `n.Property` was already converted to lower case by parser
+		// Note: First character cannot be number, but it was already checked by parser
+		if '0' <= r && r <= '9' || 'a' <= r && r <= 'z' || r == '_' {
+			continue
+		}
+		sema.errorf(
+			n,
+			"configuration variable name %q can only contain alphabets, decimal numbers, and '_'. note: see the convention at https://docs.github.com/en/actions/learn-github-actions/variables#naming-conventions-for-configuration-variables",
+			n.Property,
+		)
+		return
+	}
+
+	if sema.configVars == nil {
+		return
+	}
+	if len(sema.configVars) == 0 {
+		sema.errorf(
+			n,
+			"no configuration variable is allowed since the variables list is empty in actionlint.yaml. you may forget adding the variable %q to the list",
+			n.Property,
+		)
+		return
+	}
+
+	for _, v := range sema.configVars {
+		if strings.EqualFold(v, n.Property) {
+			return
+		}
+	}
+
+	sema.errorf(
+		n,
+		"undefined configuration variable %q. defined configuration variables in actionlint.yaml are %s",
+		n.Property,
+		sortedQuotes(sema.configVars),
+	)
 }
 
 func (sema *ExprSemanticsChecker) checkArrayDeref(n *ArrayDerefNode) ExprType {

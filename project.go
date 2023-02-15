@@ -58,9 +58,9 @@ func (p *Project) Knows(path string) bool {
 	return strings.HasPrefix(absPath(path), p.root)
 }
 
-// Config returns config object of the GitHub project repository. The config file is read from
+// LoadConfig returns config object of the GitHub project repository. The config file is read from
 // ".github/actionlint.yaml" or ".github/actionlint.yml".
-func (p *Project) Config() (*Config, error) {
+func (p *Project) LoadConfig() (*Config, error) {
 	if p.config != nil {
 		return p.config, nil
 	}

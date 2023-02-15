@@ -7,7 +7,7 @@ This document describes how to install [actionlint](../docs).
 
 ### [Chocolatey](https://chocolatey.org/)
 
-[`actionlint`](https://community.chocolatey.org/packages/actionlint) is available in the community repo:
+[`actionlint` package][chocolatey] is available in the community repo:
 
 ```powershell
 choco install actionlint
@@ -15,17 +15,25 @@ choco install actionlint
 
 ### [Scoop](https://scoop.sh/)
 
-[`actionlint`](https://scoop.sh/#/apps?q=actionlint&s=0&d=1&o=true) is available in the main bucket:
+[`actionlint` package][scoop] is available in the main bucket:
 
 ```powershell
 scoop install actionlint
+```
+
+### [Winget](https://learn.microsoft.com/en-us/windows/package-manager/)
+
+[`actionlint` package][winget] is available in the winget-pkgs repo:
+
+```powershell
+winget install actionlint
 ```
 
 ## Linux
 
 ### [AUR](https://aur.archlinux.org/)
 
-[`actionlint`](https://aur.archlinux.org/packages/actionlint) is available in the AUR:
+[`actionlint` package][aur] is available in the AUR:
 
 ```sh
 paru -S actionlint
@@ -138,3 +146,7 @@ go install github.com/rhysd/actionlint/cmd/actionlint
 [Go]: https://golang.org/
 [asdf]: https://asdf-vm.com/
 [asdf-plugin]: https://github.com/crazy-matt/asdf-actionlint
+[chocolatey]: https://community.chocolatey.org/packages/actionlint
+[scoop]: https://scoop.sh/#/apps?q=actionlint&s=0&d=1&o=true
+[winget]: https://github.com/microsoft/winget-pkgs/tree/master/manifests/r/rhysd/actionlint
+[aur]: https://aur.archlinux.org/packages/actionlint

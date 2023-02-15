@@ -231,7 +231,10 @@ func TestRuleRunnerLabelCheckLabels(t *testing.T) {
 				node.Strategy = st
 			}
 
-			rule := NewRuleRunnerLabel(tc.known)
+			rule := NewRuleRunnerLabel()
+			cfg := Config{}
+			cfg.SelfHostedRunner.Labels = tc.known
+			rule.SetConfig(&cfg)
 			if err := rule.VisitJobPre(node); err != nil {
 				t.Fatal(err)
 			}
@@ -251,7 +254,7 @@ func TestRuleRunnerLabelCheckLabels(t *testing.T) {
 }
 
 func TestRuleRunnerLabelDoNothingOnNoRunsOn(t *testing.T) {
-	rule := NewRuleRunnerLabel([]string{})
+	rule := NewRuleRunnerLabel()
 	if err := rule.VisitJobPre(&Job{}); err != nil {
 		t.Fatal(err)
 	}

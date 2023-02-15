@@ -217,13 +217,14 @@ func TestLinterLintProject(t *testing.T) {
 			opts := LinterOptions{
 				WorkingDir: repo,
 			}
+			cfg := filepath.Join(repo, "actionlint.yaml")
+			if _, err := os.Stat(cfg); err == nil {
+				opts.ConfigFile = cfg
+			}
 			linter, err := NewLinter(io.Discard, &opts)
 			if err != nil {
 				t.Fatal(err)
 			}
-
-			config := Config{}
-			linter.defaultConfig = &config
 
 			proj := &Project{root: repo}
 			errs, err := linter.LintDir(filepath.Join(repo, "workflows"), proj)

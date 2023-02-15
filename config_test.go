@@ -70,7 +70,7 @@ func TestConfigParseError(t *testing.T) {
 
 func TestConfigReadFileOK(t *testing.T) {
 	p := filepath.Join("testdata", "config", "ok.yml")
-	c, err := readConfigFile(p)
+	c, err := ReadConfigFile(p)
 	if err != nil {
 		t.Fatal(err)
 	}
@@ -82,7 +82,7 @@ func TestConfigReadFileOK(t *testing.T) {
 
 func TestConfigReadFileReadError(t *testing.T) {
 	p := filepath.Join("testdata", "config", "does-not-exist.yml")
-	_, err := readConfigFile(p)
+	_, err := ReadConfigFile(p)
 	if err == nil {
 		t.Fatal("error did not occur")
 	}
@@ -94,7 +94,7 @@ func TestConfigReadFileReadError(t *testing.T) {
 
 func TestConfigReadFileParseError(t *testing.T) {
 	p := filepath.Join("testdata", "config", "broken.yml")
-	_, err := readConfigFile(p)
+	_, err := ReadConfigFile(p)
 	if err == nil {
 		t.Fatal("error did not occur")
 	}
@@ -115,8 +115,15 @@ func TestConfigGenerateDefaultConfigFileOK(t *testing.T) {
 	if err := writeDefaultConfigFile(f); err != nil {
 		t.Fatal(err)
 	}
-	if _, err := readConfigFile(f); err != nil {
+	c, err := ReadConfigFile(f)
+	if err != nil {
 		t.Fatal(err)
+	}
+	if len(c.SelfHostedRunner.Labels) != 0 {
+		t.Fatal(c.SelfHostedRunner.Labels)
+	}
+	if c.ConfigVariables != nil {
+		t.Fatal(c.SelfHostedRunner.Labels)
 	}
 }
 

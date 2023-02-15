@@ -1,2 +1,2 @@
-test.yaml:6:15: context "env" is not allowed here. available contexts are "github", "inputs", "secrets". see https://docs.github.com/en/actions/learn-github-actions/contexts#context-availability for more details [expression]
-test.yaml:14:19: context "env" is not allowed here. available contexts are "github", "inputs", "matrix", "needs", "secrets", "strategy". see https://docs.github.com/en/actions/learn-github-actions/contexts#context-availability for more details [expression]
+test.yaml:6:15: context "env" is not allowed here. available contexts are "github", "inputs", "secrets", "vars". see https://docs.github.com/en/actions/learn-github-actions/contexts#context-availability for more details [expression]
+test.yaml:14:19: context "env" is not allowed here. available contexts are "github", "inputs", "matrix", "needs", "secrets", "strategy", "vars". see https://docs.github.com/en/actions/learn-github-actions/contexts#context-availability for more details [expression]

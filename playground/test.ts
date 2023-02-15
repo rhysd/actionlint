@@ -3,7 +3,11 @@ import { promises as fs } from 'fs';
 import { strict as assert } from 'assert';
 import { Crypto } from '@peculiar/webcrypto';
 
-globalThis.crypto = new Crypto();
+// This polyfill is necessary for Node.js v18 or earlier. `global.crypto` was added at v19.
+// https://github.com/nodejs/node/pull/42083/files
+if (typeof globalThis.crypto === 'undefined') {
+    globalThis.crypto = new Crypto();
+}
 
 // Inject global.Go
 require('./lib/js/wasm_exec.js');
