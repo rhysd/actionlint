@@ -39,6 +39,21 @@ winget install actionlint
 paru -S actionlint
 ```
 
+### [Nix](https://nixos.wiki/)
+
+[`actionlint` package][nixpkgs] is available in the Nix ecosystem:
+
+On NixOS:
+
+```sh
+nix-env -iA nixos.actionlint
+```
+
+On Non NixOS:
+
+```sh
+nix-env -iA nixpkgs.actionlint
+```
 
 ## macOS
 
@@ -150,3 +165,4 @@ go install github.com/rhysd/actionlint/cmd/actionlint
 [scoop]: https://scoop.sh/#/apps?q=actionlint&s=0&d=1&o=true
 [winget]: https://github.com/microsoft/winget-pkgs/tree/master/manifests/r/rhysd/actionlint
 [aur]: https://aur.archlinux.org/packages/actionlint
+[nixpkgs]: https://github.com/NixOS/nixpkgs/blob/master/pkgs/development/tools/analysis/actionlint/default.nix
