@@ -116,6 +116,26 @@ Another option to try actionlint is [the online playground][playground]. Your br
 
 See [the usage document](docs/usage.md) for more details.
 
+Running this from inside a workflow to check all workflows in the current repo is also possible:
+``` yaml
+name: Lint GitHub Actions workflows
+on: [push, pull_request, workflow_dispatch]
+
+permissions:
+  contents: read
+
+jobs:
+  actionlint:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@ac593985615ec2ede58e132d2e21d2b1cbd6127c # v3.3.0
+      
+      - name: Check workflow files
+        uses: docker://rhysd/actionlint@sha256:5f957b2a08d223e48133e1a914ed046bea12e578fe2f6ae4de47fdbe691a2468 # 1.6.22
+        with:
+          args: -color
+```
+
 ## Documents
 
 - [Checks](docs/checks.md): Full list of all checks done by actionlint with example inputs, outputs, and playground links.
