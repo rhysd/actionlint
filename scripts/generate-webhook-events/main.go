@@ -129,21 +129,21 @@ var AllWebhookTypes = map[string][]string {`)
 	}
 
 	numHooks := 0
-	sawHeading := false
+	sawAbout := false
 	currentHook := ""
 Toplevel:
 	for n := root.FirstChild(); n != nil; n = n.NextSibling() {
 		k := n.Kind()
-		if !sawHeading {
-			// When '## Available events'
-			if h, ok := n.(*ast.Heading); ok && h.Level == 2 && string(h.Text(src)) == "Available events" {
-				sawHeading = true
-				dbg.Println("Found \"Available events\" heading")
+		if !sawAbout {
+			// When '## About events that trigger workflows'
+			if h, ok := n.(*ast.Heading); ok && h.Level == 2 && string(h.Text(src)) == "About events that trigger workflows" {
+				sawAbout = true
+				dbg.Println("Found \"About events that trigger workflows\" heading")
 			}
 			continue
 		}
 
-		if h, ok := n.(*ast.Heading); ok && h.Level == 3 {
+		if h, ok := n.(*ast.Heading); ok && h.Level == 2 {
 			currentHook = string(h.Text(src))
 			dbg.Printf("Found new hook %q\n", currentHook)
 			continue
@@ -180,8 +180,8 @@ Toplevel:
 	}
 	fmt.Fprintln(buf, "}")
 
-	if !sawHeading {
-		return errors.New("\"## Available events\" heading was missing")
+	if !sawAbout {
+		return errors.New("\"## About events that trigger workflows\" heading was missing")
 	}
 
 	if numHooks == 0 {

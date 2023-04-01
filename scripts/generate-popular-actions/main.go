@@ -146,8 +146,8 @@ var popularActions = []*action{
 	},
 	{
 		slug: "actions/deploy-pages",
-		tags: []string{"v1"},
-		next: "v2",
+		tags: []string{"v1", "v2"},
+		next: "v3",
 	},
 	{
 		slug: "actions/delete-package-versions",
@@ -180,8 +180,8 @@ var popularActions = []*action{
 	},
 	{
 		slug: "actions/setup-go",
-		tags: []string{"v1", "v2", "v3"},
-		next: "v4",
+		tags: []string{"v1", "v2", "v3", "v4"},
+		next: "v5",
 	},
 	{
 		slug: "actions/setup-java",
@@ -200,8 +200,8 @@ var popularActions = []*action{
 	},
 	{
 		slug: "actions/stale",
-		tags: []string{"v1", "v2", "v3", "v4", "v5", "v6", "v7"},
-		next: "v8",
+		tags: []string{"v1", "v2", "v3", "v4", "v5", "v6", "v7", "v8"},
+		next: "v9",
 	},
 	{
 		slug: "actions/upload-artifact",
@@ -220,8 +220,8 @@ var popularActions = []*action{
 	},
 	{
 		slug: "aws-actions/configure-aws-credentials",
-		tags: []string{"v1"},
-		next: "v2",
+		tags: []string{"v1", "v2"},
+		next: "v3",
 	},
 	{
 		slug: "azure/aks-set-context",

@@ -166,6 +166,12 @@ func WorkflowKeyAvailability(key string) ([]string, []string) {
 		ctx := split(cs[1])
 		sp := split(cs[2])
 
+		// 'None' means no special function is available. It was added by this commit:
+		// https://github.com/github/docs/commit/ed18f98d128a2720d9a285b1ed48b161e4b9b7ef
+		if len(sp) == 1 && sp[0] == "none" {
+			sp = []string{}
+		}
+
 		for _, s := range sp {
 			funcs[s] = append(funcs[s], key)
 		}
