@@ -8,17 +8,17 @@ Wow
 
 Foo
 
-### `workflow_dispatch`
+## `workflow_dispatch`
 
 | Webhook event payload | Activity types | `GITHUB_SHA` | `GITHUB_REF` |
 | ------------------ | ------------ | ------------ | ------------------|
 | [workflow_dispatch](/webhooks/event-payloads/#workflow_dispatch) | n/a | Last commit on the `GITHUB_REF` branch | Branch that received dispatch |
 
-## Available events
+## About events that trigger workflows
 
 Bar
 
-### `check_run`
+## `check_run`
 
 | Operator | Description | Example |
 | -------- | ----------- | ------- |
@@ -30,7 +30,7 @@ Aaaa aaaa
 | --------------------- | -------------- | ------------ | -------------|
 | [`check_run`](/webhooks/event-payloads/#check_run) | - `created`<br/>- `rerequested`<br/>- `completed` | Last commit on default branch | Default branch |
 
-### `discussion`
+## `discussion`
 
 Blah blah blah
 
@@ -38,7 +38,7 @@ Blah blah blah
 | --------------------- | -------------- | ------------ | -------------|
 | [`discussion`](/webhooks/event-payloads/#discussion) | - `opened`<br/>- `edited`<br/>- `deleted`<br/>- `transferred`<br/>- `pinned`<br/>- `unpinned`<br/>- `labeled`<br/>- `unlabeled`<br/>- `locked`<br/>- `unlocked`<br/>- `category_changed`<br/> - `answered`<br/> - `unanswered` | Last commit on default branch | Default branch |
 
-### `create`
+## `create`
 
 Runs your workflow
 
