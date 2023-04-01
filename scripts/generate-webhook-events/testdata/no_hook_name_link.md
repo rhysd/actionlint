@@ -2,9 +2,9 @@
 title: Test
 ---
 
-## Available events
+## About events that trigger workflows
 
-### `check_run`
+## `check_run`
 
 oops first cell does not contain [`check_run`](/webhooks/event-payloads/#check_run)!
 
