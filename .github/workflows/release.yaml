@@ -16,7 +16,7 @@ jobs:
       - run: ronn ./man/actionlint.1.ronn
       - uses: actions/setup-go@v3
         with:
-          go-version: '1.19'
+          go-version: '1.20'
       - uses: goreleaser/goreleaser-action@v2
         with:
           version: latest
@@ -65,7 +65,7 @@ jobs:
         with:
           platforms: linux/amd64,linux/arm64
           build-args: |
-            GOLANG_VER=1.19
+            GOLANG_VER=1.20
             ACTIONLINT_VER=${{ steps.tag.outputs.name }}
           push: true
           tags: |
