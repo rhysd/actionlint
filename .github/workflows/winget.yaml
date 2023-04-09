@@ -1,0 +1,21 @@
+name: Winget
+on:
+  workflow_dispatch:
+    inputs:
+      tag:
+        description: version of actionlint to release
+        required: true
+        type: string
+
+jobs:
+  winget:
+    runs-on: windows-latest
+    steps:
+      - uses: vedantmgoyal2009/winget-releaser@v2
+        if: ${{ github.event_name == 'workflow_dispatch' }}
+        with:
+          identifier: rhysd.actionlint
+          installers-regex: '_windows_\w+\.zip$'
+          token: ${{ secrets.WINGET_TOKEN }}
+          version: ${{ inputs.tag }}
+          release-tag: ${{ inputs.tag }}

@@ -43,7 +43,7 @@ jobs:
           git log -n 1
           git push
   winget:
-    runs-on: windows-latest # Action can only run on Windows
+    runs-on: windows-latest
     needs: release
     steps:
       - uses: vedantmgoyal2009/winget-releaser@v2
