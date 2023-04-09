@@ -42,6 +42,15 @@ jobs:
           git -c user.email='41898282+github-actions[bot]@users.noreply.github.com' -c user.name='github-actions[bot]' commit -m "update version to $ver in download-actionlint.bash"
           git log -n 1
           git push
+  winget:
+    runs-on: windows-latest # Action can only run on Windows
+    needs: release
+    steps:
+      - uses: vedantmgoyal2009/winget-releaser@v2
+        with:
+          identifier: rhysd.actionlint
+          installers-regex: '_windows_\w+\.zip$'
+          token: ${{ secrets.WINGET_TOKEN }}
   docker:
     runs-on: ubuntu-latest
     steps:
