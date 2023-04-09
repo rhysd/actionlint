@@ -36,7 +36,7 @@ for f in "${files[@]}"; do
 done
 
 echo 'Applying wasm-opt to ./playground-dist/main.wasm'
-wasm-opt -O -o ./playground-dist/opt.wasm ./playground-dist/main.wasm
+wasm-opt -O -o ./playground-dist/opt.wasm ./playground-dist/main.wasm --enable-bulk-memory
 mv ./playground-dist/opt.wasm ./playground-dist/main.wasm
 
 echo 'Generating and copying manual'
