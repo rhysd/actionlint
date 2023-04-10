@@ -18,29 +18,29 @@
   "author": "rhysd <lin90162@yahoo.co.jp> (https://rhysd.github.io/)",
   "license": "MIT",
   "dependencies": {
-    "@types/jsdom": "^20.0.1",
+    "@types/jsdom": "^21.1.1",
     "@types/mocha": "^10.0.1",
     "bulma": "^0.9.4",
     "bulmaswatch": "^0.8.1",
     "codemirror": "^5.65.8",
     "devicon": "^2.15.1",
     "ismobilejs": "^1.1.1",
-    "jsdom": "^20.0.3",
+    "jsdom": "^21.1.1",
     "mocha": "^10.2.0",
     "pako": "^2.1.0"
   },
   "devDependencies": {
-    "@peculiar/webcrypto": "^1.4.1",
-    "@types/codemirror": "^5.60.5",
-    "@types/node": "^18.11.18",
+    "@peculiar/webcrypto": "^1.4.3",
+    "@types/codemirror": "^5.60.7",
+    "@types/node": "^18.15.11",
     "@types/pako": "^2.0.0",
-    "@typescript-eslint/eslint-plugin": "^5.47.1",
-    "@typescript-eslint/parser": "^5.47.1",
-    "eslint": "^8.30.0",
+    "@typescript-eslint/eslint-plugin": "^5.57.1",
+    "@typescript-eslint/parser": "^5.57.1",
+    "eslint": "^8.38.0",
     "http-server": "^14.1.1",
-    "prettier": "^2.8.1",
-    "stylelint": "^14.16.0",
-    "stylelint-config-standard": "^29.0.0",
-    "typescript": "^4.9.4"
+    "prettier": "^2.8.7",
+    "stylelint": "^15.4.0",
+    "stylelint-config-standard": "^32.0.0",
+    "typescript": "^5.0.4"
   }
 }
