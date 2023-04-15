@@ -17,5 +17,4 @@ jobs:
           identifier: rhysd.actionlint
           installers-regex: '_windows_\w+\.zip$'
           token: ${{ secrets.WINGET_TOKEN }}
-          version: ${{ inputs.tag }}
           release-tag: ${{ inputs.tag }}
