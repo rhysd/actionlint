@@ -1,4 +1,6 @@
 on:
+  merge_group:
+    branches-ignore: bar
   push:
     branches-ignore: test
     tags-ignore: deploy/*
