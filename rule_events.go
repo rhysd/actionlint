@@ -132,6 +132,7 @@ func (rule *RuleEvents) checkWebhookEvent(event *WebhookEvent) {
 	}
 
 	// Some filters are available with specific events and exclusive
+	// - on.merge_group.<branches|branches-ignore>
 	// - on.<push|pull_request|pull_request_target>.<paths|paths-ignore>
 	// - on.push.<branches|tags|branches-ignore|tags-ignore>
 	// - on.<pull_request|pull_request_target>.<branches|branches-ignore>
@@ -146,7 +147,7 @@ func (rule *RuleEvents) checkWebhookEvent(event *WebhookEvent) {
 		event.Branches,
 		event.BranchesIgnore,
 		hook,
-		[]string{"push", "pull_request", "pull_request_target", "workflow_run"},
+		[]string{"merge_group", "push", "pull_request", "pull_request_target", "workflow_run"},
 	)
 	rule.checkExclusiveFilters(
 		event.Tags,
