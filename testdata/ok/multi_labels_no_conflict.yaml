@@ -3,7 +3,7 @@ jobs:
   test:
     strategy:
       matrix:
-        os: [ubuntu-20.04, linux]
+        os: [ubuntu-22.04, linux]
     runs-on: [ubuntu-latest, '${{matrix.os}}']
     steps:
       - run: echo
