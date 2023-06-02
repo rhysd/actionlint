@@ -1,4 +1,6 @@
+//go:build gofuzz
 // +build gofuzz
+
 package actionlint_fuzz
 
 import (
