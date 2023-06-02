@@ -331,8 +331,6 @@ Then enable the matcher using `add-matcher` command before running `actionlint` 
   shell: bash
 ```
 
-Note that `-color` option is not available because ANSI color sequences prevent the matcher from matching the error messages.
-
 When you change your workflow and the changed line causes a new error, CI will annotate the diff with the extracted error message.
 
 <img src="https://github.com/rhysd/ss/blob/master/actionlint/problem-matcher.png?raw=true" alt="annotation by Problem Matchers" width="715" height="221"/>
