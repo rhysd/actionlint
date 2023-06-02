@@ -36,11 +36,11 @@ func TestRuleRunnerLabelCheckLabels(t *testing.T) {
 		},
 		{
 			what:   "self-hosted all Linux runner labels",
-			labels: []string{"self-hosted", "linux", "ubuntu-20.04", "ubuntu-latest"},
+			labels: []string{"self-hosted", "linux", "ubuntu-22.04", "ubuntu-latest"},
 		},
 		{
 			what:   "self-hosted all macOS runner labels",
-			labels: []string{"self-hosted", "macOS", "macOS-latest", "macOS-11.0", "macOS-11"},
+			labels: []string{"self-hosted", "macOS", "macOS-latest", "macOS-12.0", "macOS-12"},
 		},
 		{
 			what:   "self-hosted Linux runner in upper case",
@@ -56,7 +56,7 @@ func TestRuleRunnerLabelCheckLabels(t *testing.T) {
 		},
 		{
 			what:   "multiple labels for GH-hosted runner",
-			labels: []string{"ubuntu-latest", "ubuntu-20.04"},
+			labels: []string{"ubuntu-latest", "ubuntu-22.04"},
 		},
 		{
 			what:   "user-defined labels",
@@ -75,7 +75,7 @@ func TestRuleRunnerLabelCheckLabels(t *testing.T) {
 		},
 		{
 			what:   "matrix at first label",
-			labels: []string{"${{matrix.os}}", "ubuntu-20.04"},
+			labels: []string{"${{matrix.os}}", "ubuntu-22.04"},
 			matrix: []string{"ubuntu-latest"},
 		},
 		{
@@ -194,6 +194,16 @@ func TestRuleRunnerLabelCheckLabels(t *testing.T) {
 				`label "windows-latest" conflicts with label "macos-latest"`,
 				`label "macos-latest" conflicts with label "windows-latest"`,
 			},
+		},
+		{
+			what:   "Linux labels conflict",
+			labels: []string{"ubuntu-latest", "ubuntu-20.04"},
+			errs:   []string{`label "ubuntu-20.04" conflicts with label "ubuntu-latest"`},
+		},
+		{
+			what:   "macOS labels conflict",
+			labels: []string{"macos-11", "macos-12"},
+			errs:   []string{`label "macos-12" conflicts with label "macos-11"`},
 		},
 		// TODO: Add error tests for 'include:'
 	}
