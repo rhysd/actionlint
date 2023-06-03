@@ -205,6 +205,11 @@ func TestRuleRunnerLabelCheckLabels(t *testing.T) {
 			labels: []string{"macos-11", "macos-12"},
 			errs:   []string{`label "macos-12" conflicts with label "macos-11"`},
 		},
+		{
+			what:   "macOS XL and normal labels conflict",
+			labels: []string{"macos-13-xl", "macos-13"},
+			errs:   []string{`label "macos-13" conflicts with label "macos-13-xl"`},
+		},
 		// TODO: Add error tests for 'include:'
 	}
 
