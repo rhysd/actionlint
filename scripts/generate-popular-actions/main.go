@@ -327,8 +327,8 @@ var popularActions = []*action{
 	},
 	{
 		slug: "github/super-linter",
-		tags: []string{"v3", "v4"},
-		next: "v5",
+		tags: []string{"v3", "v4", "v5"},
+		next: "v6",
 	},
 	{
 		slug: "githubocto/flat",
@@ -398,8 +398,8 @@ var popularActions = []*action{
 	},
 	{
 		slug: "peter-evans/create-pull-request",
-		tags: []string{"v1", "v2", "v3", "v4"},
-		next: "v5",
+		tags: []string{"v1", "v2", "v3", "v4", "v5"},
+		next: "v6",
 	},
 	{
 		slug: "preactjs/compressed-size-action",
@@ -483,8 +483,8 @@ var popularActions = []*action{
 	},
 	{
 		slug: "treosh/lighthouse-ci-action",
-		tags: []string{"v1", "v2", "v3", "v7", "v8", "v9"},
-		next: "v10",
+		tags: []string{"v1", "v2", "v3", "v7", "v8", "v9", "v10"},
+		next: "v11",
 	},
 	{
 		slug: "wearerequired/lint-action",

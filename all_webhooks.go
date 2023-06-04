@@ -36,7 +36,7 @@ var AllWebhookTypes = map[string][]string{
 	"release":                     {"published", "unpublished", "created", "edited", "deleted", "prereleased", "released"},
 	"repository_dispatch":         {},
 	"status":                      {},
-	"watch":                       {"started"},
+	"watch":                       {"starred"},
 	"workflow_dispatch":           {},
 	"workflow_run":                {"completed", "requested", "in_progress"},
 }
