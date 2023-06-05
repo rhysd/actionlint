@@ -28,3 +28,5 @@
 /test\.yaml:189:21: context "env" is not allowed here\. .+ \[expression\]/
 /test\.yaml:193:40: context "env" is not allowed here\. .+ \[expression\]/
 /test\.yaml:200:22: context "runner" is not allowed here\. .+ \[expression\]/
+/test\.yaml:208:19: context "runner" is not allowed here\. .+ \[expression\]/
+/test\.yaml:210:18: context "runner" is not allowed here\. .+ \[expression\]/

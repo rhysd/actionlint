@@ -218,6 +218,7 @@ func (rule *RuleExpression) VisitJobPre(n *Job) error {
 				rule.checkString(l, "jobs.<job_id>.runs-on")
 			}
 		}
+		rule.checkString(n.RunsOn.Group, "jobs.<job_id>.runs-on")
 	}
 
 	rule.checkConcurrency(n.Concurrency, "jobs.<job_id>.concurrency")
