@@ -201,3 +201,12 @@ jobs:
     runs-on: ubuntu-latest
     steps:
       - run: echo hi
+  # jobs.<job_id>.runs-on (#280)
+  test-runs-on:
+    runs-on:
+      # ERROR
+      labels: ${{ runner.OS }}
+      # ERROR
+      group: ${{ runner.OS }}
+    steps:
+      - run: echo hello

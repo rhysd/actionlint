@@ -562,11 +562,11 @@ func (l *Linter) check(
 		all = filtered
 	}
 
-	sort.Sort(ByErrorPosition(all))
-
 	for _, err := range all {
 		err.Filepath = path // Populate filename in the error
 	}
+
+	sort.Stable(ByErrorPosition(all))
 
 	if l.logLevel >= LogLevelVerbose {
 		elapsed := time.Since(start)

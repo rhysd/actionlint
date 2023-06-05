@@ -110,7 +110,7 @@ func checkErrors(t *testing.T, outfile string, errs []*Error) {
 		}
 	}
 
-	sort.Sort(ByErrorPosition(errs))
+	sort.Stable(ByErrorPosition(errs))
 
 	if len(errs) != len(expected) {
 		ms := make([]string, 0, len(errs))

@@ -204,13 +204,13 @@ func (rule *RuleExpression) VisitJobPre(n *Job) error {
 	rule.checkStrings(n.Needs, "")
 
 	if n.RunsOn != nil {
-		if n.RunsOn.Expression != nil {
-			if ty := rule.checkOneExpression(n.RunsOn.Expression, "runner label at \"runs-on\" section", "jobs.<job_id>.runs-on"); ty != nil {
+		if n.RunsOn.LabelsExpr != nil {
+			if ty := rule.checkOneExpression(n.RunsOn.LabelsExpr, "runner label at \"runs-on\" section", "jobs.<job_id>.runs-on"); ty != nil {
 				switch ty.(type) {
 				case *ArrayType, StringType, AnyType:
 					// OK
 				default:
-					rule.errorf(n.RunsOn.Expression.Pos, "type of expression at \"runs-on\" must be string or array but found type %q", ty.String())
+					rule.errorf(n.RunsOn.LabelsExpr.Pos, "type of expression at \"runs-on\" must be string or array but found type %q", ty.String())
 				}
 			}
 		} else {
@@ -218,6 +218,7 @@ func (rule *RuleExpression) VisitJobPre(n *Job) error {
 				rule.checkString(l, "jobs.<job_id>.runs-on")
 			}
 		}
+		rule.checkString(n.RunsOn.Group, "jobs.<job_id>.runs-on")
 	}
 
 	rule.checkConcurrency(n.Concurrency, "jobs.<job_id>.concurrency")
