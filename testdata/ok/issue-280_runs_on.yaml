@@ -1,0 +1,31 @@
+name: test
+on: push
+
+jobs:
+  test1:
+    runs-on:
+      group: ubuntu-runners
+    steps:
+      - uses: actions/checkout@v3
+  test2:
+    runs-on:
+      labels: x64
+    steps:
+      - uses: actions/checkout@v3
+  test3:
+    runs-on:
+      group: ubuntu-runners
+      labels: x64
+    steps:
+      - uses: actions/checkout@v3
+  test4:
+    runs-on:
+      labels: [x64, self-hosted]
+    steps:
+      - uses: actions/checkout@v3
+  test5:
+    runs-on:
+      group: ubuntu-runners
+      labels: [x64, self-hosted]
+    steps:
+      - uses: actions/checkout@v3

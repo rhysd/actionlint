@@ -1,0 +1,73 @@
+name: test
+on: push
+
+jobs:
+  test1:
+    # ERROR: Empty
+    runs-on:
+    steps:
+      - run: echo 'hello'
+  test2:
+    # ERROR: Empty labels
+    runs-on: []
+    steps:
+      - run: echo 'hello'
+  test3:
+    # ERROR: Empty string
+    runs-on: ''
+    steps:
+      - run: echo 'hello'
+  test4:
+    # ERROR: Empty string in array
+    runs-on: ['x64', '']
+    steps:
+      - run: echo 'hello'
+  test5:
+    runs-on:
+      # ERROR: Unknown property
+      groups: [foo, bar]
+    steps:
+      - run: echo 'hello'
+  test6:
+    runs-on:
+      # ERROR: Empty group
+      group:
+    steps:
+      - run: echo 'hello'
+  test7:
+    runs-on:
+      # ERROR: Empty string in group
+      group: ''
+    steps:
+      - run: echo 'hello'
+  test8:
+    runs-on:
+      # ERROR: Group must be string
+      group: [hello, world]
+    steps:
+      - run: echo 'hello'
+  test9:
+    runs-on:
+      # ERROR: Empty labels
+      labels: []
+    steps:
+      - run: echo 'hello'
+  test10:
+    runs-on:
+      # ERROR: Empty label
+      labels: ''
+    steps:
+      - run: echo 'hello'
+  test11:
+    runs-on:
+      # ERROR: Empty label in array
+      labels: [x64, '']
+    steps:
+      - run: echo 'hello'
+  test12:
+    runs-on:
+      # ERROR: Labels must be string or mapping
+      labels:
+        hello: world
+    steps:
+      - run: echo 'hello'

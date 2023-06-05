@@ -1079,6 +1079,36 @@ func (p *parser) parseSteps(n *yaml.Node) []*Step {
 	return ret
 }
 
+// https://docs.github.com/en/actions/using-workflows/workflow-syntax-for-github-actions#jobsjob_idruns-on
+func (p *parser) parseRunsOn(n *yaml.Node) *Runner {
+	if expr := p.mayParseExpression(n); expr != nil {
+		return &Runner{nil, expr, nil}
+	}
+
+	if n.Kind == yaml.ScalarNode || n.Kind == yaml.SequenceNode {
+		labels := p.parseStringOrStringSequence("runs-on", n, false, false)
+		return &Runner{labels, nil, nil}
+	}
+
+	r := &Runner{}
+	for _, kv := range p.parseSectionMapping("runs-on", n, false) {
+		switch kv.id {
+		case "labels":
+			if expr := p.mayParseExpression(kv.val); expr != nil {
+				r.LabelsExpr = expr
+				continue
+			}
+			r.Labels = p.parseStringOrStringSequence("labels", kv.val, false, false)
+		case "group":
+			r.Group = p.parseString(kv.val, false)
+		default:
+			p.unexpectedKey(kv.key, "runs-on", []string{"labels", "group"})
+		}
+	}
+
+	return r
+}
+
 // https://docs.github.com/en/actions/learn-github-actions/workflow-syntax-for-github-actions#jobsjob_id
 func (p *parser) parseJob(id *String, n *yaml.Node) *Job {
 	ret := &Job{ID: id, Pos: id.Pos}
@@ -1114,12 +1144,7 @@ func (p *parser) parseJob(id *String, n *yaml.Node) *Job {
 				ret.Needs = p.parseStringSequence("needs", v, false, false)
 			}
 		case "runs-on":
-			if expr := p.mayParseExpression(v); expr != nil {
-				ret.RunsOn = &Runner{nil, expr}
-			} else {
-				labels := p.parseStringOrStringSequence("runs-on", v, false, false)
-				ret.RunsOn = &Runner{labels, nil}
-			}
+			ret.RunsOn = p.parseRunsOn(v)
 			stepsOnlyKey = k
 		case "permissions":
 			ret.Permissions = p.parsePermissions(k.Pos, v)
