@@ -254,7 +254,7 @@ func TestErrorSortErrorsByPosition(t *testing.T) {
 				errs = append(errs, &Error{Line: p.line, Column: p.col})
 			}
 
-			sort.Sort(ByErrorPosition(errs))
+			sort.Stable(ByErrorPosition(errs))
 
 			for i := 0; i < len(errs)-1; i++ {
 				l, r := errs[i], errs[i+1]
@@ -289,7 +289,7 @@ func TestErrorSortErrorsByFile(t *testing.T) {
 		},
 	}
 
-	sort.Sort(ByErrorPosition(errs))
+	sort.Stable(ByErrorPosition(errs))
 
 	for i, want := range []string{
 		"path/to/A.txt",
