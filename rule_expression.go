@@ -984,7 +984,7 @@ func (rule *RuleExpression) guessTypeOfMatrix(m *Matrix) *ObjectType {
 func (rule *RuleExpression) guessTypeOfMatrixRow(r *MatrixRow) ExprType {
 	if r.Expression != nil {
 		if a, ok := rule.checkArrayExpression(r.Expression, "matrix row", "jobs.<job_id>.strategy").(*ArrayType); ok {
-			return a
+			return a.Elem
 		}
 		return AnyType{}
 	}
