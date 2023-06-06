@@ -324,8 +324,8 @@ When you change your workflow and the changed line causes a new error, CI will a
 Running super-linter in your repository automatically runs actionlint.
 
 Note that currently super-linter does not provide a way to pass additional command line options. So it is not possible to ignore
-errors by `-ignore` option with super-linter. See [github/super-linter#1853](https://github.com/github/super-linter/pull/1853) or
-[github/super-linter#1667](https://github.com/github/super-linter/pull/1667) for more details.
+errors by `-ignore` option with super-linter. See [super-linter/super-linter#1853](https://github.com/super-linter/super-linter/pull/1853) or
+[super-linter/super-linter#1667](https://github.com/super-linter/super-linter/pull/1667) for more details.
 
 ### pre-commit
 
