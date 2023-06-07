@@ -340,9 +340,8 @@ When you change your workflow and the changed line causes a new error, CI will a
 [super-linter][] is a Bash script for a simple combination of various linters, provided by GitHub. It has support for actionlint.
 Running super-linter in your repository automatically runs actionlint.
 
-Note that currently super-linter does not provide a way to pass additional command line options. So it is not possible to ignore
-errors by `-ignore` option with super-linter. See [github/super-linter#1853](https://github.com/github/super-linter/pull/1853) or
-[github/super-linter#1667](https://github.com/github/super-linter/pull/1667) for more details.
+To ignore some errors, please add `-ignore` option by using [`GITHUB_ACTIONS_COMMAND_ARGS` environment variable][super-linter-env-var].
+Please see [super-linter/super-linter#1852](https://github.com/super-linter/super-linter/issues/1852) for the discussion.
 
 ### pre-commit
 
@@ -432,6 +431,7 @@ You can also see actionlint issues inline in VS Code via the [Trunk VS Code exte
 [jsonl]: https://jsonlines.org/
 [problem-matchers]: https://github.com/actions/toolkit/blob/master/docs/problem-matchers.md
 [super-linter]: https://github.com/github/super-linter
+[super-linter-env-var]: https://github.com/super-linter/super-linter#environment-variables
 [actionlint-matcher]: https://raw.githubusercontent.com/rhysd/actionlint/main/.github/actionlint-matcher.json
 [preinstall-ubuntu]: https://github.com/actions/virtual-environments/blob/main/images/linux/Ubuntu2004-README.md
 [pre-commit]: https://pre-commit.com
