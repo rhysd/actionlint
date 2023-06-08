@@ -5,6 +5,7 @@ import (
 	"errors"
 	"fmt"
 	"io"
+	"io/fs"
 	"os"
 	"path/filepath"
 	"regexp"
@@ -413,12 +414,16 @@ func (l *Linter) LintFile(path string, project *Project) ([]*Error, error) {
 	return errs, err
 }
 
-// Lint lints YAML workflow file content given as byte sequence. The path parameter is used as file
-// path the content came from. Setting "<stdin>" to path parameter indicates the output came from
-// STDIN.
-// Note that only given Project instance is used for configuration. No config is automatically loaded
-// based on path parameter.
+// Lint lints YAML workflow file content given as byte slice. The path parameter is used as file
+// path where the content came from. Setting "<stdin>" to path parameter indicates the output came
+// from STDIN.
+// When nil is passed to the project parameter, it tries to find the project from the path parameter.
 func (l *Linter) Lint(path string, content []byte, project *Project) ([]*Error, error) {
+	if project == nil && path != "<stdin>" {
+		if _, err := os.Stat(path); !errors.Is(err, fs.ErrNotExist) {
+			project = l.projects.At(path)
+		}
+	}
 	proc := newConcurrentProcess(runtime.NumCPU())
 	dbg := l.debugWriter()
 	localActions := NewLocalActionsCache(project, dbg)
