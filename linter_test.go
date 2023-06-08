@@ -164,31 +164,30 @@ func TestLinterLintError(t *testing.T) {
 					panic(err)
 				}
 
-				opts := LinterOptions{}
+				o := LinterOptions{}
 
 				if strings.Contains(testName, "shellcheck") {
 					if shellcheck == "" {
 						t.Skip("skipped because \"shellcheck\" command does not exist in system")
 					}
-					opts.Shellcheck = shellcheck
+					o.Shellcheck = shellcheck
 				}
 
 				if strings.Contains(testName, "pyflakes") {
 					if pyflakes == "" {
 						t.Skip("skipped because \"pyflakes\" command does not exist in system")
 					}
-					opts.Pyflakes = pyflakes
+					o.Pyflakes = pyflakes
 				}
 
-				linter, err := NewLinter(io.Discard, &opts)
+				l, err := NewLinter(io.Discard, &o)
 				if err != nil {
 					t.Fatal(err)
 				}
 
-				config := Config{}
-				linter.defaultConfig = &config
+				l.defaultConfig = &Config{}
 
-				errs, err := linter.Lint("test.yaml", b, proj)
+				errs, err := l.Lint("test.yaml", b, proj)
 				if err != nil {
 					t.Fatal(err)
 				}
@@ -196,6 +195,42 @@ func TestLinterLintError(t *testing.T) {
 				checkErrors(t, base+".out", errs)
 			})
 		}
+	}
+}
+
+func TestLintFindProjectFromPath(t *testing.T) {
+	d := filepath.Join("testdata", "projects", "broken_reusable_workflow")
+	f := filepath.Join(d, "workflows", "test.yaml")
+	b, err := os.ReadFile(f)
+	if err != nil {
+		panic(err)
+	}
+	lint := func(path string) []*Error {
+		l, err := NewLinter(io.Discard, &LinterOptions{})
+		if err != nil {
+			t.Fatal(err)
+		}
+		l.defaultConfig = &Config{}
+		errs, err := l.Lint(path, b, nil)
+		if err != nil {
+			t.Fatal(err)
+		}
+		return errs
+	}
+
+	errs := lint(f)
+	if len(errs) == 0 {
+		t.Fatal("no error was detected though the project was found from path parameter")
+	}
+
+	errs = lint("<stdin>")
+	if len(errs) > 0 {
+		t.Fatal("some error was detected though path parameter is stdin", errs)
+	}
+
+	errs = lint(filepath.Join("this-dir-doesnt-exist", "not-found.yaml"))
+	if len(errs) > 0 {
+		t.Fatal("some error was detected though path parameter does not exist", errs)
 	}
 }
 
