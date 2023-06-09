@@ -128,6 +128,10 @@ func NewLocalActionsCache(proj *Project, dbg io.Writer) *LocalActionsCache {
 	}
 }
 
+func newNullLocalActionsCache(dbg io.Writer) *LocalActionsCache {
+	return &LocalActionsCache{dbg: dbg}
+}
+
 func (c *LocalActionsCache) debug(format string, args ...interface{}) {
 	if c.dbg == nil {
 		return
@@ -215,6 +219,9 @@ type LocalActionsCacheFactory struct {
 // created per one repository. Created instances are cached and will be used when caches are
 // requested for the same projects. This method is not thread safe.
 func (f *LocalActionsCacheFactory) GetCache(p *Project) *LocalActionsCache {
+	if p == nil {
+		return newNullLocalActionsCache(f.dbg)
+	}
 	r := p.RootDir()
 	if c, ok := f.caches[r]; ok {
 		return c
