@@ -308,8 +308,7 @@ func TestLinterFormatErrorMessageOK(t *testing.T) {
 				t.Fatal(err)
 			}
 
-			config := Config{}
-			l.defaultConfig = &config
+			l.defaultConfig = &Config{}
 			errs, err := l.LintFile(infile, proj)
 			if err != nil {
 				t.Fatal(err)
@@ -337,6 +336,34 @@ func TestLinterFormatErrorMessageOK(t *testing.T) {
 				t.Fatal(cmp.Diff(want, have))
 			}
 		})
+	}
+}
+
+func TestLinterPathsNotFound(t *testing.T) {
+	l, err := NewLinter(io.Discard, &LinterOptions{})
+	if err != nil {
+		t.Fatal(err)
+	}
+
+	cwd, err := os.Getwd()
+	if err != nil {
+		panic(err)
+	}
+
+	paths := []string{
+		filepath.Join("testdata", "this-file-doesnt-exist.yaml"),                   // Relative file path (parent exists)
+		filepath.Join("this-dir-doesnt-exist", "this-file-doesnt-exist.yaml"),      // Relative file path (parent doesn't exist)
+		filepath.Join(cwd, "this-file-doesnt-exist.yaml"),                          // Absolute file path (parent exists)
+		filepath.Join(cwd, "this-dir-doesnt-exist", "this-file-doesnt-exist.yaml"), // Absolute file path (parent doesn't exist)
+	}
+
+	_, err = l.LintFiles(paths, nil)
+	if err == nil {
+		t.Fatal("no error happened")
+	}
+	msg := err.Error()
+	if !strings.Contains(msg, "could not read") {
+		t.Fatal("unexpected error:", msg)
 	}
 }
 

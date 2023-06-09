@@ -224,6 +224,17 @@ func TestLocalActionsLogCacheHit(t *testing.T) {
 	}
 }
 
+func TestLocalActionsNullCache(t *testing.T) {
+	c := newNullLocalActionsCache(io.Discard)
+	m, err := c.FindMetadata("./path/to/action.yaml")
+	if m != nil {
+		t.Error("metadata should not be found:", m)
+	}
+	if err != nil {
+		t.Error("error should not happen:", err)
+	}
+}
+
 // Error cases
 
 func TestLocalActionsBrokenMetadata(t *testing.T) {
@@ -553,5 +564,10 @@ func TestLocalActionsCacheFactory(t *testing.T) {
 	c3 := f.GetCache(p1)
 	if c1 != c3 {
 		t.Errorf("same cache is not returned for the same project: %v vs %v", c1, c3)
+	}
+
+	c4 := f.GetCache(nil)
+	if c4.proj != nil {
+		t.Errorf("null cache must be returned if given project is nil: %v", c4)
 	}
 }

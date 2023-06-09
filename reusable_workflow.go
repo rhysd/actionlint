@@ -379,6 +379,11 @@ func NewLocalReusableWorkflowCache(proj *Project, cwd string, dbg io.Writer) *Lo
 	}
 }
 
+func newNullLocalReusableWorkflowCache(dbg io.Writer) *LocalReusableWorkflowCache {
+	// Null cache. Cache never hits. It is used when project is not found
+	return &LocalReusableWorkflowCache{dbg: dbg}
+}
+
 // LocalReusableWorkflowCacheFactory is a factory object to create a LocalReusableWorkflowCache
 // instance per project.
 type LocalReusableWorkflowCacheFactory struct {
@@ -396,6 +401,9 @@ func NewLocalReusableWorkflowCacheFactory(cwd string, dbg io.Writer) *LocalReusa
 // was already created for the project, this method returns the existing instance. Otherwise it creates
 // a new instance and returns it.
 func (f *LocalReusableWorkflowCacheFactory) GetCache(p *Project) *LocalReusableWorkflowCache {
+	if p == nil {
+		return newNullLocalReusableWorkflowCache(f.dbg)
+	}
 	r := p.RootDir()
 	if c, ok := f.caches[r]; ok {
 		return c
