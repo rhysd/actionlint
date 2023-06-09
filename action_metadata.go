@@ -129,6 +129,7 @@ func NewLocalActionsCache(proj *Project, dbg io.Writer) *LocalActionsCache {
 }
 
 func newNullLocalActionsCache(dbg io.Writer) *LocalActionsCache {
+	// Null cache. Cache never hits. It is used when project is not found
 	return &LocalActionsCache{dbg: dbg}
 }
 

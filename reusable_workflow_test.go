@@ -2,6 +2,7 @@ package actionlint
 
 import (
 	"fmt"
+	"io"
 	"path/filepath"
 	"strings"
 	"testing"
@@ -880,6 +881,22 @@ func TestReusableWorkflowMetadataCacheWriteFromFileAndASTNodeConcurrently(t *tes
 	}
 }
 
+func TestReusableWorkflowNullCache(t *testing.T) {
+	c := newNullLocalReusableWorkflowCache(io.Discard)
+	e := &WorkflowCallEvent{Inputs: []*WorkflowCallEventInput{}}
+
+	// This should do nothing
+	c.WriteWorkflowCallEvent(filepath.Join("foo", "test.yaml"), e)
+
+	m, err := c.FindMetadata("./foo/test.yaml")
+	if m != nil {
+		t.Errorf("metadata should never be found with null cache: %v", m)
+	}
+	if err != nil {
+		t.Errorf("error should not happen since the cache simply doesn't hit: %v", err)
+	}
+}
+
 func TestReusableWorkflowCacheFactory(t *testing.T) {
 	cwd := filepath.Join("path", "to", "project1")
 	f := NewLocalReusableWorkflowCacheFactory(cwd, nil)
@@ -896,5 +913,10 @@ func TestReusableWorkflowCacheFactory(t *testing.T) {
 	c3 := f.GetCache(p1)
 	if c1 != c3 {
 		t.Errorf("Same cache was not used: %v vs %v", c1, c3)
+	}
+
+	c4 := f.GetCache(nil)
+	if c4.proj != nil {
+		t.Errorf("Null cache should be returned when project is nil: %v", c4)
 	}
 }

@@ -380,6 +380,7 @@ func NewLocalReusableWorkflowCache(proj *Project, cwd string, dbg io.Writer) *Lo
 }
 
 func newNullLocalReusableWorkflowCache(dbg io.Writer) *LocalReusableWorkflowCache {
+	// Null cache. Cache never hits. It is used when project is not found
 	return &LocalReusableWorkflowCache{dbg: dbg}
 }
 
