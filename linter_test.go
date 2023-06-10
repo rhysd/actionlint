@@ -17,98 +17,42 @@ import (
 )
 
 func TestLinterShellcheckCommandNotFound(t *testing.T) {
-	dir := filepath.Join("testdata", "ok")
-
-	es, err := os.ReadDir(dir)
+	f := filepath.Join("testdata", "ok", "minimal.yaml")
+	o := LinterOptions{Shellcheck: "i_am_not_a_program"}
+	l, err := NewLinter(io.Discard, &o)
 	if err != nil {
-		panic(err)
+		t.Fatal(err)
+	}
+	l.defaultConfig = &Config{}
+
+	_, err = l.LintFile(f, nil)
+	if err == nil {
+		t.Fatal("no error happened")
 	}
 
-	fs := make([]string, 0, len(es))
-	for _, e := range es {
-		if e.IsDir() {
-			continue
-		}
-		n := e.Name()
-		if strings.HasSuffix(n, ".yaml") || strings.HasSuffix(n, ".yml") {
-			fs = append(fs, filepath.Join(dir, n))
-		}
-	}
-
-	proj := &Project{root: dir}
-
-	shellcheck := "i_am_not_a_program"
-	pyflakes := ""
-
-	for _, f := range fs {
-		t.Run(filepath.Base(f), func(t *testing.T) {
-			opts := LinterOptions{
-				Shellcheck: shellcheck,
-				Pyflakes:   pyflakes,
-			}
-
-			linter, err := NewLinter(io.Discard, &opts)
-			if err != nil {
-				t.Fatal(err)
-			}
-
-			config := Config{}
-			linter.defaultConfig = &config
-
-			errs, err := linter.LintFile(f, proj)
-			if err == nil {
-				t.Fatal("Non existing shellcheck command should fail")
-			}
-			_ = errs
-		})
+	msg := err.Error()
+	if !strings.Contains(msg, "invalid argument at -shellcheck option") {
+		t.Fatal("unexpected error:", msg)
 	}
 }
 
 func TestLinterPyflakesCommandNotFound(t *testing.T) {
-	dir := filepath.Join("testdata", "ok")
-
-	es, err := os.ReadDir(dir)
+	f := filepath.Join("testdata", "ok", "minimal.yaml")
+	o := LinterOptions{Pyflakes: "i_am_not_a_program"}
+	l, err := NewLinter(io.Discard, &o)
 	if err != nil {
-		panic(err)
+		t.Fatal(err)
+	}
+	l.defaultConfig = &Config{}
+
+	_, err = l.LintFile(f, nil)
+	if err == nil {
+		t.Fatal("no error happened")
 	}
 
-	fs := make([]string, 0, len(es))
-	for _, e := range es {
-		if e.IsDir() {
-			continue
-		}
-		n := e.Name()
-		if strings.HasSuffix(n, ".yaml") || strings.HasSuffix(n, ".yml") {
-			fs = append(fs, filepath.Join(dir, n))
-		}
-	}
-
-	proj := &Project{root: dir}
-
-	shellcheck := ""
-	pyflakes := "i_am_not_a_program"
-
-	for _, f := range fs {
-		t.Run(filepath.Base(f), func(t *testing.T) {
-			opts := LinterOptions{
-				Shellcheck: shellcheck,
-				Pyflakes:   pyflakes,
-			}
-
-			linter, err := NewLinter(io.Discard, &opts)
-			if err != nil {
-				t.Fatal(err)
-			}
-
-			config := Config{}
-			linter.defaultConfig = &config
-
-			errs, err := linter.LintFile(f, proj)
-			if err == nil {
-				t.Fatal("Non existing shellcheck command should fail")
-			}
-			_ = errs
-		})
+	msg := err.Error()
+	if !strings.Contains(msg, "invalid argument at -pyflakes option") {
+		t.Fatal("unexpected error:", msg)
 	}
 }
 
