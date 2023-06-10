@@ -17,7 +17,7 @@ endif
 test: .testtimestamp
 
 .staticchecktimestamp: $(TESTS) $(SRCS) $(TOOL)
-	staticcheck ./ ./cmd/... ./scripts/...
+	staticcheck ./...
 	GOOS=js GOARCH=wasm staticcheck ./playground
 	touch .staticchecktimestamp
 
