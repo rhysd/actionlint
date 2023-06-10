@@ -8,16 +8,16 @@ all: clean build test
 
 .testtimestamp: $(TESTS) $(SRCS) $(TESTDATA) $(TOOL)
 ifdef GOTEST
-	gotest ./ ./scripts/... # https://github.com/rhysd/gotest
+	gotest ./... # https://github.com/rhysd/gotest
 else
-	go test -v ./ ./scripts/...
+	go test -v ./...
 endif
 	touch .testtimestamp
 
 test: .testtimestamp
 
 .staticchecktimestamp: $(TESTS) $(SRCS) $(TOOL)
-	staticcheck ./ ./cmd/... ./scripts/...
+	staticcheck ./...
 	GOOS=js GOARCH=wasm staticcheck ./playground
 	touch .staticchecktimestamp
 

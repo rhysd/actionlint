@@ -34,7 +34,7 @@ make test
 [staticcheck](https://staticcheck.io/) is used to lint Go sources.
 
 ```sh
-staticcheck ./ ./cmd/...
+staticcheck ./...
 ```
 
 or
