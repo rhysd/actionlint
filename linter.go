@@ -506,19 +506,23 @@ func (l *Linter) check(
 		}
 		if l.shellcheck != "" {
 			r, err := NewRuleShellcheck(l.shellcheck, proc)
-			if err != nil {
-				return nil, fmt.Errorf("invalid argument at -shellcheck option: %w", err)
+			if err == nil {
+				rules = append(rules, r)
+			} else {
+				l.log("Error in rule \"shellcheck\":", err)
+				return nil, err
 			}
-			rules = append(rules, r)
 		} else {
 			l.log("Rule \"shellcheck\" was disabled since shellcheck command name was empty")
 		}
 		if l.pyflakes != "" {
 			r, err := NewRulePyflakes(l.pyflakes, proc)
-			if err != nil {
-				return nil, fmt.Errorf("invalid argument at -pyflakes option: %w", err)
+			if err == nil {
+				rules = append(rules, r)
+			} else {
+				l.log("Error in rule \"pyflakes\":", err)
+				return nil, err
 			}
-			rules = append(rules, r)
 		} else {
 			l.log("Rule \"pyflakes\" was disabled since pyflakes command name was empty")
 		}
