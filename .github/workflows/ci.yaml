@@ -42,7 +42,7 @@ jobs:
         env:
           # Note: -race requires cgo
           CGO_ENABLED: 0
-      - run: go test -v -race -coverprofile coverage.txt -covermode=atomic ./ ./scripts/...
+      - run: go test -v -race -coverprofile coverage.txt -covermode=atomic ./...
       - run: go tool cover -func ./coverage.txt
       - name: Dog fooding 🐶
         run: |
