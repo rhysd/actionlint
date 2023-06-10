@@ -509,8 +509,7 @@ func (l *Linter) check(
 			if err == nil {
 				rules = append(rules, r)
 			} else {
-				l.log("Error in rule \"shellcheck\":", err)
-				return nil, err
+				l.log("Rule \"shellcheck\" was disabled:", err)
 			}
 		} else {
 			l.log("Rule \"shellcheck\" was disabled since shellcheck command name was empty")
@@ -520,8 +519,7 @@ func (l *Linter) check(
 			if err == nil {
 				rules = append(rules, r)
 			} else {
-				l.log("Error in rule \"pyflakes\":", err)
-				return nil, err
+				l.log("Rule \"pyflakes\" was disabled:", err)
 			}
 		} else {
 			l.log("Rule \"pyflakes\" was disabled since pyflakes command name was empty")
