@@ -25,22 +25,22 @@
     "codemirror": "^5.65.8",
     "devicon": "^2.15.1",
     "ismobilejs": "^1.1.1",
-    "jsdom": "^21.1.1",
+    "jsdom": "^22.1.0",
     "mocha": "^10.2.0",
     "pako": "^2.1.0"
   },
   "devDependencies": {
     "@peculiar/webcrypto": "^1.4.3",
-    "@types/codemirror": "^5.60.7",
-    "@types/node": "^18.15.11",
+    "@types/codemirror": "^5.60.8",
+    "@types/node": "^20.3.0",
     "@types/pako": "^2.0.0",
-    "@typescript-eslint/eslint-plugin": "^5.57.1",
-    "@typescript-eslint/parser": "^5.57.1",
-    "eslint": "^8.38.0",
+    "@typescript-eslint/eslint-plugin": "^5.59.9",
+    "@typescript-eslint/parser": "^5.59.9",
+    "eslint": "^8.42.0",
     "http-server": "^14.1.1",
-    "prettier": "^2.8.7",
-    "stylelint": "^15.4.0",
-    "stylelint-config-standard": "^32.0.0",
-    "typescript": "^5.0.4"
+    "prettier": "^2.8.8",
+    "stylelint": "^15.7.0",
+    "stylelint-config-standard": "^33.0.0",
+    "typescript": "^5.1.3"
   }
 }

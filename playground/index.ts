@@ -1,8 +1,6 @@
 // `styleActiveLine` is a property for active-line.js addon. @types/codemirror requires `import 'codemirror/addon/selection/active-line'`
-// to add this property but we don't use import statement.
-type CodeMirrorConfig = CodeMirror.EditorConfiguration & {
-    styleActiveLine: true;
-};
+// to add properties to `CodeMirror.EditorConfiguration` object but we don't use import statement.
+/// <reference types="codemirror/addon/selection/active-line" />
 
 (async function () {
     function getElementById(id: string): HTMLElement {
@@ -92,7 +90,7 @@ jobs:
       - uses: actions/checkout@v3
       - uses: actions/setup-node@v3
         with:
-          node_version: 16.x
+          node_version: 18.x
       - uses: actions/cache@v3
         with:
           path: ~/.npm
@@ -103,7 +101,7 @@ jobs:
         return src;
     }
 
-    const editorConfig: CodeMirrorConfig = {
+    const editorConfig: CodeMirror.EditorConfiguration = {
         mode: 'yaml',
         theme: 'material-darker',
         lineNumbers: true,
@@ -113,11 +111,7 @@ jobs:
         gutters: ['CodeMirror-linenumbers', 'error-marker'],
         extraKeys: {
             Tab(cm) {
-                if (cm.somethingSelected()) {
-                    cm.execCommand('indentMore');
-                } else {
-                    cm.execCommand('insertSoftTab');
-                }
+                cm.execCommand(cm.somethingSelected() ? 'indentMore' : 'insertSoftTab');
             },
         },
         value: await getDefaultSource(),
