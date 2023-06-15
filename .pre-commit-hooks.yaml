@@ -4,13 +4,20 @@
   description: Runs actionlint to lint GitHub Actions workflow files
   language: golang
   types: ["yaml"]
-  files: "^.github/workflows/"
+  files: ^\.github/workflows/
   entry: actionlint
   minimum_pre_commit_version: 3.0.0
 - id: actionlint-docker
-  name: Lint GitHub Actions workflow file Docker
+  name: Lint GitHub Actions workflow files
   description: Runs actionlint Docker image to lint GitHub Actions workflow files
   language: docker_image
   types: ["yaml"]
-  files: "^.github/workflows/"
+  files: ^\.github/workflows/
   entry: rhysd/actionlint:1.6.24
+- id: actionlint-system
+  name: Lint GitHub Actions workflow files
+  description: Runs system-installed actionlint to lint GitHub Actions workflow files
+  language: system
+  types: ["yaml"]
+  files: ^\.github/workflows/
+  entry: actionlint
