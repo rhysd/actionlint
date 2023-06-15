@@ -13,7 +13,7 @@
   language: docker_image
   types: ["yaml"]
   files: ^\.github/workflows/
-  entry: rhysd/actionlint:1.6.24
+  entry: rhysd/actionlint:1.6.25
 - id: actionlint-system
   name: Lint GitHub Actions workflow files
   description: Runs system-installed actionlint to lint GitHub Actions workflow files
