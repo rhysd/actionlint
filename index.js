@@ -73,7 +73,7 @@ jobs:
       - uses: actions/checkout@v3
       - uses: actions/setup-node@v3
         with:
-          node_version: 16.x
+          node_version: 18.x
       - uses: actions/cache@v3
         with:
           path: ~/.npm
@@ -92,12 +92,7 @@ jobs:
         gutters: ['CodeMirror-linenumbers', 'error-marker'],
         extraKeys: {
             Tab(cm) {
-                if (cm.somethingSelected()) {
-                    cm.execCommand('indentMore');
-                }
-                else {
-                    cm.execCommand('insertSoftTab');
-                }
+                cm.execCommand(cm.somethingSelected() ? 'indentMore' : 'insertSoftTab');
             },
         },
         value: await getDefaultSource(),
