@@ -1,3 +1,29 @@
+<a name="v1.6.25"></a>
+# [v1.6.25](https://github.com/rhysd/actionlint/releases/tag/v1.6.25) - 15 Jun 2023
+
+- Parse new syntax at `runs-on:`. Now `runs-on:` can have `group:` and `labels:` configurations. Please read [the official document](https://docs.github.com/en/actions/using-github-hosted-runners/using-larger-runners#running-jobs-on-your-runner) for more details. ([#280](https://github.com/rhysd/actionlint/issues/280))
+  ```yaml
+  runs-on:
+    group: ubuntu-runners
+    labels: ubuntu-20.04-16core
+  ```
+- Add support for macOS XL runners. `macos-latest-xl`, `macos-13-xl`, `macos-12-xl` labels are available at `runs-on:`. ([#299](https://github.com/rhysd/actionlint/issues/299), thanks [@woa7](https://github.com/woa7))
+- Find Git project directory from `-stdin-filename` command line argument. Even if the workflow content is passed via stdin, actionlint can recognize reusable workflows depended by the workflow using file path passed at `-stdin-filename` argument. ([#283](https://github.com/rhysd/actionlint/issues/283))
+- Fix order of errors is not deterministic when multiple errors happens at the same location (file name, line number, column number) when building actionlint with Go 1.20.
+- Fix type name of `watch` webhook.
+- Fix type of matrix row (property of `matrix` context) when `${{ }}` is used in the row value. ([#294](https://github.com/rhysd/actionlint/issues/294))
+- Fix `go install ./...` doesn't work. ([#297](https://github.com/rhysd/actionlint/issues/297))
+- Update `actionlint` pre-commit hook to use Go toolchain. Now pre-commit automatically installs `actionlint` command so you don't need to install it manually. Note that this hook requires pre-commit v3.0.0 or later. For those who don't have Go toolchain, the previous hook is maintained as `actionlint-system` hook. ([#301](https://github.com/rhysd/actionlint/issues/301), thanks [@Freed-Wu](https://github.com/Freed-Wu) and [@dokempf](https://github.com/dokempf))
+- Update Go dependencies to the latest.
+- Update npm dependencies for playground to the latest and fix optimizing Wasm binary with `wasm-opt`.
+- Update popular actions data set. New major versions and new inputs of many popular actions are now supported like `sparse-checkout` of `actions/checkout`.  ([#305](https://github.com/rhysd/actionlint/issues/305))
+- Fix outdated document for Problem Matchers. ([#289](https://github.com/rhysd/actionlint/issues/289), thanks [@carlcsaposs-canonical](https://github.com/carlcsaposs-canonical))
+- Fix outdated links in document for super-linter. ([#303](https://github.com/rhysd/actionlint/issues/303), thanks [@gmacario](https://github.com/gmacario))
+- Automate releasing the Winget package with GitHub Actions. ([#276](https://github.com/rhysd/actionlint/issues/276), [#293](https://github.com/rhysd/actionlint/issues/293), thanks [@sitiom](https://github.com/sitiom))
+
+[Changes][v1.6.25]
+
+
 <a name="v1.6.24"></a>
 # [v1.6.24](https://github.com/rhysd/actionlint/releases/tag/v1.6.24) - 04 Apr 2023
 
@@ -1376,6 +1402,7 @@ See documentation for more details:
 [Changes][v1.0.0]
 
 
+[v1.6.25]: https://github.com/rhysd/actionlint/compare/v1.6.24...v1.6.25
 [v1.6.24]: https://github.com/rhysd/actionlint/compare/v1.6.23...v1.6.24
 [v1.6.23]: https://github.com/rhysd/actionlint/compare/v1.6.22...v1.6.23
 [v1.6.22]: https://github.com/rhysd/actionlint/compare/v1.6.21...v1.6.22
