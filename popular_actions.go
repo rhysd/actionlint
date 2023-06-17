@@ -1548,6 +1548,8 @@ var PopularActions = map[string]*ActionMetadata{
 			"aws-secret-access-key":     {"aws-secret-access-key", false},
 			"aws-session-token":         {"aws-session-token", false},
 			"http-proxy":                {"http-proxy", false},
+			"inline-session-policy":     {"inline-session-policy", false},
+			"managed-session-policies":  {"managed-session-policies", false},
 			"mask-aws-account-id":       {"mask-aws-account-id", false},
 			"role-chaining":             {"role-chaining", false},
 			"role-duration-seconds":     {"role-duration-seconds", false},
