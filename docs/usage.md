@@ -345,12 +345,10 @@ Please see [super-linter/super-linter#1852](https://github.com/super-linter/supe
 
 ### pre-commit
 
-[pre-commit][] is a framework for managing and maintaining multi-language Git pre-commit hooks.
+[pre-commit][] is a framework for managing and maintaining multi-language Git pre-commit hooks. actionlint is available as a
+pre-commit hook to check workflow files in `.github/workflows/` directory.
 
-actionlint is available as a pre-commit hook.
-
-Once the `actionlint` binary is installed locally, add this to your `.pre-commit-config.yaml` in
-your repository:
+Add this to your `.pre-commit-config.yaml` in your repository:
 
 ```yaml
 ---
@@ -361,16 +359,13 @@ repos:
       - id: actionlint
 ```
 
-or alternatively, run actionlint with Docker:
+As alternatives to `actionlint` hook, `actionlint-docker` or `actionlint-system` hooks are available.
 
-```yaml
----
-repos:
-  - repo: https://github.com/rhysd/actionlint
-    rev: main
-    hooks:
-      - id: actionlint-docker
-```
+| Hook ID | Explanation |
+|-|-|
+| `actionlint` | Automatically installs `actionlint` command in isolated `$GOPATH` directory using [Go toolchain][go-install]. |
+| `actionlint-docker` | Automatically pulls [the actionlint Docker image](#docker). |
+| `actionlint-system` | Uses system-installed `actionlint` command. The command is necessary to be [installed manually](install.md). |
 
 ### VS Code
 
@@ -435,6 +430,7 @@ You can also see actionlint issues inline in VS Code via the [Trunk VS Code exte
 [actionlint-matcher]: https://raw.githubusercontent.com/rhysd/actionlint/main/.github/actionlint-matcher.json
 [preinstall-ubuntu]: https://github.com/actions/virtual-environments/blob/main/images/linux/Ubuntu2004-README.md
 [pre-commit]: https://pre-commit.com
+[go-install]: https://go.dev/doc/install
 [docker]: https://www.docker.com/
 [docker-image]: https://hub.docker.com/r/rhysd/actionlint
 [vsc-extension]: https://marketplace.visualstudio.com/items?itemName=arahata.linter-actionlint
