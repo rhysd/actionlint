@@ -93,7 +93,8 @@ func NewProjects() *Projects {
 	return &Projects{}
 }
 
-// At returns the Project instance which the path belongs to.
+// At returns the Project instance which the path belongs to. It returns nil if no project is found
+// from the path.
 func (ps *Projects) At(path string) *Project {
 	for _, p := range ps.known {
 		if p.Knows(path) {

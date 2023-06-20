@@ -1,0 +1,9 @@
+on:
+  workflow_call:
+    outputs: this causes an error
+
+jobs:
+  test:
+    runs-on: ubuntu-latest
+    steps:
+      - run: echo ...
