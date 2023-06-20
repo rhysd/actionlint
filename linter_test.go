@@ -199,12 +199,15 @@ func TestLinterLintError(t *testing.T) {
 }
 
 func TestLintFindProjectFromPath(t *testing.T) {
-	d := filepath.Join("testdata", "projects", "broken_reusable_workflow")
-	f := filepath.Join(d, "workflows", "test.yaml")
+	d := filepath.Join("testdata", "find_project")
+	f := filepath.Join(d, ".github", "workflows", "test.yaml")
 	b, err := os.ReadFile(f)
 	if err != nil {
 		panic(err)
 	}
+
+	testEnsureDotGitDir(d)
+
 	lint := func(path string) []*Error {
 		l, err := NewLinter(io.Discard, &LinterOptions{})
 		if err != nil {
