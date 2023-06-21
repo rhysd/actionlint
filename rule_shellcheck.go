@@ -34,7 +34,10 @@ func NewRuleShellcheck(executable string, proc *concurrentProcess) (*RuleShellch
 		return nil, err
 	}
 	r := &RuleShellcheck{
-		RuleBase:      RuleBase{name: "shellcheck"},
+		RuleBase: RuleBase{
+			name: "shellcheck",
+			desc: "Checks for shell script sources in \"run:\" using shellcheck",
+		},
 		cmd:           cmd,
 		workflowShell: "",
 		jobShell:      "",

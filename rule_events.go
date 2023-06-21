@@ -19,7 +19,10 @@ type RuleEvents struct {
 // NewRuleEvents creates new RuleEvents instance.
 func NewRuleEvents() *RuleEvents {
 	return &RuleEvents{
-		RuleBase: RuleBase{name: "events"},
+		RuleBase: RuleBase{
+			name: "events",
+			desc: "Checks for workflow trigger events at \"on:\"",
+		},
 	}
 }
 

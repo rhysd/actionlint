@@ -9,6 +9,7 @@ import (
 // automatically
 type RuleBase struct {
 	name   string
+	desc   string
 	errs   []*Error
 	dbg    io.Writer
 	config *Config
@@ -52,9 +53,14 @@ func (r *RuleBase) Errs() []*Error {
 	return r.errs
 }
 
-// Name is name of the rule.
+// Name returns the name of the rule.
 func (r *RuleBase) Name() string {
 	return r.name
+}
+
+// Description returns the description of the rule.
+func (r *RuleBase) Description() string {
+	return r.desc
 }
 
 // EnableDebug enables debug output from the rule. Given io.Writer instance is used to print debug
@@ -74,6 +80,7 @@ type Rule interface {
 	Pass
 	Errs() []*Error
 	Name() string
+	Description() string
 	EnableDebug(out io.Writer)
 	SetConfig(cfg *Config)
 }
