@@ -228,6 +228,7 @@ func newRulesRegistry() *rulesRegistry {
 		curIdx: 0,
 		entries: map[string]ruleEntry{
 			"syntax-check": {"Checks for GitHub Actions workflow syntax", 0},
+			"yaml-syntax":  {"Checks for GitHub Actions workflow syntax", 0},
 		},
 	}
 }

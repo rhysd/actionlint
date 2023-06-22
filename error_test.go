@@ -418,6 +418,11 @@ func TestErrorPrintFormattedWithTemplateFields(t *testing.T) {
 			temp: "{{range $ = .}}{{replace $.Kind \"kind\" \"king\"}}{{end}}",
 			want: "king1king2",
 		},
+		// Rules are not registerred so description is empty and index is 0
+		{
+			temp: "{{range $ = .}}{{$.Kind | kindDescription | json}}{{kindIndex $.Kind}}\n{{end}}",
+			want: "\"\"\n0\n\"\"\n0\n",
+		},
 	}
 
 	for _, tc := range testCases {
@@ -475,6 +480,40 @@ func TestErrorPrintSerializedIntoJSON(t *testing.T) {
 	}
 	if !cmp.Equal(testErrorTemplateFields, decoded) {
 		t.Fatal(cmp.Diff(testErrorTemplateFields, decoded))
+	}
+}
+
+func TestErrorPrintKindDescriptionAndIndex(t *testing.T) {
+	errs := []*Error{
+		errorAt(&Pos{}, "rule1", "error 1"),
+		errorAt(&Pos{}, "rule2", "error 2"),
+		errorAt(&Pos{}, "syntax-check", "error 3"),
+		errorAt(&Pos{}, "yaml-syntax", "error 4"),
+	}
+
+	f, err := NewErrorFormatter("{{range $ = .}}({{kindIndex $.Kind}} {{kindDescription $.Kind}}){{end}}")
+	if err != nil {
+		t.Fatal(err)
+	}
+
+	f.RegisterRule(&RuleBase{
+		name: "rule1",
+		desc: "description for rule1",
+	})
+	f.RegisterRule(&RuleBase{
+		name: "rule2",
+		desc: "description for rule2",
+	})
+
+	var b bytes.Buffer
+	if err := f.PrintErrors(&b, errs, []byte("dummy source")); err != nil {
+		t.Fatal(err)
+	}
+
+	want := "(1 description for rule1)(2 description for rule2)(0 Checks for GitHub Actions workflow syntax)(0 Checks for GitHub Actions workflow syntax)"
+	have := b.String()
+	if want != have {
+		t.Fatalf("wanted %q but got %q", want, have)
 	}
 }
 
