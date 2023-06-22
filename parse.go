@@ -1362,7 +1362,7 @@ func handleYAMLError(err error) []*Error {
 			l, _ = strconv.Atoi(ss[1])
 		}
 		msg = fmt.Sprintf("could not parse as YAML: %s", msg)
-		return &Error{msg, "", l, 0, "yaml-syntax"}
+		return &Error{msg, "", l, 0, "syntax-check"}
 	}
 
 	if te, ok := err.(*yaml.TypeError); ok {

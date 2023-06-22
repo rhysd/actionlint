@@ -488,7 +488,6 @@ func TestErrorPrintKindDescriptionAndIndex(t *testing.T) {
 		errorAt(&Pos{}, "rule1", "error 1"),
 		errorAt(&Pos{}, "rule2", "error 2"),
 		errorAt(&Pos{}, "syntax-check", "error 3"),
-		errorAt(&Pos{}, "yaml-syntax", "error 4"),
 	}
 
 	f, err := NewErrorFormatter("{{range $ = .}}({{kindIndex $.Kind}} {{kindDescription $.Kind}}){{end}}")
@@ -510,7 +509,7 @@ func TestErrorPrintKindDescriptionAndIndex(t *testing.T) {
 		t.Fatal(err)
 	}
 
-	want := "(1 description for rule1)(2 description for rule2)(0 Checks for GitHub Actions workflow syntax)(0 Checks for GitHub Actions workflow syntax)"
+	want := "(1 description for rule1)(2 description for rule2)(0 Checks for GitHub Actions workflow syntax)"
 	have := b.String()
 	if want != have {
 		t.Fatalf("wanted %q but got %q", want, have)
