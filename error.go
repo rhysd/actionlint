@@ -215,6 +215,7 @@ func unescapeBackslash(s string) string {
 }
 
 type ruleTemplateEntry struct {
+	Name        string
 	Description string
 	Index       int
 }
@@ -227,7 +228,7 @@ func newRuleTemplatesRegistry() *ruleTemplatesRegistry {
 	return &ruleTemplatesRegistry{
 		curIdx: 0,
 		entries: map[string]ruleTemplateEntry{
-			"syntax-check": {"Checks for GitHub Actions workflow syntax", 0},
+			"syntax-check": {"syntax-check", "Checks for GitHub Actions workflow syntax", 0},
 		},
 	}
 }
@@ -237,7 +238,7 @@ func (r *ruleTemplatesRegistry) register(name, desc string) {
 	}
 
 	r.curIdx++
-	r.entries[name] = ruleTemplateEntry{desc, r.curIdx}
+	r.entries[name] = ruleTemplateEntry{name, desc, r.curIdx}
 }
 func (r *ruleTemplatesRegistry) descriptionOf(kind string) string {
 	e, ok := r.entries[kind]
@@ -285,8 +286,12 @@ func NewErrorFormatter(format string) (*ErrorFormatter, error) {
 		"kindIndex": func(k string) int {
 			return r.indexOf(k)
 		},
-		"allKinds": func() map[string]ruleTemplateEntry {
-			return r.entries
+		"allKinds": func() []ruleTemplateEntry {
+			ret := make([]ruleTemplateEntry, len(r.entries))
+			for _, e := range r.entries {
+				ret[e.Index] = e
+			}
+			return ret
 		},
 	})
 	t, err := template.New("error formatter").Funcs(funcs).Parse(unescapeBackslash(format))

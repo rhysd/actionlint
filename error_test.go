@@ -517,7 +517,7 @@ func TestErrorPrintKindIndex(t *testing.T) {
 }
 
 func TestErrorPrintAllKinds(t *testing.T) {
-	f, err := NewErrorFormatter("{{range $k,$v := allKinds}}{{$k}}: {{$v.Index}}: {{$v.Description}}\n{{end}}")
+	f, err := NewErrorFormatter("{{range $ = allKinds}}{{$.Name}}: {{$.Index}}: {{$.Description}}\n{{end}}")
 	if err != nil {
 		t.Fatal(err)
 	}
