@@ -21,7 +21,7 @@ func WorkflowKeyAvailability(key string) ([]string, []string) {
 		return []string{"env", "github", "inputs", "job", "matrix", "needs", "runner", "steps", "strategy", "vars"}, []string{}
 	case "jobs.<job_id>.steps.if":
 		return []string{"env", "github", "inputs", "job", "matrix", "needs", "runner", "steps", "strategy", "vars"}, []string{"always", "cancelled", "failure", "hashfiles", "success"}
-	case "jobs.<job_id>.container", "jobs.<job_id>.container.credentials", "jobs.<job_id>.services.<service_id>.credentials":
+	case "jobs.<job_id>.container.credentials", "jobs.<job_id>.services.<service_id>.credentials":
 		return []string{"env", "github", "inputs", "matrix", "needs", "secrets", "strategy", "vars"}, []string{}
 	case "jobs.<job_id>.defaults.run":
 		return []string{"env", "github", "inputs", "matrix", "needs", "strategy", "vars"}, []string{}
@@ -29,7 +29,7 @@ func WorkflowKeyAvailability(key string) ([]string, []string) {
 		return []string{"github", "inputs", "jobs", "vars"}, []string{}
 	case "jobs.<job_id>.env", "jobs.<job_id>.secrets.<secrets_id>":
 		return []string{"github", "inputs", "matrix", "needs", "secrets", "strategy", "vars"}, []string{}
-	case "jobs.<job_id>.concurrency", "jobs.<job_id>.continue-on-error", "jobs.<job_id>.environment", "jobs.<job_id>.name", "jobs.<job_id>.runs-on", "jobs.<job_id>.services", "jobs.<job_id>.timeout-minutes", "jobs.<job_id>.with.<with_id>":
+	case "jobs.<job_id>.concurrency", "jobs.<job_id>.container", "jobs.<job_id>.container.image", "jobs.<job_id>.continue-on-error", "jobs.<job_id>.environment", "jobs.<job_id>.name", "jobs.<job_id>.runs-on", "jobs.<job_id>.services", "jobs.<job_id>.timeout-minutes", "jobs.<job_id>.with.<with_id>":
 		return []string{"github", "inputs", "matrix", "needs", "strategy", "vars"}, []string{}
 	case "jobs.<job_id>.strategy":
 		return []string{"github", "inputs", "needs", "vars"}, []string{}
@@ -53,4 +53,4 @@ func WorkflowKeyAvailability(key string) ([]string, []string) {
 var SpecialFunctionNames = map[string][]string{"always": []string{"jobs.<job_id>.if", "jobs.<job_id>.steps.if"}, "cancelled": []string{"jobs.<job_id>.if", "jobs.<job_id>.steps.if"}, "failure": []string{"jobs.<job_id>.if", "jobs.<job_id>.steps.if"}, "hashfiles": []string{"jobs.<job_id>.steps.continue-on-error", "jobs.<job_id>.steps.env", "jobs.<job_id>.steps.if", "jobs.<job_id>.steps.name", "jobs.<job_id>.steps.run", "jobs.<job_id>.steps.timeout-minutes", "jobs.<job_id>.steps.with", "jobs.<job_id>.steps.working-directory"}, "success": []string{"jobs.<job_id>.if", "jobs.<job_id>.steps.if"}}
 
 // For test
-var allWorkflowKeys = []string{"concurrency", "env", "jobs.<job_id>.concurrency", "jobs.<job_id>.container", "jobs.<job_id>.container.credentials", "jobs.<job_id>.container.env.<env_id>", "jobs.<job_id>.continue-on-error", "jobs.<job_id>.defaults.run", "jobs.<job_id>.env", "jobs.<job_id>.environment", "jobs.<job_id>.environment.url", "jobs.<job_id>.if", "jobs.<job_id>.name", "jobs.<job_id>.outputs.<output_id>", "jobs.<job_id>.runs-on", "jobs.<job_id>.secrets.<secrets_id>", "jobs.<job_id>.services", "jobs.<job_id>.services.<service_id>.credentials", "jobs.<job_id>.services.<service_id>.env.<env_id>", "jobs.<job_id>.steps.continue-on-error", "jobs.<job_id>.steps.env", "jobs.<job_id>.steps.if", "jobs.<job_id>.steps.name", "jobs.<job_id>.steps.run", "jobs.<job_id>.steps.timeout-minutes", "jobs.<job_id>.steps.with", "jobs.<job_id>.steps.working-directory", "jobs.<job_id>.strategy", "jobs.<job_id>.timeout-minutes", "jobs.<job_id>.with.<with_id>", "on.workflow_call.inputs.<inputs_id>.default", "on.workflow_call.outputs.<output_id>.value", "run-name"}
+var allWorkflowKeys = []string{"concurrency", "env", "jobs.<job_id>.concurrency", "jobs.<job_id>.container", "jobs.<job_id>.container.credentials", "jobs.<job_id>.container.env.<env_id>", "jobs.<job_id>.container.image", "jobs.<job_id>.continue-on-error", "jobs.<job_id>.defaults.run", "jobs.<job_id>.env", "jobs.<job_id>.environment", "jobs.<job_id>.environment.url", "jobs.<job_id>.if", "jobs.<job_id>.name", "jobs.<job_id>.outputs.<output_id>", "jobs.<job_id>.runs-on", "jobs.<job_id>.secrets.<secrets_id>", "jobs.<job_id>.services", "jobs.<job_id>.services.<service_id>.credentials", "jobs.<job_id>.services.<service_id>.env.<env_id>", "jobs.<job_id>.steps.continue-on-error", "jobs.<job_id>.steps.env", "jobs.<job_id>.steps.if", "jobs.<job_id>.steps.name", "jobs.<job_id>.steps.run", "jobs.<job_id>.steps.timeout-minutes", "jobs.<job_id>.steps.with", "jobs.<job_id>.steps.working-directory", "jobs.<job_id>.strategy", "jobs.<job_id>.timeout-minutes", "jobs.<job_id>.with.<with_id>", "on.workflow_call.inputs.<inputs_id>.default", "on.workflow_call.outputs.<output_id>.value", "run-name"}
