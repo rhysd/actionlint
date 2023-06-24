@@ -50,7 +50,7 @@ jobs:
     container:
       # jobs.<job_id>.container
       # OK
-      image: ${{ env.IMAGE_NAME }}:14.16
+      image: ${{ github.actor }}:14.16
       # jobs.<job_id>.container.credentials
       credentials:
         # ERROR
