@@ -418,11 +418,6 @@ func TestErrorPrintFormattedWithTemplateFields(t *testing.T) {
 			temp: "{{range $ = .}}{{replace $.Kind \"kind\" \"king\"}}{{end}}",
 			want: "king1king2",
 		},
-		// Rules are not registerred so index is always 0
-		{
-			temp: "{{range $ = .}}{{kindIndex $.Kind}}\n{{end}}",
-			want: "0\n0\n",
-		},
 	}
 
 	for _, tc := range testCases {
@@ -483,41 +478,8 @@ func TestErrorPrintSerializedIntoJSON(t *testing.T) {
 	}
 }
 
-func TestErrorPrintKindIndex(t *testing.T) {
-	errs := []*Error{
-		errorAt(&Pos{}, "rule1", "error 1"),
-		errorAt(&Pos{}, "rule2", "error 2"),
-		errorAt(&Pos{}, "syntax-check", "error 3"),
-	}
-
-	f, err := NewErrorFormatter("{{range $ = .}}{{kindIndex $.Kind}} {{end}}")
-	if err != nil {
-		t.Fatal(err)
-	}
-
-	f.RegisterRule(&RuleBase{
-		name: "rule1",
-		desc: "description for rule1",
-	})
-	f.RegisterRule(&RuleBase{
-		name: "rule2",
-		desc: "description for rule2",
-	})
-
-	var b bytes.Buffer
-	if err := f.PrintErrors(&b, errs, []byte("dummy source")); err != nil {
-		t.Fatal(err)
-	}
-
-	want := "1 2 0 "
-	have := b.String()
-	if want != have {
-		t.Fatalf("wanted %q but got %q", want, have)
-	}
-}
-
 func TestErrorPrintAllKinds(t *testing.T) {
-	f, err := NewErrorFormatter("{{range $ = allKinds}}{{$.Name}}: {{$.Index}}: {{$.Description}}\n{{end}}")
+	f, err := NewErrorFormatter("{{range $ = allKinds}}{{$.Name}}: {{$.Description}}\n{{end}}")
 	if err != nil {
 		t.Fatal(err)
 	}
@@ -538,9 +500,9 @@ func TestErrorPrintAllKinds(t *testing.T) {
 	output := b.String()
 
 	for _, want := range []string{
-		"syntax-check: 0: Checks for GitHub Actions workflow syntax\n",
-		"rule1: 1: description for rule1\n",
-		"rule2: 2: description for rule2\n",
+		"syntax-check: Checks for GitHub Actions workflow syntax\n",
+		"rule1: description for rule1\n",
+		"rule2: description for rule2\n",
 	} {
 		if !strings.Contains(output, want) {
 			t.Errorf("%q is not included in `allKinds` output: %q", want, output)

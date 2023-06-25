@@ -214,52 +214,16 @@ func unescapeBackslash(s string) string {
 	return r.Replace(s)
 }
 
-type ruleTemplateEntry struct {
+type ruleTemplateFields struct {
 	Name        string
 	Description string
-	Index       int
-}
-type ruleTemplatesRegistry struct {
-	curIdx  int
-	entries map[string]ruleTemplateEntry
-}
-
-func newRuleTemplatesRegistry() *ruleTemplatesRegistry {
-	return &ruleTemplatesRegistry{
-		curIdx: 0,
-		entries: map[string]ruleTemplateEntry{
-			"syntax-check": {"syntax-check", "Checks for GitHub Actions workflow syntax", 0},
-		},
-	}
-}
-func (r *ruleTemplatesRegistry) register(name, desc string) {
-	if _, ok := r.entries[name]; ok {
-		return
-	}
-
-	r.curIdx++
-	r.entries[name] = ruleTemplateEntry{name, desc, r.curIdx}
-}
-func (r *ruleTemplatesRegistry) descriptionOf(kind string) string {
-	e, ok := r.entries[kind]
-	if !ok {
-		return ""
-	}
-	return e.Description
-}
-func (r *ruleTemplatesRegistry) indexOf(kind string) int {
-	e, ok := r.entries[kind]
-	if !ok {
-		return 0
-	}
-	return e.Index
 }
 
 // ErrorFormatter is a formatter to format a slice of ErrorTemplateFields. It is used for
 // formatting error messages with -format option.
 type ErrorFormatter struct {
 	temp  *template.Template
-	rules *ruleTemplatesRegistry
+	rules map[string]*ruleTemplateFields
 }
 
 // NewErrorFormatter creates new ErrorFormatter instance. Given format must contain at least one
@@ -269,7 +233,9 @@ func NewErrorFormatter(format string) (*ErrorFormatter, error) {
 		return nil, fmt.Errorf("template to format error messages must contain at least one {{ }} placeholder: %s", format)
 	}
 
-	r := newRuleTemplatesRegistry()
+	r := map[string]*ruleTemplateFields{
+		"syntax-check": {"syntax-check", "Checks for GitHub Actions workflow syntax"},
+	}
 
 	funcs := template.FuncMap(map[string]interface{}{
 		"json": func(data interface{}) (string, error) {
@@ -283,13 +249,10 @@ func NewErrorFormatter(format string) (*ErrorFormatter, error) {
 		"replace": func(s string, oldnew ...string) string {
 			return strings.NewReplacer(oldnew...).Replace(s)
 		},
-		"kindIndex": func(k string) int {
-			return r.indexOf(k)
-		},
-		"allKinds": func() []ruleTemplateEntry {
-			ret := make([]ruleTemplateEntry, len(r.entries))
-			for _, e := range r.entries {
-				ret[e.Index] = e
+		"allKinds": func() []*ruleTemplateFields {
+			ret := make([]*ruleTemplateFields, 0, len(r))
+			for _, e := range r {
+				ret = append(ret, e)
 			}
 			return ret
 		},
@@ -322,5 +285,8 @@ func (f *ErrorFormatter) PrintErrors(out io.Writer, errs []*Error, src []byte) e
 // RegisterRule registers the rule. Registered rules are used to get description and index of error
 // kinds when you use `kindDescription` or `kindIndex` functions in an error format template.
 func (f *ErrorFormatter) RegisterRule(r Rule) {
-	f.rules.register(r.Name(), r.Description())
+	n := r.Name()
+	if _, ok := f.rules[n]; !ok {
+		f.rules[n] = &ruleTemplateFields{n, r.Description()}
+	}
 }
