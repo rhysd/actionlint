@@ -575,6 +575,42 @@ func TestErrorFormatterPrintJSONEncodeError(t *testing.T) {
 	}
 }
 
+func TestErrorFormatterPrintToPascalCase(t *testing.T) {
+	tests := []struct {
+		input string
+		want  string
+	}{
+		{"", ""},
+		{"foo", "Foo"},
+		{"Foo", "Foo"},
+		{"foo-bar", "FooBar"},
+		{"fooBar", "FooBar"},
+		{"FooBar", "FooBar"},
+		{"foo_bar", "FooBar"},
+		{"foo.bar", "FooBar"},
+	}
+
+	for _, tc := range tests {
+		t.Run(tc.input, func(t *testing.T) {
+			f, err := NewErrorFormatter("{{range $ = .}}{{toPascalCase .Message}}{{end}}")
+			if err != nil {
+				t.Fatal(err)
+			}
+			var b strings.Builder
+
+			fs := []*ErrorTemplateFields{{Message: tc.input}}
+			if err := f.Print(&b, fs); err != nil {
+				t.Fatal(err)
+			}
+
+			have := b.String()
+			if have != tc.want {
+				t.Fatalf("wanted %q but have %q", tc.want, have)
+			}
+		})
+	}
+}
+
 func TestErrorString(t *testing.T) {
 	err := &Error{
 		Message: "this is message",

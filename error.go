@@ -214,6 +214,22 @@ func unescapeBackslash(s string) string {
 	return r.Replace(s)
 }
 
+func toPascalCase(s string) string {
+	ss := strings.FieldsFunc(s, func(r rune) bool {
+		return !('a' <= r && r <= 'z' || 'A' <= r && r <= 'Z' || '0' <= r && r <= '9')
+	})
+	for i, s := range ss {
+		var c rune
+		for _, c = range s {
+			break
+		}
+		if 'a' <= c && c <= 'z' {
+			ss[i] = strings.ToUpper(s[:1]) + s[1:]
+		}
+	}
+	return strings.Join(ss, "")
+}
+
 type ruleTemplateFields struct {
 	Name        string
 	Description string
@@ -249,6 +265,7 @@ func NewErrorFormatter(format string) (*ErrorFormatter, error) {
 		"replace": func(s string, oldnew ...string) string {
 			return strings.NewReplacer(oldnew...).Replace(s)
 		},
+		"toPascalCase": toPascalCase,
 		"allKinds": func() []*ruleTemplateFields {
 			ret := make([]*ruleTemplateFields, 0, len(r))
 			for _, e := range r {
