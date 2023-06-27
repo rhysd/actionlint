@@ -611,6 +611,29 @@ func TestErrorFormatterPrintToPascalCase(t *testing.T) {
 	}
 }
 
+func TestErrorFormatterPrintGetVersion(t *testing.T) {
+	saved := version
+	defer func() {
+		version = saved
+	}()
+	version = "dummy version"
+
+	f, err := NewErrorFormatter("{{getVersion}}")
+	if err != nil {
+		t.Fatal(err)
+	}
+	var b strings.Builder
+
+	if err := f.Print(&b, []*ErrorTemplateFields{}); err != nil {
+		t.Fatal(err)
+	}
+
+	out := b.String()
+	if out != "dummy version" {
+		t.Fatalf("version should be \"dummy version\" but have %q", out)
+	}
+}
+
 func TestErrorString(t *testing.T) {
 	err := &Error{
 		Message: "this is message",
