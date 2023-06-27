@@ -563,7 +563,7 @@ func (a *app) fetchRemote() (map[string]*actionlint.ActionMetadata, error) {
 					spec := req.action.spec(req.tag)
 					var meta actionlint.ActionMetadata
 					if err := yaml.Unmarshal(body, &meta); err != nil {
-						ret <- &fetched{err: fmt.Errorf("coult not parse metadata for %s: %w", url, err)}
+						ret <- &fetched{err: fmt.Errorf("could not parse metadata for %s: %w", url, err)}
 						break
 					}
 					if _, ok := a.skipInputs[req.action.slug]; ok {

@@ -107,7 +107,7 @@ func (rule *RuleExpression) VisitWorkflowPre(n *Workflow) error {
 
 			for _, i := range e.Inputs {
 				rule.checkString(i.Description, "")
-				// Check default value before setting type to `ity` because refering myself should cause an error.
+				// Check default value before setting type to `ity` because referring myself should cause an error.
 				//   inputs:
 				//     recursive:
 				//       type: string

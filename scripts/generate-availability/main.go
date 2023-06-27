@@ -200,7 +200,7 @@ func WorkflowKeyAvailability(key string) ([]string, []string) {
 // See the script for more details: https://github.com/rhysd/actionlint/blob/main/scripts/generate-availability/`)
 	fmt.Fprintf(buf, "var SpecialFunctionNames = %#v\n", funcs)
 
-	// This variabel is for unit tests
+	// This variable is for unit tests
 	sort.Strings(keys)
 	fmt.Fprintf(buf, "\n// For test\nvar allWorkflowKeys = %#v\n", keys)
 

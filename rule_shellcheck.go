@@ -25,7 +25,7 @@ type RuleShellcheck struct {
 	mu            sync.Mutex
 }
 
-// NewRuleShellcheck craetes new RuleShellcheck instance. Parameter executable can be command name
+// NewRuleShellcheck creates new RuleShellcheck instance. Parameter executable can be command name
 // or relative/absolute file path. When the given executable is not found in system, it returns an
 // error as 2nd return value.
 func NewRuleShellcheck(executable string, proc *concurrentProcess) (*RuleShellcheck, error) {
