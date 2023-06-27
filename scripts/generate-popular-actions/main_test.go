@@ -55,7 +55,7 @@ func TestDataSource(t *testing.T) {
 				continue
 			}
 			if tag == a.next {
-				t.Errorf("tags[%d] at action %q is equal to next verion %q", i, a.slug, a.next)
+				t.Errorf("tags[%d] at action %q is equal to next version %q", i, a.slug, a.next)
 			}
 			if j, ok := tags[tag]; ok {
 				t.Errorf("duplicate tag %q at action %q appears: tags[%d] v.s. tags[%d]", tag, a.slug, i, j)

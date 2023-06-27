@@ -187,7 +187,7 @@ type ObjectType struct {
 	// Mapped is an element type of this object. This means all props have the type. For example,
 	// The element type of env context is string.
 	// AnyType means its property types can be any type so it shapes a loose object. Setting nil
-	// means propreties are mapped to no type so it shapes a strict object.
+	// means properties are mapped to no type so it shapes a strict object.
 	//
 	// Invariant: All types in Props field must be assignable to this type.
 	Mapped ExprType
