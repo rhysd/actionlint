@@ -33,6 +33,12 @@ on:
         type: boolean
       environment:
         type: environment
+      number:
+        type: number
+        default: 123
+      pi:
+        type: number
+        default: 3.1415
 
 jobs:
   test:
@@ -46,5 +52,6 @@ jobs:
       - run: echo '${{ github.event.inputs.dry-run }}'
       - run: echo '${{ github.event.inputs.notification }}'
       - run: echo '${{ github.event.inputs.environment }}'
+      - run: echo '${{ github.event.inputs.number }}'
       - run: echo "${{ contains('hello, world!', github.event.inputs.name) }}"
         if: ${{ github.event.inputs.verbose }}
