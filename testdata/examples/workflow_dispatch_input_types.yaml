@@ -3,7 +3,7 @@ on:
     inputs:
       # Unknown input type
       id:
-        type: number
+        type: text
       # ERROR: No options for 'choice' input type
       kind:
         type: choice

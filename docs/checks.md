@@ -1207,7 +1207,7 @@ on:
     inputs:
       # Unknown input type
       id:
-        type: number
+        type: text
       # ERROR: No options for 'choice' input type
       kind:
         type: choice
@@ -1240,7 +1240,7 @@ jobs:
 Output:
 
 ```
-test.yaml:6:15: input type of workflow_dispatch event must be one of "string", "boolean", "choice", "environment" but got "number" [syntax-check]
+test.yaml:6:15: input type of workflow_dispatch event must be one of "string", "number", "boolean", "choice", "environment" but got "text" [syntax-check]
   |
 6 |         type: number
   |               ^~~~~~
@@ -1277,7 +1277,7 @@ test.yaml:33:24: property "massage" is not defined in object type {id: string; k
 
 actionlint checks several mistakes around `workflow_dispatch` configuration.
 
-- Input type must be one of 'choice', 'string', 'boolean', 'environment'
+- Input type must be one of 'choice', 'string', 'number', 'boolean', 'environment'
 - `options:` must be set for 'choice' input type
 - The default value of 'choice' input must be included in options
 - The default value of 'boolean' input must be `true` or `false`

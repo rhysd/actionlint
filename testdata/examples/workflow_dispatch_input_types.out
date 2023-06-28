@@ -1,4 +1,4 @@
-test.yaml:6:15: input type of workflow_dispatch event must be one of "string", "boolean", "choice", "environment" but got "number" [syntax-check]
+test.yaml:6:15: input type of workflow_dispatch event must be one of "string", "number", "boolean", "choice", "environment" but got "text" [syntax-check]
 test.yaml:8:7: input type of "kind" is "choice" but "options" is not set [events]
 test.yaml:16:18: default value "Chobi" of "name" input is not included in its options "\"Tama\", \"Mike\"" [events]
 test.yaml:22:18: type of "verbose" input is "boolean". its default value "yes" must be "true" or "false" [events]

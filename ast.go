@@ -158,6 +158,8 @@ const (
 	WorkflowDispatchEventInputTypeNone WorkflowDispatchEventInputType = iota
 	// WorkflowDispatchEventInputTypeString is string type of input of workflow_dispatch event.
 	WorkflowDispatchEventInputTypeString
+	// WorkflowDispatchEventInputTypeNumber is number type of input of workflow_dispatch event.
+	WorkflowDispatchEventInputTypeNumber
 	// WorkflowDispatchEventInputTypeBoolean is boolean type of input of workflow_dispatch event.
 	WorkflowDispatchEventInputTypeBoolean
 	// WorkflowDispatchEventInputTypeChoice is choice type of input of workflow_dispatch event.
