@@ -20,6 +20,10 @@ on:
         type: boolean
         # ERROR: Boolean value must be 'true' or 'false'
         default: yes
+      age:
+        type: number
+        # ERROR: Number value must be parsed as a float number
+        default: teen
 
 jobs:
   test:
@@ -29,5 +33,7 @@ jobs:
       - run: echo "${{ inputs.massage }}"
       # ERROR: Bool value is not available for object key
       - run: echo "${{ env[inputs.verbose] }}"
+      # ERROR: Number value is not available for object key
+      - run: echo "${{ env[inputs.age] }}"
       # ERROR: `github.event.inputs` is also not defined
       - run: echo "${{ github.event.inputs.massage }}"
