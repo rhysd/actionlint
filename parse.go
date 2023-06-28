@@ -353,6 +353,8 @@ func (p *parser) parseWorkflowDispatchEvent(pos *Pos, n *yaml.Node) *WorkflowDis
 					switch attr.val.Value {
 					case "string":
 						ty = WorkflowDispatchEventInputTypeString
+					case "number":
+						ty = WorkflowDispatchEventInputTypeNumber
 					case "boolean":
 						ty = WorkflowDispatchEventInputTypeBoolean
 					case "choice":
@@ -360,7 +362,7 @@ func (p *parser) parseWorkflowDispatchEvent(pos *Pos, n *yaml.Node) *WorkflowDis
 					case "environment":
 						ty = WorkflowDispatchEventInputTypeEnvironment
 					default:
-						p.errorf(attr.val, "input type of workflow_dispatch event must be one of \"string\", \"boolean\", \"choice\", \"environment\" but got %q", attr.val.Value)
+						p.errorf(attr.val, `input type of workflow_dispatch event must be one of "string", "number", "boolean", "choice", "environment" but got %q`, attr.val.Value)
 					}
 				case "options":
 					opts = p.parseStringSequence("options", attr.val, false, false)

@@ -10,6 +10,8 @@ on:
           - aaa
       boolean:
         type: boolean
+      number:
+        type: number
       environment:
         type: environment
 
@@ -31,3 +33,5 @@ jobs:
       - run: echo "${{ github.event.*[inputs.choice] }}"
       - run: echo "${{ github.event.*[inputs.string] }}"
       - run: echo "${{ github.event.*[inputs.environment] }}"
+      # Number value is not available for object key
+      - run: echo "${{ github[inputs.number] }}"

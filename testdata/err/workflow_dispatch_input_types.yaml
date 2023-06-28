@@ -45,6 +45,9 @@ on:
           - bbb
       input_unknown_type:
         type: unknown
+      number_invalid_default:
+        type: number
+        default: number
 
 jobs:
   test:
