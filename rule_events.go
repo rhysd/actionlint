@@ -250,16 +250,25 @@ func (rule *RuleEvents) checkWorkflowDispatchEvent(event *WorkflowDispatchEvent)
 			if len(i.Options) > 0 {
 				rule.errorf(i.Name.Pos, "\"options\" can not be set to %q input because its input type is not \"choice\"", n)
 			}
-			switch i.Type {
-			case WorkflowDispatchEventInputTypeBoolean:
-				if i.Default != nil {
+			if i.Default != nil {
+				// TODO: Can some check be done for WorkflowDispatchEventInputTypeEnvironment?
+				// What is suitable for default value of the type? (Or is a default value never suitable?)
+				switch i.Type {
+				case WorkflowDispatchEventInputTypeNumber:
+					if _, err := strconv.ParseFloat(i.Default.Value, 64); err != nil {
+						rule.errorf(
+							i.Default.Pos,
+							"type of %q input is \"number\" but its default value %q cannot be parsed as a float number: %s",
+							i.Name.Value,
+							i.Default.Value,
+							err,
+						)
+					}
+				case WorkflowDispatchEventInputTypeBoolean:
 					if d := strings.ToLower(i.Default.Value); d != "true" && d != "false" {
 						rule.errorf(i.Default.Pos, "type of %q input is \"boolean\". its default value %q must be \"true\" or \"false\"", n, i.Default.Value)
 					}
 				}
-			default:
-				// TODO: Can some check be done for WorkflowDispatchEventInputTypeEnvironment?
-				// What is suitable for default value of the type? (Or is a default value never suitable?)
 			}
 		}
 	}

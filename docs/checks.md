@@ -1207,7 +1207,7 @@ on:
     inputs:
       # Unknown input type
       id:
-        type: number
+        type: text
       # ERROR: No options for 'choice' input type
       kind:
         type: choice
@@ -1224,6 +1224,10 @@ on:
         type: boolean
         # ERROR: Boolean value must be 'true' or 'false'
         default: yes
+      age:
+        type: number
+        # ERROR: Number value must be parsed as a float number
+        default: teen
 
 jobs:
   test:
@@ -1233,6 +1237,8 @@ jobs:
       - run: echo "${{ inputs.massage }}"
       # ERROR: Bool value is not available for object key
       - run: echo "${{ env[inputs.verbose] }}"
+      # ERROR: Number value is not available for object key
+      - run: echo "${{ env[inputs.age] }}"
       # ERROR: `github.event.inputs` is also not defined
       - run: echo "${{ github.event.inputs.massage }}"
 ```
@@ -1240,10 +1246,10 @@ jobs:
 Output:
 
 ```
-test.yaml:6:15: input type of workflow_dispatch event must be one of "string", "boolean", "choice", "environment" but got "number" [syntax-check]
+test.yaml:6:15: input type of workflow_dispatch event must be one of "string", "number", "boolean", "choice", "environment" but got "text" [syntax-check]
   |
-6 |         type: number
-  |               ^~~~~~
+6 |         type: text
+  |               ^~~~
 test.yaml:8:7: input type of "kind" is "choice" but "options" is not set [events]
   |
 8 |       kind:
@@ -1256,31 +1262,40 @@ test.yaml:22:18: type of "verbose" input is "boolean". its default value "yes" m
    |
 22 |         default: yes
    |                  ^~~
-test.yaml:29:24: property "massage" is not defined in object type {id: any; kind: string; name: string; message: string; verbose: bool} [expression]
+test.yaml:26:18: type of "age" input is "number" but its default value "teen" cannot be parsed as a float number: strconv.ParseFloat: parsing "teen": invalid syntax [events]
    |
-29 |       - run: echo "${{ inputs.massage }}"
+26 |         default: teen
+   |                  ^~~~
+test.yaml:33:24: property "massage" is not defined in object type {age: number; id: any; kind: string; message: string; name: string; verbose: bool} [expression]
+   |
+33 |       - run: echo "${{ inputs.massage }}"
    |                        ^~~~~~~~~~~~~~
-test.yaml:31:28: property access of object must be type of string but got "bool" [expression]
+test.yaml:35:28: property access of object must be type of string but got "bool" [expression]
    |
-31 |       - run: echo "${{ env[inputs.verbose] }}"
+35 |       - run: echo "${{ env[inputs.verbose] }}"
    |                            ^~~~~~~~~~~~~~~
-test.yaml:33:24: property "massage" is not defined in object type {id: string; kind: string; name: string; message: string; verbose: string} [expression]
+test.yaml:37:28: property access of object must be type of string but got "number" [expression]
    |
-33 |       - run: echo "${{ github.event.inputs.massage }}"
+37 |       - run: echo "${{ env[inputs.age] }}"
+   |                            ^~~~~~~~~~~
+test.yaml:39:24: property "massage" is not defined in object type {age: string; id: string; kind: string; message: string; name: string; verbose: string} [expression]
+   |
+39 |       - run: echo "${{ github.event.inputs.massage }}"
    |                        ^~~~~~~~~~~~~~~~~~~~~~~~~~~
 ```
 
-[Playground](https://rhysd.github.io/actionlint#eJx9kDtuwzAMQHefggiy2gfwmrlbtqIoJJuxVVukIFIOgiB3b+yoDQqh2ajHR/HD1FYAZ47TaebzZ+8kGO3GFQI4CknlEd9f/U8EoJeALVDyFmOGk6NC6EZ2HWZIxuNLAYCDOiZ5WgA1HI03f8Cbm54lPZ5MmrWFw8jWZexRxAxFN9HoaMhwwWhZCscyz2io/P+CUlVfbLfpFEUflTGR1EwtJJtIUz2bNbelRDH87lKvZgt43xh2++s1H7fxZhsVbrfdfybS8p7tPPTHK31wOibb4IKkTdnlG041i90=)
+[Playground](https://rhysd.github.io/actionlint#eJyNkcFugzAMQO98hVX1Ch+Q68697TZNUwIuZICNYoeuqvrvA5qtmrJVuznPz07sMJkC4MShPw58emu8TFbrboUAnqaocouXU/MVAeh5QgOKH5pQ7ylL1x37GhMkO+JDAYAn9UxytwBKeLaj/QEOvr+XNHi0cVADTx07n/CIIrbNbhMNntoEZwyOJXMc84CW8v5nlAR/6UxxdBjyIkWkonhnt82kKHqrDJGkZDIQXSSN5WDX3JYSxel7A+VqGsBlT7DbXy7pQ6rRbgPC9br7y0SaX5KdRn39p740fqi2XrvoKpyRtMof9AmbKqYK)
 
 [`workflow_dispatch`][workflow-dispatch-event] is an event to trigger a workflow manually. The event can have parameters called
 'inputs'. Each input has its name, description, default value, and [input type][workflow-dispatch-input-type-announce].
 
 actionlint checks several mistakes around `workflow_dispatch` configuration.
 
-- Input type must be one of 'choice', 'string', 'boolean', 'environment'
+- Input type must be one of 'choice', 'string', 'number', 'boolean', 'environment'
 - `options:` must be set for 'choice' input type
 - The default value of 'choice' input must be included in options
 - The default value of 'boolean' input must be `true` or `false`
+- The default value of 'number' input must be parsed as a float number
 
 In addition, `github.event.inputs` and `inputs` objects are typed based on the input definitions. Properties not defined in
 `inputs:` will cause a type error thanks to a type checker.
@@ -1296,6 +1311,8 @@ inputs:
     options: ['hello']
   bool_input:
     type: boolean
+  num_input:
+    type: number
   env_input:
     type: environment
   no_type_input:
@@ -1308,6 +1325,7 @@ inputs:
   "string_input": string;
   "choice_input": string;
   "bool_input": bool;
+  "num_input": number;
   "env_input": string;
   "no_type_input": any;
 }
@@ -1320,6 +1338,7 @@ inputs:
   "string_input": string;
   "choice_input": string;
   "bool_input": string;
+  "num_input": string;
   "env_input": string;
   "no_type_input": string;
 }

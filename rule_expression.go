@@ -83,6 +83,8 @@ func (rule *RuleExpression) VisitWorkflowPre(n *Workflow) error {
 				switch i.Type {
 				case WorkflowDispatchEventInputTypeBoolean:
 					ty = BoolType{}
+				case WorkflowDispatchEventInputTypeNumber:
+					ty = NumberType{}
 				case WorkflowDispatchEventInputTypeString, WorkflowDispatchEventInputTypeChoice, WorkflowDispatchEventInputTypeEnvironment:
 					ty = StringType{}
 				default:

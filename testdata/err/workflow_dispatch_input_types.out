@@ -9,4 +9,5 @@ test.yaml:27:7: "options" can not be set to "boolean_with_options" input because
 test.yaml:32:7: "options" can not be set to "string_with_options" input because its input type is not "choice" [events]
 test.yaml:37:7: "options" can not be set to "environment_with_options" input because its input type is not "choice" [events]
 test.yaml:42:7: "options" can not be set to "no_type_with_options" input because its input type is not "choice" [events]
-test.yaml:47:15: input type of workflow_dispatch event must be one of "string", "boolean", "choice", "environment" but got "unknown" [syntax-check]
+test.yaml:47:15: input type of workflow_dispatch event must be one of "string", "number", "boolean", "choice", "environment" but got "unknown" [syntax-check]
+test.yaml:50:18: type of "number_invalid_default" input is "number" but its default value "number" cannot be parsed as a float number: strconv.ParseFloat: parsing "number": invalid syntax [events]
