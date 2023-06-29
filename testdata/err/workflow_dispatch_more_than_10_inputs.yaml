@@ -1,0 +1,31 @@
+# https://docs.github.com/en/actions/using-workflows/events-that-trigger-workflows#providing-inputs
+on:
+  workflow_dispatch:
+    inputs:
+      input1:
+        type: string
+      input2:
+        type: string
+      input3:
+        type: string
+      input4:
+        type: string
+      input5:
+        type: string
+      input6:
+        type: string
+      input7:
+        type: string
+      input8:
+        type: string
+      input9:
+        type: string
+      input10:
+        type: string
+      input11:
+        type: string
+jobs:
+  test:
+    runs-on: ubuntu-latest
+    steps:
+      - run: echo hello

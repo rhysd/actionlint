@@ -1,0 +1,15 @@
+name: Test for workflow_dispatch input types (part2)
+on:
+  workflow_dispatch:
+    inputs:
+      input_unknown_type:
+        type: unknown
+      number_invalid_default:
+        type: number
+        default: hello
+
+jobs:
+  test:
+    runs-on: ubuntu-latest
+    steps:
+      - run: echo hi
