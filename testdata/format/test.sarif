@@ -1,0 +1,288 @@
+{
+  "$schema": "https://raw.githubusercontent.com/oasis-tcs/sarif-spec/master/Schemata/sarif-schema-2.1.0.json",
+  "version": "2.1.0",
+  "runs": [
+    {
+      "tool": {
+        "driver": {
+          "name": "GitHub Actions lint",
+          "version": "",
+          "informationUri": "https://github.com/rhysd/actionlint",
+          "rules": [
+            {
+              "id": "action",
+              "name": "Action",
+              "defaultConfiguration": {
+                "level": "error"
+              },
+              "properties": {
+                "description": "Checks for popular actions released on GitHub, local actions, and action calls at \"uses:\"",
+                "queryURI": "https://github.com/rhysd/actionlint/blob/main/docs/checks.md"
+              },
+              "fullDescription": {
+                "text": "Checks for popular actions released on GitHub, local actions, and action calls at \"uses:\""
+              },
+              "helpUri": "https://github.com/rhysd/actionlint/blob/main/docs/checks.md"
+            },
+            {
+              "id": "credentials",
+              "name": "Credentials",
+              "defaultConfiguration": {
+                "level": "error"
+              },
+              "properties": {
+                "description": "Checks for credentials in \"services:\" configuration",
+                "queryURI": "https://github.com/rhysd/actionlint/blob/main/docs/checks.md"
+              },
+              "fullDescription": {
+                "text": "Checks for credentials in \"services:\" configuration"
+              },
+              "helpUri": "https://github.com/rhysd/actionlint/blob/main/docs/checks.md"
+            },
+            {
+              "id": "deprecated-commands",
+              "name": "DeprecatedCommands",
+              "defaultConfiguration": {
+                "level": "error"
+              },
+              "properties": {
+                "description": "Checks for deprecated \"set-output\", \"save-state\", \"set-env\", and \"add-path\" commands at \"run:\"",
+                "queryURI": "https://github.com/rhysd/actionlint/blob/main/docs/checks.md"
+              },
+              "fullDescription": {
+                "text": "Checks for deprecated \"set-output\", \"save-state\", \"set-env\", and \"add-path\" commands at \"run:\""
+              },
+              "helpUri": "https://github.com/rhysd/actionlint/blob/main/docs/checks.md"
+            },
+            {
+              "id": "env-var",
+              "name": "EnvVar",
+              "defaultConfiguration": {
+                "level": "error"
+              },
+              "properties": {
+                "description": "Checks for environment variables configuration at \"env:\"",
+                "queryURI": "https://github.com/rhysd/actionlint/blob/main/docs/checks.md"
+              },
+              "fullDescription": {
+                "text": "Checks for environment variables configuration at \"env:\""
+              },
+              "helpUri": "https://github.com/rhysd/actionlint/blob/main/docs/checks.md"
+            },
+            {
+              "id": "events",
+              "name": "Events",
+              "defaultConfiguration": {
+                "level": "error"
+              },
+              "properties": {
+                "description": "Checks for workflow trigger events at \"on:\"",
+                "queryURI": "https://github.com/rhysd/actionlint/blob/main/docs/checks.md"
+              },
+              "fullDescription": {
+                "text": "Checks for workflow trigger events at \"on:\""
+              },
+              "helpUri": "https://github.com/rhysd/actionlint/blob/main/docs/checks.md"
+            },
+            {
+              "id": "expression",
+              "name": "Expression",
+              "defaultConfiguration": {
+                "level": "error"
+              },
+              "properties": {
+                "description": "Syntax and semantics checks for expressions embedded with ${{ }} syntax",
+                "queryURI": "https://github.com/rhysd/actionlint/blob/main/docs/checks.md"
+              },
+              "fullDescription": {
+                "text": "Syntax and semantics checks for expressions embedded with ${{ }} syntax"
+              },
+              "helpUri": "https://github.com/rhysd/actionlint/blob/main/docs/checks.md"
+            },
+            {
+              "id": "glob",
+              "name": "Glob",
+              "defaultConfiguration": {
+                "level": "error"
+              },
+              "properties": {
+                "description": "Checks for glob syntax used in branch names, tags, and paths",
+                "queryURI": "https://github.com/rhysd/actionlint/blob/main/docs/checks.md"
+              },
+              "fullDescription": {
+                "text": "Checks for glob syntax used in branch names, tags, and paths"
+              },
+              "helpUri": "https://github.com/rhysd/actionlint/blob/main/docs/checks.md"
+            },
+            {
+              "id": "id",
+              "name": "Id",
+              "defaultConfiguration": {
+                "level": "error"
+              },
+              "properties": {
+                "description": "Checks for duplication and naming convention of job/step IDs",
+                "queryURI": "https://github.com/rhysd/actionlint/blob/main/docs/checks.md"
+              },
+              "fullDescription": {
+                "text": "Checks for duplication and naming convention of job/step IDs"
+              },
+              "helpUri": "https://github.com/rhysd/actionlint/blob/main/docs/checks.md"
+            },
+            {
+              "id": "job-needs",
+              "name": "JobNeeds",
+              "defaultConfiguration": {
+                "level": "error"
+              },
+              "properties": {
+                "description": "Checks for job IDs in \"needs:\". Undefined IDs and cyclic dependencies are checked",
+                "queryURI": "https://github.com/rhysd/actionlint/blob/main/docs/checks.md"
+              },
+              "fullDescription": {
+                "text": "Checks for job IDs in \"needs:\". Undefined IDs and cyclic dependencies are checked"
+              },
+              "helpUri": "https://github.com/rhysd/actionlint/blob/main/docs/checks.md"
+            },
+            {
+              "id": "matrix",
+              "name": "Matrix",
+              "defaultConfiguration": {
+                "level": "error"
+              },
+              "properties": {
+                "description": "Checks for matrix combinations in \"matrix:\"",
+                "queryURI": "https://github.com/rhysd/actionlint/blob/main/docs/checks.md"
+              },
+              "fullDescription": {
+                "text": "Checks for matrix combinations in \"matrix:\""
+              },
+              "helpUri": "https://github.com/rhysd/actionlint/blob/main/docs/checks.md"
+            },
+            {
+              "id": "permissions",
+              "name": "Permissions",
+              "defaultConfiguration": {
+                "level": "error"
+              },
+              "properties": {
+                "description": "Checks for permissions configuration in \"permissions:\". Permission names and permission scopes are checked",
+                "queryURI": "https://github.com/rhysd/actionlint/blob/main/docs/checks.md"
+              },
+              "fullDescription": {
+                "text": "Checks for permissions configuration in \"permissions:\". Permission names and permission scopes are checked"
+              },
+              "helpUri": "https://github.com/rhysd/actionlint/blob/main/docs/checks.md"
+            },
+            {
+              "id": "runner-label",
+              "name": "RunnerLabel",
+              "defaultConfiguration": {
+                "level": "error"
+              },
+              "properties": {
+                "description": "Checks for GitHub-hosted and preset self-hosted runner labels in \"runs-on:\"",
+                "queryURI": "https://github.com/rhysd/actionlint/blob/main/docs/checks.md"
+              },
+              "fullDescription": {
+                "text": "Checks for GitHub-hosted and preset self-hosted runner labels in \"runs-on:\""
+              },
+              "helpUri": "https://github.com/rhysd/actionlint/blob/main/docs/checks.md"
+            },
+            {
+              "id": "shell-name",
+              "name": "ShellName",
+              "defaultConfiguration": {
+                "level": "error"
+              },
+              "properties": {
+                "description": "Checks for shell names used for scripts in \"run:\"",
+                "queryURI": "https://github.com/rhysd/actionlint/blob/main/docs/checks.md"
+              },
+              "fullDescription": {
+                "text": "Checks for shell names used for scripts in \"run:\""
+              },
+              "helpUri": "https://github.com/rhysd/actionlint/blob/main/docs/checks.md"
+            },
+            {
+              "id": "syntax-check",
+              "name": "SyntaxCheck",
+              "defaultConfiguration": {
+                "level": "error"
+              },
+              "properties": {
+                "description": "Checks for GitHub Actions workflow syntax",
+                "queryURI": "https://github.com/rhysd/actionlint/blob/main/docs/checks.md"
+              },
+              "fullDescription": {
+                "text": "Checks for GitHub Actions workflow syntax"
+              },
+              "helpUri": "https://github.com/rhysd/actionlint/blob/main/docs/checks.md"
+            },
+            {
+              "id": "workflow-call",
+              "name": "WorkflowCall",
+              "defaultConfiguration": {
+                "level": "error"
+              },
+              "properties": {
+                "description": "Checks for reusable workflow calls. Inputs and outputs of called reusable workflow are checked",
+                "queryURI": "https://github.com/rhysd/actionlint/blob/main/docs/checks.md"
+              },
+              "fullDescription": {
+                "text": "Checks for reusable workflow calls. Inputs and outputs of called reusable workflow are checked"
+              },
+              "helpUri": "https://github.com/rhysd/actionlint/blob/main/docs/checks.md"
+            }
+          ]
+        }
+      },
+      "results": [
+        {
+          "ruleId": "syntax-check",
+          "message": {
+            "text": "unexpected key \"branch\" for \"push\" section. expected one of \"branches\", \"branches-ignore\", \"paths\", \"paths-ignore\", \"tags\", \"tags-ignore\", \"types\", \"workflows\""
+          },
+          "locations": [
+            {
+              "physicalLocation": {
+                "artifactLocation": {
+                  "uri": "testdata/format/test.yaml",
+                  "uriBaseId": "%SRCROOT%"
+                },
+                "region": {
+                  "startLine": 3,
+                  "startColumn": 5,
+                  "endColumn": 11,
+                  "snippet": "    branch: main\n    ^~~~~~~"
+                }
+              }
+            }
+          ]
+        },
+        {
+          "ruleId": "runner-label",
+          "message": {
+            "text": "label \"linux-latest\" is unknown. available labels are \"windows-latest\", \"windows-2022\", \"windows-2019\", \"windows-2016\", \"ubuntu-latest\", \"ubuntu-22.04\", \"ubuntu-20.04\", \"ubuntu-18.04\", \"macos-latest\", \"macos-latest-xl\", \"macos-13-xl\", \"macos-13\", \"macos-13.0\", \"macos-12-xl\", \"macos-12\", \"macos-12.0\", \"macos-11\", \"macos-11.0\", \"macos-10.15\", \"self-hosted\", \"x64\", \"arm\", \"arm64\", \"linux\", \"macos\", \"windows\". if it is a custom label for self-hosted runner, set list of labels in actionlint.yaml config file"
+          },
+          "locations": [
+            {
+              "physicalLocation": {
+                "artifactLocation": {
+                  "uri": "testdata/format/test.yaml",
+                  "uriBaseId": "%SRCROOT%"
+                },
+                "region": {
+                  "startLine": 6,
+                  "startColumn": 14,
+                  "endColumn": 25,
+                  "snippet": "    runs-on: linux-latest\n             ^~~~~~~~~~~~"
+                }
+              }
+            }
+          ]
+        }
+      ]
+    }
+  ]
+}
