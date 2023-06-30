@@ -6,6 +6,7 @@ import (
 	"encoding/json"
 	"fmt"
 	"io"
+	"sort"
 	"strings"
 	"text/template"
 
@@ -235,6 +236,18 @@ type ruleTemplateFields struct {
 	Description string
 }
 
+type byRuleNameField []*ruleTemplateFields
+
+func (by byRuleNameField) Len() int {
+	return len(by)
+}
+func (by byRuleNameField) Less(i, j int) bool {
+	return strings.Compare(by[i].Name, by[j].Name) < 0
+}
+func (by byRuleNameField) Swap(i, j int) {
+	by[i], by[j] = by[j], by[i]
+}
+
 // ErrorFormatter is a formatter to format a slice of ErrorTemplateFields. It is used for
 // formatting error messages with -format option.
 type ErrorFormatter struct {
@@ -272,6 +285,7 @@ func NewErrorFormatter(format string) (*ErrorFormatter, error) {
 			for _, e := range r {
 				ret = append(ret, e)
 			}
+			sort.Sort(byRuleNameField(ret))
 			return ret
 		},
 	})
