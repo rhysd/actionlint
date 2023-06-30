@@ -6,6 +6,7 @@ import (
 	"encoding/json"
 	"fmt"
 	"io"
+	"sort"
 	"strings"
 	"text/template"
 
@@ -214,10 +215,44 @@ func unescapeBackslash(s string) string {
 	return r.Replace(s)
 }
 
+func toPascalCase(s string) string {
+	ss := strings.FieldsFunc(s, func(r rune) bool {
+		return !('a' <= r && r <= 'z' || 'A' <= r && r <= 'Z' || '0' <= r && r <= '9')
+	})
+	for i, s := range ss {
+		var c rune
+		for _, c = range s {
+			break
+		}
+		if 'a' <= c && c <= 'z' {
+			ss[i] = strings.ToUpper(s[:1]) + s[1:]
+		}
+	}
+	return strings.Join(ss, "")
+}
+
+type ruleTemplateFields struct {
+	Name        string
+	Description string
+}
+
+type byRuleNameField []*ruleTemplateFields
+
+func (by byRuleNameField) Len() int {
+	return len(by)
+}
+func (by byRuleNameField) Less(i, j int) bool {
+	return strings.Compare(by[i].Name, by[j].Name) < 0
+}
+func (by byRuleNameField) Swap(i, j int) {
+	by[i], by[j] = by[j], by[i]
+}
+
 // ErrorFormatter is a formatter to format a slice of ErrorTemplateFields. It is used for
 // formatting error messages with -format option.
 type ErrorFormatter struct {
-	temp *template.Template
+	temp  *template.Template
+	rules map[string]*ruleTemplateFields
 }
 
 // NewErrorFormatter creates new ErrorFormatter instance. Given format must contain at least one
@@ -226,6 +261,11 @@ func NewErrorFormatter(format string) (*ErrorFormatter, error) {
 	if !strings.Contains(format, "{{") {
 		return nil, fmt.Errorf("template to format error messages must contain at least one {{ }} placeholder: %s", format)
 	}
+
+	r := map[string]*ruleTemplateFields{
+		"syntax-check": {"syntax-check", "Checks for GitHub Actions workflow syntax"},
+	}
+
 	funcs := template.FuncMap(map[string]interface{}{
 		"json": func(data interface{}) (string, error) {
 			var b strings.Builder
@@ -238,12 +278,23 @@ func NewErrorFormatter(format string) (*ErrorFormatter, error) {
 		"replace": func(s string, oldnew ...string) string {
 			return strings.NewReplacer(oldnew...).Replace(s)
 		},
+		"toPascalCase": toPascalCase,
+		"getVersion":   getCommandVersion,
+		"allKinds": func() []*ruleTemplateFields {
+			ret := make([]*ruleTemplateFields, 0, len(r))
+			for _, e := range r {
+				ret = append(ret, e)
+			}
+			sort.Sort(byRuleNameField(ret))
+			return ret
+		},
 	})
 	t, err := template.New("error formatter").Funcs(funcs).Parse(unescapeBackslash(format))
 	if err != nil {
 		return nil, fmt.Errorf("template %q to format error messages could not be parsed: %w", format, err)
 	}
-	return &ErrorFormatter{t}, nil
+
+	return &ErrorFormatter{t, r}, nil
 }
 
 // Print formats the slice of template fields and prints it with given writer.
@@ -261,4 +312,13 @@ func (f *ErrorFormatter) PrintErrors(out io.Writer, errs []*Error, src []byte) e
 		t = append(t, err.GetTemplateFields(src))
 	}
 	return f.Print(out, t)
+}
+
+// RegisterRule registers the rule. Registered rules are used to get description and index of error
+// kinds when you use `kindDescription` or `kindIndex` functions in an error format template.
+func (f *ErrorFormatter) RegisterRule(r Rule) {
+	n := r.Name()
+	if _, ok := f.rules[n]; !ok {
+		f.rules[n] = &ruleTemplateFields{n, r.Description()}
+	}
 }

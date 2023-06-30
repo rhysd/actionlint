@@ -9,7 +9,10 @@ type RuleGlob struct {
 // NewRuleGlob creates new RuleGlob instance.
 func NewRuleGlob() *RuleGlob {
 	return &RuleGlob{
-		RuleBase: RuleBase{name: "glob"},
+		RuleBase: RuleBase{
+			name: "glob",
+			desc: "Checks for glob syntax used in branch names, tags, and paths",
+		},
 	}
 }
 

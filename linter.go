@@ -551,6 +551,12 @@ func (l *Linter) check(
 			l.debug("%s found %d errors", rule.Name(), len(errs))
 			all = append(all, errs...)
 		}
+
+		if l.errFmt != nil {
+			for _, rule := range rules {
+				l.errFmt.RegisterRule(rule)
+			}
+		}
 	}
 
 	if len(l.ignorePats) > 0 {
