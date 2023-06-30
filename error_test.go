@@ -478,6 +478,38 @@ func TestErrorPrintSerializedIntoJSON(t *testing.T) {
 	}
 }
 
+func TestErrorPrintAllKinds(t *testing.T) {
+	f, err := NewErrorFormatter("{{range $ = allKinds}}{{$.Name}}: {{$.Description}}\n{{end}}")
+	if err != nil {
+		t.Fatal(err)
+	}
+
+	f.RegisterRule(&RuleBase{
+		name: "rule1",
+		desc: "description for rule1",
+	})
+	f.RegisterRule(&RuleBase{
+		name: "rule2",
+		desc: "description for rule2",
+	})
+
+	var b bytes.Buffer
+	if err := f.PrintErrors(&b, []*Error{}, []byte("dummy source")); err != nil {
+		t.Fatal(err)
+	}
+	output := b.String()
+
+	for _, want := range []string{
+		"syntax-check: Checks for GitHub Actions workflow syntax\n",
+		"rule1: description for rule1\n",
+		"rule2: description for rule2\n",
+	} {
+		if !strings.Contains(output, want) {
+			t.Errorf("%q is not included in `allKinds` output: %q", want, output)
+		}
+	}
+}
+
 func TestErrorNewErrorFormatterError(t *testing.T) {
 	testCases := []struct {
 		temp string
@@ -540,6 +572,65 @@ func TestErrorFormatterPrintJSONEncodeError(t *testing.T) {
 	want := "could not encode template value into JSON"
 	if !strings.Contains(err.Error(), want) {
 		t.Fatalf("%q is not contained in error message %q", want, err.Error())
+	}
+}
+
+func TestErrorFormatterPrintToPascalCase(t *testing.T) {
+	tests := []struct {
+		input string
+		want  string
+	}{
+		{"", ""},
+		{"foo", "Foo"},
+		{"Foo", "Foo"},
+		{"foo-bar", "FooBar"},
+		{"fooBar", "FooBar"},
+		{"FooBar", "FooBar"},
+		{"foo_bar", "FooBar"},
+		{"foo.bar", "FooBar"},
+	}
+
+	for _, tc := range tests {
+		t.Run(tc.input, func(t *testing.T) {
+			f, err := NewErrorFormatter("{{range $ = .}}{{toPascalCase .Message}}{{end}}")
+			if err != nil {
+				t.Fatal(err)
+			}
+			var b strings.Builder
+
+			fs := []*ErrorTemplateFields{{Message: tc.input}}
+			if err := f.Print(&b, fs); err != nil {
+				t.Fatal(err)
+			}
+
+			have := b.String()
+			if have != tc.want {
+				t.Fatalf("wanted %q but have %q", tc.want, have)
+			}
+		})
+	}
+}
+
+func TestErrorFormatterPrintGetVersion(t *testing.T) {
+	saved := version
+	defer func() {
+		version = saved
+	}()
+	version = "dummy version"
+
+	f, err := NewErrorFormatter("{{getVersion}}")
+	if err != nil {
+		t.Fatal(err)
+	}
+	var b strings.Builder
+
+	if err := f.Print(&b, []*ErrorTemplateFields{}); err != nil {
+		t.Fatal(err)
+	}
+
+	out := b.String()
+	if out != "dummy version" {
+		t.Fatalf("version should be \"dummy version\" but have %q", out)
 	}
 }
 

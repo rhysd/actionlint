@@ -43,7 +43,10 @@ func NewRulePyflakes(executable string, proc *concurrentProcess) (*RulePyflakes,
 		return nil, err
 	}
 	r := &RulePyflakes{
-		RuleBase:              RuleBase{name: "pyflakes"},
+		RuleBase: RuleBase{
+			name: "pyflakes",
+			desc: "Checks for Python script when \"shell: python\" is configured using Pyflakes",
+		},
 		cmd:                   cmd,
 		workflowShellIsPython: shellIsPythonKindUnspecified,
 		jobShellIsPython:      shellIsPythonKindUnspecified,

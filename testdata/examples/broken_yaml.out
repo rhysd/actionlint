@@ -1,1 +1,1 @@
-test.yaml:6:0: could not parse as YAML: yaml: line 6: mapping values are not allowed in this context [yaml-syntax]
+test.yaml:6:0: could not parse as YAML: yaml: line 6: mapping values are not allowed in this context [syntax-check]

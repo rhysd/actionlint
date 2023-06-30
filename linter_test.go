@@ -2,6 +2,7 @@ package actionlint
 
 import (
 	"bufio"
+	"encoding/json"
 	"fmt"
 	"io"
 	"os"
@@ -339,6 +340,60 @@ func TestLinterFormatErrorMessageOK(t *testing.T) {
 				t.Fatal(cmp.Diff(want, have))
 			}
 		})
+	}
+}
+
+func TestLinterFormatErrorMessageInSARIF(t *testing.T) {
+	dir := filepath.Join("testdata", "format")
+	proj := &Project{root: dir}
+	file := filepath.Join(dir, "test.yaml")
+
+	bytes, err := os.ReadFile(filepath.Join(dir, "sarif_template.txt"))
+	if err != nil {
+		panic(err)
+	}
+	format := string(bytes)
+
+	opts := LinterOptions{Format: format}
+	var b strings.Builder
+	l, err := NewLinter(&b, &opts)
+	if err != nil {
+		t.Fatal(err)
+	}
+
+	l.defaultConfig = &Config{}
+	errs, err := l.LintFile(file, proj)
+	if err != nil {
+		t.Fatal(err)
+	}
+	if len(errs) == 0 {
+		t.Fatal("no error")
+	}
+
+	out := b.String()
+	// Fix path separators on Windows
+	if runtime.GOOS == "windows" {
+		slash := filepath.ToSlash(file)
+		escaped := strings.ReplaceAll(file, `\`, `\\`)
+		out = strings.ReplaceAll(out, escaped, slash)
+	}
+
+	var have interface{}
+	if err := json.Unmarshal([]byte(out), &have); err != nil {
+		t.Fatalf("Output is not JSON: %v: %q", err, out)
+	}
+
+	bytes, err = os.ReadFile(filepath.Join(dir, "test.sarif"))
+	if err != nil {
+		panic(err)
+	}
+	var want interface{}
+	if err := json.Unmarshal(bytes, &want); err != nil {
+		panic(err)
+	}
+
+	if !cmp.Equal(want, have) {
+		t.Fatal(cmp.Diff(want, have))
 	}
 }
 
