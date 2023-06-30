@@ -10,7 +10,7 @@
                     "informationUri": "https://github.com/rhysd/actionlint",
                     "rules": [
                         {{$first := true}}
-                        {{range $ = allKinds }}
+                        {{range $ := allKinds }}
                             {{if $first}}{{$first = false}}{{else}},{{end}}
                             {
                                 "id": {{json $.Name}},
@@ -33,7 +33,7 @@
             },
             "results": [
                 {{$first := true}}
-                {{range $ = .}}
+                {{range $ := .}}
                     {{if $first}}{{$first = false}}{{else}},{{end}}
                     {
                         "ruleId": {{json $.Kind}},
