@@ -109,15 +109,24 @@ And it suppresses `SC2016` shellcheck rule error since it complains about the te
 Basically it is more recommended to use [Problem Matchers](#problem-matchers) or reviewdog as explained in
 ['Tools integration' section](#tools-integ) below.
 
+#### Example: [SARIF format][sarif]
+
+[The Static Analysis Results Interchange Format (SARIF)][sarif] is a standardized format for the results of static analysis tools.
+
+Since this practical format is much more complex than the above examples, the template is not written here. Please read
+[the template file in test data](../testdata/format/sarif_template.txt).
+
+Outputs are also too large to be written here. Please read [the output example in test data](../testdata/format/test.sarif).
+
 #### Formatting syntax
 
 In [Go template syntax][go-template], `.` within `{{ }}` means the target object. Here, the target object is a sequence of error
 objects.
 
-The sequence can be traversed with `range` statement, which is like `for ... = range ... {}` in Go.
+The sequence can be traversed with `range` action, which is like `for ... = range ... {}` in Go.
 
 ```
-{{range $err = .}} this part iterates error objects with the iteration variable $err {{end}}
+{{range $err := .}} this part iterates error objects with the iteration variable $err {{end}}
 ```
 
 The error object has the following fields.
@@ -130,6 +139,25 @@ The error object has the following fields.
 | `{{$err.Filepath}}` | Canonical relative file path of the error position | `.github/workflows/ci.yaml`                                      |
 | `{{$err.Line}}`     | Line number of the error position (1-based)        | `21`                                                             |
 | `{{$err.Column}}`   | Column number of the error position (1-based)      | `20`                                                             |
+
+Functions called in `{{ }}` placeholder are template actions. There are many actions defined by Go standard library. In addition,
+there are a few custom actions defined by actionlint. Most useful action would be `json` as we already used it in the above JSON
+example. List of all custom actions are as follows:
+
+| Action           | Description                                                                      | Example usage                             |
+|------------------|----------------------------------------------------------------------------------|-------------------------------------------|
+| `json x`         | Serialize `x` as JSON string followed by newline character                       | `{{json $err}}`                           |
+| `replace x y z`  | Replace string `y` with `z` in `x`                                               | `{{replace $err.Filepath "\\" "/"}}`      |
+| `toPascalCase x` | Convert `x` into PascalCase (e.g. 'foo-bar' to 'FooBar')                         | `{{toPascalCase $err.Kind}}`              |
+| `allKinds`       | Return an array of kind objects. The kind object is explained in the below table | `{{range $ = allKinds}}{{$.Name}}{{end}}` |
+| `getVersion`     | Return the version of actionlint as string                                       | `{{getVersion}}`                          |
+
+The kind object returned from `allKinds` action has the following fields.
+
+| Field                   | Description                   | Example                                     |
+|-------------------------|-------------------------------|---------------------------------------------|
+| `{{$kind.Name}}`        | Name of the kind              | `syntax-check`                              |
+| `{{$kind.Description}}` | Short description of the kind | `Checks for GitHub Actions workflow syntax` |
 
 For example, the following simple iteration body
 
@@ -144,8 +172,7 @@ line is 21, col is 20, message is "property \"platform\" is not defined in objec
 ```
 
 In `{{ }}` placeholder, input can be piped and action can be used to transform texts. In above example, the message is piped with
-`|` and transformed with `printf "%q"`. Most useful action would be `json` as we already used it in the above JSON example. It
-serializes the given object into JSON string followed by newline character.
+`|` and transformed with `printf "%q"`.
 
 Note that special characters escaped with back slash like `\n` in the format string are automatically unespcaed.
 
@@ -405,8 +432,9 @@ You can also see actionlint issues inline in VS Code via the [Trunk VS Code exte
 [reviewdog]: https://github.com/reviewdog/reviewdog
 [cmd-manual]: https://rhysd.github.io/actionlint/usage.html
 [go-template]: https://pkg.go.dev/text/template
-[ga-annotate-error]: https://docs.github.com/en/actions/learn-github-actions/workflow-commands-for-github-actions#setting-an-error-message
 [jsonl]: https://jsonlines.org/
+[ga-annotate-error]: https://docs.github.com/en/actions/learn-github-actions/workflow-commands-for-github-actions#setting-an-error-message
+[sarif]: https://docs.oasis-open.org/sarif/sarif/v2.1.0/sarif-v2.1.0.html
 [problem-matchers]: https://github.com/actions/toolkit/blob/master/docs/problem-matchers.md
 [super-linter]: https://github.com/github/super-linter
 [super-linter-env-var]: https://github.com/super-linter/super-linter#environment-variables
