@@ -835,6 +835,10 @@ var PopularActions = map[string]*ActionMetadata{
 			"repo-token":         {"repo-token", false},
 			"sync-labels":        {"sync-labels", false},
 		},
+		Outputs: ActionMetadataOutputs{
+			"all-labels": {"all-labels"},
+			"new-labels": {"new-labels"},
+		},
 	},
 	"actions/setup-dotnet@v1": {
 		Name: "Setup .NET Core SDK",
