@@ -254,7 +254,9 @@
                   "startLine": 3,
                   "startColumn": 5,
                   "endColumn": 11,
-                  "snippet": "    branch: main\n    ^~~~~~~"
+                  "snippet": {
+                    "text": "    branch: main\n    ^~~~~~~"
+                  }
                 }
               }
             }
@@ -276,7 +278,9 @@
                   "startLine": 6,
                   "startColumn": 14,
                   "endColumn": 25,
-                  "snippet": "    runs-on: linux-latest\n             ^~~~~~~~~~~~"
+                  "snippet": {
+                    "text": "    runs-on: linux-latest\n             ^~~~~~~~~~~~"
+                  }
                 }
               }
             }

@@ -51,7 +51,9 @@
                                         "startLine": {{$.Line}},
                                         "startColumn": {{$.Column}},
                                         "endColumn": {{$.EndColumn}},
-                                        "snippet": {{json $.Snippet}}
+                                        "snippet": {
+                                            "text": {{json $.Snippet}}
+                                        }
                                     }
                                 }
                             }
