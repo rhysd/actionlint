@@ -76,7 +76,7 @@ func (rule *RuleShellName) checkShellName(node *String) {
 	}
 
 	// Ignore dynamic shell name
-	if strings.Contains(node.Value, "${{") {
+	if node.ContainsExpression() {
 		return
 	}
 

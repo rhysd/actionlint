@@ -1,0 +1,18 @@
+on: push
+
+env:
+  ${{ runner.name }}: ''
+
+jobs:
+  test:
+    runs-on: ubuntu-latest
+    container:
+      image: node:14.16
+      env:
+        ${{ runner.foooooo }}: ''
+    env:
+      ${{ runner.fooooooo }}: ''
+    steps:
+      - run: echo "$Linux"
+        env:
+          ${{ runner.name }}: ''

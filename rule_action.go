@@ -32,12 +32,12 @@ func (rule *RuleAction) VisitStep(n *Step) error {
 		return nil
 	}
 
-	spec := e.Uses.Value
-
-	if strings.Contains(spec, "${{") && strings.Contains(spec, "}}") {
+	if e.Uses.ContainsExpression() {
 		// Cannot parse specification made with interpolation. Give up
 		return nil
 	}
+
+	spec := e.Uses.Value
 
 	if strings.HasPrefix(spec, "./") {
 		// Relative to repository root

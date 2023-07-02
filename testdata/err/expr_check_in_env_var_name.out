@@ -1,0 +1,4 @@
+test.yaml:4:7: context "runner" is not allowed here. available contexts are "github", "inputs", "secrets", "vars". see https://docs.github.com/en/actions/learn-github-actions/contexts#context-availability for more details [expression]
+test.yaml:12:13: property "foooooo" is not defined in object type {arch: string; debug: string; name: string; os: string; temp: string; tool_cache: string} [expression]
+test.yaml:14:11: context "runner" is not allowed here. available contexts are "github", "inputs", "matrix", "needs", "secrets", "strategy", "vars". see https://docs.github.com/en/actions/learn-github-actions/contexts#context-availability for more details [expression]
+test.yaml:14:11: property "fooooooo" is not defined in object type {arch: string; debug: string; name: string; os: string; temp: string; tool_cache: string} [expression]
