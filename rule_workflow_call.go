@@ -48,11 +48,7 @@ func (rule *RuleWorkflowCall) VisitJobPre(n *Job) error {
 	}
 
 	u := n.WorkflowCall.Uses
-	if u == nil || u.Value == "" {
-		return nil
-	}
-
-	if strings.Contains(u.Value, "${{") {
+	if u == nil || u.Value == "" || u.ContainsExpression() {
 		return nil
 	}
 

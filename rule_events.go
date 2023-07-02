@@ -189,7 +189,7 @@ func (rule *RuleEvents) checkWorkflowCallEvent(event *WorkflowCallEvent) {
 			continue
 		}
 		// ${{ }} is available in the default value
-		if !strings.Contains(i.Default.Value, "${{") {
+		if !i.Default.ContainsExpression() {
 			switch i.Type {
 			case WorkflowCallEventInputTypeNumber:
 				if _, err := strconv.ParseFloat(i.Default.Value, 64); err != nil {

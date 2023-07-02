@@ -59,14 +59,8 @@ func (rule *RuleID) VisitStep(n *Step) error {
 }
 
 func (rule *RuleID) validateConvention(id *String, what string) {
-	if id == nil || id.Value == "" || containsPlaceholder(id.Value) || jobIDPattern.MatchString(id.Value) {
+	if id == nil || id.Value == "" || id.ContainsExpression() || jobIDPattern.MatchString(id.Value) {
 		return
 	}
 	rule.errorf(id.Pos, "invalid %s ID %q. %s ID must start with a letter or _ and contain only alphanumeric characters, -, or _", what, id.Value, what)
-}
-
-func containsPlaceholder(s string) bool {
-	i := strings.Index(s, "${{")
-	j := strings.Index(s, "}}")
-	return i >= 0 && j >= 0 && i < j
 }
