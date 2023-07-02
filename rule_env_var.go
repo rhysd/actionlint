@@ -46,6 +46,9 @@ func (rule *RuleEnvVar) checkEnv(env *Env) {
 		return
 	}
 	for _, v := range env.Vars {
+		if v.Name.ContainsExpression() {
+			continue // Key name can contain expressions (#312)
+		}
 		if strings.ContainsAny(v.Name.Value, "&= 	") {
 			rule.errorf(
 				v.Name.Pos,
