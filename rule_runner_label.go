@@ -139,32 +139,32 @@ func (rule *RuleRunnerLabel) VisitJobPre(n *Job) error {
 }
 
 // https://docs.github.com/en/actions/using-github-hosted-runners/about-github-hosted-runners
-func (rule *RuleRunnerLabel) checkLabelAndConflict(label *String, m *Matrix) {
-	if l := label.Value; strings.Contains(l, "${{") {
-		ls := rule.tryToGetLabelsInMatrix(l, m)
-		cs := make([]runnerOSCompat, 0, len(ls))
-		for _, l := range ls {
-			comp := rule.verifyRunnerLabel(l)
+func (rule *RuleRunnerLabel) checkLabelAndConflict(l *String, m *Matrix) {
+	if l.ContainsExpression() {
+		ss := rule.tryToGetLabelsInMatrix(l, m)
+		cs := make([]runnerOSCompat, 0, len(ss))
+		for _, s := range ss {
+			comp := rule.verifyRunnerLabel(s)
 			cs = append(cs, comp)
 		}
-		rule.checkCombiCompat(cs, ls)
+		rule.checkCombiCompat(cs, ss)
 		return
 	}
 
-	comp := rule.verifyRunnerLabel(label)
-	rule.checkCompat(comp, label)
+	comp := rule.verifyRunnerLabel(l)
+	rule.checkCompat(comp, l)
 }
 
-func (rule *RuleRunnerLabel) checkLabel(label *String, m *Matrix) {
-	if l := label.Value; strings.Contains(l, "${{") {
-		ls := rule.tryToGetLabelsInMatrix(l, m)
-		for _, l := range ls {
-			rule.verifyRunnerLabel(l)
+func (rule *RuleRunnerLabel) checkLabel(l *String, m *Matrix) {
+	if l.ContainsExpression() {
+		ss := rule.tryToGetLabelsInMatrix(l, m)
+		for _, s := range ss {
+			rule.verifyRunnerLabel(s)
 		}
 		return
 	}
 
-	rule.verifyRunnerLabel(label)
+	rule.verifyRunnerLabel(l)
 }
 
 func (rule *RuleRunnerLabel) verifyRunnerLabel(label *String) runnerOSCompat {
@@ -201,17 +201,17 @@ func (rule *RuleRunnerLabel) verifyRunnerLabel(label *String) runnerOSCompat {
 	return compatInvalid
 }
 
-func (rule *RuleRunnerLabel) tryToGetLabelsInMatrix(l string, m *Matrix) []*String {
+func (rule *RuleRunnerLabel) tryToGetLabelsInMatrix(label *String, m *Matrix) []*String {
 	if m == nil {
 		return nil
 	}
-	l = strings.TrimSpace(l)
 
 	// Only when the form of "${{...}}", evaluate the expression
-	if strings.Count(l, "${{") != 1 || !strings.HasPrefix(l, "${{") || !strings.HasSuffix(l, "}}") {
+	if !label.IsExpressionAssigned() {
 		return nil
 	}
 
+	l := strings.TrimSpace(label.Value)
 	p := NewExprParser()
 	expr, err := p.Parse(NewExprLexer(l[3:])) // 3 means omit first "${{"
 	if err != nil {
@@ -236,8 +236,7 @@ func (rule *RuleRunnerLabel) tryToGetLabelsInMatrix(l string, m *Matrix) []*Stri
 	if m.Rows != nil {
 		if row, ok := m.Rows[prop]; ok {
 			for _, v := range row.Values {
-				if s, ok := v.(*RawYAMLString); ok && !strings.Contains(s.Value, "${{") {
-					// When the value does not have expression syntax ${{ }}
+				if s, ok := v.(*RawYAMLString); ok && !containsExpression(s.Value) {
 					labels = append(labels, &String{s.Value, false, s.Pos()})
 				}
 			}
@@ -248,8 +247,7 @@ func (rule *RuleRunnerLabel) tryToGetLabelsInMatrix(l string, m *Matrix) []*Stri
 		for _, combi := range m.Include.Combinations {
 			if combi.Assigns != nil {
 				if assign, ok := combi.Assigns[prop]; ok {
-					if s, ok := assign.Value.(*RawYAMLString); ok && !strings.Contains(s.Value, "${{") {
-						// When the value does not have expression syntax ${{ }}
+					if s, ok := assign.Value.(*RawYAMLString); ok && !containsExpression(s.Value) {
 						labels = append(labels, &String{s.Value, false, s.Pos()})
 					}
 				}

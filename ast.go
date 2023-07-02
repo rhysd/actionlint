@@ -41,6 +41,30 @@ type String struct {
 	Pos *Pos
 }
 
+func containsExpression(s string) bool {
+	i := strings.Index(s, "${{")
+	return i >= 0 && i < strings.Index(s, "}}")
+}
+
+// ContainsExpression returns whether the string contains at least one ${{ }} expression.
+func (s *String) ContainsExpression() bool {
+	return containsExpression(s.Value)
+}
+
+func isExprAssigned(s string) bool {
+	v := strings.TrimSpace(s)
+	// Do not check `strings.Count(s.Value, "}}") == 1` because it might appear in JSON string
+	//   if: ${{ env.foo == '{"foo": {"bar": true}}' }}
+	return strings.HasPrefix(v, "${{") &&
+		strings.HasSuffix(v, "}}") &&
+		strings.Count(v, "${{") == 1
+}
+
+// IsExpressionAssigned returns whether a single expression is assigned to the string.
+func (s *String) IsExpressionAssigned() bool {
+	return isExprAssigned(s.Value)
+}
+
 // Bool represents generic boolean value in YAML file with position.
 type Bool struct {
 	// Value is a raw value of the bool string.

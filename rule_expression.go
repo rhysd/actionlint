@@ -13,11 +13,6 @@ type typedExpr struct {
 	pos Pos
 }
 
-func isExprAssigned(str *String) bool {
-	s := strings.TrimSpace(str.Value)
-	return strings.HasPrefix(s, "${{") && strings.HasSuffix(s, "}}")
-}
-
 // RuleExpression is a rule checker to check expression syntax in string values of workflow syntax.
 // It checks syntax and semantics of the expressions including type checks and functions/contexts
 // definitions. For more details see
@@ -125,7 +120,7 @@ func (rule *RuleExpression) VisitWorkflowPre(n *Workflow) error {
 					ty = StringType{}
 				case WorkflowCallEventInputTypeBoolean:
 					ty = BoolType{}
-					if len(ts) == 1 && isExprAssigned(i.Default) {
+					if len(ts) == 1 && i.Default.IsExpressionAssigned() {
 						switch ts[0].ty.(type) {
 						case BoolType, AnyType:
 							// ok
@@ -135,7 +130,7 @@ func (rule *RuleExpression) VisitWorkflowPre(n *Workflow) error {
 					}
 				case WorkflowCallEventInputTypeNumber:
 					ty = NumberType{}
-					if len(ts) == 1 && isExprAssigned(i.Default) {
+					if len(ts) == 1 && i.Default.IsExpressionAssigned() {
 						switch ts[0].ty.(type) {
 						case NumberType, AnyType:
 							// ok
@@ -310,12 +305,12 @@ func (rule *RuleExpression) VisitStep(n *Step) error {
 	rule.checkFloat(n.TimeoutMinutes, "jobs.<job_id>.steps.timeout-minutes")
 
 	if n.ID != nil {
-		// Step ID is case insensitive
-		id := strings.ToLower(n.ID.Value)
-		if strings.Contains(id, "${{") && strings.Contains(id, "}}") {
+		if n.ID.ContainsExpression() {
 			rule.checkString(n.ID, "")
 			rule.stepsTy.Loose()
 		}
+		// Step ID is case insensitive
+		id := strings.ToLower(n.ID.Value)
 		rule.stepsTy.Props[id] = NewStrictObjectType(map[string]ExprType{
 			"outputs":    rule.getActionOutputsType(spec),
 			"conclusion": StringType{},
@@ -583,7 +578,7 @@ func (rule *RuleExpression) checkWorkflowCall(c *WorkflowCall) {
 				}
 			}
 		case 1:
-			if isExprAssigned(i.Value) {
+			if i.Value.IsExpressionAssigned() {
 				ty = ts[0].ty
 			}
 		}
@@ -646,11 +641,11 @@ func (rule *RuleExpression) checkIfCondition(str *String, workflowKey string) {
 	//   if: true && false
 
 	var condTy ExprType
-	if strings.Contains(str.Value, "${{") && strings.Contains(str.Value, "}}") {
+	if str.ContainsExpression() {
 		ts := rule.checkString(str, workflowKey)
 
 		if len(ts) == 1 {
-			if isExprAssigned(str) {
+			if str.IsExpressionAssigned() {
 				condTy = ts[0].ty
 			}
 		}

@@ -119,12 +119,7 @@ func (p *parser) missingExpression(n *yaml.Node, expecting string) {
 }
 
 func (p *parser) parseExpression(n *yaml.Node, expecting string) *String {
-	s := strings.TrimSpace(n.Value)
-	if !strings.HasPrefix(s, "${{") || !strings.HasSuffix(s, "}}") {
-		p.missingExpression(n, expecting)
-		return nil
-	}
-	if strings.Count(n.Value, "${{") != 1 {
+	if !isExprAssigned(n.Value) {
 		p.missingExpression(n, expecting)
 		return nil
 	}
@@ -135,8 +130,7 @@ func (p *parser) mayParseExpression(n *yaml.Node) *String {
 	if n.Tag != "!!str" {
 		return nil
 	}
-	s := strings.TrimSpace(n.Value)
-	if !strings.HasPrefix(s, "${{") || !strings.HasSuffix(s, "}}") || strings.Count(n.Value, "${{") != 1 {
+	if !isExprAssigned(n.Value) {
 		return nil
 	}
 	return newString(n)
