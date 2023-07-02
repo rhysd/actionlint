@@ -490,6 +490,7 @@ func (rule *RuleExpression) checkEnv(env *Env, workflowKey string) {
 
 	if env.Vars != nil {
 		for _, e := range env.Vars {
+			rule.checkString(e.Name, workflowKey)
 			rule.checkString(e.Value, workflowKey)
 		}
 		return
