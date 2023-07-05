@@ -42,7 +42,7 @@ func (rule *RuleEnvVar) VisitWorkflowPre(n *Workflow) error {
 }
 
 func (rule *RuleEnvVar) checkEnv(env *Env) {
-	if env == nil {
+	if env == nil || env.Expression != nil {
 		return
 	}
 	for _, v := range env.Vars {
