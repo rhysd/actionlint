@@ -6,6 +6,7 @@ import (
 	"errors"
 	"io"
 	"math"
+	"os"
 	"sort"
 	"strconv"
 	"strings"
@@ -646,4 +647,49 @@ func TestErrorString(t *testing.T) {
 	if want != have {
 		t.Fatalf("wanted %q but have %q", want, have)
 	}
+}
+
+func ExampleErrorFormatter() {
+	// Errors returned from Linter methods
+	errs := []*Error{
+		{
+			Message:  "error message 1",
+			Filepath: "foo.yaml",
+			Line:     1,
+			Column:   4,
+			Kind:     "rule1",
+		},
+		{
+			Message:  "error message 2",
+			Filepath: "foo.yaml",
+			Line:     3,
+			Column:   1,
+			Kind:     "rule2",
+		},
+	}
+
+	// Create ErrorFormatter instance with template
+	f, err := NewErrorFormatter(`{{range $ := .}}{{$.Filepath}}:{{$.Line}}:{{$.Column}}: {{$.Message}}\n{{end}}`)
+	if err != nil {
+		// Some error happened while creating the formatter (e.g. syntax error)
+		panic(err)
+	}
+
+	src := `on: push
+
+jobs:
+  test:
+    runs-on: ubuntu-latest
+    steps:
+      - run: echo
+`
+
+	// Prints all errors to stdout following the template
+	if err := f.PrintErrors(os.Stdout, errs, []byte(src)); err != nil {
+		panic(err)
+	}
+
+	// Output:
+	// foo.yaml:1:4: error message 1
+	// foo.yaml:3:1: error message 2
 }
