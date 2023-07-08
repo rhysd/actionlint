@@ -503,6 +503,7 @@ func (l *Linter) check(
 			NewRuleWorkflowCall(path, localReusableWorkflows),
 			NewRuleExpression(localActions, localReusableWorkflows),
 			NewRuleDeprecatedCommands(),
+			NewRuleIfCond(),
 		}
 		if l.shellcheck != "" {
 			r, err := NewRuleShellcheck(l.shellcheck, proc)
