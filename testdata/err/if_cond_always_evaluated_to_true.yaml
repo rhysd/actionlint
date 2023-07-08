@@ -1,0 +1,66 @@
+on: push
+
+jobs:
+  test-steps:
+    runs-on: ubuntu-latest
+    steps:
+      - run: echo 1
+        # False
+        if: ${{ false }}
+      - run: echo 2
+        # ERROR: True
+        if: |
+          ${{ false }}
+      - run: echo 3
+        # False
+        if: '${{ false }}'
+      - run: echo 4
+        # ERROR: True
+        if: '${{ false }} '
+      - run: echo 5
+        # ERROR: True
+        if: ' ${{ false }}'
+      - run: echo 6
+        # False
+        if: 'false'
+      - run: echo 7
+        # False
+        if: 'false '
+      - run: echo 8
+        # False
+        if: |
+          false
+      - run: echo 9
+        # False
+        if: ' false'
+      - run: echo 10
+        # True
+        if: false || true
+      - run: echo 11
+        # False
+        if: true && false
+      - run: echo 12
+        # False
+        if: ${{ true && false }}
+      - run: echo 13
+        # ERROR: True
+        if: ${{ false }} && ${{ false }}
+  test-cond-1:
+    if: |
+      # ERROR: True
+      ${{ false }}
+    runs-on: ubuntu-latest
+    steps:
+      - run: echo 1
+  test-cond-2:
+    # ERROR: True
+    if: ' ${{ false }}'
+    runs-on: ubuntu-latest
+    steps:
+      - run: echo 1
+  test-cond-3:
+    # ERROR: True
+    if: ${{ false }} && ${{ false }}
+    runs-on: ubuntu-latest
+    steps:
+      - run: echo 1
