@@ -8,6 +8,10 @@ jobs:
         # OK
         if: ${{ github.event_name == 'push' }}
       - run: echo 'Commit is pushed'
+        # OK
+        if: |
+          github.event_name == 'push'
+      - run: echo 'Commit is pushed'
         # ERROR: It is always evaluated to true
         if: |
           ${{ github.event_name == 'push' }}

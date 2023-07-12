@@ -34,10 +34,10 @@ func TestRuleIfCond(t *testing.T) {
 
 			errs := r.Errs()
 			if tc.valid && len(errs) > 0 {
-				t.Fatalf("wanted no error but have %q", errs)
+				t.Fatalf("wanted no error but have %q for condition %q", errs, tc.cond)
 			}
 			if !tc.valid && len(errs) != 1 {
-				t.Fatalf("wanted one error but have %q", errs)
+				t.Fatalf("wanted one error but have %q for condition %q", errs, tc.cond)
 			}
 		})
 	}
@@ -56,10 +56,10 @@ func TestRuleIfCond(t *testing.T) {
 
 			errs := r.Errs()
 			if tc.valid && len(errs) > 0 {
-				t.Fatalf("wanted no error but have %q", errs)
+				t.Fatalf("wanted no error but have %q for condition %q", errs, tc.cond)
 			}
 			if !tc.valid && len(errs) != 1 {
-				t.Fatalf("wanted one error but have %q", errs)
+				t.Fatalf("wanted one error but have %q for condition %q", errs, tc.cond)
 			}
 		})
 	}
