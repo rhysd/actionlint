@@ -2554,6 +2554,10 @@ jobs:
         # OK
         if: ${{ github.event_name == 'push' }}
       - run: echo 'Commit is pushed'
+        # OK
+        if: |
+          github.event_name == 'push'
+      - run: echo 'Commit is pushed'
         # ERROR: It is always evaluated to true
         if: |
           ${{ github.event_name == 'push' }}
@@ -2571,21 +2575,21 @@ jobs:
 Output:
 
 ```
-test.yaml:12:13: if: condition "${{ github.event_name == 'push' }}\n" is always evaluated to true because extra characters are around ${{ }} [if-cond]
+test.yaml:16:13: if: condition "${{ github.event_name == 'push' }}\n" is always evaluated to true because extra characters are around ${{ }} [if-cond]
    |
-12 |         if: |
+16 |         if: |
    |             ^
-test.yaml:16:13: if: condition "${{ github.event_name == 'push' }} " is always evaluated to true because extra characters are around ${{ }} [if-cond]
+test.yaml:20:13: if: condition "${{ github.event_name == 'push' }} " is always evaluated to true because extra characters are around ${{ }} [if-cond]
    |
-16 |         if: "${{ github.event_name == 'push' }} "
+20 |         if: "${{ github.event_name == 'push' }} "
    |             ^~~~
-test.yaml:22:13: if: condition "${{ github.event_name == 'push' }} && ${{ github.ref_name == 'main' }}" is always evaluated to true because extra characters are around ${{ }} [if-cond]
+test.yaml:26:13: if: condition "${{ github.event_name == 'push' }} && ${{ github.ref_name == 'main' }}" is always evaluated to true because extra characters are around ${{ }} [if-cond]
    |
-22 |         if: ${{ github.event_name == 'push' }} && ${{ github.ref_name == 'main' }}
+26 |         if: ${{ github.event_name == 'push' }} && ${{ github.ref_name == 'main' }}
    |             ^~~
 ```
 
-[Playground](https://rhysd.github.io/actionlint#eJy1j0sKwjAUReddxaVIM6oLCHTkQqTVVxsxSWlenNTu3aT+KoJWwVF4nMO5xBqJ1rsmSfa2cjIBmBzHF+i8cbkNgq+8YZ8fyshG5Jhad7GAPJoStGksxMpqrRjKjVnaiqsEqFpi0ffYKW58taQjGV6bUhOKAiLaAsPwffN0v/CXfvo5inROFmyhS2We8+/KWXbDHdUPOI38sDjjP2F4Yr2OB+cMjO6qVQ==)
+[Playground](https://rhysd.github.io/actionlint#eJy1j00OgjAQhfec4oUYusIDNGHlQQzoIDW2JXTqBrm7FP8wJogaV5PJ+/K9GWskau+qKNrbwskIYHIcJtB441LbA77whn16yEM2RI6pdhcKSAMpQZvKQqys1oqh3KClrbhCgColFm2LneLKF0s6kuG1yTUhyyACLdB1nztP9w1T7t/E/zg8fi9FPEcLttC5Ms/6KXOS3OKGykc4lnzROOOfvnhEvZb3zBmiAMLK)
 
 Evaluation of `${{ }}` at `if:` condition is tricky. When the expression in `${{ }}` is evaluated to boolean value and there is
 no extra characters around the `${{ }}`, the condition is evaluated to the boolean value. Otherwise the condition is treated as
@@ -2604,6 +2608,15 @@ is equivalent to
 ```yaml
 if: "${{ false }}\n"
 ```
+
+Unlike using `${{ }}`, putting an expression directly ignores white spaces around it. It's the reason why
+
+```yaml
+if: |
+  false
+```
+
+works as intended.
 
 actionlint checks all `if:` conditions in workflow and reports error when some condition is always evaluated to true due to extra
 characters around `${{ }}`.
