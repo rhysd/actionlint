@@ -1,7 +1,6 @@
 package actionlint
 
 import (
-	"fmt"
 	"strconv"
 	"strings"
 )
@@ -197,7 +196,8 @@ func (rule *RuleExpression) VisitJobPre(n *Job) error {
 	//           os: [ubuntu-latest, macos-latest, windows-latest]
 	//       runs-on: ${{ matrix.os }}
 	if n.Strategy != nil && n.Strategy.Matrix != nil {
-		rule.matrixTy = rule.guessTypeOfMatrix(n.Strategy.Matrix)
+		// Check and guess type of the matrix
+		rule.matrixTy = rule.checkMatrix(n.Strategy.Matrix)
 	}
 
 	rule.checkString(n.Name, "jobs.<job_id>.name")
@@ -229,15 +229,7 @@ func (rule *RuleExpression) VisitJobPre(n *Job) error {
 	rule.checkIfCondition(n.If, "jobs.<job_id>.if")
 
 	if n.Strategy != nil {
-		if n.Strategy.Matrix != nil {
-			for _, r := range n.Strategy.Matrix.Rows {
-				for _, v := range r.Values {
-					rule.checkRawYAMLValue(v)
-				}
-			}
-			rule.checkMatrixCombinations(n.Strategy.Matrix.Include, "include")
-			rule.checkMatrixCombinations(n.Strategy.Matrix.Exclude, "exclude")
-		}
+		// Note: Types in "jobs.<job_id>.strategy.matrix" were checked `checkMatrix`
 		rule.checkBool(n.Strategy.FailFast, "jobs.<job_id>.strategy")
 		rule.checkInt(n.Strategy.MaxParallel, "jobs.<job_id>.strategy")
 	}
@@ -457,30 +449,6 @@ func (rule *RuleExpression) checkNumberExpression(s *String, what, workflowKey s
 		return nil
 	}
 	return rule.checkNumberTy(ty, s.Pos, what)
-}
-
-func (rule *RuleExpression) checkMatrixCombinations(cs *MatrixCombinations, what string) {
-	if cs == nil {
-		return
-	}
-
-	if cs.Expression != nil {
-		if ty, ok := rule.checkArrayExpression(cs.Expression, what, "jobs.<job_id>.strategy").(*ArrayType); ok {
-			rule.checkObjectTy(ty.Elem, cs.Expression.Pos, what)
-		}
-		return
-	}
-
-	what = fmt.Sprintf("matrix combination at element of %s section", what)
-	for _, combi := range cs.Combinations {
-		if combi.Expression != nil {
-			rule.checkObjectExpression(combi.Expression, what, "jobs.<job_id>.strategy")
-			continue
-		}
-		for _, a := range combi.Assigns {
-			rule.checkRawYAMLValue(a.Value)
-		}
-	}
 }
 
 func (rule *RuleExpression) checkEnv(env *Env, workflowKey string) {
@@ -775,23 +743,6 @@ func (rule *RuleExpression) checkExprsIn(s string, pos *Pos, quoted, checkUntrus
 	return ts, true
 }
 
-func (rule *RuleExpression) checkRawYAMLValue(v RawYAMLValue) {
-	switch v := v.(type) {
-	case *RawYAMLObject:
-		for _, p := range v.Props {
-			rule.checkRawYAMLValue(p)
-		}
-	case *RawYAMLArray:
-		for _, v := range v.Elems {
-			rule.checkRawYAMLValue(v)
-		}
-	case *RawYAMLString:
-		rule.checkExprsIn(v.Value, v.Pos(), false, false, "jobs.<job_id>.strategy")
-	default:
-		panic("unreachable")
-	}
-}
-
 func (rule *RuleExpression) exprError(err *ExprError, lineBase, colBase int) {
 	pos := convertExprLineColToPos(err.Line, err.Column, lineBase, colBase)
 	rule.error(pos, err.Message)
@@ -894,7 +845,7 @@ func (rule *RuleExpression) populateDependantNeedsTypes(out *ObjectType, job *Jo
 	}
 }
 
-func (rule *RuleExpression) guessTypeOfMatrixExpression(expr *String) *ObjectType {
+func (rule *RuleExpression) checkMatrixExpression(expr *String) *ObjectType {
 	ty := rule.checkObjectExpression(expr, "matrix", "jobs.<job_id>.strategy")
 	if ty == nil {
 		return NewEmptyObjectType()
@@ -927,18 +878,35 @@ func (rule *RuleExpression) guessTypeOfMatrixExpression(expr *String) *ObjectTyp
 	return matTy
 }
 
-func (rule *RuleExpression) guessTypeOfMatrix(m *Matrix) *ObjectType {
+func (rule *RuleExpression) checkMatrix(m *Matrix) *ObjectType {
 	if m.Expression != nil {
-		return rule.guessTypeOfMatrixExpression(m.Expression)
+		return rule.checkMatrixExpression(m.Expression)
+	}
+
+	// Check types of "exclude" but they are not used to guess type of matrix
+	if m.Exclude != nil {
+		if m.Exclude.Expression != nil {
+			if ty, ok := rule.checkArrayExpression(m.Exclude.Expression, "exclude", "jobs.<job_id>.strategy").(*ArrayType); ok {
+				rule.checkObjectTy(ty.Elem, m.Exclude.Expression.Pos, "exclude")
+			}
+		} else {
+			for _, combi := range m.Exclude.Combinations {
+				if combi.Expression != nil {
+					rule.checkObjectExpression(combi.Expression, "exclude", "jobs.<job_id>.strategy")
+					continue
+				}
+				for _, a := range combi.Assigns {
+					rule.checkRawYAMLValue(a.Value)
+				}
+			}
+		}
 	}
 
 	o := NewEmptyStrictObjectType()
 
 	for n, r := range m.Rows {
-		o.Props[n] = rule.guessTypeOfMatrixRow(r)
+		o.Props[n] = rule.checkMatrixRow(r)
 	}
-
-	// Note: Type check in 'include' section duplicates with checkMatrixCombinations() method
 
 	if m.Include == nil {
 		return o
@@ -968,7 +936,7 @@ func (rule *RuleExpression) guessTypeOfMatrix(m *Matrix) *ObjectType {
 		}
 
 		for n, assign := range combi.Assigns {
-			ty := guessTypeOfRawYAMLValue(assign.Value)
+			ty := rule.checkRawYAMLValue(assign.Value)
 			if t, ok := o.Props[n]; ok {
 				// When the combination exists in 'matrix' section, merge type with existing one
 				ty = t.Merge(ty)
@@ -977,12 +945,10 @@ func (rule *RuleExpression) guessTypeOfMatrix(m *Matrix) *ObjectType {
 		}
 	}
 
-	// Note: m.Exclude is not considered when guessing type of matrix
-
 	return o
 }
 
-func (rule *RuleExpression) guessTypeOfMatrixRow(r *MatrixRow) ExprType {
+func (rule *RuleExpression) checkMatrixRow(r *MatrixRow) ExprType {
 	if r.Expression != nil {
 		if a, ok := rule.checkArrayExpression(r.Expression, "matrix row", "jobs.<job_id>.strategy").(*ArrayType); ok {
 			return a.Elem
@@ -992,7 +958,7 @@ func (rule *RuleExpression) guessTypeOfMatrixRow(r *MatrixRow) ExprType {
 
 	var ty ExprType
 	for _, v := range r.Values {
-		t := guessTypeOfRawYAMLValue(v)
+		t := rule.checkRawYAMLValue(v)
 		if ty == nil {
 			ty = t
 		} else {
@@ -1036,34 +1002,41 @@ func (rule *RuleExpression) checkWorkflowCallOutputs(outputs map[string]*Workflo
 	}
 }
 
-func guessTypeOfRawYAMLValue(v RawYAMLValue) ExprType {
+func (rule *RuleExpression) checkRawYAMLValue(v RawYAMLValue) ExprType {
 	switch v := v.(type) {
 	case *RawYAMLObject:
 		m := make(map[string]ExprType, len(v.Props))
 		for k, p := range v.Props {
-			m[k] = guessTypeOfRawYAMLValue(p)
+			m[k] = rule.checkRawYAMLValue(p)
 		}
 		return NewStrictObjectType(m)
 	case *RawYAMLArray:
 		if len(v.Elems) == 0 {
 			return &ArrayType{AnyType{}, false}
 		}
-		elem := guessTypeOfRawYAMLValue(v.Elems[0])
+		elem := rule.checkRawYAMLValue(v.Elems[0])
 		for _, v := range v.Elems[1:] {
-			elem = elem.Merge(guessTypeOfRawYAMLValue(v))
+			elem = elem.Merge(rule.checkRawYAMLValue(v))
 		}
 		return &ArrayType{elem, false}
 	case *RawYAMLString:
-		return guessTypeFromString(v.Value)
+		return rule.checkRawYAMLString(v)
 	default:
 		panic("unreachable")
 	}
 }
 
-func guessTypeFromString(s string) ExprType {
-	if isExprAssigned(s) {
-		return AnyType{}
+func (rule *RuleExpression) checkRawYAMLString(y *RawYAMLString) ExprType {
+	ts, ok := rule.checkExprsIn(y.Value, y.Pos(), false, false, "jobs.<job_id>.strategy")
+
+	if isExprAssigned(y.Value) {
+		if !ok || len(ts) != 1 {
+			return AnyType{}
+		}
+		return ts[0].ty
 	}
+
+	s := strings.TrimSpace(y.Value)
 	// Note that keywords are case sensitive. TRUE, FALSE, NULL are invalid named value.
 	if s == "true" || s == "false" {
 		return BoolType{}
