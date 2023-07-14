@@ -1,0 +1,23 @@
+on: push
+
+jobs:
+  error:
+    runs-on: ubuntu-latest
+    strategy:
+      matrix:
+        test:
+          - ${{ github.retention_days }}
+    steps:
+      # ERROR: `matrix.test` is a number value
+      - run: echo ${{ matrix.test.foo }}
+  no-error:
+    runs-on: ubuntu-latest
+    strategy:
+      # Type of matrix.test falls back to any since number and bool are merged
+      matrix:
+        test:
+          - ${{ 123 }}
+          - ${{ true }}
+    steps:
+      # OK: matrix.test is any type
+      - run: echo ${{ matrix.test.foo }}
