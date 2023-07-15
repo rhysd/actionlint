@@ -44,7 +44,8 @@ func newString(n *yaml.Node) *String {
 }
 
 type workflowKeyVal struct {
-	id  string // Key in lower case since workflow keys are case-insensitive
+	// id is used for comparing keys. When the key is case insensitive, this field is in lower case.
+	id  string
 	key *String
 	val *yaml.Node
 }
@@ -544,7 +545,7 @@ func (p *parser) parseWorkflowCallEvent(pos *Pos, n *yaml.Node) *WorkflowCallEve
 				ret.Outputs[kv.id] = output
 			}
 		default:
-			p.unexpectedKey(kv.key, "workflow_call", []string{"inputs", "secrets"})
+			p.unexpectedKey(kv.key, "workflow_call", []string{"inputs", "secrets", "outputs"})
 		}
 	}
 
@@ -639,7 +640,7 @@ func (p *parser) parsePermissions(pos *Pos, n *yaml.Node) *Permissions {
 	if n.Kind == yaml.ScalarNode {
 		ret.All = p.parseString(n, false)
 	} else {
-		m := p.parseSectionMapping("permissions", n, true, true)
+		m := p.parseSectionMapping("permissions", n, true, false) // XXX: Is the permission scope case insensitive?
 		scopes := make(map[string]*PermissionScope, len(m))
 		for _, kv := range m {
 			scopes[kv.id] = &PermissionScope{
