@@ -276,7 +276,11 @@ func (p *parser) parseMapping(what string, n *yaml.Node, allowEmpty, caseSensiti
 		}
 
 		if pos, ok := keys[id]; ok {
-			p.errorfAt(k.Pos, "key %q is duplicated in %s. previously defined at %s. note that key names are case insensitive", k.Value, what, pos.String())
+			var note string
+			if !caseSensitive {
+				note = ". note that this key is case insensitive"
+			}
+			p.errorfAt(k.Pos, "key %q is duplicated in %s. previously defined at %s%s", k.Value, what, pos.String(), note)
 			continue
 		}
 		m = append(m, workflowKeyVal{id, k, n.Content[i+1]})
