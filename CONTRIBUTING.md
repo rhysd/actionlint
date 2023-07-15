@@ -15,7 +15,10 @@ or
 make build
 ```
 
-It generates some sources with `go generate`.
+`make build` generates some sources with `go generate`. When you want to avoid it, add `SKIP_GO_GENERATE=1` to `make` arguments.
+
+Since actionlint doesn't use any cgo features, setting `CGO_ENABLED=0` environment variable is recommended to avoid troubles
+around linking libc. `make build` does this by default.
 
 ## How to run tests
 
@@ -42,9 +45,6 @@ or
 ```sh
 make lint
 ```
-
-Note that `staticcheck ./...` is not available because it does not support `syscall/js` yet. `playground/main.go` hits
-this issue.
 
 ## How to run fuzzer
 
@@ -103,7 +103,7 @@ Visit [`playground/README.md`](./playground/README.md).
 
 Run [`deploy.bash`](./playground/deploy.bash) at root of repository. It does:
 
-1. Ensures to install dependencies and to build `main.wasm`
+1. Ensure to install dependencies and to build `main.wasm`
 2. Copy all assets to `./playground-dist` directory
 3. Optimize `main.wasm` with `wasm-opt` which is a part of [Binaryen](https://github.com/WebAssembly/binaryen) toolchain
 3. Switch branch to `gh-pages`
@@ -170,7 +170,7 @@ Update for `availability.go` is run weekly on CI by [`generate`](.github/workflo
 
 ## Testing
 
-- All examples in ['Checks' section](docs/checks.md) are put in [the examples directory](testdata/examples) and tested in
+- All examples in ['Checks' document](docs/checks.md) are put in [the examples directory](testdata/examples) and tested in
   [`linter_test.go`](linter_test.go).
 - I cloned GitHub top 1000 repositories and extracted 1400+ workflow files. And I tried actionlint with the collected workflow
   files. All bugs found while the trial were fixed and I confirmed no more false positives.
