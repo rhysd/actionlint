@@ -225,6 +225,9 @@ func (p *parser) parseFloat(n *yaml.Node) *Float {
 
 	if n.Tag == "!!str" {
 		e := p.parseExpression(n, "float number literal")
+		if e == nil {
+			return nil
+		}
 		return &Float{
 			Expression: e,
 			Pos:        posAt(n),
@@ -950,6 +953,15 @@ func (p *parser) parseContainer(sec string, pos *Pos, n *yaml.Node) *Container {
 	return ret
 }
 
+// https://docs.github.com/en/actions/using-workflows/workflow-syntax-for-github-actions#jobsjob_idtimeout-minutes
+func (p *parser) parseTimeoutMinutes(n *yaml.Node) *Float {
+	f := p.parseFloat(n)
+	if f != nil && f.Expression == nil && f.Value <= 0.0 {
+		p.errorf(n, "value at \"timeout-minutes\" must be greater than zero: %v", f.Value)
+	}
+	return f
+}
+
 // https://docs.github.com/en/actions/learn-github-actions/workflow-syntax-for-github-actions#jobsjob_idsteps
 func (p *parser) parseStep(n *yaml.Node) *Step {
 	ret := &Step{Pos: posAt(n)}
@@ -968,7 +980,7 @@ func (p *parser) parseStep(n *yaml.Node) *Step {
 		case "continue-on-error":
 			ret.ContinueOnError = p.parseBool(kv.val)
 		case "timeout-minutes":
-			ret.TimeoutMinutes = p.parseFloat(kv.val)
+			ret.TimeoutMinutes = p.parseTimeoutMinutes(kv.val)
 		case "uses", "with":
 			var exec *ExecAction
 			if ret.Exec == nil {
@@ -1165,7 +1177,7 @@ func (p *parser) parseJob(id *String, n *yaml.Node) *Job {
 			ret.Steps = p.parseSteps(v)
 			stepsOnlyKey = k
 		case "timeout-minutes":
-			ret.TimeoutMinutes = p.parseFloat(v)
+			ret.TimeoutMinutes = p.parseTimeoutMinutes(v)
 			stepsOnlyKey = k
 		case "strategy":
 			ret.Strategy = p.parseStrategy(k.Pos, v)

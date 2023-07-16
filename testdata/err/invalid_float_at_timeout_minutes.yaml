@@ -8,6 +8,10 @@ jobs:
         timeout-minutes: true
       - run: echo 'invalid type 2'
         timeout-minutes: '3.5'
+      - run: echo 'invalid value 1'
+        timeout-minutes: 0
+      - run: echo 'invalid value 2'
+        timeout-minutes: -3.5
       - run: echo 'ok 1'
         timeout-minutes: 3.5
       - run: echo 'ok 2'
