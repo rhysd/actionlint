@@ -1,3 +1,5 @@
 test.yaml:7:21: expecting a single ${{...}} expression or integer literal, but found plain text node [syntax-check]
 test.yaml:13:21: expected scalar node for integer value but found scalar node with "!!float" tag [syntax-check]
 test.yaml:19:21: expecting a single ${{...}} expression or integer literal, but found plain text node [syntax-check]
+test.yaml:25:21: value at "max-parallel" must be greater than zero: 0 [syntax-check]
+test.yaml:31:21: value at "max-parallel" must be greater than zero: -4 [syntax-check]

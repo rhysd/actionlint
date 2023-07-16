@@ -199,6 +199,9 @@ func (p *parser) parseInt(n *yaml.Node) *Int {
 
 	if n.Tag == "!!str" {
 		e := p.parseExpression(n, "integer literal")
+		if e == nil {
+			return nil
+		}
 		return &Int{
 			Expression: e,
 			Pos:        posAt(n),
@@ -880,6 +883,15 @@ func (p *parser) parseMatrix(pos *Pos, n *yaml.Node) *Matrix {
 	return ret
 }
 
+// https://docs.github.com/en/actions/using-workflows/workflow-syntax-for-github-actions#jobsjob_idstrategymax-parallel
+func (p *parser) parseMaxParallel(n *yaml.Node) *Int {
+	i := p.parseInt(n)
+	if i != nil && i.Expression == nil && i.Value <= 0 {
+		p.errorf(n, "value at \"max-parallel\" must be greater than zero: %v", i.Value)
+	}
+	return i
+}
+
 // https://docs.github.com/en/actions/learn-github-actions/workflow-syntax-for-github-actions#jobsjob_idstrategy
 func (p *parser) parseStrategy(pos *Pos, n *yaml.Node) *Strategy {
 	ret := &Strategy{Pos: pos}
@@ -891,7 +903,7 @@ func (p *parser) parseStrategy(pos *Pos, n *yaml.Node) *Strategy {
 		case "fail-fast":
 			ret.FailFast = p.parseBool(kv.val)
 		case "max-parallel":
-			ret.MaxParallel = p.parseInt(kv.val)
+			ret.MaxParallel = p.parseMaxParallel(kv.val)
 		default:
 			p.unexpectedKey(kv.key, "strategy", []string{"matrix", "fail-fast", "max-parallel"})
 		}
