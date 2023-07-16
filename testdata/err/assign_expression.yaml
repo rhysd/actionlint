@@ -1,0 +1,55 @@
+on:
+  workflow_dispatch:
+    inputs:
+      ok:
+        type: boolean
+        # OK
+        required: ${{ true }}
+      error:
+        type: boolean
+        # ERROR
+        required: 'this is true'
+
+# OK
+env: ${{ fromJSON('...') }}
+
+jobs:
+  test1:
+    strategy:
+      # ERROR
+      max-parallel: 'max is 3'
+      # OK
+      matrix: ${{ fromJSON('...') }}
+    # ERROR
+    timeout-minutes: '4 minutes'
+    # OK
+    runs-on: ${{ 'ubuntu-latest' }}
+    steps:
+      - run: echo hello
+  test2:
+    strategy:
+      matrix:
+        # OK
+        include: ${{ fromJSON('...') }}
+    runs-on:
+      # OK
+      labels: ${{ 'ubuntu-latest' }}
+    steps:
+      - run: echo hello
+  test3:
+    strategy:
+      matrix:
+        include:
+          # OK
+          - ${{ fromJSON('...') }}
+    runs-on: ubuntu-latest
+    steps:
+      - run: echo hello
+  test4:
+    strategy:
+      matrix:
+        # OK
+        foo: ${{ fromJSON('...') }}
+    runs-on: ubuntu-latest
+    steps:
+      - run: echo hello
