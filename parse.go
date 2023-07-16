@@ -3,7 +3,6 @@ package actionlint
 import (
 	"fmt"
 	"math"
-	"os"
 	"regexp"
 	"strconv"
 	"strings"
@@ -11,6 +10,7 @@ import (
 	"gopkg.in/yaml.v3"
 )
 
+// https://pkg.go.dev/gopkg.in/yaml.v3#Kind
 func nodeKindName(k yaml.Kind) string {
 	switch k {
 	case yaml.DocumentNode:
@@ -24,10 +24,7 @@ func nodeKindName(k yaml.Kind) string {
 	case yaml.AliasNode:
 		return "alias"
 	default:
-		if os.Getenv("ACTIONLINT_DEBUG") != "" {
-			return "unknown"
-		}
-		panic("unreachable")
+		panic(fmt.Sprintf("unreachable: unknown YAML kind: %v", k))
 	}
 }
 
