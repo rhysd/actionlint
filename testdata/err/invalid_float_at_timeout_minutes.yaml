@@ -1,0 +1,20 @@
+on: push
+
+jobs:
+  test:
+    runs-on: ubuntu-latest
+    steps:
+      - run: echo 'invalid type 1'
+        timeout-minutes: true
+      - run: echo 'invalid type 2'
+        timeout-minutes: '3.5'
+      - run: echo 'invalid value 1'
+        timeout-minutes: 0
+      - run: echo 'invalid value 2'
+        timeout-minutes: -3.5
+      - run: echo 'ok 1'
+        timeout-minutes: 3.5
+      - run: echo 'ok 2'
+        timeout-minutes: 3
+      - run: echo 'ok 3'
+        timeout-minutes: ${{ 3.5 }}

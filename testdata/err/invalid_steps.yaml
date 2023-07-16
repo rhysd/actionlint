@@ -1,0 +1,21 @@
+on: push
+
+jobs:
+  test1:
+    runs-on: ubuntu-latest
+    steps:
+      # 'run' is first
+      - run: echo hello
+        uses: actions/checkout@v3
+      # 'uses' is first
+      - uses: actions/checkout@v3
+        run: echo hello
+      # 'shell' is specified so it must be 'run'
+      - shell: bash
+        uses: actions/checkout@v3
+      # Neither 'run' nor 'uses' is used
+      - null
+  test2:
+    runs-on: ubuntu-latest
+    # Empty steps
+    steps:

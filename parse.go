@@ -2,7 +2,7 @@ package actionlint
 
 import (
 	"fmt"
-	"os"
+	"math"
 	"regexp"
 	"strconv"
 	"strings"
@@ -10,6 +10,7 @@ import (
 	"gopkg.in/yaml.v3"
 )
 
+// https://pkg.go.dev/gopkg.in/yaml.v3#Kind
 func nodeKindName(k yaml.Kind) string {
 	switch k {
 	case yaml.DocumentNode:
@@ -23,10 +24,7 @@ func nodeKindName(k yaml.Kind) string {
 	case yaml.AliasNode:
 		return "alias"
 	default:
-		if os.Getenv("ACTIONLINT_DEBUG") != "" {
-			return "unknown"
-		}
-		panic("unreachable")
+		panic(fmt.Sprintf("unreachable: unknown YAML kind: %v", k))
 	}
 }
 
@@ -198,6 +196,9 @@ func (p *parser) parseInt(n *yaml.Node) *Int {
 
 	if n.Tag == "!!str" {
 		e := p.parseExpression(n, "integer literal")
+		if e == nil {
+			return nil
+		}
 		return &Int{
 			Expression: e,
 			Pos:        posAt(n),
@@ -224,6 +225,9 @@ func (p *parser) parseFloat(n *yaml.Node) *Float {
 
 	if n.Tag == "!!str" {
 		e := p.parseExpression(n, "float number literal")
+		if e == nil {
+			return nil
+		}
 		return &Float{
 			Expression: e,
 			Pos:        posAt(n),
@@ -231,7 +235,7 @@ func (p *parser) parseFloat(n *yaml.Node) *Float {
 	}
 
 	f, err := strconv.ParseFloat(n.Value, 64)
-	if err != nil {
+	if err != nil || math.IsNaN(f) {
 		p.errorf(n, "invalid float value: %q: %s", n.Value, err.Error())
 		return nil
 	}
@@ -721,7 +725,7 @@ func (p *parser) parseConcurrency(pos *Pos, n *yaml.Node) *Concurrency {
 			}
 		}
 		if !groupFound {
-			p.error(n, "group name is missing in \"concurrency\" section")
+			p.errorAt(pos, "group name is missing in \"concurrency\" section")
 		}
 	}
 
@@ -748,7 +752,7 @@ func (p *parser) parseEnvironment(pos *Pos, n *yaml.Node) *Environment {
 			}
 		}
 		if !nameFound {
-			p.error(n, "name is missing in \"environment\" section")
+			p.errorAt(pos, "name is missing in \"environment\" section")
 		}
 	}
 
@@ -876,6 +880,15 @@ func (p *parser) parseMatrix(pos *Pos, n *yaml.Node) *Matrix {
 	return ret
 }
 
+// https://docs.github.com/en/actions/using-workflows/workflow-syntax-for-github-actions#jobsjob_idstrategymax-parallel
+func (p *parser) parseMaxParallel(n *yaml.Node) *Int {
+	i := p.parseInt(n)
+	if i != nil && i.Expression == nil && i.Value <= 0 {
+		p.errorf(n, "value at \"max-parallel\" must be greater than zero: %v", i.Value)
+	}
+	return i
+}
+
 // https://docs.github.com/en/actions/learn-github-actions/workflow-syntax-for-github-actions#jobsjob_idstrategy
 func (p *parser) parseStrategy(pos *Pos, n *yaml.Node) *Strategy {
 	ret := &Strategy{Pos: pos}
@@ -887,7 +900,7 @@ func (p *parser) parseStrategy(pos *Pos, n *yaml.Node) *Strategy {
 		case "fail-fast":
 			ret.FailFast = p.parseBool(kv.val)
 		case "max-parallel":
-			ret.MaxParallel = p.parseInt(kv.val)
+			ret.MaxParallel = p.parseMaxParallel(kv.val)
 		default:
 			p.unexpectedKey(kv.key, "strategy", []string{"matrix", "fail-fast", "max-parallel"})
 		}
@@ -949,6 +962,15 @@ func (p *parser) parseContainer(sec string, pos *Pos, n *yaml.Node) *Container {
 	return ret
 }
 
+// https://docs.github.com/en/actions/using-workflows/workflow-syntax-for-github-actions#jobsjob_idtimeout-minutes
+func (p *parser) parseTimeoutMinutes(n *yaml.Node) *Float {
+	f := p.parseFloat(n)
+	if f != nil && f.Expression == nil && f.Value <= 0.0 {
+		p.errorf(n, "value at \"timeout-minutes\" must be greater than zero: %v", f.Value)
+	}
+	return f
+}
+
 // https://docs.github.com/en/actions/learn-github-actions/workflow-syntax-for-github-actions#jobsjob_idsteps
 func (p *parser) parseStep(n *yaml.Node) *Step {
 	ret := &Step{Pos: posAt(n)}
@@ -967,7 +989,7 @@ func (p *parser) parseStep(n *yaml.Node) *Step {
 		case "continue-on-error":
 			ret.ContinueOnError = p.parseBool(kv.val)
 		case "timeout-minutes":
-			ret.TimeoutMinutes = p.parseFloat(kv.val)
+			ret.TimeoutMinutes = p.parseTimeoutMinutes(kv.val)
 		case "uses", "with":
 			var exec *ExecAction
 			if ret.Exec == nil {
@@ -1164,7 +1186,7 @@ func (p *parser) parseJob(id *String, n *yaml.Node) *Job {
 			ret.Steps = p.parseSteps(v)
 			stepsOnlyKey = k
 		case "timeout-minutes":
-			ret.TimeoutMinutes = p.parseFloat(v)
+			ret.TimeoutMinutes = p.parseTimeoutMinutes(v)
 			stepsOnlyKey = k
 		case "strategy":
 			ret.Strategy = p.parseStrategy(k.Pos, v)
