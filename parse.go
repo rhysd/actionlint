@@ -725,7 +725,7 @@ func (p *parser) parseConcurrency(pos *Pos, n *yaml.Node) *Concurrency {
 			}
 		}
 		if !groupFound {
-			p.error(n, "group name is missing in \"concurrency\" section")
+			p.errorAt(pos, "group name is missing in \"concurrency\" section")
 		}
 	}
 
@@ -752,7 +752,7 @@ func (p *parser) parseEnvironment(pos *Pos, n *yaml.Node) *Environment {
 			}
 		}
 		if !nameFound {
-			p.error(n, "name is missing in \"environment\" section")
+			p.errorAt(pos, "name is missing in \"environment\" section")
 		}
 	}
 
