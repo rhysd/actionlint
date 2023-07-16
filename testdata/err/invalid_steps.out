@@ -1,0 +1,8 @@
+test.yaml:9:9: this step is for running shell command since it contains at least one of "run", "shell" keys, but also contains "uses" key which is used for running action [syntax-check]
+test.yaml:12:9: this step is for running action since it contains at least one of "uses", "with" keys, but also contains "run" key which is used for running shell command [syntax-check]
+test.yaml:14:9: "run" is required to run script in step [syntax-check]
+test.yaml:15:9: this step is for running shell command since it contains at least one of "run", "shell" keys, but also contains "uses" key which is used for running action [syntax-check]
+test.yaml:17:9: element of "steps" section should not be empty. please remove this section if it's unnecessary [syntax-check]
+test.yaml:17:9: step must run script with "run" section or run action with "uses" section [syntax-check]
+test.yaml:18:3: "steps" section is missing in job "test2" [syntax-check]
+test.yaml:21:11: "steps" section must be sequence node but got scalar node with "!!null" tag [syntax-check]
