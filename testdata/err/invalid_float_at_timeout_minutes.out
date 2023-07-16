@@ -1,0 +1,2 @@
+test.yaml:8:26: expected scalar node for float value but found scalar node with "!!bool" tag [syntax-check]
+test.yaml:10:26: expecting a single ${{...}} expression or float number literal, but found plain text node [syntax-check]
