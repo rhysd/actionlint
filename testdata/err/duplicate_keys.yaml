@@ -1,0 +1,14 @@
+on: push
+
+jobs:
+  test:
+    strategy:
+      matrix:
+        # Duplicate case-insensitive keys
+        foo: [a, b, c]
+        FOO: [a, b, c]
+    # Duplicate case-sensitive keys
+    runs-on: ubuntu-latest
+    runs-on: ubuntu-latest
+    steps:
+      - run: echo

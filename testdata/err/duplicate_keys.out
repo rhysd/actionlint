@@ -1,0 +1,2 @@
+test.yaml:9:9: key "FOO" is duplicated in "matrix" section. previously defined at line:8,col:9. note that this key is case insensitive [syntax-check]
+test.yaml:12:5: key "runs-on" is duplicated in "test" job. previously defined at line:11,col:5 [syntax-check]
