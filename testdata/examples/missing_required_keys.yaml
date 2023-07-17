@@ -2,7 +2,7 @@ on: push
 jobs:
   test:
     strategy:
-      # ERROR: Matrix name is duplicated. keys are case insensitive
+      # ERROR: Matrix name is duplicated. These keys are case insensitive
       matrix:
         version_name: [v1, v2]
         VERSION_NAME: [V1, V2]

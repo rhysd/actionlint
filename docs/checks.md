@@ -52,24 +52,38 @@ on: push
 jobs:
   test:
     runs-on: ubuntu-latest
-    step:
+    # ERROR: Typo of `defaults:`
+    default:
+      run:
+        working-directory: /path/to/dir
+    steps:
+      - run: echo hello
+        # ERROR: `shell:` must be in lower case
+        Shell: bash
 ```
 
 Output:
 
 ```
-test.yaml:5:5: unexpected key "step" for "job" section. expected one of "concurrency", "container", "continue-on-error", "defaults", "env", "environment", "if", "name", "needs", "outputs", "permissions", "runs-on", "secrets", "services", "steps", "strategy", "timeout-minutes", "uses", "with" [syntax-check]
+test.yaml:6:5: unexpected key "default" for "job" section. expected one of "concurrency", "container", "continue-on-error", "defaults", "env", "environment", "if", "name", "needs", "outputs", "permissions", "runs-on", "secrets", "services", "steps", "strategy", "timeout-minutes", "uses", "with" [syntax-check]
   |
-5 |     step:
-  |     ^~~~~
+6 |     default:
+  |     ^~~~~~~~
+test.yaml:12:9: unexpected key "Shell" for "step" section. expected one of "continue-on-error", "env", "id", "if", "name", "run", "shell", "timeout-minutes", "uses", "with", "working-directory" [syntax-check]
+   |
+12 |         Shell: bash
+   |         ^~~~~~
 ```
 
-[Playground](https://rhysd.github.io/actionlint#eJzLz7NSKCgtzuDKyk8qtuJSUChJLS4B0QoKRaV5xbr5QPnSpNK8klLdnESQHFiquCS1wAoAMZgSwQ==)
+[Playground](https://rhysd.github.io/actionlint#eJw9jEEOwyAMBO95xX4AcecbfQEkTkmLMMK2ov6+ATU92d6ZNdeAZpKXFycJC6AkOibQrYrji1uyquZKHGyijfZo5edN816Bk/v7qE+3HZ1W5f4J8C1q9sr+yqYnSk3uipt90JoZmUrh/6vHOANSlPwFtPsxjA==)
 
-[Workflow syntax][syntax-doc] defines what keys can be defined in which mapping object. When other keys are defined, they
-are simply ignored and don't affect workflow behavior. It means typo in keys is not detected by GitHub.
+[Workflow syntax][syntax-doc] defines what keys can be defined in which mapping object. When unknown key is defined, it makes
+the workflow run fail.
 
 actionlint can detect unexpected keys while parsing workflow syntax and report them as an error.
+
+Key names are basically case sensitive (though some specific key names are case insensitive). This check is useful to catch
+case-sensitivity mistakes.
 
 <a name="check-missing-required-duplicate-keys"></a>
 ## Missing required keys and key duplicates
@@ -81,7 +95,7 @@ on: push
 jobs:
   test:
     strategy:
-      # ERROR: Matrix name is duplicated. keys are case insensitive
+      # ERROR: Matrix name is duplicated. These keys are case insensitive
       matrix:
         version_name: [v1, v2]
         VERSION_NAME: [V1, V2]
@@ -107,7 +121,7 @@ test.yaml:8:9: key "version_name" is duplicated in "matrix" section. previously 
 
 Some mappings must include specific keys. For example, job mappings must include `runs-on:` and `steps:`.
 
-And duplicate keys are not allowed. In workflow syntax, comparing keys is **case insensitive**. For example, the job ID
+And duplicate keys are not allowed. In workflow syntax, comparing some keys is **case insensitive**. For example, the job ID
 `test` in lower case and the job ID `TEST` in upper case are not able to exist in the same workflow.
 
 actionlint checks these missing required keys and duplicate keys while parsing, and reports an error.

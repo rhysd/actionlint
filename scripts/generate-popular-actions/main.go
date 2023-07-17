@@ -210,8 +210,8 @@ var popularActions = []*action{
 	},
 	{
 		slug: "actions/upload-pages-artifact",
-		tags: []string{"v1"},
-		next: "v2",
+		tags: []string{"v1", "v2"},
+		next: "v3",
 	},
 	{
 		slug: "actions/dependency-review-action",
