@@ -832,6 +832,7 @@ var PopularActions = map[string]*ActionMetadata{
 		Inputs: ActionMetadataInputs{
 			"configuration-path": {"configuration-path", false},
 			"dot":                {"dot", false},
+			"pr-number":          {"pr-number", false},
 			"repo-token":         {"repo-token", false},
 			"sync-labels":        {"sync-labels", false},
 		},
@@ -1517,6 +1518,14 @@ var PopularActions = map[string]*ActionMetadata{
 		},
 	},
 	"actions/upload-pages-artifact@v1": {
+		Name: "Upload GitHub Pages artifact",
+		Inputs: ActionMetadataInputs{
+			"name":           {"name", false},
+			"path":           {"path", false},
+			"retention-days": {"retention-days", false},
+		},
+	},
+	"actions/upload-pages-artifact@v2": {
 		Name: "Upload GitHub Pages artifact",
 		Inputs: ActionMetadataInputs{
 			"name":           {"name", false},
