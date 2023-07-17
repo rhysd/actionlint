@@ -5,7 +5,7 @@ test.yaml:10:5: unexpected key "invalid_key" for "push" section. expected one of
 test.yaml:15:9: unexpected key "invalid_key" for "inputs at workflow_call event" section. expected one of "default", "description", "required", "type" [syntax-check]
 test.yaml:18:9: unexpected key "invalid_key" for "secrets" section. expected one of "description", "required" [syntax-check]
 test.yaml:22:9: unexpected key "invalid_key" for "outputs at workflow_call event" section. expected one of "description", "value" [syntax-check]
-test.yaml:23:5: unexpected key "invalid_key" for "workflow_call" section. expected one of "inputs", "secrets" [syntax-check]
+test.yaml:23:5: unexpected key "invalid_key" for "workflow_call" section. expected one of "inputs", "outputs", "secrets" [syntax-check]
 test.yaml:27:5: unexpected key "invalid_key" for "run" section. expected one of "shell", "working-directory" [syntax-check]
 test.yaml:28:3: expected "run" key for "defaults" section but got "invalid_key" [syntax-check]
 test.yaml:32:3: unexpected key "invalid_key" for "concurrency" section. expected one of "cancel-in-progress", "group" [syntax-check]
