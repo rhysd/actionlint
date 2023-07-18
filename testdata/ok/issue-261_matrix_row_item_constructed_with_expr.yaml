@@ -1,0 +1,20 @@
+on:
+  workflow_dispatch:
+    inputs:
+      custom-build-type:
+        type: string
+
+jobs:
+  build_matrix:
+    strategy:
+      matrix:
+        build-type:
+          - debug
+          - ${{ fromJson(inputs.custom-build-type) }}
+        exclude:
+          # 'release' is not listed in the matrix row, but it should not be reported as array
+          # since one of the element of the row array is dynamically constructed with ${{ }} (#261)
+          - build-type: release
+    runs-on: ubuntu-latest
+    steps:
+      - run: echo ${{ matrix.build-type }}
