@@ -83,21 +83,29 @@ func (rule *RuleMatrix) checkExclude(m *Matrix) {
 		return
 	}
 
-	rows := m.Rows
-	if len(rows) == 0 && (m.Include == nil || len(m.Include.Combinations) == 0) {
+	if len(m.Rows) == 0 && (m.Include == nil || len(m.Include.Combinations) == 0) {
 		rule.error(m.Pos, "\"exclude\" section exists but no matrix variation exists")
 		return
 	}
 
-	vals := make(map[string][]RawYAMLValue, len(rows))
+	vals := make(map[string][]RawYAMLValue, len(m.Rows))
 	ignored := map[string]struct{}{}
-	for name, row := range rows {
+Outer:
+	for name, row := range m.Rows {
 		if row.Expression != nil {
 			ignored[name] = struct{}{}
-		} else {
-			vals[name] = row.Values
+			continue
 		}
+		// When some item is constructed with ${{ }} dynamically, give up checking combination values (#261)
+		for _, y := range row.Values {
+			if s, ok := y.(*RawYAMLString); ok && isExprAssigned(s.Value) {
+				ignored[name] = struct{}{}
+				continue Outer
+			}
+		}
+		vals[name] = row.Values
 	}
+
 	if m.Include != nil {
 		for _, combi := range m.Include.Combinations {
 			for n, a := range combi.Assigns {
