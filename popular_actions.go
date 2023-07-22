@@ -381,6 +381,7 @@ var PopularActions = map[string]*ActionMetadata{
 			"exclude-labels":     {"exclude-labels", false},
 			"inactive-day":       {"inactive-day", false},
 			"inactive-label":     {"inactive-label", false},
+			"inactive-mode":      {"inactive-mode", false},
 			"issue-assignee":     {"issue-assignee", false},
 			"issue-creator":      {"issue-creator", false},
 			"issue-emoji":        {"issue-emoji", false},
@@ -2672,6 +2673,9 @@ var PopularActions = map[string]*ActionMetadata{
 			"allow-checksums":   {"allow-checksums", false},
 			"allow-snapshots":   {"allow-snapshots", false},
 			"min-wrapper-count": {"min-wrapper-count", false},
+		},
+		Outputs: ActionMetadataOutputs{
+			"failed-wrapper": {"failed-wrapper"},
 		},
 	},
 	"haskell/actions/setup@v1": {
