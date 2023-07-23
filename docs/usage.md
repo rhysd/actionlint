@@ -28,6 +28,7 @@ To know all flags and options, see an output of `actionlint -h` or [the online c
 ### Ignore some errors
 
 To ignore some errors, `-ignore` option offers to filter errors by messages using regular expression. The option is repeatable.
+The regular expression syntax is the same as [RE2][re2].
 
 ```sh
 actionlint -ignore 'label ".+" is unknown' -ignore '".+" is potentially untrusted'
@@ -432,6 +433,7 @@ You can also see actionlint issues inline in VS Code via the [Trunk VS Code exte
 [reviewdog-actionlint]: https://github.com/reviewdog/action-actionlint
 [reviewdog]: https://github.com/reviewdog/reviewdog
 [cmd-manual]: https://rhysd.github.io/actionlint/usage.html
+[re2]: https://golang.org/s/re2syntax
 [go-template]: https://pkg.go.dev/text/template
 [jsonl]: https://jsonlines.org/
 [ga-annotate-error]: https://docs.github.com/en/actions/learn-github-actions/workflow-commands-for-github-actions#setting-an-error-message
