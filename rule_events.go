@@ -5,7 +5,7 @@ import (
 	"strings"
 	"time"
 
-	"github.com/robfig/cron"
+	"github.com/robfig/cron/v3"
 )
 
 //go:generate go run ./scripts/generate-webhook-events ./all_webhooks.go

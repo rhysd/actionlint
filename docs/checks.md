@@ -1439,7 +1439,7 @@ jobs:
 Output:
 
 ```
-test.yaml:4:13: invalid CRON format "0 */3 * *" in schedule event: Expected exactly 5 fields, found 4: 0 */3 * * [events]
+test.yaml:4:13: invalid CRON format "0 */3 * *" in schedule event: expected exactly 5 fields, found 4: [0 */3 * *] [events]
   |
 4 |     - cron: '0 */3 * *'
   |             ^~
