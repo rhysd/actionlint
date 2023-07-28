@@ -287,7 +287,7 @@ func (l *Linter) LintFiles(filepaths []string, project *Project) ([]*Error, erro
 	l.log("Linting", n, "files")
 
 	cwd := l.cwd
-	proc := newConcurrentProcess(runtime.NumCPU())
+	proc := NewConcurrentProcess(runtime.NumCPU())
 	sema := semaphore.NewWeighted(int64(runtime.NumCPU()))
 	ctx := context.Background()
 	dbg := l.debugWriter()
@@ -396,7 +396,7 @@ func (l *Linter) LintFile(path string, project *Project) ([]*Error, error) {
 		}
 	}
 
-	proc := newConcurrentProcess(runtime.NumCPU())
+	proc := NewConcurrentProcess(runtime.NumCPU())
 	dbg := l.debugWriter()
 	localActions := NewLocalActionsCache(project, dbg)
 	localReusableWorkflows := NewLocalReusableWorkflowCache(project, l.cwd, dbg)
@@ -424,7 +424,7 @@ func (l *Linter) Lint(path string, content []byte, project *Project) ([]*Error, 
 			project = l.projects.At(path)
 		}
 	}
-	proc := newConcurrentProcess(runtime.NumCPU())
+	proc := NewConcurrentProcess(runtime.NumCPU())
 	dbg := l.debugWriter()
 	localActions := NewLocalActionsCache(project, dbg)
 	localReusableWorkflows := NewLocalReusableWorkflowCache(project, l.cwd, dbg)
