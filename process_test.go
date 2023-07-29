@@ -32,7 +32,7 @@ func testSkipIfNoCommand(t *testing.T, p *concurrentProcess, cmd string) *extern
 }
 
 func TestProcessRunProcessSerial(t *testing.T) {
-	p := newConcurrentProcess(1)
+	p := NewConcurrentProcess(1)
 	ret := []string{}
 	mu := sync.Mutex{}
 	starts := []time.Time{}
@@ -94,7 +94,7 @@ func TestProcessRunConcurrently(t *testing.T) {
 		t.Skip("this test is flaky on Windows")
 	}
 
-	p := newConcurrentProcess(5)
+	p := NewConcurrentProcess(5)
 	sleep := testSkipIfNoCommand(t, p, "sleep")
 
 	start := time.Now()
@@ -119,7 +119,7 @@ func TestProcessRunConcurrently(t *testing.T) {
 }
 
 func TestProcessRunMultipleCommandsConcurrently(t *testing.T) {
-	p := newConcurrentProcess(3)
+	p := NewConcurrentProcess(3)
 
 	done := make([]bool, 5)
 	cmds := make([]*externalCommand, 0, 5)
@@ -151,7 +151,7 @@ func TestProcessRunMultipleCommandsConcurrently(t *testing.T) {
 }
 
 func TestProcessWaitMultipleCommandsFinish(t *testing.T) {
-	p := newConcurrentProcess(2)
+	p := NewConcurrentProcess(2)
 
 	done := make([]bool, 3)
 	for i := 0; i < 3; i++ {
@@ -177,7 +177,7 @@ func TestProcessWaitMultipleCommandsFinish(t *testing.T) {
 }
 
 func TestProcessInputStdin(t *testing.T) {
-	p := newConcurrentProcess(1)
+	p := NewConcurrentProcess(1)
 	cat := testSkipIfNoCommand(t, p, "cat")
 	out := ""
 
@@ -201,7 +201,7 @@ func TestProcessInputStdin(t *testing.T) {
 }
 
 func TestProcessErrorCommandNotFound(t *testing.T) {
-	p := newConcurrentProcess(1)
+	p := NewConcurrentProcess(1)
 	c := &externalCommand{
 		proc: p,
 		exe:  "this-command-does-not-exist",
@@ -231,7 +231,7 @@ func TestProcessErrorCommandNotFound(t *testing.T) {
 }
 
 func TestProcessErrorInCallback(t *testing.T) {
-	p := newConcurrentProcess(1)
+	p := NewConcurrentProcess(1)
 	echo := testSkipIfNoCommand(t, p, "echo")
 
 	echo.run([]string{}, "", func(b []byte, err error) error {
@@ -258,7 +258,7 @@ func TestProcessErrorInCallback(t *testing.T) {
 }
 
 func TestProcessErrorLinterFailed(t *testing.T) {
-	p := newConcurrentProcess(1)
+	p := NewConcurrentProcess(1)
 	ls := testSkipIfNoCommand(t, p, "ls")
 
 	// Running ls with directory which does not exist emulates external liter's failure.

@@ -23,7 +23,7 @@ type concurrentProcess struct {
 	wg   sync.WaitGroup
 }
 
-func newConcurrentProcess(par int) *concurrentProcess {
+func NewConcurrentProcess(par int) *concurrentProcess {
 	return &concurrentProcess{
 		ctx:  context.Background(),
 		sema: semaphore.NewWeighted(int64(par)),
