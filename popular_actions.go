@@ -2455,6 +2455,7 @@ var PopularActions = map[string]*ActionMetadata{
 		Outputs: ActionMetadataOutputs{
 			"db-locations": {"db-locations"},
 			"sarif-id":     {"sarif-id"},
+			"sarif-output": {"sarif-output"},
 		},
 	},
 	"github/codeql-action/autobuild@v1": {
@@ -2836,11 +2837,13 @@ var PopularActions = map[string]*ActionMetadata{
 			"commitmode":              {"commitMode", false},
 			"configuration":           {"configuration", false},
 			"configurationjson":       {"configurationJson", false},
+			"exportcache":             {"exportCache", false},
 			"exportonly":              {"exportOnly", false},
 			"failonerror":             {"failOnError", false},
 			"fetchreleaseinformation": {"fetchReleaseInformation", false},
 			"fetchreviewers":          {"fetchReviewers", false},
 			"fetchreviews":            {"fetchReviews", false},
+			"fetchviacommits":         {"fetchViaCommits", false},
 			"fromtag":                 {"fromTag", false},
 			"ignoreprereleases":       {"ignorePreReleases", false},
 			"includeopen":             {"includeOpen", false},
