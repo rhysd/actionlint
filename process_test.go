@@ -9,7 +9,7 @@ import (
 	"time"
 )
 
-func testStartEchoCommand(t *testing.T, proc *concurrentProcess, done *bool) {
+func testStartEchoCommand(t *testing.T, proc *ConcurrentProcess, done *bool) {
 	*done = false
 	echo := testSkipIfNoCommand(t, proc, "echo")
 	echo.run([]string{}, "", func(b []byte, err error) error {
@@ -23,7 +23,7 @@ func testStartEchoCommand(t *testing.T, proc *concurrentProcess, done *bool) {
 	// This function does not wait the command finishes
 }
 
-func testSkipIfNoCommand(t *testing.T, p *concurrentProcess, cmd string) *externalCommand {
+func testSkipIfNoCommand(t *testing.T, p *ConcurrentProcess, cmd string) *externalCommand {
 	c, err := p.newCommandRunner(cmd)
 	if err != nil {
 		t.Skipf("%s command is necessary to run this test: %s", cmd, err)

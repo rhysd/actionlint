@@ -445,7 +445,7 @@ func (l *Linter) check(
 	path string,
 	content []byte,
 	project *Project,
-	proc *concurrentProcess,
+	proc *ConcurrentProcess,
 	localActions *LocalActionsCache,
 	localReusableWorkflows *LocalReusableWorkflowCache,
 ) ([]*Error, error) {

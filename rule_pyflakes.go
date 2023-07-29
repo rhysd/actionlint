@@ -37,7 +37,7 @@ type RulePyflakes struct {
 // NewRulePyflakes creates new RulePyflakes instance. Parameter executable can be command name
 // or relative/absolute file path. When the given executable is not found in system, it returns
 // an error.
-func NewRulePyflakes(executable string, proc *concurrentProcess) (*RulePyflakes, error) {
+func NewRulePyflakes(executable string, proc *ConcurrentProcess) (*RulePyflakes, error) {
 	cmd, err := proc.newCommandRunner(executable)
 	if err != nil {
 		return nil, err
