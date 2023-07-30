@@ -52,7 +52,7 @@ func (rule *RuleMatrix) checkDuplicateInRow(row *MatrixRow) {
 		ok := true
 		for _, p := range seen {
 			if p.Equals(v) {
-				rule.errorf(
+				rule.Errorf(
 					v.Pos(),
 					"duplicate value %s is found in matrix %q. the same value is at %s",
 					v.String(),
@@ -84,7 +84,7 @@ func (rule *RuleMatrix) checkExclude(m *Matrix) {
 	}
 
 	if len(m.Rows) == 0 && (m.Include == nil || len(m.Include.Combinations) == 0) {
-		rule.error(m.Pos, "\"exclude\" section exists but no matrix variation exists")
+		rule.Error(m.Pos, "\"exclude\" section exists but no matrix variation exists")
 		return
 	}
 
@@ -135,7 +135,7 @@ Outer:
 				for k := range vals {
 					ss = append(ss, k)
 				}
-				rule.errorf(
+				rule.Errorf(
 					a.Key.Pos,
 					"%q in \"exclude\" section does not exist in matrix. available matrix configurations are %s",
 					k,
@@ -152,7 +152,7 @@ Outer:
 			for _, v := range vs {
 				ss = append(ss, v.String())
 			}
-			rule.errorf(
+			rule.Errorf(
 				a.Value.Pos(),
 				"value %s in \"exclude\" does not exist in matrix %q combinations. possible values are %s",
 				a.Value.String(),

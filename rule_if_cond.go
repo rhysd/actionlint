@@ -42,7 +42,7 @@ func (rule *RuleIfCond) checkIfCond(n *String) {
 	if strings.HasPrefix(n.Value, "${{") && strings.HasSuffix(n.Value, "}}") && strings.Count(n.Value, "${{") == 1 {
 		return
 	}
-	rule.errorf(
+	rule.Errorf(
 		n.Pos,
 		"if: condition %q is always evaluated to true because extra characters are around ${{ }}",
 		n.Value,

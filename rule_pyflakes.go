@@ -153,7 +153,7 @@ func (rule *RulePyflakes) parseNextError(stdout []byte, pos *Pos) ([]byte, error
 	} else {
 		return nil, fmt.Errorf("error message from pyflakes does not end with \\n nor \\r\\n while checking script at %s. output: %q", pos, stdout)
 	}
-	rule.errorf(pos, "pyflakes reported issue in this script: %s", msg)
+	rule.Errorf(pos, "pyflakes reported issue in this script: %s", msg)
 
 	return b, nil
 }
