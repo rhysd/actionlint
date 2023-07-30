@@ -107,7 +107,7 @@ func TestProcessRunConcurrently(t *testing.T) {
 			return nil
 		})
 	}
-	if err := sleep.Wait(); err != nil {
+	if err := sleep.wait(); err != nil {
 		t.Fatal(err)
 	}
 	p.Wait()
