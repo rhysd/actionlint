@@ -78,7 +78,7 @@ func (proc *ConcurrentProcess) run(eg *errgroup.Group, exe string, args []string
 }
 
 // wait waits all goroutines started by this concurrentProcess instance finish.
-func (proc *ConcurrentProcess) wait() {
+func (proc *ConcurrentProcess) Wait() {
 	proc.wg.Wait() // Wait for all goroutines completing to shutdown
 }
 

@@ -342,7 +342,7 @@ func (l *Linter) LintFiles(filepaths []string, project *Project) ([]*Error, erro
 		})
 	}
 
-	proc.wait()
+	proc.Wait()
 	if err := eg.Wait(); err != nil {
 		return nil, err
 	}
@@ -401,7 +401,7 @@ func (l *Linter) LintFile(path string, project *Project) ([]*Error, error) {
 	localActions := NewLocalActionsCache(project, dbg)
 	localReusableWorkflows := NewLocalReusableWorkflowCache(project, l.cwd, dbg)
 	errs, err := l.check(path, src, project, proc, localActions, localReusableWorkflows)
-	proc.wait()
+	proc.Wait()
 	if err != nil {
 		return nil, err
 	}
@@ -429,7 +429,7 @@ func (l *Linter) Lint(path string, content []byte, project *Project) ([]*Error, 
 	localActions := NewLocalActionsCache(project, dbg)
 	localReusableWorkflows := NewLocalReusableWorkflowCache(project, l.cwd, dbg)
 	errs, err := l.check(path, content, project, proc, localActions, localReusableWorkflows)
-	proc.wait()
+	proc.Wait()
 	if err != nil {
 		return nil, err
 	}
