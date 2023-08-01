@@ -47,8 +47,8 @@ const (
 	ColorOptionKindNever
 )
 
-// LinterOptions is set of options for Linter instance. This struct should be created by user and
-// given to NewLinter factory function.
+// LinterOptions is set of options for Linter instance. This struct is used for NewLinter factory
+// function call. The zero value LinterOptions{} represents the default behavior.
 type LinterOptions struct {
 	// Verbose is flag if verbose log output is enabled.
 	Verbose bool
@@ -86,8 +86,9 @@ type LinterOptions struct {
 	// will be used to get a working directory.
 	WorkingDir string
 	// OnRulesCreated is a hook to add or remove the check rules. This function is called on checking
-	// every workflow files. Rules created by Linter instance is passed to the argument and the function
-	// should return the modified rules slice.
+	// every workflow files. Rules created by Linter instance are passed to the argument and the
+	// function should return the modified rules.
+	// Note that syntax errors may be reported even if this function returns nil or an empty slice.
 	OnRulesCreated func([]Rule) []Rule
 	// More options will come here
 }
