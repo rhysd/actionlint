@@ -458,6 +458,33 @@ func TestLinterPathsNotFound(t *testing.T) {
 	}
 }
 
+func TestLinterRemoveRuleOnRulesCreatedHook(t *testing.T) {
+	o := &LinterOptions{
+		OnRulesCreated: func(rules []Rule) []Rule {
+			for i, r := range rules {
+				if r.Name() == "runner-label" {
+					rules = append(rules[:i], rules[i+1:]...)
+				}
+			}
+			return rules
+		},
+	}
+
+	l, err := NewLinter(io.Discard, o)
+	if err != nil {
+		t.Fatal(err)
+	}
+
+	f := filepath.Join("testdata", "err", "invalid_runner_labels.yaml")
+	errs, err := l.LintFile(f, nil)
+	if err != nil {
+		t.Fatal(err)
+	}
+	if len(errs) != 0 {
+		t.Fatal("no error was expected because runner-label rule was removed but got:", errs)
+	}
+}
+
 func BenchmarkLintWorkflowFiles(b *testing.B) {
 	large := filepath.Join("testdata", "bench", "many_scripts.yaml")
 	small := filepath.Join("testdata", "bench", "small.yaml")
