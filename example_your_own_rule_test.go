@@ -2,7 +2,7 @@ package actionlint_test
 
 import (
 	"fmt"
-	"os"
+	"io"
 	"path/filepath"
 
 	"github.com/rhysd/actionlint"
@@ -41,7 +41,7 @@ func ExampleLinter_yourOwnRule() {
 		},
 	}
 
-	l, err := actionlint.NewLinter(os.Stdout, o)
+	l, err := actionlint.NewLinter(io.Discard, o)
 	if err != nil {
 		panic(err)
 	}
@@ -54,12 +54,12 @@ func ExampleLinter_yourOwnRule() {
 		panic(err)
 	}
 
+	// `errs` includes errors like below:
+	//
+	// testdata/examples/main.yaml:14:9: every step must have its name [step-name]
+	//    |
+	// 14 |       - uses: actions/checkout@v3
+	//    |         ^~~~~
 	fmt.Println(len(errs), "lint errors found by actionlint")
-
-	// Output:
-	// testdata/ok/minimal.yaml:6:9: every step must have its name [step-name]
-	//   |
-	// 6 |       - run: echo
-	//   |         ^~~~
-	// 1 lint errors found by actionlint
+	// Output: 1 lint errors found by actionlint
 }

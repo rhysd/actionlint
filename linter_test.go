@@ -458,12 +458,86 @@ func TestLinterPathsNotFound(t *testing.T) {
 	}
 }
 
+type customRuleForTest struct {
+	RuleBase
+	count int
+}
+
+func (r *customRuleForTest) VisitStep(n *Step) error {
+	r.count++
+	if r.count > 1 {
+		r.Errorf(n.Pos, "only single step is allowed but got %d steps", r.count)
+	}
+	return nil
+}
+
+func TestLinterAddCustomRuleOnRulesCreatedHook(t *testing.T) {
+	o := &LinterOptions{
+		OnRulesCreated: func(rules []Rule) []Rule {
+			r := &customRuleForTest{
+				RuleBase: NewRuleBase("this-is-test", ""),
+			}
+			return append(rules, r)
+		},
+	}
+
+	l, err := NewLinter(io.Discard, o)
+	if err != nil {
+		t.Fatal(err)
+	}
+	l.defaultConfig = &Config{}
+
+	{
+		w := `on: push
+jobs:
+  test:
+    runs-on: ubuntu-latest
+    steps:
+      - run: echo
+`
+		errs, err := l.Lint("test.yaml", []byte(w), nil)
+		if err != nil {
+			t.Fatal(err)
+		}
+		if len(errs) != 0 {
+			t.Fatal("wanted no error but have", errs)
+		}
+	}
+
+	{
+		w := `on: push
+jobs:
+  test:
+    runs-on: ubuntu-latest
+    steps:
+      - run: echo
+      - run: echo
+`
+		errs, err := l.Lint("test.yaml", []byte(w), nil)
+		if err != nil {
+			t.Fatal(err)
+		}
+		if len(errs) != 1 {
+			t.Fatal("wanted 1 error but have", errs)
+		}
+
+		var b strings.Builder
+		errs[0].PrettyPrint(&b, nil)
+		have := b.String()
+		want := "test.yaml:7:9: only single step is allowed but got 2 steps [this-is-test]\n"
+		if have != want {
+			t.Fatalf("wanted error message %q but have %q", want, have)
+		}
+	}
+}
+
 func TestLinterRemoveRuleOnRulesCreatedHook(t *testing.T) {
 	o := &LinterOptions{
 		OnRulesCreated: func(rules []Rule) []Rule {
 			for i, r := range rules {
 				if r.Name() == "runner-label" {
 					rules = append(rules[:i], rules[i+1:]...)
+					break
 				}
 			}
 			return rules
@@ -474,6 +548,7 @@ func TestLinterRemoveRuleOnRulesCreatedHook(t *testing.T) {
 	if err != nil {
 		t.Fatal(err)
 	}
+	l.defaultConfig = &Config{}
 
 	f := filepath.Join("testdata", "err", "invalid_runner_labels.yaml")
 	errs, err := l.LintFile(f, nil)
