@@ -99,7 +99,7 @@ func (rule *RuleAction) checkRepoAction(spec string, exec *ExecAction) {
 }
 
 func (rule *RuleAction) invalidActionFormat(pos *Pos, spec string, why string) {
-	rule.errorf(pos, "specifying action %q in invalid format because %s. available formats are \"{owner}/{repo}@{ref}\" or \"{owner}/{repo}/{path}@{ref}\"", spec, why)
+	rule.Errorf(pos, "specifying action %q in invalid format because %s. available formats are \"{owner}/{repo}@{ref}\" or \"{owner}/{repo}/{path}@{ref}\"", spec, why)
 }
 
 // https://docs.github.com/en/actions/learn-github-actions/workflow-syntax-for-github-actions#example-using-the-github-packages-container-registry
@@ -116,7 +116,7 @@ func (rule *RuleAction) checkDockerAction(uri string, exec *ExecAction) {
 	}
 
 	if _, err := url.Parse(uri); err != nil {
-		rule.errorf(
+		rule.Errorf(
 			exec.Uses.Pos,
 			"URI for Docker container %q is invalid: %s (tag=%s)",
 			uri,
@@ -126,7 +126,7 @@ func (rule *RuleAction) checkDockerAction(uri string, exec *ExecAction) {
 	}
 
 	if tagExists && tag == "" {
-		rule.errorf(exec.Uses.Pos, "tag of Docker action should not be empty: %q", uri)
+		rule.Errorf(exec.Uses.Pos, "tag of Docker action should not be empty: %q", uri)
 	}
 }
 
@@ -134,7 +134,7 @@ func (rule *RuleAction) checkDockerAction(uri string, exec *ExecAction) {
 func (rule *RuleAction) checkLocalAction(path string, action *ExecAction) {
 	meta, err := rule.cache.FindMetadata(path)
 	if err != nil {
-		rule.error(action.Uses.Pos, err.Error())
+		rule.Error(action.Uses.Pos, err.Error())
 		return
 	}
 	if meta == nil {
@@ -154,7 +154,7 @@ func (rule *RuleAction) checkAction(meta *ActionMetadata, exec *ExecAction, desc
 			for _, i := range meta.Inputs {
 				ns = append(ns, i.Name)
 			}
-			rule.errorf(
+			rule.Errorf(
 				i.Name.Pos,
 				"input %q is not defined in action %s. available inputs are %s",
 				i.Name.Value,
@@ -174,7 +174,7 @@ func (rule *RuleAction) checkAction(meta *ActionMetadata, exec *ExecAction, desc
 						ns = append(ns, i.Name)
 					}
 				}
-				rule.errorf(
+				rule.Errorf(
 					exec.Uses.Pos,
 					"missing input %q which is required by action %s. all required inputs are %s",
 					i.Name,

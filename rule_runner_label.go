@@ -186,7 +186,7 @@ func (rule *RuleRunnerLabel) verifyRunnerLabel(label *String) runnerOSCompat {
 		}
 	}
 
-	rule.errorf(
+	rule.Errorf(
 		label.Pos,
 		"label %q is unknown. available labels are %s. if it is a custom label for self-hosted runner, set list of labels in actionlint.yaml config file",
 		label.Value,
@@ -261,7 +261,7 @@ func (rule *RuleRunnerLabel) tryToGetLabelsInMatrix(label *String, m *Matrix) []
 func (rule *RuleRunnerLabel) checkConflict(comp runnerOSCompat, label *String) bool {
 	for c, l := range rule.compats {
 		if c&comp == 0 {
-			rule.errorf(label.Pos, "label %q conflicts with label %q defined at %s. note: to run your job on each workers, use matrix", label.Value, l.Value, l.Pos)
+			rule.Errorf(label.Pos, "label %q conflicts with label %q defined at %s. note: to run your job on each workers, use matrix", label.Value, l.Value, l.Pos)
 			return false
 		}
 	}

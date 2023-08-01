@@ -15,6 +15,15 @@ type RuleBase struct {
 	config *Config
 }
 
+// NewRuleBase creates a new RuleBase instance. It should be embedded to your own
+// rule instance.
+func NewRuleBase(name string, desc string) *RuleBase {
+	return &RuleBase{
+		name: name,
+		desc: desc,
+	}
+}
+
 // VisitStep is callback when visiting Step node.
 func (r *RuleBase) VisitStep(node *Step) error { return nil }
 
@@ -30,12 +39,16 @@ func (r *RuleBase) VisitWorkflowPre(node *Workflow) error { return nil }
 // VisitWorkflowPost is callback when visiting Workflow node after visiting its children.
 func (r *RuleBase) VisitWorkflowPost(node *Workflow) error { return nil }
 
-func (r *RuleBase) error(pos *Pos, msg string) {
+// Error creates a new error from the source position and the error message and stores it in the
+// rule instance. The errors can be accessed by Errs method.
+func (r *RuleBase) Error(pos *Pos, msg string) {
 	err := errorAt(pos, r.name, msg)
 	r.errs = append(r.errs, err)
 }
 
-func (r *RuleBase) errorf(pos *Pos, format string, args ...interface{}) {
+// Errorf reports a new error with the source position and the formatted error message and stores it
+// in the rule instance. The errors can be accessed by Errs method.
+func (r *RuleBase) Errorf(pos *Pos, format string, args ...interface{}) {
 	err := errorfAt(pos, r.name, format, args...)
 	r.errs = append(r.errs, err)
 }

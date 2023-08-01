@@ -59,7 +59,7 @@ func (rule *RuleJobNeeds) VisitJobPre(n *Job) error {
 	for _, j := range n.Needs {
 		id := strings.ToLower(j.Value)
 		if contains(needs, id) {
-			rule.errorf(j.Pos, "job ID %q duplicates in \"needs\" section. note that job ID is case insensitive", j.Value)
+			rule.Errorf(j.Pos, "job ID %q duplicates in \"needs\" section. note that job ID is case insensitive", j.Value)
 			continue
 		}
 		if id != "" {
@@ -74,7 +74,7 @@ func (rule *RuleJobNeeds) VisitJobPre(n *Job) error {
 		return nil
 	}
 	if prev, ok := rule.nodes[id]; ok {
-		rule.errorf(n.Pos, "job ID %q duplicates. previously defined at %s. note that job ID is case insensitive", n.ID.Value, prev.pos.String())
+		rule.Errorf(n.Pos, "job ID %q duplicates. previously defined at %s. note that job ID is case insensitive", n.ID.Value, prev.pos.String())
 	}
 
 	rule.nodes[id] = &jobNode{
@@ -96,7 +96,7 @@ func (rule *RuleJobNeeds) VisitWorkflowPost(n *Workflow) error {
 		for _, dep := range node.needs {
 			n, ok := rule.nodes[dep]
 			if !ok {
-				rule.errorf(node.pos, "job %q needs job %q which does not exist in this workflow", id, dep)
+				rule.Errorf(node.pos, "job %q needs job %q which does not exist in this workflow", id, dep)
 				valid = false
 				continue
 			}
@@ -117,7 +117,7 @@ func (rule *RuleJobNeeds) VisitWorkflowPost(n *Workflow) error {
 			desc = append(desc, fmt.Sprintf("%q -> %q", from, to))
 		}
 
-		rule.errorf(
+		rule.Errorf(
 			edge.from.pos,
 			"cyclic dependencies in \"needs\" configurations of jobs are detected. detected cycle is %s",
 			strings.Join(desc, ", "),

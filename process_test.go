@@ -64,7 +64,7 @@ func TestProcessRunProcessSerial(t *testing.T) {
 	if err := echo.wait(); err != nil {
 		t.Fatal(err)
 	}
-	p.wait()
+	p.Wait()
 
 	if len(ret) != numProcs {
 		t.Fatalf("wanted %d outputs but got %#v", numProcs, ret)
@@ -110,7 +110,7 @@ func TestProcessRunConcurrently(t *testing.T) {
 	if err := sleep.wait(); err != nil {
 		t.Fatal(err)
 	}
-	p.wait()
+	p.Wait()
 
 	sec := time.Since(start).Seconds()
 	if sec >= 0.5 {
@@ -167,7 +167,7 @@ func TestProcessWaitMultipleCommandsFinish(t *testing.T) {
 		})
 	}
 
-	p.wait()
+	p.Wait()
 
 	for i, b := range done {
 		if !b {
@@ -193,7 +193,7 @@ func TestProcessInputStdin(t *testing.T) {
 	if err := cat.wait(); err != nil {
 		t.Fatal(err)
 	}
-	p.wait()
+	p.Wait()
 
 	if out != "this is test" {
 		t.Fatalf("stdin was not input to `cat` command: %q", out)
@@ -220,10 +220,10 @@ func TestProcessErrorCommandNotFound(t *testing.T) {
 
 	err := c.wait()
 	if err == nil || !strings.Contains(err.Error(), "yay! error found!") {
-		t.Fatalf("error was not reported by p.wait(): %v", err)
+		t.Fatalf("error was not reported by p.Wait(): %v", err)
 	}
 
-	p.wait()
+	p.Wait()
 
 	if !echoDone {
 		t.Fatal("a command following the error did not run")
@@ -247,10 +247,10 @@ func TestProcessErrorInCallback(t *testing.T) {
 
 	err := echo.wait()
 	if err == nil || err.Error() != "dummy error" {
-		t.Fatalf("error was not reported by p.wait(): %v", err)
+		t.Fatalf("error was not reported by p.Wait(): %v", err)
 	}
 
-	p.wait()
+	p.Wait()
 
 	if !echoDone {
 		t.Fatal("a command following the error did not run")
@@ -284,7 +284,7 @@ func TestProcessErrorLinterFailed(t *testing.T) {
 		t.Fatalf("Error message was unexpected: %q", msg)
 	}
 
-	p.wait()
+	p.Wait()
 
 	if !echoDone {
 		t.Fatal("a command following the error did not run")

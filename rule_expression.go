@@ -124,7 +124,7 @@ func (rule *RuleExpression) VisitWorkflowPre(n *Workflow) error {
 						case BoolType, AnyType:
 							// ok
 						default:
-							rule.errorf(i.Default.Pos, "type of input %q must be bool but found type %s", i.Name.Value, ts[0].ty.String())
+							rule.Errorf(i.Default.Pos, "type of input %q must be bool but found type %s", i.Name.Value, ts[0].ty.String())
 						}
 					}
 				case WorkflowCallEventInputTypeNumber:
@@ -134,7 +134,7 @@ func (rule *RuleExpression) VisitWorkflowPre(n *Workflow) error {
 						case NumberType, AnyType:
 							// ok
 						default:
-							rule.errorf(i.Default.Pos, "type of input %q must be number but found type %s", i.Name.Value, ts[0].ty.String())
+							rule.Errorf(i.Default.Pos, "type of input %q must be number but found type %s", i.Name.Value, ts[0].ty.String())
 						}
 					}
 				default:
@@ -210,7 +210,7 @@ func (rule *RuleExpression) VisitJobPre(n *Job) error {
 				case *ArrayType, StringType, AnyType:
 					// OK
 				default:
-					rule.errorf(n.RunsOn.LabelsExpr.Pos, "type of expression at \"runs-on\" must be string or array but found type %q", ty.String())
+					rule.Errorf(n.RunsOn.LabelsExpr.Pos, "type of expression at \"runs-on\" must be string or array but found type %q", ty.String())
 				}
 			}
 		} else {
@@ -322,7 +322,7 @@ func (rule *RuleExpression) getActionOutputsType(spec *String) *ObjectType {
 	if strings.HasPrefix(spec.Value, "./") {
 		meta, err := rule.localActions.FindMetadata(spec.Value)
 		if err != nil {
-			rule.error(spec.Pos, err.Error())
+			rule.Error(spec.Pos, err.Error())
 			return NewMapObjectType(StringType{})
 		}
 		if meta == nil {
@@ -354,7 +354,7 @@ func (rule *RuleExpression) getWorkflowCallOutputsType(call *WorkflowCall) *Obje
 
 	m, err := rule.localWorkflows.FindMetadata(call.Uses.Value)
 	if err != nil {
-		rule.error(call.Uses.Pos, err.Error())
+		rule.Error(call.Uses.Pos, err.Error())
 		return NewMapObjectType(StringType{})
 	}
 	if m == nil {
@@ -381,7 +381,7 @@ func (rule *RuleExpression) checkOneExpression(s *String, what, workflowKey stri
 
 	if len(ts) != 1 {
 		// This case should be unreachable since only one ${{ }} is included is checked by parser
-		rule.errorf(s.Pos, "one ${{ }} expression should be included in %q value but got %d expressions", what, len(ts))
+		rule.Errorf(s.Pos, "one ${{ }} expression should be included in %q value but got %d expressions", what, len(ts))
 		return nil
 	}
 
@@ -396,7 +396,7 @@ func (rule *RuleExpression) checkObjectTy(ty ExprType, pos *Pos, what string) Ex
 	case *ObjectType, AnyType:
 		return ty
 	default:
-		rule.errorf(pos, "type of expression at %q must be object but found type %s", what, ty.String())
+		rule.Errorf(pos, "type of expression at %q must be object but found type %s", what, ty.String())
 		return nil
 	}
 }
@@ -409,7 +409,7 @@ func (rule *RuleExpression) checkArrayTy(ty ExprType, pos *Pos, what string) Exp
 	case *ArrayType, AnyType:
 		return ty
 	default:
-		rule.errorf(pos, "type of expression at %q must be array but found type %s", what, ty.String())
+		rule.Errorf(pos, "type of expression at %q must be array but found type %s", what, ty.String())
 		return nil
 	}
 }
@@ -422,7 +422,7 @@ func (rule *RuleExpression) checkNumberTy(ty ExprType, pos *Pos, what string) Ex
 	case NumberType, AnyType:
 		return ty
 	default:
-		rule.errorf(pos, "type of expression at %q must be number but found type %s", what, ty.String())
+		rule.Errorf(pos, "type of expression at %q must be number but found type %s", what, ty.String())
 		return nil
 	}
 }
@@ -513,7 +513,7 @@ func (rule *RuleExpression) checkWorkflowCall(c *WorkflowCall) {
 
 	m, err := rule.localWorkflows.FindMetadata(c.Uses.Value)
 	if err != nil {
-		rule.error(c.Uses.Pos, err.Error())
+		rule.Error(c.Uses.Pos, err.Error())
 	}
 
 	for n, i := range c.Inputs {
@@ -553,7 +553,7 @@ func (rule *RuleExpression) checkWorkflowCall(c *WorkflowCall) {
 		}
 
 		if !mi.Type.Assignable(ty) {
-			rule.errorf(
+			rule.Errorf(
 				i.Value.Pos,
 				"input %q is typed as %s by reusable workflow %q. %s value cannot be assigned",
 				mi.Name,
@@ -635,7 +635,7 @@ func (rule *RuleExpression) checkIfCondition(str *String, workflowKey string) {
 	}
 
 	if condTy != nil && !(BoolType{}).Assignable(condTy) {
-		rule.errorf(str.Pos, "\"if\" condition should be type \"bool\" but got type %q", condTy.String())
+		rule.Errorf(str.Pos, "\"if\" condition should be type \"bool\" but got type %q", condTy.String())
 	}
 }
 
@@ -643,7 +643,7 @@ func (rule *RuleExpression) checkTemplateEvaluatedType(ts []typedExpr) {
 	for _, t := range ts {
 		switch t.ty.(type) {
 		case *ObjectType, *ArrayType, NullType:
-			rule.errorf(&t.pos, "object, array, and null values should not be evaluated in template with ${{ }} but evaluating the value of type %s", t.ty)
+			rule.Errorf(&t.pos, "object, array, and null values should not be evaluated in template with ${{ }} but evaluating the value of type %s", t.ty)
 		}
 	}
 }
@@ -689,7 +689,7 @@ func (rule *RuleExpression) checkBool(b *Bool, workflowKey string) {
 	case BoolType, AnyType:
 		// ok
 	default:
-		rule.errorf(b.Expression.Pos, "type of expression must be bool but found type %s", ty.String())
+		rule.Errorf(b.Expression.Pos, "type of expression must be bool but found type %s", ty.String())
 	}
 }
 
@@ -745,7 +745,7 @@ func (rule *RuleExpression) checkExprsIn(s string, pos *Pos, quoted, checkUntrus
 
 func (rule *RuleExpression) exprError(err *ExprError, lineBase, colBase int) {
 	pos := convertExprLineColToPos(err.Line, err.Column, lineBase, colBase)
-	rule.error(pos, err.Message)
+	rule.Error(pos, err.Message)
 }
 
 func (rule *RuleExpression) checkSemanticsOfExprNode(expr ExprNode, line, col int, checkUntrusted bool, workflowKey string) (ExprType, bool) {

@@ -105,7 +105,7 @@ func (rule *RuleShellName) checkShellName(node *String) {
 		}
 	}
 
-	rule.errorf(
+	rule.Errorf(
 		node.Pos,
 		"shell name %q is invalid%s. available names are %s",
 		node.Value,
