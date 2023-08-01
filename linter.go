@@ -85,22 +85,27 @@ type LinterOptions struct {
 	// WorkingDir is a file path to the current working directory. When this value is empty, os.Getwd
 	// will be used to get a working directory.
 	WorkingDir string
+	// OnRulesCreated is a hook to add or remove the check rules. This function is called on checking
+	// every workflow files. Rules created by Linter instance is passed to the argument and the function
+	// should return the modified rules slice.
+	OnRulesCreated func([]Rule) []Rule
 	// More options will come here
 }
 
 // Linter is struct to lint workflow files.
 type Linter struct {
-	projects      *Projects
-	out           io.Writer
-	logOut        io.Writer
-	logLevel      LogLevel
-	oneline       bool
-	shellcheck    string
-	pyflakes      string
-	ignorePats    []*regexp.Regexp
-	defaultConfig *Config
-	errFmt        *ErrorFormatter
-	cwd           string
+	projects       *Projects
+	out            io.Writer
+	logOut         io.Writer
+	logLevel       LogLevel
+	oneline        bool
+	shellcheck     string
+	pyflakes       string
+	ignorePats     []*regexp.Regexp
+	defaultConfig  *Config
+	errFmt         *ErrorFormatter
+	cwd            string
+	onRulesCreated func([]Rule) []Rule
 }
 
 // NewLinter creates a new Linter instance.
@@ -178,6 +183,7 @@ func NewLinter(out io.Writer, opts *LinterOptions) (*Linter, error) {
 		cfg,
 		formatter,
 		cwd,
+		opts.OnRulesCreated,
 	}, nil
 }
 
@@ -524,6 +530,9 @@ func (l *Linter) check(
 			}
 		} else {
 			l.log("Rule \"pyflakes\" was disabled since pyflakes command name was empty")
+		}
+		if l.onRulesCreated != nil {
+			rules = l.onRulesCreated(rules)
 		}
 
 		v := NewVisitor()
