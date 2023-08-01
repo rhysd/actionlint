@@ -17,8 +17,8 @@ type RuleBase struct {
 
 // NewRuleBase creates a new RuleBase instance. It should be embedded to your own
 // rule instance.
-func NewRuleBase(name string, desc string) *RuleBase {
-	return &RuleBase{
+func NewRuleBase(name string, desc string) RuleBase {
+	return RuleBase{
 		name: name,
 		desc: desc,
 	}
