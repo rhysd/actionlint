@@ -1,0 +1,10 @@
+on: push
+jobs:
+  test1:
+    runs-on: ubuntu-oldest
+    steps:
+      - run: echo
+  test2:
+    runs-on: [ubuntu-latest, windows-latest, macos-latest]
+    steps:
+      - run: echo
