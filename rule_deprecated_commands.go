@@ -46,7 +46,7 @@ func (rule *RuleDeprecatedCommands) VisitStep(n *Step) error {
 				panic("unreachable")
 			}
 
-			rule.errorf(
+			rule.Errorf(
 				r.Run.Pos,
 				"workflow command %q was deprecated. use `%s` instead: https://docs.github.com/en/actions/using-workflows/workflow-commands-for-github-actions",
 				c,

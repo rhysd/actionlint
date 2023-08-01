@@ -50,7 +50,7 @@ func (rule *RuleEnvVar) checkEnv(env *Env) {
 			continue // Key name can contain expressions (#312)
 		}
 		if strings.ContainsAny(v.Name.Value, "&= 	") {
-			rule.errorf(
+			rule.Errorf(
 				v.Name.Pos,
 				"environment variable name %q is invalid. '&', '=' and spaces should not be contained",
 				v.Name.Value,

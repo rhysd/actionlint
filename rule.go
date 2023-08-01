@@ -15,6 +15,13 @@ type RuleBase struct {
 	config *Config
 }
 
+func NewRuleBase(name string, desc string) *RuleBase {
+	return &RuleBase{
+		name: name,
+		desc: desc,
+	}
+}
+
 // VisitStep is callback when visiting Step node.
 func (r *RuleBase) VisitStep(node *Step) error { return nil }
 
@@ -30,12 +37,12 @@ func (r *RuleBase) VisitWorkflowPre(node *Workflow) error { return nil }
 // VisitWorkflowPost is callback when visiting Workflow node after visiting its children.
 func (r *RuleBase) VisitWorkflowPost(node *Workflow) error { return nil }
 
-func (r *RuleBase) error(pos *Pos, msg string) {
+func (r *RuleBase) Error(pos *Pos, msg string) {
 	err := errorAt(pos, r.name, msg)
 	r.errs = append(r.errs, err)
 }
 
-func (r *RuleBase) errorf(pos *Pos, format string, args ...interface{}) {
+func (r *RuleBase) Errorf(pos *Pos, format string, args ...interface{}) {
 	err := errorfAt(pos, r.name, format, args...)
 	r.errs = append(r.errs, err)
 }

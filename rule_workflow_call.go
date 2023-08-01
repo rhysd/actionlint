@@ -68,7 +68,7 @@ func (rule *RuleWorkflowCall) VisitJobPre(n *Job) error {
 		rule.cache.writeCache(u.Value, nil)
 	}
 
-	rule.errorf(
+	rule.Errorf(
 		u.Pos,
 		"reusable workflow call %q at \"uses\" is not following the format \"owner/repo/path/to/workflow.yml@ref\" nor \"./path/to/workflow.yml\". see https://docs.github.com/en/actions/learn-github-actions/reusing-workflows for more details",
 		u.Value,
@@ -80,7 +80,7 @@ func (rule *RuleWorkflowCall) checkWorkflowCallUsesLocal(call *WorkflowCall) {
 	u := call.Uses
 	m, err := rule.cache.FindMetadata(u.Value)
 	if err != nil {
-		rule.error(u.Pos, err.Error())
+		rule.Error(u.Pos, err.Error())
 		return
 	}
 	if m == nil {
@@ -92,7 +92,7 @@ func (rule *RuleWorkflowCall) checkWorkflowCallUsesLocal(call *WorkflowCall) {
 	for n, i := range m.Inputs {
 		if i != nil && i.Required {
 			if _, ok := call.Inputs[n]; !ok {
-				rule.errorf(u.Pos, "input %q is required by %q reusable workflow", i.Name, u.Value)
+				rule.Errorf(u.Pos, "input %q is required by %q reusable workflow", i.Name, u.Value)
 			}
 		}
 	}
@@ -110,7 +110,7 @@ func (rule *RuleWorkflowCall) checkWorkflowCallUsesLocal(call *WorkflowCall) {
 					note = "defined inputs are " + sortedQuotes(is)
 				}
 			}
-			rule.errorf(i.Name.Pos, "input %q is not defined in %q reusable workflow. %s", i.Name.Value, u.Value, note)
+			rule.Errorf(i.Name.Pos, "input %q is not defined in %q reusable workflow. %s", i.Name.Value, u.Value, note)
 		}
 	}
 
@@ -119,7 +119,7 @@ func (rule *RuleWorkflowCall) checkWorkflowCallUsesLocal(call *WorkflowCall) {
 		for n, s := range m.Secrets {
 			if s.Required {
 				if _, ok := call.Secrets[n]; !ok {
-					rule.errorf(u.Pos, "secret %q is required by %q reusable workflow", s.Name, u.Value)
+					rule.Errorf(u.Pos, "secret %q is required by %q reusable workflow", s.Name, u.Value)
 				}
 			}
 		}
@@ -137,7 +137,7 @@ func (rule *RuleWorkflowCall) checkWorkflowCallUsesLocal(call *WorkflowCall) {
 						note = "defined secrets are " + sortedQuotes(ss)
 					}
 				}
-				rule.errorf(s.Name.Pos, "secret %q is not defined in %q reusable workflow. %s", s.Name.Value, u.Value, note)
+				rule.Errorf(s.Name.Pos, "secret %q is not defined in %q reusable workflow. %s", s.Name.Value, u.Value, note)
 			}
 		}
 	}
