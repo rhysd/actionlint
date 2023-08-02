@@ -9,7 +9,7 @@ import (
 	"time"
 )
 
-func testStartEchoCommand(t *testing.T, proc *ConcurrentProcess, done *bool) {
+func testStartEchoCommand(t *testing.T, proc *concurrentProcess, done *bool) {
 	*done = false
 	echo := testSkipIfNoCommand(t, proc, "echo")
 	echo.run([]string{}, "", func(b []byte, err error) error {
@@ -23,7 +23,7 @@ func testStartEchoCommand(t *testing.T, proc *ConcurrentProcess, done *bool) {
 	// This function does not wait the command finishes
 }
 
-func testSkipIfNoCommand(t *testing.T, p *ConcurrentProcess, cmd string) *externalCommand {
+func testSkipIfNoCommand(t *testing.T, p *concurrentProcess, cmd string) *externalCommand {
 	c, err := p.newCommandRunner(cmd)
 	if err != nil {
 		t.Skipf("%s command is necessary to run this test: %s", cmd, err)
@@ -32,7 +32,7 @@ func testSkipIfNoCommand(t *testing.T, p *ConcurrentProcess, cmd string) *extern
 }
 
 func TestProcessRunProcessSerial(t *testing.T) {
-	p := NewConcurrentProcess(1)
+	p := newConcurrentProcess(1)
 	ret := []string{}
 	mu := sync.Mutex{}
 	starts := []time.Time{}
@@ -64,7 +64,7 @@ func TestProcessRunProcessSerial(t *testing.T) {
 	if err := echo.wait(); err != nil {
 		t.Fatal(err)
 	}
-	p.Wait()
+	p.wait()
 
 	if len(ret) != numProcs {
 		t.Fatalf("wanted %d outputs but got %#v", numProcs, ret)
@@ -94,7 +94,7 @@ func TestProcessRunConcurrently(t *testing.T) {
 		t.Skip("this test is flaky on Windows")
 	}
 
-	p := NewConcurrentProcess(5)
+	p := newConcurrentProcess(5)
 	sleep := testSkipIfNoCommand(t, p, "sleep")
 
 	start := time.Now()
@@ -110,7 +110,7 @@ func TestProcessRunConcurrently(t *testing.T) {
 	if err := sleep.wait(); err != nil {
 		t.Fatal(err)
 	}
-	p.Wait()
+	p.wait()
 
 	sec := time.Since(start).Seconds()
 	if sec >= 0.5 {
@@ -119,7 +119,7 @@ func TestProcessRunConcurrently(t *testing.T) {
 }
 
 func TestProcessRunMultipleCommandsConcurrently(t *testing.T) {
-	p := NewConcurrentProcess(3)
+	p := newConcurrentProcess(3)
 
 	done := make([]bool, 5)
 	cmds := make([]*externalCommand, 0, 5)
@@ -151,7 +151,7 @@ func TestProcessRunMultipleCommandsConcurrently(t *testing.T) {
 }
 
 func TestProcessWaitMultipleCommandsFinish(t *testing.T) {
-	p := NewConcurrentProcess(2)
+	p := newConcurrentProcess(2)
 
 	done := make([]bool, 3)
 	for i := 0; i < 3; i++ {
@@ -167,7 +167,7 @@ func TestProcessWaitMultipleCommandsFinish(t *testing.T) {
 		})
 	}
 
-	p.Wait()
+	p.wait()
 
 	for i, b := range done {
 		if !b {
@@ -177,7 +177,7 @@ func TestProcessWaitMultipleCommandsFinish(t *testing.T) {
 }
 
 func TestProcessInputStdin(t *testing.T) {
-	p := NewConcurrentProcess(1)
+	p := newConcurrentProcess(1)
 	cat := testSkipIfNoCommand(t, p, "cat")
 	out := ""
 
@@ -193,7 +193,7 @@ func TestProcessInputStdin(t *testing.T) {
 	if err := cat.wait(); err != nil {
 		t.Fatal(err)
 	}
-	p.Wait()
+	p.wait()
 
 	if out != "this is test" {
 		t.Fatalf("stdin was not input to `cat` command: %q", out)
@@ -201,7 +201,7 @@ func TestProcessInputStdin(t *testing.T) {
 }
 
 func TestProcessErrorCommandNotFound(t *testing.T) {
-	p := NewConcurrentProcess(1)
+	p := newConcurrentProcess(1)
 	c := &externalCommand{
 		proc: p,
 		exe:  "this-command-does-not-exist",
@@ -223,7 +223,7 @@ func TestProcessErrorCommandNotFound(t *testing.T) {
 		t.Fatalf("error was not reported by p.Wait(): %v", err)
 	}
 
-	p.Wait()
+	p.wait()
 
 	if !echoDone {
 		t.Fatal("a command following the error did not run")
@@ -231,7 +231,7 @@ func TestProcessErrorCommandNotFound(t *testing.T) {
 }
 
 func TestProcessErrorInCallback(t *testing.T) {
-	p := NewConcurrentProcess(1)
+	p := newConcurrentProcess(1)
 	echo := testSkipIfNoCommand(t, p, "echo")
 
 	echo.run([]string{}, "", func(b []byte, err error) error {
@@ -250,7 +250,7 @@ func TestProcessErrorInCallback(t *testing.T) {
 		t.Fatalf("error was not reported by p.Wait(): %v", err)
 	}
 
-	p.Wait()
+	p.wait()
 
 	if !echoDone {
 		t.Fatal("a command following the error did not run")
@@ -258,7 +258,7 @@ func TestProcessErrorInCallback(t *testing.T) {
 }
 
 func TestProcessErrorLinterFailed(t *testing.T) {
-	p := NewConcurrentProcess(1)
+	p := newConcurrentProcess(1)
 	ls := testSkipIfNoCommand(t, p, "ls")
 
 	// Running ls with directory which does not exist emulates external liter's failure.
@@ -284,7 +284,7 @@ func TestProcessErrorLinterFailed(t *testing.T) {
 		t.Fatalf("Error message was unexpected: %q", msg)
 	}
 
-	p.Wait()
+	p.wait()
 
 	if !echoDone {
 		t.Fatal("a command following the error did not run")

@@ -294,7 +294,7 @@ func (l *Linter) LintFiles(filepaths []string, project *Project) ([]*Error, erro
 	l.log("Linting", n, "files")
 
 	cwd := l.cwd
-	proc := NewConcurrentProcess(runtime.NumCPU())
+	proc := newConcurrentProcess(runtime.NumCPU())
 	sema := semaphore.NewWeighted(int64(runtime.NumCPU()))
 	ctx := context.Background()
 	dbg := l.debugWriter()
@@ -349,7 +349,7 @@ func (l *Linter) LintFiles(filepaths []string, project *Project) ([]*Error, erro
 		})
 	}
 
-	proc.Wait()
+	proc.wait()
 	if err := eg.Wait(); err != nil {
 		return nil, err
 	}
@@ -403,12 +403,12 @@ func (l *Linter) LintFile(path string, project *Project) ([]*Error, error) {
 		}
 	}
 
-	proc := NewConcurrentProcess(runtime.NumCPU())
+	proc := newConcurrentProcess(runtime.NumCPU())
 	dbg := l.debugWriter()
 	localActions := NewLocalActionsCache(project, dbg)
 	localReusableWorkflows := NewLocalReusableWorkflowCache(project, l.cwd, dbg)
 	errs, err := l.check(path, src, project, proc, localActions, localReusableWorkflows)
-	proc.Wait()
+	proc.wait()
 	if err != nil {
 		return nil, err
 	}
@@ -431,12 +431,12 @@ func (l *Linter) Lint(path string, content []byte, project *Project) ([]*Error, 
 			project = l.projects.At(path)
 		}
 	}
-	proc := NewConcurrentProcess(runtime.NumCPU())
+	proc := newConcurrentProcess(runtime.NumCPU())
 	dbg := l.debugWriter()
 	localActions := NewLocalActionsCache(project, dbg)
 	localReusableWorkflows := NewLocalReusableWorkflowCache(project, l.cwd, dbg)
 	errs, err := l.check(path, content, project, proc, localActions, localReusableWorkflows)
-	proc.Wait()
+	proc.wait()
 	if err != nil {
 		return nil, err
 	}
@@ -452,7 +452,7 @@ func (l *Linter) check(
 	path string,
 	content []byte,
 	project *Project,
-	proc *ConcurrentProcess,
+	proc *concurrentProcess,
 	localActions *LocalActionsCache,
 	localReusableWorkflows *LocalReusableWorkflowCache,
 ) ([]*Error, error) {

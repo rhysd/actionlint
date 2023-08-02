@@ -12,22 +12,22 @@ import (
 	"golang.org/x/sys/execabs"
 )
 
-// ConcurrentProcess is a manager to run process concurrently. Since running process consumes OS
+// concurrentProcess is a manager to run process concurrently. Since running process consumes OS
 // resources, running too many processes concurrently causes some issues. On macOS, making too many
 // process makes the parent process hang (see issue #3). And running processes which open files can
 // cause the error "pipe: too many files to open". To avoid it, this type manages how many processes
 // are run at once.
-type ConcurrentProcess struct {
+type concurrentProcess struct {
 	ctx  context.Context
 	sema *semaphore.Weighted
 	wg   sync.WaitGroup
 }
 
-// NewConcurrentProcess creates a new ConcurrentProcess instance. The `par` argument represents how
+// newConcurrentProcess creates a new ConcurrentProcess instance. The `par` argument represents how
 // many processes can be run in parallel. It is recommended to use the value returned from
 // runtime.NumCPU() for the argument.
-func NewConcurrentProcess(par int) *ConcurrentProcess {
-	return &ConcurrentProcess{
+func newConcurrentProcess(par int) *concurrentProcess {
+	return &concurrentProcess{
 		ctx:  context.Background(),
 		sema: semaphore.NewWeighted(int64(par)),
 	}
@@ -66,7 +66,7 @@ func runProcessWithStdin(exe string, args []string, stdin string) ([]byte, error
 	return stdout, nil
 }
 
-func (proc *ConcurrentProcess) run(eg *errgroup.Group, exe string, args []string, stdin string, callback func([]byte, error) error) {
+func (proc *concurrentProcess) run(eg *errgroup.Group, exe string, args []string, stdin string, callback func([]byte, error) error) {
 	proc.sema.Acquire(proc.ctx, 1)
 	proc.wg.Add(1)
 	eg.Go(func() error {
@@ -77,14 +77,14 @@ func (proc *ConcurrentProcess) run(eg *errgroup.Group, exe string, args []string
 	})
 }
 
-// Wait waits all goroutines started by this concurrentProcess instance finish.
-func (proc *ConcurrentProcess) Wait() {
+// wait waits all goroutines started by this concurrentProcess instance finish.
+func (proc *concurrentProcess) wait() {
 	proc.wg.Wait() // Wait for all goroutines completing to shutdown
 }
 
 // newCommandRunner creates new external command runner for given executable. The executable path
 // is resolved in this function.
-func (proc *ConcurrentProcess) newCommandRunner(exe string) (*externalCommand, error) {
+func (proc *concurrentProcess) newCommandRunner(exe string) (*externalCommand, error) {
 	p, err := execabs.LookPath(exe)
 	if err != nil {
 		return nil, err
@@ -101,7 +101,7 @@ func (proc *ConcurrentProcess) newCommandRunner(exe string) (*externalCommand, e
 // by using errgroup.Group. The wait() method must be called at the end for checking if some fatal
 // error occurred.
 type externalCommand struct {
-	proc *ConcurrentProcess
+	proc *concurrentProcess
 	eg   errgroup.Group
 	exe  string
 }
