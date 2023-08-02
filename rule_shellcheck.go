@@ -28,7 +28,7 @@ type RuleShellcheck struct {
 // NewRuleShellcheck creates new RuleShellcheck instance. Parameter executable can be command name
 // or relative/absolute file path. When the given executable is not found in system, it returns an
 // error as 2nd return value.
-func NewRuleShellcheck(executable string, proc *ConcurrentProcess) (*RuleShellcheck, error) {
+func NewRuleShellcheck(executable string, proc *concurrentProcess) (*RuleShellcheck, error) {
 	cmd, err := proc.newCommandRunner(executable)
 	if err != nil {
 		return nil, err
