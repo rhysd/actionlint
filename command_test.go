@@ -2,12 +2,13 @@ package actionlint
 
 import (
 	"bytes"
-	"fmt"
 	"os"
 	"path/filepath"
+	"strings"
+	"testing"
 )
 
-func ExampleCommand() {
+func TestCommandMain(t *testing.T) {
 	var output bytes.Buffer
 
 	// Create command instance populating stdin/stdout/stderr
@@ -18,13 +19,26 @@ func ExampleCommand() {
 	}
 
 	// Run the command end-to-end. Note that given args should contain program name
-	workflow := filepath.Join(".github", "workflows", "release.yaml")
-	status := cmd.Main([]string{"actionlint", "-shellcheck=", "-pyflakes=", workflow})
+	workflow := filepath.Join("testdata", "examples", "main.yaml")
+	status := cmd.Main([]string{"actionlint", "-shellcheck=", "-pyflakes=", "-ignore", `label .+ is unknown\.`, workflow})
 
-	fmt.Println("Exited with status", status)
-	// Output: Exited with status 0
+	if status != 1 {
+		t.Fatal("exit status should be 1 but got", status)
+	}
 
-	if status != 0 {
-		panic("actionlint command failed: " + output.String())
+	out := output.String()
+
+	for _, s := range []string{
+		"main.yaml:3:5:",
+		"unexpected key \"branch\" for \"push\" section",
+		"^~~~~~~~~~~~~~~",
+	} {
+		if !strings.Contains(out, s) {
+			t.Errorf("output should contain %q: %q", s, out)
+		}
+	}
+
+	if strings.Contains(out, "[runner-label]") {
+		t.Errorf("runner-label rule should be ignored by -ignore but it is included in output: %q", out)
 	}
 }
