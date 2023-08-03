@@ -111,11 +111,11 @@ func (rule *RulePyflakes) isPythonShell(r *ExecRun) bool {
 
 func (rule *RulePyflakes) runPyflakes(src string, pos *Pos) {
 	src = sanitizeExpressionsInScript(src) // Defined at rule_shellcheck.go
-	rule.debug("%s: Running %s for Python script:\n%s", pos, rule.cmd.exe, src)
+	rule.Debug("%s: Running %s for Python script:\n%s", pos, rule.cmd.exe, src)
 
 	rule.cmd.run([]string{}, src, func(stdout []byte, err error) error {
 		if err != nil {
-			rule.debug("Command %s failed: %v", rule.cmd.exe, err)
+			rule.Debug("Command %s failed: %v", rule.cmd.exe, err)
 			return fmt.Errorf("`%s` did not run successfully while checking script at %s: %w", rule.cmd.exe, pos, err)
 		}
 		if len(stdout) == 0 {
