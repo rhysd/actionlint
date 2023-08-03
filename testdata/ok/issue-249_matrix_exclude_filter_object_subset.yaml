@@ -1,0 +1,26 @@
+name: 'Regression test case for issue #249'
+on: push
+
+jobs:
+  test:
+    strategy:
+      matrix:
+        os:
+          - name: Ubuntu
+            matrix: ubuntu
+          - name: Windows
+            matrix: windows
+        arch:
+          - name: ARM
+            matrix: arm
+          - name: Intel
+            matrix: intel
+        exclude:
+          # This should filter out { os: { name: Windows, matrix: windows }, arch: {name: ARM, matrix: arm } }
+          - os:
+              matrix: windows
+            arch:
+              matrix: arm
+    runs-on: ubuntu-latest
+    steps:
+      - run: echo 'name is ${{ matrix.os.name }} and arch is ${{ matrix.arch.name }}'

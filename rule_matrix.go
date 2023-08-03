@@ -69,9 +69,43 @@ func (rule *RuleMatrix) checkDuplicateInRow(row *MatrixRow) {
 	}
 }
 
-func findYAMLValueInArray(heystack []RawYAMLValue, needle RawYAMLValue) bool {
-	for _, v := range heystack {
-		if v.Equals(needle) {
+func filterMatchesYAMLValue(v, filter RawYAMLValue) bool {
+	switch v := v.(type) {
+	case *RawYAMLObject:
+		// `exclude` and `include` filter can match to objects in matrix as subset of them (#249).
+		// For example,
+		//
+		// matrix:
+		//   os:
+		//     - { name: Ubuntu, matrix: ubuntu }
+		//     - { name: Windows, matrix: windows }
+		//   arch:
+		//     - { name: ARM, matrix: arm }
+		//     - { name: Intel, matrix: intel }
+		//   exclude:
+		//     - os: { matrix: windows }
+		//       arch: { matrix: arm }
+		//
+		// The `exclude` filters out `{ os: { name: Windows, matrix: windows }, arch: {name: ARM, matrix: arm } }`
+		switch filter := filter.(type) {
+		case *RawYAMLObject:
+			for n, f := range filter.Props {
+				if p, ok := v.Props[n]; !ok || !filterMatchesYAMLValue(p, f) {
+					return false
+				}
+			}
+			return true
+		default:
+			return false
+		}
+	default:
+		return v.Equals(filter)
+	}
+}
+
+func filterMatchesMatrixRow(row []RawYAMLValue, filter RawYAMLValue) bool {
+	for _, v := range row {
+		if filterMatchesYAMLValue(v, filter) {
 			return true
 		}
 	}
@@ -117,7 +151,7 @@ Outer:
 					vals[n] = []RawYAMLValue{a.Value}
 					continue
 				}
-				if !findYAMLValueInArray(vs, a.Value) {
+				if !filterMatchesMatrixRow(vs, a.Value) {
 					vals[n] = append(vs, a.Value)
 				}
 			}
@@ -144,7 +178,7 @@ Outer:
 				continue
 			}
 
-			if findYAMLValueInArray(vs, a.Value) {
+			if filterMatchesMatrixRow(vs, a.Value) {
 				continue
 			}
 
