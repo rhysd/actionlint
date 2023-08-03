@@ -1,17 +1,13 @@
 SRCS := $(filter-out %_test.go, $(wildcard *.go cmd/actionlint/*.go)) go.mod go.sum
 TESTS := $(filter %_test.go, $(wildcard *.go))
 TOOL := $(wildcard scripts/*/*.go)
-TESTDATA := $(wildcard testdata/examples/*.yaml testdata/examples/*.out)
+TESTDATA := $(wildcard testdata/examples/* testdata/err/* testdata/ok/*)
 GOTEST := $(shell command -v gotest 2>/dev/null)
 
 all: clean build test
 
 .testtimestamp: $(TESTS) $(SRCS) $(TESTDATA) $(TOOL)
-ifdef GOTEST
-	gotest ./... # https://github.com/rhysd/gotest
-else
-	go test -v ./...
-endif
+	go test ./...
 	touch .testtimestamp
 
 test: .testtimestamp
