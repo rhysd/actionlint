@@ -1111,7 +1111,7 @@ test.yaml:6:28: duplicate value "14" is found in matrix "node". the same value i
   |
 6 |         node: [10, 12, 14, 14]
   |                            ^~~
-test.yaml:9:19: value "13" in "exclude" does not exist in matrix "node" combinations. possible values are "10", "12", "14", "14" [matrix]
+test.yaml:9:19: value "13" in "exclude" does not match in matrix "node" combinations. possible values are "10", "12", "14", "14" [matrix]
   |
 9 |           - node: 13
   |                   ^~

@@ -2,6 +2,7 @@ package actionlint
 
 import (
 	"fmt"
+	"sort"
 	"strconv"
 	"strings"
 
@@ -512,7 +513,8 @@ func (o *RawYAMLObject) String() string {
 	for n, p := range o.Props {
 		qs = append(qs, fmt.Sprintf("%q: %s", n, p.String()))
 	}
-	return fmt.Sprintf("{%s}", strings.Join(qs, ", "))
+	sort.Strings(qs)
+	return "{" + strings.Join(qs, ", ") + "}"
 }
 
 // RawYAMLArray is raw YAML sequence value.

@@ -188,7 +188,7 @@ Outer:
 			}
 			rule.Errorf(
 				a.Value.Pos(),
-				"value %s in \"exclude\" does not exist in matrix %q combinations. possible values are %s",
+				"value %s in \"exclude\" does not match in matrix %q combinations. possible values are %s",
 				a.Value.String(),
 				k,
 				strings.Join(ss, ", "), // Note: do not use quotesBuilder
