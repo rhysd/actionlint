@@ -292,7 +292,7 @@ func TestExprInsecureNoUntrustedValue(t *testing.T) {
 		"matrix.event.issue.title",
 		"github",
 		"github.event.issue",
-		//"github.event.commits.foo.message",
+		"github.event.commits.foo.message",
 		"github.event.commits[0]",
 		"github.event.commits.*",
 		"github.event.commits.*.foo",
