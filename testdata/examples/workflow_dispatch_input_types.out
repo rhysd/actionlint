@@ -4,4 +4,6 @@ test.yaml:16:18: default value "Chobi" of "name" input is not included in its op
 test.yaml:22:18: type of "verbose" input is "boolean". its default value "yes" must be "true" or "false" [events]
 test.yaml:26:18: type of "age" input is "number" but its default value "teen" cannot be parsed as a float number: strconv.ParseFloat: parsing "teen": invalid syntax [events]
 test.yaml:33:24: property "massage" is not defined in object type {age: number; id: any; kind: string; message: string; name: string; verbose: bool} [expression]
-test.yaml:35:24: property "massage" is not defined in object type {age: string; id: string; kind: string; message: string; name: string; verbose: string} [expression]
+test.yaml:35:28: property access of object must be type of string but got "bool" [expression]
+test.yaml:37:28: property access of object must be type of string but got "number" [expression]
+test.yaml:39:24: property "massage" is not defined in object type {age: string; id: string; kind: string; message: string; name: string; verbose: string} [expression]

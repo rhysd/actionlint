@@ -1,3 +1,4 @@
-test.yaml:7:24: property "os" is not defined in object type {id: string; network: string} [expression]
-test.yaml:9:24: receiver of object dereference "owner" must be type of object but got "string" [expression]
-test.yaml:11:20: object, array, and null values should not be evaluated in template with ${{ }} but evaluating the value of type {string => string} [expression]
+test.yaml:7:28: property access of object must be type of string but got "number" [expression]
+test.yaml:9:24: property "os" is not defined in object type {id: string; network: string} [expression]
+test.yaml:11:24: receiver of object dereference "owner" must be type of object but got "string" [expression]
+test.yaml:13:20: object, array, and null values should not be evaluated in template with ${{ }} but evaluating the value of type {string => string} [expression]

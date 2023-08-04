@@ -553,7 +553,7 @@ func TestExprInsecureNoUntrustedObjectFiltering(t *testing.T) {
 		"github.*.foo",
 		"github.*['foo']",
 		"github.event.*.body.foo",
-		//"github.event.*.body.*", // `['aaa', 'bbb'].*` is `[]`
+		"github.event.*.body.*", // `['aaa', 'bbb'].*` is `[]`
 		"github.*.*.foo",
 		"github.*.commits.*.foo",
 		"github.*['commits'].*.foo",
