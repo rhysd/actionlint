@@ -7,33 +7,33 @@ import (
 )
 
 type quotesBuilder struct {
-	builder strings.Builder
-	buf     []byte
-	comma   bool
+	inner strings.Builder
+	buf   []byte
+	comma bool
 }
 
 func (b *quotesBuilder) append(s string) {
 	if b.comma {
-		b.builder.WriteString(", ")
+		b.inner.WriteString(", ")
 	} else {
 		b.comma = true
 	}
 	b.buf = strconv.AppendQuote(b.buf[:0], s)
-	b.builder.Write(b.buf)
+	b.inner.Write(b.buf)
 }
 
 func (b *quotesBuilder) appendRune(r rune) {
 	if b.comma {
-		b.builder.WriteString(", ")
+		b.inner.WriteString(", ")
 	} else {
 		b.comma = true
 	}
 	b.buf = strconv.AppendQuoteRune(b.buf[:0], r)
-	b.builder.Write(b.buf)
+	b.inner.Write(b.buf)
 }
 
 func (b *quotesBuilder) build() string {
-	return b.builder.String()
+	return b.inner.String()
 }
 
 func quotes(ss []string) string {
@@ -52,7 +52,7 @@ func quotes(ss []string) string {
 	n += (l - 1) * 2 // comma
 	b := quotesBuilder{}
 	b.buf = make([]byte, 0, max)
-	b.builder.Grow(n)
+	b.inner.Grow(n)
 	for _, s := range ss {
 		b.append(s)
 	}
@@ -80,7 +80,7 @@ func quotesAll(sss ...[]string) string {
 	b.buf = make([]byte, 0, max)
 	n += (len(sss) - 1) * 2 // comma
 	if n > 0 {
-		b.builder.Grow(n)
+		b.inner.Grow(n)
 	}
 	for _, ss := range sss {
 		for _, s := range ss {

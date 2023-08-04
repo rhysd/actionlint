@@ -553,11 +553,13 @@ func (a *RawYAMLArray) Pos() *Pos {
 }
 
 func (a *RawYAMLArray) String() string {
-	qs := make([]string, 0, len(a.Elems))
+	var b quotesBuilder
+	b.inner.WriteRune('[')
 	for _, v := range a.Elems {
-		qs = append(qs, v.String())
+		b.append(v.String())
 	}
-	return fmt.Sprintf("[%s]", strings.Join(qs, ", "))
+	b.inner.WriteRune(']')
+	return b.build()
 }
 
 // RawYAMLString is raw YAML scalar value.
