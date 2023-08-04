@@ -778,7 +778,7 @@ func (rule *RuleExpression) checkSemanticsOfExprNode(expr ExprNode, line, col in
 	if workflowKey != "" {
 		ctx, sp := WorkflowKeyAvailability(workflowKey)
 		if len(ctx) == 0 {
-			rule.debug("No context avaiability was found for workflow key %q", workflowKey)
+			rule.Debug("No context avaiability was found for workflow key %q", workflowKey)
 		}
 		c.SetContextAvailability(ctx)
 		c.SetSpecialFunctionAvailability(sp)
