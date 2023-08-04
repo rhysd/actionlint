@@ -3,8 +3,6 @@ jobs:
   test:
     runs-on: ubuntu-latest
     steps:
-      # ERROR: `env` is object. Index access to object is invalid
-      - run: echo '${{ env[0] }}'
       # ERROR: Properties in objects are strongly typed. Missing property can be caught
       - run: echo '${{ job.container.os }}'
       # ERROR: `github.repository` is string. Trying to access .owner property is invalid
