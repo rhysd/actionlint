@@ -53,6 +53,8 @@ func (r *RuleBase) Errorf(pos *Pos, format string, args ...interface{}) {
 	r.errs = append(r.errs, err)
 }
 
+// Debug prints debug log to the output. The output is specified by the argument of EnableDebug method.
+// By default, no output is set so debug log is not printed.
 func (r *RuleBase) Debug(format string, args ...interface{}) {
 	if r.dbg == nil {
 		return
@@ -77,7 +79,7 @@ func (r *RuleBase) Description() string {
 }
 
 // EnableDebug enables debug output from the rule. Given io.Writer instance is used to print debug
-// information to console.
+// information to console. Setting nil means disabling debug output.
 func (r *RuleBase) EnableDebug(out io.Writer) {
 	r.dbg = out
 }
