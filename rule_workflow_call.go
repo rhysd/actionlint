@@ -84,7 +84,7 @@ func (rule *RuleWorkflowCall) checkWorkflowCallUsesLocal(call *WorkflowCall) {
 		return
 	}
 	if m == nil {
-		rule.debug("Skip workflow call %q since no metadata was found", u.Value)
+		rule.Debug("Skip workflow call %q since no metadata was found", u.Value)
 		return
 	}
 
@@ -142,7 +142,7 @@ func (rule *RuleWorkflowCall) checkWorkflowCallUsesLocal(call *WorkflowCall) {
 		}
 	}
 
-	rule.debug("Validated reusable workflow %q", u.Value)
+	rule.Debug("Validated reusable workflow %q", u.Value)
 }
 
 // Parse ./{path/{filename}

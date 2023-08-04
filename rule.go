@@ -53,7 +53,7 @@ func (r *RuleBase) Errorf(pos *Pos, format string, args ...interface{}) {
 	r.errs = append(r.errs, err)
 }
 
-func (r *RuleBase) debug(format string, args ...interface{}) {
+func (r *RuleBase) Debug(format string, args ...interface{}) {
 	if r.dbg == nil {
 		return
 	}
