@@ -3,6 +3,7 @@ package actionlint
 import (
 	"fmt"
 	"os"
+	"path/filepath"
 	"strings"
 
 	"gopkg.in/yaml.v3"
@@ -39,6 +40,24 @@ func ReadConfigFile(path string) (*Config, error) {
 		return nil, fmt.Errorf("could not read config file %q: %w", path, err)
 	}
 	return parseConfig(b, path)
+}
+
+// loadRepoConfig reads config file from the repository's .github/actionlint.yml or
+// .github/actionlint.yaml.
+func loadRepoConfig(root string) (*Config, error) {
+	for _, f := range []string{"actionlint.yaml", "actionlint.yml"} {
+		path := filepath.Join(root, ".github", f)
+		b, err := os.ReadFile(path)
+		if err != nil {
+			continue // file does not exist
+		}
+		cfg, err := parseConfig(b, path)
+		if err != nil {
+			return nil, err
+		}
+		return cfg, nil
+	}
+	return nil, nil
 }
 
 func writeDefaultConfigFile(path string) error {

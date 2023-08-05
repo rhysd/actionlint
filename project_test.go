@@ -3,6 +3,7 @@ package actionlint
 import (
 	"os"
 	"path/filepath"
+	"strings"
 	"testing"
 )
 
@@ -57,7 +58,10 @@ func TestProjectsFindProjectFromPath(t *testing.T) {
 		},
 	} {
 		t.Run(tc.what, func(t *testing.T) {
-			p := ps.At(tc.path)
+			p, err := ps.At(tc.path)
+			if err != nil {
+				t.Fatal(err)
+			}
 
 			r := p.RootDir()
 			if r != abs {
@@ -65,7 +69,10 @@ func TestProjectsFindProjectFromPath(t *testing.T) {
 			}
 
 			// Result should be cached
-			p2 := ps.At(tc.path)
+			p2, err := ps.At(tc.path)
+			if err != nil {
+				t.Fatal(err)
+			}
 			if p != p2 {
 				t.Fatalf("project %v is not cached. New project is %v. %p v.s. %p", p, p2, p, p2)
 			}
@@ -83,8 +90,60 @@ func TestProjectsDoesNotFindProjectFromOutside(t *testing.T) {
 
 	outside := filepath.Join(d, "..")
 	ps := NewProjects()
-	p := ps.At(outside)
+	p, err := ps.At(outside)
+	if err != nil {
+		t.Fatal(err)
+	}
 	if p != nil && p.RootDir() == abs {
 		t.Fatalf("project %v is detected from outside of the project %q", p, outside)
+	}
+}
+
+func TestProjectsLoadingProjectConfig(t *testing.T) {
+	d := filepath.Join("testdata", "config", "projects", "ok")
+	testEnsureDotGitDir(d)
+	ps := NewProjects()
+	p, err := ps.At(d)
+	if err != nil {
+		t.Fatal(err)
+	}
+	if p == nil {
+		t.Fatal("project was not found at", d)
+	}
+	if c := p.Config(); c == nil {
+		t.Fatal("config was not found for directory", d)
+	}
+}
+
+func TestProjectsLoadingNoProjectConfig(t *testing.T) {
+	d := filepath.Join("testdata", "config", "projects", "none")
+	testEnsureDotGitDir(d)
+	ps := NewProjects()
+	p, err := ps.At(d)
+	if err != nil {
+		t.Fatal(err)
+	}
+	if p == nil {
+		t.Fatal("project was not found at", d)
+	}
+	if c := p.Config(); c != nil {
+		t.Fatal("config was found for directory", d)
+	}
+}
+
+func TestProjectsLoadingBrokenProjectConfig(t *testing.T) {
+	want := "could not parse config file"
+	d := filepath.Join("testdata", "config", "projects", "err")
+	testEnsureDotGitDir(d)
+	ps := NewProjects()
+	p, err := ps.At(d)
+	if err == nil {
+		t.Fatalf("wanted error %q but have no error", want)
+	}
+	if p != nil {
+		t.Fatal("project was returned though getting config failed", p)
+	}
+	if msg := err.Error(); !strings.Contains(msg, want) {
+		t.Fatalf("wanted error %q but have error %q", want, msg)
 	}
 }
