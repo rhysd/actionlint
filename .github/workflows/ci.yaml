@@ -38,7 +38,8 @@ jobs:
       - uses: actions/setup-go@v4
         with:
           go-version: ${{ matrix.go }}
-      - run: go build ./cmd/actionlint
+      # Set -race for catching data races on dog fooding (#333)
+      - run: go build -race ./cmd/actionlint
         env:
           # Note: -race requires cgo
           CGO_ENABLED: 0

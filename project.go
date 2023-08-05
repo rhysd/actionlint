@@ -21,20 +21,24 @@ func absPath(path string) string {
 
 // findProject creates new Project instance by finding a project which the given path belongs to.
 // A project must be a Git repository and have ".github/workflows" directory.
-func findProject(path string) *Project {
+func findProject(path string) (*Project, error) {
 	d := absPath(path)
 	for {
 		w := filepath.Join(d, ".github", "workflows")
 		if s, err := os.Stat(w); err == nil && s.IsDir() {
 			g := filepath.Join(d, ".git")
 			if _, err := os.Stat(g); err == nil { // Note: .git may be a file
-				return &Project{root: d}
+				c, err := loadRepoConfig(d)
+				if err != nil {
+					return nil, err
+				}
+				return &Project{root: d, config: c}, nil
 			}
 		}
 
 		p := filepath.Dir(d)
 		if p == d {
-			return nil
+			return nil, nil
 		}
 		d = p
 	}
@@ -58,28 +62,12 @@ func (p *Project) Knows(path string) bool {
 	return strings.HasPrefix(absPath(path), p.root)
 }
 
-// LoadConfig returns config object of the GitHub project repository. The config file is read from
-// ".github/actionlint.yaml" or ".github/actionlint.yml".
-func (p *Project) LoadConfig() (*Config, error) {
-	if p.config != nil {
-		return p.config, nil
-	}
-
-	for _, f := range []string{"actionlint.yaml", "actionlint.yml"} {
-		path := filepath.Join(p.root, ".github", f)
-		b, err := os.ReadFile(path)
-		if err != nil {
-			continue // file does not exist
-		}
-		cfg, err := parseConfig(b, path)
-		if err != nil {
-			return nil, err
-		}
-		p.config = cfg
-		return cfg, nil
-	}
-
-	return nil, nil // not found
+// Config returns config object of the GitHub project repository. The config file was read from
+// ".github/actionlint.yaml" or ".github/actionlint.yml" when this Project instance was created.
+// When no config was found, this method returns nil.
+func (p *Project) Config() *Config {
+	// Note: Calling this method must be thread safe (#333)
+	return p.config
 }
 
 // Projects represents set of projects. It caches Project instances which was created previously
@@ -95,17 +83,20 @@ func NewProjects() *Projects {
 
 // At returns the Project instance which the path belongs to. It returns nil if no project is found
 // from the path.
-func (ps *Projects) At(path string) *Project {
+func (ps *Projects) At(path string) (*Project, error) {
 	for _, p := range ps.known {
 		if p.Knows(path) {
-			return p
+			return p, nil
 		}
 	}
 
-	p := findProject(path)
+	p, err := findProject(path)
+	if err != nil {
+		return nil, err
+	}
 	if p != nil {
 		ps.known = append(ps.known, p)
 	}
 
-	return p
+	return p, nil
 }
