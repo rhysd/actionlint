@@ -24,15 +24,9 @@ func absPath(path string) string {
 func findProject(path string) (*Project, error) {
 	d := absPath(path)
 	for {
-		w := filepath.Join(d, ".github", "workflows")
-		if s, err := os.Stat(w); err == nil && s.IsDir() {
-			g := filepath.Join(d, ".git")
-			if _, err := os.Stat(g); err == nil { // Note: .git may be a file
-				c, err := loadRepoConfig(d)
-				if err != nil {
-					return nil, err
-				}
-				return &Project{root: d, config: c}, nil
+		if s, err := os.Stat(filepath.Join(d, ".github", "workflows")); err == nil && s.IsDir() {
+			if _, err := os.Stat(filepath.Join(d, ".git")); err == nil { // Note: .git may be a file
+				return NewProject(d)
 			}
 		}
 
@@ -42,6 +36,16 @@ func findProject(path string) (*Project, error) {
 		}
 		d = p
 	}
+}
+
+// NewProject creates a new instance with a file path to the root directory of the repository.
+// This function returns an error when failing to parse an actionlint config file in the repository.
+func NewProject(root string) (*Project, error) {
+	c, err := loadRepoConfig(root)
+	if err != nil {
+		return nil, err
+	}
+	return &Project{root, c}, nil
 }
 
 // RootDir returns a root directory path of the GitHub project repository.
