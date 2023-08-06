@@ -38,13 +38,15 @@ jobs:
       - uses: actions/setup-go@v4
         with:
           go-version: ${{ matrix.go }}
-      # Set -race for catching data races on dog fooding (#333)
-      - run: go build -race ./cmd/actionlint
+      - run: go test -v -race -coverprofile coverage.txt -covermode=atomic ./...
+      - run: go tool cover -func ./coverage.txt
+      # Check build without CGO
+      - run: go build ./cmd/actionlint
         env:
           # Note: -race requires cgo
           CGO_ENABLED: 0
-      - run: go test -v -race -coverprofile coverage.txt -covermode=atomic ./...
-      - run: go tool cover -func ./coverage.txt
+      # Set -race for catching data races on dog fooding (#333)
+      - run: go build -race ./cmd/actionlint
       - name: Dog fooding 🐶
         run: |
           echo "::add-matcher::.github/actionlint-matcher.json"
