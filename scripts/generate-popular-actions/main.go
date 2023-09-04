@@ -220,8 +220,8 @@ var popularActions = []*action{
 	},
 	{
 		slug: "aws-actions/configure-aws-credentials",
-		tags: []string{"v1", "v2"},
-		next: "v3",
+		tags: []string{"v1", "v2", "v3"},
+		next: "v4",
 	},
 	{
 		slug: "azure/aks-set-context",
@@ -299,8 +299,8 @@ var popularActions = []*action{
 	},
 	{
 		slug: "game-ci/unity-builder",
-		tags: []string{"v2"},
-		next: "v3",
+		tags: []string{"v2", "v3"},
+		next: "v4",
 	},
 	{
 		slug: "getsentry/paths-filter",
