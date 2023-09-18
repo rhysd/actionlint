@@ -1641,6 +1641,38 @@ var PopularActions = map[string]*ActionMetadata{
 			"aws-session-token":     {"aws-session-token"},
 		},
 	},
+	"aws-actions/configure-aws-credentials@v4": {
+		Name: "\"Configure AWS Credentials\" Action for GitHub Actions",
+		Inputs: ActionMetadataInputs{
+			"audience":                      {"audience", false},
+			"aws-access-key-id":             {"aws-access-key-id", false},
+			"aws-region":                    {"aws-region", true},
+			"aws-secret-access-key":         {"aws-secret-access-key", false},
+			"aws-session-token":             {"aws-session-token", false},
+			"disable-retry":                 {"disable-retry", false},
+			"http-proxy":                    {"http-proxy", false},
+			"inline-session-policy":         {"inline-session-policy", false},
+			"managed-session-policies":      {"managed-session-policies", false},
+			"mask-aws-account-id":           {"mask-aws-account-id", false},
+			"output-credentials":            {"output-credentials", false},
+			"retry-max-attempts":            {"retry-max-attempts", false},
+			"role-chaining":                 {"role-chaining", false},
+			"role-duration-seconds":         {"role-duration-seconds", false},
+			"role-external-id":              {"role-external-id", false},
+			"role-session-name":             {"role-session-name", false},
+			"role-skip-session-tagging":     {"role-skip-session-tagging", false},
+			"role-to-assume":                {"role-to-assume", false},
+			"special-characters-workaround": {"special-characters-workaround", false},
+			"unset-current-credentials":     {"unset-current-credentials", false},
+			"web-identity-token-file":       {"web-identity-token-file", false},
+		},
+		Outputs: ActionMetadataOutputs{
+			"aws-access-key-id":     {"aws-access-key-id"},
+			"aws-account-id":        {"aws-account-id"},
+			"aws-secret-access-key": {"aws-secret-access-key"},
+			"aws-session-token":     {"aws-session-token"},
+		},
+	},
 	"azure/aks-set-context@v1": {
 		Name: "Azure Kubernetes set context",
 		Inputs: ActionMetadataInputs{
@@ -2126,6 +2158,46 @@ var PopularActions = map[string]*ActionMetadata{
 			"metadata": {"metadata"},
 		},
 	},
+	"docker/build-push-action@v5": {
+		Name: "Build and push Docker images",
+		Inputs: ActionMetadataInputs{
+			"add-hosts":        {"add-hosts", false},
+			"allow":            {"allow", false},
+			"attests":          {"attests", false},
+			"build-args":       {"build-args", false},
+			"build-contexts":   {"build-contexts", false},
+			"builder":          {"builder", false},
+			"cache-from":       {"cache-from", false},
+			"cache-to":         {"cache-to", false},
+			"cgroup-parent":    {"cgroup-parent", false},
+			"context":          {"context", false},
+			"file":             {"file", false},
+			"github-token":     {"github-token", false},
+			"labels":           {"labels", false},
+			"load":             {"load", false},
+			"network":          {"network", false},
+			"no-cache":         {"no-cache", false},
+			"no-cache-filters": {"no-cache-filters", false},
+			"outputs":          {"outputs", false},
+			"platforms":        {"platforms", false},
+			"provenance":       {"provenance", false},
+			"pull":             {"pull", false},
+			"push":             {"push", false},
+			"sbom":             {"sbom", false},
+			"secret-files":     {"secret-files", false},
+			"secrets":          {"secrets", false},
+			"shm-size":         {"shm-size", false},
+			"ssh":              {"ssh", false},
+			"tags":             {"tags", false},
+			"target":           {"target", false},
+			"ulimit":           {"ulimit", false},
+		},
+		Outputs: ActionMetadataOutputs{
+			"digest":   {"digest"},
+			"imageid":  {"imageid"},
+			"metadata": {"metadata"},
+		},
+	},
 	"docker/login-action@v1": {
 		Name: "Docker Login",
 		Inputs: ActionMetadataInputs{
@@ -2137,6 +2209,16 @@ var PopularActions = map[string]*ActionMetadata{
 		},
 	},
 	"docker/login-action@v2": {
+		Name: "Docker Login",
+		Inputs: ActionMetadataInputs{
+			"ecr":      {"ecr", false},
+			"logout":   {"logout", false},
+			"password": {"password", false},
+			"registry": {"registry", false},
+			"username": {"username", false},
+		},
+	},
+	"docker/login-action@v3": {
 		Name: "Docker Login",
 		Inputs: ActionMetadataInputs{
 			"ecr":      {"ecr", false},
@@ -2233,6 +2315,27 @@ var PopularActions = map[string]*ActionMetadata{
 			"version":   {"version"},
 		},
 	},
+	"docker/metadata-action@v5": {
+		Name: "Docker Metadata action",
+		Inputs: ActionMetadataInputs{
+			"bake-target":  {"bake-target", false},
+			"context":      {"context", false},
+			"flavor":       {"flavor", false},
+			"github-token": {"github-token", false},
+			"images":       {"images", true},
+			"labels":       {"labels", false},
+			"sep-labels":   {"sep-labels", false},
+			"sep-tags":     {"sep-tags", false},
+			"tags":         {"tags", false},
+		},
+		Outputs: ActionMetadataOutputs{
+			"bake-file": {"bake-file"},
+			"json":      {"json"},
+			"labels":    {"labels"},
+			"tags":      {"tags"},
+			"version":   {"version"},
+		},
+	},
 	"docker/setup-buildx-action@v1": {
 		Name: "Docker Setup Buildx",
 		Inputs: ActionMetadataInputs{
@@ -2281,6 +2384,32 @@ var PopularActions = map[string]*ActionMetadata{
 			"status":    {"status"},
 		},
 	},
+	"docker/setup-buildx-action@v3": {
+		Name: "Docker Setup Buildx",
+		Inputs: ActionMetadataInputs{
+			"append":          {"append", false},
+			"buildkitd-flags": {"buildkitd-flags", false},
+			"cleanup":         {"cleanup", false},
+			"config":          {"config", false},
+			"config-inline":   {"config-inline", false},
+			"driver":          {"driver", false},
+			"driver-opts":     {"driver-opts", false},
+			"endpoint":        {"endpoint", false},
+			"install":         {"install", false},
+			"platforms":       {"platforms", false},
+			"use":             {"use", false},
+			"version":         {"version", false},
+		},
+		Outputs: ActionMetadataOutputs{
+			"driver":    {"driver"},
+			"endpoint":  {"endpoint"},
+			"flags":     {"flags"},
+			"name":      {"name"},
+			"nodes":     {"nodes"},
+			"platforms": {"platforms"},
+			"status":    {"status"},
+		},
+	},
 	"docker/setup-qemu-action@v1": {
 		Name: "Docker Setup QEMU",
 		Inputs: ActionMetadataInputs{
@@ -2292,6 +2421,16 @@ var PopularActions = map[string]*ActionMetadata{
 		},
 	},
 	"docker/setup-qemu-action@v2": {
+		Name: "Docker Setup QEMU",
+		Inputs: ActionMetadataInputs{
+			"image":     {"image", false},
+			"platforms": {"platforms", false},
+		},
+		Outputs: ActionMetadataOutputs{
+			"platforms": {"platforms"},
+		},
+	},
+	"docker/setup-qemu-action@v3": {
 		Name: "Docker Setup QEMU",
 		Inputs: ActionMetadataInputs{
 			"image":     {"image", false},
@@ -2775,6 +2914,20 @@ var PopularActions = map[string]*ActionMetadata{
 		},
 	},
 	"goreleaser/goreleaser-action@v4": {
+		Name: "GoReleaser Action",
+		Inputs: ActionMetadataInputs{
+			"args":         {"args", false},
+			"distribution": {"distribution", false},
+			"install-only": {"install-only", false},
+			"version":      {"version", false},
+			"workdir":      {"workdir", false},
+		},
+		Outputs: ActionMetadataOutputs{
+			"artifacts": {"artifacts"},
+			"metadata":  {"metadata"},
+		},
+	},
+	"goreleaser/goreleaser-action@v5": {
 		Name: "GoReleaser Action",
 		Inputs: ActionMetadataInputs{
 			"args":         {"args", false},
