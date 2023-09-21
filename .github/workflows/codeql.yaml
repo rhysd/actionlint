@@ -28,7 +28,7 @@ jobs:
       matrix:
         language: ['go', 'javascript']
     steps:
-      - uses: actions/checkout@v3
+      - uses: actions/checkout@v4
       - uses: github/codeql-action/init@v2
         with:
           config-file: ./.github/codeql/codeql-config.yaml
