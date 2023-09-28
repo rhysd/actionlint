@@ -1,0 +1,75 @@
+on:
+  branch_protection_rule:
+    if: true
+  check_run:
+    if: true
+  check_suite:
+    if: true
+  create:
+    if: true
+  delete:
+    if: true
+  deployment:
+    if: true
+  deployment_status:
+    if: true
+  discussion:
+    if: true
+  discussion_comment:
+    if: true
+  fork:
+    if: true
+  gollum:
+    if: true
+  issues:
+    if: true
+  issue_comment:
+    if: true
+  label:
+    if: true
+  merge_group:
+    if: true
+  milestone:
+    if: true
+  page_build:
+    if: true
+  project:
+    if: true
+  project_card:
+    if: true
+  project_column:
+    if: true
+  public:
+    if: true
+  pull_request:
+    if: true
+  pull_request_review:
+    if: true
+  pull_request_review_comment:
+    if: true
+  pull_request_target:
+    if: true
+  push:
+    if: true
+  registry_package:
+    if: true
+  release:
+    if: true
+  repository_dispatch:
+    if: true
+  status:
+    if: true
+  watch:
+    if: true
+  workflow_dispatch:
+    if: true
+  workflow_run:
+    types: [completed]
+    if: true
+    workflows: [foo]
+
+jobs:
+  hello:
+    runs-on: ubuntu-latest
+    steps:
+      - run: echo 'hello'

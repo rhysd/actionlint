@@ -256,7 +256,7 @@
         {
           "ruleId": "syntax-check",
           "message": {
-            "text": "unexpected key \"branch\" for \"push\" section. expected one of \"branches\", \"branches-ignore\", \"paths\", \"paths-ignore\", \"tags\", \"tags-ignore\", \"types\", \"workflows\""
+            "text": "unexpected key \"branch\" for \"push\" section. expected one of \"branches\", \"branches-ignore\", \"if\", \"paths\", \"paths-ignore\", \"tags\", \"tags-ignore\", \"types\", \"workflows\""
           },
           "locations": [
             {

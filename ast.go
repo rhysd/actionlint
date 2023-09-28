@@ -137,6 +137,8 @@ type WebhookEvent struct {
 	// Types is list of types of the webhook event. Only the types enumerated here will trigger
 	// the workflow.
 	Types []*String
+	// If is `if` filter. This value is nil when it is omitted.
+	If *String
 	// Branches is 'branches' filter. This value is nil when it is omitted.
 	Branches *WebhookEventFilter
 	// BranchesIgnore is 'branches-ignore' filter. This value is nil when it is omitted.
@@ -214,6 +216,8 @@ type DispatchInput struct {
 // WorkflowDispatchEvent is event on dispatching workflow manually.
 // https://docs.github.com/en/actions/learn-github-actions/events-that-trigger-workflows#workflow_dispatch
 type WorkflowDispatchEvent struct {
+	// If is `if` filter. This value is nil when it is omitted.
+	If *String
 	// Inputs is map from input names to input attributes. Keys are in lower case since they are case insensitive.
 	Inputs map[string]*DispatchInput
 	// Pos is a position in source.
@@ -228,6 +232,8 @@ func (e *WorkflowDispatchEvent) EventName() string {
 // RepositoryDispatchEvent is repository_dispatch event configuration.
 // https://docs.github.com/en/actions/learn-github-actions/events-that-trigger-workflows#repository_dispatch
 type RepositoryDispatchEvent struct {
+	// If is `if` filter. This value is nil when it is omitted.
+	If *String
 	// Types is list of types which can trigger workflow.
 	Types []*String
 	// Pos is a position in source.
