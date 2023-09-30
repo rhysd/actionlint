@@ -1916,7 +1916,7 @@ var PopularActions = map[string]*ActionMetadata{
 			"server_address":   {"server_address", false},
 			"server_port":      {"server_port", false},
 			"subject":          {"subject", true},
-			"to":               {"to", true},
+			"to":               {"to", false},
 			"username":         {"username", false},
 		},
 	},
