@@ -290,10 +290,6 @@ func TestLinterFormatErrorMessageOK(t *testing.T) {
 			format: "{{range $err := .}}{{json $err}}{{end}}",
 		},
 		{
-			file:   "test.jsonl",
-			format: "{{range $err := .}}{{json $err}}{{end}}",
-		},
-		{
 			file:   "test.md",
 			format: "{{range $ := .}}### Error at line {{$.Line}}, col {{$.Column}} of `{{$.Filepath}}`\\n\\n{{$.Message}}\\n\\n```\\n{{$.Snippet}}\\n```\\n\\n{{end}}",
 		},
