@@ -328,8 +328,13 @@ func (p *parser) parseWorkflowDispatchEvent(pos *Pos, n *yaml.Node) *WorkflowDis
 	ret := &WorkflowDispatchEvent{Pos: pos}
 
 	for _, kv := range p.parseSectionMapping("workflow_dispatch", n, true, true) {
-		if kv.id != "inputs" {
-			p.unexpectedKey(kv.key, "workflow_dispatch", []string{"inputs"})
+		if kv.id != "if" && kv.id != "inputs" {
+			p.unexpectedKey(kv.key, "workflow_dispatch", []string{"inputs", "if"})
+			continue
+		}
+
+		if kv.id == "if" {
+			ret.If = p.parseString(kv.val, false)
 			continue
 		}
 
@@ -399,6 +404,8 @@ func (p *parser) parseRepositoryDispatchEvent(pos *Pos, n *yaml.Node) *Repositor
 	for _, kv := range p.parseSectionMapping("repository_dispatch", n, true, true) {
 		if kv.id == "types" {
 			ret.Types = p.parseStringOrStringSequence("types", kv.val, false, false)
+		} else if kv.id == "if" {
+			ret.If = p.parseString(kv.val, false)
 		} else {
 			p.unexpectedKey(kv.key, "repository_dispatch", []string{"types"})
 		}
@@ -434,6 +441,8 @@ func (p *parser) parseWebhookEvent(name *String, n *yaml.Node) *WebhookEvent {
 			ret.Branches = p.parseWebhookEventFilter(kv.key, kv.val)
 		case "branches-ignore":
 			ret.BranchesIgnore = p.parseWebhookEventFilter(kv.key, kv.val)
+		case "if":
+			ret.If = p.parseString(kv.val, false)
 		case "tags":
 			ret.Tags = p.parseWebhookEventFilter(kv.key, kv.val)
 		case "tags-ignore":
@@ -449,6 +458,7 @@ func (p *parser) parseWebhookEvent(name *String, n *yaml.Node) *WebhookEvent {
 				"types",
 				"branches",
 				"branches-ignore",
+				"if",
 				"tags",
 				"tags-ignore",
 				"paths",

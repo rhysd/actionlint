@@ -1,6 +1,6 @@
 ### Error at line 3, col 5 of `testdata/format/test.yaml`
 
-unexpected key "branch" for "push" section. expected one of "branches", "branches-ignore", "paths", "paths-ignore", "tags", "tags-ignore", "types", "workflows"
+unexpected key "branch" for "push" section. expected one of "branches", "branches-ignore", "if", "paths", "paths-ignore", "tags", "tags-ignore", "types", "workflows"
 
 ```
     branch: main
