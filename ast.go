@@ -422,13 +422,27 @@ func (e *ExecRun) Kind() ExecKind {
 	return ExecKindRun
 }
 
-// Input is an input field for running an action.
+// WorkflowInput is an input field for running an action.
 // https://docs.github.com/en/actions/learn-github-actions/workflow-syntax-for-github-actions#jobsjob_idstepswith
-type Input struct {
+type WorkflowInput struct {
 	// Name is a name of the input.
 	Name *String
 	// Value is a value of the input.
 	Value *String
+}
+
+// ActionInput is an input field to define the parameters that an action accepts.
+// https://docs.github.com/en/actions/creating-actions/metadata-syntax-for-github-actions#inputs
+// TODO This kinda duplicates `ActionMetadataInput` from `action_metadata.go`. Merge them?
+type ActionInput struct {
+	// Description is the description of the input.
+	Description *String
+	// Required is a flag to show if the input is required or not.
+	Required *Bool
+	// Default is a default value of the input. It can be nil when no default value is specified.
+	Default *String
+	// Pos is a position in source.
+	Pos *Pos
 }
 
 // ExecAction is configuration how to run action at the step.
@@ -437,7 +451,7 @@ type ExecAction struct {
 	// https://docs.github.com/en/actions/learn-github-actions/workflow-syntax-for-github-actions#jobsjob_idstepsuses
 	Uses *String
 	// Inputs represents inputs to the action to execute in 'with' section. Keys are in lower case since they are case-insensitive.
-	Inputs map[string]*Input
+	Inputs map[string]*WorkflowInput
 	// Entrypoint represents optional 'entrypoint' field in 'with' section. Nil field means nothing specified
 	// https://docs.github.com/en/actions/learn-github-actions/workflow-syntax-for-github-actions#jobsjob_idstepswithentrypoint
 	Entrypoint *String
@@ -912,9 +926,9 @@ type Action struct {
 	// TODO Not sure we actually need this
 	Description *String
 
-	// Inputs is list of inputs of the action. This field can be nil when user didn't specify it.
+	// Inputs is a mapping from the input ID to input attributes . This field can be nil when user didn't specify it.
 	// https://docs.github.com/en/actions/creating-actions/metadata-syntax-for-github-actions#inputs
-	// TODO Add support for this if it makes sense
+	Inputs map[string]*ActionInput
 }
 
 type DockerContainerAction struct {

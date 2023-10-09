@@ -142,6 +142,44 @@ func (p *parser) parseString(n *yaml.Node, allowEmpty bool) *String {
 	return newString(n)
 }
 
+// https://docs.github.com/en/actions/creating-actions/metadata-syntax-for-github-actions#inputsinput_id
+func (p *parser) parseActionInput(id *String, n *yaml.Node) *ActionInput {
+	ret := &ActionInput{Pos: posAt(n)}
+
+	for _, kv := range p.parseMapping(fmt.Sprintf("%q input", id.Value), n, false, true) {
+		switch kv.id {
+		case "description":
+			ret.Description = p.parseString(kv.val, false)
+		case "required":
+			ret.Required = p.parseBool(kv.val)
+		case "default":
+			ret.Default = p.parseString(kv.val, true)
+		default:
+			p.unexpectedKey(kv.key, "input", []string{
+				"description",
+				"required",
+				"default",
+			})
+		}
+	}
+
+	if ret.Description == nil {
+		p.errorf(n, "\"description\" property is missing in specification of input %q", id.Value)
+	}
+
+	return ret
+}
+
+func (p *parser) parseActionInputs(pos *Pos, n *yaml.Node) map[string]*ActionInput {
+	inputs := p.parseSectionMapping("inputs", n, false, false)
+	ret := make(map[string]*ActionInput, len(inputs))
+	for _, kv := range inputs {
+		ret[kv.id] = p.parseActionInput(kv.key, kv.val)
+	}
+
+	return ret
+}
+
 func (p *parser) parseStringSequence(sec string, n *yaml.Node, allowEmpty bool, allowElemEmpty bool) []*String {
 	if ok := p.checkSequence(sec, n, allowEmpty); !ok {
 		return nil
@@ -1014,7 +1052,7 @@ func (p *parser) parseStep(n *yaml.Node) *Step {
 			} else {
 				// kv.key == "with"
 				with := p.parseSectionMapping("with", kv.val, false, false)
-				exec.Inputs = make(map[string]*Input, len(with))
+				exec.Inputs = make(map[string]*WorkflowInput, len(with))
 				for _, input := range with {
 					switch input.id {
 					case "entrypoint":
@@ -1024,7 +1062,7 @@ func (p *parser) parseStep(n *yaml.Node) *Step {
 						// https://docs.github.com/en/actions/learn-github-actions/workflow-syntax-for-github-actions#jobsjob_idstepswithargs
 						exec.Args = p.parseString(input.val, true)
 					default:
-						exec.Inputs[input.id] = &Input{input.key, p.parseString(input.val, true)}
+						exec.Inputs[input.id] = &WorkflowInput{input.key, p.parseString(input.val, true)}
 					}
 				}
 			}
@@ -1391,8 +1429,7 @@ func (p *parser) parseAction(n *yaml.Node) *Action {
 	}
 
 	for _, kv := range p.parseMapping("action", n.Content[0], false, true) {
-		// k, v := kv.key, kv.val
-		v := kv.val
+		k, v := kv.key, kv.val
 		switch kv.id {
 		case "name":
 			// TODO can it be empty? Also for the ones below
@@ -1403,8 +1440,9 @@ func (p *parser) parseAction(n *yaml.Node) *Action {
 		case "description":
 			// TODO remove if not necessary
 			a.Description = p.parseString(v, true)
+		case "inputs":
+			a.Inputs = p.parseActionInputs(k.Pos, v)
 		}
-		// TODO Add support for parsing inputs
 		// TODO Add support for parsing outputs & runs, we need to create different structs then though
 		// case "on":
 		// 	a.On = p.parseEvents(k.Pos, v)
