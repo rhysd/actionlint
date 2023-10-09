@@ -89,18 +89,19 @@ func (v *Visitor) Visit(n *Workflow) error {
 }
 
 // Visit visits given syntax tree in depth-first order
-func (v *Visitor) VisitAction(n *Action) error {
+func (v *Visitor) VisitAction(n Action) error {
 	var t time.Time
 	if v.dbg != nil {
 		t = time.Now()
 	}
 
-	// TODO visit steps and potentially more
-	// for _, s := range n.Steps {
-	// 	if err := v.visitStep(s); err != nil {
-	// 		return err
-	// 	}
-	// }
+	if c, ok := n.(*CompositeAction); ok {
+		for _, s := range c.Steps {
+			if err := v.visitStep(s); err != nil {
+				return err
+			}
+		}
+	}
 
 	if v.dbg != nil {
 		// v.reportElapsedTime(fmt.Sprintf("Visiting %d steps at job %q", len(n.Steps), n.ID.Value), t)

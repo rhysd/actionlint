@@ -911,9 +911,27 @@ type Workflow struct {
 	Jobs map[string]*Job
 }
 
+// ExecKind is kind of how the step is executed. A step runs some action or runs some shell script.
+type ActionKind uint8
+
+const (
+	// ExecKindAction is kind for step to run action
+	ActionKindJavascript ExecKind = iota
+	// ExecKindRun is kind for step to run shell script
+	ActionKindDocker
+	ActionKindComposite
+)
+
+// Exec is an interface how the step is executed. Step in workflow runs either an action or a script
+type Action interface {
+	// Kind returns kind of the step execution.
+	Kind() ActionKind
+	Common() *ActionCommon
+}
+
 // Action is root of action syntax tree, which represents one action metadata file.
 // https://docs.github.com/en/actions/creating-actions/metadata-syntax-for-github-actions
-type Action struct {
+type ActionCommon struct {
 	// Name is the name of the action.
 	// https://docs.github.com/en/actions/creating-actions/metadata-syntax-for-github-actions#name
 	Name *String
@@ -932,7 +950,7 @@ type Action struct {
 }
 
 type DockerContainerAction struct {
-	Action
+	ActionCommon
 
 	// Outputs is list of outputs of the action. This field can be nil when user didn't specify it.
 	// https://docs.github.com/en/actions/creating-actions/metadata-syntax-for-github-actions#outputs-for-docker-container-and-javascript-actions
@@ -943,8 +961,16 @@ type DockerContainerAction struct {
 	// TODO Add support for this
 }
 
+func (e *DockerContainerAction) Kind() ActionKind {
+	return ActionKind(ActionKindDocker)
+}
+
+func (e *DockerContainerAction) Common() *ActionCommon {
+	return &e.ActionCommon
+}
+
 type JavaScriptAction struct {
-	Action
+	ActionCommon
 
 	// Outputs is list of outputs of the action. This field can be nil when user didn't specify it.
 	// https://docs.github.com/en/actions/creating-actions/metadata-syntax-for-github-actions#outputs-for-docker-container-and-javascript-actions
@@ -955,8 +981,16 @@ type JavaScriptAction struct {
 	// TODO Add support for this
 }
 
+func (e *JavaScriptAction) Kind() ActionKind {
+	return ActionKind(ActionKindJavascript)
+}
+
+func (e *JavaScriptAction) Common() *ActionCommon {
+	return &e.ActionCommon
+}
+
 type CompositeAction struct {
-	Action
+	ActionCommon
 
 	// Outputs is list of outputs of the action. This field can be nil when user didn't specify it.
 	// https://docs.github.com/en/actions/creating-actions/metadata-syntax-for-github-actions#outputs-for-composite-actions
@@ -965,6 +999,16 @@ type CompositeAction struct {
 	// Runs specifies how the action is executed.
 	// https://docs.github.com/en/actions/creating-actions/metadata-syntax-for-github-actions#runs-for-composite-actions
 	// TODO Add support for this
+
+	Steps []*Step
+}
+
+func (e *CompositeAction) Kind() ActionKind {
+	return ActionKind(ActionKindComposite)
+}
+
+func (e *CompositeAction) Common() *ActionCommon {
+	return &e.ActionCommon
 }
 
 // FindWorkflowCallEvent returns workflow_call event node if exists

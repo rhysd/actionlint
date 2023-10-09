@@ -1019,7 +1019,7 @@ func (p *parser) parseTimeoutMinutes(n *yaml.Node) *Float {
 }
 
 // https://docs.github.com/en/actions/learn-github-actions/workflow-syntax-for-github-actions#jobsjob_idsteps
-func (p *parser) parseStep(n *yaml.Node) *Step {
+func (p *parser) parseStep(n *yaml.Node, requireShell bool) *Step {
 	ret := &Step{Pos: posAt(n)}
 	var workDir *String
 
@@ -1120,6 +1120,9 @@ func (p *parser) parseStep(n *yaml.Node) *Step {
 		if e.Run == nil {
 			p.error(n, "\"run\" is required to run script in step")
 		}
+		if e.Shell == nil && requireShell {
+			p.error(n, "\"shell\" is required to run script in step as part of composite actions")
+		}
 	default:
 		p.error(n, "step must run script with \"run\" section or run action with \"uses\" section")
 	}
@@ -1128,7 +1131,7 @@ func (p *parser) parseStep(n *yaml.Node) *Step {
 }
 
 // https://docs.github.com/en/actions/learn-github-actions/workflow-syntax-for-github-actions#jobsjob_idsteps
-func (p *parser) parseSteps(n *yaml.Node) []*Step {
+func (p *parser) parseSteps(n *yaml.Node, requireShell bool) []*Step {
 	if ok := p.checkSequence("steps", n, false); !ok {
 		return nil
 	}
@@ -1136,7 +1139,7 @@ func (p *parser) parseSteps(n *yaml.Node) []*Step {
 	ret := make([]*Step, 0, len(n.Content))
 
 	for _, c := range n.Content {
-		if s := p.parseStep(c); s != nil {
+		if s := p.parseStep(c, requireShell); s != nil {
 			ret = append(ret, s)
 		}
 	}
@@ -1230,7 +1233,7 @@ func (p *parser) parseJob(id *String, n *yaml.Node) *Job {
 		case "if":
 			ret.If = p.parseString(v, false)
 		case "steps":
-			ret.Steps = p.parseSteps(v)
+			ret.Steps = p.parseSteps(v, false)
 			stepsOnlyKey = k
 		case "timeout-minutes":
 			ret.TimeoutMinutes = p.parseTimeoutMinutes(v)
@@ -1411,11 +1414,60 @@ func (p *parser) parse(n *yaml.Node) *Workflow {
 	return w
 }
 
-// https://docs.github.com/en/actions/creating-actions/metadata-syntax-for-github-actions
-func (p *parser) parseAction(n *yaml.Node) *Action {
-	// TODO We need different types based on the action type
-	a := &Action{}
+func (p *parser) extractActionKind(n *yaml.Node) Action {
+	c := &ActionCommon{}
+	for _, kv := range p.parseMapping("action", n, false, true) {
+		if kv.id != "runs" {
+			continue
+		}
+		for _, kv2 := range p.parseMapping("runs", kv.val, false, true) {
+			if kv2.id == "using" {
+				switch p.parseString(kv2.val, false).Value {
+				case "javascript":
+					return &JavaScriptAction{ActionCommon: *c}
+				case "docker":
+					return &DockerContainerAction{ActionCommon: *c}
+				case "composite":
+					return &CompositeAction{ActionCommon: *c}
+				default:
+					p.error(kv2.val, "unknown action type (only javascript, docker and composite are supported)")
+					// TODO look at unsupported key for better error message
+					return &JavaScriptAction{ActionCommon: *c}
+				}
+			}
+		}
 
+	}
+	a := JavaScriptAction{ActionCommon: *c}
+	return &a
+}
+
+func (p *parser) parseActionRuns(n *yaml.Node, a Action) {
+	for _, kv := range p.parseMapping("runs", n, false, true) {
+		switch kv.id {
+		case "using":
+			// TODO ignore
+		case "steps":
+			// TODO ignore
+			var def *CompositeAction
+			if ca, ok := a.(*CompositeAction); ok {
+				def = ca
+			} else {
+				p.errorAt(kv.key.Pos, "this action defines parameters for composite actions, but is something else")
+				continue
+			}
+			def.Steps = p.parseSteps(kv.val, true)
+		default:
+			p.unexpectedKey(kv.key, "runs", []string{
+				"using",
+				"steps",
+			})
+		}
+	}
+}
+
+// https://docs.github.com/en/actions/creating-actions/metadata-syntax-for-github-actions
+func (p *parser) parseAction(n *yaml.Node) Action {
 	if n.Line == 0 {
 		n.Line = 1
 	}
@@ -1425,56 +1477,47 @@ func (p *parser) parseAction(n *yaml.Node) *Action {
 
 	if len(n.Content) == 0 {
 		p.error(n, "action is empty")
-		return a
+		return &JavaScriptAction{ActionCommon: ActionCommon{}} // TODO add Unknown type?
 	}
+
+	a := p.extractActionKind(n.Content[0])
+	c := a.Common()
 
 	for _, kv := range p.parseMapping("action", n.Content[0], false, true) {
 		k, v := kv.key, kv.val
 		switch kv.id {
 		case "name":
 			// TODO can it be empty? Also for the ones below
-			a.Name = p.parseString(v, true)
+			c.Name = p.parseString(v, true)
 		case "author":
 			// TODO remove if not necessary
-			a.Author = p.parseString(v, true)
+			c.Author = p.parseString(v, true)
 		case "description":
 			// TODO remove if not necessary
-			a.Description = p.parseString(v, true)
+			c.Description = p.parseString(v, true)
 		case "inputs":
-			a.Inputs = p.parseActionInputs(k.Pos, v)
+			c.Inputs = p.parseActionInputs(k.Pos, v)
+		case "outputs":
+			// TODO Add support for parsing outputs & runs, we need to create different structs then though
+		case "runs":
+			// TODO
+			p.parseActionRuns(v, a)
+		default:
+			p.unexpectedKey(k, "action", []string{
+				"name",
+				"author",
+				"description",
+				"inputs",
+				"outputs",
+				"runs",
+			})
 		}
-		// TODO Add support for parsing outputs & runs, we need to create different structs then though
-		// case "on":
-		// 	a.On = p.parseEvents(k.Pos, v)
-		// case "permissions":
-		// 	a.Permissions = p.parsePermissions(k.Pos, v)
-		// case "env":
-		// 	a.Env = p.parseEnv(v)
-		// case "defaults":
-		// 	a.Defaults = p.parseDefaults(k.Pos, v)
-		// case "concurrency":
-		// 	a.Concurrency = p.parseConcurrency(k.Pos, v)
-		// case "jobs":
-		// 	a.Jobs = p.parseJobs(v)
-		// case "run-name":
-		// 	a.RunName = p.parseString(v, false)
-		// default:
-		// 	p.unexpectedKey(k, "workflow", []string{
-		// 		"name",
-		// 		"run-name",
-		// 		"on",
-		// 		"permissions",
-		// 		"env",
-		// 		"defaults",
-		// 		"concurrency",
-		// 		"jobs",
-		// 	})
 	}
 
-	if a.Name == nil {
+	if c.Name == nil {
 		p.error(n, "\"name\" property is missing in action metadata")
 	}
-	if a.Description == nil {
+	if c.Description == nil {
 		p.error(n, "\"description\" property is missing in action metadata")
 	}
 	// if a.Runs == nil {
@@ -1536,7 +1579,7 @@ func Parse(b []byte) (*Workflow, []*Error) {
 // Parse parses given source as byte sequence into workflow syntax tree. It returns all errors
 // detected while parsing the input. It means that detecting one error does not stop parsing. Even
 // if one or more errors are detected, parser will try to continue parsing and finding more errors.
-func ParseAction(b []byte) (*Action, []*Error) {
+func ParseAction(b []byte) (Action, []*Error) {
 	var n yaml.Node
 
 	if err := yaml.Unmarshal(b, &n); err != nil {
