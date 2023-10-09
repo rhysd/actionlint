@@ -247,6 +247,7 @@ func (p *parser) parseFloat(n *yaml.Node) *Float {
 	}
 }
 
+// TODO rename workflowKeyVal or have a different type
 func (p *parser) parseMapping(what string, n *yaml.Node, allowEmpty, caseSensitive bool) []workflowKeyVal {
 	isNull := isNull(n)
 
@@ -1372,6 +1373,79 @@ func (p *parser) parse(n *yaml.Node) *Workflow {
 	return w
 }
 
+// https://docs.github.com/en/actions/creating-actions/metadata-syntax-for-github-actions
+func (p *parser) parseAction(n *yaml.Node) *Action {
+	// TODO We need different types based on the action type
+	a := &Action{}
+
+	if n.Line == 0 {
+		n.Line = 1
+	}
+	if n.Column == 0 {
+		n.Column = 1
+	}
+
+	if len(n.Content) == 0 {
+		p.error(n, "action is empty")
+		return a
+	}
+
+	for _, kv := range p.parseMapping("action", n.Content[0], false, true) {
+		// k, v := kv.key, kv.val
+		v := kv.val
+		switch kv.id {
+		case "name":
+			// TODO can it be empty? Also for the ones below
+			a.Name = p.parseString(v, true)
+		case "author":
+			// TODO remove if not necessary
+			a.Author = p.parseString(v, true)
+		case "description":
+			// TODO remove if not necessary
+			a.Description = p.parseString(v, true)
+		}
+		// TODO Add support for parsing inputs
+		// TODO Add support for parsing outputs & runs, we need to create different structs then though
+		// case "on":
+		// 	a.On = p.parseEvents(k.Pos, v)
+		// case "permissions":
+		// 	a.Permissions = p.parsePermissions(k.Pos, v)
+		// case "env":
+		// 	a.Env = p.parseEnv(v)
+		// case "defaults":
+		// 	a.Defaults = p.parseDefaults(k.Pos, v)
+		// case "concurrency":
+		// 	a.Concurrency = p.parseConcurrency(k.Pos, v)
+		// case "jobs":
+		// 	a.Jobs = p.parseJobs(v)
+		// case "run-name":
+		// 	a.RunName = p.parseString(v, false)
+		// default:
+		// 	p.unexpectedKey(k, "workflow", []string{
+		// 		"name",
+		// 		"run-name",
+		// 		"on",
+		// 		"permissions",
+		// 		"env",
+		// 		"defaults",
+		// 		"concurrency",
+		// 		"jobs",
+		// 	})
+	}
+
+	if a.Name == nil {
+		p.error(n, "\"name\" property is missing in action metadata")
+	}
+	if a.Description == nil {
+		p.error(n, "\"description\" property is missing in action metadata")
+	}
+	// if a.Runs == nil {
+	// 	p.error(n, "\"runs\" section is missing in action metadata")
+	// }
+
+	return a
+}
+
 // func dumpYAML(n *yaml.Node, level int) {
 // 	fmt.Printf("%s%s (%s, %d,%d): %q\n", strings.Repeat(". ", level), nodeKindName(n.Kind), n.Tag, n.Line, n.Column, n.Value)
 // 	for _, c := range n.Content {
@@ -1419,4 +1493,23 @@ func Parse(b []byte) (*Workflow, []*Error) {
 	w := p.parse(&n)
 
 	return w, p.errors
+}
+
+// Parse parses given source as byte sequence into workflow syntax tree. It returns all errors
+// detected while parsing the input. It means that detecting one error does not stop parsing. Even
+// if one or more errors are detected, parser will try to continue parsing and finding more errors.
+func ParseAction(b []byte) (*Action, []*Error) {
+	var n yaml.Node
+
+	if err := yaml.Unmarshal(b, &n); err != nil {
+		return nil, handleYAMLError(err)
+	}
+
+	// Uncomment for checking YAML tree
+	// dumpYAML(&n, 0)
+
+	p := &parser{}
+	a := p.parseAction(&n)
+
+	return a, p.errors
 }

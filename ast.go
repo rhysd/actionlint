@@ -897,6 +897,62 @@ type Workflow struct {
 	Jobs map[string]*Job
 }
 
+// Action is root of action syntax tree, which represents one action metadata file.
+// https://docs.github.com/en/actions/creating-actions/metadata-syntax-for-github-actions
+type Action struct {
+	// Name is the name of the action.
+	// https://docs.github.com/en/actions/creating-actions/metadata-syntax-for-github-actions#name
+	Name *String
+	// Author is name of the action's author. This field can be nil when user didn't specify it.
+	// https://docs.github.com/en/actions/creating-actions/metadata-syntax-for-github-actions#author
+	// TODO Not sure we actually need this
+	Author *String
+	// Description is the description of the action.
+	// https://docs.github.com/en/actions/creating-actions/metadata-syntax-for-github-actions#description
+	// TODO Not sure we actually need this
+	Description *String
+
+	// Inputs is list of inputs of the action. This field can be nil when user didn't specify it.
+	// https://docs.github.com/en/actions/creating-actions/metadata-syntax-for-github-actions#inputs
+	// TODO Add support for this if it makes sense
+}
+
+type DockerContainerAction struct {
+	Action
+
+	// Outputs is list of outputs of the action. This field can be nil when user didn't specify it.
+	// https://docs.github.com/en/actions/creating-actions/metadata-syntax-for-github-actions#outputs-for-docker-container-and-javascript-actions
+	// TODO Add support for this if it makes sense
+
+	// Runs specifies how the action is executed.
+	// https://docs.github.com/en/actions/creating-actions/metadata-syntax-for-github-actions#runs-for-docker-container-actions
+	// TODO Add support for this
+}
+
+type JavaScriptAction struct {
+	Action
+
+	// Outputs is list of outputs of the action. This field can be nil when user didn't specify it.
+	// https://docs.github.com/en/actions/creating-actions/metadata-syntax-for-github-actions#outputs-for-docker-container-and-javascript-actions
+	// TODO Add support for this if it makes sense
+
+	// Runs specifies how the action is executed.
+	// https://docs.github.com/en/actions/creating-actions/metadata-syntax-for-github-actions#runs-for-javascript-actions
+	// TODO Add support for this
+}
+
+type CompositeAction struct {
+	Action
+
+	// Outputs is list of outputs of the action. This field can be nil when user didn't specify it.
+	// https://docs.github.com/en/actions/creating-actions/metadata-syntax-for-github-actions#outputs-for-composite-actions
+	// TODO Add support for this if it makes sense
+
+	// Runs specifies how the action is executed.
+	// https://docs.github.com/en/actions/creating-actions/metadata-syntax-for-github-actions#runs-for-composite-actions
+	// TODO Add support for this
+}
+
 // FindWorkflowCallEvent returns workflow_call event node if exists
 func (w *Workflow) FindWorkflowCallEvent() (*WorkflowCallEvent, bool) {
 	for _, e := range w.On {
