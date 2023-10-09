@@ -791,118 +791,117 @@ func (l *Linter) checkAction(
 		l.debug("No config was found")
 	}
 
-	_, all := ParseAction(content)
+	a, all := ParseAction(content)
 
 	if l.logLevel >= LogLevelVerbose {
 		elapsed := time.Since(start)
 		l.log("Found", len(all), "parse errors in", elapsed.Milliseconds(), "ms for", path)
 	}
 
-	// if a != nil {
-	// 	dbg := l.debugWriter()
+	if a != nil {
+		dbg := l.debugWriter()
 
-	// 	rules := []Rule{
-	// 		NewRuleMatrix(),
-	// 		NewRuleCredentials(),
-	// 		NewRuleShellName(),
-	// 		NewRuleRunnerLabel(),
-	// 		NewRuleEvents(),
-	// 		NewRuleJobNeeds(),
-	// 		NewRuleAction(localActions),
-	// 		NewRuleEnvVar(),
-	// 		NewRuleID(),
-	// 		NewRuleGlob(),
-	// 		NewRulePermissions(),
-	// 		NewRuleWorkflowCall(path, localReusableWorkflows),
-	// 		NewRuleExpression(localActions, localReusableWorkflows),
-	// 		NewRuleDeprecatedCommands(),
-	// 		NewRuleIfCond(),
-	// 	}
-	// 	if l.shellcheck != "" {
-	// 		r, err := NewRuleShellcheck(l.shellcheck, proc)
-	// 		if err == nil {
-	// 			rules = append(rules, r)
-	// 		} else {
-	// 			l.log("Rule \"shellcheck\" was disabled:", err)
-	// 		}
-	// 	} else {
-	// 		l.log("Rule \"shellcheck\" was disabled since shellcheck command name was empty")
-	// 	}
-	// 	if l.pyflakes != "" {
-	// 		r, err := NewRulePyflakes(l.pyflakes, proc)
-	// 		if err == nil {
-	// 			rules = append(rules, r)
-	// 		} else {
-	// 			l.log("Rule \"pyflakes\" was disabled:", err)
-	// 		}
-	// 	} else {
-	// 		l.log("Rule \"pyflakes\" was disabled since pyflakes command name was empty")
-	// 	}
-	// 	if l.onRulesCreated != nil {
-	// 		rules = l.onRulesCreated(rules)
-	// 	}
+		rules := []Rule{
+			NewRuleMatrix(),
+			NewRuleCredentials(),
+			NewRuleShellName(),
+			NewRuleRunnerLabel(),
+			NewRuleEvents(),
+			NewRuleJobNeeds(),
+			NewRuleAction(localActions),
+			NewRuleEnvVar(),
+			NewRuleID(),
+			NewRuleGlob(),
+			NewRulePermissions(),
+			NewRuleWorkflowCall(path, localReusableWorkflows),
+			NewRuleExpression(localActions, localReusableWorkflows),
+			NewRuleDeprecatedCommands(),
+			NewRuleIfCond(),
+		}
+		if l.shellcheck != "" {
+			r, err := NewRuleShellcheck(l.shellcheck, proc)
+			if err == nil {
+				rules = append(rules, r)
+			} else {
+				l.log("Rule \"shellcheck\" was disabled:", err)
+			}
+		} else {
+			l.log("Rule \"shellcheck\" was disabled since shellcheck command name was empty")
+		}
+		if l.pyflakes != "" {
+			r, err := NewRulePyflakes(l.pyflakes, proc)
+			if err == nil {
+				rules = append(rules, r)
+			} else {
+				l.log("Rule \"pyflakes\" was disabled:", err)
+			}
+		} else {
+			l.log("Rule \"pyflakes\" was disabled since pyflakes command name was empty")
+		}
+		if l.onRulesCreated != nil {
+			rules = l.onRulesCreated(rules)
+		}
 
-	// 	v := NewVisitor()
-	// 	for _, rule := range rules {
-	// 		v.AddPass(rule)
-	// 	}
-	// 	if dbg != nil {
-	// 		v.EnableDebug(dbg)
-	// 		for _, r := range rules {
-	// 			r.EnableDebug(dbg)
-	// 		}
-	// 	}
-	// 	if cfg != nil {
-	// 		for _, r := range rules {
-	// 			r.SetConfig(cfg)
-	// 		}
-	// 	}
+		v := NewVisitor()
+		for _, rule := range rules {
+			v.AddPass(rule)
+		}
+		if dbg != nil {
+			v.EnableDebug(dbg)
+			for _, r := range rules {
+				r.EnableDebug(dbg)
+			}
+		}
+		if cfg != nil {
+			for _, r := range rules {
+				r.SetConfig(cfg)
+			}
+		}
 
-	// 	if err := v.Visit(a); err != nil {
-	// 		l.debug("error occurred while visiting action metadata syntax tree: %v", err)
-	// 		return nil, err
-	// 	}
+		if err := v.VisitAction(a); err != nil {
+			l.debug("error occurred while visiting action syntax tree: %v", err)
+			return nil, err
+		}
 
-	// 	for _, rule := range rules {
-	// 		errs := rule.Errs()
-	// 		l.debug("%s found %d errors", rule.Name(), len(errs))
-	// 		all = append(all, errs...)
-	// 	}
+		for _, rule := range rules {
+			errs := rule.Errs()
+			l.debug("%s found %d errors", rule.Name(), len(errs))
+			all = append(all, errs...)
+		}
 
-	// 	if l.errFmt != nil {
-	// 		for _, rule := range rules {
-	// 			l.errFmt.RegisterRule(rule)
-	// 		}
-	// 	}
-	// }
+		if l.errFmt != nil {
+			for _, rule := range rules {
+				l.errFmt.RegisterRule(rule)
+			}
+		}
+	}
 
-	// if len(l.ignorePats) > 0 {
-	// 	filtered := make([]*Error, 0, len(all))
-	// Loop:
-	// 	for _, err := range all {
-	// 		for _, pat := range l.ignorePats {
-	// 			if pat.MatchString(err.Message) {
-	// 				continue Loop
-	// 			}
-	// 		}
-	// 		filtered = append(filtered, err)
-	// 	}
-	// 	all = filtered
-	// }
+	if len(l.ignorePats) > 0 {
+		filtered := make([]*Error, 0, len(all))
+	Loop:
+		for _, err := range all {
+			for _, pat := range l.ignorePats {
+				if pat.MatchString(err.Message) {
+					continue Loop
+				}
+			}
+			filtered = append(filtered, err)
+		}
+		all = filtered
+	}
 
-	// for _, err := range all {
-	// 	err.Filepath = path // Populate filename in the error
-	// }
+	for _, err := range all {
+		err.Filepath = path // Populate filename in the error
+	}
 
-	// sort.Stable(ByErrorPosition(all))
+	sort.Stable(ByErrorPosition(all))
 
-	// if l.logLevel >= LogLevelVerbose {
-	// 	elapsed := time.Since(start)
-	// 	l.log("Found total", len(all), "errors in", elapsed.Milliseconds(), "ms for", path)
-	// }
+	if l.logLevel >= LogLevelVerbose {
+		elapsed := time.Since(start)
+		l.log("Found total", len(all), "errors in", elapsed.Milliseconds(), "ms for", path)
+	}
 
-	// return all, nil
-	return []*Error{}, nil
+	return all, nil
 }
 
 func (l *Linter) printErrors(errs []*Error, src []byte) {
