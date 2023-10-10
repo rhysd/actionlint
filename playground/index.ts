@@ -22,6 +22,7 @@
     const toggleAction = getElementById('toggle-action');
 
     function getCurrentType() {
+        // eslint-disable-next-line @typescript-eslint/no-non-null-assertion
         return document.querySelector('.is-active')!.id === 'toggle-workflow' ? 'workflow' : 'action';
     }
 
@@ -119,7 +120,7 @@ runs:
     using: 'node12'
     main: 'index.js'`;
 
-        return type == 'workflow' ? workflowSrc : actionSrc;
+        return type === 'workflow' ? workflowSrc : actionSrc;
     }
 
     const editorConfig: CodeMirror.EditorConfiguration = {
@@ -321,8 +322,9 @@ runs:
             const target = event.currentTarget as HTMLElement;
             if (!target.classList.contains('is-active')) {
                 target.classList.add('is-active');
-                const sibling = target.nextElementSibling || target.previousElementSibling;
-                sibling!.classList.remove('is-active');
+                // eslint-disable-next-line @typescript-eslint/no-non-null-assertion
+                const sibling = (target.nextElementSibling || target.previousElementSibling)!;
+                sibling.classList.remove('is-active');
 
                 if (!contentChanged) {
                     editor.setValue(await getDefaultSource(target.id === 'toggle-workflow' ? 'workflow' : 'action'));
