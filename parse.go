@@ -1602,10 +1602,8 @@ func (p *parser) parseAction(n *yaml.Node) Action {
 			// TODO can it be empty? Also for the ones below
 			c.Name = p.parseString(v, true)
 		case "author":
-			// TODO remove if not necessary
 			c.Author = p.parseString(v, true)
 		case "description":
-			// TODO remove if not necessary
 			c.Description = p.parseString(v, true)
 		case "inputs":
 			c.Inputs = p.parseActionInputs(k.Pos, v)
@@ -1615,7 +1613,6 @@ func (p *parser) parseAction(n *yaml.Node) Action {
 			p.parseActionRuns(v, a)
 		case "branding":
 			// TODO Add support for "branding" section
-			break
 		default:
 			p.unexpectedKey(k, "action", []string{
 				"name",

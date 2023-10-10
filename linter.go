@@ -757,7 +757,7 @@ func (l *Linter) check(
 	return all, nil
 }
 
-// Lint lints YAML action metadata file content given as byte slice. The path parameter is used as file
+// LintAction lints YAML action metadata file content given as byte slice. The path parameter is used as file
 // path where the content came from. Setting "<stdin>" to path parameter indicates the output came
 // from STDIN.
 // When nil is passed to the project parameter, it tries to find the project from the path parameter.
