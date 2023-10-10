@@ -1535,7 +1535,7 @@ func (p *parser) parseActionRuns(n *yaml.Node, a Action) {
 			case "args":
 				def.Args = p.parseStringSequence("args", kv.val, true, false)
 			case "env":
-				def.Env = p.parseEnvironment(kv.key.Pos, kv.val)
+				def.Env = p.parseEnv(kv.val)
 			case "pre-entrypoint":
 				def.PreEntrypoint = p.parseString(kv.val, false)
 			case "entrypoint":

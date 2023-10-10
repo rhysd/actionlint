@@ -24,8 +24,11 @@ func NewRuleBase(name string, desc string) RuleBase {
 	}
 }
 
-// VisitStep is callback when visiting Step node.
+// VisitStep is callback when visiting Step node (that is part of a workflow job).
 func (r *RuleBase) VisitStep(node *Step) error { return nil }
+
+// // VisitCompositeStep is callback when visiting Step node (that is part of a composite action).
+// func (r *RuleBase) VisitCompositeStep(node *Step) error { return nil }
 
 // VisitJobPre is callback when visiting Job node before visiting its children.
 func (r *RuleBase) VisitJobPre(node *Job) error { return nil }
@@ -38,6 +41,12 @@ func (r *RuleBase) VisitWorkflowPre(node *Workflow) error { return nil }
 
 // VisitWorkflowPost is callback when visiting Workflow node after visiting its children.
 func (r *RuleBase) VisitWorkflowPost(node *Workflow) error { return nil }
+
+// VisitActionPre is callback when visiting Workflow node before visiting its children.
+func (r *RuleBase) VisitActionPre(node Action) error { return nil }
+
+// VisitActionPost is callback when visiting Workflow node after visiting its children.
+func (r *RuleBase) VisitActionPost(node Action) error { return nil }
 
 // Error creates a new error from the source position and the error message and stores it in the
 // rule instance. The errors can be accessed by Errs method.

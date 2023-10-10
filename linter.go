@@ -835,17 +835,10 @@ func (l *Linter) checkAction(
 		dbg := l.debugWriter()
 
 		rules := []Rule{
-			NewRuleMatrix(),
-			NewRuleCredentials(),
 			NewRuleShellName(),
-			NewRuleRunnerLabel(),
-			NewRuleEvents(),
-			NewRuleJobNeeds(),
 			NewRuleAction(localActions),
 			NewRuleEnvVar(),
 			NewRuleID(),
-			NewRuleGlob(),
-			NewRulePermissions(),
 			NewRuleWorkflowCall(path, localReusableWorkflows),
 			NewRuleExpression(localActions, localReusableWorkflows),
 			NewRuleDeprecatedCommands(),

@@ -267,6 +267,47 @@ func (rule *RuleExpression) VisitJobPost(n *Job) error {
 	return nil
 }
 
+// VisitActionPre is callback when visiting Job node before visiting its children.
+func (rule *RuleExpression) VisitActionPre(n Action) error {
+	rule.needsTy = NewEmptyStrictObjectType()
+	rule.stepsTy = NewEmptyStrictObjectType()
+
+	ity := NewEmptyStrictObjectType()
+	rule.inputsTy = ity
+
+	for k := range n.Common().Inputs {
+		ity.Props[k] = AnyType{}
+	}
+
+	switch a := n.(type) {
+	case *JavaScriptAction:
+		rule.checkIfCondition(a.PreIf, "runs.pre-if")
+		rule.checkIfCondition(a.PostIf, "runs.post-if")
+	case *DockerContainerAction:
+		rule.checkEnv(a.Env, "runs.env")
+	}
+
+	return nil
+}
+
+// VisitActionPost is callback when visiting Job node after visiting its children
+func (rule *RuleExpression) VisitActionPost(n Action) error {
+	// 'environment' and 'outputs' sections are evaluated after all steps are run
+	// if n.Environment != nil {
+	// 	rule.checkString(n.Environment.Name, "jobs.<job_id>.environment")
+	// 	rule.checkString(n.Environment.URL, "jobs.<job_id>.environment.url")
+	// }
+	// for _, output := range n.Outputs {
+	// 	rule.checkString(output.Value, "jobs.<job_id>.outputs.<output_id>")
+	// }
+
+	rule.matrixTy = nil
+	rule.stepsTy = nil
+	rule.needsTy = nil
+
+	return nil
+}
+
 // VisitStep is callback when visiting Step node.
 func (rule *RuleExpression) VisitStep(n *Step) error {
 	rule.checkString(n.Name, "jobs.<job_id>.steps.name")

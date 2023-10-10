@@ -990,7 +990,7 @@ type DockerContainerAction struct {
 	Args []*String
 
 	// Inputs is a mapping of environment variables to pass to the container
-	Env *Environment
+	Env *Env
 
 	// PostEntrypoint specifices an entrypoint to run at the end of the job
 	PostEntrypoint *String
