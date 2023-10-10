@@ -1613,6 +1613,9 @@ func (p *parser) parseAction(n *yaml.Node) Action {
 			c.Outputs = p.parseActionOutputs(k.Pos, v, a.Kind() == ActionKindComposite)
 		case "runs":
 			p.parseActionRuns(v, a)
+		case "branding":
+			// TODO Add support for "branding" section
+			break
 		default:
 			p.unexpectedKey(k, "action", []string{
 				"name",
@@ -1621,6 +1624,7 @@ func (p *parser) parseAction(n *yaml.Node) Action {
 				"inputs",
 				"outputs",
 				"runs",
+				"branding",
 			})
 		}
 	}

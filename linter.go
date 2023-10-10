@@ -757,6 +757,39 @@ func (l *Linter) check(
 	return all, nil
 }
 
+// Lint lints YAML action metadata file content given as byte slice. The path parameter is used as file
+// path where the content came from. Setting "<stdin>" to path parameter indicates the output came
+// from STDIN.
+// When nil is passed to the project parameter, it tries to find the project from the path parameter.
+// TODO Maybe merge with Lint() and have a param to decide if it's a workflow or action
+func (l *Linter) LintAction(path string, content []byte, project *Project) ([]*Error, error) {
+	if project == nil && path != "<stdin>" {
+		if _, err := os.Stat(path); !errors.Is(err, fs.ErrNotExist) {
+			p, err := l.projects.At(path)
+			if err != nil {
+				return nil, err
+			}
+			project = p
+		}
+	}
+	proc := newConcurrentProcess(runtime.NumCPU())
+	dbg := l.debugWriter()
+	// TODO Figure out what to do about the caches
+	localActions := NewLocalActionsCache(project, dbg)
+	localReusableWorkflows := NewLocalReusableWorkflowCache(project, l.cwd, dbg)
+	errs, err := l.checkAction(path, content, project, proc, localActions, localReusableWorkflows)
+	proc.wait()
+	if err != nil {
+		return nil, err
+	}
+	if l.errFmt != nil {
+		l.errFmt.PrintErrors(l.out, errs, content)
+	} else {
+		l.printErrors(errs, content)
+	}
+	return errs, nil
+}
+
 func (l *Linter) checkAction(
 	path string,
 	content []byte,

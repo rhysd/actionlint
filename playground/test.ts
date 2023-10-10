@@ -94,7 +94,7 @@ jobs:
     steps:
       - run: echo 'hi'`;
 
-        window.runActionlint(source);
+        window.runActionlint(source, 'workflow');
         const errors = await results.waitCheckCompleted();
         const json = JSON.stringify(errors);
         assert.equal(errors.length, 1, json);
@@ -120,7 +120,7 @@ jobs:
     steps:
       - run: echo 'hi'`;
 
-        window.runActionlint(source);
+        window.runActionlint(source, 'workflow');
         const errors = await results.waitCheckCompleted();
         const json = JSON.stringify(errors);
         assert.equal(errors.length, 0, json);
