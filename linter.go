@@ -293,7 +293,7 @@ func (l *Linter) LintDir(dir string, project *Project) ([]*Error, error) {
 	return l.LintFiles(files, project)
 }
 
-// LintDir lints all YAML workflow files in the given directory recursively.
+// LintActionDir lints all YAML workflow files in the given directory recursively.
 func (l *Linter) LintActionDir(dir string, project *Project) ([]*Error, error) {
 	files := []string{}
 	if err := filepath.Walk(dir, func(path string, info os.FileInfo, err error) error {
@@ -429,7 +429,7 @@ func (l *Linter) LintFiles(filepaths []string, project *Project) ([]*Error, erro
 	return all, nil
 }
 
-// LintFiles lints YAML workflow files and outputs the errors to given writer. It applies lint
+// LintActionFiles lints YAML workflow files and outputs the errors to given writer. It applies lint
 // rules to all given files. The project parameter can be nil. In the case, a project is detected
 // from the file path.
 func (l *Linter) LintActionFiles(filepaths []string, project *Project) ([]*Error, error) {

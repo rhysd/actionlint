@@ -911,25 +911,26 @@ type Workflow struct {
 	Jobs map[string]*Job
 }
 
-// ExecKind is kind of how the step is executed. A step runs some action or runs some shell script.
+// ActionKind is kind of how the action is executed (JavaScript, Docker or Composite)
 type ActionKind uint8
 
 const (
-	// ExecKindAction is kind for step to run action
-	ActionKindJavascript ExecKind = iota
-	// ExecKindRun is kind for step to run shell script
+	// ActionKindJavascript is kind for actions implemented as node.js scripts
+	ActionKindJavascript ActionKind = iota
+	// ActionKindDocker is kind for actions implemented as docker images
 	ActionKindDocker
+	// ActionKindComposite is kind for actions implemented as composite actions (sequence of steps)
 	ActionKindComposite
 )
 
-// Exec is an interface how the step is executed. Step in workflow runs either an action or a script
+// Action is an interface how the step is executed. Step in workflow runs either an action or a script
 type Action interface {
 	// Kind returns kind of the step execution.
 	Kind() ActionKind
 	Common() *ActionCommon
 }
 
-// Action is root of action syntax tree, which represents one action metadata file.
+// ActionCommon is root of action syntax tree, which represents one action metadata file.
 // https://docs.github.com/en/actions/creating-actions/metadata-syntax-for-github-actions
 type ActionCommon struct {
 	// Name is the name of the action.

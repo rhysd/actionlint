@@ -88,7 +88,7 @@ func (v *Visitor) Visit(n *Workflow) error {
 	return nil
 }
 
-// Visit visits given syntax tree in depth-first order
+// VisitAction visits given syntax tree in depth-first order
 func (v *Visitor) VisitAction(n Action) error {
 	var t time.Time
 	if v.dbg != nil {
@@ -106,7 +106,6 @@ func (v *Visitor) VisitAction(n Action) error {
 	if v.dbg != nil {
 		// v.reportElapsedTime(fmt.Sprintf("Visiting %d steps at job %q", len(n.Steps), n.ID.Value), t)
 		v.reportElapsedTime(fmt.Sprintf("Visiting %d steps at job %q", 0, 0), t)
-		t = time.Now()
 	}
 
 	return nil
