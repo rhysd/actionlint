@@ -154,11 +154,14 @@ func (p *parser) parseActionInput(id *String, n *yaml.Node) *ActionInput {
 			ret.Required = p.parseBool(kv.val)
 		case "default":
 			ret.Default = p.parseString(kv.val, true)
+		case "deprecationMessage":
+			ret.DeprecationMessage = p.parseString(kv.val, false)
 		default:
 			p.unexpectedKey(kv.key, "input", []string{
 				"description",
 				"required",
 				"default",
+				"deprecationMessage",
 			})
 		}
 	}
@@ -175,6 +178,47 @@ func (p *parser) parseActionInputs(pos *Pos, n *yaml.Node) map[string]*ActionInp
 	ret := make(map[string]*ActionInput, len(inputs))
 	for _, kv := range inputs {
 		ret[kv.id] = p.parseActionInput(kv.key, kv.val)
+	}
+
+	return ret
+}
+
+// https://docs.github.com/en/actions/creating-actions/metadata-syntax-for-github-actions#inputsinput_id
+func (p *parser) parseActionOutput(id *String, n *yaml.Node, withValue bool) *ActionOutput {
+	ret := &ActionOutput{Pos: posAt(n)}
+
+	for _, kv := range p.parseMapping(fmt.Sprintf("%q outputs", id.Value), n, false, true) {
+		switch kv.id {
+		case "description":
+			ret.Description = p.parseString(kv.val, false)
+		case "value":
+			if withValue {
+				ret.Value = p.parseString(kv.val, false)
+			} else {
+				p.errorf(kv.val, "output %q cannot have \"value\" property for composite actions", id.Value)
+			}
+		default:
+			p.unexpectedKey(kv.key, "input", []string{
+				"description",
+				"required",
+				"default",
+				"deprecationMessage",
+			})
+		}
+	}
+
+	if withValue && ret.Value == nil {
+		p.errorf(n, "\"value\" property is missing in specification of output %q", id.Value)
+	}
+
+	return ret
+}
+
+func (p *parser) parseActionOutputs(pos *Pos, n *yaml.Node, withValue bool) map[string]*ActionOutput {
+	outputs := p.parseSectionMapping("outputs", n, false, false)
+	ret := make(map[string]*ActionOutput, len(outputs))
+	for _, kv := range outputs {
+		ret[kv.id] = p.parseActionOutput(kv.key, kv.val, withValue)
 	}
 
 	return ret
@@ -1518,7 +1562,20 @@ func (p *parser) parseActionRuns(n *yaml.Node, a Action) {
 		}
 	}
 
-	// TODO check that all required keys are present
+	switch a := a.(type) {
+	case *JavaScriptAction:
+		if a.Main == nil {
+			p.error(n, "\"main\" is required to run action in step")
+		}
+	case *DockerContainerAction:
+		if a.Image == nil {
+			p.error(n, "\"image\" is required for a docker container action")
+		}
+	case *CompositeAction:
+		if a.Steps == nil {
+			p.error(n, "\"steps\" is required for a composite action")
+		}
+	}
 }
 
 // https://docs.github.com/en/actions/creating-actions/metadata-syntax-for-github-actions
@@ -1553,9 +1610,8 @@ func (p *parser) parseAction(n *yaml.Node) Action {
 		case "inputs":
 			c.Inputs = p.parseActionInputs(k.Pos, v)
 		case "outputs":
-			// TODO Add support for parsing outputs & runs, we need to create different structs then though
+			c.Outputs = p.parseActionOutputs(k.Pos, v, a.Kind() == ActionKindComposite)
 		case "runs":
-			// TODO
 			p.parseActionRuns(v, a)
 		default:
 			p.unexpectedKey(k, "action", []string{

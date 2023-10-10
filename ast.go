@@ -441,6 +441,20 @@ type ActionInput struct {
 	Required *Bool
 	// Default is a default value of the input. It can be nil when no default value is specified.
 	Default *String
+	// DeprecationMessage is a message to show when the input is deprecated.
+	DeprecationMessage *String
+	// Pos is a position in source.
+	Pos *Pos
+}
+
+// ActionOutput is an output field to that is set by this action.
+// https://docs.github.com/en/actions/creating-actions/metadata-syntax-for-github-actions#outputs-for-docker-container-and-javascript-actions
+// https://docs.github.com/en/actions/creating-actions/metadata-syntax-for-github-actions#outputs-for-composite-actions
+type ActionOutput struct {
+	// Description is the description of the input.
+	Description *String
+	// Value contains the expression that defions the value for composite action only
+	Value *String
 	// Pos is a position in source.
 	Pos *Pos
 }
@@ -948,6 +962,9 @@ type ActionCommon struct {
 	// Inputs is a mapping from the input ID to input attributes . This field can be nil when user didn't specify it.
 	// https://docs.github.com/en/actions/creating-actions/metadata-syntax-for-github-actions#inputs
 	Inputs map[string]*ActionInput
+
+	// Outputs is list of outputs of the action. This field can be nil when user didn't specify it.
+	Outputs map[string]*ActionOutput
 }
 
 type DockerContainerAction struct {

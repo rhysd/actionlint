@@ -104,6 +104,12 @@ func (v *Visitor) VisitAction(n Action) error {
 	dw.On = append(dw.On, &de)
 	dj := &Job{}
 	dj.ID = &String{Value: "action", Quoted: false, Pos: &Pos{Line: 1, Col: 3}}
+	if n.Kind() == ActionKindComposite {
+		dj.Outputs = make(map[string]*Output)
+		for k, v := range n.Common().Outputs {
+			dj.Outputs[k] = &Output{Name: &String{Value: k}, Value: v.Value}
+		}
+	}
 	dw.Jobs = make(map[string]*Job)
 	dw.Jobs[dj.ID.Value] = dj
 
