@@ -130,9 +130,7 @@ func (v *Visitor) VisitAction(n Action) error {
 		}
 	}
 
-	fmt.Println("Visiting action", n.Common().Name)
 	if c, ok := n.(*CompositeAction); ok {
-		fmt.Println("Visiting steps", len(c.Steps), n.Common().Name.Value)
 		for _, s := range c.Steps {
 			if err := v.visitStep(s); err != nil {
 				return err
