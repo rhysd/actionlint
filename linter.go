@@ -810,11 +810,11 @@ func (l *Linter) checkAction(
 			NewRuleJobNeeds(),
 			NewRuleAction(localActions),
 			NewRuleEnvVar(),
-			// TODO check / adapt enable again NewRuleID(),
+			NewRuleID(),
 			NewRuleGlob(),
 			NewRulePermissions(),
 			NewRuleWorkflowCall(path, localReusableWorkflows),
-			// TODO check / adapt enable again NewRuleExpression(localActions, localReusableWorkflows),
+			NewRuleExpression(localActions, localReusableWorkflows),
 			NewRuleDeprecatedCommands(),
 			NewRuleIfCond(),
 		}

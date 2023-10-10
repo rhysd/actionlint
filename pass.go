@@ -95,7 +95,38 @@ func (v *Visitor) VisitAction(n Action) error {
 		t = time.Now()
 	}
 
+	dw := &Workflow{}
+	dw.Name = &String{Value: "dummy-workflow", Quoted: false, Pos: &Pos{Line: 1, Col: 3}}
+	de := WorkflowDispatchEvent{Inputs: make(map[string]*DispatchInput)}
+	for k, v := range n.Common().Inputs {
+		de.Inputs[k] = &DispatchInput{Name: &String{Value: k}, Description: v.Description, Required: v.Required, Default: v.Default}
+	}
+	dw.On = append(dw.On, &de)
+	dj := &Job{}
+	dj.ID = &String{Value: "action", Quoted: false, Pos: &Pos{Line: 1, Col: 3}}
+	dw.Jobs = make(map[string]*Job)
+	dw.Jobs[dj.ID.Value] = dj
+
+	for _, p := range v.passes {
+		if err := p.VisitWorkflowPre(dw); err != nil {
+			return err
+		}
+	}
+
+	if v.dbg != nil {
+		v.reportElapsedTime("VisitWorkflowPre", t)
+		t = time.Now()
+	}
+
+	for _, p := range v.passes {
+		if err := p.VisitJobPre(dj); err != nil {
+			return err
+		}
+	}
+
+	fmt.Println("Visiting action", n.Common().Name)
 	if c, ok := n.(*CompositeAction); ok {
+		fmt.Println("Visiting steps", len(c.Steps), n.Common().Name.Value)
 		for _, s := range c.Steps {
 			if err := v.visitStep(s); err != nil {
 				return err
@@ -106,6 +137,18 @@ func (v *Visitor) VisitAction(n Action) error {
 	if v.dbg != nil {
 		// v.reportElapsedTime(fmt.Sprintf("Visiting %d steps at job %q", len(n.Steps), n.ID.Value), t)
 		v.reportElapsedTime(fmt.Sprintf("Visiting %d steps at job %q", 0, 0), t)
+	}
+
+	for _, p := range v.passes {
+		if err := p.VisitJobPost(dj); err != nil {
+			return err
+		}
+	}
+
+	for _, p := range v.passes {
+		if err := p.VisitWorkflowPost(dw); err != nil {
+			return err
+		}
 	}
 
 	return nil

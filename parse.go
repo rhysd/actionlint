@@ -1507,6 +1507,12 @@ func (p *parser) parseActionRuns(n *yaml.Node, a Action) {
 				"pre-if",
 				"post",
 				"post-if",
+				"image",
+				"args",
+				"env",
+				"pre-entrypoint",
+				"entrypoint",
+				"post-entrypoint",
 				"steps",
 			})
 		}
