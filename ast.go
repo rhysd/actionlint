@@ -959,7 +959,24 @@ type DockerContainerAction struct {
 
 	// Runs specifies how the action is executed.
 	// https://docs.github.com/en/actions/creating-actions/metadata-syntax-for-github-actions#runs-for-docker-container-actions
-	// TODO Add support for this
+
+	// Image specifies the container image to use
+	Image *String
+
+	// PreEntrypoint specifices an entrypoint to run before the main script
+	PreEntrypoint *String
+
+	// Entrypoint specifices an entrypoint to run as main action
+	Entrypoint *String
+
+	// Entrypoint specifices an entrypoint to run as main action
+	Args []*String
+
+	// Inputs is a mapping of environment variables to pass to the container
+	Env *Environment
+
+	// PostEntrypoint specifices an entrypoint to run at the end of the job
+	PostEntrypoint *String
 }
 
 func (e *DockerContainerAction) Kind() ActionKind {
@@ -977,9 +994,24 @@ type JavaScriptAction struct {
 	// https://docs.github.com/en/actions/creating-actions/metadata-syntax-for-github-actions#outputs-for-docker-container-and-javascript-actions
 	// TODO Add support for this if it makes sense
 
-	// Runs specifies how the action is executed.
 	// https://docs.github.com/en/actions/creating-actions/metadata-syntax-for-github-actions#runs-for-javascript-actions
-	// TODO Add support for this
+	// Main specifies the entrypoint of the action.
+	Main *String
+
+	// Using specifies the specific node runtime (node18, node20 ..)
+	Using *String
+
+	// Pre specifices an entrypoint to run before the main script
+	Pre *String
+
+	// PreIf defines an expression whether the pre script should be run
+	PreIf *String
+
+	// Post specifices an entrypoint to run at the end of the job
+	Post *String
+
+	// PostIf specifies an expression whether the post script should be run
+	PostIf *String
 }
 
 func (e *JavaScriptAction) Kind() ActionKind {

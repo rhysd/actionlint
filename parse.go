@@ -1422,12 +1422,13 @@ func (p *parser) extractActionKind(n *yaml.Node) Action {
 		}
 		for _, kv2 := range p.parseMapping("runs", kv.val, false, true) {
 			if kv2.id == "using" {
-				switch p.parseString(kv2.val, false).Value {
-				case "javascript":
+				using := p.parseString(kv2.val, false).Value
+				switch {
+				case strings.HasPrefix(using, "node"):
 					return &JavaScriptAction{ActionCommon: *c}
-				case "docker":
+				case using == "docker":
 					return &DockerContainerAction{ActionCommon: *c}
-				case "composite":
+				case using == "composite":
 					return &CompositeAction{ActionCommon: *c}
 				default:
 					p.error(kv2.val, "unknown action type (only javascript, docker and composite are supported)")
@@ -1448,7 +1449,6 @@ func (p *parser) parseActionRuns(n *yaml.Node, a Action) {
 		case "using":
 			// TODO ignore
 		case "steps":
-			// TODO ignore
 			var def *CompositeAction
 			if ca, ok := a.(*CompositeAction); ok {
 				def = ca
@@ -1457,13 +1457,62 @@ func (p *parser) parseActionRuns(n *yaml.Node, a Action) {
 				continue
 			}
 			def.Steps = p.parseSteps(kv.val, true)
+		case "main", "pre", "pre-if", "post", "post-if":
+			var def *JavaScriptAction
+			if na, ok := a.(*JavaScriptAction); ok {
+				def = na
+			} else {
+				p.errorAt(kv.key.Pos, "this action defines parameters for composite actions, but is something else")
+				continue
+			}
+			switch kv.id {
+			case "main":
+				def.Main = p.parseString(kv.val, false)
+			case "pre":
+				def.Pre = p.parseString(kv.val, false)
+			case "pre-if":
+				def.PreIf = p.parseString(kv.val, false)
+			case "post":
+				def.Post = p.parseString(kv.val, false)
+			case "post-if":
+				def.PostIf = p.parseString(kv.val, false)
+			}
+		case "image", "entrypoint", "args", "env", "pre-entrypoint", "post-entrypoint":
+			var def *DockerContainerAction
+			if da, ok := a.(*DockerContainerAction); ok {
+				def = da
+			} else {
+				p.errorAt(kv.key.Pos, "this action defines parameters for composite actions, but is something else")
+				continue
+			}
+			switch kv.id {
+			case "image":
+				def.Image = p.parseString(kv.val, false)
+			case "args":
+				def.Args = p.parseStringSequence("args", kv.val, true, false)
+			case "env":
+				def.Env = p.parseEnvironment(kv.key.Pos, kv.val)
+			case "pre-entrypoint":
+				def.PreEntrypoint = p.parseString(kv.val, false)
+			case "entrypoint":
+				def.Entrypoint = p.parseString(kv.val, false)
+			case "post-entrypoint":
+				def.PostEntrypoint = p.parseString(kv.val, false)
+			}
 		default:
 			p.unexpectedKey(kv.key, "runs", []string{
 				"using",
+				"main",
+				"pre",
+				"pre-if",
+				"post",
+				"post-if",
 				"steps",
 			})
 		}
 	}
+
+	// TODO check that all required keys are present
 }
 
 // https://docs.github.com/en/actions/creating-actions/metadata-syntax-for-github-actions
