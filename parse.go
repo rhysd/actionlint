@@ -183,7 +183,8 @@ func (p *parser) parseActionInputs(pos *Pos, n *yaml.Node) map[string]*ActionInp
 	return ret
 }
 
-// https://docs.github.com/en/actions/creating-actions/metadata-syntax-for-github-actions#inputsinput_id
+// https://docs.github.com/en/actions/creating-actions/metadata-syntax-for-github-actions#outputs-for-docker-container-and-javascript-actions
+// https://docs.github.com/en/actions/creating-actions/metadata-syntax-for-github-actions#outputs-for-composite-actions
 func (p *parser) parseActionOutput(id *String, n *yaml.Node, withValue bool) *ActionOutput {
 	ret := &ActionOutput{Pos: posAt(n)}
 
