@@ -108,7 +108,7 @@ func (rule *RuleShellcheck) VisitWorkflowPost(n *Workflow) error {
 }
 
 // VisitActionPost is callback when visiting Action node after visiting its children.
-func (rule *RuleShellcheck) VisitActionPost(n Action) error {
+func (rule *RuleShellcheck) VisitActionPost(n *Action) error {
 	rule.workflowShell = ""
 	return rule.cmd.wait() // Wait until all processes running for this rule
 }

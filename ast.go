@@ -937,11 +937,10 @@ const (
 	ActionKindComposite
 )
 
-// Action is an interface how the step is executed. Step in workflow runs either an action or a script
-type Action interface {
+// ActionRuns is an interface how the step is executed. Step in workflow runs either an action or a script
+type ActionRuns interface {
 	// Kind returns kind of the step execution.
 	Kind() ActionKind
-	Common() *ActionCommon
 }
 
 // Branding defines what badges to be shown in GitHub Marketplace.
@@ -953,23 +952,17 @@ type Branding struct {
 	Icon *String
 }
 
-// ActionCommon is root of action syntax tree, which represents one action metadata file.
+// Action is root of action syntax tree, which represents one action metadata file.
 // https://docs.github.com/en/actions/creating-actions/metadata-syntax-for-github-actions
-type ActionCommon struct {
+type Action struct {
 	// Name is the name of the action.
-	// https://docs.github.com/en/actions/creating-actions/metadata-syntax-for-github-actions#name
 	Name *String
 	// Author is name of the action's author. This field can be nil when user didn't specify it.
-	// https://docs.github.com/en/actions/creating-actions/metadata-syntax-for-github-actions#author
-	// TODO Not sure we actually need this
 	Author *String
 	// Description is the description of the action.
-	// https://docs.github.com/en/actions/creating-actions/metadata-syntax-for-github-actions#description
-	// TODO Not sure we actually need this
 	Description *String
 
 	// Inputs is a mapping from the input ID to input attributes . This field can be nil when user didn't specify it.
-	// https://docs.github.com/en/actions/creating-actions/metadata-syntax-for-github-actions#inputs
 	Inputs map[string]*ActionInput
 
 	// Outputs is list of outputs of the action. This field can be nil when user didn't specify it.
@@ -977,18 +970,12 @@ type ActionCommon struct {
 
 	// Branding defines what badges to be shown in GitHub Marketplace.
 	Branding *Branding
+
+	// Runs specifies how the action is executed (via JavaScript, Docker or composite steps)
+	Runs ActionRuns
 }
 
 type DockerContainerAction struct {
-	ActionCommon
-
-	// Outputs is list of outputs of the action. This field can be nil when user didn't specify it.
-	// https://docs.github.com/en/actions/creating-actions/metadata-syntax-for-github-actions#outputs-for-docker-container-and-javascript-actions
-	// TODO Add support for this if it makes sense
-
-	// Runs specifies how the action is executed.
-	// https://docs.github.com/en/actions/creating-actions/metadata-syntax-for-github-actions#runs-for-docker-container-actions
-
 	// Image specifies the container image to use
 	Image *String
 
@@ -1012,13 +999,7 @@ func (e *DockerContainerAction) Kind() ActionKind {
 	return ActionKind(ActionKindDocker)
 }
 
-func (e *DockerContainerAction) Common() *ActionCommon {
-	return &e.ActionCommon
-}
-
 type JavaScriptAction struct {
-	ActionCommon
-
 	// Outputs is list of outputs of the action. This field can be nil when user didn't specify it.
 	// https://docs.github.com/en/actions/creating-actions/metadata-syntax-for-github-actions#outputs-for-docker-container-and-javascript-actions
 	// TODO Add support for this if it makes sense
@@ -1047,13 +1028,7 @@ func (e *JavaScriptAction) Kind() ActionKind {
 	return ActionKind(ActionKindJavascript)
 }
 
-func (e *JavaScriptAction) Common() *ActionCommon {
-	return &e.ActionCommon
-}
-
 type CompositeAction struct {
-	ActionCommon
-
 	// Outputs is list of outputs of the action. This field can be nil when user didn't specify it.
 	// https://docs.github.com/en/actions/creating-actions/metadata-syntax-for-github-actions#outputs-for-composite-actions
 	// TODO Add support for this if it makes sense
@@ -1067,10 +1042,6 @@ type CompositeAction struct {
 
 func (e *CompositeAction) Kind() ActionKind {
 	return ActionKind(ActionKindComposite)
-}
-
-func (e *CompositeAction) Common() *ActionCommon {
-	return &e.ActionCommon
 }
 
 // FindWorkflowCallEvent returns workflow_call event node if exists

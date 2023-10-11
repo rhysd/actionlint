@@ -185,7 +185,7 @@ func (p *parser) parseActionInputs(pos *Pos, n *yaml.Node) map[string]*ActionInp
 
 // https://docs.github.com/en/actions/creating-actions/metadata-syntax-for-github-actions#outputs-for-docker-container-and-javascript-actions
 // https://docs.github.com/en/actions/creating-actions/metadata-syntax-for-github-actions#outputs-for-composite-actions
-func (p *parser) parseActionOutput(id *String, n *yaml.Node, withValue bool) *ActionOutput {
+func (p *parser) parseActionOutput(id *String, n *yaml.Node) *ActionOutput {
 	ret := &ActionOutput{Pos: posAt(n)}
 
 	for _, kv := range p.parseMapping(fmt.Sprintf("%q outputs", id.Value), n, false, true) {
@@ -193,11 +193,7 @@ func (p *parser) parseActionOutput(id *String, n *yaml.Node, withValue bool) *Ac
 		case "description":
 			ret.Description = p.parseString(kv.val, false)
 		case "value":
-			if withValue {
-				ret.Value = p.parseString(kv.val, false)
-			} else {
-				p.errorf(kv.val, "output %q cannot have \"value\" property for composite actions", id.Value)
-			}
+			ret.Value = p.parseString(kv.val, false)
 		default:
 			p.unexpectedKey(kv.key, "input", []string{
 				"description",
@@ -208,18 +204,14 @@ func (p *parser) parseActionOutput(id *String, n *yaml.Node, withValue bool) *Ac
 		}
 	}
 
-	if withValue && ret.Value == nil {
-		p.errorf(n, "\"value\" property is missing in specification of output %q", id.Value)
-	}
-
 	return ret
 }
 
-func (p *parser) parseActionOutputs(pos *Pos, n *yaml.Node, withValue bool) map[string]*ActionOutput {
+func (p *parser) parseActionOutputs(pos *Pos, n *yaml.Node) map[string]*ActionOutput {
 	outputs := p.parseSectionMapping("outputs", n, false, false)
 	ret := make(map[string]*ActionOutput, len(outputs))
 	for _, kv := range outputs {
-		ret[kv.id] = p.parseActionOutput(kv.key, kv.val, withValue)
+		ret[kv.id] = p.parseActionOutput(kv.key, kv.val)
 	}
 
 	return ret
@@ -1458,43 +1450,55 @@ func (p *parser) parse(n *yaml.Node) *Workflow {
 	return w
 }
 
-func (p *parser) extractActionKind(n *yaml.Node) Action {
-	c := &ActionCommon{}
-	for _, kv := range p.parseMapping("action", n, false, true) {
-		if kv.id != "runs" {
-			continue
-		}
-		for _, kv2 := range p.parseMapping("runs", kv.val, false, true) {
-			if kv2.id == "using" {
-				using := p.parseString(kv2.val, false).Value
-				switch {
-				case strings.HasPrefix(using, "node"):
-					return &JavaScriptAction{ActionCommon: *c}
-				case using == "docker":
-					return &DockerContainerAction{ActionCommon: *c}
-				case using == "composite":
-					return &CompositeAction{ActionCommon: *c}
-				default:
-					p.error(kv2.val, "unknown action type (only javascript, docker and composite are supported)")
-					// TODO look at unsupported key for better error message
-					return &JavaScriptAction{ActionCommon: *c}
-				}
-			}
-		}
+// func (p *parser) extractActionKind(n *yaml.Node) ActionRuns {
+// 	c := &Action{}
+// 	for _, kv := range p.parseMapping("action", n, false, true) {
+// 		if kv.id != "runs" {
+// 			continue
+// 		}
+// 		for _, kv2 := range p.parseMapping("runs", kv.val, false, true) {
+// 			if kv2.id == "using" {
+// 				using := p.parseString(kv2.val, false).Value
+// 				switch {
+// 				case strings.HasPrefix(using, "node"):
+// 					return &JavaScriptAction{Action: *c}
+// 				case using == "docker":
+// 					return &DockerContainerAction{Action: *c}
+// 				case using == "composite":
+// 					return &CompositeAction{Action: *c}
+// 				default:
+// 					p.error(kv2.val, "unknown action type (only javascript, docker and composite are supported)")
+// 					// TODO look at unsupported key for better error message
+// 					return &JavaScriptAction{Action: *c}
+// 				}
+// 			}
+// 		}
 
-	}
-	a := JavaScriptAction{ActionCommon: *c}
-	return &a
-}
+// 	}
+// 	a := JavaScriptAction{Action: *c}
+// 	return &a
+// }
 
-func (p *parser) parseActionRuns(n *yaml.Node, a Action) {
+func (p *parser) parseActionRuns(n *yaml.Node) ActionRuns {
+	var r ActionRuns
 	for _, kv := range p.parseMapping("runs", n, false, true) {
 		switch kv.id {
 		case "using":
-			// TODO ignore
+			using := p.parseString(kv.val, false).Value
+			switch {
+			case strings.HasPrefix(using, "node"):
+				r = &JavaScriptAction{}
+			case using == "docker":
+				r = &DockerContainerAction{}
+			case using == "composite":
+				r = &CompositeAction{}
+			default:
+				p.error(kv.val, "unknown action type (only javascript, docker and composite are supported)")
+				// TODO look at unsupported key for better error message
+			}
 		case "steps":
 			var def *CompositeAction
-			if ca, ok := a.(*CompositeAction); ok {
+			if ca, ok := r.(*CompositeAction); ok {
 				def = ca
 			} else {
 				p.errorAt(kv.key.Pos, "this action defines parameters for composite actions, but is something else")
@@ -1503,7 +1507,7 @@ func (p *parser) parseActionRuns(n *yaml.Node, a Action) {
 			def.Steps = p.parseSteps(kv.val, true)
 		case "main", "pre", "pre-if", "post", "post-if":
 			var def *JavaScriptAction
-			if na, ok := a.(*JavaScriptAction); ok {
+			if na, ok := r.(*JavaScriptAction); ok {
 				def = na
 			} else {
 				p.errorAt(kv.key.Pos, "this action defines parameters for composite actions, but is something else")
@@ -1523,7 +1527,7 @@ func (p *parser) parseActionRuns(n *yaml.Node, a Action) {
 			}
 		case "image", "entrypoint", "args", "env", "pre-entrypoint", "post-entrypoint":
 			var def *DockerContainerAction
-			if da, ok := a.(*DockerContainerAction); ok {
+			if da, ok := r.(*DockerContainerAction); ok {
 				def = da
 			} else {
 				p.errorAt(kv.key.Pos, "this action defines parameters for composite actions, but is something else")
@@ -1562,7 +1566,12 @@ func (p *parser) parseActionRuns(n *yaml.Node, a Action) {
 		}
 	}
 
-	switch a := a.(type) {
+	if r == nil {
+		p.error(n, "\"using\" is required to define what is going on")
+		return r
+	}
+
+	switch a := r.(type) {
 	case *JavaScriptAction:
 		if a.Main == nil {
 			p.error(n, "\"main\" is required to run action in step")
@@ -1576,6 +1585,7 @@ func (p *parser) parseActionRuns(n *yaml.Node, a Action) {
 			p.error(n, "\"steps\" is required for a composite action")
 		}
 	}
+	return r
 }
 
 func (p *parser) parseBranding(n *yaml.Node) *Branding {
@@ -1604,7 +1614,8 @@ func (p *parser) parseBranding(n *yaml.Node) *Branding {
 }
 
 // https://docs.github.com/en/actions/creating-actions/metadata-syntax-for-github-actions
-func (p *parser) parseAction(n *yaml.Node) Action {
+func (p *parser) parseAction(n *yaml.Node) *Action {
+	a := &Action{}
 	if n.Line == 0 {
 		n.Line = 1
 	}
@@ -1614,30 +1625,26 @@ func (p *parser) parseAction(n *yaml.Node) Action {
 
 	if len(n.Content) == 0 {
 		p.error(n, "action is empty")
-		return &JavaScriptAction{ActionCommon: ActionCommon{}} // TODO add Unknown type?
+		return a
 	}
-
-	a := p.extractActionKind(n.Content[0])
-	c := a.Common()
 
 	for _, kv := range p.parseMapping("action", n.Content[0], false, true) {
 		k, v := kv.key, kv.val
 		switch kv.id {
 		case "name":
-			// TODO can it be empty? Also for the ones below
-			c.Name = p.parseString(v, true)
+			a.Name = p.parseString(v, true)
 		case "author":
-			c.Author = p.parseString(v, true)
+			a.Author = p.parseString(v, true)
 		case "description":
-			c.Description = p.parseString(v, true)
+			a.Description = p.parseString(v, true)
 		case "inputs":
-			c.Inputs = p.parseActionInputs(k.Pos, v)
+			a.Inputs = p.parseActionInputs(k.Pos, v)
 		case "outputs":
-			c.Outputs = p.parseActionOutputs(k.Pos, v, a.Kind() == ActionKindComposite)
+			a.Outputs = p.parseActionOutputs(k.Pos, v)
 		case "runs":
-			p.parseActionRuns(v, a)
+			a.Runs = p.parseActionRuns(v)
 		case "branding":
-			c.Branding = p.parseBranding(v)
+			a.Branding = p.parseBranding(v)
 		default:
 			p.unexpectedKey(k, "action", []string{
 				"name",
@@ -1651,15 +1658,25 @@ func (p *parser) parseAction(n *yaml.Node) Action {
 		}
 	}
 
-	if c.Name == nil {
+	if a.Name == nil {
 		p.error(n, "\"name\" property is missing in action metadata")
 	}
-	if c.Description == nil {
+	if a.Description == nil {
 		p.error(n, "\"description\" property is missing in action metadata")
 	}
-	// if a.Runs == nil {
-	// 	p.error(n, "\"runs\" section is missing in action metadata")
-	// }
+	if a.Runs == nil {
+		p.error(n, "\"runs\" section is missing in action metadata")
+	} else {
+		requireValue := a.Runs.Kind() == ActionKindComposite
+		for _, o := range a.Outputs {
+			if o.Value == nil && requireValue {
+				p.errorAt(o.Pos, "output value is required for composite actions")
+			}
+			if o.Value != nil && !requireValue {
+				p.errorAt(o.Pos, "output value is only allowed for composite actions")
+			}
+		}
+	}
 
 	return a
 }
@@ -1716,7 +1733,7 @@ func Parse(b []byte) (*Workflow, []*Error) {
 // ParseAction parses given source as byte sequence into workflow syntax tree. It returns all errors
 // detected while parsing the input. It means that detecting one error does not stop parsing. Even
 // if one or more errors are detected, parser will try to continue parsing and finding more errors.
-func ParseAction(b []byte) (Action, []*Error) {
+func ParseAction(b []byte) (*Action, []*Error) {
 	var n yaml.Node
 
 	if err := yaml.Unmarshal(b, &n); err != nil {

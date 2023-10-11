@@ -268,30 +268,30 @@ func (rule *RuleExpression) VisitJobPost(n *Job) error {
 }
 
 // VisitActionPre is callback when visiting Job node before visiting its children.
-func (rule *RuleExpression) VisitActionPre(n Action) error {
+func (rule *RuleExpression) VisitActionPre(n *Action) error {
 	rule.needsTy = NewEmptyStrictObjectType()
 	rule.stepsTy = NewEmptyStrictObjectType()
 
 	ity := NewEmptyStrictObjectType()
 	rule.inputsTy = ity
 
-	for k := range n.Common().Inputs {
+	for k := range n.Inputs {
 		ity.Props[k] = AnyType{}
 	}
 
-	switch a := n.(type) {
+	switch r := n.Runs.(type) {
 	case *JavaScriptAction:
-		rule.checkIfCondition(a.PreIf, "runs.pre-if")
-		rule.checkIfCondition(a.PostIf, "runs.post-if")
+		rule.checkIfCondition(r.PreIf, "runs.pre-if")
+		rule.checkIfCondition(r.PostIf, "runs.post-if")
 	case *DockerContainerAction:
-		rule.checkEnv(a.Env, "runs.env")
+		rule.checkEnv(r.Env, "runs.env")
 	}
 
 	return nil
 }
 
 // VisitActionPost is callback when visiting Job node after visiting its children
-func (rule *RuleExpression) VisitActionPost(n Action) error {
+func (rule *RuleExpression) VisitActionPost(n *Action) error {
 	// 'environment' and 'outputs' sections are evaluated after all steps are run
 	// if n.Environment != nil {
 	// 	rule.checkString(n.Environment.Name, "jobs.<job_id>.environment")

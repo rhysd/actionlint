@@ -42,14 +42,14 @@ func (rule *RuleID) VisitJobPost(n *Job) error {
 }
 
 // VisitActionPre is callback when visiting Job node before visiting its children.
-func (rule *RuleID) VisitActionPre(n Action) error {
+func (rule *RuleID) VisitActionPre(n *Action) error {
 	rule.seen = map[string]*Pos{}
 
 	return nil
 }
 
 // VisitActionPost is callback when visiting Job node after visiting its children.
-func (rule *RuleID) VisitActionPost(n Action) error {
+func (rule *RuleID) VisitActionPost(n *Action) error {
 	rule.seen = nil
 	return nil
 }

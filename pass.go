@@ -20,9 +20,9 @@ type Pass interface {
 	VisitWorkflowPost(node *Workflow) error
 
 	// VisitActionPre is callback when visiting Action node before visiting its children. It returns internal error when it cannot continue the process
-	VisitActionPre(node Action) error
+	VisitActionPre(node *Action) error
 	// VisitActionPost is callback when visiting Action node after visiting its children. It returns internal error when it cannot continue the process
-	VisitActionPost(node Action) error
+	VisitActionPost(node *Action) error
 }
 
 // Visitor visits syntax tree from root in depth-first order
@@ -94,7 +94,7 @@ func (v *Visitor) Visit(n *Workflow) error {
 }
 
 // VisitAction visits given syntax tree in depth-first order
-func (v *Visitor) VisitAction(n Action) error {
+func (v *Visitor) VisitAction(n *Action) error {
 	var t time.Time
 	if v.dbg != nil {
 		t = time.Now()
@@ -146,7 +146,7 @@ func (v *Visitor) VisitAction(n Action) error {
 		t = time.Now()
 	}
 
-	if c, ok := n.(*CompositeAction); ok {
+	if c, ok := n.Runs.(*CompositeAction); ok {
 		for _, s := range c.Steps {
 			if err := v.visitStep(s); err != nil {
 				return err
@@ -155,7 +155,7 @@ func (v *Visitor) VisitAction(n Action) error {
 
 		if v.dbg != nil {
 			// v.reportElapsedTime(fmt.Sprintf("Visiting %d steps at job %q", len(n.Steps), n.ID.Value), t)
-			v.reportElapsedTime(fmt.Sprintf("Visiting %d steps of action %q", len(c.Steps), n.Common().Name.Value), t)
+			v.reportElapsedTime(fmt.Sprintf("Visiting %d steps of action %q", len(c.Steps), n.Name.Value), t)
 		}
 	}
 
