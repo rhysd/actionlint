@@ -1578,6 +1578,31 @@ func (p *parser) parseActionRuns(n *yaml.Node, a Action) {
 	}
 }
 
+func (p *parser) parseBranding(n *yaml.Node) *Branding {
+	b := Branding{}
+	for _, kv := range p.parseMapping("branding", n, false, false) {
+		switch kv.id {
+		case "color":
+			b.Color = p.parseString(kv.val, false)
+		case "icon":
+			b.Icon = p.parseString(kv.val, false)
+		default:
+			p.unexpectedKey(kv.key, "branding", []string{
+				"color",
+				"icon",
+			})
+		}
+	}
+
+	if b.Icon == nil {
+		p.error(n, "\"icon\" is required for branding information")
+	}
+	if b.Color == nil {
+		p.error(n, "\"color\" is required for branding information")
+	}
+	return &b
+}
+
 // https://docs.github.com/en/actions/creating-actions/metadata-syntax-for-github-actions
 func (p *parser) parseAction(n *yaml.Node) Action {
 	if n.Line == 0 {
@@ -1612,7 +1637,7 @@ func (p *parser) parseAction(n *yaml.Node) Action {
 		case "runs":
 			p.parseActionRuns(v, a)
 		case "branding":
-			// TODO Add support for "branding" section
+			c.Branding = p.parseBranding(v)
 		default:
 			p.unexpectedKey(k, "action", []string{
 				"name",

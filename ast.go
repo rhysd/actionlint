@@ -944,6 +944,15 @@ type Action interface {
 	Common() *ActionCommon
 }
 
+// Branding defines what badges to be shown in GitHub Marketplace.
+// https://docs.github.com/en/actions/creating-actions/metadata-syntax-for-github-actions#branding
+type Branding struct {
+	// Color defines the background color of the badge.
+	Color *String
+	// Icon to use
+	Icon *String
+}
+
 // ActionCommon is root of action syntax tree, which represents one action metadata file.
 // https://docs.github.com/en/actions/creating-actions/metadata-syntax-for-github-actions
 type ActionCommon struct {
@@ -965,6 +974,9 @@ type ActionCommon struct {
 
 	// Outputs is list of outputs of the action. This field can be nil when user didn't specify it.
 	Outputs map[string]*ActionOutput
+
+	// Branding defines what badges to be shown in GitHub Marketplace.
+	Branding *Branding
 }
 
 type DockerContainerAction struct {
