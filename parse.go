@@ -41,7 +41,7 @@ func newString(n *yaml.Node) *String {
 	return &String{n.Value, quoted, posAt(n)}
 }
 
-type workflowKeyVal struct {
+type yamlKeyValue struct {
 	// id is used for comparing keys. When the key is case insensitive, this field is in lower case.
 	id  string
 	key *String
@@ -330,8 +330,7 @@ func (p *parser) parseFloat(n *yaml.Node) *Float {
 	}
 }
 
-// TODO rename workflowKeyVal or have a different type
-func (p *parser) parseMapping(what string, n *yaml.Node, allowEmpty, caseSensitive bool) []workflowKeyVal {
+func (p *parser) parseMapping(what string, n *yaml.Node, allowEmpty, caseSensitive bool) []yamlKeyValue {
 	isNull := isNull(n)
 
 	if !isNull && n.Kind != yaml.MappingNode {
@@ -346,7 +345,7 @@ func (p *parser) parseMapping(what string, n *yaml.Node, allowEmpty, caseSensiti
 
 	l := len(n.Content) / 2
 	keys := make(map[string]*Pos, l)
-	m := make([]workflowKeyVal, 0, l)
+	m := make([]yamlKeyValue, 0, l)
 	for i := 0; i < len(n.Content); i += 2 {
 		k := p.parseString(n.Content[i], false)
 		if k == nil {
@@ -371,7 +370,7 @@ func (p *parser) parseMapping(what string, n *yaml.Node, allowEmpty, caseSensiti
 			p.errorfAt(k.Pos, "key %q is duplicated in %s. previously defined at %s%s", k.Value, what, pos.String(), note)
 			continue
 		}
-		m = append(m, workflowKeyVal{id, k, n.Content[i+1]})
+		m = append(m, yamlKeyValue{id, k, n.Content[i+1]})
 		keys[id] = k.Pos
 	}
 
@@ -382,7 +381,7 @@ func (p *parser) parseMapping(what string, n *yaml.Node, allowEmpty, caseSensiti
 	return m
 }
 
-func (p *parser) parseSectionMapping(sec string, n *yaml.Node, allowEmpty, caseSensitive bool) []workflowKeyVal {
+func (p *parser) parseSectionMapping(sec string, n *yaml.Node, allowEmpty, caseSensitive bool) []yamlKeyValue {
 	return p.parseMapping(fmt.Sprintf("%q section", sec), n, allowEmpty, caseSensitive)
 }
 
