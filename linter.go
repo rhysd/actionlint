@@ -90,6 +90,9 @@ type LinterOptions struct {
 	// function should return the modified rules.
 	// Note that syntax errors may be reported even if this function returns nil or an empty slice.
 	OnRulesCreated func([]Rule) []Rule
+	// FileSyntax decides whether directories or files should be linted as workflow files or Action
+	// metadata
+	FileSyntax string
 	// More options will come here
 }
 
@@ -107,6 +110,7 @@ type Linter struct {
 	errFmt         *ErrorFormatter
 	cwd            string
 	onRulesCreated func([]Rule) []Rule
+	fileSyntax     FileKind
 }
 
 // NewLinter creates a new Linter instance.
@@ -171,6 +175,17 @@ func NewLinter(out io.Writer, opts *LinterOptions) (*Linter, error) {
 			cwd = d
 		}
 	}
+	var fileSyntax FileKind
+	switch opts.FileSyntax {
+	case "workflow":
+		fileSyntax = FileWorkflow
+	case "action":
+		fileSyntax = FileAction
+	case "auto-detect":
+		fileSyntax = FileAutoDetect
+	default:
+		return nil, fmt.Errorf("unknown file syntax choose 'workflow', 'action' or 'auto-detect'")
+	}
 
 	return &Linter{
 		NewProjects(),
@@ -185,6 +200,7 @@ func NewLinter(out io.Writer, opts *LinterOptions) (*Linter, error) {
 		formatter,
 		cwd,
 		opts.OnRulesCreated,
+		fileSyntax,
 	}, nil
 }
 
@@ -252,21 +268,23 @@ func (l *Linter) LintRepository(dir string) ([]*Error, error) {
 	}
 
 	l.log("Detected project:", p.RootDir())
-	wd := p.WorkflowsDir()
-	workflow_errors, err := l.LintDir(wd, p)
-	if err != nil {
-		return workflow_errors, err
+	var parentDir string
+	if l.fileSyntax == FileWorkflow {
+		parentDir = p.WorkflowsDir()
+	} else {
+		parentDir = p.RootDir()
 	}
-	action_errors, err := l.LintActionDir(p.RootDir(), p)
+	errors, err := l.LintDir(parentDir, p)
 	if err != nil {
-		return action_errors, err
+		return errors, err
 	}
-	return append(workflow_errors, action_errors...), nil
+	return errors, nil
 }
 
-// LintDir lints all YAML workflow files in the given directory recursively.
+// LintDir lints all YAML files in the given directory recursively.
 func (l *Linter) LintDir(dir string, project *Project) ([]*Error, error) {
 	files := []string{}
+	workflow_dir := project.WorkflowsDir()
 	if err := filepath.Walk(dir, func(path string, info os.FileInfo, err error) error {
 		if err != nil {
 			return err
@@ -274,7 +292,19 @@ func (l *Linter) LintDir(dir string, project *Project) ([]*Error, error) {
 		if info.IsDir() {
 			return nil
 		}
-		if strings.HasSuffix(path, ".yml") || strings.HasSuffix(path, ".yaml") {
+		includeAnyYaml := false
+		switch l.fileSyntax {
+		case FileAction:
+			includeAnyYaml = false
+		case FileWorkflow:
+			includeAnyYaml = true
+		case FileAutoDetect:
+			includeAnyYaml = strings.HasPrefix(path, workflow_dir)
+		}
+		if !includeAnyYaml && (strings.HasSuffix(path, "action.yml") || strings.HasSuffix(path, "action.yaml")) {
+			files = append(files, path)
+		}
+		if includeAnyYaml && (strings.HasSuffix(path, ".yml") || strings.HasSuffix(path, ".yaml")) {
 			files = append(files, path)
 		}
 		return nil
@@ -293,32 +323,6 @@ func (l *Linter) LintDir(dir string, project *Project) ([]*Error, error) {
 	return l.LintFiles(files, project)
 }
 
-// LintActionDir lints all YAML action files in the given directory recursively.
-func (l *Linter) LintActionDir(dir string, project *Project) ([]*Error, error) {
-	files := []string{}
-	if err := filepath.Walk(dir, func(path string, info os.FileInfo, err error) error {
-		if err != nil {
-			return err
-		}
-		if info.IsDir() {
-			return nil
-		}
-		if strings.HasSuffix(path, "/action.yml") || strings.HasSuffix(path, "/action.yaml") {
-			files = append(files, path)
-		}
-		return nil
-	}); err != nil {
-		return nil, fmt.Errorf("could not read files in %q: %w", dir, err)
-	}
-
-	l.log("Collected", len(files), "action YAML files")
-
-	// To make output deterministic, sort order of file paths
-	sort.Strings(files)
-
-	return l.LintActionFiles(files, project)
-}
-
 // LintFiles lints YAML workflow files and outputs the errors to given writer. It applies lint
 // rules to all given files. The project parameter can be nil. In the case, a project is detected
 // from the file path.
@@ -331,7 +335,7 @@ func (l *Linter) LintFiles(filepaths []string, project *Project) ([]*Error, erro
 		return l.LintFile(filepaths[0], project)
 	}
 
-	l.log("Linting", n, "workflow files")
+	l.log("Linting", n, "files")
 
 	cwd := l.cwd
 	proc := newConcurrentProcess(runtime.NumCPU())
@@ -424,122 +428,12 @@ func (l *Linter) LintFiles(filepaths []string, project *Project) ([]*Error, erro
 		}
 	}
 
-	l.log("Found", total, "errors in", n, "workflow files")
+	l.log("Found", total, "errors in", n, "files")
 
 	return all, nil
 }
 
-// LintActionFiles lints YAML workflow files and outputs the errors to given writer. It applies lint
-// rules to all given files. The project parameter can be nil. In the case, a project is detected
-// from the file path.
-func (l *Linter) LintActionFiles(filepaths []string, project *Project) ([]*Error, error) {
-	n := len(filepaths)
-	// switch n {
-	// case 0:
-	// 	return []*Error{}, nil
-	// case 1:
-	// 	return l.LintActionFile(filepaths[0], project)
-	// }
-
-	l.log("Linting", n, "action files")
-
-	cwd := l.cwd
-	proc := newConcurrentProcess(runtime.NumCPU())
-	sema := semaphore.NewWeighted(int64(runtime.NumCPU()))
-	ctx := context.Background()
-	dbg := l.debugWriter()
-	acf := NewLocalActionsCacheFactory(dbg)
-	rwcf := NewLocalReusableWorkflowCacheFactory(cwd, dbg)
-
-	type workspace struct {
-		path string
-		errs []*Error
-		src  []byte
-	}
-
-	ws := make([]workspace, 0, len(filepaths))
-	for _, p := range filepaths {
-		ws = append(ws, workspace{path: p})
-	}
-
-	eg := errgroup.Group{}
-	for i := range ws {
-		// Each element of ws is accessed by single goroutine so mutex is unnecessary
-		w := &ws[i]
-		proj := project
-		if proj == nil {
-			// This method modifies state of l.projects so it cannot be called in parallel.
-			// Before entering goroutine, resolve project instance.
-			p, err := l.projects.At(w.path)
-			if err != nil {
-				return nil, err
-			}
-			proj = p
-		}
-		ac := acf.GetCache(proj) // #173
-		rwc := rwcf.GetCache(proj)
-
-		eg.Go(func() error {
-			// Bound concurrency on reading files to avoid "too many files to open" error (issue #3)
-			sema.Acquire(ctx, 1)
-			src, err := os.ReadFile(w.path)
-			sema.Release(1)
-			if err != nil {
-				return fmt.Errorf("could not read %q: %w", w.path, err)
-			}
-
-			if cwd != "" {
-				if r, err := filepath.Rel(cwd, w.path); err == nil {
-					w.path = r // Use relative path if possible
-				}
-			}
-			errs, err := l.checkAction(w.path, src, proj, proc, ac, rwc)
-			if err != nil {
-				return fmt.Errorf("fatal error while checking %s: %w", w.path, err)
-			}
-			w.src = src
-			w.errs = errs
-			return nil
-		})
-	}
-
-	proc.wait()
-	if err := eg.Wait(); err != nil {
-		return nil, err
-	}
-
-	total := 0
-	for i := range ws {
-		total += len(ws[i].errs)
-	}
-
-	all := make([]*Error, 0, total)
-	if l.errFmt != nil {
-		temp := make([]*ErrorTemplateFields, 0, total)
-		for i := range ws {
-			w := &ws[i]
-			for _, err := range w.errs {
-				temp = append(temp, err.GetTemplateFields(w.src))
-			}
-			all = append(all, w.errs...)
-		}
-		if err := l.errFmt.Print(l.out, temp); err != nil {
-			return nil, err
-		}
-	} else {
-		for i := range ws {
-			w := &ws[i]
-			l.printErrors(w.errs, w.src)
-			all = append(all, w.errs...)
-		}
-	}
-
-	l.log("Found", total, "errors in", n, "action files")
-
-	return all, nil
-}
-
-// LintFile lints one YAML workflow file and outputs the errors to given writer. The project
+// LintFile lints one YAML file and outputs the errors to given writer. The project
 // parameter can be nil. In the case, the project is detected from the given path.
 func (l *Linter) LintFile(path string, project *Project) ([]*Error, error) {
 	if project == nil {
@@ -644,32 +538,47 @@ func (l *Linter) check(
 		l.debug("No config was found")
 	}
 
-	w, all := Parse(content)
+	w, a, all := ParseFile(path, content, l.fileSyntax)
 
 	if l.logLevel >= LogLevelVerbose {
 		elapsed := time.Since(start)
 		l.log("Found", len(all), "parse errors in", elapsed.Milliseconds(), "ms for", path)
 	}
 
-	if w != nil {
+	if w != nil || a != nil {
 		dbg := l.debugWriter()
 
-		rules := []Rule{
-			NewRuleMatrix(),
-			NewRuleCredentials(),
-			NewRuleShellName(),
-			NewRuleRunnerLabel(),
-			NewRuleEvents(),
-			NewRuleJobNeeds(),
-			NewRuleAction(localActions),
-			NewRuleEnvVar(),
-			NewRuleID(),
-			NewRuleGlob(),
-			NewRulePermissions(),
-			NewRuleWorkflowCall(path, localReusableWorkflows),
-			NewRuleExpression(localActions, localReusableWorkflows),
-			NewRuleDeprecatedCommands(),
-			NewRuleIfCond(),
+		var rules []Rule
+		if w != nil {
+			rules = []Rule{
+				NewRuleMatrix(),
+				NewRuleCredentials(),
+				NewRuleShellName(),
+				NewRuleRunnerLabel(),
+				NewRuleEvents(),
+				NewRuleJobNeeds(),
+				NewRuleAction(localActions),
+				NewRuleEnvVar(),
+				NewRuleID(),
+				NewRuleGlob(),
+				NewRulePermissions(),
+				NewRuleWorkflowCall(path, localReusableWorkflows),
+				NewRuleExpression(localActions, localReusableWorkflows),
+				NewRuleDeprecatedCommands(),
+				NewRuleIfCond(),
+			}
+		} else {
+			rules = []Rule{
+				NewRuleBranding(),
+				NewRuleShellName(),
+				NewRuleAction(localActions),
+				NewRuleEnvVar(),
+				NewRuleID(),
+				NewRuleWorkflowCall(path, localReusableWorkflows),
+				NewRuleExpression(localActions, localReusableWorkflows),
+				NewRuleDeprecatedCommands(),
+				NewRuleIfCond(),
+			}
 		}
 		if l.shellcheck != "" {
 			r, err := NewRuleShellcheck(l.shellcheck, proc)
@@ -711,183 +620,17 @@ func (l *Linter) check(
 			}
 		}
 
-		if err := v.Visit(w); err != nil {
-			l.debug("error occurred while visiting workflow syntax tree: %v", err)
-			return nil, err
-		}
-
-		for _, rule := range rules {
-			errs := rule.Errs()
-			l.debug("%s found %d errors", rule.Name(), len(errs))
-			all = append(all, errs...)
-		}
-
-		if l.errFmt != nil {
-			for _, rule := range rules {
-				l.errFmt.RegisterRule(rule)
-			}
-		}
-	}
-
-	if len(l.ignorePats) > 0 {
-		filtered := make([]*Error, 0, len(all))
-	Loop:
-		for _, err := range all {
-			for _, pat := range l.ignorePats {
-				if pat.MatchString(err.Message) {
-					continue Loop
-				}
-			}
-			filtered = append(filtered, err)
-		}
-		all = filtered
-	}
-
-	for _, err := range all {
-		err.Filepath = path // Populate filename in the error
-	}
-
-	sort.Stable(ByErrorPosition(all))
-
-	if l.logLevel >= LogLevelVerbose {
-		elapsed := time.Since(start)
-		l.log("Found total", len(all), "errors in", elapsed.Milliseconds(), "ms for", path)
-	}
-
-	return all, nil
-}
-
-// LintAction lints YAML action metadata file content given as byte slice. The path parameter is used as file
-// path where the content came from. Setting "<stdin>" to path parameter indicates the output came
-// from STDIN.
-// When nil is passed to the project parameter, it tries to find the project from the path parameter.
-// TODO Maybe merge with Lint() and have a param to decide if it's a workflow or action
-func (l *Linter) LintAction(path string, content []byte, project *Project) ([]*Error, error) {
-	if project == nil && path != "<stdin>" {
-		if _, err := os.Stat(path); !errors.Is(err, fs.ErrNotExist) {
-			p, err := l.projects.At(path)
-			if err != nil {
+		if w != nil {
+			if err := v.Visit(w); err != nil {
+				l.debug("error occurred while visiting workflow syntax tree: %v", err)
 				return nil, err
 			}
-			project = p
 		}
-	}
-	proc := newConcurrentProcess(runtime.NumCPU())
-	dbg := l.debugWriter()
-	// TODO Figure out what to do about the caches
-	localActions := NewLocalActionsCache(project, dbg)
-	localReusableWorkflows := NewLocalReusableWorkflowCache(project, l.cwd, dbg)
-	errs, err := l.checkAction(path, content, project, proc, localActions, localReusableWorkflows)
-	proc.wait()
-	if err != nil {
-		return nil, err
-	}
-	if l.errFmt != nil {
-		l.errFmt.PrintErrors(l.out, errs, content)
-	} else {
-		l.printErrors(errs, content)
-	}
-	return errs, nil
-}
-
-func (l *Linter) checkAction(
-	path string,
-	content []byte,
-	project *Project,
-	proc *concurrentProcess,
-	localActions *LocalActionsCache,
-	localReusableWorkflows *LocalReusableWorkflowCache,
-) ([]*Error, error) {
-	// Note: This method is called to check multiple files in parallel.
-	// It must be thread safe assuming fields of Linter are not modified while running.
-
-	var start time.Time
-	if l.logLevel >= LogLevelVerbose {
-		start = time.Now()
-	}
-
-	l.log("Linting action", path)
-	if project != nil {
-		l.log("Using project at", project.RootDir())
-	}
-
-	var cfg *Config
-	if l.defaultConfig != nil {
-		// `-config-file` option has higher prioritiy than repository config file
-		cfg = l.defaultConfig
-	} else if project != nil {
-		cfg = project.Config()
-	}
-	if cfg != nil {
-		l.debug("Config: %#v", cfg)
-	} else {
-		l.debug("No config was found")
-	}
-
-	a, all := ParseAction(content)
-
-	if l.logLevel >= LogLevelVerbose {
-		elapsed := time.Since(start)
-		l.log("Found", len(all), "parse errors in", elapsed.Milliseconds(), "ms for", path)
-	}
-
-	if a != nil {
-		dbg := l.debugWriter()
-
-		rules := []Rule{
-			NewRuleBranding(),
-			NewRuleShellName(),
-			NewRuleAction(localActions),
-			NewRuleEnvVar(),
-			NewRuleID(),
-			NewRuleWorkflowCall(path, localReusableWorkflows),
-			NewRuleExpression(localActions, localReusableWorkflows),
-			NewRuleDeprecatedCommands(),
-			NewRuleIfCond(),
-		}
-		if l.shellcheck != "" {
-			r, err := NewRuleShellcheck(l.shellcheck, proc)
-			if err == nil {
-				rules = append(rules, r)
-			} else {
-				l.log("Rule \"shellcheck\" was disabled:", err)
+		if a != nil {
+			if err := v.VisitAction(a); err != nil {
+				l.debug("error occurred while visiting workflow syntax tree: %v", err)
+				return nil, err
 			}
-		} else {
-			l.log("Rule \"shellcheck\" was disabled since shellcheck command name was empty")
-		}
-		if l.pyflakes != "" {
-			r, err := NewRulePyflakes(l.pyflakes, proc)
-			if err == nil {
-				rules = append(rules, r)
-			} else {
-				l.log("Rule \"pyflakes\" was disabled:", err)
-			}
-		} else {
-			l.log("Rule \"pyflakes\" was disabled since pyflakes command name was empty")
-		}
-		if l.onRulesCreated != nil {
-			rules = l.onRulesCreated(rules)
-		}
-
-		v := NewVisitor()
-		for _, rule := range rules {
-			v.AddPass(rule)
-		}
-		if dbg != nil {
-			v.EnableDebug(dbg)
-			for _, r := range rules {
-				r.EnableDebug(dbg)
-			}
-		}
-		if cfg != nil {
-			for _, r := range rules {
-				r.SetConfig(cfg)
-			}
-		}
-
-		if err := v.VisitAction(a); err != nil {
-			l.debug("error occurred while visiting action syntax tree: %v", err)
-			return nil, err
 		}
 
 		for _, rule := range rules {

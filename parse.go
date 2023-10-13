@@ -1392,7 +1392,7 @@ func (p *parser) parseJobs(n *yaml.Node) map[string]*Job {
 }
 
 // https://docs.github.com/en/actions/learn-github-actions/workflow-syntax-for-github-actions
-func (p *parser) parse(n *yaml.Node) *Workflow {
+func (p *parser) parseWorkflow(n *yaml.Node) *Workflow {
 	w := &Workflow{}
 
 	if n.Line == 0 {
@@ -1449,35 +1449,6 @@ func (p *parser) parse(n *yaml.Node) *Workflow {
 
 	return w
 }
-
-// func (p *parser) extractActionKind(n *yaml.Node) ActionRuns {
-// 	c := &Action{}
-// 	for _, kv := range p.parseMapping("action", n, false, true) {
-// 		if kv.id != "runs" {
-// 			continue
-// 		}
-// 		for _, kv2 := range p.parseMapping("runs", kv.val, false, true) {
-// 			if kv2.id == "using" {
-// 				using := p.parseString(kv2.val, false).Value
-// 				switch {
-// 				case strings.HasPrefix(using, "node"):
-// 					return &JavaScriptAction{Action: *c}
-// 				case using == "docker":
-// 					return &DockerContainerAction{Action: *c}
-// 				case using == "composite":
-// 					return &CompositeAction{Action: *c}
-// 				default:
-// 					p.error(kv2.val, "unknown action type (only javascript, docker and composite are supported)")
-// 					// TODO look at unsupported key for better error message
-// 					return &JavaScriptAction{Action: *c}
-// 				}
-// 			}
-// 		}
-
-// 	}
-// 	a := JavaScriptAction{Action: *c}
-// 	return &a
-// }
 
 func (p *parser) parseActionRuns(n *yaml.Node) ActionRuns {
 	var r ActionRuns
@@ -1711,40 +1682,67 @@ func handleYAMLError(err error) []*Error {
 	return []*Error{yamlErr(err.Error())}
 }
 
-// Parse parses given source as byte sequence into workflow syntax tree. It returns all errors
-// detected while parsing the input. It means that detecting one error does not stop parsing. Even
-// if one or more errors are detected, parser will try to continue parsing and finding more errors.
-func Parse(b []byte) (*Workflow, []*Error) {
-	var n yaml.Node
+// FileKind is kind of how the action is executed (JavaScript, Docker or Composite)
+type FileKind uint8
 
-	if err := yaml.Unmarshal(b, &n); err != nil {
-		return nil, handleYAMLError(err)
+const (
+	// FileWorkflow ensures the file is parsed as Actions workflow
+	FileWorkflow FileKind = iota
+	// FileAction ensures the file is parsed as Action metadata file
+	FileAction
+	// FileAutoDetect will select between workflow and action metadata file based on filename and file content.
+	FileAutoDetect
+)
+
+func selectFormat(filename string, node *yaml.Node, kind FileKind) FileKind {
+	if kind != FileAutoDetect { // Format is already enforced
+		return kind
+	}
+	if strings.Contains(filename, ".github/workflows/") {
+		println("Detect", filename, "as workflow file based (due to its directory)")
+		return FileWorkflow
+	}
+	if strings.HasSuffix(filename, "/action.yaml") || strings.HasSuffix(filename, "/action.yml") {
+		println("Detect", filename, "as action filename based (due to its filename)")
+		return FileAction
 	}
 
-	// Uncomment for checking YAML tree
-	// dumpYAML(&n, 0)
+	// selecting Action if `runs` element is present Workflow otherwise:
+	if isNull(node) || len(node.Content) == 0 || node.Content[0].Kind != yaml.MappingNode {
+		println("Defaulted", filename, "as workflow (file is not a yaml mapping)", nodeKindName(node.Kind))
+		return FileWorkflow
+	}
 
-	p := &parser{}
-	w := p.parse(&n)
-
-	return w, p.errors
+	for i := 0; i < len(node.Content[0].Content); i += 2 {
+		if node.Content[0].Content[i].Kind == yaml.ScalarNode && node.Content[0].Content[i].Value == "runs" {
+			println("Detected", filename, "as action workflow (it has a 'runs' key)")
+			return FileAction
+		}
+	}
+	return FileWorkflow
 }
 
-// ParseAction parses given source as byte sequence into workflow syntax tree. It returns all errors
-// detected while parsing the input. It means that detecting one error does not stop parsing. Even
-// if one or more errors are detected, parser will try to continue parsing and finding more errors.
-func ParseAction(b []byte) (*Action, []*Error) {
+// ParseFile parses given source as byte sequence into action or workflow syntax tree. It returns
+// all errors detected while parsing the input. It means that detecting one error does not stop parsing.
+// Even if one or more errors are detected, parser will try to continue parsing and finding more errors.
+func ParseFile(filename string, b []byte, kind FileKind) (*Workflow, *Action, []*Error) {
 	var n yaml.Node
+	var a *Action
+	var w *Workflow
 
 	if err := yaml.Unmarshal(b, &n); err != nil {
-		return nil, handleYAMLError(err)
+		return nil, nil, handleYAMLError(err)
 	}
 
 	// Uncomment for checking YAML tree
 	// dumpYAML(&n, 0)
 
 	p := &parser{}
-	a := p.parseAction(&n)
+	if selectFormat(filename, &n, kind) == FileWorkflow {
+		w = p.parseWorkflow(&n)
+	} else {
+		a = p.parseAction(&n)
+	}
 
-	return a, p.errors
+	return w, a, p.errors
 }
