@@ -90,9 +90,9 @@ type LinterOptions struct {
 	// function should return the modified rules.
 	// Note that syntax errors may be reported even if this function returns nil or an empty slice.
 	OnRulesCreated func([]Rule) []Rule
-	// FileSyntax decides whether directories or files should be linted as workflow files or Action
+	// InputFormat decides whether directories or files should be linted as workflow files or Action
 	// metadata
-	FileSyntax string
+	InputFormat string
 	// More options will come here
 }
 
@@ -110,7 +110,7 @@ type Linter struct {
 	errFmt         *ErrorFormatter
 	cwd            string
 	onRulesCreated func([]Rule) []Rule
-	fileSyntax     FileKind
+	inputFormat    InputFormat
 }
 
 // NewLinter creates a new Linter instance.
@@ -175,14 +175,16 @@ func NewLinter(out io.Writer, opts *LinterOptions) (*Linter, error) {
 			cwd = d
 		}
 	}
-	var fileSyntax FileKind
-	switch opts.FileSyntax {
+	var inputFormat InputFormat
+	switch opts.InputFormat {
 	case "workflow":
-		fileSyntax = FileWorkflow
+		inputFormat = FileWorkflow
 	case "action":
-		fileSyntax = FileAction
+		inputFormat = FileAction
+	case "":
+		fallthrough
 	case "auto-detect":
-		fileSyntax = FileAutoDetect
+		inputFormat = FileAutoDetect
 	default:
 		return nil, fmt.Errorf("unknown file syntax choose 'workflow', 'action' or 'auto-detect'")
 	}
@@ -200,7 +202,7 @@ func NewLinter(out io.Writer, opts *LinterOptions) (*Linter, error) {
 		formatter,
 		cwd,
 		opts.OnRulesCreated,
-		fileSyntax,
+		inputFormat,
 	}, nil
 }
 
@@ -253,11 +255,13 @@ func (l *Linter) GenerateDefaultConfig(dir string) error {
 	return nil
 }
 
-// LintRepository lints YAML workflow files and outputs the errors to given writer. It finds the nearest
-// `.github/workflows` directory based on `dir` and applies lint rules to all YAML workflow files
-// under the directory.
+// LintRepository lints YAML workflow and action files and outputs the errors to given writer.
+// It finds the nearest `.github/workflows` directory based on `dir` and applies lint rules to
+// all YAML workflow files under the directory.
+// Action metadata files are searched for in all other directories of the repository.
+// Note, the InputFormat option can be used to filter this behavior.
 func (l *Linter) LintRepository(dir string) ([]*Error, error) {
-	l.log("Linting all workflow files in repository:", dir)
+	l.log("Linting all", inputFormatString(l.inputFormat), "files in repository:", dir)
 
 	p, err := l.projects.At(dir)
 	if err != nil {
@@ -269,16 +273,30 @@ func (l *Linter) LintRepository(dir string) ([]*Error, error) {
 
 	l.log("Detected project:", p.RootDir())
 	var parentDir string
-	if l.fileSyntax == FileWorkflow {
+	if l.inputFormat == FileWorkflow {
 		parentDir = p.WorkflowsDir()
 	} else {
 		parentDir = p.RootDir()
 	}
-	errors, err := l.LintDir(parentDir, p)
+	return l.LintDir(parentDir, p)
+}
+
+// LintDirInRepository lints YAML workflow or actions files and outputs the errors to given writer.
+// It finds the projected based on the nearest `.github/workflows` directory based on `dir`.
+// However, only files within `dir` are linted.
+func (l *Linter) LintDirInRepository(dir string) ([]*Error, error) {
+	l.log("Linting all", inputFormatString(l.inputFormat), "files in repository:", dir)
+
+	p, err := l.projects.At(dir)
 	if err != nil {
-		return errors, err
+		return nil, err
 	}
-	return errors, nil
+	if p == nil {
+		return nil, fmt.Errorf("no project was found in any parent directories of %q. check workflows directory is put correctly in your Git repository", dir)
+	}
+
+	l.log("Detected project:", p.RootDir())
+	return l.LintDir(dir, p)
 }
 
 // LintDir lints all YAML files in the given directory recursively.
@@ -293,7 +311,7 @@ func (l *Linter) LintDir(dir string, project *Project) ([]*Error, error) {
 			return nil
 		}
 		includeAnyYaml := false
-		switch l.fileSyntax {
+		switch l.inputFormat {
 		case FileAction:
 			includeAnyYaml = false
 		case FileWorkflow:
@@ -520,7 +538,7 @@ func (l *Linter) check(
 		start = time.Now()
 	}
 
-	l.log("Linting workflow", path)
+	l.log("Linting", inputFormatString(l.inputFormat), path)
 	if project != nil {
 		l.log("Using project at", project.RootDir())
 	}
@@ -538,11 +556,11 @@ func (l *Linter) check(
 		l.debug("No config was found")
 	}
 
-	w, a, all := ParseFile(path, content, l.fileSyntax)
+	w, a, sf, all := ParseFile(path, content, l.inputFormat)
 
 	if l.logLevel >= LogLevelVerbose {
 		elapsed := time.Since(start)
-		l.log("Found", len(all), "parse errors in", elapsed.Milliseconds(), "ms for", path)
+		l.log("Found", len(all), "parse errors in", elapsed.Milliseconds(), "ms for", inputFormatString(sf), path)
 	}
 
 	if w != nil || a != nil {
@@ -621,7 +639,7 @@ func (l *Linter) check(
 		}
 
 		if w != nil {
-			if err := v.Visit(w); err != nil {
+			if err := v.VisitWorkflow(w); err != nil {
 				l.debug("error occurred while visiting workflow syntax tree: %v", err)
 				return nil, err
 			}
@@ -668,7 +686,7 @@ func (l *Linter) check(
 
 	if l.logLevel >= LogLevelVerbose {
 		elapsed := time.Since(start)
-		l.log("Found total", len(all), "errors in", elapsed.Milliseconds(), "ms for", path)
+		l.log("Found total", len(all), "errors in", elapsed.Milliseconds(), "ms for", inputFormatString(sf), path)
 	}
 
 	return all, nil

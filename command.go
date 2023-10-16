@@ -102,7 +102,7 @@ func (cmd *Command) runLinter(args []string, opts *LinterOptions, initConfig boo
 	}
 
 	if len(args) == 1 && isDir(args[0]) {
-		return l.LintRepository(args[0])
+		return l.LintDirInRepository(args[0])
 	}
 
 	if len(args) == 1 && args[0] == "-" {
@@ -156,7 +156,7 @@ func (cmd *Command) Main(args []string) int {
 	flags.BoolVar(&opts.Debug, "debug", false, "Enable debug output (for development)")
 	flags.BoolVar(&ver, "version", false, "Show version and how this binary was installed")
 	flags.StringVar(&opts.StdinFileName, "stdin-filename", "", "File name when reading input from stdin")
-	flags.StringVar(&opts.FileSyntax, "file-syntax", "auto-detect", "What syntax to check 'workflow', 'action' or 'auto-detect'")
+	flags.StringVar(&opts.InputFormat, "input-format", "auto-detect", "What syntax to check 'workflow', 'action' or 'auto-detect'")
 	flags.Usage = func() {
 		fmt.Fprintln(cmd.Stderr, commandUsageHeader)
 		flags.PrintDefaults()

@@ -1088,7 +1088,7 @@ func (p *parser) parseStep(n *yaml.Node, requireShell bool) *Step {
 			} else {
 				// kv.key == "with"
 				with := p.parseSectionMapping("with", kv.val, false, false)
-				exec.Inputs = make(map[string]*WorkflowInput, len(with))
+				exec.Inputs = make(map[string]*StepInput, len(with))
 				for _, input := range with {
 					switch input.id {
 					case "entrypoint":
@@ -1098,7 +1098,7 @@ func (p *parser) parseStep(n *yaml.Node, requireShell bool) *Step {
 						// https://docs.github.com/en/actions/learn-github-actions/workflow-syntax-for-github-actions#jobsjob_idstepswithargs
 						exec.Args = p.parseString(input.val, true)
 					default:
-						exec.Inputs[input.id] = &WorkflowInput{input.key, p.parseString(input.val, true)}
+						exec.Inputs[input.id] = &StepInput{input.key, p.parseString(input.val, true)}
 					}
 				}
 			}
@@ -1455,21 +1455,20 @@ func (p *parser) parseActionRuns(n *yaml.Node) ActionRuns {
 	for _, kv := range p.parseMapping("runs", n, false, true) {
 		switch kv.id {
 		case "using":
-			using := p.parseString(kv.val, false).Value
+			using := p.parseString(kv.val, false)
 			switch {
-			case strings.HasPrefix(using, "node"):
-				r = &JavaScriptAction{}
-			case using == "docker":
-				r = &DockerContainerAction{}
-			case using == "composite":
-				r = &CompositeAction{}
+			case strings.HasPrefix(using.Value, "node"):
+				r = &JavaScriptRuns{Using: using}
+			case using.Value == "docker":
+				r = &DockerContainerRuns{}
+			case using.Value == "composite":
+				r = &CompositeRuns{}
 			default:
 				p.error(kv.val, "unknown action type (only javascript, docker and composite are supported)")
-				// TODO look at unsupported key for better error message
 			}
 		case "steps":
-			var def *CompositeAction
-			if ca, ok := r.(*CompositeAction); ok {
+			var def *CompositeRuns
+			if ca, ok := r.(*CompositeRuns); ok {
 				def = ca
 			} else {
 				p.errorAt(kv.key.Pos, "this action defines parameters for composite actions, but is something else")
@@ -1477,8 +1476,8 @@ func (p *parser) parseActionRuns(n *yaml.Node) ActionRuns {
 			}
 			def.Steps = p.parseSteps(kv.val, true)
 		case "main", "pre", "pre-if", "post", "post-if":
-			var def *JavaScriptAction
-			if na, ok := r.(*JavaScriptAction); ok {
+			var def *JavaScriptRuns
+			if na, ok := r.(*JavaScriptRuns); ok {
 				def = na
 			} else {
 				p.errorAt(kv.key.Pos, "this action defines parameters for composite actions, but is something else")
@@ -1497,8 +1496,8 @@ func (p *parser) parseActionRuns(n *yaml.Node) ActionRuns {
 				def.PostIf = p.parseString(kv.val, false)
 			}
 		case "image", "entrypoint", "args", "env", "pre-entrypoint", "post-entrypoint":
-			var def *DockerContainerAction
-			if da, ok := r.(*DockerContainerAction); ok {
+			var def *DockerContainerRuns
+			if da, ok := r.(*DockerContainerRuns); ok {
 				def = da
 			} else {
 				p.errorAt(kv.key.Pos, "this action defines parameters for composite actions, but is something else")
@@ -1543,15 +1542,15 @@ func (p *parser) parseActionRuns(n *yaml.Node) ActionRuns {
 	}
 
 	switch a := r.(type) {
-	case *JavaScriptAction:
+	case *JavaScriptRuns:
 		if a.Main == nil {
 			p.error(n, "\"main\" is required to run action in step")
 		}
-	case *DockerContainerAction:
+	case *DockerContainerRuns:
 		if a.Image == nil {
 			p.error(n, "\"image\" is required for a docker container action")
 		}
-	case *CompositeAction:
+	case *CompositeRuns:
 		if a.Steps == nil {
 			p.error(n, "\"steps\" is required for a composite action")
 		}
@@ -1682,40 +1681,52 @@ func handleYAMLError(err error) []*Error {
 	return []*Error{yamlErr(err.Error())}
 }
 
-// FileKind is kind of how the action is executed (JavaScript, Docker or Composite)
-type FileKind uint8
+// InputFormat is kind of how input files should be treated (as workflow file, action file or either of them).
+type InputFormat uint8
 
 const (
 	// FileWorkflow ensures the file is parsed as Actions workflow
-	FileWorkflow FileKind = iota
+	FileWorkflow InputFormat = iota
 	// FileAction ensures the file is parsed as Action metadata file
 	FileAction
 	// FileAutoDetect will select between workflow and action metadata file based on filename and file content.
 	FileAutoDetect
 )
 
-func selectFormat(filename string, node *yaml.Node, kind FileKind) FileKind {
-	if kind != FileAutoDetect { // Format is already enforced
-		return kind
+func inputFormatString(inputFormat InputFormat) string {
+	switch inputFormat {
+	case FileWorkflow:
+		return "workflow"
+	case FileAction:
+		return "action"
+	case FileAutoDetect:
+		return "workflow or action"
+	}
+	return "unknown"
+}
+
+func selectFormat(filename string, node *yaml.Node, format InputFormat) InputFormat {
+	if format != FileAutoDetect { // Format is already enforced
+		return format
 	}
 	if strings.Contains(filename, ".github/workflows/") {
-		println("Detect", filename, "as workflow file based (due to its directory)")
+		// println("Detect", filename, "as workflow file based (due to its directory)")
 		return FileWorkflow
 	}
 	if strings.HasSuffix(filename, "/action.yaml") || strings.HasSuffix(filename, "/action.yml") {
-		println("Detect", filename, "as action filename based (due to its filename)")
+		// println("Detect", filename, "as action filename based (due to its filename)")
 		return FileAction
 	}
 
 	// selecting Action if `runs` element is present Workflow otherwise:
 	if isNull(node) || len(node.Content) == 0 || node.Content[0].Kind != yaml.MappingNode {
-		println("Defaulted", filename, "as workflow (file is not a yaml mapping)", nodeKindName(node.Kind))
+		// println("Defaulted", filename, "as workflow (file is not a yaml mapping)", nodeKindName(node.Kind))
 		return FileWorkflow
 	}
 
 	for i := 0; i < len(node.Content[0].Content); i += 2 {
 		if node.Content[0].Content[i].Kind == yaml.ScalarNode && node.Content[0].Content[i].Value == "runs" {
-			println("Detected", filename, "as action workflow (it has a 'runs' key)")
+			// println("Detected", filename, "as action workflow (it has a 'runs' key)")
 			return FileAction
 		}
 	}
@@ -1725,24 +1736,25 @@ func selectFormat(filename string, node *yaml.Node, kind FileKind) FileKind {
 // ParseFile parses given source as byte sequence into action or workflow syntax tree. It returns
 // all errors detected while parsing the input. It means that detecting one error does not stop parsing.
 // Even if one or more errors are detected, parser will try to continue parsing and finding more errors.
-func ParseFile(filename string, b []byte, kind FileKind) (*Workflow, *Action, []*Error) {
+func ParseFile(filename string, b []byte, format InputFormat) (*Workflow, *Action, InputFormat, []*Error) {
 	var n yaml.Node
 	var a *Action
 	var w *Workflow
 
 	if err := yaml.Unmarshal(b, &n); err != nil {
-		return nil, nil, handleYAMLError(err)
+		return nil, nil, format, handleYAMLError(err)
 	}
 
 	// Uncomment for checking YAML tree
 	// dumpYAML(&n, 0)
 
 	p := &parser{}
-	if selectFormat(filename, &n, kind) == FileWorkflow {
+	sf := selectFormat(filename, &n, format)
+	if sf == FileWorkflow {
 		w = p.parseWorkflow(&n)
 	} else {
 		a = p.parseAction(&n)
 	}
 
-	return w, a, p.errors
+	return w, a, sf, p.errors
 }

@@ -27,7 +27,7 @@ func encodeErrorAsMap(err *actionlint.Error) map[string]interface{} {
 }
 
 func lint(source string, typ string) interface{} {
-	opts := actionlint.LinterOptions{}
+	opts := actionlint.LinterOptions{InputFormat: typ}
 	linter, err := actionlint.NewLinter(io.Discard, &opts)
 	if err != nil {
 		fail(err, "creating linter instance")
@@ -36,11 +36,7 @@ func lint(source string, typ string) interface{} {
 
 	var errs []*actionlint.Error
 
-	if typ == "workflow" {
-		errs, err = linter.Lint("test.yaml", []byte(source), nil)
-	} else {
-		errs, err = linter.LintAction("test.yml", []byte(source), nil)
-	}
+	errs, err = linter.Lint("test.yaml", []byte(source), nil)
 
 	if err != nil {
 		fail(err, "applying lint rules")

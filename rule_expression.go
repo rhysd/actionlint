@@ -280,10 +280,10 @@ func (rule *RuleExpression) VisitActionPre(n *Action) error {
 	}
 
 	switch r := n.Runs.(type) {
-	case *JavaScriptAction:
+	case *JavaScriptRuns:
 		rule.checkIfCondition(r.PreIf, "runs.pre-if")
 		rule.checkIfCondition(r.PostIf, "runs.post-if")
-	case *DockerContainerAction:
+	case *DockerContainerRuns:
 		rule.checkEnv(r.Env, "runs.env")
 	}
 
@@ -292,14 +292,10 @@ func (rule *RuleExpression) VisitActionPre(n *Action) error {
 
 // VisitActionPost is callback when visiting Job node after visiting its children
 func (rule *RuleExpression) VisitActionPost(n *Action) error {
-	// 'environment' and 'outputs' sections are evaluated after all steps are run
-	// if n.Environment != nil {
-	// 	rule.checkString(n.Environment.Name, "jobs.<job_id>.environment")
-	// 	rule.checkString(n.Environment.URL, "jobs.<job_id>.environment.url")
-	// }
-	// for _, output := range n.Outputs {
-	// 	rule.checkString(output.Value, "jobs.<job_id>.outputs.<output_id>")
-	// }
+	// 'outputs' sections are evaluated after all steps are run
+	for _, output := range n.Outputs {
+		rule.checkString(output.Value, "jobs.<job_id>.outputs.<output_id>")
+	}
 
 	rule.matrixTy = nil
 	rule.stepsTy = nil
