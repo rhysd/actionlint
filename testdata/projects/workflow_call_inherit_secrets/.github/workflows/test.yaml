@@ -2,5 +2,5 @@ on: push
 
 jobs:
   caller:
-    uses: ./workflows/reusable.yaml
+    uses: ./.github/workflows/reusable.yaml
     secrets: inherit

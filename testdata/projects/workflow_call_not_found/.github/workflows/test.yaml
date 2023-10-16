@@ -2,7 +2,7 @@ on: push
 
 jobs:
   caller:
-    uses: ./workflows/this-workflow-does-not-exist.yaml
+    uses: ./.github/workflows/this-workflow-does-not-exist.yaml
   other:
     needs: [caller]
     runs-on: ubuntu-latest

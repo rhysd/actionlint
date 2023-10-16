@@ -16,7 +16,7 @@ on:
 
 jobs:
   caller:
-    uses: ./workflows/recursive.yaml
+    uses: ./.github/workflows/recursive.yaml
     with:
       input1: hello
       input2: 42

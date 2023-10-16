@@ -50,7 +50,7 @@ jobs:
       - name: Dog fooding 🐶
         run: |
           echo "::add-matcher::.github/actionlint-matcher.json"
-          ./actionlint -color -ignore '.*key "FOO" is duplicated in ".*" section.*' -ignore '"description" property is missing in specification of input "hello"' -ignore 'expected bool value but found mapping node with "!!map" tag' -ignore '"outputs" section is scalar node but mapping node is expected' -ignore 'could not parse as YAML: yaml: line 2: mapping values are not allowed in this context' -ignore '"runs" section is missing in action metadata'
+          ./actionlint -color -input-format=workflow
       - uses: codecov/codecov-action@v3
         with:
           env_vars: OS
@@ -118,11 +118,6 @@ jobs:
             --mount type=bind,source="$(pwd)",target=/mnt/app \
             --workdir /mnt/app \
             -- ${{ steps.image.outputs.digest }} -color -verbose \
-            -ignore '.*key "FOO" is duplicated in ".*" section.*' \
-            -ignore '"description" property is missing in specification of input "hello"' \
-            -ignore 'expected bool value but found mapping node with "!!map" tag' \
-            -ignore '"outputs" section is scalar node but mapping node is expected' \
-            -ignore 'could not parse as YAML: yaml: line 2: mapping values are not allowed in this context' \
-            -ignore '"runs" section is missing in action metadata'
+            -input-format=workflow
       - name: Lint Dockerfile with hadolint
         run: docker run --rm -i hadolint/hadolint hadolint --ignore DL3018 --strict-labels - < Dockerfile

@@ -2,7 +2,7 @@ on: push
 
 jobs:
   caller:
-    uses: ./workflows/reusable.yaml
+    uses: ./.github/workflows/reusable.yaml
     with:
       aaa: this is not existing
       foo: this is existing
@@ -16,7 +16,7 @@ jobs:
       - run: echo '${{ needs.caller.outputs.bar }} is existing'
       - run: echo '${{ needs.caller.outputs.ccc }} is not existing'
   empty:
-    uses: ./workflows/empty_reusable.yaml
+    uses: ./.github/workflows/empty_reusable.yaml
     with:
       input1: this is not existing
     secrets:

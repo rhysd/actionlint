@@ -17,4 +17,4 @@ jobs:
   test:
     runs-on: ubuntu-latest
     steps:
-      - run: echo '${{ outputs.required_input }}'
+      - run: echo '${{ inputs.name }}'
