@@ -254,7 +254,8 @@ func TestLinterLintProject(t *testing.T) {
 		t.Run("project/"+name, func(t *testing.T) {
 			repo := filepath.Join(root, name)
 			opts := LinterOptions{
-				WorkingDir: repo,
+				WorkingDir:  repo,
+				InputFormat: "workflow",
 			}
 			cfg := filepath.Join(repo, "actionlint.yaml")
 			if _, err := os.Stat(cfg); err == nil {

@@ -24,7 +24,7 @@ func NewRuleBase(name string, desc string) RuleBase {
 	}
 }
 
-// VisitStep is callback when visiting Step node
+// VisitStep is callback when visiting Step node.
 func (r *RuleBase) VisitStep(node *Step) error { return nil }
 
 // VisitJobPre is callback when visiting Job node before visiting its children.

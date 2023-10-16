@@ -34,9 +34,7 @@ func lint(source string, typ string) interface{} {
 		return nil
 	}
 
-	var errs []*actionlint.Error
-
-	errs, err = linter.Lint("test.yaml", []byte(source), nil)
+	errs, err := linter.Lint("test.yaml", []byte(source), nil)
 
 	if err != nil {
 		fail(err, "applying lint rules")
