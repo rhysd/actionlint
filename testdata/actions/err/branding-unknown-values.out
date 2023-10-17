@@ -1,0 +1,2 @@
+test.yaml:7:10: invalid color "navy". valid colors are [white yellow blue green orange red purple gray-dark] [branding]
+test.yaml:8:9: invalid icon "github" [branding]

@@ -1,0 +1,7 @@
+name: "Missing Using Value"
+description: "Unknown execution type"
+runs:
+  steps:  # composite key
+    - uses: action/checkout@v4
+  using: node20  # it is actually JavaScript
+  image: true:v1.0.0  # docker specific key

@@ -1,0 +1,33 @@
+name: 'Complex JavaScript Action'
+description: 'Try to set as many options as possible'
+author: 'rhysd <https://rhysd.github.io>'
+inputs:
+  base_uri:
+    description: 'Only description is required for inputs'
+  base_url:
+    description: 'Only description is required for inputs'
+    deprecationMessage: "Use 'base_uri' instead"
+  api_secret:
+    required: true
+    description: 'Secret key for the API'
+  github_token:
+    required: false
+    default: ${{ github.token }}
+    description: 'GitHub API Token'
+  branch:
+    required: false
+    description: 'Branch name'
+outputs:
+  id:
+    description: create id of resource
+runs:
+  main: "index.js"
+  pre: "prepare.js"
+  pre-if: runner.os == 'windows'  # failure()
+  using: 'node20'  # unusual position
+  post: cleanup.js
+  post-if: runner.os == 'linux'
+
+branding:
+  icon: 'check'
+  color: 'green'

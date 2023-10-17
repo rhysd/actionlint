@@ -1,0 +1,5 @@
+name: "Test format"
+description: "Should be detected as action due to 'runs' key"
+runs:
+  using: node20
+  main: index.js

@@ -1,0 +1,23 @@
+name: "Composite with invalid refs"
+description: "Output value is only valid for composite actions"
+inputs:
+  token:
+    required: true
+    description: "GitHub Token to use"
+  test:
+    default: ${{ unknown.token }}
+    description: "Test expression evaluation of default"
+outputs:
+  no_value:
+    description: "Output without value"
+    # ERROR no value
+  unknown_step:
+    description: "Output referencing unknown step"
+    value: ${{ steps.unknown_step.outputs.unknown }}
+
+runs:
+  using: composite
+  steps:
+    - run: "echo ${{ inputs.unknown_input }}"
+      id: hello
+      shell: bash

@@ -142,81 +142,6 @@ func (p *parser) parseString(n *yaml.Node, allowEmpty bool) *String {
 	return newString(n)
 }
 
-// https://docs.github.com/en/actions/creating-actions/metadata-syntax-for-github-actions#inputsinput_id
-func (p *parser) parseActionInput(id *String, n *yaml.Node) *ActionInput {
-	ret := &ActionInput{Pos: posAt(n)}
-
-	for _, kv := range p.parseMapping(fmt.Sprintf("%q input", id.Value), n, false, true) {
-		switch kv.id {
-		case "description":
-			ret.Description = p.parseString(kv.val, false)
-		case "required":
-			ret.Required = p.parseBool(kv.val)
-		case "default":
-			ret.Default = p.parseString(kv.val, true)
-		case "deprecationMessage":
-			ret.DeprecationMessage = p.parseString(kv.val, false)
-		default:
-			p.unexpectedKey(kv.key, "input", []string{
-				"description",
-				"required",
-				"default",
-				"deprecationMessage",
-			})
-		}
-	}
-
-	if ret.Description == nil {
-		p.errorf(n, "\"description\" property is missing in specification of input %q", id.Value)
-	}
-
-	return ret
-}
-
-func (p *parser) parseActionInputs(pos *Pos, n *yaml.Node) map[string]*ActionInput {
-	inputs := p.parseSectionMapping("inputs", n, false, false)
-	ret := make(map[string]*ActionInput, len(inputs))
-	for _, kv := range inputs {
-		ret[kv.id] = p.parseActionInput(kv.key, kv.val)
-	}
-
-	return ret
-}
-
-// https://docs.github.com/en/actions/creating-actions/metadata-syntax-for-github-actions#outputs-for-docker-container-and-javascript-actions
-// https://docs.github.com/en/actions/creating-actions/metadata-syntax-for-github-actions#outputs-for-composite-actions
-func (p *parser) parseActionOutput(id *String, n *yaml.Node) *ActionOutput {
-	ret := &ActionOutput{Pos: posAt(n)}
-
-	for _, kv := range p.parseMapping(fmt.Sprintf("%q outputs", id.Value), n, false, true) {
-		switch kv.id {
-		case "description":
-			ret.Description = p.parseString(kv.val, false)
-		case "value":
-			ret.Value = p.parseString(kv.val, false)
-		default:
-			p.unexpectedKey(kv.key, "input", []string{
-				"description",
-				"required",
-				"default",
-				"deprecationMessage",
-			})
-		}
-	}
-
-	return ret
-}
-
-func (p *parser) parseActionOutputs(pos *Pos, n *yaml.Node) map[string]*ActionOutput {
-	outputs := p.parseSectionMapping("outputs", n, false, false)
-	ret := make(map[string]*ActionOutput, len(outputs))
-	for _, kv := range outputs {
-		ret[kv.id] = p.parseActionOutput(kv.key, kv.val)
-	}
-
-	return ret
-}
-
 func (p *parser) parseStringSequence(sec string, n *yaml.Node, allowEmpty bool, allowElemEmpty bool) []*String {
 	if ok := p.checkSequence(sec, n, allowEmpty); !ok {
 		return nil
@@ -1450,37 +1375,133 @@ func (p *parser) parseWorkflow(n *yaml.Node) *Workflow {
 	return w
 }
 
+// https://docs.github.com/en/actions/creating-actions/metadata-syntax-for-github-actions#inputsinput_id
+func (p *parser) parseActionInput(id *String, n *yaml.Node) *ActionInput {
+	ret := &ActionInput{Pos: posAt(n)}
+
+	for _, kv := range p.parseMapping(fmt.Sprintf("%q input", id.Value), n, false, true) {
+		switch kv.id {
+		case "description":
+			ret.Description = p.parseString(kv.val, false)
+		case "required":
+			ret.Required = p.parseBool(kv.val)
+		case "default":
+			ret.Default = p.parseString(kv.val, true)
+		case "deprecationMessage":
+			ret.DeprecationMessage = p.parseString(kv.val, false)
+		default:
+			p.unexpectedKey(kv.key, "input", []string{
+				"description",
+				"required",
+				"default",
+				"deprecationMessage",
+			})
+		}
+	}
+
+	if ret.Description == nil {
+		p.errorf(n, "\"description\" property is missing in specification of input %q", id.Value)
+	}
+
+	return ret
+}
+
+func (p *parser) parseActionInputs(pos *Pos, n *yaml.Node) map[string]*ActionInput {
+	inputs := p.parseSectionMapping("inputs", n, false, false)
+	ret := make(map[string]*ActionInput, len(inputs))
+	for _, kv := range inputs {
+		ret[kv.id] = p.parseActionInput(kv.key, kv.val)
+	}
+
+	return ret
+}
+
+// https://docs.github.com/en/actions/creating-actions/metadata-syntax-for-github-actions#outputs-for-docker-container-and-javascript-actions
+// https://docs.github.com/en/actions/creating-actions/metadata-syntax-for-github-actions#outputs-for-composite-actions
+func (p *parser) parseActionOutput(id *String, n *yaml.Node) *ActionOutput {
+	ret := &ActionOutput{Pos: posAt(n)}
+
+	for _, kv := range p.parseMapping(fmt.Sprintf("%q outputs", id.Value), n, false, true) {
+		switch kv.id {
+		case "description":
+			ret.Description = p.parseString(kv.val, false)
+		case "value":
+			ret.Value = p.parseString(kv.val, false)
+		default:
+			p.unexpectedKey(kv.key, "output", []string{
+				"description",
+				"value",
+			})
+		}
+	}
+
+	return ret
+}
+
+func (p *parser) parseActionOutputs(pos *Pos, n *yaml.Node) map[string]*ActionOutput {
+	outputs := p.parseSectionMapping("outputs", n, false, false)
+	ret := make(map[string]*ActionOutput, len(outputs))
+	for _, kv := range outputs {
+		ret[kv.id] = p.parseActionOutput(kv.key, kv.val)
+	}
+
+	return ret
+}
+
 func (p *parser) parseActionRuns(n *yaml.Node) ActionRuns {
 	var r ActionRuns
+	hadUsingKey := false
 	for _, kv := range p.parseMapping("runs", n, false, true) {
 		switch kv.id {
 		case "using":
 			using := p.parseString(kv.val, false)
+			hadUsingKey = true
 			switch {
 			case strings.HasPrefix(using.Value, "node"):
-				r = &JavaScriptRuns{Using: using}
+				if r == nil {
+					r = &JavaScriptRuns{Using: using}
+				} else if na, ok := r.(*JavaScriptRuns); ok {
+					na.Using = using
+				} else {
+					p.errorAt(kv.key.Pos, "this action declares it uses javascript but has foreign keys")
+				}
 			case using.Value == "docker":
-				r = &DockerContainerRuns{}
+				if r == nil {
+					r = &DockerContainerRuns{}
+				} else if r.Kind() != ActionKindDockerContainer {
+					p.errorAt(kv.key.Pos, "this action declares it uses docker container but has foreign keys")
+				}
 			case using.Value == "composite":
-				r = &CompositeRuns{}
+				if r == nil {
+					r = &CompositeRuns{}
+				} else if r.Kind() != ActionKindComposite {
+					p.errorAt(kv.key.Pos, "this action declares it is a composite action but has foreign keys")
+				}
 			default:
-				p.error(kv.val, "unknown action type (only javascript, docker and composite are supported)")
+				p.errorf(kv.val, "unknown action type %s, (only javascript, docker and composite are supported)", using.Value)
+				return nil
 			}
 		case "steps":
 			var def *CompositeRuns
-			if ca, ok := r.(*CompositeRuns); ok {
+			if r == nil {
+				def = &CompositeRuns{}
+				r = def
+			} else if ca, ok := r.(*CompositeRuns); ok {
 				def = ca
 			} else {
-				p.errorAt(kv.key.Pos, "this action defines parameters for composite actions, but is something else")
+				p.errorfAt(kv.key.Pos, "this action defines parameter %s for composite actions, but is something else", kv.id)
 				continue
 			}
 			def.Steps = p.parseSteps(kv.val, true)
 		case "main", "pre", "pre-if", "post", "post-if":
 			var def *JavaScriptRuns
-			if na, ok := r.(*JavaScriptRuns); ok {
+			if r == nil {
+				def = &JavaScriptRuns{}
+				r = def
+			} else if na, ok := r.(*JavaScriptRuns); ok {
 				def = na
 			} else {
-				p.errorAt(kv.key.Pos, "this action defines parameters for composite actions, but is something else")
+				p.errorfAt(kv.key.Pos, "this action defines parameter %s for javascript actions, but is something else", kv.id)
 				continue
 			}
 			switch kv.id {
@@ -1497,10 +1518,13 @@ func (p *parser) parseActionRuns(n *yaml.Node) ActionRuns {
 			}
 		case "image", "entrypoint", "args", "env", "pre-entrypoint", "post-entrypoint":
 			var def *DockerContainerRuns
-			if da, ok := r.(*DockerContainerRuns); ok {
+			if r == nil {
+				def = &DockerContainerRuns{}
+				r = def
+			} else if da, ok := r.(*DockerContainerRuns); ok {
 				def = da
 			} else {
-				p.errorAt(kv.key.Pos, "this action defines parameters for composite actions, but is something else")
+				p.errorfAt(kv.key.Pos, "this action defines parameter %s for javascript actions, but is something else", kv.id)
 				continue
 			}
 			switch kv.id {
@@ -1536,15 +1560,15 @@ func (p *parser) parseActionRuns(n *yaml.Node) ActionRuns {
 		}
 	}
 
-	if r == nil {
-		p.error(n, "\"using\" is required to define what is going on")
+	if !hadUsingKey {
+		p.error(n, "\"using\" is required to define what to execute")
 		return r
 	}
 
 	switch a := r.(type) {
 	case *JavaScriptRuns:
 		if a.Main == nil {
-			p.error(n, "\"main\" is required to run action in step")
+			p.error(n, "\"main\" is required for a javascript action")
 		}
 	case *DockerContainerRuns:
 		if a.Image == nil {
@@ -1598,6 +1622,8 @@ func (p *parser) parseAction(n *yaml.Node) *Action {
 		return a
 	}
 
+	hasRunsBlock := false
+
 	for _, kv := range p.parseMapping("action", n.Content[0], false, true) {
 		k, v := kv.key, kv.val
 		switch kv.id {
@@ -1613,6 +1639,7 @@ func (p *parser) parseAction(n *yaml.Node) *Action {
 			a.Outputs = p.parseActionOutputs(k.Pos, v)
 		case "runs":
 			a.Runs = p.parseActionRuns(v)
+			hasRunsBlock = true // even if parseActionRuns is nil, it is still had a runs block
 		case "branding":
 			a.Branding = p.parseBranding(v)
 		default:
@@ -1634,9 +1661,10 @@ func (p *parser) parseAction(n *yaml.Node) *Action {
 	if a.Description == nil {
 		p.error(n, "\"description\" property is missing in action metadata")
 	}
-	if a.Runs == nil {
+	if !hasRunsBlock {
 		p.error(n, "\"runs\" section is missing in action metadata")
-	} else {
+	}
+	if a.Runs != nil {
 		requireValue := a.Runs.Kind() == ActionKindComposite
 		for _, o := range a.Outputs {
 			if o.Value == nil && requireValue {
@@ -1731,6 +1759,12 @@ func selectFormat(filename string, node *yaml.Node, format InputFormat) InputFor
 		}
 	}
 	return FileWorkflow
+}
+
+// Parse is an alias for ParseFile with default values for API stability
+func Parse(b []byte) (*Workflow, []*Error) {
+	w, _, _, errs := ParseFile("<stdin>", b, FileWorkflow)
+	return w, errs
 }
 
 // ParseFile parses given source as byte sequence into action or workflow syntax tree. It returns

@@ -1,0 +1,6 @@
+name: "Missing Using Value"
+description: "Unknown execution type"
+runs:
+  image: true:v1.0.0  # appears like docker runs block
+  using: composite  # it is actually composite
+  main: index.js  # JavaScript specfici key

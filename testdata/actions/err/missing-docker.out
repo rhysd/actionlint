@@ -1,0 +1,1 @@
+test.yaml:4:3: "image" is required for a docker container action [syntax-check]

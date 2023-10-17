@@ -1,0 +1,4 @@
+name: "Missing Require Values"
+description: "Composite action with missing required values"
+runs:
+  using: composite

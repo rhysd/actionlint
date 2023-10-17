@@ -1,0 +1,2 @@
+test.yaml:6:3: this action declares it uses javascript but has foreign keys [syntax-check]
+test.yaml:7:3: this action defines parameter image for javascript actions, but is something else [syntax-check]

@@ -1,0 +1,1 @@
+test.yaml:7:7: "shell" is required to run script in step as part of composite actions [syntax-check]

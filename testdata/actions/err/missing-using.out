@@ -1,0 +1,2 @@
+test.yaml:3:7: runs should not be empty. please remove this section if it's unnecessary [syntax-check]
+test.yaml:3:7: "using" is required to define what to execute [syntax-check]

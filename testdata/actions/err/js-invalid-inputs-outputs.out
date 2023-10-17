@@ -1,0 +1,5 @@
+test.yaml:5:5: "description" property is missing in specification of input "without_description" [syntax-check]
+test.yaml:8:5: unexpected key "type" for "input" section. expected one of "default", "deprecationMessage", "description", "required" [syntax-check]
+test.yaml:11:5: output value is only allowed for composite actions [syntax-check]
+test.yaml:13:24: "output_without_desc" outputs should not be empty. please remove this section if it's unnecessary [syntax-check]
+test.yaml:16:5: unexpected key "unknown_key" for "output" section. expected one of "description", "value" [syntax-check]

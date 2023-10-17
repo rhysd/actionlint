@@ -51,6 +51,11 @@ func (v *Visitor) reportElapsedTime(what string, start time.Time) {
 	fmt.Fprintf(v.dbg, "[Visitor] %s took %vms\n", what, time.Since(start).Milliseconds())
 }
 
+// Visit is an alias for VisitWorkflow for API stability
+func (v *Visitor) Visit(n *Workflow) error {
+	return v.VisitWorkflow(n)
+}
+
 // VisitWorkflow visits given syntax tree in depth-first order
 func (v *Visitor) VisitWorkflow(n *Workflow) error {
 	var t time.Time

@@ -279,6 +279,10 @@ func (rule *RuleExpression) VisitActionPre(n *Action) error {
 		ity.Props[k] = AnyType{}
 	}
 
+	for _, v := range n.Inputs {
+		rule.checkString(v.Default, "jobs.<job_id>.inputs.<input_id>.default")
+	}
+
 	switch r := n.Runs.(type) {
 	case *JavaScriptRuns:
 		rule.checkIfCondition(r.PreIf, "runs.pre-if")

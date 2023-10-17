@@ -1,0 +1,7 @@
+name: "Testing Composite Steps"
+description: "Ensure various composite step errors are caught"
+runs:
+  using: "composite"
+  steps:
+    # Error missing shell
+    - run: "echo 'Hello World!'"

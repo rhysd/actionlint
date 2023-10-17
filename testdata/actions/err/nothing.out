@@ -1,0 +1,4 @@
+test.yaml:1:1: unexpected key "unknown" for "action" section. expected one of "author", "branding", "description", "inputs", "name", "outputs", "runs" [syntax-check]
+test.yaml:1:1: "name" property is missing in action metadata [syntax-check]
+test.yaml:1:1: "description" property is missing in action metadata [syntax-check]
+test.yaml:1:1: "runs" section is missing in action metadata [syntax-check]

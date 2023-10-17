@@ -1,0 +1,84 @@
+name: 'Complex Docker Action'
+description: 'Try to set as many options as possible'
+author: 'rhysd <https://rhysd.github.io>'
+inputs:
+  base_uri:
+    required: true
+    description: 'Provide the AST portal URL'
+  cx_tenant:
+    required: true
+    description: 'Provide the Tenant for AST portal URL'
+  cx_client_id:
+    required: true
+    description: 'Client ID for AST portal authentication'
+  cx_client_secret:
+    required: true
+    description: 'Secret key for AST portal authentication'
+  project_name:
+    required: false
+    default: ${{ github.repository }} # default repo name
+    description: 'Select a Checkmarx Project Name'
+  branch:
+    required: false
+    default: ${{ github.head_ref || github.ref }} # default branch name
+    description: 'Branch name'
+  github_token:
+    required: false
+    default: ${{ github.token }}
+    description: 'GitHub API Token'
+  additional_params:
+    required: false
+    default: ''
+    description: 'Additional parameters for AST scan'
+  repo_name:
+    required: false
+    default:  ${{ github.event.repository.name }}
+    description: "Repository name for PR decoration"
+  namespace:
+    required: false
+    default: ${{ github.repository_owner }}
+    description: "Organization name to create the Pr comment"
+  pr_number:
+    required: false
+    default: ${{ github.event.number }}
+    description: "Pr Number of the pull request that needs the decoration"
+outputs: 
+  cxcli:
+    description: output from cli
+  cxScanID:
+    description: scan ID output from cli
+runs:
+  image: 'Dockerfile'
+  args:
+    - ${{ inputs.base_uri }}
+    - ${{ inputs.cx_tenant }}
+    - ${{ inputs.cx_client_id }}
+    - ${{ inputs.cx_client_secret }}
+    - ${{ inputs.github_token }}
+    - ${{ inputs.project_name }}
+    - ${{ inputs.additional_params }}
+    - ${{ inputs.repo_name }}
+    - ${{ inputs.namespace }}
+    - ${{ inputs.pr_number }}
+  entrypoint: '/app/entrypoint.sh'
+  using: 'docker'
+  # post-if: cancelled()
+  post-entrypoint: '/app/cleanup.sh'
+  pre-entrypoint: '/app/prepare.sh'
+
+  env:
+    CX_BASE_URI: "${{ inputs.base_uri }}"
+    CX_TENANT: ${{ inputs.cx_tenant }}
+    CX_CLIENT_ID: ${{ inputs.cx_client_id }}
+    CX_CLIENT_SECRET: ${{ inputs.cx_client_secret }}
+    GITHUB_TOKEN: ${{ inputs.github_token }}
+    BRANCH: ${{ inputs.branch }}
+    PROJECT_NAME: ${{ inputs.project_name }}
+    ADDITIONAL_PARAMS: ${{ inputs.additional_params }}
+    REPO_NAME: ${{ inputs.repo_name }}
+    NAMESPACE: ${{ inputs.namespace }}
+    PR_NUMBER: ${{ inputs.pr_number }}
+
+branding:
+  icon: 'check'
+  color: 'green'

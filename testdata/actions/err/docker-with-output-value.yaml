@@ -1,0 +1,10 @@
+name: "Docker With Output Value"
+description: "Output value is only valid for composite actions"
+outputs:
+  my_output:
+    description: "My output"
+    value: "my value"
+
+runs:
+  using: docker
+  image: true:v1.0.0

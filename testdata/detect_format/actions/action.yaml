@@ -1,0 +1,5 @@
+name: "Test format"
+description: "Should be detected as action due to action.yaml filename"
+runs:
+  using: node20
+  main: index.js

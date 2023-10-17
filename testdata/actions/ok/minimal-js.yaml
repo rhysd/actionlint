@@ -1,0 +1,5 @@
+name: 'Minimal JavaScript Action'
+description: 'Ensure most keys can be left out'
+runs:
+  using: 'node20'
+  main: 'index.js'
