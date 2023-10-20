@@ -136,8 +136,8 @@ var popularActions = []*action{
 	},
 	{
 		slug: "actions/checkout",
-		tags: []string{"v1", "v2", "v3"},
-		next: "v4",
+		tags: []string{"v1", "v2", "v3", "v4"},
+		next: "v5",
 	},
 	{
 		slug: "actions/configure-pages",
@@ -220,8 +220,8 @@ var popularActions = []*action{
 	},
 	{
 		slug: "aws-actions/configure-aws-credentials",
-		tags: []string{"v1", "v2"},
-		next: "v3",
+		tags: []string{"v1", "v2", "v3", "v4"},
+		next: "v5",
 	},
 	{
 		slug: "azure/aks-set-context",
@@ -259,28 +259,28 @@ var popularActions = []*action{
 		next: "v5"}, // v1 does not exist
 	{
 		slug: "docker/build-push-action",
-		tags: []string{"v1", "v2", "v3", "v4"},
-		next: "v5",
+		tags: []string{"v1", "v2", "v3", "v4", "v5"},
+		next: "v6",
 	},
 	{
 		slug: "docker/login-action",
-		tags: []string{"v1", "v2"},
-		next: "v3",
+		tags: []string{"v1", "v2", "v3"},
+		next: "v4",
 	},
 	{
 		slug: "docker/metadata-action",
-		tags: []string{"v1", "v2", "v3", "v4"},
-		next: "v5",
+		tags: []string{"v1", "v2", "v3", "v4", "v5"},
+		next: "v6",
 	},
 	{
 		slug: "docker/setup-buildx-action",
-		tags: []string{"v1", "v2"},
-		next: "v3",
+		tags: []string{"v1", "v2", "v3"},
+		next: "v4",
 	},
 	{
 		slug: "docker/setup-qemu-action",
-		tags: []string{"v1", "v2"},
-		next: "v3",
+		tags: []string{"v1", "v2", "v3"},
+		next: "v4",
 	},
 	{
 		slug: "dorny/paths-filter",
@@ -299,8 +299,8 @@ var popularActions = []*action{
 	},
 	{
 		slug: "game-ci/unity-builder",
-		tags: []string{"v2"},
-		next: "v3",
+		tags: []string{"v2", "v3"},
+		next: "v4",
 	},
 	{
 		slug: "getsentry/paths-filter",
@@ -342,8 +342,8 @@ var popularActions = []*action{
 	},
 	{
 		slug: "goreleaser/goreleaser-action",
-		tags: []string{"v1", "v2", "v3", "v4"},
-		next: "v5",
+		tags: []string{"v1", "v2", "v3", "v4", "v5"},
+		next: "v6",
 	},
 	{
 		slug: "gradle/wrapper-validation-action",

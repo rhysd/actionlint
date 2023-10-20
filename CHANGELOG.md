@@ -1,3 +1,99 @@
+<a name="v1.6.26"></a>
+# [v1.6.26](https://github.com/rhysd/actionlint/releases/tag/v1.6.26) - 18 Sep 2023
+
+- Several template fields and template actions were added. All fields and actions are listed in [the document](https://github.com/rhysd/actionlint/blob/main/docs/usage.md#format-error-messages). Please read it for more details. ([#311](https://github.com/rhysd/actionlint/issues/311))
+  - By these additions, now actionlint can output the result in [the SARIF format](https://docs.oasis-open.org/sarif/sarif/v2.1.0/sarif-v2.1.0.html). SARIF is a format for the output of static analysis tools used by [GitHub CodeQL](https://codeql.github.com/). [the example Go template](https://github.com/rhysd/actionlint/blob/main/testdata/format/sarif_template.txt) to format actionlint output in SARIF.
+    ```sh
+    actionlint -format "$(cat /path/to/sarif_template.txt)" > output.json
+    ```
+  - `allKinds` returns the kinds (lint rules) information as an array. You can include what lint rules are defined in the command output.
+  - `toPascalCase` converts snake case (`foo_bar`) or kebab case (`foo-bar`) into pascal case (`FooBar`).
+- Report an error when the condition at `if:` is always evaluated to true. See [the check document](https://github.com/rhysd/actionlint/blob/main/docs/checks.md#if-cond-always-true) to know more details. ([#272](https://github.com/rhysd/actionlint/issues/272))
+  ```yaml
+  # ERROR: All the following `if:` conditions are always evaluated to true
+  - run: echo 'Commit is pushed'
+    if: |
+      ${{ github.event_name == 'push' }}
+  - run: echo 'Commit is pushed'
+    if: "${{ github.event_name == 'push' }} "
+  - run: echo 'Commit is pushed to main'
+    if: ${{ github.event_name == 'push' }} && ${{ github.ref_name == 'main' }}
+  ```
+- Fix actionlint didn't understand `${{ }}` placeholders in environment variable names. ([#312](https://github.com/rhysd/actionlint/issues/312))
+  ```yaml
+  env:
+    "${{ steps.x.outputs.value }}": "..."
+  ```
+- Fix type of matrix row when some expression is assigned to it with `${{ }}` ([#285](https://github.com/rhysd/actionlint/issues/285))
+  ```yaml
+  strategy:
+    matrix:
+      test:
+        # Matrix rows are assigned from JSON string
+        - ${{ fromJson(inputs.matrix) }}
+  steps:
+    - run: echo ${{ matrix.test.foo.bar }}
+  ```
+- Fix checking `exclude` of matrix was incorrect when some matrix row is dynamically constructed with `${{ }}`. ([#261](https://github.com/rhysd/actionlint/issues/261))
+  ```yaml
+  strategy:
+    matrix:
+      build-type:
+        - debug
+        - ${{ fromJson(inputs.custom-build-type) }}
+      exclude:
+        # 'release' is not listed in 'build-type' row, but it should not be reported as error
+        # since the second row of 'build-type' is dynamically constructed with ${{ }}.
+        - build-type: release
+  ```
+- Fix checking `exclude` of matrix was incorrect when object is nested at row of the matrix. ([#249](https://github.com/rhysd/actionlint/issues/249))
+  ```yaml
+  matrix:
+    os:
+      - name: Ubuntu
+        matrix: ubuntu
+      - name: Windows
+        matrix: windows
+    arch:
+      - name: ARM
+        matrix: arm
+      - name: Intel
+        matrix: intel
+    exclude:
+      # This should exclude { os: { name: Windows, matrix: windows }, arch: {name: ARM, matrix: arm } }
+      - os:
+          matrix: windows
+        arch:
+          matrix: arm
+  ```
+- Fix data race when `actionlint.yml` config file is used by multiple goroutines to check multiple workflow files. ([#333](https://github.com/rhysd/actionlint/issues/333))
+- Check keys' case sensitivity. ([#302](https://github.com/rhysd/actionlint/issues/302))
+  ```yaml
+  steps:
+    # ERROR: 'run:' is correct
+    - ruN: echo "hello"
+  ```
+- Add `number` as [input type of `workflow_dispatch` event](https://docs.github.com/en/actions/learn-github-actions/contexts#inputs-context). ([#316](https://github.com/rhysd/actionlint/issues/316))
+- Check max number of inputs of `workflow_dispatch` event is 10.
+- Check numbers at `timeout-minutes` and `max-parallel` are greater than zero.
+- Add Go APIs to define a custom rule. Please read [the code example](https://pkg.go.dev/github.com/rhysd/actionlint/#example_Linter_yourOwnRule) to know the usage.
+  - Make some [`RuleBase`](https://pkg.go.dev/github.com/rhysd/actionlint#RuleBase) methods public which are useful to implement your own custom rule type. (thanks [@hugo-syn](https://github.com/hugo-syn), [#327](https://github.com/rhysd/actionlint/issues/327), [#331](https://github.com/rhysd/actionlint/issues/331))
+  - `OnRulesCreated` field is added to [`LinterOptions`](https://pkg.go.dev/github.com/rhysd/actionlint#LinterOptions) struct. You can modify applied rules with the hook (add your own rule, remove some rule, ...).
+- Add `NewProject()` Go API to create a [`Project`](https://pkg.go.dev/github.com/rhysd/actionlint#Project) instance.
+- Fix tests failed when sources are downloaded from `.tar.gz` link. ([#307](https://github.com/rhysd/actionlint/issues/307))
+- Improve [the pre-commit document](https://github.com/rhysd/actionlint/blob/main/docs/usage.md#pre-commit) to explain all pre-commit hooks by this repository.
+- Clarify the regular expression syntax of `-ignore` option is [RE2](https://github.com/google/re2/wiki/Syntax). ([#320](https://github.com/rhysd/actionlint/issues/320))
+- Use ubuntu-latest runner to create winget release. (thanks [@sitiom](https://github.com/sitiom), [#308](https://github.com/rhysd/actionlint/issues/308))
+- Update popular actions data set, available contexts, webhook types to the latest.
+  - Fix typo in `watch` webhook's types (thanks [@suzuki-shunsuke](https://github.com/suzuki-shunsuke), [#334](https://github.com/rhysd/actionlint/issues/334))
+  - Add `secret_source` property to [`github` context](https://docs.github.com/en/actions/learn-github-actions/contexts#github-context). (thanks [@asml-mdroogle](https://github.com/asml-mdroogle), [#339](https://github.com/rhysd/actionlint/issues/339))
+  - Many new major releases are added to the popular actions data set (including `actions/checkout@v4`).
+- Use Go 1.21 to build release binaries.
+- Update Go dependencies to the latest. (thanks [@harryzcy](https://github.com/harryzcy), [#322](https://github.com/rhysd/actionlint/issues/322))
+
+[Changes][v1.6.26]
+
+
 <a name="v1.6.25"></a>
 # [v1.6.25](https://github.com/rhysd/actionlint/releases/tag/v1.6.25) - 15 Jun 2023
 
@@ -9,14 +105,14 @@
   ```
 - Add support for macOS XL runners. `macos-latest-xl`, `macos-13-xl`, `macos-12-xl` labels are available at `runs-on:`. ([#299](https://github.com/rhysd/actionlint/issues/299), thanks [@woa7](https://github.com/woa7))
 - Find Git project directory from `-stdin-filename` command line argument. Even if the workflow content is passed via stdin, actionlint can recognize reusable workflows depended by the workflow using file path passed at `-stdin-filename` argument. ([#283](https://github.com/rhysd/actionlint/issues/283))
-- Fix order of errors is not deterministic when multiple errors happens at the same location (file name, line number, column number) when building actionlint with Go 1.20.
+- Fix order of errors is not deterministic when multiple errors happen at the same location (file name, line number, column number). It happens only when building actionlint with Go 1.20 or later.
 - Fix type name of `watch` webhook.
 - Fix type of matrix row (property of `matrix` context) when `${{ }}` is used in the row value. ([#294](https://github.com/rhysd/actionlint/issues/294))
 - Fix `go install ./...` doesn't work. ([#297](https://github.com/rhysd/actionlint/issues/297))
-- Update `actionlint` pre-commit hook to use Go toolchain. Now pre-commit automatically installs `actionlint` command so you don't need to install it manually. Note that this hook requires pre-commit v3.0.0 or later. For those who don't have Go toolchain, the previous hook is maintained as `actionlint-system` hook. ([#301](https://github.com/rhysd/actionlint/issues/301), thanks [@Freed-Wu](https://github.com/Freed-Wu) and [@dokempf](https://github.com/dokempf))
+- Update `actionlint` pre-commit hook to use Go toolchain. Now pre-commit automatically installs `actionlint` command so you don't need to install it manually. Note that this hook requires pre-commit v3.0.0 or later. For those who don't have Go toolchain, the previous hook is maintained as `actionlint-system` hook. Please read [the document](https://github.com/rhysd/actionlint/blob/main/docs/usage.md#pre-commit) to know the usage details. ([#301](https://github.com/rhysd/actionlint/issues/301), thanks [@Freed-Wu](https://github.com/Freed-Wu) and [@dokempf](https://github.com/dokempf))
 - Update Go dependencies to the latest.
 - Update npm dependencies for playground to the latest and fix optimizing Wasm binary with `wasm-opt`.
-- Update popular actions data set. New major versions and new inputs of many popular actions are now supported like `sparse-checkout` of `actions/checkout`.  ([#305](https://github.com/rhysd/actionlint/issues/305))
+- Update popular actions data set. New major versions and new inputs of many popular actions are now supported like `sparse-checkout` input of `actions/checkout` action.  ([#305](https://github.com/rhysd/actionlint/issues/305))
 - Fix outdated document for Problem Matchers. ([#289](https://github.com/rhysd/actionlint/issues/289), thanks [@carlcsaposs-canonical](https://github.com/carlcsaposs-canonical))
 - Fix outdated links in document for super-linter. ([#303](https://github.com/rhysd/actionlint/issues/303), thanks [@gmacario](https://github.com/gmacario))
 - Automate releasing the Winget package with GitHub Actions. ([#276](https://github.com/rhysd/actionlint/issues/276), [#293](https://github.com/rhysd/actionlint/issues/293), thanks [@sitiom](https://github.com/sitiom))
@@ -1402,6 +1498,7 @@ See documentation for more details:
 [Changes][v1.0.0]
 
 
+[v1.6.26]: https://github.com/rhysd/actionlint/compare/v1.6.25...v1.6.26
 [v1.6.25]: https://github.com/rhysd/actionlint/compare/v1.6.24...v1.6.25
 [v1.6.24]: https://github.com/rhysd/actionlint/compare/v1.6.23...v1.6.24
 [v1.6.23]: https://github.com/rhysd/actionlint/compare/v1.6.22...v1.6.23

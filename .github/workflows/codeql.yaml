@@ -28,7 +28,7 @@ jobs:
       matrix:
         language: ['go', 'javascript']
     steps:
-      - uses: actions/checkout@v3
+      - uses: actions/checkout@v4
       - uses: github/codeql-action/init@v2
         with:
           config-file: ./.github/codeql/codeql-config.yaml
@@ -37,7 +37,7 @@ jobs:
         if: ${{ matrix.language != 'go' }}
       - uses: actions/setup-go@v4
         with:
-          go-version: '1.20'
+          go-version: '1.21'
         if: ${{ matrix.language == 'go' }}
       - name: Build Go sources
         run: |

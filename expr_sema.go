@@ -225,6 +225,7 @@ var BuiltinGlobalVariableTypes = map[string]ExprType{
 		"run_id":              StringType{},
 		"run_number":          StringType{},
 		"run_attempt":         StringType{},
+		"secret_source":       StringType{},
 		"server_url":          StringType{},
 		"sha":                 StringType{},
 		"token":               StringType{},

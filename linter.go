@@ -216,7 +216,10 @@ func (l *Linter) debugWriter() io.Writer {
 func (l *Linter) GenerateDefaultConfig(dir string) error {
 	l.log("Generating default actionlint.yaml in repository:", dir)
 
-	p := l.projects.At(dir)
+	p, err := l.projects.At(dir)
+	if err != nil {
+		return err
+	}
 	if p == nil {
 		return errors.New("project is not found. check current project is initialized as Git repository and \".github/workflows\" directory exists")
 	}
@@ -240,14 +243,17 @@ func (l *Linter) GenerateDefaultConfig(dir string) error {
 func (l *Linter) LintRepository(dir string) ([]*Error, error) {
 	l.log("Linting all workflow files in repository:", dir)
 
-	proj := l.projects.At(dir)
-	if proj == nil {
+	p, err := l.projects.At(dir)
+	if err != nil {
+		return nil, err
+	}
+	if p == nil {
 		return nil, fmt.Errorf("no project was found in any parent directories of %q. check workflows directory is put correctly in your Git repository", dir)
 	}
 
-	l.log("Detected project:", proj.RootDir())
-	wd := proj.WorkflowsDir()
-	return l.LintDir(wd, proj)
+	l.log("Detected project:", p.RootDir())
+	wd := p.WorkflowsDir()
+	return l.LintDir(wd, p)
 }
 
 // LintDir lints all YAML workflow files in the given directory recursively.
@@ -316,14 +322,18 @@ func (l *Linter) LintFiles(filepaths []string, project *Project) ([]*Error, erro
 	for i := range ws {
 		// Each element of ws is accessed by single goroutine so mutex is unnecessary
 		w := &ws[i]
-		p := project
-		if p == nil {
+		proj := project
+		if proj == nil {
 			// This method modifies state of l.projects so it cannot be called in parallel.
 			// Before entering goroutine, resolve project instance.
-			p = l.projects.At(w.path)
+			p, err := l.projects.At(w.path)
+			if err != nil {
+				return nil, err
+			}
+			proj = p
 		}
-		ac := acf.GetCache(p) // #173
-		rwc := rwcf.GetCache(p)
+		ac := acf.GetCache(proj) // #173
+		rwc := rwcf.GetCache(proj)
 
 		eg.Go(func() error {
 			// Bound concurrency on reading files to avoid "too many files to open" error (issue #3)
@@ -339,7 +349,7 @@ func (l *Linter) LintFiles(filepaths []string, project *Project) ([]*Error, erro
 					w.path = r // Use relative path if possible
 				}
 			}
-			errs, err := l.check(w.path, src, p, proc, ac, rwc)
+			errs, err := l.check(w.path, src, proj, proc, ac, rwc)
 			if err != nil {
 				return fmt.Errorf("fatal error while checking %s: %w", w.path, err)
 			}
@@ -389,7 +399,11 @@ func (l *Linter) LintFiles(filepaths []string, project *Project) ([]*Error, erro
 // parameter can be nil. In the case, the project is detected from the given path.
 func (l *Linter) LintFile(path string, project *Project) ([]*Error, error) {
 	if project == nil {
-		project = l.projects.At(path)
+		p, err := l.projects.At(path)
+		if err != nil {
+			return nil, err
+		}
+		project = p
 	}
 
 	src, err := os.ReadFile(path)
@@ -428,7 +442,11 @@ func (l *Linter) LintFile(path string, project *Project) ([]*Error, error) {
 func (l *Linter) Lint(path string, content []byte, project *Project) ([]*Error, error) {
 	if project == nil && path != "<stdin>" {
 		if _, err := os.Stat(path); !errors.Is(err, fs.ErrNotExist) {
-			project = l.projects.At(path)
+			p, err := l.projects.At(path)
+			if err != nil {
+				return nil, err
+			}
+			project = p
 		}
 	}
 	proc := newConcurrentProcess(runtime.NumCPU())
@@ -471,13 +489,10 @@ func (l *Linter) check(
 
 	var cfg *Config
 	if l.defaultConfig != nil {
+		// `-config-file` option has higher prioritiy than repository config file
 		cfg = l.defaultConfig
 	} else if project != nil {
-		c, err := project.LoadConfig()
-		if err != nil {
-			return nil, err
-		}
-		cfg = c
+		cfg = project.Config()
 	}
 	if cfg != nil {
 		l.debug("Config: %#v", cfg)

@@ -2,7 +2,7 @@ on: push
 
 jobs:
   test:
-    runs-on: ubuntu-18.04
+    runs-on: ubuntu-22.04
     steps:
       - uses: ./action/broken_input
         with:
