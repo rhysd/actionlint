@@ -1083,6 +1083,25 @@ var PopularActions = map[string]*ActionMetadata{
 			"node-version": {"node-version"},
 		},
 	},
+	"actions/setup-node@v4": {
+		Name: "Setup Node.js environment",
+		Inputs: ActionMetadataInputs{
+			"always-auth":           {"always-auth", false},
+			"architecture":          {"architecture", false},
+			"cache":                 {"cache", false},
+			"cache-dependency-path": {"cache-dependency-path", false},
+			"check-latest":          {"check-latest", false},
+			"node-version":          {"node-version", false},
+			"node-version-file":     {"node-version-file", false},
+			"registry-url":          {"registry-url", false},
+			"scope":                 {"scope", false},
+			"token":                 {"token", false},
+		},
+		Outputs: ActionMetadataOutputs{
+			"cache-hit":    {"cache-hit"},
+			"node-version": {"node-version"},
+		},
+	},
 	"actions/setup-python@v1": {
 		Name: "Setup Python",
 		Inputs: ActionMetadataInputs{
