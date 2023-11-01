@@ -1402,14 +1402,41 @@ func handleYAMLError(err error) []*Error {
 	return []*Error{yamlErr(err.Error())}
 }
 
+var ignoreRe = regexp.MustCompile("(?:^|\n)\\s*#\\s*actionlint\\s+ignore=([^\n]+)\\s*$")
+
+func visitNodeForIgnores(n *yaml.Node, i *map[int][]regexp.Regexp) {
+	if n.HeadComment != "" {
+		line := posAt(n).Line
+		matches := ignoreRe.FindAllStringSubmatch(n.HeadComment, -1)
+		for _, m := range matches {
+			if len(m) > 1 {
+				patterns := strings.Split(m[1], ",")
+				(*i)[line] = make([]regexp.Regexp, 0, len(patterns))
+				for _, p := range patterns {
+					r, err := regexp.Compile(p)
+					if err != nil {
+						continue
+					}
+					(*i)[line] = append((*i)[line], *r)
+				}
+			}
+		}
+	}
+	if n.Content != nil {
+		for _, c := range n.Content {
+			visitNodeForIgnores(c, i)
+		}
+	}
+}
+
 // Parse parses given source as byte sequence into workflow syntax tree. It returns all errors
 // detected while parsing the input. It means that detecting one error does not stop parsing. Even
 // if one or more errors are detected, parser will try to continue parsing and finding more errors.
-func Parse(b []byte) (*Workflow, []*Error) {
+func Parse(b []byte) (*Workflow, map[int][]regexp.Regexp, []*Error) {
 	var n yaml.Node
 
 	if err := yaml.Unmarshal(b, &n); err != nil {
-		return nil, handleYAMLError(err)
+		return nil, nil, handleYAMLError(err)
 	}
 
 	// Uncomment for checking YAML tree
@@ -1417,6 +1444,8 @@ func Parse(b []byte) (*Workflow, []*Error) {
 
 	p := &parser{}
 	w := p.parse(&n)
+	i := map[int][]regexp.Regexp{}
+	visitNodeForIgnores(&n, &i)
 
-	return w, p.errors
+	return w, i, p.errors
 }

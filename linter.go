@@ -500,7 +500,7 @@ func (l *Linter) check(
 		l.debug("No config was found")
 	}
 
-	w, all := Parse(content)
+	w, i, all := Parse(content)
 
 	if l.logLevel >= LogLevelVerbose {
 		elapsed := time.Since(start)
@@ -592,6 +592,24 @@ func (l *Linter) check(
 			for _, pat := range l.ignorePats {
 				if pat.MatchString(err.Message) {
 					continue Loop
+				}
+			}
+			filtered = append(filtered, err)
+		}
+		all = filtered
+	}
+
+	// ignore inline ignore patterns
+	if len(i) > 0 {
+		filtered := make([]*Error, 0, len(all))
+	Loop2:
+		for _, err := range all {
+			patterns, ok := i[err.Line]
+			if ok {
+				for _, p := range patterns {
+					if p.MatchString(err.Message) {
+						continue Loop2
+					}
 				}
 			}
 			filtered = append(filtered, err)
