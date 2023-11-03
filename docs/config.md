@@ -46,5 +46,5 @@ config-variables:
 
 [Checks](checks.md) | [Installation](install.md) | [Usage](usage.md) | [Go API](api.md) | [References](reference.md)
 
-[Super-Linter]: https://github.com/github/super-linter
+[Super-Linter]: https://github.com/super-linter/super-linter
 [vars]: https://docs.github.com/en/actions/learn-github-actions/variables
