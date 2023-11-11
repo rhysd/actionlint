@@ -3144,6 +3144,7 @@ var PopularActions = map[string]*ActionMetadata{
 			"outputfile":              {"outputFile", false},
 			"owner":                   {"owner", false},
 			"path":                    {"path", false},
+			"platform":                {"platform", false},
 			"repo":                    {"repo", false},
 			"token":                   {"token", false},
 			"totag":                   {"toTag", false},
