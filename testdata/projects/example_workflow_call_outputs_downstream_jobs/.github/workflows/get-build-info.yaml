@@ -3,7 +3,7 @@ on:
   workflow_call:
     outputs:
       version:
-        value: ${{ outputs.version }}
+        value: ${{ jobs.test.outputs.version }}
         description: version of software
 
 jobs:

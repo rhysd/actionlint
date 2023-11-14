@@ -1,0 +1,4 @@
+name: "Implicit Runs"
+description: "Even if only JavaScript options are declared, a using value is still required"
+runs:
+  main: "index.js"

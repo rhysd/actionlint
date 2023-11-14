@@ -1,0 +1,7 @@
+name: "Branding Test"
+description: "Ensure a known color is configured"
+runs:
+  using: "node12"
+  main: "index.js"
+branding:
+  new: key

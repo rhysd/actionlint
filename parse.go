@@ -41,7 +41,7 @@ func newString(n *yaml.Node) *String {
 	return &String{n.Value, quoted, posAt(n)}
 }
 
-type workflowKeyVal struct {
+type yamlKeyValue struct {
 	// id is used for comparing keys. When the key is case insensitive, this field is in lower case.
 	id  string
 	key *String
@@ -247,7 +247,7 @@ func (p *parser) parseFloat(n *yaml.Node) *Float {
 	}
 }
 
-func (p *parser) parseMapping(what string, n *yaml.Node, allowEmpty, caseSensitive bool) []workflowKeyVal {
+func (p *parser) parseMapping(what string, n *yaml.Node, allowEmpty, caseSensitive bool) []yamlKeyValue {
 	isNull := isNull(n)
 
 	if !isNull && n.Kind != yaml.MappingNode {
@@ -262,7 +262,7 @@ func (p *parser) parseMapping(what string, n *yaml.Node, allowEmpty, caseSensiti
 
 	l := len(n.Content) / 2
 	keys := make(map[string]*Pos, l)
-	m := make([]workflowKeyVal, 0, l)
+	m := make([]yamlKeyValue, 0, l)
 	for i := 0; i < len(n.Content); i += 2 {
 		k := p.parseString(n.Content[i], false)
 		if k == nil {
@@ -287,7 +287,7 @@ func (p *parser) parseMapping(what string, n *yaml.Node, allowEmpty, caseSensiti
 			p.errorfAt(k.Pos, "key %q is duplicated in %s. previously defined at %s%s", k.Value, what, pos.String(), note)
 			continue
 		}
-		m = append(m, workflowKeyVal{id, k, n.Content[i+1]})
+		m = append(m, yamlKeyValue{id, k, n.Content[i+1]})
 		keys[id] = k.Pos
 	}
 
@@ -298,7 +298,7 @@ func (p *parser) parseMapping(what string, n *yaml.Node, allowEmpty, caseSensiti
 	return m
 }
 
-func (p *parser) parseSectionMapping(sec string, n *yaml.Node, allowEmpty, caseSensitive bool) []workflowKeyVal {
+func (p *parser) parseSectionMapping(sec string, n *yaml.Node, allowEmpty, caseSensitive bool) []yamlKeyValue {
 	return p.parseMapping(fmt.Sprintf("%q section", sec), n, allowEmpty, caseSensitive)
 }
 
@@ -980,7 +980,7 @@ func (p *parser) parseTimeoutMinutes(n *yaml.Node) *Float {
 }
 
 // https://docs.github.com/en/actions/learn-github-actions/workflow-syntax-for-github-actions#jobsjob_idsteps
-func (p *parser) parseStep(n *yaml.Node) *Step {
+func (p *parser) parseStep(n *yaml.Node, requireShell bool) *Step {
 	ret := &Step{Pos: posAt(n)}
 	var workDir *String
 
@@ -1013,7 +1013,7 @@ func (p *parser) parseStep(n *yaml.Node) *Step {
 			} else {
 				// kv.key == "with"
 				with := p.parseSectionMapping("with", kv.val, false, false)
-				exec.Inputs = make(map[string]*Input, len(with))
+				exec.Inputs = make(map[string]*StepInput, len(with))
 				for _, input := range with {
 					switch input.id {
 					case "entrypoint":
@@ -1023,7 +1023,7 @@ func (p *parser) parseStep(n *yaml.Node) *Step {
 						// https://docs.github.com/en/actions/learn-github-actions/workflow-syntax-for-github-actions#jobsjob_idstepswithargs
 						exec.Args = p.parseString(input.val, true)
 					default:
-						exec.Inputs[input.id] = &Input{input.key, p.parseString(input.val, true)}
+						exec.Inputs[input.id] = &StepInput{input.key, p.parseString(input.val, true)}
 					}
 				}
 			}
@@ -1081,6 +1081,9 @@ func (p *parser) parseStep(n *yaml.Node) *Step {
 		if e.Run == nil {
 			p.error(n, "\"run\" is required to run script in step")
 		}
+		if e.Shell == nil && requireShell {
+			p.error(n, "\"shell\" is required to run script in step as part of composite actions")
+		}
 	default:
 		p.error(n, "step must run script with \"run\" section or run action with \"uses\" section")
 	}
@@ -1089,7 +1092,7 @@ func (p *parser) parseStep(n *yaml.Node) *Step {
 }
 
 // https://docs.github.com/en/actions/learn-github-actions/workflow-syntax-for-github-actions#jobsjob_idsteps
-func (p *parser) parseSteps(n *yaml.Node) []*Step {
+func (p *parser) parseSteps(n *yaml.Node, requireShell bool) []*Step {
 	if ok := p.checkSequence("steps", n, false); !ok {
 		return nil
 	}
@@ -1097,7 +1100,7 @@ func (p *parser) parseSteps(n *yaml.Node) []*Step {
 	ret := make([]*Step, 0, len(n.Content))
 
 	for _, c := range n.Content {
-		if s := p.parseStep(c); s != nil {
+		if s := p.parseStep(c, requireShell); s != nil {
 			ret = append(ret, s)
 		}
 	}
@@ -1191,7 +1194,7 @@ func (p *parser) parseJob(id *String, n *yaml.Node) *Job {
 		case "if":
 			ret.If = p.parseString(v, false)
 		case "steps":
-			ret.Steps = p.parseSteps(v)
+			ret.Steps = p.parseSteps(v, false)
 			stepsOnlyKey = k
 		case "timeout-minutes":
 			ret.TimeoutMinutes = p.parseTimeoutMinutes(v)
@@ -1314,7 +1317,7 @@ func (p *parser) parseJobs(n *yaml.Node) map[string]*Job {
 }
 
 // https://docs.github.com/en/actions/learn-github-actions/workflow-syntax-for-github-actions
-func (p *parser) parse(n *yaml.Node) *Workflow {
+func (p *parser) parseWorkflow(n *yaml.Node) *Workflow {
 	w := &Workflow{}
 
 	if n.Line == 0 {
@@ -1372,6 +1375,310 @@ func (p *parser) parse(n *yaml.Node) *Workflow {
 	return w
 }
 
+// https://docs.github.com/en/actions/creating-actions/metadata-syntax-for-github-actions#inputsinput_id
+func (p *parser) parseActionInput(id *String, n *yaml.Node) *ActionInput {
+	ret := &ActionInput{Pos: posAt(n)}
+
+	for _, kv := range p.parseMapping(fmt.Sprintf("%q input", id.Value), n, false, true) {
+		switch kv.id {
+		case "description":
+			ret.Description = p.parseString(kv.val, false)
+		case "required":
+			ret.Required = p.parseBool(kv.val)
+		case "default":
+			ret.Default = p.parseString(kv.val, true)
+		case "deprecationMessage":
+			ret.DeprecationMessage = p.parseString(kv.val, false)
+		default:
+			p.unexpectedKey(kv.key, "input", []string{
+				"description",
+				"required",
+				"default",
+				"deprecationMessage",
+			})
+		}
+	}
+
+	if ret.Description == nil {
+		p.errorf(n, "\"description\" property is missing in specification of input %q", id.Value)
+	}
+
+	return ret
+}
+
+func (p *parser) parseActionInputs(pos *Pos, n *yaml.Node) map[string]*ActionInput {
+	inputs := p.parseSectionMapping("inputs", n, false, false)
+	ret := make(map[string]*ActionInput, len(inputs))
+	for _, kv := range inputs {
+		ret[kv.id] = p.parseActionInput(kv.key, kv.val)
+	}
+
+	return ret
+}
+
+// https://docs.github.com/en/actions/creating-actions/metadata-syntax-for-github-actions#outputs-for-docker-container-and-javascript-actions
+// https://docs.github.com/en/actions/creating-actions/metadata-syntax-for-github-actions#outputs-for-composite-actions
+func (p *parser) parseActionOutput(id *String, n *yaml.Node) *ActionOutput {
+	ret := &ActionOutput{Pos: posAt(n)}
+
+	for _, kv := range p.parseMapping(fmt.Sprintf("%q outputs", id.Value), n, false, true) {
+		switch kv.id {
+		case "description":
+			ret.Description = p.parseString(kv.val, false)
+		case "value":
+			ret.Value = p.parseString(kv.val, false)
+		default:
+			p.unexpectedKey(kv.key, "output", []string{
+				"description",
+				"value",
+			})
+		}
+	}
+
+	return ret
+}
+
+func (p *parser) parseActionOutputs(pos *Pos, n *yaml.Node) map[string]*ActionOutput {
+	outputs := p.parseSectionMapping("outputs", n, false, false)
+	ret := make(map[string]*ActionOutput, len(outputs))
+	for _, kv := range outputs {
+		ret[kv.id] = p.parseActionOutput(kv.key, kv.val)
+	}
+
+	return ret
+}
+
+func (p *parser) parseActionRuns(n *yaml.Node) ActionRuns {
+	var r ActionRuns
+	hadUsingKey := false
+	for _, kv := range p.parseMapping("runs", n, false, true) {
+		switch kv.id {
+		case "using":
+			using := p.parseString(kv.val, false)
+			hadUsingKey = true
+			switch {
+			case strings.HasPrefix(using.Value, "node"):
+				if r == nil {
+					r = &JavaScriptRuns{Using: using}
+				} else if na, ok := r.(*JavaScriptRuns); ok {
+					na.Using = using
+				} else {
+					p.errorAt(kv.key.Pos, "this action declares it uses javascript but has foreign keys")
+				}
+			case using.Value == "docker":
+				if r == nil {
+					r = &DockerContainerRuns{}
+				} else if r.Kind() != ActionKindDockerContainer {
+					p.errorAt(kv.key.Pos, "this action declares it uses docker container but has foreign keys")
+				}
+			case using.Value == "composite":
+				if r == nil {
+					r = &CompositeRuns{}
+				} else if r.Kind() != ActionKindComposite {
+					p.errorAt(kv.key.Pos, "this action declares it is a composite action but has foreign keys")
+				}
+			default:
+				p.errorf(kv.val, "unknown action type %s, (only javascript, docker and composite are supported)", using.Value)
+				return nil
+			}
+		case "steps":
+			var def *CompositeRuns
+			if r == nil {
+				def = &CompositeRuns{}
+				r = def
+			} else if ca, ok := r.(*CompositeRuns); ok {
+				def = ca
+			} else {
+				p.errorfAt(kv.key.Pos, "this action defines parameter %s for composite actions, but is something else", kv.id)
+				continue
+			}
+			def.Steps = p.parseSteps(kv.val, true)
+		case "main", "pre", "pre-if", "post", "post-if":
+			var def *JavaScriptRuns
+			if r == nil {
+				def = &JavaScriptRuns{}
+				r = def
+			} else if na, ok := r.(*JavaScriptRuns); ok {
+				def = na
+			} else {
+				p.errorfAt(kv.key.Pos, "this action defines parameter %s for javascript actions, but is something else", kv.id)
+				continue
+			}
+			switch kv.id {
+			case "main":
+				def.Main = p.parseString(kv.val, false)
+			case "pre":
+				def.Pre = p.parseString(kv.val, false)
+			case "pre-if":
+				def.PreIf = p.parseString(kv.val, false)
+			case "post":
+				def.Post = p.parseString(kv.val, false)
+			case "post-if":
+				def.PostIf = p.parseString(kv.val, false)
+			}
+		case "image", "entrypoint", "args", "env", "pre-entrypoint", "post-entrypoint":
+			var def *DockerContainerRuns
+			if r == nil {
+				def = &DockerContainerRuns{}
+				r = def
+			} else if da, ok := r.(*DockerContainerRuns); ok {
+				def = da
+			} else {
+				p.errorfAt(kv.key.Pos, "this action defines parameter %s for javascript actions, but is something else", kv.id)
+				continue
+			}
+			switch kv.id {
+			case "image":
+				def.Image = p.parseString(kv.val, false)
+			case "args":
+				def.Args = p.parseStringSequence("args", kv.val, true, false)
+			case "env":
+				def.Env = p.parseEnv(kv.val)
+			case "pre-entrypoint":
+				def.PreEntrypoint = p.parseString(kv.val, false)
+			case "entrypoint":
+				def.Entrypoint = p.parseString(kv.val, false)
+			case "post-entrypoint":
+				def.PostEntrypoint = p.parseString(kv.val, false)
+			}
+		default:
+			p.unexpectedKey(kv.key, "runs", []string{
+				"using",
+				"main",
+				"pre",
+				"pre-if",
+				"post",
+				"post-if",
+				"image",
+				"args",
+				"env",
+				"pre-entrypoint",
+				"entrypoint",
+				"post-entrypoint",
+				"steps",
+			})
+		}
+	}
+
+	if !hadUsingKey {
+		p.error(n, "\"using\" is required to define what to execute")
+		return r
+	}
+
+	switch a := r.(type) {
+	case *JavaScriptRuns:
+		if a.Main == nil {
+			p.error(n, "\"main\" is required for a javascript action")
+		}
+	case *DockerContainerRuns:
+		if a.Image == nil {
+			p.error(n, "\"image\" is required for a docker container action")
+		}
+	case *CompositeRuns:
+		if a.Steps == nil {
+			p.error(n, "\"steps\" is required for a composite action")
+		}
+	}
+	return r
+}
+
+func (p *parser) parseBranding(n *yaml.Node) *Branding {
+	b := Branding{}
+	for _, kv := range p.parseMapping("branding", n, false, false) {
+		switch kv.id {
+		case "color":
+			b.Color = p.parseString(kv.val, false)
+		case "icon":
+			b.Icon = p.parseString(kv.val, false)
+		default:
+			p.unexpectedKey(kv.key, "branding", []string{
+				"color",
+				"icon",
+			})
+		}
+	}
+
+	if b.Icon == nil {
+		p.error(n, "\"icon\" is required for branding information")
+	}
+	if b.Color == nil {
+		p.error(n, "\"color\" is required for branding information")
+	}
+	return &b
+}
+
+// https://docs.github.com/en/actions/creating-actions/metadata-syntax-for-github-actions
+func (p *parser) parseAction(n *yaml.Node) *Action {
+	a := &Action{}
+	if n.Line == 0 {
+		n.Line = 1
+	}
+	if n.Column == 0 {
+		n.Column = 1
+	}
+
+	if len(n.Content) == 0 {
+		p.error(n, "action is empty")
+		return a
+	}
+
+	hasRunsBlock := false
+
+	for _, kv := range p.parseMapping("action", n.Content[0], false, true) {
+		k, v := kv.key, kv.val
+		switch kv.id {
+		case "name":
+			a.Name = p.parseString(v, true)
+		case "author":
+			a.Author = p.parseString(v, true)
+		case "description":
+			a.Description = p.parseString(v, true)
+		case "inputs":
+			a.Inputs = p.parseActionInputs(k.Pos, v)
+		case "outputs":
+			a.Outputs = p.parseActionOutputs(k.Pos, v)
+		case "runs":
+			a.Runs = p.parseActionRuns(v)
+			hasRunsBlock = true // even if parseActionRuns is nil, it is still had a runs block
+		case "branding":
+			a.Branding = p.parseBranding(v)
+		default:
+			p.unexpectedKey(k, "action", []string{
+				"name",
+				"author",
+				"description",
+				"inputs",
+				"outputs",
+				"runs",
+				"branding",
+			})
+		}
+	}
+
+	if a.Name == nil {
+		p.error(n, "\"name\" property is missing in action metadata")
+	}
+	if a.Description == nil {
+		p.error(n, "\"description\" property is missing in action metadata")
+	}
+	if !hasRunsBlock {
+		p.error(n, "\"runs\" section is missing in action metadata")
+	}
+	if a.Runs != nil {
+		requireValue := a.Runs.Kind() == ActionKindComposite
+		for _, o := range a.Outputs {
+			if o.Value == nil && requireValue {
+				p.errorAt(o.Pos, "output value is required for composite actions")
+			}
+			if o.Value != nil && !requireValue {
+				p.errorAt(o.Pos, "output value is only allowed for composite actions")
+			}
+		}
+	}
+
+	return a
+}
+
 // func dumpYAML(n *yaml.Node, level int) {
 // 	fmt.Printf("%s%s (%s, %d,%d): %q\n", strings.Repeat(". ", level), nodeKindName(n.Kind), n.Tag, n.Line, n.Column, n.Value)
 // 	for _, c := range n.Content {
@@ -1402,21 +1709,86 @@ func handleYAMLError(err error) []*Error {
 	return []*Error{yamlErr(err.Error())}
 }
 
-// Parse parses given source as byte sequence into workflow syntax tree. It returns all errors
-// detected while parsing the input. It means that detecting one error does not stop parsing. Even
-// if one or more errors are detected, parser will try to continue parsing and finding more errors.
+// InputFormat is kind of how input files should be treated (as workflow file, action file or either of them).
+type InputFormat uint8
+
+const (
+	// FileWorkflow ensures the file is parsed as Actions workflow
+	FileWorkflow InputFormat = iota
+	// FileAction ensures the file is parsed as Action metadata file
+	FileAction
+	// FileAutoDetect will select between workflow and action metadata file based on filename and file content.
+	FileAutoDetect
+)
+
+func inputFormatString(inputFormat InputFormat) string {
+	switch inputFormat {
+	case FileWorkflow:
+		return "workflow"
+	case FileAction:
+		return "action"
+	case FileAutoDetect:
+		return "workflow or action"
+	}
+	return "unknown"
+}
+
+func selectFormat(filename string, node *yaml.Node, format InputFormat) InputFormat {
+	if format != FileAutoDetect { // Format is already enforced
+		return format
+	}
+	if strings.Contains(filename, ".github/workflows/") {
+		// println("Detect", filename, "as workflow file based (due to its directory)")
+		return FileWorkflow
+	}
+	if strings.HasSuffix(filename, "/action.yaml") || strings.HasSuffix(filename, "/action.yml") {
+		// println("Detect", filename, "as action filename based (due to its filename)")
+		return FileAction
+	}
+
+	// selecting Action if `runs` element is present Workflow otherwise:
+	if isNull(node) || len(node.Content) == 0 || node.Content[0].Kind != yaml.MappingNode {
+		// println("Defaulted", filename, "as workflow (file is not a yaml mapping)", nodeKindName(node.Kind))
+		return FileWorkflow
+	}
+
+	for i := 0; i < len(node.Content[0].Content); i += 2 {
+		if node.Content[0].Content[i].Kind == yaml.ScalarNode && node.Content[0].Content[i].Value == "runs" {
+			// println("Detected", filename, "as action workflow (it has a 'runs' key)")
+			return FileAction
+		}
+	}
+	return FileWorkflow
+}
+
+// Parse is an alias for ParseFile with default values for API stability
 func Parse(b []byte) (*Workflow, []*Error) {
+	w, _, _, errs := ParseFile("<stdin>", b, FileWorkflow)
+	return w, errs
+}
+
+// ParseFile parses given source as byte sequence into action or workflow syntax tree. It returns
+// all errors detected while parsing the input. It means that detecting one error does not stop parsing.
+// Even if one or more errors are detected, parser will try to continue parsing and finding more errors.
+func ParseFile(filename string, b []byte, format InputFormat) (*Workflow, *Action, InputFormat, []*Error) {
 	var n yaml.Node
+	var a *Action
+	var w *Workflow
 
 	if err := yaml.Unmarshal(b, &n); err != nil {
-		return nil, handleYAMLError(err)
+		return nil, nil, format, handleYAMLError(err)
 	}
 
 	// Uncomment for checking YAML tree
 	// dumpYAML(&n, 0)
 
 	p := &parser{}
-	w := p.parse(&n)
+	sf := selectFormat(filename, &n, format)
+	if sf == FileWorkflow {
+		w = p.parseWorkflow(&n)
+	} else {
+		a = p.parseAction(&n)
+	}
 
-	return w, p.errors
+	return w, a, sf, p.errors
 }

@@ -26,8 +26,8 @@ func encodeErrorAsMap(err *actionlint.Error) map[string]interface{} {
 	return obj
 }
 
-func lint(source string) interface{} {
-	opts := actionlint.LinterOptions{}
+func lint(source string, typ string) interface{} {
+	opts := actionlint.LinterOptions{InputFormat: typ}
 	linter, err := actionlint.NewLinter(io.Discard, &opts)
 	if err != nil {
 		fail(err, "creating linter instance")
@@ -35,6 +35,7 @@ func lint(source string) interface{} {
 	}
 
 	errs, err := linter.Lint("test.yaml", []byte(source), nil)
+
 	if err != nil {
 		fail(err, "applying lint rules")
 		return nil
@@ -52,12 +53,14 @@ func lint(source string) interface{} {
 
 func runActionlint(_this js.Value, args []js.Value) interface{} {
 	source := args[0].String()
-	return lint(source)
+	typ := args[1].String()
+
+	return lint(source, typ)
 }
 
 func main() {
 	window.Set("runActionlint", js.FuncOf(runActionlint))
 	window.Call("dismissLoading")
-	lint(window.Call("getYamlSource").String()) // Show the first result
+	lint(window.Call("getYamlSource").String(), "workflow") // Show the first result
 	select {}
 }

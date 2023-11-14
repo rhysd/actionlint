@@ -1,0 +1,10 @@
+on: push
+
+jobs:
+  caller:
+    uses: ./.github/workflows/this-workflow-does-not-exist.yaml
+  other:
+    needs: [caller]
+    runs-on: ubuntu-latest
+    steps:
+      - run: echo 'Unknown output ${{ needs.caller.outputs.foo }}'

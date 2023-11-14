@@ -1,0 +1,5 @@
+name: 'Minimal Docker Action'
+description: 'Ensure most keys can be left out'
+runs:
+  using: 'docker'
+  image: 'true:v1.0.0'

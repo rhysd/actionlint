@@ -1,1 +1,1 @@
-workflows/test.yaml:14:24: undefined configuration variable "piyo". defined configuration variables in actionlint.yaml are "FOO", "WOO" [expression]
+.github/workflows/test.yaml:14:24: undefined configuration variable "piyo". defined configuration variables in actionlint.yaml are "FOO", "WOO" [expression]

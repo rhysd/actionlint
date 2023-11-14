@@ -18,6 +18,11 @@ type Pass interface {
 	VisitWorkflowPre(node *Workflow) error
 	// VisitWorkflowPost is callback when visiting Workflow node after visiting its children. It returns internal error when it cannot continue the process
 	VisitWorkflowPost(node *Workflow) error
+
+	// VisitActionPre is callback when visiting Action node before visiting its children. It returns internal error when it cannot continue the process
+	VisitActionPre(node *Action) error
+	// VisitActionPost is callback when visiting Action node after visiting its children. It returns internal error when it cannot continue the process
+	VisitActionPost(node *Action) error
 }
 
 // Visitor visits syntax tree from root in depth-first order
@@ -46,8 +51,13 @@ func (v *Visitor) reportElapsedTime(what string, start time.Time) {
 	fmt.Fprintf(v.dbg, "[Visitor] %s took %vms\n", what, time.Since(start).Milliseconds())
 }
 
-// Visit visits given syntax tree in depth-first order
+// Visit is an alias for VisitWorkflow for API stability
 func (v *Visitor) Visit(n *Workflow) error {
+	return v.VisitWorkflow(n)
+}
+
+// VisitWorkflow visits given syntax tree in depth-first order
+func (v *Visitor) VisitWorkflow(n *Workflow) error {
 	var t time.Time
 	if v.dbg != nil {
 		t = time.Now()
@@ -83,6 +93,50 @@ func (v *Visitor) Visit(n *Workflow) error {
 
 	if v.dbg != nil {
 		v.reportElapsedTime("VisitWorkflowPost", t)
+	}
+
+	return nil
+}
+
+// VisitAction visits given syntax tree in depth-first order
+func (v *Visitor) VisitAction(n *Action) error {
+	var t time.Time
+	if v.dbg != nil {
+		t = time.Now()
+	}
+
+	for _, p := range v.passes {
+		if err := p.VisitActionPre(n); err != nil {
+			return err
+		}
+	}
+
+	if v.dbg != nil {
+		v.reportElapsedTime("VisitActionPre", t)
+		t = time.Now()
+	}
+
+	if c, ok := n.Runs.(*CompositeRuns); ok {
+		for _, s := range c.Steps {
+			if err := v.visitStep(s); err != nil {
+				return err
+			}
+		}
+
+		if v.dbg != nil {
+			v.reportElapsedTime(fmt.Sprintf("Visiting %d steps of action %q", len(c.Steps), n.Name.Value), t)
+			t = time.Now()
+		}
+	}
+
+	for _, p := range v.passes {
+		if err := p.VisitActionPost(n); err != nil {
+			return err
+		}
+	}
+
+	if v.dbg != nil {
+		v.reportElapsedTime("VisitActionPost", t)
 	}
 
 	return nil

@@ -1,0 +1,3 @@
+test.yaml:7:3: unexpected key "new" for "branding" section. expected one of "color", "icon" [syntax-check]
+test.yaml:7:3: "icon" is required for branding information [syntax-check]
+test.yaml:7:3: "color" is required for branding information [syntax-check]

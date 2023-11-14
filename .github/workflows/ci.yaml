@@ -50,7 +50,7 @@ jobs:
       - name: Dog fooding 🐶
         run: |
           echo "::add-matcher::.github/actionlint-matcher.json"
-          ./actionlint -color
+          ./actionlint -color -input-format=workflow
       - uses: codecov/codecov-action@v3
         with:
           env_vars: OS
@@ -116,6 +116,6 @@ jobs:
         run: docker container run
           --mount type=bind,source="$(pwd)",target=/mnt/app
           --workdir /mnt/app
-          -- ${{ steps.image.outputs.digest }} -color -verbose
+          -- ${{ steps.image.outputs.digest }} -color -verbose -input-format=workflow
       - name: Lint Dockerfile with hadolint
         run: docker run --rm -i hadolint/hadolint hadolint --ignore DL3018 --strict-labels - < Dockerfile

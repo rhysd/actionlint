@@ -70,3 +70,12 @@ main {
 footer {
   margin-top: 32px;
 }
+
+.type-toggle {
+  margin-right: 1rem;
+}
+
+.type-toggle li a {
+  padding: calc(.5em - 1px) 1em;
+  height: 2.5em;
+}

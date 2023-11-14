@@ -17,7 +17,7 @@ import (
 	"golang.org/x/sys/execabs"
 )
 
-func TestLinterLintOK(t *testing.T) {
+func TestLinterLintWorkflowOK(t *testing.T) {
 	dir := filepath.Join("testdata", "ok")
 
 	es, err := os.ReadDir(dir)
@@ -73,7 +73,52 @@ func TestLinterLintOK(t *testing.T) {
 	}
 }
 
-func testFindAllWorkflowsInDir(subdir string) (string, []string, error) {
+func TestLinterLintActionOK(t *testing.T) {
+	dir, fs, err := testFindAllYamlInDir("actions/ok")
+
+	if err != nil {
+		panic(err)
+	}
+
+	proj := &Project{root: dir}
+	shellcheck, err := execabs.LookPath("shellcheck")
+	if err != nil {
+		t.Skip("skipped because \"shellcheck\" command does not exist in system")
+	}
+
+	pyflakes, err := execabs.LookPath("pyflakes")
+	if err != nil {
+		t.Skip("skipped because \"pyflakes\" command does not exist in system")
+	}
+
+	for _, f := range fs {
+		t.Run(filepath.Base(f), func(t *testing.T) {
+			opts := LinterOptions{
+				Shellcheck:  shellcheck,
+				Pyflakes:    pyflakes,
+				InputFormat: "action",
+			}
+
+			linter, err := NewLinter(io.Discard, &opts)
+			if err != nil {
+				t.Fatal(err)
+			}
+
+			config := Config{}
+			linter.defaultConfig = &config
+
+			errs, err := linter.LintFile(f, proj)
+			if err != nil {
+				t.Fatal(err)
+			}
+			if len(errs) > 0 {
+				t.Fatal(errs)
+			}
+		})
+	}
+}
+
+func testFindAllYamlInDir(subdir string) (string, []string, error) {
 	dir := filepath.Join("testdata", subdir)
 
 	entries, err := os.ReadDir(dir)
@@ -137,9 +182,9 @@ func checkErrors(t *testing.T, outfile string, errs []*Error) {
 	}
 }
 
-func TestLinterLintError(t *testing.T) {
+func TestLinterLintWorkflowError(t *testing.T) {
 	for _, subdir := range []string{"examples", "err"} {
-		dir, infiles, err := testFindAllWorkflowsInDir(subdir)
+		dir, infiles, err := testFindAllYamlInDir(subdir)
 		if err != nil {
 			panic(err)
 		}
@@ -196,6 +241,66 @@ func TestLinterLintError(t *testing.T) {
 				checkErrors(t, base+".out", errs)
 			})
 		}
+	}
+}
+
+func TestLinterLintActionError(t *testing.T) {
+	dir, infiles, err := testFindAllYamlInDir("actions/err")
+	if err != nil {
+		panic(err)
+	}
+
+	proj := &Project{root: dir}
+
+	shellcheck := ""
+	if p, err := execabs.LookPath("shellcheck"); err == nil {
+		shellcheck = p
+	}
+
+	pyflakes := ""
+	if p, err := execabs.LookPath("pyflakes"); err == nil {
+		pyflakes = p
+	}
+
+	for _, infile := range infiles {
+		base := strings.TrimSuffix(infile, filepath.Ext(infile))
+		testName := filepath.Base(base)
+		t.Run(testName, func(t *testing.T) {
+			b, err := os.ReadFile(infile)
+			if err != nil {
+				panic(err)
+			}
+
+			o := LinterOptions{InputFormat: "action"}
+
+			if strings.Contains(testName, "shellcheck") {
+				if shellcheck == "" {
+					t.Skip("skipped because \"shellcheck\" command does not exist in system")
+				}
+				o.Shellcheck = shellcheck
+			}
+
+			if strings.Contains(testName, "pyflakes") {
+				if pyflakes == "" {
+					t.Skip("skipped because \"pyflakes\" command does not exist in system")
+				}
+				o.Pyflakes = pyflakes
+			}
+
+			l, err := NewLinter(io.Discard, &o)
+			if err != nil {
+				t.Fatal(err)
+			}
+
+			l.defaultConfig = &Config{}
+
+			errs, err := l.Lint("test.yaml", b, proj)
+			if err != nil {
+				t.Fatal(err)
+			}
+
+			checkErrors(t, base+".out", errs)
+		})
 	}
 }
 
@@ -256,7 +361,7 @@ func TestLinterLintProject(t *testing.T) {
 			opts := LinterOptions{
 				WorkingDir: repo,
 			}
-			cfg := filepath.Join(repo, "actionlint.yaml")
+			cfg := filepath.Join(repo, ".github", "actionlint.yaml")
 			if _, err := os.Stat(cfg); err == nil {
 				opts.ConfigFile = cfg
 			}
@@ -266,7 +371,7 @@ func TestLinterLintProject(t *testing.T) {
 			}
 
 			proj := &Project{root: repo}
-			errs, err := linter.LintDir(filepath.Join(repo, "workflows"), proj)
+			errs, err := linter.LintDir(filepath.Join(repo, ".github", "workflows"), proj)
 			if err != nil {
 				t.Fatal(err)
 			}
@@ -706,7 +811,7 @@ func BenchmarkLintWorkflowContent(b *testing.B) {
 }
 
 func BenchmarkExamplesLintFiles(b *testing.B) {
-	dir, files, err := testFindAllWorkflowsInDir("examples")
+	dir, files, err := testFindAllYamlInDir("examples")
 	if err != nil {
 		panic(err)
 	}

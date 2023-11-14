@@ -1,0 +1,30 @@
+on:
+  workflow_call:
+    inputs:
+      input1:
+        type: string
+      input2:
+        type: number
+        required: true
+    outputs:
+      output1:
+        value: '...'
+    secrets:
+      secret1:
+      secret2:
+        required: true
+
+jobs:
+  caller:
+    uses: ./.github/workflows/recursive.yaml
+    with:
+      input1: hello
+      input2: 42
+    secrets:
+      secret1: aaa
+      secret2: bbb
+  other:
+    needs: [caller]
+    runs-on: ubuntu-latest
+    steps:
+      - run: echo '${{ needs.caller.outputs.output1 }}'

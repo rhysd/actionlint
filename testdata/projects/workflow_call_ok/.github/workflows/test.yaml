@@ -1,0 +1,35 @@
+on: push
+
+jobs:
+  caller1:
+    uses: ./.github/workflows/reusable_all_required.yaml
+    with:
+      str: hi
+      num: 13
+      bool: true
+    secrets:
+      foo: bar
+  caller2:
+    uses: ./.github/workflows/reusable_all_optional.yaml
+    with:
+      str: hi
+      num: 13
+      bool: true
+    secrets:
+      foo: bar
+  caller3:
+    uses: ./.github/workflows/reusable_all_optional.yaml
+  caller4:
+    uses: ./.github/workflows/empty1.yaml
+  caller5:
+    uses: ./.github/workflows/empty2.yaml
+  caller6:
+    uses: ./.github/workflows/empty3.yaml
+  pass-through-placeholder:
+    uses: ./.github/workflows/reusable_all_required.yaml
+    with:
+      str: ${{ 'hi' }}
+      num: ${{ 13 }}
+      bool: ${{ true }}
+    secrets:
+      foo: ${{ 'bar' }}

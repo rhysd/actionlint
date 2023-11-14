@@ -1,0 +1,5 @@
+on: push
+
+jobs:
+  caller:
+    uses: ./.github/workflows/reusable.yaml

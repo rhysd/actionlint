@@ -1,0 +1,20 @@
+name: "JS With Output Value"
+description: "Output value is only valid for composite actions"
+inputs:
+  without_description:
+    required: true
+  with_extra_key:
+    description: "Warning about extra keys like type"
+    type: string
+outputs:
+  output_with_value:
+    description: "My output"
+    value: "my value"
+  output_without_desc: {}
+  output_with_unknown_key:
+    description: "Only description is allowed as key"
+    unknown_key: "my value"
+
+runs:
+  using: node20
+  main: index.js

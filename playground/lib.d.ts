@@ -6,7 +6,7 @@ interface ActionlintError {
 }
 
 interface Window {
-    runActionlint?(src: string): void;
+    runActionlint?(src: string, typ: 'workflow' | 'action'): void;
     getYamlSource(): string;
     showError(msg: string): void;
     onCheckCompleted(errs: ActionlintError[]): void;

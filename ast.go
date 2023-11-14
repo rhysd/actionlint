@@ -422,9 +422,9 @@ func (e *ExecRun) Kind() ExecKind {
 	return ExecKindRun
 }
 
-// Input is an input field for running an action.
+// StepInput is an input field for running an action.
 // https://docs.github.com/en/actions/learn-github-actions/workflow-syntax-for-github-actions#jobsjob_idstepswith
-type Input struct {
+type StepInput struct {
 	// Name is a name of the input.
 	Name *String
 	// Value is a value of the input.
@@ -437,7 +437,7 @@ type ExecAction struct {
 	// https://docs.github.com/en/actions/learn-github-actions/workflow-syntax-for-github-actions#jobsjob_idstepsuses
 	Uses *String
 	// Inputs represents inputs to the action to execute in 'with' section. Keys are in lower case since they are case-insensitive.
-	Inputs map[string]*Input
+	Inputs map[string]*StepInput
 	// Entrypoint represents optional 'entrypoint' field in 'with' section. Nil field means nothing specified
 	// https://docs.github.com/en/actions/learn-github-actions/workflow-syntax-for-github-actions#jobsjob_idstepswithentrypoint
 	Entrypoint *String
@@ -895,6 +895,132 @@ type Workflow struct {
 	Concurrency *Concurrency
 	// Jobs is mappings from job ID to the job object. Keys are in lower case since they are case-insensitive.
 	Jobs map[string]*Job
+}
+
+// ActionInput is an input field to define the parameters that an action accepts.
+// https://docs.github.com/en/actions/creating-actions/metadata-syntax-for-github-actions#inputs
+// TODO This kinda duplicates `ActionMetadataInput` from `action_metadata.go`. Merge them?
+type ActionInput struct {
+	// Description is the description of the input.
+	Description *String
+	// Required is a flag to show if the input is required or not.
+	Required *Bool
+	// Default is a default value of the input. It can be nil when no default value is specified.
+	Default *String
+	// DeprecationMessage is a message to show when the input is deprecated.
+	DeprecationMessage *String
+	// Pos is a position in source.
+	Pos *Pos
+}
+
+// ActionOutput is an output field to that is set by this action.
+// https://docs.github.com/en/actions/creating-actions/metadata-syntax-for-github-actions#outputs-for-docker-container-and-javascript-actions
+// https://docs.github.com/en/actions/creating-actions/metadata-syntax-for-github-actions#outputs-for-composite-actions
+type ActionOutput struct {
+	// Description is the description of the input.
+	Description *String
+	// Value contains the expression that defions the value; for composite action only (nil otherwise)
+	Value *String
+	// Pos is a position in source.
+	Pos *Pos
+}
+
+// Branding defines what badges to be shown in GitHub Marketplace for actions.
+// https://docs.github.com/en/actions/creating-actions/metadata-syntax-for-github-actions#branding
+type Branding struct {
+	// Color defines the background color of the badge.
+	Color *String
+	// Icon to use
+	Icon *String
+}
+
+// ActionKind is kind of how the action is executed (JavaScript, Docker or Composite)
+type ActionKind uint8
+
+const (
+	// ActionKindJavascript is kind for actions implemented as node.js scripts
+	ActionKindJavascript ActionKind = iota
+	// ActionKindDockerContainer is kind for actions implemented as docker images
+	ActionKindDockerContainer
+	// ActionKindComposite is kind for actions implemented as composite actions (sequence of steps)
+	ActionKindComposite
+)
+
+// ActionRuns is an interface how the action is executed. Action can be executed as JavaScript, Docker or composite steps.
+type ActionRuns interface {
+	// Kind returns kind of the Action run
+	Kind() ActionKind
+}
+
+// DockerContainerRuns defines how to run an action implemented as docker container
+// https://docs.github.com/en/actions/creating-actions/metadata-syntax-for-github-actions#runs-for-docker-container-actions
+type DockerContainerRuns struct {
+	// Image specifies the container image to use
+	Image *String
+	// PreEntrypoint specifices an entrypoint to run before the main script
+	PreEntrypoint *String
+	// Entrypoint specifices an entrypoint to run as main action
+	Entrypoint *String
+	// Entrypoint specifices an entrypoint to run as main action
+	Args []*String
+	// Inputs is a mapping of environment variables to pass to the container
+	Env *Env
+	// PostEntrypoint specifices an entrypoint to run at the end of the job
+	PostEntrypoint *String
+}
+
+func (e *DockerContainerRuns) Kind() ActionKind {
+	return ActionKind(ActionKindDockerContainer)
+}
+
+type JavaScriptRuns struct {
+	// https://docs.github.com/en/actions/creating-actions/metadata-syntax-for-github-actions#runs-for-javascript-actions
+	// Using specifies the specific node runtime (node18, node20 ..)
+	Using *String
+	// Main specifies the entrypoint of the action.
+	Main *String
+	// Pre specifices an entrypoint to run before the main script
+	Pre *String
+	// PreIf defines an expression whether the pre script should be run
+	PreIf *String
+	// Post specifices an entrypoint to run at the end of the job
+	Post *String
+	// PostIf specifies an expression whether the post script should be run
+	PostIf *String
+}
+
+func (e *JavaScriptRuns) Kind() ActionKind {
+	return ActionKind(ActionKindJavascript)
+}
+
+// CompositeRuns is configuration how to run composite action at the step.
+// https://docs.github.com/en/actions/creating-actions/metadata-syntax-for-github-actions#runs-for-composite-actions
+type CompositeRuns struct {
+	// Steps specifies the steps to run (as in workflow job steps)
+	Steps []*Step
+}
+
+func (e *CompositeRuns) Kind() ActionKind {
+	return ActionKind(ActionKindComposite)
+}
+
+// Action is root of action syntax tree, which represents one action metadata file.
+// https://docs.github.com/en/actions/creating-actions/metadata-syntax-for-github-actions
+type Action struct {
+	// Name is the name of the action.
+	Name *String
+	// Author is name of the action's author. This field can be nil when user didn't specify it.
+	Author *String
+	// Description is the description of the action.
+	Description *String
+	// Inputs is a mapping from the input ID to input attributes . This field can be nil when user didn't specify it.
+	Inputs map[string]*ActionInput
+	// Outputs is list of outputs of the action. This field can be nil when user didn't specify it.
+	Outputs map[string]*ActionOutput
+	// Branding defines what badges to be shown in GitHub Marketplace.
+	Branding *Branding
+	// Runs specifies how the action is executed (via JavaScript, Docker or composite steps)
+	Runs ActionRuns
 }
 
 // FindWorkflowCallEvent returns workflow_call event node if exists

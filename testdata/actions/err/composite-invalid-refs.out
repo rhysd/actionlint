@@ -1,0 +1,4 @@
+test.yaml:8:18: undefined variable "unknown". available variables are "env", "github", "inputs", "job", "matrix", "needs", "runner", "secrets", "steps", "strategy", "vars" [expression]
+test.yaml:12:5: output value is required for composite actions [syntax-check]
+test.yaml:16:16: property "unknown_step" is not defined in object type {hello: {conclusion: string; outcome: string; outputs: {string => string}}} [expression]
+test.yaml:21:22: property "unknown_input" is not defined in object type {test: any; token: any} [expression]

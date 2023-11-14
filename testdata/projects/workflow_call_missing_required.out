@@ -1,2 +1,2 @@
-workflows/test.yaml:5:11: input "required1" is required by "./workflows/reusable.yaml" reusable workflow [workflow-call]
-workflows/test.yaml:5:11: secret "required1" is required by "./workflows/reusable.yaml" reusable workflow [workflow-call]
+.github/workflows/test.yaml:5:11: input "required1" is required by "./.github/workflows/reusable.yaml" reusable workflow [workflow-call]
+.github/workflows/test.yaml:5:11: secret "required1" is required by "./.github/workflows/reusable.yaml" reusable workflow [workflow-call]

@@ -1,0 +1,8 @@
+on: push
+
+jobs:
+  checks:
+    concurrency:
+      group: some-group
+      cancel-in-progress: true
+    uses: ./.github/workflows/reusable.yaml

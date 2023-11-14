@@ -1,0 +1,6 @@
+name: 'Minimal Docker Action'
+description: 'Ensure most keys can be left out'
+runs:
+  using: 'composite'
+  steps:
+    - uses: actions/checkout@v4

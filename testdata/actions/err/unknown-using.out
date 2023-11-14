@@ -1,0 +1,2 @@
+test.yaml:4:3: unexpected key "unknown-key" for "runs" section. expected one of "args", "entrypoint", "env", "image", "main", "post", "post-entrypoint", "post-if", "pre", "pre-entrypoint", "pre-if", "steps", "using" [syntax-check]
+test.yaml:5:10: unknown action type python3.12, (only javascript, docker and composite are supported) [syntax-check]

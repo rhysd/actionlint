@@ -1,0 +1,2 @@
+test.yaml:5:3: this action declares it is a composite action but has foreign keys [syntax-check]
+test.yaml:6:3: this action defines parameter main for javascript actions, but is something else [syntax-check]

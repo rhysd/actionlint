@@ -1,0 +1,7 @@
+name: "Missing Using Value"
+description: "Unknown execution type"
+runs:
+  main: index.js  # appears like JavaScript action
+  using: docker  # it is actually docker
+  steps:  # composite key
+    - uses: action/checkout@v4

@@ -18,6 +18,13 @@
     const checkUrlButton = getElementById('check-url-btn');
     const checkUrlInput = getElementById('check-url-input') as HTMLInputElement;
     const permalinkButton = getElementById('permalink-btn');
+    const toggleWorkflow = getElementById('toggle-workflow');
+    const toggleAction = getElementById('toggle-action');
+
+    function getCurrentType() {
+        // eslint-disable-next-line @typescript-eslint/no-non-null-assertion
+        return document.querySelector('.is-active')!.id === 'toggle-workflow' ? 'workflow' : 'action';
+    }
 
     async function getRemoteSource(url: string): Promise<string> {
         function getUrlToFetch(u: string): string {
@@ -52,7 +59,7 @@
         return src.trim();
     }
 
-    async function getDefaultSource(): Promise<string> {
+    async function getDefaultSource(type: 'workflow' | 'action' = 'workflow'): Promise<string> {
         const params = new URLSearchParams(window.location.search);
 
         const s = params.get('s');
@@ -72,7 +79,7 @@
             return new TextDecoder().decode(decompressed);
         }
 
-        const src = `# Paste your workflow YAML to this code editor
+        const workflowSrc = `# Paste your workflow YAML to this code editor
 
 on:
   push:
@@ -98,7 +105,22 @@ jobs:
         if: \${{ github.repository.permissions.admin == true }}
       - run: npm install && npm test`;
 
-        return src;
+        const actionSrc = `# Paste your action YAML to this code editor
+
+name: 'My Action Name'
+description: 'My Action Description'
+inputs:
+    my_input:
+        description: 'My input'
+        required: true
+        default: 3
+    my_other_input:
+        required: true
+runs:
+    using: 'node12'
+    main: 'index.js'`;
+
+        return type === 'workflow' ? workflowSrc : actionSrc;
     }
 
     const editorConfig: CodeMirror.EditorConfiguration = {
@@ -121,33 +143,38 @@ jobs:
     const debounceInterval = isMobile.phone ? 1000 : 300;
     let debounceId: number | null = null;
     let contentChanged = false;
-    editor.on('change', function (_, e) {
-        contentChanged = true;
+
+    function startActionlint(): void {
+        debounceId = null;
 
         if (typeof window.runActionlint !== 'function') {
             showError('Preparing Wasm file is not completed yet. Please wait for a while and try again.');
             return;
         }
 
+        errorMessage.style.display = 'none';
+        successMessage.style.display = 'none';
+        editor.clearGutter('error-marker');
+        // eslint-disable-next-line @typescript-eslint/no-non-null-assertion
+        window.runActionlint!(editor.getValue(), getCurrentType());
+    }
+
+    function startActionLintDebounced(): void {
         if (debounceId !== null) {
             window.clearTimeout(debounceId);
         }
+        debounceId = window.setTimeout(() => startActionlint(), debounceInterval);
+    }
 
-        function startActionlint(): void {
-            debounceId = null;
-            errorMessage.style.display = 'none';
-            successMessage.style.display = 'none';
-            editor.clearGutter('error-marker');
-            // eslint-disable-next-line @typescript-eslint/no-non-null-assertion
-            window.runActionlint!(editor.getValue());
-        }
+    editor.on('change', function (_, e) {
+        contentChanged = true;
 
         if (e.origin === 'paste') {
             startActionlint(); // When pasting some code, apply actionlint instantly
             return;
         }
 
-        debounceId = window.setTimeout(() => startActionlint(), debounceInterval);
+        startActionLintDebounced();
     });
 
     function getSource(): string {
@@ -287,6 +314,26 @@ jobs:
         const compressed = pako.deflate(bin);
         const b64 = btoa(String.fromCharCode(...compressed));
         window.location.hash = b64;
+    });
+
+    [toggleWorkflow, toggleAction].forEach(element => {
+        element.addEventListener('click', async event => {
+            event.preventDefault();
+            const target = event.currentTarget as HTMLElement;
+            if (!target.classList.contains('is-active')) {
+                target.classList.add('is-active');
+                // eslint-disable-next-line @typescript-eslint/no-non-null-assertion
+                const sibling = (target.nextElementSibling || target.previousElementSibling)!;
+                sibling.classList.remove('is-active');
+
+                if (!contentChanged) {
+                    editor.setValue(await getDefaultSource(target.id === 'toggle-workflow' ? 'workflow' : 'action'));
+                    contentChanged = false;
+                } else {
+                    startActionLintDebounced();
+                }
+            }
+        });
     });
 
     const go = new Go();

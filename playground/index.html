@@ -24,7 +24,7 @@
     <nav id="header-bar" class="navbar" role="navigation" aria-label="header navigation bar">
       <header class="header">
         <h1 class="title"><a id="logo" rel="noopener" href="https://github.com/rhysd/actionlint"><i class="devicon-github-original"></i></a> actionlint playground</h1>
-        <h2 class="subtitle">Static checker for GitHub Actions workflow files</h2>
+        <h2 class="subtitle">Static checker for GitHub Actions workflow and action metadata files</h2>
       </header>
       <div class="navbar-end">
         <div class="control">
@@ -42,7 +42,19 @@
 
     </nav>
     <main>
-      <div id="editor" class="split-pane"></div>
+      <div class="split-pane">
+        <div class="tabs is-toggle type-toggle">
+          <ul>
+            <li class="is-active" id="toggle-workflow">
+              <a>Wokflow</a>
+            </li>
+            <li id="toggle-action">
+              <a>Action</a>
+            </li>
+          </ul>
+        </div>
+        <div id="editor"></div>
+      </div>
       <div class="split-pane">
         <div id="loading" class="notification sticky has-text-centered is-size-5">Loading WebAssembly binary...</div>
         <table id="lint-result" class="table sticky is-hoverable">

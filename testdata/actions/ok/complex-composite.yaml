@@ -1,0 +1,42 @@
+name: 'Complex JavaScript Action'
+description: 'Try to set as many options as possible'
+author: 'rhysd <https://rhysd.github.io>'
+inputs:
+  base_uri:
+    required: true
+    description: 'Provide the AST portal URL'
+  cx_tenant:
+    required: true
+    description: 'Provide the Tenant for AST portal URL'
+  cx_client_id:
+    required: true
+    description: 'Client ID for AST portal authentication'
+  cx_client_secret:
+    required: true
+    description: 'Secret key for AST portal authentication'
+  project_name:
+    required: false
+    default: ${{ github.repository }} # default repo name
+    description: 'Select a Checkmarx Project Name'
+  branch:
+    required: false
+    default: ${{ github.head_ref || github.ref }} # default branch name
+    description: 'Branch name'
+  github_token:
+    required: false
+    default: ${{ github.token }}
+    description: 'GitHub API Token'
+  additional_params:
+    required: false
+    default: ''
+    description: 'Additional parameters for AST scan'
+outputs:
+  random-number:
+    description: "Random number"
+    value: ${{ steps.random-number-generator.outputs.random-id }}
+runs:
+  steps:
+    - id: random-number-generator
+      run: echo "random-id=$RANDOM)" >> "$GITHUB_OUTPUT"
+      shell: bash
+  using: "composite"
