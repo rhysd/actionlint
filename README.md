@@ -1,7 +1,7 @@
 actionlint
 ==========
 [![CI Badge][]][CI]
-[![API Document][api-badge]][apidoc]
+[![API Document][api-badge]][apidoc]<!-- gh-dependents-info-used-by-start --><!-- gh-dependents-info-used-by-end -->
 
 [actionlint][repo] is a static checker for GitHub Actions workflow files. [Try it online!][playground]
 
