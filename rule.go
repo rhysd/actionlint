@@ -90,7 +90,7 @@ func (r *RuleBase) SetConfig(cfg *Config) {
 	r.config = cfg
 }
 
-//GetConfig returns the config of the rule
+// GetConfig returns the config of the rule
 func (r *RuleBase) GetConfig() *Config {
 	return r.config
 }
@@ -103,4 +103,5 @@ type Rule interface {
 	Description() string
 	EnableDebug(out io.Writer)
 	SetConfig(cfg *Config)
+	GetConfig() *Config
 }
