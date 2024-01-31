@@ -36,6 +36,7 @@ var allGitHubHostedRunnerLabels = []string{
 	"macos-latest-xl",
 	"macos-latest-xlarge",
 	"macos-latest-large",
+	"macos-14",
 	"macos-13-xl",
 	"macos-13-xlarge",
 	"macos-13-large",
