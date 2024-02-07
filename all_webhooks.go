@@ -27,7 +27,7 @@ var AllWebhookTypes = map[string][]string{
 	"project_card":                {"created", "moved", "converted", "edited", "deleted"},
 	"project_column":              {"created", "updated", "moved", "deleted"},
 	"public":                      {},
-	"pull_request":                {"assigned", "unassigned", "labeled", "unlabeled", "opened", "edited", "closed", "reopened", "synchronize", "converted_to_draft", "ready_for_review", "locked", "unlocked", "review_requested", "review_request_removed", "auto_merge_enabled", "auto_merge_disabled"},
+	"pull_request":                {"assigned", "unassigned", "labeled", "unlabeled", "opened", "edited", "closed", "reopened", "synchronize", "converted_to_draft", "locked", "unlocked", "enqueued", "dequeued", "milestoned", "demilestoned", "ready_for_review", "review_requested", "review_request_removed", "auto_merge_enabled", "auto_merge_disabled"},
 	"pull_request_review":         {"submitted", "edited", "dismissed"},
 	"pull_request_review_comment": {"created", "edited", "deleted"},
 	"pull_request_target":         {"assigned", "unassigned", "labeled", "unlabeled", "opened", "edited", "closed", "reopened", "synchronize", "converted_to_draft", "ready_for_review", "locked", "unlocked", "review_requested", "review_request_removed", "auto_merge_enabled", "auto_merge_disabled"},
