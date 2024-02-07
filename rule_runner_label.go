@@ -18,6 +18,9 @@ const (
 	compatMacOS130
 	compatMacOS130L
 	compatMacOS130XL
+	compatMacOS140
+	compatMacOS140L
+	compatMacOS140XL
 	compatWindows2016
 	compatWindows2019
 	compatWindows2022
@@ -36,6 +39,11 @@ var allGitHubHostedRunnerLabels = []string{
 	"macos-latest-xl",
 	"macos-latest-xlarge",
 	"macos-latest-large",
+	"macos-14-xl",
+	"macos-14-xlarge",
+	"macos-14-large",
+	"macos-14",
+	"macos-14.0",
 	"macos-13-xl",
 	"macos-13-xlarge",
 	"macos-13-large",
@@ -70,6 +78,11 @@ var defaultRunnerOSCompats = map[string]runnerOSCompat{
 	"ubuntu-latest":       compatUbuntu2204,
 	"ubuntu-22.04":        compatUbuntu2204,
 	"ubuntu-20.04":        compatUbuntu2004,
+	"macos-14-xl":         compatMacOS140XL,
+	"macos-14-xlarge":     compatMacOS140XL,
+	"macos-14-large":      compatMacOS140L,
+	"macos-14":            compatMacOS140,
+	"macos-14.0":          compatMacOS140,
 	"macos-13-xl":         compatMacOS130XL,
 	"macos-13-xlarge":     compatMacOS130XL,
 	"macos-13-large":      compatMacOS130L,
