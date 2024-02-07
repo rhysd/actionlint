@@ -35,7 +35,7 @@ jobs:
           pyflakes --version
         if: ${{ matrix.os == 'windows-latest' }}
       - uses: actions/checkout@v4
-      - uses: actions/setup-go@v4
+      - uses: actions/setup-go@v5
         with:
           go-version: ${{ matrix.go }}
       - run: go test -v -race -coverprofile coverage.txt -covermode=atomic ./...
@@ -51,9 +51,10 @@ jobs:
         run: |
           echo "::add-matcher::.github/actionlint-matcher.json"
           ./actionlint -color
-      - uses: codecov/codecov-action@v3
+      - uses: codecov/codecov-action@v4
         with:
           env_vars: OS
+          token: ${{ secrets.CODECOV_TOKEN }}
         env:
           OS: ${{ matrix.os }}
   wasm:
@@ -61,14 +62,14 @@ jobs:
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v4
-      - uses: actions/setup-go@v4
+      - uses: actions/setup-go@v5
         with:
           go-version: '1.21'
-      - uses: actions/setup-node@v3
+      - uses: actions/setup-node@v4
         with:
           node-version: "lts/*"
       - name: Cache node_modules
-        uses: actions/cache@v3
+        uses: actions/cache@v4
         with:
           path: ./playground/node_modules
           key: ${{ hashFiles('./playground/package.json') }}
@@ -83,7 +84,7 @@ jobs:
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v4
-      - uses: actions/setup-go@v4
+      - uses: actions/setup-go@v5
         with:
           go-version: '1.21'
       - name: Check Go sources are formatted
@@ -107,7 +108,7 @@ jobs:
       - uses: actions/checkout@v4
       - name: Build image
         id: image
-        uses: docker/build-push-action@v3
+        uses: docker/build-push-action@v5
         with:
           build-args: |
             GOLANG_VER=1.21
