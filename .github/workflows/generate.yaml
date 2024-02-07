@@ -21,7 +21,7 @@ jobs:
       pull-requests: write
     steps:
       - uses: actions/checkout@v4
-      - uses: actions/setup-go@v4
+      - uses: actions/setup-go@v5
         with:
           go-version: '1.21'
       - name: Check new release on GitHub
@@ -35,7 +35,7 @@ jobs:
             echo "pr=true" >> "$GITHUB_OUTPUT"
           fi
         id: diff
-      - uses: peter-evans/create-pull-request@v3
+      - uses: peter-evans/create-pull-request@v6
         with:
           branch: 'ci/${{ github.run_id }}'
           commit-message: 'update generated files by `go generate` on CI'
