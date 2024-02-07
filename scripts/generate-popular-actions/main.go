@@ -131,8 +131,8 @@ var popularActions = []*action{
 	},
 	{
 		slug: "actions/cache",
-		tags: []string{"v1", "v2", "v3"},
-		next: "v4",
+		tags: []string{"v1", "v2", "v3", "v4"},
+		next: "v5",
 	},
 	{
 		slug: "actions/checkout",
@@ -141,13 +141,13 @@ var popularActions = []*action{
 	},
 	{
 		slug: "actions/configure-pages",
-		tags: []string{"v1", "v2", "v3"},
-		next: "v4",
+		tags: []string{"v1", "v2", "v3", "v4"},
+		next: "v5",
 	},
 	{
 		slug: "actions/deploy-pages",
-		tags: []string{"v1", "v2"},
-		next: "v3",
+		tags: []string{"v1", "v2", "v3", "v4"},
+		next: "v5",
 	},
 	{
 		slug: "actions/delete-package-versions",
@@ -156,8 +156,8 @@ var popularActions = []*action{
 	},
 	{
 		slug: "actions/download-artifact",
-		tags: []string{"v1", "v2", "v3"},
-		next: "v4",
+		tags: []string{"v1", "v2", "v3", "v4"},
+		next: "v5",
 	},
 	{
 		slug: "actions/first-interaction",
@@ -166,27 +166,28 @@ var popularActions = []*action{
 	},
 	{
 		slug: "actions/github-script",
-		tags: []string{"v1", "v2", "v3", "v4", "v5", "v6"},
-		next: "v7",
+		tags: []string{"v1", "v2", "v3", "v4", "v5", "v6", "v7"},
+		next: "v8",
 	},
 	{
 		slug: "actions/labeler",
-		tags: []string{"v2", "v3", "v4"},
-		next: "v5"}, // v1 does not exist
-	{
-		slug: "actions/setup-dotnet",
-		tags: []string{"v1", "v2", "v3"},
-		next: "v4",
+		tags: []string{"v2", "v3", "v4", "v5"}, // v1 does not exist
+		next: "v6",
 	},
 	{
-		slug: "actions/setup-go",
+		slug: "actions/setup-dotnet",
 		tags: []string{"v1", "v2", "v3", "v4"},
 		next: "v5",
 	},
 	{
+		slug: "actions/setup-go",
+		tags: []string{"v1", "v2", "v3", "v4", "v5"},
+		next: "v6",
+	},
+	{
 		slug: "actions/setup-java",
-		tags: []string{"v1", "v2", "v3"},
-		next: "v4",
+		tags: []string{"v1", "v2", "v3", "v4"},
+		next: "v5",
 	},
 	{
 		slug: "actions/setup-node",
@@ -195,28 +196,28 @@ var popularActions = []*action{
 	},
 	{
 		slug: "actions/setup-python",
+		tags: []string{"v1", "v2", "v3", "v4", "v5"},
+		next: "v6",
+	},
+	{
+		slug: "actions/stale",
+		tags: []string{"v1", "v2", "v3", "v4", "v5", "v6", "v7", "v8", "v9"},
+		next: "v10",
+	},
+	{
+		slug: "actions/upload-artifact",
 		tags: []string{"v1", "v2", "v3", "v4"},
 		next: "v5",
 	},
 	{
-		slug: "actions/stale",
-		tags: []string{"v1", "v2", "v3", "v4", "v5", "v6", "v7", "v8"},
-		next: "v9",
-	},
-	{
-		slug: "actions/upload-artifact",
+		slug: "actions/upload-pages-artifact",
 		tags: []string{"v1", "v2", "v3"},
 		next: "v4",
 	},
 	{
-		slug: "actions/upload-pages-artifact",
-		tags: []string{"v1", "v2"},
-		next: "v3",
-	},
-	{
 		slug: "actions/dependency-review-action",
-		tags: []string{"v3"},
-		next: "v4",
+		tags: []string{"v3", "v4"},
+		next: "v5",
 	},
 	{
 		slug: "aws-actions/configure-aws-credentials",
@@ -240,13 +241,13 @@ var popularActions = []*action{
 	},
 	{
 		slug: "codecov/codecov-action",
-		tags: []string{"v1", "v2", "v3"},
-		next: "v4",
+		tags: []string{"v1", "v2", "v3", "v4"},
+		next: "v5",
 	},
 	{
 		slug: "dawidd6/action-download-artifact",
-		tags: []string{"v2"},
-		next: "v3",
+		tags: []string{"v2", "v3"},
+		next: "v4",
 	},
 	{
 		slug: "dawidd6/action-send-mail",
@@ -255,8 +256,9 @@ var popularActions = []*action{
 	},
 	{
 		slug: "dessant/lock-threads",
-		tags: []string{"v2", "v3", "v4"},
-		next: "v5"}, // v1 does not exist
+		tags: []string{"v2", "v3", "v4", "v5"}, // v1 does not exist
+		next: "v6",
+	},
 	{
 		slug: "docker/build-push-action",
 		tags: []string{"v1", "v2", "v3", "v4", "v5"},
@@ -284,8 +286,8 @@ var popularActions = []*action{
 	},
 	{
 		slug: "dorny/paths-filter",
-		tags: []string{"v1", "v2"},
-		next: "v3",
+		tags: []string{"v1", "v2", "v3"},
+		next: "v4",
 	},
 	{
 		slug: "enriikke/gatsby-gh-pages-action",
@@ -299,8 +301,8 @@ var popularActions = []*action{
 	},
 	{
 		slug: "game-ci/unity-builder",
-		tags: []string{"v2", "v3"},
-		next: "v4",
+		tags: []string{"v2", "v3", "v4"},
+		next: "v5",
 	},
 	{
 		slug: "getsentry/paths-filter",
@@ -310,20 +312,20 @@ var popularActions = []*action{
 	{
 		slug: "github/codeql-action",
 		path: "/analyze",
-		tags: []string{"v1", "v2"},
-		next: "v3",
+		tags: []string{"v1", "v2", "v3"},
+		next: "v4",
 	},
 	{
 		slug: "github/codeql-action",
 		path: "/autobuild",
-		tags: []string{"v1", "v2"},
-		next: "v3",
+		tags: []string{"v1", "v2", "v3"},
+		next: "v4",
 	},
 	{
 		slug: "github/codeql-action",
 		path: "/init",
-		tags: []string{"v1", "v2"},
-		next: "v3",
+		tags: []string{"v1", "v2", "v3"},
+		next: "v4",
 	},
 	{
 		slug: "github/super-linter",
@@ -347,8 +349,8 @@ var popularActions = []*action{
 	},
 	{
 		slug: "gradle/wrapper-validation-action",
-		tags: []string{"v1"},
-		next: "v2",
+		tags: []string{"v1", "v2"},
+		next: "v3",
 	},
 	{
 		slug: "haskell/actions",
@@ -398,8 +400,8 @@ var popularActions = []*action{
 	},
 	{
 		slug: "peter-evans/create-pull-request",
-		tags: []string{"v1", "v2", "v3", "v4", "v5"},
-		next: "v6",
+		tags: []string{"v1", "v2", "v3", "v4", "v5", "v6"},
+		next: "v7",
 	},
 	{
 		slug: "preactjs/compressed-size-action",
@@ -483,8 +485,8 @@ var popularActions = []*action{
 	},
 	{
 		slug: "treosh/lighthouse-ci-action",
-		tags: []string{"v1", "v2", "v3", "v7", "v8", "v9", "v10"},
-		next: "v11",
+		tags: []string{"v1", "v2", "v3", "v7", "v8", "v9", "v10", "v11"},
+		next: "v12",
 	},
 	{
 		slug: "wearerequired/lint-action",
