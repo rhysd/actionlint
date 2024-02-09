@@ -90,6 +90,12 @@ func (r *RuleBase) SetConfig(cfg *Config) {
 	r.config = cfg
 }
 
+// Config returns the user configuration of actionlint. When no config was set to this rule by SetConfig,
+// this method returns nil.
+func (r *RuleBase) Config() *Config {
+	return r.config
+}
+
 // Rule is an interface which all rule structs must meet.
 type Rule interface {
 	Pass
@@ -98,4 +104,5 @@ type Rule interface {
 	Description() string
 	EnableDebug(out io.Writer)
 	SetConfig(cfg *Config)
+	Config() *Config
 }

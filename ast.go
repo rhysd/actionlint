@@ -42,14 +42,14 @@ type String struct {
 	Pos *Pos
 }
 
-func containsExpression(s string) bool {
+func ContainsExpression(s string) bool {
 	i := strings.Index(s, "${{")
 	return i >= 0 && i < strings.Index(s, "}}")
 }
 
 // ContainsExpression returns whether the string contains at least one ${{ }} expression.
 func (s *String) ContainsExpression() bool {
-	return containsExpression(s.Value)
+	return ContainsExpression(s.Value)
 }
 
 func isExprAssigned(s string) bool {
