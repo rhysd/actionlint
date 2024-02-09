@@ -1,3 +1,23 @@
+# Reporting an issue
+
+To report a bug, please submit a new ticket on GitHub. It's helpful to search similar tickets before making it.
+
+https://github.com/rhysd/actionlint/issues/new
+
+Providing a reproducible workflow content is much appreciated. If only a small snippet of workflow is provided or no
+input is provided at all, such issue tickets may get lower priority since they are occasionally time consuming to
+investigate.
+
+# Sending a patch
+
+Thank you for taking your time to improve this project. To send a patch, please submit a new pull request on GitHub.
+It's helpful to check if a similar patch was rejected in the past before making it. actionlint focuses on detecting
+mistakes so adding rules related to styles or conventions is basically not accepted.
+
+https://github.com/rhysd/actionlint/pulls
+
+Before submitting it, please ensure the build/tests/lints passed. How to run them is described in the following sections.
+
 # Development
 
 `make` (3.81 or later) is useful to run each tasks and reduce redundant builds/tests.
