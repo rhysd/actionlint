@@ -90,8 +90,9 @@ func (r *RuleBase) SetConfig(cfg *Config) {
 	r.config = cfg
 }
 
-// GetConfig returns the config of the rule
-func (r *RuleBase) GetConfig() *Config {
+// Config returns the user configuration of actionlint. When no config was set to this rule by SetConfig,
+// this method returns nil.
+func (r *RuleBase) Config() *Config {
 	return r.config
 }
 
@@ -103,5 +104,5 @@ type Rule interface {
 	Description() string
 	EnableDebug(out io.Writer)
 	SetConfig(cfg *Config)
-	GetConfig() *Config
+	Config() *Config
 }
