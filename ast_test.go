@@ -48,9 +48,11 @@ func TestStringContainsExpression(t *testing.T) {
 	for _, tc := range tests {
 		t.Run(tc.input, func(t *testing.T) {
 			s := &String{Value: tc.input}
-			have := s.ContainsExpression()
-			if tc.want != have {
-				t.Fatalf("wanted %v but got %v for input %q", tc.want, have, tc.input)
+			if have := s.ContainsExpression(); tc.want != have {
+				t.Fatalf("wanted %v but the method returned %v for input %q", tc.want, have, tc.input)
+			}
+			if have := ContainsExpression(tc.input); tc.want != have {
+				t.Fatalf("wanted %v but the function returned %v for input %q", tc.want, have, tc.input)
 			}
 		})
 	}

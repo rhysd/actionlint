@@ -42,6 +42,8 @@ type String struct {
 	Pos *Pos
 }
 
+// ContainsExpression checks if the given string contains a ${{ }} placeholder or not. This function
+// is identical to String.ContainsExpression method except for taking a standard string value.
 func ContainsExpression(s string) bool {
 	i := strings.Index(s, "${{")
 	return i >= 0 && i < strings.Index(s, "}}")
