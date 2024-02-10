@@ -37,8 +37,9 @@ config-variables:
   - ENVIRONMENT_STAGE
 ```
 
-- `self-hosted-runner`: Configuration for your self-hosted runner environment
-  - `labels`: Label names added to your self-hosted runners as list of string
+- `self-hosted-runner`: Configuration for your self-hosted runner environment.
+  - `labels`: Label names added to your self-hosted runners as list of pattern. Glob syntax supported by [`filepath.Match`][pat]
+    is available.
 - `config-variables`: [Configuration variables][vars]. When an array is set, actionlint will check `vars` properties strictly.
   An empty array means no variable is allowed. The default value `null` disables the check.
 
@@ -47,4 +48,5 @@ config-variables:
 [Checks](checks.md) | [Installation](install.md) | [Usage](usage.md) | [Go API](api.md) | [References](reference.md)
 
 [Super-Linter]: https://github.com/super-linter/super-linter
+[pat]: https://pkg.go.dev/path/filepath#Match
 [vars]: https://docs.github.com/en/actions/learn-github-actions/variables
