@@ -69,6 +69,11 @@ func TestRuleRunnerLabelCheckLabels(t *testing.T) {
 			known:  []string{"INSTANCE_TYPE=*", "some-base-prefix:size=*&cpu=?"},
 		},
 		{
+			what:   "some character is escaped in user-defined label patterns",
+			labels: []string{`linux-[arch]`},
+			known:  []string{`*-\[*]`},
+		},
+		{
 			what:   "user-defined labels with invalid glob pattern",
 			labels: []string{"self-hosted", "INSTANCE_TYPE=m6a.large"},
 			known:  []string{"INSTANCE_TYPE=["},
