@@ -12,3 +12,5 @@
 /man/actionlint.1.html
 /playground-dist
 /actionlint-workflow-ast
+# IntelliJ IDE Folder
+.idea/
