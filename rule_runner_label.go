@@ -1,7 +1,7 @@
 package actionlint
 
 import (
-	"path/filepath"
+	"path"
 	"strings"
 )
 
@@ -206,7 +206,7 @@ func (rule *RuleRunnerLabel) verifyRunnerLabel(label *String) runnerOSCompat {
 
 	known := rule.getKnownLabels()
 	for _, k := range known {
-		m, err := filepath.Match(k, l)
+		m, err := path.Match(k, l)
 		if err != nil {
 			rule.Errorf(label.Pos, "label pattern %q is an invalid glob. kindly check list of labels in actionlint.yaml config file: %v", k, err)
 			return compatInvalid
