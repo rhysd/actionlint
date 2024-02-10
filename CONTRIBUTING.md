@@ -16,7 +16,11 @@ mistakes so adding rules related to styles or conventions is basically not accep
 
 https://github.com/rhysd/actionlint/pulls
 
-Before submitting it, please ensure the build/tests/lints passed. How to run them is described in the following sections.
+Before submitting your PR, please ensure the following points:
+
+- Confirm build/tests/lints passed. How to run them is described in the following sections.
+- If you added a new feature, consider to add tests and explain it in [the usage document](docs/usage.md).
+- If you added a new public API, consider to add tests and a doc comment for the API.
 
 # Development
 

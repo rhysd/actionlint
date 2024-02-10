@@ -64,6 +64,17 @@ func TestRuleRunnerLabelCheckLabels(t *testing.T) {
 			known:  []string{"foo", "bar"},
 		},
 		{
+			what:   "user-defined labels with patterns",
+			labels: []string{"self-hosted", "INSTANCE_TYPE=m6a.large", "some-base-prefix:size=large&cpu=8"},
+			known:  []string{"INSTANCE_TYPE=*", "some-base-prefix:size=*&cpu=?"},
+		},
+		{
+			what:   "user-defined labels with invalid glob pattern",
+			labels: []string{"self-hosted", "INSTANCE_TYPE=m6a.large"},
+			known:  []string{"INSTANCE_TYPE=["},
+			errs:   []string{`label pattern "INSTANCE_TYPE=[" is an invalid glob. kindly check list of labels in actionlint.yaml config file: syntax error in pattern`},
+		},
+		{
 			what:   "matrix",
 			labels: []string{"${{matrix.os}}"},
 			matrix: []string{"ubuntu-latest", "windows-latest"},

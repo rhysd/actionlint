@@ -13,6 +13,14 @@ jobs:
     runs-on: label2
     steps:
       - run: echo
+  ok4:
+    runs-on: glob-super-label
+    steps:
+      - run: echo
+  ok5:
+    runs-on: glob-awesome-great-label
+    steps:
+      - run: echo
   err:
     runs-on: label3
     steps:
