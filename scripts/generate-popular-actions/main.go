@@ -151,8 +151,8 @@ var popularActions = []*action{
 	},
 	{
 		slug: "actions/delete-package-versions",
-		tags: []string{"v1", "v2", "v3", "v4"},
-		next: "v5",
+		tags: []string{"v1", "v2", "v3", "v4", "v5"},
+		next: "v6",
 	},
 	{
 		slug: "actions/download-artifact",
@@ -339,8 +339,8 @@ var popularActions = []*action{
 	},
 	{
 		slug: "golangci/golangci-lint-action",
-		tags: []string{"v1", "v2", "v3"},
-		next: "v4",
+		tags: []string{"v1", "v2", "v3", "v4"},
+		next: "v5",
 	},
 	{
 		slug: "goreleaser/goreleaser-action",
