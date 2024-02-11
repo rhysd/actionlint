@@ -709,6 +709,21 @@ var PopularActions = map[string]*ActionMetadata{
 			"token":                            {"token", false},
 		},
 	},
+	"actions/delete-package-versions@v5": {
+		Name: "Delete Package Versions",
+		Inputs: ActionMetadataInputs{
+			"delete-only-pre-release-versions": {"delete-only-pre-release-versions", false},
+			"delete-only-untagged-versions":    {"delete-only-untagged-versions", false},
+			"ignore-versions":                  {"ignore-versions", false},
+			"min-versions-to-keep":             {"min-versions-to-keep", false},
+			"num-old-versions-to-delete":       {"num-old-versions-to-delete", false},
+			"owner":                            {"owner", false},
+			"package-name":                     {"package-name", true},
+			"package-type":                     {"package-type", true},
+			"package-version-ids":              {"package-version-ids", false},
+			"token":                            {"token", false},
+		},
+	},
 	"actions/dependency-review-action@v3": {
 		Name: "Dependency Review",
 		Inputs: ActionMetadataInputs{
@@ -3460,6 +3475,20 @@ var PopularActions = map[string]*ActionMetadata{
 		},
 	},
 	"golangci/golangci-lint-action@v3": {
+		Name: "Run golangci-lint",
+		Inputs: ActionMetadataInputs{
+			"args":              {"args", false},
+			"github-token":      {"github-token", false},
+			"install-mode":      {"install-mode", false},
+			"only-new-issues":   {"only-new-issues", false},
+			"skip-build-cache":  {"skip-build-cache", false},
+			"skip-cache":        {"skip-cache", false},
+			"skip-pkg-cache":    {"skip-pkg-cache", false},
+			"version":           {"version", false},
+			"working-directory": {"working-directory", false},
+		},
+	},
+	"golangci/golangci-lint-action@v4": {
 		Name: "Run golangci-lint",
 		Inputs: ActionMetadataInputs{
 			"args":              {"args", false},
