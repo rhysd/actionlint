@@ -42,6 +42,35 @@ processes.
 actionlint -shellcheck= -pyflakes=
 ```
 
+### Ignore error by inline comment
+
+To ignore an error by inline comment, use `# actionlint ignore=<pattern>` or `# actionlint ignore=<pattern 1>,<pattern 2>,...` comment in the workflow file.
+The comment should be placed at the before the line where the error is reported. Ignore pattern is the same as `-ignore` option.
+
+```yaml
+      # actionlint ignore=undefined variable
+      - run: echo '${{ foo }}'
+```
+
+```yaml
+      # actionlint ignore=undefined variable ".*"
+      - run: echo '${{ foo }}'
+```
+
+```yaml
+      - name: ignore shellcheck errors
+        # actionlint ignore=SC2016
+        run: |
+          actionlint -format '{{range $err := .}}::error file={{$err.Filepath}},line={{$err.Line}},col={{$err.Column}}::{{$err.Message}}{{end}}' .github/workflows/*.yml
+```
+
+```yaml
+      # actionlint ignore=undefined variable, potentially untrusted
+      - run: |
+          echo '${{ foo }}'
+          echo '${{ github.event.head_commit.author.name }}'
+```
+
 <a name="format"></a>
 ### Format error messages
 
