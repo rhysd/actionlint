@@ -1,0 +1,20 @@
+on:
+  push:
+
+jobs:
+  actionlint:
+    runs-on: ubuntu-latest
+    steps:
+        # OK
+        # actionlint ignore=potentially untrusted
+      - run: echo '${{ github.event.head_commit.author.name }}'
+        # ERROR: ignore should placed last line
+        # actionlint ignore=potentially untrusted
+        # dummy comment
+      - run: echo '${{ github.event.head_commit.author.name }}'
+      # ERROR: not ignored
+      - run: echo '${{ github.event.head_commit.author.name }}' # actionlint ignore=potentially untrusted
+      # ERROR: not ignored
+      - run: echo '${{ github.event.head_commit.author.name }}'
+        # actionlint ignore=potentially untrusted
+
