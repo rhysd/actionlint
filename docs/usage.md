@@ -388,6 +388,13 @@ repos:
       - id: actionlint
 ```
 
+This example builds the head of main branch. [pre-commit recommends to fix the revision][pre-commit-latest-ver] and may cause
+some warning due to the unpinned revision. Please consider to choose one of [tags][actionlint-tags] instead of `main` like:
+
+```yaml
+rev: v1.6.26
+```
+
 As alternatives to `actionlint` hook, `actionlint-docker` or `actionlint-system` hooks are available.
 
 | Hook ID | Explanation |
@@ -400,6 +407,12 @@ As alternatives to `actionlint` hook, `actionlint-docker` or `actionlint-system`
 
 [Linter extension][vsc-extension] for [VS Code][vscode] is available. The extension automatically detects `.github/workflows`
 directory, runs `actionlint` command, and reports errors in the code editor while editing workflow files.
+
+### Emacs
+
+Plugins for both [Flycheck][emacs-flycheck] and [Flymake][emacs-flymake] are available via [MELPA][emacs-melpa].
+
+Their respective repositories are [flycheck-actionlint][emacs-flycheck-extension] and [flymake-actionlint][emacs-flymake-extension].
 
 ### Nova
 
@@ -461,11 +474,18 @@ You can also see actionlint issues inline in VS Code via the [Trunk VS Code exte
 [actionlint-matcher]: https://raw.githubusercontent.com/rhysd/actionlint/main/.github/actionlint-matcher.json
 [preinstall-ubuntu]: https://github.com/actions/virtual-environments/blob/main/images/linux/Ubuntu2004-README.md
 [pre-commit]: https://pre-commit.com
+[pre-commit-latest-ver]: https://pre-commit.com/#using-the-latest-version-for-a-repository
+[actionlint-tags]: https://github.com/rhysd/actionlint/tags
 [go-install]: https://go.dev/doc/install
 [docker]: https://www.docker.com/
 [docker-image]: https://hub.docker.com/r/rhysd/actionlint
 [vsc-extension]: https://marketplace.visualstudio.com/items?itemName=arahata.linter-actionlint
 [vscode]: https://code.visualstudio.com/
+[emacs-melpa]: https://melpa.org/
+[emacs-flymake]: https://www.gnu.org/software/emacs/manual/html_node/flymake/
+[emacs-flymake-extension]: https://github.com/ROCKTAKEY/flymake-actionlint
+[emacs-flycheck]: https://www.flycheck.org/
+[emacs-flycheck-extension]: https://github.com/tirimia/flycheck-actionlint
 [nova-extension]: https://extensions.panic.com/extensions/org.netwrk/org.netwrk.actionlint/
 [nova]: https://nova.app
 [trunk-io]: https://docs.trunk.io/docs

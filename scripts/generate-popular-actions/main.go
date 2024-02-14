@@ -343,6 +343,26 @@ var popularActions = []*action{
 		next: "v5",
 	},
 	{
+		slug: "google-github-actions/auth",
+		tags: []string{"v1", "v2"},
+		next: "v3",
+	},
+	{
+		slug: "google-github-actions/get-secretmanager-secrets",
+		tags: []string{"v1", "v2"},
+		next: "v3",
+	},
+	{
+		slug: "google-github-actions/setup-gcloud",
+		tags: []string{"v1", "v2"},
+		next: "v3",
+	},
+	{
+		slug: "google-github-actions/upload-cloud-storage",
+		tags: []string{"v1", "v2"},
+		next: "v3",
+	},
+	{
 		slug: "goreleaser/goreleaser-action",
 		tags: []string{"v1", "v2", "v3", "v4", "v5"},
 		next: "v6",
@@ -407,6 +427,16 @@ var popularActions = []*action{
 		slug: "preactjs/compressed-size-action",
 		tags: []string{"v1", "v2"},
 		next: "v3",
+	},
+	{
+		slug: "pulumi/actions",
+		tags: []string{"v1", "v2", "v3", "v4", "v5"},
+		next: "v6",
+	},
+	{
+		slug: "pypa/gh-action-pypi-publish",
+		tags: []string{"release/v1"},
+		next: "release/v2",
 	},
 	{
 		slug: "reviewdog/action-actionlint",
