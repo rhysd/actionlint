@@ -344,23 +344,23 @@ var popularActions = []*action{
 	},
 	{
 		slug: "google-github-actions/auth",
-		tags: []string{"v0", "v1"},
-		next: "v2",
+		tags: []string{"v1", "v2"},
+		next: "v3",
 	},
 	{
 		slug: "google-github-actions/get-secretmanager-secrets",
-		tags: []string{"v0", "v1"},
-		next: "v2",
+		tags: []string{"v1", "v2"},
+		next: "v3",
 	},
 	{
 		slug: "google-github-actions/setup-gcloud",
-		tags: []string{"v0", "v1"},
-		next: "v2",
+		tags: []string{"v1", "v2"},
+		next: "v3",
 	},
 	{
 		slug: "google-github-actions/upload-cloud-storage",
-		tags: []string{"v0", "v1"},
-		next: "v2",
+		tags: []string{"v1", "v2"},
+		next: "v3",
 	},
 	{
 		slug: "goreleaser/goreleaser-action",
@@ -430,8 +430,8 @@ var popularActions = []*action{
 	},
 	{
 		slug: "pulumi/actions",
-		tags: []string{"v1", "v2", "v3", "v4"},
-		next: "v5",
+		tags: []string{"v1", "v2", "v3", "v4", "v5"},
+		next: "v6",
 	},
 	{
 		slug: "pypa/gh-action-pypi-publish",
