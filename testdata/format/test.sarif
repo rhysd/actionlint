@@ -278,9 +278,9 @@
           ]
         },
         {
-          "ruleId": "runner-label",
+          "ruleId": "expression",
           "message": {
-            "text": "label \"linux-latest\" is unknown. available labels are \"windows-latest\", \"windows-2022\", \"windows-2019\", \"windows-2016\", \"ubuntu-latest\", \"ubuntu-22.04\", \"ubuntu-20.04\", \"macos-latest\", \"macos-latest-xl\", \"macos-latest-xlarge\", \"macos-latest-large\", \"macos-14-xl\", \"macos-14-xlarge\", \"macos-14-large\", \"macos-14\", \"macos-14.0\", \"macos-13-xl\", \"macos-13-xlarge\", \"macos-13-large\", \"macos-13\", \"macos-13.0\", \"macos-12-xl\", \"macos-12-xlarge\", \"macos-12-large\", \"macos-12\", \"macos-12.0\", \"macos-11\", \"macos-11.0\", \"macos-10.15\", \"self-hosted\", \"x64\", \"arm\", \"arm64\", \"linux\", \"macos\", \"windows\". if it is a custom label for self-hosted runner, set list of labels in actionlint.yaml config file"
+            "text": "property \"msg\" is not defined in object type {}"
           },
           "locations": [
             {
@@ -290,11 +290,35 @@
                   "uriBaseId": "%SRCROOT%"
                 },
                 "region": {
-                  "startLine": 6,
-                  "startColumn": 14,
-                  "endColumn": 25,
+                  "startLine": 9,
+                  "startColumn": 23,
+                  "endColumn": 32,
                   "snippet": {
-                    "text": "    runs-on: linux-latest\n             ^~~~~~~~~~~~"
+                    "text": "      - run: echo ${{ matrix.msg }}\n                      ^~~~~~~~~~"
+                  }
+                }
+              }
+            }
+          ]
+        },
+        {
+          "ruleId": "syntax-check",
+          "message": {
+            "text": "this step is for running shell command since it contains at least one of \"run\", \"shell\" keys, but also contains \"with\" key which is used for running action"
+          },
+          "locations": [
+            {
+              "physicalLocation": {
+                "artifactLocation": {
+                  "uri": "testdata/format/test.yaml",
+                  "uriBaseId": "%SRCROOT%"
+                },
+                "region": {
+                  "startLine": 10,
+                  "startColumn": 9,
+                  "endColumn": 13,
+                  "snippet": {
+                    "text": "        with:\n        ^~~~~"
                   }
                 }
               }

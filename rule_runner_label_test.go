@@ -55,6 +55,18 @@ func TestRuleRunnerLabelCheckLabels(t *testing.T) {
 			labels: []string{"self-hosted", "ubuntu-20.04"},
 		},
 		{
+			what:   "larger Ubuntu runner",
+			labels: []string{"ubuntu-latest-16-cores"},
+		},
+		{
+			what:   "larger Ubuntu runner with other labels",
+			labels: []string{"ubuntu-latest", "ubuntu-latest-16-cores"},
+		},
+		{
+			what:   "larger Windows runner",
+			labels: []string{"windows-latest-8-cores"},
+		},
+		{
 			what:   "multiple labels for GH-hosted runner",
 			labels: []string{"ubuntu-latest", "ubuntu-22.04"},
 		},
@@ -72,12 +84,6 @@ func TestRuleRunnerLabelCheckLabels(t *testing.T) {
 			what:   "some character is escaped in user-defined label patterns",
 			labels: []string{`linux-[arch]`},
 			known:  []string{`*-\[*]`},
-		},
-		{
-			what:   "user-defined labels with invalid glob pattern",
-			labels: []string{"self-hosted", "INSTANCE_TYPE=m6a.large"},
-			known:  []string{"INSTANCE_TYPE=["},
-			errs:   []string{`label pattern "INSTANCE_TYPE=[" is an invalid glob. kindly check list of labels in actionlint.yaml config file: syntax error in pattern`},
 		},
 		{
 			what:   "matrix",
@@ -225,6 +231,17 @@ func TestRuleRunnerLabelCheckLabels(t *testing.T) {
 			what:   "macOS XL and normal labels conflict",
 			labels: []string{"macos-13-xl", "macos-13"},
 			errs:   []string{`label "macos-13" conflicts with label "macos-13-xl"`},
+		},
+		{
+			what:   "larger runner labels conflict",
+			labels: []string{"ubuntu-latest-16-cores", "windows-latest-8-cores"},
+			errs:   []string{`label "windows-latest-8-cores" conflicts with label "ubuntu-latest-16-cores"`},
+		},
+		{
+			what:   "user-defined labels with invalid glob pattern",
+			labels: []string{"self-hosted", "INSTANCE_TYPE=m6a.large"},
+			known:  []string{"INSTANCE_TYPE=["},
+			errs:   []string{`label pattern "INSTANCE_TYPE=[" is an invalid glob. kindly check list of labels in actionlint.yaml config file: syntax error in pattern`},
 		},
 		// TODO: Add error tests for 'include:'
 	}

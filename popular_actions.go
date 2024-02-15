@@ -768,6 +768,7 @@ var PopularActions = map[string]*ActionMetadata{
 			"retry-on-snapshot-warnings":         {"retry-on-snapshot-warnings", false},
 			"retry-on-snapshot-warnings-timeout": {"retry-on-snapshot-warnings-timeout", false},
 			"vulnerability-check":                {"vulnerability-check", false},
+			"warn-only":                          {"warn-only", false},
 		},
 	},
 	"actions/deploy-pages@v1": {
@@ -2054,6 +2055,7 @@ var PopularActions = map[string]*ActionMetadata{
 	"bahmutov/npm-install@v1": {
 		Name: "NPM or Yarn install with caching",
 		Inputs: ActionMetadataInputs{
+			"cache-key-prefix":  {"cache-key-prefix", false},
 			"install-command":   {"install-command", false},
 			"uselockfile":       {"useLockFile", false},
 			"userollingcache":   {"useRollingCache", false},
