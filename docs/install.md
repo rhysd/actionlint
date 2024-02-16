@@ -41,8 +41,8 @@ pacman -S actionlint
 
 Alternatively actionlint is also available on [AUR][aur]. The packages can be installed via [`paru`][paru] command.
 
-- [actionlint-bin][aur-bin]
-- [actionlint-git][aur-git]
+- [actionlint-bin](https://aur.archlinux.org/packages/actionlint-bin)
+- [actionlint-git](https://aur.archlinux.org/packages/actionlint-git)
 
 ### [Nix](https://nixos.wiki/)
 
@@ -176,6 +176,4 @@ go install github.com/rhysd/actionlint/cmd/actionlint
 [archlinux]: https://archlinux.org/packages/extra/x86_64/actionlint/
 [aur]: https://aur.archlinux.org/
 [paru]: https://github.com/Morganamilo/paru
-[aur-bin]: https://aur.archlinux.org/packages/actionlint-bin
-[aur-git]: https://aur.archlinux.org/packages/actionlint-git
 [nixpkgs]: https://github.com/NixOS/nixpkgs/blob/master/pkgs/development/tools/analysis/actionlint/default.nix

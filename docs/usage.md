@@ -414,6 +414,15 @@ Plugins for both [Flycheck][emacs-flycheck] and [Flymake][emacs-flymake] are ava
 
 Their respective repositories are [flycheck-actionlint][emacs-flycheck-extension] and [flymake-actionlint][emacs-flymake-extension].
 
+### Vim and Neovim
+
+[nvim-lint][] supports actionlint on Neovim. The plugin automatically and asynchronously runs actionlint and notifies errors
+on the fly when you edit GitHub Actions CI workflows. Please read the plugin's documentation for more details.
+
+[ALE][vim-ale] supports actionlint on Vim and Neovim. Similar to nvim-lint, The plugin automatically and asynchronously runs
+actionlint and notifies errors on the fly when you edit GitHub Actions CI workflows. Please read the plugin's documentation for
+more details.
+
 ### Nova
 
 [Nova.app][nova] is a MacOS only editor and IDE. The [Actionlint for Nova][nova-extension] allows you to get inline feedback
@@ -486,6 +495,8 @@ You can also see actionlint issues inline in VS Code via the [Trunk VS Code exte
 [emacs-flymake-extension]: https://github.com/ROCKTAKEY/flymake-actionlint
 [emacs-flycheck]: https://www.flycheck.org/
 [emacs-flycheck-extension]: https://github.com/tirimia/flycheck-actionlint
+[nvim-lint]: https://github.com/mfussenegger/nvim-lint
+[vim-ale]: https://github.com/dense-analysis/ale
 [nova-extension]: https://extensions.panic.com/extensions/org.netwrk/org.netwrk.actionlint/
 [nova]: https://nova.app
 [trunk-io]: https://docs.trunk.io/docs
