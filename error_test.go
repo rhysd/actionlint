@@ -4,6 +4,7 @@ import (
 	"bytes"
 	"encoding/json"
 	"errors"
+	"fmt"
 	"io"
 	"math"
 	"sort"
@@ -362,13 +363,27 @@ func TestErrorGetTemplateFieldsOK(t *testing.T) {
 	}
 }
 
-// Regression for #128
+// Regression test for #128
 func TestErrorGetTemplateFieldsColumnIsOutOfBounds(t *testing.T) {
 	err := errorAt(&Pos{1, 9999}, "kind", "this is message")
 	err.Filepath = "filename.yaml"
 	f := err.GetTemplateFields([]byte("this is source"))
 	if strings.Contains(f.Snippet, "\n") {
 		t.Fatalf("snippet should contain indicator but it has: %q", f.Snippet)
+	}
+}
+
+func TestErrorErrorToString(t *testing.T) {
+	err := &Error{
+		Message: "this is message",
+		Line:    1,
+		Column:  2,
+		Kind:    "test",
+	}
+	want := err.Error()
+	have := err.String()
+	if want != have {
+		t.Fatalf("wanted %q but have %q", want, have)
 	}
 }
 
@@ -634,16 +649,40 @@ func TestErrorFormatterPrintGetVersion(t *testing.T) {
 	}
 }
 
-func TestErrorString(t *testing.T) {
-	err := &Error{
-		Message: "this is message",
-		Line:    1,
-		Column:  2,
-		Kind:    "test",
+// Regression test for #370
+func TestErrorFormatterRegisterRuleInParallel(t *testing.T) {
+	f, err := NewErrorFormatter("{{json .}}")
+	if err != nil {
+		t.Fatal(err)
 	}
-	want := err.Error()
-	have := err.String()
-	if want != have {
-		t.Fatalf("wanted %q but have %q", want, have)
+
+	rules := []Rule{}
+	for i := 0; i < 100; i++ {
+		rules = append(rules,
+			&RuleBase{
+				name: fmt.Sprintf("rule%d", i),
+				desc: fmt.Sprintf("description for rule%d", i),
+			},
+		)
+	}
+
+	done := make(chan struct{})
+
+	for i := 0; i < 100; i++ {
+		go func() {
+			for _, r := range rules {
+				f.RegisterRule(r)
+			}
+			done <- struct{}{}
+		}()
+	}
+
+	for i := 0; i < 100; i++ {
+		<-done
+	}
+
+	// Note: `syntax-check` rule is registered by NewErrorFormatter
+	if len(f.rules) != 101 {
+		t.Fatalf("not all rules were registered. %d rules were registered", len(f.rules))
 	}
 }
