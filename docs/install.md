@@ -31,6 +31,14 @@ winget install actionlint
 
 ## Linux
 
+### [Arch Linux](https://archlinux.org/)
+
+[`actionlint` package][archlinux] is available in the official repo:
+
+```sh
+pacman -S actionlint
+```
+
 ### [AUR](https://aur.archlinux.org/)
 
 [`actionlint` package][aur] is available in the AUR:
@@ -164,5 +172,6 @@ go install github.com/rhysd/actionlint/cmd/actionlint
 [chocolatey]: https://community.chocolatey.org/packages/actionlint
 [scoop]: https://scoop.sh/#/apps?q=actionlint&s=0&d=1&o=true
 [winget]: https://github.com/microsoft/winget-pkgs/tree/master/manifests/r/rhysd/actionlint
+[archlinux]: https://archlinux.org/packages/extra/x86_64/actionlint/
 [aur]: https://aur.archlinux.org/packages/actionlint
 [nixpkgs]: https://github.com/NixOS/nixpkgs/blob/master/pkgs/development/tools/analysis/actionlint/default.nix
