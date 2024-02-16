@@ -31,13 +31,18 @@ winget install actionlint
 
 ## Linux
 
-### [AUR](https://aur.archlinux.org/)
+### [Arch Linux](https://archlinux.org/)
 
-[`actionlint` package][aur] is available in the AUR:
+[`actionlint` package][archlinux] is available in the official repo:
 
 ```sh
-paru -S actionlint
+pacman -S actionlint
 ```
+
+Alternatively actionlint is also available on [AUR][aur]. The packages can be installed via [`paru`][paru] command.
+
+- [actionlint-bin][aur-bin]
+- [actionlint-git][aur-git]
 
 ### [Nix](https://nixos.wiki/)
 
@@ -65,7 +70,7 @@ nix-env -iA nixpkgs.actionlint
 brew install actionlint
 ```
 
-And rhysd/actionlint repository also provides its own Homebrew package, which is automatically updated on new release.
+Alternatively rhysd/actionlint repository also provides its own Homebrew package, which is automatically updated on new release.
 If you prefer it, tap the repository before running `brew install`.
 
 ```sh
@@ -85,7 +90,11 @@ Prebuilt binaries are built at each release by CI for the following OS and arch:
 - Windows (i386, x86_64, arm64)
 - FreeBSD (i386, x86_64)
 
-Note: `darwin/arm64` and `windows/arm64` target binaries are not tested since the author doesn't have the environments.
+Note: The following targets are not tested since GitHub Actions doesn't support them:
+
+- Linux i386, arm32, arm64
+- Windows i386, arm64
+- FreeBSD i386, x86_64
 
 <a name="download-script"></a>
 ## Download script
@@ -164,5 +173,9 @@ go install github.com/rhysd/actionlint/cmd/actionlint
 [chocolatey]: https://community.chocolatey.org/packages/actionlint
 [scoop]: https://scoop.sh/#/apps?q=actionlint&s=0&d=1&o=true
 [winget]: https://github.com/microsoft/winget-pkgs/tree/master/manifests/r/rhysd/actionlint
-[aur]: https://aur.archlinux.org/packages/actionlint
+[archlinux]: https://archlinux.org/packages/extra/x86_64/actionlint/
+[aur]: https://aur.archlinux.org/
+[paru]: https://github.com/Morganamilo/paru
+[aur-bin]: https://aur.archlinux.org/packages/actionlint-bin
+[aur-git]: https://aur.archlinux.org/packages/actionlint-git
 [nixpkgs]: https://github.com/NixOS/nixpkgs/blob/master/pkgs/development/tools/analysis/actionlint/default.nix

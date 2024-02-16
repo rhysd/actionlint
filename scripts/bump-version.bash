@@ -40,10 +40,10 @@ echo "Bumping up version to ${version} (tag: ${tag})"
 # Update container image tag in pre-commit hook (See #116 for more details)
 case "$OSTYPE" in
     darwin*)
-        /usr/bin/sed -i '' -E "s/entry: rhysd\\/actionlint:.*/entry: rhysd\\/actionlint:${version}/" "$pre_commit_hook"
+        /usr/bin/sed -i '' -E "s/entry: docker.io\\/rhysd\\/actionlint:.*/entry: docker.io\\/rhysd\\/actionlint:${version}/" "$pre_commit_hook"
         ;;
     *)
-        sed -i -E "s/entry: rhysd\\/actionlint:.*/entry: rhysd\\/actionlint:${version}/" "$pre_commit_hook"
+        sed -i -E "s/entry: docker.io\\/rhysd\\/actionlint:.*/entry: docker.io\\/rhysd\\/actionlint:${version}/" "$pre_commit_hook"
         ;;
 esac
 
