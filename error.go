@@ -252,7 +252,6 @@ func (by byRuleNameField) Swap(i, j int) {
 // ErrorFormatter is a formatter to format a slice of ErrorTemplateFields. It is used for
 // formatting error messages with -format option.
 type ErrorFormatter struct {
-	// Note: Evaluating a template is thread-safe.  // > // https://pkg.go.dev/text/template
 	temp    *template.Template
 	rules   map[string]*ruleTemplateFields
 	rulesMu sync.Mutex
