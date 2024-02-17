@@ -2259,6 +2259,7 @@ var PopularActions = map[string]*ActionMetadata{
 			"skip_unpack":          {"skip_unpack", false},
 			"workflow":             {"workflow", false},
 			"workflow_conclusion":  {"workflow_conclusion", false},
+			"workflow_search":      {"workflow_search", false},
 		},
 		Outputs: ActionMetadataOutputs{
 			"artifacts":      {"artifacts"},
