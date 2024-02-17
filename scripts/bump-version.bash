@@ -31,21 +31,30 @@ if [[ ! "$version" =~ ^[0-9]+\.[0-9]+\.[0-9]+$ ]]; then
     exit 1
 fi
 
+case "$OSTYPE" in
+    darwin*)
+        sed="/usr/bin/sed -i '' -E"
+        ;;
+    *)
+        sed="sed -i -E"
+        ;;
+esac
+
 pre_commit_hook='./.pre-commit-hooks.yaml'
+usage_doc='./docs/usage.md'
 tag="v${version}"
 job_url='https://github.com/rhysd/actionlint/actions/workflows/release.yaml'
 
 echo "Bumping up version to ${version} (tag: ${tag})"
 
 # Update container image tag in pre-commit hook (See #116 for more details)
-case "$OSTYPE" in
-    darwin*)
-        /usr/bin/sed -i '' -E "s/entry: docker.io\\/rhysd\\/actionlint:.*/entry: docker.io\\/rhysd\\/actionlint:${version}/" "$pre_commit_hook"
-        ;;
-    *)
-        sed -i -E "s/entry: docker.io\\/rhysd\\/actionlint:.*/entry: docker.io\\/rhysd\\/actionlint:${version}/" "$pre_commit_hook"
-        ;;
-esac
+echo "Updating $pre_commit_hook"
+$sed "s/entry: docker.io\\/rhysd\\/actionlint:.*/entry: docker.io\\/rhysd\\/actionlint:${version}/" "$pre_commit_hook"
+
+echo "Updating $usage_doc"
+$sed "s/    rev: v[0-9]+\.[0-9]+\.[0-9]+/    rev: v${version}/" "$usage_doc"
+$sed "s/actionlint@[0-9]+\.[0-9]+\.[0-9]+/actionlint@${version}/g" "$usage_doc"
+$sed "s/\`actionlint:[0-9]+\.[0-9]+\.[0-9]+\`/\`actionlint:${version}\`/g" "$usage_doc"
 
 echo 'Creating a version bump commit and a version tag'
 git add "$pre_commit_hook"
