@@ -57,7 +57,7 @@ $sed "s/actionlint@[0-9]+\.[0-9]+\.[0-9]+/actionlint@${version}/g" "$usage_doc"
 $sed "s/\`actionlint:[0-9]+\.[0-9]+\.[0-9]+\`/\`actionlint:${version}\`/g" "$usage_doc"
 
 echo 'Creating a version bump commit and a version tag'
-git add "$pre_commit_hook"
+git add "$pre_commit_hook" "$usage_doc"
 git commit -m "bump up version to ${tag}"
 git tag "$tag"
 
