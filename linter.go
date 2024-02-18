@@ -300,8 +300,9 @@ func (l *Linter) LintFiles(filepaths []string, project *Project) ([]*Error, erro
 	l.log("Linting", n, "files")
 
 	cwd := l.cwd
-	proc := newConcurrentProcess(runtime.NumCPU())
-	sema := semaphore.NewWeighted(int64(runtime.NumCPU()))
+	cpus := runtime.NumCPU()
+	proc := newConcurrentProcess(cpus)
+	sema := semaphore.NewWeighted(int64(cpus))
 	ctx := context.Background()
 	dbg := l.debugWriter()
 	acf := NewLocalActionsCacheFactory(dbg)
@@ -359,10 +360,17 @@ func (l *Linter) LintFiles(filepaths []string, project *Project) ([]*Error, erro
 		})
 	}
 
-	proc.wait()
 	if err := eg.Wait(); err != nil {
 		return nil, err
 	}
+
+	// Ensure that all processes finish. `proc.wait()` must be called after `eg.Wait()`.
+	// Calling `WaitGroup.Add` after `WaitGroup.Wait` can cause a race condition (specifically when
+	// increasing the group count from 0 to 1 and calling `Wait` and at the same time).
+	// `WaitGroup.Add` is called in `proc.run()` and `WaitGroup.Wait` is called in `proc.wait()`.
+	// After traversing all workflows, `proc.run()` is no longer called so `proc.wait()` can be
+	// called safely.
+	proc.wait()
 
 	total := 0
 	for i := range ws {

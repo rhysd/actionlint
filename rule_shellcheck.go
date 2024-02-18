@@ -197,6 +197,7 @@ func (rule *RuleShellcheck) runShellcheck(src, sh string, pos *Pos) {
 			return nil
 		}
 
+		// Synchronize rule.Errorf calls
 		rule.mu.Lock()
 		defer rule.mu.Unlock()
 		// It's better to show source location in the script as position of error, but it's not
