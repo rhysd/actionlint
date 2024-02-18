@@ -36,6 +36,7 @@ List of checks:
 - [Environment variable names](#check-env-var-names)
 - [Permissions](#permissions)
 - [Reusable workflows](#check-reusable-workflows)
+- [Workflow references at `workflow_run`](#check-workflow-run-refs)
 - [ID naming convention](#id-naming-convention)
 - [Contexts and special functions availability](#ctx-spfunc-availability)
 - [Deprecated workflow commands](#check-deprecated-workflow-commands)
@@ -2496,6 +2497,44 @@ In the above example, `get-build-info.yaml` has one output `version`. actionlint
 as `{version: string}`. In the downstream job, actionlint can report an error at undefined key `tag` in the object.
 
 Note that this check only works with local reusable workflow (starting with `./`).
+
+<a name="check-workflow-run-refss"></a>
+## Workflows references at `workflow_run`
+[`workflow_run` is a trigger event](https://docs.github.com/en/actions/using-workflows/events-that-trigger-workflows#workflow_run) to run a workflow when another workflow is completed. 
+
+actionlint checks that all workflows referenced by name at `workflow_run.workflows` exists.
+
+Example input:
+
+```yaml
+# file: .github/workflows/build.yml
+on: push
+```
+```yaml
+# file: .github/workflows/test.yml
+name: Tests
+on: push
+```
+```yaml
+# file: .github/workflows/notify-errors.yml
+on: 
+  workflow_run:
+    types: [completed]
+    workflows: 
+      - build
+      - test # ERROR: This workflow does not exist, its name is `Tests`
+```
+Output:
+
+```
+:6:9: Workflow "test" is not defined [workflow_run]
+  |
+6 |       - test # ERROR: This workflow does not exist, its name is `Tests`
+  |         ^~~~
+```
+
+> [!NOTE]
+> This check only applies when all workflow files are analyzed together
 
 <a name="id-naming-convention"></a>
 ## ID naming convention
