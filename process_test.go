@@ -293,17 +293,23 @@ func TestProcessErrorLinterFailed(t *testing.T) {
 
 func TestProcessRunConcurrentlyAndWait(t *testing.T) {
 	p := newConcurrentProcess(2)
-	ls := testSkipIfNoCommand(t, p, "ls")
+	echo := testSkipIfNoCommand(t, p, "echo")
 
 	c := make(chan struct{})
-	go func() {
-		for i := 0; i < 5; i++ {
-			ls.run(nil, "", func(b []byte, err error) error {
-				return err
-			})
-		}
-		c <- struct{}{}
-	}()
-	<-c
+	for i := 0; i < 3; i++ {
+		go func() {
+			for i := 0; i < 5; i++ {
+				echo.run(nil, "", func(b []byte, err error) error {
+					return err
+				})
+			}
+			c <- struct{}{}
+		}()
+	}
+
+	for i := 0; i < 3; i++ {
+		<-c
+	}
+
 	p.wait()
 }
