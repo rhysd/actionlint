@@ -290,3 +290,20 @@ func TestProcessErrorLinterFailed(t *testing.T) {
 		t.Fatal("a command following the error did not run")
 	}
 }
+
+func TestProcessRunConcurrentlyAndWait(t *testing.T) {
+	p := newConcurrentProcess(2)
+	ls := testSkipIfNoCommand(t, p, "ls")
+
+	c := make(chan struct{})
+	go func() {
+		for i := 0; i < 5; i++ {
+			ls.run(nil, "", func(b []byte, err error) error {
+				return err
+			})
+		}
+		c <- struct{}{}
+	}()
+	<-c
+	p.wait()
+}
