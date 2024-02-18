@@ -39,7 +39,7 @@ func FuzzCheck(data []byte) int {
 		v.AddPass(rule)
 	}
 
-	if err := v.Visit(w); err != nil {
+	if err := v.Visit("", w); err != nil {
 		return 0
 	}
 

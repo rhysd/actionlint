@@ -17,7 +17,7 @@ func NewRuleGlob() *RuleGlob {
 }
 
 // VisitWorkflowPre is callback when visiting Workflow node before visiting its children.
-func (rule *RuleGlob) VisitWorkflowPre(n *Workflow) error {
+func (rule *RuleGlob) VisitWorkflowPre(_ string, n *Workflow) error {
 	for _, e := range n.On {
 		if w, ok := e.(*WebhookEvent); ok {
 			rule.checkGitRefGlobs(w.Branches)

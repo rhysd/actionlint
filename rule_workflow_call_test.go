@@ -83,7 +83,7 @@ func TestRuleWorkflowCallNestedWorkflowCalls(t *testing.T) {
 	c := NewLocalReusableWorkflowCache(nil, "", nil)
 	r := NewRuleWorkflowCall("", c)
 
-	if err := r.VisitWorkflowPre(w); err != nil {
+	if err := r.VisitWorkflowPre("", w); err != nil {
 		t.Fatal(err)
 	}
 
@@ -126,7 +126,7 @@ func TestRuleWorkflowCallWriteEventNodeToMetadataCache(t *testing.T) {
 	c := NewLocalReusableWorkflowCache(&Project{cwd, nil}, cwd, nil)
 	r := NewRuleWorkflowCall("test-workflow.yaml", c)
 
-	if err := r.VisitWorkflowPre(w); err != nil {
+	if err := r.VisitWorkflowPre("", w); err != nil {
 		t.Fatal(err)
 	}
 
@@ -330,7 +330,7 @@ func TestRuleWorkflowCallCheckReusableWorkflowCall(t *testing.T) {
 					},
 				},
 			}
-			if err := r.VisitWorkflowPre(w); err != nil {
+			if err := r.VisitWorkflowPre("", w); err != nil {
 				t.Fatal(err)
 			}
 

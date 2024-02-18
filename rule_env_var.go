@@ -36,7 +36,7 @@ func (rule *RuleEnvVar) VisitJobPre(n *Job) error {
 }
 
 // VisitWorkflowPre is callback when visiting Workflow node before visiting its children.
-func (rule *RuleEnvVar) VisitWorkflowPre(n *Workflow) error {
+func (rule *RuleEnvVar) VisitWorkflowPre(_ string, n *Workflow) error {
 	rule.checkEnv(n.Env)
 	return nil
 }

@@ -11,7 +11,7 @@ func testValidateEnvVarName(t *testing.T, name string) []*Error {
 	}
 	w := &Workflow{Env: e}
 	r := NewRuleEnvVar()
-	if err := r.VisitWorkflowPre(w); err != nil {
+	if err := r.VisitWorkflowPre("", w); err != nil {
 		t.Fatal(err)
 	}
 	return r.Errs()
@@ -54,7 +54,7 @@ func TestRuleEnvVarCheckInvalidName(t *testing.T) {
 func TestRuleEnvVarSkipEdgeCaseEnv(t *testing.T) {
 	w := &Workflow{Env: nil}
 	r := NewRuleEnvVar()
-	if err := r.VisitWorkflowPre(w); err != nil {
+	if err := r.VisitWorkflowPre("", w); err != nil {
 		t.Fatal(err)
 	}
 	if errs := r.Errs(); len(errs) > 0 {
@@ -67,7 +67,7 @@ func TestRuleEnvVarSkipEdgeCaseEnv(t *testing.T) {
 		},
 	}
 	r = NewRuleEnvVar()
-	if err := r.VisitWorkflowPre(w); err != nil {
+	if err := r.VisitWorkflowPre("", w); err != nil {
 		t.Fatal(err)
 	}
 	if errs := r.Errs(); len(errs) > 0 {

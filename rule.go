@@ -34,7 +34,7 @@ func (r *RuleBase) VisitJobPre(node *Job) error { return nil }
 func (r *RuleBase) VisitJobPost(node *Job) error { return nil }
 
 // VisitWorkflowPre is callback when visiting Workflow node before visiting its children.
-func (r *RuleBase) VisitWorkflowPre(node *Workflow) error { return nil }
+func (r *RuleBase) VisitWorkflowPre(path string, node *Workflow) error { return nil }
 
 // VisitWorkflowPost is callback when visiting Workflow node after visiting its children.
 func (r *RuleBase) VisitWorkflowPost(node *Workflow) error { return nil }
