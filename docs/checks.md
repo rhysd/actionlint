@@ -832,6 +832,26 @@ false positives can be avoided by showing the shell name explicitly. It is also 
   shell: pwsh
 ```
 
+When you want to control shellcheck behaivor, [`SHELLCHECK_OPTS` environment variable][shellcheck-env-var] is useful.
+
+From command line:
+
+```sh
+# Enable some optional rules
+SHELLCHECK_OPTS='--enable=avoid-nullary-conditions' actionlint
+
+# Disable some rules
+SHELLCHECK_OPTS='--exclude=SC2129' actionlint
+```
+
+On GitHub Actions:
+
+```yaml
+- run: actionlint
+  env:
+    SHELLCHECK_OPTS: --exclude=SC2129
+```
+
 <a name="check-pyflakes-integ"></a>
 ## [pyflakes][] integration for `run:`
 
@@ -2650,6 +2670,7 @@ characters around `${{ }}`.
 [SC2194]: https://github.com/koalaman/shellcheck/wiki/SC2194
 [SC2154]: https://github.com/koalaman/shellcheck/wiki/SC2154
 [SC2157]: https://github.com/koalaman/shellcheck/wiki/SC2157
+[shellcheck-env-var]: https://github.com/koalaman/shellcheck/wiki/Integration#environment-variables
 [pyflakes]: https://github.com/PyCQA/pyflakes
 [expr-doc]: https://docs.github.com/en/actions/learn-github-actions/expressions
 [contexts-doc]: https://docs.github.com/en/actions/learn-github-actions/contexts
