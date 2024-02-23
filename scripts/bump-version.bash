@@ -54,9 +54,11 @@ echo "Updating $pre_commit_hook"
 sed_ "s/entry: docker\\.io\\/rhysd\\/actionlint:.*/entry: docker.io\\/rhysd\\/actionlint:${version}/" "$pre_commit_hook"
 
 echo "Updating $usage_doc"
-sed_ "s/    rev: v[0-9]+\.[0-9]+\.[0-9]+/    rev: v${version}/" "$usage_doc"
-sed_ "s/actionlint@[0-9]+\.[0-9]+\.[0-9]+/actionlint@${version}/g" "$usage_doc"
-sed_ "s/\`actionlint:[0-9]+\.[0-9]+\.[0-9]+\`/\`actionlint:${version}\`/g" "$usage_doc"
+sed_ "\
+    s/    rev: v[0-9]+\.[0-9]+\.[0-9]+/    rev: v${version}/; \
+    s/ actionlint@[0-9]+\.[0-9]+\.[0-9]+/ actionlint@${version}/g; \
+    s/\`actionlint:[0-9]+\.[0-9]+\.[0-9]+\`/\`actionlint:${version}\`/g; \
+    " "$usage_doc"
 
 echo 'Creating a version bump commit and a version tag'
 git add "$pre_commit_hook" "$usage_doc"
