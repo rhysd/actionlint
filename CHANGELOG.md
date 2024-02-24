@@ -1,3 +1,58 @@
+<a name="v1.6.27"></a>
+# [v1.6.27](https://github.com/rhysd/actionlint/releases/tag/v1.6.27) - 24 Feb 2024
+
+- Add macOS 14 runner labels for [Apple Silicon support](https://github.blog/changelog/2024-01-30-github-actions-macos-14-sonoma-is-now-available/). The following labels are added. (thanks [@harryzcy](https://github.com/harryzcy), [#392](https://github.com/rhysd/actionlint/issues/392))
+  - `macos-14`
+  - `macos-14-xlarge`
+  - `macos-14-large`
+- Remove `ubuntu-18.04` runner label from runners list since [it is no longer supported](https://github.blog/changelog/2022-08-09-github-actions-the-ubuntu-18-04-actions-runner-image-is-being-deprecated-and-will-be-removed-by-12-1-22/). ([#363](https://github.com/rhysd/actionlint/issues/363))
+- Allow glob patterns in `self-hosted-runner.labels` configuration. For example, the following configuration defines any runner labels prefixed with `private-linux-`. (thanks [@kishaningithub](https://github.com/kishaningithub), [#378](https://github.com/rhysd/actionlint/issues/378))
+  ```yaml
+  self-hosted-runner:
+      labels:
+        - private-linux-*
+  ```
+- Fix a race condition bug when `-format` option is used for linting multiple workflow files. Thanks [@ReinAchten-TomTom](https://github.com/ReinAchten-TomTom) for your help on the investigation. ([#370](https://github.com/rhysd/actionlint/issues/370))
+- Fix a race condition due to conflicts between some goroutine which starts to run shellcheck process and other goroutine which starts to wait until all processes finish.
+- The popular actions data set was updated to the latest and the following actions were newly added. (thanks [@jmarshall](https://github.com/jmarshall), [#380](https://github.com/rhysd/actionlint/issues/380))
+  - `google-github-actions/auth`
+  - `google-github-actions/get-secretmanager-secrets`
+  - `google-github-actions/setup-gcloud`
+  - `google-github-actions/upload-cloud-storage`
+  - `pulumi/actions`
+  - `pypa/gh-action-pypi-publish`
+- Add support for larger runner labels. The following labels are added. (thanks [@therealdwright](https://github.com/therealdwright), [#371](https://github.com/rhysd/actionlint/issues/371))
+  - `windows-latest-8-cores`
+  - `ubuntu-latest-4-cores`
+  - `ubuntu-latest-8-cores`
+  - `ubuntu-latest-16-cores`
+- The following WebHook types are supported for `pull_request` event.
+  - `enqueued`
+  - `dequeued`
+  - `milestoned`
+  - `demilestoned`
+- Explain how to control shellckeck behavior in the [shellcheck rule document](https://github.com/rhysd/actionlint/blob/main/docs/checks.md#check-shellcheck-integ). Use `SHELLCHECK_OPTS` environment variable to pass arguments to shellcheck. See [the shellcheck's official document](https://github.com/koalaman/shellcheck/wiki/Integration#environment-variables) for more details.
+  ```
+  # Enable some optional rules
+  SHELLCHECK_OPTS='--enable=avoid-nullary-conditions' actionlint
+  # Disable some rules
+  SHELLCHECK_OPTS='--exclude=SC2129' actionlint
+  ```
+- Explicitly specify `docker.io` host name in pre-commit hook. (thanks [@gotmax23](https://github.com/gotmax23), [#382](https://github.com/rhysd/actionlint/issues/382))
+- Explain how to report issues and send patches in [CONTRIBUTING.md](https://github.com/rhysd/actionlint/blob/main/CONTRIBUTING.md).
+- Fix the link to super-linter project. (thanks [@zkoppert](https://github.com/zkoppert), [#376](https://github.com/rhysd/actionlint/issues/376))
+- Add the instruction to install actionlint via the Arch Linux's official repository. (thanks [@sorairolake](https://github.com/sorairolake), [#381](https://github.com/rhysd/actionlint/issues/381))
+- Prefer fixed revisions in the pre-commit usage. (thanks [@corneliusroemer](https://github.com/corneliusroemer), [#354](https://github.com/rhysd/actionlint/issues/354))
+- Add instructions to use actionlint with Emacs. (thanks [@tirimia](https://github.com/tirimia), [#341](https://github.com/rhysd/actionlint/issues/341))
+- Add instructions to use actionlint with Vim and Neovim text editors.
+- Add `actionlint.RuleBase.Config` method to get the actionlint configuration passed to rules. (thanks [@hugo-syn](https://github.com/hugo-syn), [#387](https://github.com/rhysd/actionlint/issues/387))
+- Add `actionlint.ContainsExpression` function to check if the given string contains `${{ }}` placeholders or not. (thanks [@hugo-syn](https://github.com/hugo-syn), [#388](https://github.com/rhysd/actionlint/issues/388))
+- Support Go 1.22 and set the minimum supported Go version to 1.18 for `x/sys` package.
+- Update Go dependencies to the latest.
+
+[Changes][v1.6.27]
+
+
 <a name="v1.6.26"></a>
 # [v1.6.26](https://github.com/rhysd/actionlint/releases/tag/v1.6.26) - 18 Sep 2023
 
@@ -1498,6 +1553,7 @@ See documentation for more details:
 [Changes][v1.0.0]
 
 
+[v1.6.27]: https://github.com/rhysd/actionlint/compare/v1.6.26...v1.6.27
 [v1.6.26]: https://github.com/rhysd/actionlint/compare/v1.6.25...v1.6.26
 [v1.6.25]: https://github.com/rhysd/actionlint/compare/v1.6.24...v1.6.25
 [v1.6.24]: https://github.com/rhysd/actionlint/compare/v1.6.23...v1.6.24
@@ -1542,4 +1598,4 @@ See documentation for more details:
 [v1.1.0]: https://github.com/rhysd/actionlint/compare/v1.0.0...v1.1.0
 [v1.0.0]: https://github.com/rhysd/actionlint/tree/v1.0.0
 
-<!-- Generated by https://github.com/rhysd/changelog-from-release v3.7.0 -->
+<!-- Generated by https://github.com/rhysd/changelog-from-release v3.7.2 -->
