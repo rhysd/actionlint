@@ -48,7 +48,7 @@ archives:
 
 brews:
   - name: actionlint
-    tap:
+    repository:
       owner: rhysd
       name: actionlint
     folder: HomebrewFormula
