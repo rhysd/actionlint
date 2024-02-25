@@ -8,6 +8,7 @@ import (
 )
 
 func canParseByGoYAML(data []byte) (ret bool) {
+	ret = true
 	defer func() {
 		if err := recover(); err != nil {
 			ret = false
@@ -15,7 +16,7 @@ func canParseByGoYAML(data []byte) (ret bool) {
 	}()
 	var n yaml.Node
 	yaml.Unmarshal(data, &n)
-	return true
+	return
 }
 
 func FuzzParse(data []byte) int {
