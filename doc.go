@@ -33,5 +33,15 @@ https://github.com/rhysd/actionlint/blob/main/go.mod
 All documentations for actionlint can be found in the following page.
 
 https://github.com/rhysd/actionlint/tree/main/docs
+
+# License
+
+This library is provided under the MIT license.
+
+> Copyright (c) 2021 rhysd
+
+Full text can be found in the following page.
+
+https://github.com/rhysd/actionlint/blob/main/LICENSE.txt
 */
 package actionlint
