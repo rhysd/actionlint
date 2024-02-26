@@ -36,14 +36,14 @@ Followings are unexhaustive list of interesting APIs.
 - `ActionMetadata` is a struct for action metadata file (`action.yml`). It is used to check inputs specified at `with:`
   and typing `steps.{id}.outputs` object strictly.
 - `PopularActions` global variable is the data set of popular actions' metadata collected by [the script](../scripts/generate-popular-actions).
-- `AllWebhookTypes` global variable is the mapping from all webhook names to their types collected by [the scirpt](../scripts/generate-webhook-events).
+- `AllWebhookTypes` global variable is the mapping from all webhook names to their types collected by [the script](../scripts/generate-webhook-events).
 - `WorkflowKeyAvailability()` returns available context names and special function names for the given workflow key like
-  `jobs.<job_id>.outputs.<output_id>`. This function uses the data collected by [the scirpt](../scripts/generate-availability).
+  `jobs.<job_id>.outputs.<output_id>`. This function uses the data collected by [the script](../scripts/generate-availability).
 
 ## Library versioning
 
 The version of this repository is for command line tool `actionlint`. So it does not represent the version of the library.
-It means that the library does not follow sematinc versioning and any patch version bump may introduce some breaking changes.
+It means that the library does not follow semantic versioning and any patch version bump may introduce some breaking changes.
 
 ## Go version compatibility
 
