@@ -17,7 +17,7 @@ Please read the YourOwnRule example.
 # Library versioning
 
 The version is for the command line tool. So it does not represent the version of the library. It
-means that the library does not follow sematinc versioning and any patch version bump may introduce
+means that the library does not follow semantic versioning and any patch version bump may introduce
 some breaking changes.
 
 # Go version compatibility
@@ -25,6 +25,8 @@ some breaking changes.
 Minimum supported Go version is written in go.mod file in this library. That said, older Go versions
 are actually not tested on CI. Last two major Go versions are recommended because they're tested on
 CI. For example, when the latest Go version is v1.22, v1.21 and v1.22 are nice to use.
+
+https://github.com/rhysd/actionlint/blob/main/go.mod
 
 # Other documentations
 
