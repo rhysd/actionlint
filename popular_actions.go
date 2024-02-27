@@ -2180,6 +2180,7 @@ var PopularActions = map[string]*ActionMetadata{
 			"commit_parent":              {"commit_parent", false},
 			"directory":                  {"directory", false},
 			"disable_file_fixes":         {"disable_file_fixes", false},
+			"disable_safe_directory":     {"disable_safe_directory", false},
 			"disable_search":             {"disable_search", false},
 			"dry_run":                    {"dry_run", false},
 			"env_vars":                   {"env_vars", false},
@@ -2188,6 +2189,7 @@ var PopularActions = map[string]*ActionMetadata{
 			"file":                       {"file", false},
 			"files":                      {"files", false},
 			"flags":                      {"flags", false},
+			"git_service":                {"git_service", false},
 			"handle_no_reports_found":    {"handle_no_reports_found", false},
 			"job_code":                   {"job_code", false},
 			"name":                       {"name", false},
@@ -3576,6 +3578,7 @@ var PopularActions = map[string]*ActionMetadata{
 			"min_mask_length": {"min_mask_length", false},
 			"secrets":         {"secrets", true},
 		},
+		SkipOutputs: true,
 	},
 	"google-github-actions/get-secretmanager-secrets@v2": {
 		Name: "Get Secret Manager secrets",
@@ -3583,6 +3586,7 @@ var PopularActions = map[string]*ActionMetadata{
 			"min_mask_length": {"min_mask_length", false},
 			"secrets":         {"secrets", true},
 		},
+		SkipOutputs: true,
 	},
 	"google-github-actions/setup-gcloud@v1": {
 		Name: "Set up gcloud Cloud SDK environment",
