@@ -24,8 +24,10 @@ func (rule *RuleCredentials) VisitJobPre(n *Job) error {
 	if n.Container != nil {
 		rule.checkContainer("\"container\" section", n.Container)
 	}
-	for _, s := range n.Services {
-		rule.checkContainer(fmt.Sprintf("%q service", s.Name.Value), s.Container)
+	if n.Services != nil {
+		for _, s := range n.Services.Value {
+			rule.checkContainer(fmt.Sprintf("%q service", s.Name.Value), s.Container)
+		}
 	}
 	return nil
 }

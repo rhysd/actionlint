@@ -29,8 +29,10 @@ func (rule *RuleEnvVar) VisitJobPre(n *Job) error {
 	if n.Container != nil {
 		rule.checkEnv(n.Container.Env)
 	}
-	for _, s := range n.Services {
-		rule.checkEnv(s.Container.Env)
+	if n.Services != nil {
+		for _, s := range n.Services.Value {
+			rule.checkEnv(s.Container.Env)
+		}
 	}
 	return nil
 }
