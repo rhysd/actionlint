@@ -1,0 +1,7 @@
+on: push
+jobs:
+  tests:
+    runs-on: ubuntu-latest
+    services: ${{ fromJSON('...') }}
+    steps:
+      - run: echo

@@ -762,6 +762,19 @@ type Service struct {
 	Container *Container
 }
 
+// Services is a mapping from service ID to its configuration.
+// https://docs.github.com/en/actions/using-workflows/workflow-syntax-for-github-actions#jobsjob_idservices
+type Services struct {
+	// Value is a mapping from service ID to its Service instances. Keys are in lower case since
+	// they are case-insensitive.
+	Value map[string]*Service
+	// Expression is an expression assigned to the services mapping by ${{ }} placeholder. Otherwise
+	// this field is nil.
+	Expression *String
+	// Pos is a position in source.
+	Pos *Pos
+}
+
 // Output is output entry of the job.
 // https://docs.github.com/en/actions/learn-github-actions/workflow-syntax-for-github-actions#jobsjob_idoutputs
 type Output struct {
@@ -863,9 +876,9 @@ type Job struct {
 	ContinueOnError *Bool
 	// Container is container configuration to run the job.
 	Container *Container
-	// Services is map from service names to service configurations. Keys are in lower case since they are case-insensitive.
+	// Services is a services configurations.
 	// https://docs.github.com/en/actions/learn-github-actions/workflow-syntax-for-github-actions#jobsjob_idservices
-	Services map[string]*Service
+	Services *Services
 	// WorkflowCall is a workflow call by 'uses:'.
 	// https://docs.github.com/en/actions/learn-github-actions/workflow-syntax-for-github-actions#jobsjob_iduses
 	WorkflowCall *WorkflowCall

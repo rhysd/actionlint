@@ -970,6 +970,24 @@ func (p *parser) parseContainer(sec string, pos *Pos, n *yaml.Node) *Container {
 	return ret
 }
 
+func (p *parser) parseServices(n *yaml.Node) *Services {
+	ret := &Services{Pos: posAt(n)}
+	if e := p.mayParseExpression(n); e != nil {
+		ret.Expression = e
+	} else {
+		services := p.parseSectionMapping("services", n, false, false) // XXX: Is the key case-insensitive?
+		ss := make(map[string]*Service, len(services))
+		for _, s := range services {
+			ss[s.id] = &Service{
+				Name:      s.key,
+				Container: p.parseContainer("services", s.key.Pos, s.val),
+			}
+		}
+		ret.Value = ss
+	}
+	return ret
+}
+
 // https://docs.github.com/en/actions/using-workflows/workflow-syntax-for-github-actions#jobsjob_idtimeout-minutes
 func (p *parser) parseTimeoutMinutes(n *yaml.Node) *Float {
 	f := p.parseFloat(n)
@@ -1205,14 +1223,7 @@ func (p *parser) parseJob(id *String, n *yaml.Node) *Job {
 			ret.Container = p.parseContainer("container", k.Pos, v)
 			stepsOnlyKey = k
 		case "services":
-			services := p.parseSectionMapping("services", v, false, false) // XXX: Is the key case-insensitive?
-			ret.Services = make(map[string]*Service, len(services))
-			for _, s := range services {
-				ret.Services[s.id] = &Service{
-					Name:      s.key,
-					Container: p.parseContainer("services", s.key.Pos, s.val),
-				}
-			}
+			ret.Services = p.parseServices(v)
 		case "uses":
 			call.Uses = p.parseString(v, false)
 			callOnlyKey = k
