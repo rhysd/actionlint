@@ -210,3 +210,10 @@ jobs:
       group: ${{ runner.OS }}
     steps:
       - run: echo hello
+  test-services:
+    runs-on: ubuntu-latest
+    # jobs.<job_id>.services
+    # ERROR at env
+    services: ${{ inputs.bool || env.FOO }}
+    steps:
+      - run: echo
