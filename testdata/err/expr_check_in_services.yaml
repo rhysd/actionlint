@@ -1,0 +1,17 @@
+on: push
+jobs:
+  ok1:
+    services: ${{ fromJSON('...') }}
+    runs-on: ubuntu-latest
+    steps:
+      - run: echo
+  err1:
+    services: redis
+    runs-on: ubuntu-latest
+    steps:
+      - run: echo
+  err2:
+    services: ${{ 'redis' }}
+    runs-on: ubuntu-latest
+    steps:
+      - run: echo
