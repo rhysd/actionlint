@@ -6,7 +6,7 @@ const MESSAGE = '.+?';
 const KIND = '.+?';
 
 let regexp = '^E?(F)E*:E*(L)E*:E*(C)E*: E*(M)E* \\[(K)\\]$';
-regexp = regexp.replace(/E/g, ESCAPE); // replaceAll is not available in node v14
+regexp = regexp.replaceAll('E', ESCAPE);
 regexp = regexp.replace('F', FILEPATH);
 regexp = regexp.replace('L', LINE);
 regexp = regexp.replace('C', COL);
