@@ -18,3 +18,5 @@ jobs:
       - run: echo ${{ matrix.foo }}
       # matrix.bar is array<any> type value
       - run: echo ${{ matrix.bar[0] }}
+      # ERROR: Array cannot be evaluated as string
+      - run: echo ${{ matrix.bar }}

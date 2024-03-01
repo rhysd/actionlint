@@ -677,6 +677,8 @@ steps:
   - run: echo ${{ matrix.foo }}
   # matrix.bar is array<any> type value
   - run: echo ${{ matrix.bar[0] }}
+  # ERROR: Array cannot be evaluated as string
+  - run: echo ${{ matrix.bar }}
 ```
 
 <a name="check-contextual-needs-object"></a>
@@ -832,7 +834,7 @@ false positives can be avoided by showing the shell name explicitly. It is also 
   shell: pwsh
 ```
 
-When you want to control shellcheck behaivor, [`SHELLCHECK_OPTS` environment variable][shellcheck-env-var] is useful.
+When you want to control shellcheck behavior, [`SHELLCHECK_OPTS` environment variable][shellcheck-env-var] is useful.
 
 From command line:
 
