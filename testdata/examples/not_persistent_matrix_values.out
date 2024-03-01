@@ -1,0 +1,1 @@
+test.yaml:22:19: object, array, and null values should not be evaluated in template with ${{ }} but evaluating the value of type array<any> [expression]
