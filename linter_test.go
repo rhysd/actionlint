@@ -199,6 +199,55 @@ func TestLinterLintError(t *testing.T) {
 	}
 }
 
+func TestLinterLintAllExamples(t *testing.T) {
+	dir, files, err := testFindAllWorkflowsInDir("examples")
+	if err != nil {
+		panic(err)
+	}
+
+	proj := &Project{root: dir}
+
+	shellcheck, err := execabs.LookPath("shellcheck")
+	if err != nil {
+		t.Skipf("shellcheck is not found: %s", err)
+	}
+
+	pyflakes, err := execabs.LookPath("pyflakes")
+	if err != nil {
+		t.Skipf("pyflakes is not found: %s", err)
+	}
+
+	o := LinterOptions{
+		Shellcheck: shellcheck,
+		Pyflakes:   pyflakes,
+	}
+
+	l, err := NewLinter(io.Discard, &o)
+	if err != nil {
+		t.Fatal(err)
+	}
+
+	l.defaultConfig = &Config{}
+
+	errs, err := l.LintFiles(files, proj)
+	if err != nil {
+		t.Fatal(err)
+	}
+
+	// Check each example workflow file caused at least one error
+CheckFiles:
+	for _, f := range files {
+		for _, e := range errs {
+			if e.Filepath == f {
+				continue CheckFiles
+			}
+		}
+		if !strings.Contains(f, "pyflakes") && !strings.Contains(f, "shellcheck") {
+			t.Errorf("Workflow %q caused no error: %v", f, errs)
+		}
+	}
+}
+
 func TestLintFindProjectFromPath(t *testing.T) {
 	d := filepath.Join("testdata", "find_project")
 	f := filepath.Join(d, ".github", "workflows", "test.yaml")
