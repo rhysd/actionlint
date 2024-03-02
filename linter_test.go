@@ -222,9 +222,7 @@ func TestLinterLintAllErrorWorkflowsAtOnce(t *testing.T) {
 	if err != nil {
 		panic(err)
 	}
-	for _, f := range fs {
-		files = append(files, f)
-	}
+	files = append(files, fs...)
 
 	o := LinterOptions{
 		Shellcheck: shellcheck,
