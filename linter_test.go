@@ -199,14 +199,7 @@ func TestLinterLintError(t *testing.T) {
 	}
 }
 
-func TestLinterLintAllExamples(t *testing.T) {
-	dir, files, err := testFindAllWorkflowsInDir("examples")
-	if err != nil {
-		panic(err)
-	}
-
-	proj := &Project{root: dir}
-
+func TestLinterLintAllErrorWorkflowsAtOnce(t *testing.T) {
 	shellcheck, err := execabs.LookPath("shellcheck")
 	if err != nil {
 		t.Skipf("shellcheck is not found: %s", err)
@@ -215,6 +208,22 @@ func TestLinterLintAllExamples(t *testing.T) {
 	pyflakes, err := execabs.LookPath("pyflakes")
 	if err != nil {
 		t.Skipf("pyflakes is not found: %s", err)
+	}
+
+	dir, files, err := testFindAllWorkflowsInDir("examples")
+	if err != nil {
+		panic(err)
+	}
+
+	// Root directory must be testdata/examples/ since some workflow assumes it
+	proj := &Project{root: dir}
+
+	_, fs, err := testFindAllWorkflowsInDir("err")
+	if err != nil {
+		panic(err)
+	}
+	for _, f := range fs {
+		files = append(files, f)
 	}
 
 	o := LinterOptions{
