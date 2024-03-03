@@ -18,35 +18,32 @@ import (
 	"gopkg.in/yaml.v3"
 )
 
-type yamlExt int
-
-const (
-	yamlExtYML yamlExt = iota
-	yamlExtYAML
-)
-
-func (ext yamlExt) String() string {
-	if ext == yamlExtYML {
-		return "yml"
-	}
-	return "yaml"
-}
-
-type actionJSON struct {
+type actionOutput struct {
 	Spec string                     `json:"spec"`
 	Meta *actionlint.ActionMetadata `json:"metadata"`
 }
 
 type action struct {
-	slug string
-	path string
-	tags []string
-	next string
-	ext  yamlExt
+	slug    string
+	path    string
+	tags    []string
+	next    string
+	fileExt string
+	// slugs not to check inputs. Some actions allow to specify inputs which are not defined in action.yml.
+	// In such cases, actionlint no longer can check the inputs, but it can still check outputs. (#16)
+	skipInputs bool
+	// slugs which allows any outputs to be set. Some actions sets outputs 'dynamically'. Those outputs
+	// may or may not exist. And they are not listed in action.yml metadata. actionlint cannot check
+	// such outputs and fallback into allowing to set any outputs. (#18)
+	skipOutputs bool
 }
 
 func (a *action) rawURL(tag string) string {
-	return fmt.Sprintf("https://raw.githubusercontent.com/%s/%s%s/action.%s", a.slug, tag, a.path, a.ext.String())
+	ext := "yml"
+	if a.fileExt != "" {
+		ext = a.fileExt
+	}
+	return fmt.Sprintf("https://raw.githubusercontent.com/%s/%s%s/action.%s", a.slug, tag, a.path, ext)
 }
 
 func (a *action) githubURL(tag string) string {
@@ -56,8 +53,6 @@ func (a *action) githubURL(tag string) string {
 func (a *action) spec(tag string) string {
 	return fmt.Sprintf("%s%s@%s", a.slug, a.path, tag)
 }
-
-type slugSet = map[string]struct{}
 
 // Note: Actions used by top 1000 public repositories at GitHub sorted by number of occurrences:
 // https://gist.github.com/rhysd/1db81fa80096b699b9c045f435d0cace
@@ -69,10 +64,10 @@ var popularActions = []*action{
 		next: "v4",
 	},
 	{
-		slug: "Azure/container-scan",
-		tags: []string{"v0"},
-		next: "v1",
-		ext:  yamlExtYAML,
+		slug:    "Azure/container-scan",
+		tags:    []string{"v0"},
+		next:    "v1",
+		fileExt: "yaml",
 	},
 	{
 		slug: "Azure/functions-action",
@@ -285,9 +280,10 @@ var popularActions = []*action{
 		next: "v4",
 	},
 	{
-		slug: "dorny/paths-filter",
-		tags: []string{"v1", "v2", "v3"},
-		next: "v4",
+		slug:        "dorny/paths-filter",
+		tags:        []string{"v1", "v2", "v3"},
+		next:        "v4",
+		skipOutputs: true,
 	},
 	{
 		slug: "enriikke/gatsby-gh-pages-action",
@@ -305,9 +301,10 @@ var popularActions = []*action{
 		next: "v5",
 	},
 	{
-		slug: "getsentry/paths-filter",
-		tags: []string{"v1", "v2"},
-		next: "v3",
+		slug:        "getsentry/paths-filter",
+		tags:        []string{"v1", "v2"},
+		next:        "v3",
+		skipOutputs: true,
 	},
 	{
 		slug: "github/codeql-action",
@@ -348,9 +345,10 @@ var popularActions = []*action{
 		next: "v3",
 	},
 	{
-		slug: "google-github-actions/get-secretmanager-secrets",
-		tags: []string{"v1", "v2"},
-		next: "v3",
+		slug:        "google-github-actions/get-secretmanager-secrets",
+		tags:        []string{"v1", "v2"},
+		next:        "v3",
+		skipOutputs: true,
 	},
 	{
 		slug: "google-github-actions/setup-gcloud",
@@ -409,9 +407,10 @@ var popularActions = []*action{
 		next: "v3",
 	},
 	{
-		slug: "octokit/request-action",
-		tags: []string{"v1.x", "v2.x"},
-		next: "v3.x",
+		slug:       "octokit/request-action",
+		tags:       []string{"v1.x", "v2.x"},
+		next:       "v3.x",
+		skipInputs: true,
 	},
 	{
 		slug: "peaceiris/actions-gh-pages",
@@ -525,33 +524,16 @@ var popularActions = []*action{
 	},
 }
 
-// slugs not to check inputs. Some actions allow to specify inputs which are not defined in action.yml.
-// In such cases, actionlint no longer can check the inputs, but it can still check outputs. (#16)
-var doNotCheckInputs = slugSet{
-	"octokit/request-action": {},
-}
-
-// slugs which allows any outputs to be set. Some actions sets outputs 'dynamically'. Those outputs
-// may or may not exist. And they are not listed in action.yml metadata. actionlint cannot check
-// such outputs and fallback into allowing to set any outputs. (#18)
-var doNotCheckOutputs = slugSet{
-	"dorny/paths-filter":                              {},
-	"getsentry/paths-filter":                          {},
-	"google-github-actions/get-secretmanager-secrets": {},
-}
-
 type app struct {
-	stdout      io.Writer
-	stderr      io.Writer
-	log         *log.Logger
-	actions     []*action
-	skipInputs  slugSet
-	skipOutputs slugSet
+	stdout  io.Writer
+	stderr  io.Writer
+	log     *log.Logger
+	actions []*action
 }
 
-func newApp(stdout, stderr, dbgout io.Writer, actions []*action, skipInputs, skipOutputs slugSet) *app {
+func newApp(stdout, stderr, dbgout io.Writer, actions []*action) *app {
 	l := log.New(dbgout, "", log.LstdFlags)
-	return &app{stdout, stderr, l, actions, skipInputs, skipOutputs}
+	return &app{stdout, stderr, l, actions}
 }
 
 func (a *app) fetchRemote() (map[string]*actionlint.ActionMetadata, error) {
@@ -599,10 +581,10 @@ func (a *app) fetchRemote() (map[string]*actionlint.ActionMetadata, error) {
 						ret <- &fetched{err: fmt.Errorf("could not parse metadata for %s: %w", url, err)}
 						break
 					}
-					if _, ok := a.skipInputs[req.action.slug]; ok {
+					if req.action.skipInputs {
 						meta.SkipInputs = true
 					}
-					if _, ok := a.skipOutputs[req.action.slug]; ok {
+					if req.action.skipOutputs {
 						meta.SkipOutputs = true
 					}
 					ret <- &fetched{spec: spec, meta: &meta}
@@ -647,7 +629,7 @@ func (a *app) fetchRemote() (map[string]*actionlint.ActionMetadata, error) {
 func (a *app) writeJSONL(out io.Writer, actions map[string]*actionlint.ActionMetadata) error {
 	enc := json.NewEncoder(out)
 	for spec, meta := range actions {
-		j := actionJSON{spec, meta}
+		j := actionOutput{spec, meta}
 		if err := enc.Encode(&j); err != nil {
 			return fmt.Errorf("could not encode action %q data into JSON: %w", spec, err)
 		}
@@ -678,13 +660,11 @@ var PopularActions = map[string]*ActionMetadata{
 		fmt.Fprintf(b, "%q: {\n", spec)
 		fmt.Fprintf(b, "Name: %q,\n", meta.Name)
 
-		slug := spec[:strings.IndexRune(spec, '@')]
-		_, skipInputs := a.skipInputs[slug]
-		if skipInputs {
+		if meta.SkipInputs {
 			fmt.Fprintf(b, "SkipInputs: true,\n")
 		}
 
-		if len(meta.Inputs) > 0 && !skipInputs {
+		if len(meta.Inputs) > 0 && !meta.SkipInputs {
 			ids := make([]string, 0, len(meta.Inputs))
 			for n := range meta.Inputs {
 				ids = append(ids, n)
@@ -699,12 +679,11 @@ var PopularActions = map[string]*ActionMetadata{
 			fmt.Fprintf(b, "},\n")
 		}
 
-		_, skipOutputs := a.skipOutputs[slug]
-		if skipOutputs {
+		if meta.SkipOutputs {
 			fmt.Fprintf(b, "SkipOutputs: true,\n")
 		}
 
-		if len(meta.Outputs) > 0 && !skipOutputs {
+		if len(meta.Outputs) > 0 && !meta.SkipOutputs {
 			ids := make([]string, 0, len(meta.Outputs))
 			for n := range meta.Outputs {
 				ids = append(ids, n)
@@ -760,7 +739,7 @@ func (a *app) readJSONL(file string) (map[string]*actionlint.ActionMetadata, err
 		} else if err != nil {
 			return nil, fmt.Errorf("could not read line in file %s: %w", file, err)
 		}
-		var j actionJSON
+		var j actionOutput
 		if err := json.Unmarshal(l, &j); err != nil {
 			return nil, fmt.Errorf("could not parse line as JSON for action metadata in file %s: %s", file, err)
 		}
@@ -958,5 +937,5 @@ Flags:`)
 }
 
 func main() {
-	os.Exit(newApp(os.Stdout, os.Stderr, os.Stderr, popularActions, doNotCheckInputs, doNotCheckOutputs).run(os.Args))
+	os.Exit(newApp(os.Stdout, os.Stderr, os.Stderr, popularActions).run(os.Args))
 }
