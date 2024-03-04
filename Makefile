@@ -10,6 +10,10 @@ TESTDATA := $(wildcard \
 		testdata/projects/* \
 		testdata/reusable_workflow_metadata/* \
 	)
+GO_GEN_SRCS := scripts/generate-popular-actions/main.go \
+				scripts/generate-popular-actions/popular_actions.json \
+				scripts/generate-webhook-events/main.go \
+				scripts/generate-availability/main.go
 
 all: clean build test
 
@@ -26,7 +30,7 @@ t test: .testtimestamp
 
 l lint: .staticchecktimestamp
 
-popular_actions.go all_webhooks.go availability.go: scripts/generate-popular-actions/main.go scripts/generate-webhook-events/main.go scripts/generate-availability/main.go
+popular_actions.go all_webhooks.go availability.go: $(GO_GEN_SRCS)
 ifdef SKIP_GO_GENERATE
 	touch popular_actions.go all_webhooks.go availability.go
 else
@@ -56,7 +60,7 @@ bench:
 	node ./scripts/generate-actionlint-matcher/main.js .github/actionlint-matcher.json
 
 scripts/generate-actionlint-matcher/test/escape.txt: actionlint
-	./actionlint -color ./testdata/err/one_error.yaml > ./scripts/generate-actionlint-matcher/test/escape.txt || true 
+	./actionlint -color ./testdata/err/one_error.yaml > ./scripts/generate-actionlint-matcher/test/escape.txt || true
 scripts/generate-actionlint-matcher/test/no_escape.txt: actionlint
 	./actionlint -no-color ./testdata/err/one_error.yaml > ./scripts/generate-actionlint-matcher/test/no_escape.txt || true
 scripts/generate-actionlint-matcher/test/want.json: actionlint
