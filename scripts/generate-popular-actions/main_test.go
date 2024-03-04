@@ -12,51 +12,56 @@ import (
 	"github.com/google/go-cmp/cmp"
 )
 
-var testDummyPopularActions = []*action{
+var testDummyPopularActions = []*registry{
 	{
-		slug: "rhysd/action-setup-vim",
-		tags: []string{"v1"},
-		next: "v2",
+		Slug: "rhysd/action-setup-vim",
+		Tags: []string{"v1"},
+		Next: "v2",
 	},
 }
 
 // Normal cases
 
-func TestDataSource(t *testing.T) {
+func TestDefaultPopularActions(t *testing.T) {
+	popularActions, err := defaultPopularActions()
+	if err != nil {
+		t.Fatal("could not load default popular actions:", err)
+	}
+
 	if len(popularActions) == 0 {
 		t.Fatal("popularActions is empty")
 	}
 
 	slugs := map[string]int{}
 	for i, a := range popularActions {
-		if j, ok := slugs[a.slug]; ok && popularActions[i].path == popularActions[j].path {
-			t.Errorf("slug %q at popularActions[%d] was already added at popularActions[%d]", a.slug, i, j)
+		if j, ok := slugs[a.Slug]; ok && popularActions[i].Path == popularActions[j].Path {
+			t.Errorf("slug %q at popularActions[%d] was already added at popularActions[%d]", a.Slug, i, j)
 		} else {
-			slugs[a.slug] = i
+			slugs[a.Slug] = i
 		}
 
-		if len(a.tags) == 0 {
-			t.Errorf("no tag is specified for %q", a.slug)
+		if len(a.Tags) == 0 {
+			t.Errorf("no tag is specified for %q", a.Slug)
 		}
 
 		tags := map[string]int{}
-		for i, tag := range a.tags {
+		for i, tag := range a.Tags {
 			if tag == "" {
-				t.Errorf("tags[%d] at action %q must not be empty string", i, a.slug)
+				t.Errorf("tags[%d] at action %q must not be empty string", i, a.Slug)
 				continue
 			}
-			if tag == a.next {
-				t.Errorf("tags[%d] at action %q is equal to next version %q", i, a.slug, a.next)
+			if tag == a.Next {
+				t.Errorf("tags[%d] at action %q is equal to next version %q", i, a.Slug, a.Next)
 			}
 			if j, ok := tags[tag]; ok {
-				t.Errorf("duplicate tag %q at action %q appears: tags[%d] v.s. tags[%d]", tag, a.slug, i, j)
+				t.Errorf("duplicate tag %q at action %q appears: tags[%d] v.s. tags[%d]", tag, a.Slug, i, j)
 			} else {
 				tags[tag] = i
 			}
 		}
 
-		if a.fileExt != "yaml" && a.fileExt != "yml" && a.fileExt != "" {
-			t.Errorf(`file ext of action %q is neither "yml" nor "yaml": %q`, a.slug, a.fileExt)
+		if a.FileExt != "yaml" && a.FileExt != "yml" && a.FileExt != "" {
+			t.Errorf(`file ext of action %q is neither "yml" nor "yaml": %q`, a.Slug, a.FileExt)
 		}
 	}
 }
@@ -74,7 +79,7 @@ func TestReadWriteJSONL(t *testing.T) {
 			stdout := &bytes.Buffer{}
 			stderr := &bytes.Buffer{}
 
-			status := newApp(stdout, stderr, io.Discard, testDummyPopularActions).run([]string{"test", "-s", f, "-f", "jsonl"})
+			status := newGen(stdout, stderr, io.Discard, testDummyPopularActions).run([]string{"test", "-s", f, "-f", "jsonl"})
 			if status != 0 {
 				t.Fatalf("exit status is non-zero: %d: %s", status, stderr.Bytes())
 			}
@@ -116,8 +121,8 @@ func TestWriteGoToStdout(t *testing.T) {
 		t.Run(tc.in, func(t *testing.T) {
 			stdout := &bytes.Buffer{}
 			stderr := &bytes.Buffer{}
-			a := newApp(stdout, stderr, io.Discard, testDummyPopularActions)
-			status := a.run([]string{"test", "-s", filepath.Join("testdata", tc.in)})
+			g := newGen(stdout, stderr, io.Discard, testDummyPopularActions)
+			status := g.run([]string{"test", "-s", filepath.Join("testdata", tc.in)})
 			if status != 0 {
 				t.Fatalf("exit status is non-zero: %d: %s", status, stderr.Bytes())
 			}
@@ -148,7 +153,7 @@ func TestWriteJSONLFile(t *testing.T) {
 
 	stdout := io.Discard
 	stderr := io.Discard
-	status := newApp(stdout, stderr, io.Discard, testDummyPopularActions).run([]string{"test", "-s", in, "-f", "jsonl", out})
+	status := newGen(stdout, stderr, io.Discard, testDummyPopularActions).run([]string{"test", "-s", in, "-f", "jsonl", out})
 	if status != 0 {
 		t.Fatal("exit status is non-zero:", status)
 	}
@@ -172,7 +177,7 @@ func TestWriteGoFile(t *testing.T) {
 
 	stdout := io.Discard
 	stderr := io.Discard
-	status := newApp(stdout, stderr, io.Discard, testDummyPopularActions).run([]string{"test", "-s", in, out})
+	status := newGen(stdout, stderr, io.Discard, testDummyPopularActions).run([]string{"test", "-s", in, out})
 	if status != 0 {
 		t.Fatal("exit status is non-zero:", status)
 	}
@@ -195,20 +200,20 @@ func TestWriteGoFile(t *testing.T) {
 }
 
 func TestFetchRemoteYAML(t *testing.T) {
-	data := []*action{
+	data := []*registry{
 		{
-			slug: "rhysd/action-setup-vim",
-			tags: []string{"v1.2.7"},
+			Slug: "rhysd/action-setup-vim",
+			Tags: []string{"v1.2.7"},
 		},
 		{
-			slug: "rhysd/changelog-from-release",
-			path: "/action",
-			tags: []string{"v2.2.2"},
+			Slug: "rhysd/changelog-from-release",
+			Path: "/action",
+			Tags: []string{"v2.2.2"},
 		},
 	}
 	stdout := &bytes.Buffer{}
 	stderr := io.Discard
-	status := newApp(stdout, stderr, io.Discard, data).run([]string{"test"})
+	status := newGen(stdout, stderr, io.Discard, data).run([]string{"test"})
 	if status != 0 {
 		t.Fatal("exit status is non-zero:", status)
 	}
@@ -229,7 +234,7 @@ func TestLogOutput(t *testing.T) {
 	f := filepath.Join("testdata", "test.jsonl")
 	stdout := &bytes.Buffer{}
 	logged := &bytes.Buffer{}
-	status := newApp(stdout, io.Discard, logged, testDummyPopularActions).run([]string{"test", "-s", f, "-f", "jsonl"})
+	status := newGen(stdout, io.Discard, logged, testDummyPopularActions).run([]string{"test", "-s", f, "-f", "jsonl"})
 	if status != 0 {
 		t.Fatal("exit status is non-zero:", status)
 	}
@@ -245,7 +250,7 @@ func TestLogOutput(t *testing.T) {
 
 	stdout = &bytes.Buffer{}
 	logged = &bytes.Buffer{}
-	status = newApp(stdout, io.Discard, logged, testDummyPopularActions).run([]string{"test", "-s", f, "-f", "jsonl", "-q"})
+	status = newGen(stdout, io.Discard, logged, testDummyPopularActions).run([]string{"test", "-s", f, "-f", "jsonl", "-q"})
 	if status != 0 {
 		t.Fatal("exit status is non-zero:", status)
 	}
@@ -263,7 +268,7 @@ func TestLogOutput(t *testing.T) {
 func TestHelpOutput(t *testing.T) {
 	stdout := io.Discard
 	stderr := &bytes.Buffer{}
-	status := newApp(stdout, stderr, io.Discard, testDummyPopularActions).run([]string{"test", "-help"})
+	status := newGen(stdout, stderr, io.Discard, testDummyPopularActions).run([]string{"test", "-help"})
 	if status != 0 {
 		t.Fatal("exit status is non-zero:", status)
 	}
@@ -274,16 +279,16 @@ func TestHelpOutput(t *testing.T) {
 }
 
 func TestDetectNewRelease(t *testing.T) {
-	data := []*action{
+	data := []*registry{
 		{
-			slug: "rhysd/action-setup-vim",
-			tags: []string{"v0"},
-			next: "v1",
+			Slug: "rhysd/action-setup-vim",
+			Tags: []string{"v0"},
+			Next: "v1",
 		},
 	}
 	stdout := &bytes.Buffer{}
 	stderr := io.Discard
-	status := newApp(stdout, stderr, io.Discard, data).run([]string{"test", "-d"})
+	status := newGen(stdout, stderr, io.Discard, data).run([]string{"test", "-d"})
 	if status != 2 {
 		t.Fatal("exit status is not 2:", status)
 	}
@@ -305,16 +310,16 @@ func TestDetectNoRelease(t *testing.T) {
 
 	for _, tc := range testCases {
 		t.Run(tc.what, func(t *testing.T) {
-			data := []*action{
+			data := []*registry{
 				{
-					slug: "rhysd/action-setup-vim",
-					tags: []string{"v1"},
-					next: tc.next,
+					Slug: "rhysd/action-setup-vim",
+					Tags: []string{"v1"},
+					Next: tc.next,
 				},
 			}
 			stdout := &bytes.Buffer{}
 			stderr := io.Discard
-			status := newApp(stdout, stderr, io.Discard, data).run([]string{"test", "-d"})
+			status := newGen(stdout, stderr, io.Discard, data).run([]string{"test", "-d"})
 			if status != 0 {
 				t.Fatal("exit status is non-zero:", status)
 			}
@@ -343,7 +348,7 @@ func TestCouldNotReadJSONLFile(t *testing.T) {
 			stdout := io.Discard
 			stderr := &bytes.Buffer{}
 
-			status := newApp(stdout, stderr, io.Discard, testDummyPopularActions).run([]string{"test", "-s", f})
+			status := newGen(stdout, stderr, io.Discard, testDummyPopularActions).run([]string{"test", "-s", f})
 			if status == 0 {
 				t.Fatal("exit status is unexpectedly zero")
 			}
@@ -362,7 +367,7 @@ func TestCouldNotCreateOutputFile(t *testing.T) {
 	stdout := io.Discard
 	stderr := &bytes.Buffer{}
 
-	status := newApp(stdout, stderr, io.Discard, testDummyPopularActions).run([]string{"test", "-s", f, "-f", "jsonl", out})
+	status := newGen(stdout, stderr, io.Discard, testDummyPopularActions).run([]string{"test", "-s", f, "-f", "jsonl", out})
 	if status == 0 {
 		t.Fatal("exit status is unexpectedly zero")
 	}
@@ -386,7 +391,7 @@ func TestWriteError(t *testing.T) {
 			stdout := testErrorWriter{}
 			stderr := &bytes.Buffer{}
 
-			status := newApp(stdout, stderr, io.Discard, testDummyPopularActions).run([]string{"test", "-s", f, "-f", format})
+			status := newGen(stdout, stderr, io.Discard, testDummyPopularActions).run([]string{"test", "-s", f, "-f", format})
 			if status == 0 {
 				t.Fatal("exit status is unexpectedly zero")
 			}
@@ -400,18 +405,18 @@ func TestWriteError(t *testing.T) {
 }
 
 func TestCouldNotFetch(t *testing.T) {
-	data := []*action{
+	data := []*registry{
 		{
-			slug: "rhysd/this-action-does-not-exist",
-			tags: []string{"v1"},
-			next: "v2",
+			Slug: "rhysd/this-action-does-not-exist",
+			Tags: []string{"v1"},
+			Next: "v2",
 		},
 	}
 
 	stdout := testErrorWriter{}
 	stderr := &bytes.Buffer{}
 
-	status := newApp(stdout, stderr, io.Discard, data).run([]string{"test"})
+	status := newGen(stdout, stderr, io.Discard, data).run([]string{"test"})
 	if status == 0 {
 		t.Fatal("exit status is unexpectedly zero")
 	}
@@ -437,7 +442,7 @@ func TestInvalidCommandArgs(t *testing.T) {
 			stdout := testErrorWriter{}
 			stderr := &bytes.Buffer{}
 
-			status := newApp(stdout, stderr, io.Discard, testDummyPopularActions).run(tc.args)
+			status := newGen(stdout, stderr, io.Discard, testDummyPopularActions).run(tc.args)
 			if status == 0 {
 				t.Fatal("exit status is unexpectedly zero")
 			}
@@ -451,17 +456,17 @@ func TestInvalidCommandArgs(t *testing.T) {
 }
 
 func TestDetectErrorBadRequest(t *testing.T) {
-	data := []*action{
+	data := []*registry{
 		// This expects to cause 400 Bad Request
 		{
-			slug: "",
-			tags: []string{"v1"},
-			next: "v2",
+			Slug: "",
+			Tags: []string{"v1"},
+			Next: "v2",
 		},
 	}
 	stdout := io.Discard
 	stderr := &bytes.Buffer{}
-	status := newApp(stdout, stderr, io.Discard, data).run([]string{"test", "-d"})
+	status := newGen(stdout, stderr, io.Discard, data).run([]string{"test", "-d"})
 	if status != 1 {
 		t.Fatal("exit status is not 1:", status)
 	}
@@ -472,21 +477,21 @@ func TestDetectErrorBadRequest(t *testing.T) {
 }
 
 func TestActionBuildRawURL(t *testing.T) {
-	a := &action{slug: "foo/bar"}
+	a := &registry{Slug: "foo/bar"}
 	have := a.rawURL("v1")
 	want := "https://raw.githubusercontent.com/foo/bar/v1/action.yml"
 	if have != want {
 		t.Errorf("Wanted %q but have %q", want, have)
 	}
 
-	a = &action{slug: "foo/bar", path: "/a/b"}
+	a = &registry{Slug: "foo/bar", Path: "/a/b"}
 	have = a.rawURL("v1")
 	want = "https://raw.githubusercontent.com/foo/bar/v1/a/b/action.yml"
 	if have != want {
 		t.Errorf("Wanted %q but have %q", want, have)
 	}
 
-	a = &action{slug: "foo/bar", fileExt: "yaml"}
+	a = &registry{Slug: "foo/bar", FileExt: "yaml"}
 	have = a.rawURL("v1")
 	want = "https://raw.githubusercontent.com/foo/bar/v1/action.yaml"
 	if have != want {
@@ -495,14 +500,14 @@ func TestActionBuildRawURL(t *testing.T) {
 }
 
 func TestActionBuildGitHubURL(t *testing.T) {
-	a := &action{slug: "foo/bar"}
+	a := &registry{Slug: "foo/bar"}
 	have := a.githubURL("v1")
 	want := "https://github.com/foo/bar/tree/v1"
 	if have != want {
 		t.Errorf("Wanted %q but have %q", want, have)
 	}
 
-	a = &action{slug: "foo/bar", path: "/a/b"}
+	a = &registry{Slug: "foo/bar", Path: "/a/b"}
 	have = a.githubURL("v1")
 	want = "https://github.com/foo/bar/tree/v1/a/b"
 	if have != want {
@@ -511,14 +516,14 @@ func TestActionBuildGitHubURL(t *testing.T) {
 }
 
 func TestActionBuildSpec(t *testing.T) {
-	a := &action{slug: "foo/bar"}
+	a := &registry{Slug: "foo/bar"}
 	have := a.spec("v1")
 	want := "foo/bar@v1"
 	if have != want {
 		t.Errorf("Wanted %q but have %q", want, have)
 	}
 
-	a = &action{slug: "foo/bar", path: "/a/b"}
+	a = &registry{Slug: "foo/bar", Path: "/a/b"}
 	have = a.spec("v1")
 	want = "foo/bar/a/b@v1"
 	if have != want {

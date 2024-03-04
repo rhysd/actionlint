@@ -3,6 +3,7 @@ package main
 import (
 	"bufio"
 	"bytes"
+	_ "embed"
 	"encoding/json"
 	"flag"
 	"fmt"
@@ -23,522 +24,66 @@ type actionOutput struct {
 	Meta *actionlint.ActionMetadata `json:"metadata"`
 }
 
-type action struct {
-	slug    string
-	path    string
-	tags    []string
-	next    string
-	fileExt string
+type registry struct {
+	Slug    string   `json:"slug"`
+	Path    string   `json:"path"`
+	Tags    []string `json:"tags"`
+	Next    string   `json:"next"`
+	FileExt string   `json:"file_ext"`
 	// slugs not to check inputs. Some actions allow to specify inputs which are not defined in action.yml.
 	// In such cases, actionlint no longer can check the inputs, but it can still check outputs. (#16)
-	skipInputs bool
+	SkipInputs bool `json:"skip_inputs"`
 	// slugs which allows any outputs to be set. Some actions sets outputs 'dynamically'. Those outputs
 	// may or may not exist. And they are not listed in action.yml metadata. actionlint cannot check
 	// such outputs and fallback into allowing to set any outputs. (#18)
-	skipOutputs bool
+	SkipOutputs bool `json:"skip_outputs"`
 }
 
-func (a *action) rawURL(tag string) string {
+func (a *registry) rawURL(tag string) string {
 	ext := "yml"
-	if a.fileExt != "" {
-		ext = a.fileExt
+	if a.FileExt != "" {
+		ext = a.FileExt
 	}
-	return fmt.Sprintf("https://raw.githubusercontent.com/%s/%s%s/action.%s", a.slug, tag, a.path, ext)
+	return fmt.Sprintf("https://raw.githubusercontent.com/%s/%s%s/action.%s", a.Slug, tag, a.Path, ext)
 }
 
-func (a *action) githubURL(tag string) string {
-	return fmt.Sprintf("https://github.com/%s/tree/%s%s", a.slug, tag, a.path)
+func (a *registry) githubURL(tag string) string {
+	return fmt.Sprintf("https://github.com/%s/tree/%s%s", a.Slug, tag, a.Path)
 }
 
-func (a *action) spec(tag string) string {
-	return fmt.Sprintf("%s%s@%s", a.slug, a.path, tag)
+func (a *registry) spec(tag string) string {
+	return fmt.Sprintf("%s%s@%s", a.Slug, a.Path, tag)
 }
 
 // Note: Actions used by top 1000 public repositories at GitHub sorted by number of occurrences:
 // https://gist.github.com/rhysd/1db81fa80096b699b9c045f435d0cace
 
-var popularActions = []*action{
-	{
-		slug: "8398a7/action-slack",
-		tags: []string{"v1", "v2", "v3"},
-		next: "v4",
-	},
-	{
-		slug:    "Azure/container-scan",
-		tags:    []string{"v0"},
-		next:    "v1",
-		fileExt: "yaml",
-	},
-	{
-		slug: "Azure/functions-action",
-		tags: []string{"v1"},
-		next: "v2",
-	},
-	{
-		slug: "EnricoMi/publish-unit-test-result-action",
-		tags: []string{"v1", "v2"},
-		next: "v3",
-	},
-	{
-		slug: "JamesIves/github-pages-deploy-action",
-		tags: []string{"releases/v3", "releases/v4"},
-		next: "release/v5",
-	},
-	{
-		slug: "ReactiveCircus/android-emulator-runner",
-		tags: []string{"v1", "v2"},
-		next: "v3",
-	},
-	{
-		slug: "Swatinem/rust-cache",
-		tags: []string{"v1", "v2"},
-		next: "v3",
-	},
-	{
-		slug: "actions-cool/issues-helper",
-		tags: []string{"v1", "v2", "v3"},
-		next: "v4",
-	},
-	{
-		slug: "actions-rs/audit-check",
-		tags: []string{"v1"},
-		next: "v2",
-	},
-	{
-		slug: "actions-rs/cargo",
-		tags: []string{"v1"},
-		next: "v2",
-	},
-	{
-		slug: "dtolnay/rust-toolchain",
-		tags: []string{"stable", "beta", "nightly"},
-		next: "",
-	},
-	{
-		slug: "actions-rs/clippy-check",
-		tags: []string{"v1"},
-		next: "v2",
-	},
-	{
-		slug: "actions-rs/toolchain",
-		tags: []string{"v1"},
-		next: "v2",
-	},
-	{
-		slug: "actions/cache",
-		tags: []string{"v1", "v2", "v3", "v4"},
-		next: "v5",
-	},
-	{
-		slug: "actions/checkout",
-		tags: []string{"v1", "v2", "v3", "v4"},
-		next: "v5",
-	},
-	{
-		slug: "actions/configure-pages",
-		tags: []string{"v1", "v2", "v3", "v4"},
-		next: "v5",
-	},
-	{
-		slug: "actions/deploy-pages",
-		tags: []string{"v1", "v2", "v3", "v4"},
-		next: "v5",
-	},
-	{
-		slug: "actions/delete-package-versions",
-		tags: []string{"v1", "v2", "v3", "v4", "v5"},
-		next: "v6",
-	},
-	{
-		slug: "actions/download-artifact",
-		tags: []string{"v1", "v2", "v3", "v4"},
-		next: "v5",
-	},
-	{
-		slug: "actions/first-interaction",
-		tags: []string{"v1"},
-		next: "v2",
-	},
-	{
-		slug: "actions/github-script",
-		tags: []string{"v1", "v2", "v3", "v4", "v5", "v6", "v7"},
-		next: "v8",
-	},
-	{
-		slug: "actions/labeler",
-		tags: []string{"v2", "v3", "v4", "v5"}, // v1 does not exist
-		next: "v6",
-	},
-	{
-		slug: "actions/setup-dotnet",
-		tags: []string{"v1", "v2", "v3", "v4"},
-		next: "v5",
-	},
-	{
-		slug: "actions/setup-go",
-		tags: []string{"v1", "v2", "v3", "v4", "v5"},
-		next: "v6",
-	},
-	{
-		slug: "actions/setup-java",
-		tags: []string{"v1", "v2", "v3", "v4"},
-		next: "v5",
-	},
-	{
-		slug: "actions/setup-node",
-		tags: []string{"v1", "v2", "v3", "v4"},
-		next: "v5",
-	},
-	{
-		slug: "actions/setup-python",
-		tags: []string{"v1", "v2", "v3", "v4", "v5"},
-		next: "v6",
-	},
-	{
-		slug: "actions/stale",
-		tags: []string{"v1", "v2", "v3", "v4", "v5", "v6", "v7", "v8", "v9"},
-		next: "v10",
-	},
-	{
-		slug: "actions/upload-artifact",
-		tags: []string{"v1", "v2", "v3", "v4"},
-		next: "v5",
-	},
-	{
-		slug: "actions/upload-pages-artifact",
-		tags: []string{"v1", "v2", "v3"},
-		next: "v4",
-	},
-	{
-		slug: "actions/dependency-review-action",
-		tags: []string{"v3", "v4"},
-		next: "v5",
-	},
-	{
-		slug: "aws-actions/configure-aws-credentials",
-		tags: []string{"v1", "v2", "v3", "v4"},
-		next: "v5",
-	},
-	{
-		slug: "azure/aks-set-context",
-		tags: []string{"v1", "v2", "v3"},
-		next: "v4",
-	},
-	{
-		slug: "azure/login",
-		tags: []string{"v1"},
-		next: "v2",
-	},
-	{
-		slug: "bahmutov/npm-install",
-		tags: []string{"v1"},
-		next: "v2",
-	},
-	{
-		slug: "codecov/codecov-action",
-		tags: []string{"v1", "v2", "v3", "v4"},
-		next: "v5",
-	},
-	{
-		slug: "dawidd6/action-download-artifact",
-		tags: []string{"v2", "v3"},
-		next: "v4",
-	},
-	{
-		slug: "dawidd6/action-send-mail",
-		tags: []string{"v1", "v2", "v3"},
-		next: "v4",
-	},
-	{
-		slug: "dessant/lock-threads",
-		tags: []string{"v2", "v3", "v4", "v5"}, // v1 does not exist
-		next: "v6",
-	},
-	{
-		slug: "docker/build-push-action",
-		tags: []string{"v1", "v2", "v3", "v4", "v5"},
-		next: "v6",
-	},
-	{
-		slug: "docker/login-action",
-		tags: []string{"v1", "v2", "v3"},
-		next: "v4",
-	},
-	{
-		slug: "docker/metadata-action",
-		tags: []string{"v1", "v2", "v3", "v4", "v5"},
-		next: "v6",
-	},
-	{
-		slug: "docker/setup-buildx-action",
-		tags: []string{"v1", "v2", "v3"},
-		next: "v4",
-	},
-	{
-		slug: "docker/setup-qemu-action",
-		tags: []string{"v1", "v2", "v3"},
-		next: "v4",
-	},
-	{
-		slug:        "dorny/paths-filter",
-		tags:        []string{"v1", "v2", "v3"},
-		next:        "v4",
-		skipOutputs: true,
-	},
-	{
-		slug: "enriikke/gatsby-gh-pages-action",
-		tags: []string{"v2"},
-		next: "v3",
-	},
-	{
-		slug: "erlef/setup-beam",
-		tags: []string{"v1"},
-		next: "v2",
-	},
-	{
-		slug: "game-ci/unity-builder",
-		tags: []string{"v2", "v3", "v4"},
-		next: "v5",
-	},
-	{
-		slug:        "getsentry/paths-filter",
-		tags:        []string{"v1", "v2"},
-		next:        "v3",
-		skipOutputs: true,
-	},
-	{
-		slug: "github/codeql-action",
-		path: "/analyze",
-		tags: []string{"v1", "v2", "v3"},
-		next: "v4",
-	},
-	{
-		slug: "github/codeql-action",
-		path: "/autobuild",
-		tags: []string{"v1", "v2", "v3"},
-		next: "v4",
-	},
-	{
-		slug: "github/codeql-action",
-		path: "/init",
-		tags: []string{"v1", "v2", "v3"},
-		next: "v4",
-	},
-	{
-		slug: "github/super-linter",
-		tags: []string{"v3", "v4", "v5"},
-		next: "v6",
-	},
-	{
-		slug: "githubocto/flat",
-		tags: []string{"v1", "v2", "v3"},
-		next: "v4",
-	},
-	{
-		slug: "golangci/golangci-lint-action",
-		tags: []string{"v1", "v2", "v3", "v4"},
-		next: "v5",
-	},
-	{
-		slug: "google-github-actions/auth",
-		tags: []string{"v1", "v2"},
-		next: "v3",
-	},
-	{
-		slug:        "google-github-actions/get-secretmanager-secrets",
-		tags:        []string{"v1", "v2"},
-		next:        "v3",
-		skipOutputs: true,
-	},
-	{
-		slug: "google-github-actions/setup-gcloud",
-		tags: []string{"v1", "v2"},
-		next: "v3",
-	},
-	{
-		slug: "google-github-actions/upload-cloud-storage",
-		tags: []string{"v1", "v2"},
-		next: "v3",
-	},
-	{
-		slug: "goreleaser/goreleaser-action",
-		tags: []string{"v1", "v2", "v3", "v4", "v5"},
-		next: "v6",
-	},
-	{
-		slug: "gradle/wrapper-validation-action",
-		tags: []string{"v1", "v2"},
-		next: "v3",
-	},
-	{
-		slug: "haskell/actions",
-		path: "/setup",
-		tags: []string{"v1", "v2"},
-		next: "v3",
-	},
-	{
-		slug: "marvinpinto/action-automatic-releases",
-		tags: []string{"latest"},
-		next: "",
-	},
-	{
-		slug: "microsoft/playwright-github-action",
-		tags: []string{"v1"},
-		next: "v2",
-	},
-	{
-		slug: "mikepenz/release-changelog-builder-action",
-		tags: []string{"v1", "v2", "v3", "v4"},
-		next: "v5",
-	},
-	{
-		slug: "msys2/setup-msys2",
-		tags: []string{"v1", "v2"},
-		next: "v3",
-	},
-	{
-		slug: "ncipollo/release-action",
-		tags: []string{"v1"},
-		next: "v2",
-	},
-	{
-		slug: "nwtgck/actions-netlify",
-		tags: []string{"v1", "v2"},
-		next: "v3",
-	},
-	{
-		slug:       "octokit/request-action",
-		tags:       []string{"v1.x", "v2.x"},
-		next:       "v3.x",
-		skipInputs: true,
-	},
-	{
-		slug: "peaceiris/actions-gh-pages",
-		tags: []string{"v2", "v3"},
-		next: "v4",
-	},
-	{
-		slug: "peter-evans/create-pull-request",
-		tags: []string{"v1", "v2", "v3", "v4", "v5", "v6"},
-		next: "v7",
-	},
-	{
-		slug: "preactjs/compressed-size-action",
-		tags: []string{"v1", "v2"},
-		next: "v3",
-	},
-	{
-		slug: "pulumi/actions",
-		tags: []string{"v1", "v2", "v3", "v4", "v5"},
-		next: "v6",
-	},
-	{
-		slug: "pypa/gh-action-pypi-publish",
-		tags: []string{"release/v1"},
-		next: "release/v2",
-	},
-	{
-		slug: "reviewdog/action-actionlint",
-		tags: []string{"v1"},
-		next: "v2",
-	},
-	{
-		slug: "reviewdog/action-eslint",
-		tags: []string{"v1"},
-		next: "v2",
-	},
-	{
-		slug: "reviewdog/action-golangci-lint",
-		tags: []string{"v1", "v2"},
-		next: "v3",
-	},
-	{
-		slug: "reviewdog/action-hadolint",
-		tags: []string{"v1"},
-		next: "v2",
-	},
-	{
-		slug: "reviewdog/action-misspell",
-		tags: []string{"v1"},
-		next: "v2",
-	},
-	{
-		slug: "reviewdog/action-rubocop",
-		tags: []string{"v1", "v2"},
-		next: "v3",
-	},
-	{
-		slug: "reviewdog/action-shellcheck",
-		tags: []string{"v1"},
-		next: "v2",
-	},
-	{
-		slug: "reviewdog/action-tflint",
-		tags: []string{"v1"},
-		next: "v2",
-	},
-	{
-		slug: "rhysd/action-setup-vim",
-		tags: []string{"v1"},
-		next: "v2",
-	},
-	{
-		slug: "ridedott/merge-me-action",
-		tags: []string{"v1", "v2"},
-		next: "v3",
-	},
-	{
-		slug: "rtCamp/action-slack-notify",
-		tags: []string{"v2"},
-		next: "v3",
-	},
-	{
-		slug: "ruby/setup-ruby",
-		tags: []string{"v1"},
-		next: "v2",
-	},
-	{
-		slug: "shivammathur/setup-php",
-		tags: []string{"v1", "v2"},
-		next: "v3",
-	},
-	{
-		slug: "softprops/action-gh-release",
-		tags: []string{"v1"},
-		next: "v2",
-	},
-	{
-		slug: "subosito/flutter-action",
-		tags: []string{"v1", "v2"},
-		next: "v3",
-	},
-	{
-		slug: "treosh/lighthouse-ci-action",
-		tags: []string{"v1", "v2", "v3", "v7", "v8", "v9", "v10", "v11"},
-		next: "v12",
-	},
-	{
-		slug: "wearerequired/lint-action",
-		tags: []string{"v1", "v2"},
-		next: "v3",
-	},
+//go:embed popular_actions.json
+var defaultPopularActionsJSON []byte
+
+func defaultPopularActions() ([]*registry, error) {
+	var a []*registry
+	if err := json.Unmarshal(defaultPopularActionsJSON, &a); err != nil {
+		return nil, err
+	}
+	return a, nil
 }
 
-type app struct {
+type gen struct {
 	stdout  io.Writer
 	stderr  io.Writer
 	log     *log.Logger
-	actions []*action
+	actions []*registry
 }
 
-func newApp(stdout, stderr, dbgout io.Writer, actions []*action) *app {
+func newGen(stdout, stderr, dbgout io.Writer, actions []*registry) *gen {
 	l := log.New(dbgout, "", log.LstdFlags)
-	return &app{stdout, stderr, l, actions}
+	return &gen{stdout, stderr, l, actions}
 }
 
-func (a *app) fetchRemote() (map[string]*actionlint.ActionMetadata, error) {
+func (g *gen) fetchRemote() (map[string]*actionlint.ActionMetadata, error) {
 	type request struct {
-		action *action
+		action *registry
 		tag    string
 	}
 
@@ -546,6 +91,15 @@ func (a *app) fetchRemote() (map[string]*actionlint.ActionMetadata, error) {
 		spec string
 		meta *actionlint.ActionMetadata
 		err  error
+	}
+
+	actions := g.actions
+	if actions == nil {
+		a, err := defaultPopularActions()
+		if err != nil {
+			return nil, err
+		}
+		actions = a
 	}
 
 	results := make(chan *fetched)
@@ -559,7 +113,7 @@ func (a *app) fetchRemote() (map[string]*actionlint.ActionMetadata, error) {
 				select {
 				case req := <-reqs:
 					url := req.action.rawURL(req.tag)
-					a.log.Println("Start fetching", url)
+					g.log.Println("Start fetching", url)
 					res, err := c.Get(url)
 					if err != nil {
 						ret <- &fetched{err: fmt.Errorf("could not fetch %s: %w", url, err)}
@@ -581,10 +135,10 @@ func (a *app) fetchRemote() (map[string]*actionlint.ActionMetadata, error) {
 						ret <- &fetched{err: fmt.Errorf("could not parse metadata for %s: %w", url, err)}
 						break
 					}
-					if req.action.skipInputs {
+					if req.action.SkipInputs {
 						meta.SkipInputs = true
 					}
-					if req.action.skipOutputs {
+					if req.action.SkipOutputs {
 						meta.SkipOutputs = true
 					}
 					ret <- &fetched{spec: spec, meta: &meta}
@@ -596,13 +150,13 @@ func (a *app) fetchRemote() (map[string]*actionlint.ActionMetadata, error) {
 	}
 
 	n := 0
-	for _, action := range a.actions {
-		n += len(action.tags)
+	for _, action := range actions {
+		n += len(action.Tags)
 	}
 
 	go func(reqs chan<- *request, done <-chan struct{}) {
-		for _, action := range a.actions {
-			for _, tag := range action.tags {
+		for _, action := range actions {
+			for _, tag := range action.Tags {
 				select {
 				case reqs <- &request{action, tag}:
 				case <-done:
@@ -626,7 +180,7 @@ func (a *app) fetchRemote() (map[string]*actionlint.ActionMetadata, error) {
 	return ret, nil
 }
 
-func (a *app) writeJSONL(out io.Writer, actions map[string]*actionlint.ActionMetadata) error {
+func (g *gen) writeJSONL(out io.Writer, actions map[string]*actionlint.ActionMetadata) error {
 	enc := json.NewEncoder(out)
 	for spec, meta := range actions {
 		j := actionOutput{spec, meta}
@@ -634,11 +188,11 @@ func (a *app) writeJSONL(out io.Writer, actions map[string]*actionlint.ActionMet
 			return fmt.Errorf("could not encode action %q data into JSON: %w", spec, err)
 		}
 	}
-	a.log.Printf("Wrote %d action metadata as JSONL", len(actions))
+	g.log.Printf("Wrote %d action metadata as JSONL", len(actions))
 	return nil
 }
 
-func (a *app) writeGo(out io.Writer, actions map[string]*actionlint.ActionMetadata) error {
+func (g *gen) writeGo(out io.Writer, actions map[string]*actionlint.ActionMetadata) error {
 	b := &bytes.Buffer{}
 	fmt.Fprint(b, `// Code generated by actionlint/scripts/generate-popular-actions. DO NOT EDIT.
 
@@ -714,11 +268,11 @@ var PopularActions = map[string]*ActionMetadata{
 		return fmt.Errorf("could not output generated Go source to stdout: %w", err)
 	}
 
-	a.log.Printf("Wrote %d action metadata as Go", len(actions))
+	g.log.Printf("Wrote %d action metadata as Go", len(actions))
 	return nil
 }
 
-func (a *app) readJSONL(file string) (map[string]*actionlint.ActionMetadata, error) {
+func (g *gen) readJSONL(file string) (map[string]*actionlint.ActionMetadata, error) {
 	if !strings.HasSuffix(file, ".jsonl") {
 		return nil, fmt.Errorf("JSONL file name must end with \".jsonl\": %s", file)
 	}
@@ -734,7 +288,7 @@ func (a *app) readJSONL(file string) (map[string]*actionlint.ActionMetadata, err
 	for {
 		l, err := r.ReadBytes('\n')
 		if err == io.EOF {
-			a.log.Printf("Read %d action metadata from %s", len(ret), file)
+			g.log.Printf("Read %d action metadata from %s", len(ret), file)
 			return ret, nil
 		} else if err != nil {
 			return nil, fmt.Errorf("could not read line in file %s: %w", file, err)
@@ -747,31 +301,31 @@ func (a *app) readJSONL(file string) (map[string]*actionlint.ActionMetadata, err
 	}
 }
 
-func (a *app) detectNewReleaseURLs() ([]string, error) {
+func (g *gen) detectNewReleaseURLs() ([]string, error) {
 	urls := make(chan string)
 	done := make(chan struct{})
 	errs := make(chan error)
-	reqs := make(chan *action)
+	reqs := make(chan *registry)
 
 	for i := 0; i < 4; i++ {
-		go func(ret chan<- string, errs chan<- error, reqs <-chan *action, done <-chan struct{}) {
+		go func(ret chan<- string, errs chan<- error, reqs <-chan *registry, done <-chan struct{}) {
 			var c http.Client
 			for {
 				select {
 				case r := <-reqs:
-					if r.next == "" {
+					if r.Next == "" {
 						ret <- ""
 						break
 					}
-					url := r.rawURL(r.next)
-					a.log.Println("Checking", url)
+					url := r.rawURL(r.Next)
+					g.log.Println("Checking", url)
 					res, err := c.Head(url)
 					if err != nil {
 						errs <- fmt.Errorf("could not send head request to %s: %w", url, err)
 						break
 					}
 					if res.StatusCode == 404 {
-						a.log.Println("Not found:", url)
+						g.log.Println("Not found:", url)
 						ret <- ""
 						break
 					}
@@ -779,8 +333,8 @@ func (a *app) detectNewReleaseURLs() ([]string, error) {
 						errs <- fmt.Errorf("head request for %s was not successful: %s", url, res.Status)
 						break
 					}
-					a.log.Println("Found:", url)
-					ret <- r.githubURL(r.next)
+					g.log.Println("Found:", url)
+					ret <- r.githubURL(r.Next)
 				case <-done:
 					return
 				}
@@ -789,7 +343,7 @@ func (a *app) detectNewReleaseURLs() ([]string, error) {
 	}
 
 	go func(done <-chan struct{}) {
-		for _, a := range a.actions {
+		for _, a := range g.actions {
 			select {
 			case reqs <- a:
 			case <-done:
@@ -799,7 +353,7 @@ func (a *app) detectNewReleaseURLs() ([]string, error) {
 	}(done)
 
 	us := []string{}
-	for i := 0; i < len(a.actions); i++ {
+	for i := 0; i < len(g.actions); i++ {
 		select {
 		case u := <-urls:
 			if u != "" {
@@ -816,7 +370,7 @@ func (a *app) detectNewReleaseURLs() ([]string, error) {
 	return us, nil
 }
 
-func (a *app) run(args []string) int {
+func (g *gen) run(args []string) int {
 	var source string
 	var format string
 	var quiet bool
@@ -827,9 +381,9 @@ func (a *app) run(args []string) int {
 	flags.StringVar(&format, "f", "go", "format of generated code output to stdout. \"go\" or \"jsonl\"")
 	flags.BoolVar(&detect, "d", false, "detect new version of actions are released")
 	flags.BoolVar(&quiet, "q", false, "disable log output to stderr")
-	flags.SetOutput(a.stderr)
+	flags.SetOutput(g.stderr)
 	flags.Usage = func() {
-		fmt.Fprintln(a.stderr, `Usage: go run generate-popular-actions [FLAGS] [FILE]
+		fmt.Fprintln(g.stderr, `Usage: go run generate-popular-actions [FLAGS] [FILE]
 
   This tool fetches action.yml files of popular actions and generates code to
   given file. When no file path is given in arguments, this tool outputs
@@ -852,65 +406,65 @@ Flags:`)
 		return 1
 	}
 	if flags.NArg() > 1 {
-		fmt.Fprintf(a.stderr, "this command takes one or zero argument but given: %s\n", flags.Args())
+		fmt.Fprintf(g.stderr, "this command takes one or zero argument but given: %s\n", flags.Args())
 		return 1
 	}
 
 	if quiet {
 		w := log.Writer()
-		defer func() { a.log.SetOutput(w) }()
-		a.log.SetOutput(io.Discard)
+		defer func() { g.log.SetOutput(w) }()
+		g.log.SetOutput(io.Discard)
 	}
 
-	a.log.Println("Start generate-popular-actions script")
+	g.log.Println("Start generate-popular-actions script")
 
 	if detect {
-		urls, err := a.detectNewReleaseURLs()
+		urls, err := g.detectNewReleaseURLs()
 		if err != nil {
-			fmt.Fprintln(a.stderr, err)
+			fmt.Fprintln(g.stderr, err)
 			return 1
 		}
 		if len(urls) == 0 {
 			return 0
 		}
-		fmt.Fprintln(a.stdout, "Detected some new releases")
+		fmt.Fprintln(g.stdout, "Detected some new releases")
 		for _, u := range urls {
-			fmt.Fprintln(a.stdout, u)
+			fmt.Fprintln(g.stdout, u)
 		}
 		return 2
 	}
 
 	if format != "go" && format != "jsonl" {
-		fmt.Fprintf(a.stderr, "invalid value for -f option: %s\n", format)
+		fmt.Fprintf(g.stderr, "invalid value for -f option: %s\n", format)
 		return 1
 	}
 
 	var actions map[string]*actionlint.ActionMetadata
 	if source == "remote" {
-		a.log.Println("Fetching data from https://github.com")
-		m, err := a.fetchRemote()
+		g.log.Println("Fetching data from https://github.com")
+		m, err := g.fetchRemote()
 		if err != nil {
-			fmt.Fprintln(a.stderr, err)
+			fmt.Fprintln(g.stderr, err)
 			return 1
 		}
 		actions = m
 	} else {
-		a.log.Println("Fetching data from", source)
-		m, err := a.readJSONL(source)
+		g.log.Println("Fetching data from", source)
+		m, err := g.readJSONL(source)
 		if err != nil {
-			fmt.Fprintln(a.stderr, err)
+			fmt.Fprintln(g.stderr, err)
 			return 1
 		}
 		actions = m
 	}
 
 	where := "stdout"
-	out := a.stdout
+	out := g.stdout
 	if flags.NArg() == 1 {
 		where = flags.Arg(0)
 		f, err := os.Create(where)
 		if err != nil {
-			fmt.Fprintf(a.stderr, "could not open file to output: %s\n", err)
+			fmt.Fprintf(g.stderr, "could not open file to output: %s\n", err)
 			return 1
 		}
 		defer f.Close()
@@ -919,23 +473,23 @@ Flags:`)
 
 	switch format {
 	case "go":
-		a.log.Println("Generating Go source code to", where)
-		if err := a.writeGo(out, actions); err != nil {
-			fmt.Fprintln(a.stderr, err)
+		g.log.Println("Generating Go source code to", where)
+		if err := g.writeGo(out, actions); err != nil {
+			fmt.Fprintln(g.stderr, err)
 			return 1
 		}
 	case "jsonl":
-		a.log.Println("Generating JSONL source to", where)
-		if err := a.writeJSONL(out, actions); err != nil {
-			fmt.Fprintln(a.stderr, err)
+		g.log.Println("Generating JSONL source to", where)
+		if err := g.writeJSONL(out, actions); err != nil {
+			fmt.Fprintln(g.stderr, err)
 			return 1
 		}
 	}
 
-	a.log.Println("Done generate-popular-actions script successfully")
+	g.log.Println("Done generate-popular-actions script successfully")
 	return 0
 }
 
 func main() {
-	os.Exit(newApp(os.Stdout, os.Stderr, os.Stderr, popularActions).run(os.Args))
+	os.Exit(newGen(os.Stdout, os.Stderr, os.Stderr, nil).run(os.Args))
 }

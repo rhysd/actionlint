@@ -1,0 +1,466 @@
+[
+    {
+        "slug": "8398a7/action-slack",
+        "tags": ["v1", "v2", "v3"],
+        "next": "v4"
+    },
+    {
+        "slug": "Azure/container-scan",
+        "tags": ["v0"],
+        "next": "v1",
+        "file_ext": "yaml"
+    },
+    {
+        "slug": "Azure/functions-action",
+        "tags": ["v1"],
+        "next": "v2"
+    },
+    {
+        "slug": "EnricoMi/publish-unit-test-result-action",
+        "tags": ["v1", "v2"],
+        "next": "v3"
+    },
+    {
+        "slug": "JamesIves/github-pages-deploy-action",
+        "tags": ["releases/v3", "releases/v4"],
+        "next": "release/v5"
+    },
+    {
+        "slug": "ReactiveCircus/android-emulator-runner",
+        "tags": ["v1", "v2"],
+        "next": "v3"
+    },
+    {
+        "slug": "Swatinem/rust-cache",
+        "tags": ["v1", "v2"],
+        "next": "v3"
+    },
+    {
+        "slug": "actions-cool/issues-helper",
+        "tags": ["v1", "v2", "v3"],
+        "next": "v4"
+    },
+    {
+        "slug": "actions-rs/audit-check",
+        "tags": ["v1"],
+        "next": "v2"
+    },
+    {
+        "slug": "actions-rs/cargo",
+        "tags": ["v1"],
+        "next": "v2"
+    },
+    {
+        "slug": "dtolnay/rust-toolchain",
+        "tags": ["stable", "beta", "nightly"],
+        "next": ""
+    },
+    {
+        "slug": "actions-rs/clippy-check",
+        "tags": ["v1"],
+        "next": "v2"
+    },
+    {
+        "slug": "actions-rs/toolchain",
+        "tags": ["v1"],
+        "next": "v2"
+    },
+    {
+        "slug": "actions/cache",
+        "tags": ["v1", "v2", "v3", "v4"],
+        "next": "v5"
+    },
+    {
+        "slug": "actions/checkout",
+        "tags": ["v1", "v2", "v3", "v4"],
+        "next": "v5"
+    },
+    {
+        "slug": "actions/configure-pages",
+        "tags": ["v1", "v2", "v3", "v4"],
+        "next": "v5"
+    },
+    {
+        "slug": "actions/deploy-pages",
+        "tags": ["v1", "v2", "v3", "v4"],
+        "next": "v5"
+    },
+    {
+        "slug": "actions/delete-package-versions",
+        "tags": ["v1", "v2", "v3", "v4", "v5"],
+        "next": "v6"
+    },
+    {
+        "slug": "actions/download-artifact",
+        "tags": ["v1", "v2", "v3", "v4"],
+        "next": "v5"
+    },
+    {
+        "slug": "actions/first-interaction",
+        "tags": ["v1"],
+        "next": "v2"
+    },
+    {
+        "slug": "actions/github-script",
+        "tags": ["v1", "v2", "v3", "v4", "v5", "v6", "v7"],
+        "next": "v8"
+    },
+    {
+        "slug": "actions/labeler",
+        "tags": ["v2", "v3", "v4", "v5"],
+        "next": "v6"
+    },
+    {
+        "slug": "actions/setup-dotnet",
+        "tags": ["v1", "v2", "v3", "v4"],
+        "next": "v5"
+    },
+    {
+        "slug": "actions/setup-go",
+        "tags": ["v1", "v2", "v3", "v4", "v5"],
+        "next": "v6"
+    },
+    {
+        "slug": "actions/setup-java",
+        "tags": ["v1", "v2", "v3", "v4"],
+        "next": "v5"
+    },
+    {
+        "slug": "actions/setup-node",
+        "tags": ["v1", "v2", "v3", "v4"],
+        "next": "v5"
+    },
+    {
+        "slug": "actions/setup-python",
+        "tags": ["v1", "v2", "v3", "v4", "v5"],
+        "next": "v6"
+    },
+    {
+        "slug": "actions/stale",
+        "tags": ["v1", "v2", "v3", "v4", "v5", "v6", "v7", "v8", "v9"],
+        "next": "v10"
+    },
+    {
+        "slug": "actions/upload-artifact",
+        "tags": ["v1", "v2", "v3", "v4"],
+        "next": "v5"
+    },
+    {
+        "slug": "actions/upload-pages-artifact",
+        "tags": ["v1", "v2", "v3"],
+        "next": "v4"
+    },
+    {
+        "slug": "actions/dependency-review-action",
+        "tags": ["v3", "v4"],
+        "next": "v5"
+    },
+    {
+        "slug": "aws-actions/configure-aws-credentials",
+        "tags": ["v1", "v2", "v3", "v4"],
+        "next": "v5"
+    },
+    {
+        "slug": "azure/aks-set-context",
+        "tags": ["v1", "v2", "v3"],
+        "next": "v4"
+    },
+    {
+        "slug": "azure/login",
+        "tags": ["v1"],
+        "next": "v2"
+    },
+    {
+        "slug": "bahmutov/npm-install",
+        "tags": ["v1"],
+        "next": "v2"
+    },
+    {
+        "slug": "codecov/codecov-action",
+        "tags": ["v1", "v2", "v3", "v4"],
+        "next": "v5"
+    },
+    {
+        "slug": "dawidd6/action-download-artifact",
+        "tags": ["v2", "v3"],
+        "next": "v4"
+    },
+    {
+        "slug": "dawidd6/action-send-mail",
+        "tags": ["v1", "v2", "v3"],
+        "next": "v4"
+    },
+    {
+        "slug": "dessant/lock-threads",
+        "tags": ["v2", "v3", "v4", "v5"],
+        "next": "v6"
+    },
+    {
+        "slug": "docker/build-push-action",
+        "tags": ["v1", "v2", "v3", "v4", "v5"],
+        "next": "v6"
+    },
+    {
+        "slug": "docker/login-action",
+        "tags": ["v1", "v2", "v3"],
+        "next": "v4"
+    },
+    {
+        "slug": "docker/metadata-action",
+        "tags": ["v1", "v2", "v3", "v4", "v5"],
+        "next": "v6"
+    },
+    {
+        "slug": "docker/setup-buildx-action",
+        "tags": ["v1", "v2", "v3"],
+        "next": "v4"
+    },
+    {
+        "slug": "docker/setup-qemu-action",
+        "tags": ["v1", "v2", "v3"],
+        "next": "v4"
+    },
+    {
+        "slug": "dorny/paths-filter",
+        "tags": ["v1", "v2", "v3"],
+        "next": "v4",
+        "skip_outputs": true
+    },
+    {
+        "slug": "enriikke/gatsby-gh-pages-action",
+        "tags": ["v2"],
+        "next": "v3"
+    },
+    {
+        "slug": "erlef/setup-beam",
+        "tags": ["v1"],
+        "next": "v2"
+    },
+    {
+        "slug": "game-ci/unity-builder",
+        "tags": ["v2", "v3", "v4"],
+        "next": "v5"
+    },
+    {
+        "slug": "getsentry/paths-filter",
+        "tags": ["v1", "v2"],
+        "next": "v3",
+        "skip_outputs": true
+    },
+    {
+        "slug": "github/codeql-action",
+        "path": "/analyze",
+        "tags": ["v1", "v2", "v3"],
+        "next": "v4"
+    },
+    {
+        "slug": "github/codeql-action",
+        "path": "/autobuild",
+        "tags": ["v1", "v2", "v3"],
+        "next": "v4"
+    },
+    {
+        "slug": "github/codeql-action",
+        "path": "/init",
+        "tags": ["v1", "v2", "v3"],
+        "next": "v4"
+    },
+    {
+        "slug": "github/super-linter",
+        "tags": ["v3", "v4", "v5"],
+        "next": "v6"
+    },
+    {
+        "slug": "githubocto/flat",
+        "tags": ["v1", "v2", "v3"],
+        "next": "v4"
+    },
+    {
+        "slug": "golangci/golangci-lint-action",
+        "tags": ["v1", "v2", "v3", "v4"],
+        "next": "v5"
+    },
+    {
+        "slug": "google-github-actions/auth",
+        "tags": ["v1", "v2"],
+        "next": "v3"
+    },
+    {
+        "slug": "google-github-actions/get-secretmanager-secrets",
+        "tags": ["v1", "v2"],
+        "next": "v3",
+        "skip_outputs": true
+    },
+    {
+        "slug": "google-github-actions/setup-gcloud",
+        "tags": ["v1", "v2"],
+        "next": "v3"
+    },
+    {
+        "slug": "google-github-actions/upload-cloud-storage",
+        "tags": ["v1", "v2"],
+        "next": "v3"
+    },
+    {
+        "slug": "goreleaser/goreleaser-action",
+        "tags": ["v1", "v2", "v3", "v4", "v5"],
+        "next": "v6"
+    },
+    {
+        "slug": "gradle/wrapper-validation-action",
+        "tags": ["v1", "v2"],
+        "next": "v3"
+    },
+    {
+        "slug": "haskell/actions",
+        "path": "/setup",
+        "tags": ["v1", "v2"],
+        "next": "v3"
+    },
+    {
+        "slug": "marvinpinto/action-automatic-releases",
+        "tags": ["latest"],
+        "next": ""
+    },
+    {
+        "slug": "microsoft/playwright-github-action",
+        "tags": ["v1"],
+        "next": "v2"
+    },
+    {
+        "slug": "mikepenz/release-changelog-builder-action",
+        "tags": ["v1", "v2", "v3", "v4"],
+        "next": "v5"
+    },
+    {
+        "slug": "msys2/setup-msys2",
+        "tags": ["v1", "v2"],
+        "next": "v3"
+    },
+    {
+        "slug": "ncipollo/release-action",
+        "tags": ["v1"],
+        "next": "v2"
+    },
+    {
+        "slug": "nwtgck/actions-netlify",
+        "tags": ["v1", "v2"],
+        "next": "v3"
+    },
+    {
+        "slug": "octokit/request-action",
+        "tags": ["v1.x", "v2.x"],
+        "next": "v3.x",
+        "skip_inputs": true
+    },
+    {
+        "slug": "peaceiris/actions-gh-pages",
+        "tags": ["v2", "v3"],
+        "next": "v4"
+    },
+    {
+        "slug": "peter-evans/create-pull-request",
+        "tags": ["v1", "v2", "v3", "v4", "v5", "v6"],
+        "next": "v7"
+    },
+    {
+        "slug": "preactjs/compressed-size-action",
+        "tags": ["v1", "v2"],
+        "next": "v3"
+    },
+    {
+        "slug": "pulumi/actions",
+        "tags": ["v1", "v2", "v3", "v4", "v5"],
+        "next": "v6"
+    },
+    {
+        "slug": "pypa/gh-action-pypi-publish",
+        "tags": ["release/v1"],
+        "next": "release/v2"
+    },
+    {
+        "slug": "reviewdog/action-actionlint",
+        "tags": ["v1"],
+        "next": "v2"
+    },
+    {
+        "slug": "reviewdog/action-eslint",
+        "tags": ["v1"],
+        "next": "v2"
+    },
+    {
+        "slug": "reviewdog/action-golangci-lint",
+        "tags": ["v1", "v2"],
+        "next": "v3"
+    },
+    {
+        "slug": "reviewdog/action-hadolint",
+        "tags": ["v1"],
+        "next": "v2"
+    },
+    {
+        "slug": "reviewdog/action-misspell",
+        "tags": ["v1"],
+        "next": "v2"
+    },
+    {
+        "slug": "reviewdog/action-rubocop",
+        "tags": ["v1", "v2"],
+        "next": "v3"
+    },
+    {
+        "slug": "reviewdog/action-shellcheck",
+        "tags": ["v1"],
+        "next": "v2"
+    },
+    {
+        "slug": "reviewdog/action-tflint",
+        "tags": ["v1"],
+        "next": "v2"
+    },
+    {
+        "slug": "rhysd/action-setup-vim",
+        "tags": ["v1"],
+        "next": "v2"
+    },
+    {
+        "slug": "ridedott/merge-me-action",
+        "tags": ["v1", "v2"],
+        "next": "v3"
+    },
+    {
+        "slug": "rtCamp/action-slack-notify",
+        "tags": ["v2"],
+        "next": "v3"
+    },
+    {
+        "slug": "ruby/setup-ruby",
+        "tags": ["v1"],
+        "next": "v2"
+    },
+    {
+        "slug": "shivammathur/setup-php",
+        "tags": ["v1", "v2"],
+        "next": "v3"
+    },
+    {
+        "slug": "softprops/action-gh-release",
+        "tags": ["v1"],
+        "next": "v2"
+    },
+    {
+        "slug": "subosito/flutter-action",
+        "tags": ["v1", "v2"],
+        "next": "v3"
+    },
+    {
+        "slug": "treosh/lighthouse-ci-action",
+        "tags": ["v1", "v2", "v3", "v7", "v8", "v9", "v10", "v11"],
+        "next": "v12"
+    },
+    {
+        "slug": "wearerequired/lint-action",
+        "tags": ["v1", "v2"],
+        "next": "v3"
+    }
+]
