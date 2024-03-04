@@ -2055,6 +2055,20 @@ var PopularActions = map[string]*ActionMetadata{
 			"tenant-id":              {"tenant-id", false},
 		},
 	},
+	"azure/login@v2": {
+		Name: "Azure Login",
+		Inputs: ActionMetadataInputs{
+			"allow-no-subscriptions": {"allow-no-subscriptions", false},
+			"audience":               {"audience", false},
+			"auth-type":              {"auth-type", false},
+			"client-id":              {"client-id", false},
+			"creds":                  {"creds", false},
+			"enable-azpssession":     {"enable-AzPSSession", false},
+			"environment":            {"environment", false},
+			"subscription-id":        {"subscription-id", false},
+			"tenant-id":              {"tenant-id", false},
+		},
+	},
 	"bahmutov/npm-install@v1": {
 		Name: "NPM or Yarn install with caching",
 		Inputs: ActionMetadataInputs{
