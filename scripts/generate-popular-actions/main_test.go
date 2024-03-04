@@ -23,7 +23,7 @@ var testDummyPopularActions = []*registry{
 // Normal cases
 
 func TestDefaultPopularActions(t *testing.T) {
-	popularActions, err := defaultPopularActions()
+	popularActions, err := newGen(nil, nil, nil, nil).getRegistry()
 	if err != nil {
 		t.Fatal("could not load default popular actions:", err)
 	}

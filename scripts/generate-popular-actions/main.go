@@ -39,20 +39,20 @@ type registry struct {
 	SkipOutputs bool `json:"skip_outputs"`
 }
 
-func (a *registry) rawURL(tag string) string {
+func (r *registry) rawURL(tag string) string {
 	ext := "yml"
-	if a.FileExt != "" {
-		ext = a.FileExt
+	if r.FileExt != "" {
+		ext = r.FileExt
 	}
-	return fmt.Sprintf("https://raw.githubusercontent.com/%s/%s%s/action.%s", a.Slug, tag, a.Path, ext)
+	return fmt.Sprintf("https://raw.githubusercontent.com/%s/%s%s/action.%s", r.Slug, tag, r.Path, ext)
 }
 
-func (a *registry) githubURL(tag string) string {
-	return fmt.Sprintf("https://github.com/%s/tree/%s%s", a.Slug, tag, a.Path)
+func (r *registry) githubURL(tag string) string {
+	return fmt.Sprintf("https://github.com/%s/tree/%s%s", r.Slug, tag, r.Path)
 }
 
-func (a *registry) spec(tag string) string {
-	return fmt.Sprintf("%s%s@%s", a.Slug, a.Path, tag)
+func (r *registry) spec(tag string) string {
+	return fmt.Sprintf("%s%s@%s", r.Slug, r.Path, tag)
 }
 
 // Note: Actions used by top 1000 public repositories at GitHub sorted by number of occurrences:
@@ -61,24 +61,28 @@ func (a *registry) spec(tag string) string {
 //go:embed popular_actions.json
 var defaultPopularActionsJSON []byte
 
-func defaultPopularActions() ([]*registry, error) {
+type gen struct {
+	stdout   io.Writer
+	stderr   io.Writer
+	log      *log.Logger
+	registry []*registry
+}
+
+func newGen(stdout, stderr, dbgout io.Writer, registry []*registry) *gen {
+	l := log.New(dbgout, "", log.LstdFlags)
+	return &gen{stdout, stderr, l, registry}
+}
+
+func (g *gen) getRegistry() ([]*registry, error) {
+	if g.registry != nil {
+		return g.registry, nil
+	}
 	var a []*registry
 	if err := json.Unmarshal(defaultPopularActionsJSON, &a); err != nil {
 		return nil, err
 	}
+	g.registry = a
 	return a, nil
-}
-
-type gen struct {
-	stdout  io.Writer
-	stderr  io.Writer
-	log     *log.Logger
-	actions []*registry
-}
-
-func newGen(stdout, stderr, dbgout io.Writer, actions []*registry) *gen {
-	l := log.New(dbgout, "", log.LstdFlags)
-	return &gen{stdout, stderr, l, actions}
 }
 
 func (g *gen) fetchRemote() (map[string]*actionlint.ActionMetadata, error) {
@@ -93,13 +97,9 @@ func (g *gen) fetchRemote() (map[string]*actionlint.ActionMetadata, error) {
 		err  error
 	}
 
-	actions := g.actions
-	if actions == nil {
-		a, err := defaultPopularActions()
-		if err != nil {
-			return nil, err
-		}
-		actions = a
+	actions, err := g.getRegistry()
+	if err != nil {
+		return nil, err
 	}
 
 	results := make(chan *fetched)
@@ -302,6 +302,11 @@ func (g *gen) readJSONL(file string) (map[string]*actionlint.ActionMetadata, err
 }
 
 func (g *gen) detectNewReleaseURLs() ([]string, error) {
+	actions, err := g.getRegistry()
+	if err != nil {
+		return nil, err
+	}
+
 	urls := make(chan string)
 	done := make(chan struct{})
 	errs := make(chan error)
@@ -343,7 +348,7 @@ func (g *gen) detectNewReleaseURLs() ([]string, error) {
 	}
 
 	go func(done <-chan struct{}) {
-		for _, a := range g.actions {
+		for _, a := range actions {
 			select {
 			case reqs <- a:
 			case <-done:
@@ -353,7 +358,7 @@ func (g *gen) detectNewReleaseURLs() ([]string, error) {
 	}(done)
 
 	us := []string{}
-	for i := 0; i < len(g.actions); i++ {
+	for i := 0; i < len(actions); i++ {
 		select {
 		case u := <-urls:
 			if u != "" {
