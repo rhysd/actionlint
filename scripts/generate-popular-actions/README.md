@@ -42,3 +42,5 @@ of each action registry. Each registry is a JSON object containing the following
 | `skip_inputs`  | Skipping checking inputs of this action or not                 | `true`                     | No        |
 | `skip_outputs` | Skipping checking outputs of this action or not                | `true`                     | No        |
 | `file_ext`     | File extension of action metadata file. The default is `"yml"` | `"yaml"`                   | No        |
+
+Alternative actions registry JSON file can be used via `-r` option.

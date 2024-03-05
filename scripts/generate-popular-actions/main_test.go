@@ -23,7 +23,7 @@ var testDummyPopularActions = []*registry{
 // Normal cases
 
 func TestDefaultPopularActions(t *testing.T) {
-	popularActions, err := newGen(nil, nil, nil, nil).getRegistry()
+	popularActions, err := newGen(nil, nil, nil).registry()
 	if err != nil {
 		t.Fatal("could not load default popular actions:", err)
 	}
@@ -75,11 +75,11 @@ func TestReadWriteJSONL(t *testing.T) {
 
 	for _, file := range files {
 		t.Run(file, func(t *testing.T) {
-			f := filepath.Join("testdata", file)
+			f := filepath.Join("testdata", "actions", file)
 			stdout := &bytes.Buffer{}
 			stderr := &bytes.Buffer{}
 
-			status := newGen(stdout, stderr, io.Discard, testDummyPopularActions).run([]string{"test", "-s", f, "-f", "jsonl"})
+			status := newGen(stdout, stderr, io.Discard).run([]string{"test", "-s", f, "-f", "jsonl"})
 			if status != 0 {
 				t.Fatalf("exit status is non-zero: %d: %s", status, stderr.Bytes())
 			}
@@ -121,13 +121,12 @@ func TestWriteGoToStdout(t *testing.T) {
 		t.Run(tc.in, func(t *testing.T) {
 			stdout := &bytes.Buffer{}
 			stderr := &bytes.Buffer{}
-			g := newGen(stdout, stderr, io.Discard, testDummyPopularActions)
-			status := g.run([]string{"test", "-s", filepath.Join("testdata", tc.in)})
+			status := newGen(stdout, stderr, io.Discard).run([]string{"test", "-s", filepath.Join("testdata", "actions", tc.in)})
 			if status != 0 {
 				t.Fatalf("exit status is non-zero: %d: %s", status, stderr.Bytes())
 			}
 
-			b, err := os.ReadFile(filepath.Join("testdata", tc.want))
+			b, err := os.ReadFile(filepath.Join("testdata", "go", tc.want))
 			if err != nil {
 				panic(err)
 			}
@@ -142,7 +141,7 @@ func TestWriteGoToStdout(t *testing.T) {
 }
 
 func TestWriteJSONLFile(t *testing.T) {
-	in := filepath.Join("testdata", "test.jsonl")
+	in := filepath.Join("testdata", "actions", "test.jsonl")
 	b, err := os.ReadFile(in)
 	if err != nil {
 		panic(err)
@@ -153,7 +152,7 @@ func TestWriteJSONLFile(t *testing.T) {
 
 	stdout := io.Discard
 	stderr := io.Discard
-	status := newGen(stdout, stderr, io.Discard, testDummyPopularActions).run([]string{"test", "-s", in, "-f", "jsonl", out})
+	status := newGen(stdout, stderr, io.Discard).run([]string{"test", "-s", in, "-f", "jsonl", out})
 	if status != 0 {
 		t.Fatal("exit status is non-zero:", status)
 	}
@@ -171,18 +170,18 @@ func TestWriteJSONLFile(t *testing.T) {
 }
 
 func TestWriteGoFile(t *testing.T) {
-	in := filepath.Join("testdata", "test.jsonl")
-	out := filepath.Join("testdata", "out.go")
+	in := filepath.Join("testdata", "actions", "test.jsonl")
+	out := filepath.Join("testdata", "go", "out.go")
 	defer os.Remove(out)
 
 	stdout := io.Discard
 	stderr := io.Discard
-	status := newGen(stdout, stderr, io.Discard, testDummyPopularActions).run([]string{"test", "-s", in, out})
+	status := newGen(stdout, stderr, io.Discard).run([]string{"test", "-s", in, out})
 	if status != 0 {
 		t.Fatal("exit status is non-zero:", status)
 	}
 
-	b, err := os.ReadFile(filepath.Join("testdata", "want.go"))
+	b, err := os.ReadFile(filepath.Join("testdata", "go", "want.go"))
 	if err != nil {
 		panic(err)
 	}
@@ -200,25 +199,15 @@ func TestWriteGoFile(t *testing.T) {
 }
 
 func TestFetchRemoteYAML(t *testing.T) {
-	data := []*registry{
-		{
-			Slug: "rhysd/action-setup-vim",
-			Tags: []string{"v1.2.7"},
-		},
-		{
-			Slug: "rhysd/changelog-from-release",
-			Path: "/action",
-			Tags: []string{"v2.2.2"},
-		},
-	}
+	f := filepath.Join("testdata", "registry", "fetch.json")
 	stdout := &bytes.Buffer{}
 	stderr := io.Discard
-	status := newGen(stdout, stderr, io.Discard, data).run([]string{"test"})
+	status := newGen(stdout, stderr, io.Discard).run([]string{"test", "-r", f})
 	if status != 0 {
 		t.Fatal("exit status is non-zero:", status)
 	}
 
-	b, err := os.ReadFile(filepath.Join("testdata", "fetched.go"))
+	b, err := os.ReadFile(filepath.Join("testdata", "go", "fetched.go"))
 	if err != nil {
 		panic(err)
 	}
@@ -231,10 +220,10 @@ func TestFetchRemoteYAML(t *testing.T) {
 }
 
 func TestLogOutput(t *testing.T) {
-	f := filepath.Join("testdata", "test.jsonl")
+	f := filepath.Join("testdata", "actions", "test.jsonl")
 	stdout := &bytes.Buffer{}
 	logged := &bytes.Buffer{}
-	status := newGen(stdout, io.Discard, logged, testDummyPopularActions).run([]string{"test", "-s", f, "-f", "jsonl"})
+	status := newGen(stdout, io.Discard, logged).run([]string{"test", "-s", f, "-f", "jsonl"})
 	if status != 0 {
 		t.Fatal("exit status is non-zero:", status)
 	}
@@ -250,7 +239,7 @@ func TestLogOutput(t *testing.T) {
 
 	stdout = &bytes.Buffer{}
 	logged = &bytes.Buffer{}
-	status = newGen(stdout, io.Discard, logged, testDummyPopularActions).run([]string{"test", "-s", f, "-f", "jsonl", "-q"})
+	status = newGen(stdout, io.Discard, logged).run([]string{"test", "-s", f, "-f", "jsonl", "-q"})
 	if status != 0 {
 		t.Fatal("exit status is non-zero:", status)
 	}
@@ -268,7 +257,7 @@ func TestLogOutput(t *testing.T) {
 func TestHelpOutput(t *testing.T) {
 	stdout := io.Discard
 	stderr := &bytes.Buffer{}
-	status := newGen(stdout, stderr, io.Discard, testDummyPopularActions).run([]string{"test", "-help"})
+	status := newGen(stdout, stderr, io.Discard).run([]string{"test", "-help"})
 	if status != 0 {
 		t.Fatal("exit status is non-zero:", status)
 	}
@@ -279,16 +268,10 @@ func TestHelpOutput(t *testing.T) {
 }
 
 func TestDetectNewRelease(t *testing.T) {
-	data := []*registry{
-		{
-			Slug: "rhysd/action-setup-vim",
-			Tags: []string{"v0"},
-			Next: "v1",
-		},
-	}
+	f := filepath.Join("testdata", "registry", "new_release.json")
 	stdout := &bytes.Buffer{}
 	stderr := io.Discard
-	status := newGen(stdout, stderr, io.Discard, data).run([]string{"test", "-d"})
+	status := newGen(stdout, stderr, io.Discard).run([]string{"test", "-d", "-r", f})
 	if status != 2 {
 		t.Fatal("exit status is not 2:", status)
 	}
@@ -300,26 +283,17 @@ func TestDetectNewRelease(t *testing.T) {
 }
 
 func TestDetectNoRelease(t *testing.T) {
-	testCases := []struct {
-		what string
-		next string
-	}{
-		{"no new version yet", "this-is-awesome-new-version"},
-		{"no next version", ""},
+	files := []string {
+		"no_new_version.json",
+		"empty_next_version.json",
 	}
 
-	for _, tc := range testCases {
-		t.Run(tc.what, func(t *testing.T) {
-			data := []*registry{
-				{
-					Slug: "rhysd/action-setup-vim",
-					Tags: []string{"v1"},
-					Next: tc.next,
-				},
-			}
+	for _, f := range files {
+		t.Run(f, func(t *testing.T) {
 			stdout := &bytes.Buffer{}
 			stderr := io.Discard
-			status := newGen(stdout, stderr, io.Discard, data).run([]string{"test", "-d"})
+			p := filepath.Join("testdata", "registry", f)
+			status := newGen(stdout, stderr, io.Discard).run([]string{"test", "-d", "-r", p})
 			if status != 0 {
 				t.Fatal("exit status is non-zero:", status)
 			}
@@ -344,11 +318,11 @@ func TestCouldNotReadJSONLFile(t *testing.T) {
 	}
 	for _, tc := range testCases {
 		t.Run(tc.file, func(t *testing.T) {
-			f := filepath.Join("testdata", tc.file)
+			f := filepath.Join("testdata", "actions", tc.file)
 			stdout := io.Discard
 			stderr := &bytes.Buffer{}
 
-			status := newGen(stdout, stderr, io.Discard, testDummyPopularActions).run([]string{"test", "-s", f})
+			status := newGen(stdout, stderr, io.Discard).run([]string{"test", "-s", f})
 			if status == 0 {
 				t.Fatal("exit status is unexpectedly zero")
 			}
@@ -362,12 +336,12 @@ func TestCouldNotReadJSONLFile(t *testing.T) {
 }
 
 func TestCouldNotCreateOutputFile(t *testing.T) {
-	f := filepath.Join("testdata", "test.jsonl")
+	f := filepath.Join("testdata", "actions", "test.jsonl")
 	out := filepath.Join("testdata", "this-dir-does-not-exit", "foo.jsonl")
 	stdout := io.Discard
 	stderr := &bytes.Buffer{}
 
-	status := newGen(stdout, stderr, io.Discard, testDummyPopularActions).run([]string{"test", "-s", f, "-f", "jsonl", out})
+	status := newGen(stdout, stderr, io.Discard).run([]string{"test", "-s", f, "-f", "jsonl", out})
 	if status == 0 {
 		t.Fatal("exit status is unexpectedly zero")
 	}
@@ -387,11 +361,11 @@ func (w testErrorWriter) Write(b []byte) (int, error) {
 func TestWriteError(t *testing.T) {
 	for _, format := range []string{"go", "jsonl"} {
 		t.Run(format, func(t *testing.T) {
-			f := filepath.Join("testdata", "test.jsonl")
+			f := filepath.Join("testdata", "actions", "test.jsonl")
 			stdout := testErrorWriter{}
 			stderr := &bytes.Buffer{}
 
-			status := newGen(stdout, stderr, io.Discard, testDummyPopularActions).run([]string{"test", "-s", f, "-f", format})
+			status := newGen(stdout, stderr, io.Discard).run([]string{"test", "-s", f, "-f", format})
 			if status == 0 {
 				t.Fatal("exit status is unexpectedly zero")
 			}
@@ -405,18 +379,11 @@ func TestWriteError(t *testing.T) {
 }
 
 func TestCouldNotFetch(t *testing.T) {
-	data := []*registry{
-		{
-			Slug: "rhysd/this-action-does-not-exist",
-			Tags: []string{"v1"},
-			Next: "v2",
-		},
-	}
-
 	stdout := testErrorWriter{}
 	stderr := &bytes.Buffer{}
+	f := filepath.Join("testdata", "registry", "repo_not_found.json")
 
-	status := newGen(stdout, stderr, io.Discard, data).run([]string{"test"})
+	status := newGen(stdout, stderr, io.Discard).run([]string{"test", "-r", f})
 	if status == 0 {
 		t.Fatal("exit status is unexpectedly zero")
 	}
@@ -442,7 +409,7 @@ func TestInvalidCommandArgs(t *testing.T) {
 			stdout := testErrorWriter{}
 			stderr := &bytes.Buffer{}
 
-			status := newGen(stdout, stderr, io.Discard, testDummyPopularActions).run(tc.args)
+			status := newGen(stdout, stderr, io.Discard).run(tc.args)
 			if status == 0 {
 				t.Fatal("exit status is unexpectedly zero")
 			}
@@ -456,17 +423,10 @@ func TestInvalidCommandArgs(t *testing.T) {
 }
 
 func TestDetectErrorBadRequest(t *testing.T) {
-	data := []*registry{
-		// This expects to cause 400 Bad Request
-		{
-			Slug: "",
-			Tags: []string{"v1"},
-			Next: "v2",
-		},
-	}
 	stdout := io.Discard
 	stderr := &bytes.Buffer{}
-	status := newGen(stdout, stderr, io.Discard, data).run([]string{"test", "-d"})
+	f := filepath.Join("testdata", "registry", "empty_slug.json")
+	status := newGen(stdout, stderr, io.Discard).run([]string{"test", "-d", "-r", f})
 	if status != 1 {
 		t.Fatal("exit status is not 1:", status)
 	}
