@@ -12,14 +12,6 @@ import (
 	"github.com/google/go-cmp/cmp"
 )
 
-var testDummyPopularActions = []*registry{
-	{
-		Slug: "rhysd/action-setup-vim",
-		Tags: []string{"v1"},
-		Next: "v2",
-	},
-}
-
 // Normal cases
 
 func TestDefaultPopularActions(t *testing.T) {
@@ -283,7 +275,7 @@ func TestDetectNewRelease(t *testing.T) {
 }
 
 func TestDetectNoRelease(t *testing.T) {
-	files := []string {
+	files := []string{
 		"no_new_version.json",
 		"empty_next_version.json",
 	}

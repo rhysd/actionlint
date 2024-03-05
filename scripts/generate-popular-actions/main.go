@@ -62,9 +62,9 @@ func (r *registry) spec(tag string) string {
 var defaultPopularActionsJSON []byte
 
 type gen struct {
-	stdout   io.Writer
-	stderr   io.Writer
-	log      *log.Logger
+	stdout      io.Writer
+	stderr      io.Writer
+	log         *log.Logger
 	rawRegistry []byte
 }
 
