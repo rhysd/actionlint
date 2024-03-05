@@ -26,8 +26,10 @@ func TestDefaultPopularActions(t *testing.T) {
 
 	slugs := map[string]int{}
 	for i, a := range popularActions {
-		if j, ok := slugs[a.Slug]; ok && popularActions[i].Path == popularActions[j].Path {
-			t.Errorf("slug %q at popularActions[%d] was already added at popularActions[%d]", a.Slug, i, j)
+		if a.Slug == "" {
+			t.Errorf("repository slug must not empty at popularActions[%d]", i)
+		} else if j, ok := slugs[a.Slug]; ok && popularActions[i].Path == popularActions[j].Path {
+			t.Errorf("duplicate registry. action %q at popularActions[%d] was already added at popularActions[%d]", a.Slug, i, j)
 		} else {
 			slugs[a.Slug] = i
 		}

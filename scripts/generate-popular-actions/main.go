@@ -298,10 +298,20 @@ func (g *gen) readJSONL(file string) (map[string]*actionlint.ActionMetadata, err
 }
 
 func (g *gen) detectNewReleaseURLs() ([]string, error) {
-	actions, err := g.registry()
+	all, err := g.registry()
 	if err != nil {
 		return nil, err
 	}
+
+	// Filter actions which have no next versions
+	actions := []*registry{}
+	for _, a := range all {
+		if a.Next != "" {
+			actions = append(actions, a)
+		}
+	}
+
+	g.log.Println("Start detecting new versions in", len(actions), "repositories")
 
 	urls := make(chan string)
 	done := make(chan struct{})
@@ -314,10 +324,6 @@ func (g *gen) detectNewReleaseURLs() ([]string, error) {
 			for {
 				select {
 				case r := <-reqs:
-					if r.Next == "" {
-						ret <- ""
-						break
-					}
 					url := r.rawURL(r.Next)
 					g.log.Println("Checking", url)
 					res, err := c.Head(url)
@@ -368,6 +374,8 @@ func (g *gen) detectNewReleaseURLs() ([]string, error) {
 	close(done)
 
 	sort.Strings(us)
+
+	g.log.Println("Done detecting new versions in", len(actions), "repositories")
 	return us, nil
 }
 
@@ -439,6 +447,7 @@ Flags:`)
 			return 1
 		}
 		if len(urls) == 0 {
+			fmt.Fprintln(g.stdout, "No new release was found")
 			return 0
 		}
 		fmt.Fprintln(g.stdout, "Detected some new releases")
