@@ -382,7 +382,7 @@ func (g *gen) run(args []string) int {
 	var detect bool
 
 	flags := flag.NewFlagSet(args[0], flag.ContinueOnError)
-	flags.StringVar(&source, "s", "remote", "source of actions. \"remote\" or jsonl file path. \"remote\" fetches data from github.com")
+	flags.StringVar(&source, "s", "", "source of actions as local jsonl file path instead of fetching actions metadata from github.com")
 	flags.StringVar(&format, "f", "go", "format of generated code output to stdout. \"go\" or \"jsonl\"")
 	flags.BoolVar(&detect, "d", false, "detect new version of actions are released")
 	flags.BoolVar(&quiet, "q", false, "disable log output to stderr")
@@ -445,7 +445,7 @@ Flags:`)
 	}
 
 	var actions map[string]*actionlint.ActionMetadata
-	if source == "remote" {
+	if source == "" {
 		g.log.Println("Fetching data from https://github.com")
 		m, err := g.fetchRemote()
 		if err != nil {
