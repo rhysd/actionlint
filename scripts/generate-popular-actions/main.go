@@ -62,26 +62,22 @@ func (r *registry) spec(tag string) string {
 var defaultPopularActionsJSON []byte
 
 type gen struct {
-	stdout   io.Writer
-	stderr   io.Writer
-	log      *log.Logger
-	registry []*registry
+	stdout      io.Writer
+	stderr      io.Writer
+	log         *log.Logger
+	rawRegistry []byte
 }
 
-func newGen(stdout, stderr, dbgout io.Writer, registry []*registry) *gen {
+func newGen(stdout, stderr, dbgout io.Writer) *gen {
 	l := log.New(dbgout, "", log.LstdFlags)
-	return &gen{stdout, stderr, l, registry}
+	return &gen{stdout, stderr, l, defaultPopularActionsJSON}
 }
 
-func (g *gen) getRegistry() ([]*registry, error) {
-	if g.registry != nil {
-		return g.registry, nil
-	}
+func (g *gen) registry() ([]*registry, error) {
 	var a []*registry
-	if err := json.Unmarshal(defaultPopularActionsJSON, &a); err != nil {
+	if err := json.Unmarshal(g.rawRegistry, &a); err != nil {
 		return nil, err
 	}
-	g.registry = a
 	return a, nil
 }
 
@@ -97,7 +93,7 @@ func (g *gen) fetchRemote() (map[string]*actionlint.ActionMetadata, error) {
 		err  error
 	}
 
-	actions, err := g.getRegistry()
+	actions, err := g.registry()
 	if err != nil {
 		return nil, err
 	}
@@ -302,7 +298,7 @@ func (g *gen) readJSONL(file string) (map[string]*actionlint.ActionMetadata, err
 }
 
 func (g *gen) detectNewReleaseURLs() ([]string, error) {
-	actions, err := g.getRegistry()
+	actions, err := g.registry()
 	if err != nil {
 		return nil, err
 	}
@@ -380,10 +376,12 @@ func (g *gen) run(args []string) int {
 	var format string
 	var quiet bool
 	var detect bool
+	var registry string
 
 	flags := flag.NewFlagSet(args[0], flag.ContinueOnError)
-	flags.StringVar(&source, "s", "remote", "source of actions. \"remote\" or jsonl file path. \"remote\" fetches data from github.com")
-	flags.StringVar(&format, "f", "go", "format of generated code output to stdout. \"go\" or \"jsonl\"")
+	flags.StringVar(&source, "s", "", "source of actions as local jsonl file path instead of fetching actions metadata from github.com")
+	flags.StringVar(&format, "f", "go", `format of generated code output to stdout. "go" or "jsonl"`)
+	flags.StringVar(&registry, "r", "", "registry of actions as local JSON file path. when this flag is not given, the default popular actions registry will be used")
 	flags.BoolVar(&detect, "d", false, "detect new version of actions are released")
 	flags.BoolVar(&quiet, "q", false, "disable log output to stderr")
 	flags.SetOutput(g.stderr)
@@ -396,6 +394,9 @@ func (g *gen) run(args []string) int {
 
   It can fetch data from remote GitHub repositories and from local JSONL file
   (-s option). And it can output Go code or JSONL serialized data (-f option).
+
+  What actions to be included is defined in the popular actions registry embedded
+  in the executable. To use your own registry JSON file, use -r option.
 
   When -d flag is given, it tries to detect new release for popular actions.
   When detecting some new releases, it shows their URLs to stdout and returns
@@ -419,6 +420,14 @@ Flags:`)
 		w := log.Writer()
 		defer func() { g.log.SetOutput(w) }()
 		g.log.SetOutput(io.Discard)
+	}
+	if registry != "" {
+		b, err := os.ReadFile(registry)
+		if err != nil {
+			fmt.Fprintf(g.stderr, "could not read actions registry from JSON file: %s\n", err)
+			return 1
+		}
+		g.rawRegistry = b
 	}
 
 	g.log.Println("Start generate-popular-actions script")
@@ -445,7 +454,7 @@ Flags:`)
 	}
 
 	var actions map[string]*actionlint.ActionMetadata
-	if source == "remote" {
+	if source == "" {
 		g.log.Println("Fetching data from https://github.com")
 		m, err := g.fetchRemote()
 		if err != nil {
@@ -496,5 +505,5 @@ Flags:`)
 }
 
 func main() {
-	os.Exit(newGen(os.Stdout, os.Stderr, os.Stderr, nil).run(os.Args))
+	os.Exit(newGen(os.Stdout, os.Stderr, os.Stderr).run(os.Args))
 }

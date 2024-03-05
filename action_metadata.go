@@ -11,7 +11,7 @@ import (
 	"gopkg.in/yaml.v3"
 )
 
-//go:generate go run ./scripts/generate-popular-actions -s remote -f go ./popular_actions.go
+//go:generate go run ./scripts/generate-popular-actions ./popular_actions.go
 
 // ActionMetadataInput is input metadata in "inputs" section in action.yml metadata file.
 // https://docs.github.com/en/actions/creating-actions/metadata-syntax-for-github-actions#inputs
