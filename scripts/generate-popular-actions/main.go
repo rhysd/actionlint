@@ -76,7 +76,7 @@ func newGen(stdout, stderr, dbgout io.Writer) *gen {
 func (g *gen) registry() ([]*registry, error) {
 	var a []*registry
 	if err := json.Unmarshal(g.rawRegistry, &a); err != nil {
-		return nil, err
+		return nil, fmt.Errorf("could not parse the local action registry file as JSON: %w", err)
 	}
 	return a, nil
 }
@@ -291,17 +291,27 @@ func (g *gen) readJSONL(file string) (map[string]*actionlint.ActionMetadata, err
 		}
 		var j actionOutput
 		if err := json.Unmarshal(l, &j); err != nil {
-			return nil, fmt.Errorf("could not parse line as JSON for action metadata in file %s: %s", file, err)
+			return nil, fmt.Errorf("could not parse line as JSON for action metadata in file %s: %w", file, err)
 		}
 		ret[j.Spec] = j.Meta
 	}
 }
 
 func (g *gen) detectNewReleaseURLs() ([]string, error) {
-	actions, err := g.registry()
+	all, err := g.registry()
 	if err != nil {
 		return nil, err
 	}
+
+	// Filter actions which have no next versions
+	actions := []*registry{}
+	for _, a := range all {
+		if a.Next != "" {
+			actions = append(actions, a)
+		}
+	}
+
+	g.log.Println("Start detecting new versions in", len(actions), "repositories")
 
 	urls := make(chan string)
 	done := make(chan struct{})
@@ -314,10 +324,6 @@ func (g *gen) detectNewReleaseURLs() ([]string, error) {
 			for {
 				select {
 				case r := <-reqs:
-					if r.Next == "" {
-						ret <- ""
-						break
-					}
 					url := r.rawURL(r.Next)
 					g.log.Println("Checking", url)
 					res, err := c.Head(url)
@@ -368,6 +374,8 @@ func (g *gen) detectNewReleaseURLs() ([]string, error) {
 	close(done)
 
 	sort.Strings(us)
+
+	g.log.Println("Done detecting new versions in", len(actions), "repositories")
 	return us, nil
 }
 
@@ -424,7 +432,7 @@ Flags:`)
 	if registry != "" {
 		b, err := os.ReadFile(registry)
 		if err != nil {
-			fmt.Fprintf(g.stderr, "could not read actions registry from JSON file: %s\n", err)
+			fmt.Fprintf(g.stderr, "could not read the file for actions registry: %s\n", err)
 			return 1
 		}
 		g.rawRegistry = b
@@ -439,6 +447,7 @@ Flags:`)
 			return 1
 		}
 		if len(urls) == 0 {
+			fmt.Fprintln(g.stdout, "No new release was found")
 			return 0
 		}
 		fmt.Fprintln(g.stdout, "Detected some new releases")

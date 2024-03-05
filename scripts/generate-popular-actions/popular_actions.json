@@ -52,8 +52,7 @@
     },
     {
         "slug": "dtolnay/rust-toolchain",
-        "tags": ["stable", "beta", "nightly"],
-        "next": ""
+        "tags": ["stable", "beta", "nightly"]
     },
     {
         "slug": "actions-rs/clippy-check",
@@ -319,8 +318,7 @@
     },
     {
         "slug": "marvinpinto/action-automatic-releases",
-        "tags": ["latest"],
-        "next": ""
+        "tags": ["latest"]
     },
     {
         "slug": "microsoft/playwright-github-action",

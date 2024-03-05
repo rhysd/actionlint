@@ -26,8 +26,10 @@ func TestDefaultPopularActions(t *testing.T) {
 
 	slugs := map[string]int{}
 	for i, a := range popularActions {
-		if j, ok := slugs[a.Slug]; ok && popularActions[i].Path == popularActions[j].Path {
-			t.Errorf("slug %q at popularActions[%d] was already added at popularActions[%d]", a.Slug, i, j)
+		if a.Slug == "" {
+			t.Errorf("repository slug must not empty at popularActions[%d]", i)
+		} else if j, ok := slugs[a.Slug]; ok && popularActions[i].Path == popularActions[j].Path {
+			t.Errorf("duplicate registry. action %q at popularActions[%d] was already added at popularActions[%d]", a.Slug, i, j)
 		} else {
 			slugs[a.Slug] = i
 		}
@@ -290,8 +292,8 @@ func TestDetectNoRelease(t *testing.T) {
 				t.Fatal("exit status is non-zero:", status)
 			}
 			out := stdout.String()
-			if out != "" {
-				t.Fatalf("stdout is not empty: %q", out)
+			if out != "No new release was found\n" {
+				t.Fatalf("stdout is unexpected: %q", out)
 			}
 		})
 	}
@@ -371,11 +373,10 @@ func TestWriteError(t *testing.T) {
 }
 
 func TestCouldNotFetch(t *testing.T) {
-	stdout := testErrorWriter{}
 	stderr := &bytes.Buffer{}
 	f := filepath.Join("testdata", "registry", "repo_not_found.json")
 
-	status := newGen(stdout, stderr, io.Discard).run([]string{"test", "-r", f})
+	status := newGen(io.Discard, stderr, io.Discard).run([]string{"test", "-r", f})
 	if status == 0 {
 		t.Fatal("exit status is unexpectedly zero")
 	}
@@ -398,10 +399,9 @@ func TestInvalidCommandArgs(t *testing.T) {
 
 	for _, tc := range testCases {
 		t.Run(strings.Join(tc.args, " "), func(t *testing.T) {
-			stdout := testErrorWriter{}
 			stderr := &bytes.Buffer{}
 
-			status := newGen(stdout, stderr, io.Discard).run(tc.args)
+			status := newGen(io.Discard, stderr, io.Discard).run(tc.args)
 			if status == 0 {
 				t.Fatal("exit status is unexpectedly zero")
 			}
@@ -425,6 +425,38 @@ func TestDetectErrorBadRequest(t *testing.T) {
 	out := stderr.String()
 	if !strings.Contains(out, "head request for https://raw.githubusercontent.com//v2/action.yml was not successful") {
 		t.Fatalf("stderr was unexpected: %q", out)
+	}
+}
+
+func TestReadActionRegistryError(t *testing.T) {
+	tests := []struct {
+		file string
+		want string
+	}{
+		{
+			file: "broken.json",
+			want: "could not parse the local action registry file as JSON:",
+		},
+		{
+			file: "oops-this-file-doesnt-exist.json",
+			want: "could not read the file for actions registry:",
+		},
+	}
+
+	for _, tc := range tests {
+		t.Run(tc.file, func(t *testing.T) {
+			stdout := io.Discard
+			stderr := &bytes.Buffer{}
+			f := filepath.Join("testdata", "registry", tc.file)
+			status := newGen(stdout, stderr, io.Discard).run([]string{"test", "-d", "-r", f})
+			if status != 1 {
+				t.Fatal("exit status is not 1:", status)
+			}
+			out := stderr.String()
+			if !strings.Contains(out, tc.want) {
+				t.Fatalf("wanted %q in stderr: %q", tc.want, out)
+			}
+		})
 	}
 }
 

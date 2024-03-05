@@ -33,14 +33,14 @@ Please see output of `-help` flag for more details.
 The data source of the popular actions is defined in [`popular_actions.json`](./popular_actions.json). This file contains an array
 of each action registry. Each registry is a JSON object containing the following keys:
 
-| Key            | Description                                                    | Example                    | Required? |
-|----------------|----------------------------------------------------------------|----------------------------|-----------|
-| `slug`         | GitHub repository slug                                         | `"actions/checkout"`       | Yes       |
-| `tags`         | Known release tags                                             | `["v1", "v2", "v3", "v4"]` | Yes       |
-| `next`         | The next release tag                                           | `"v5"`                     | Yes       |
-| `path`         | Absolute path to the action from the repository root           | `"/path/to/action"`        | No        |
-| `skip_inputs`  | Skipping checking inputs of this action or not                 | `true`                     | No        |
-| `skip_outputs` | Skipping checking outputs of this action or not                | `true`                     | No        |
-| `file_ext`     | File extension of action metadata file. The default is `"yml"` | `"yaml"`                   | No        |
+| Key            | Description                                                     | Example                    | Required? |
+|----------------|-----------------------------------------------------------------|----------------------------|-----------|
+| `slug`         | GitHub repository slug                                          | `"actions/checkout"`       | Yes       |
+| `tags`         | Known release tags                                              | `["v1", "v2", "v3", "v4"]` | Yes       |
+| `next`         | The next release tag. Empty means new version won't be detected | `"v5"`                     | No        |
+| `path`         | Absolute path to the action from the repository root            | `"/path/to/action"`        | No        |
+| `skip_inputs`  | Skipping checking inputs of this action or not                  | `true`                     | No        |
+| `skip_outputs` | Skipping checking outputs of this action or not                 | `true`                     | No        |
+| `file_ext`     | File extension of action metadata file. The default is `"yml"`  | `"yaml"`                   | No        |
 
 Alternative actions registry JSON file can be used via `-r` option.
