@@ -34,13 +34,12 @@
     "@types/codemirror": "^5.60.15",
     "@types/node": "^20.11.24",
     "@types/pako": "^2.0.3",
-    "@typescript-eslint/eslint-plugin": "^7.1.1",
-    "@typescript-eslint/parser": "^7.1.1",
     "eslint": "^8.57.0",
     "http-server": "^14.1.1",
     "prettier": "^3.2.5",
     "stylelint": "^16.2.1",
     "stylelint-config-standard": "^36.0.0",
-    "typescript": "^5.3.3"
+    "typescript": "^5.3.3",
+    "typescript-eslint": "^7.1.1"
   }
 }

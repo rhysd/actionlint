@@ -64,6 +64,9 @@ jobs:
         const go = new Go();
         const bin = await fs.readFile('./main.wasm');
         const result = await WebAssembly.instantiate(bin, go.importObject);
+
+        // Do not `await` this method call since it will never be settled
+        // eslint-disable-next-line @typescript-eslint/no-floating-promises
         go.run(result.instance);
     });
 
