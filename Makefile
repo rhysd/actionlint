@@ -37,7 +37,7 @@ else
 	go generate
 endif
 
-actionlint: $(SRCS) popular_actions.go all_webhooks.go
+actionlint: $(SRCS)
 	CGO_ENABLED=0 go build ./cmd/actionlint
 
 b build: actionlint
