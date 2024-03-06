@@ -8,7 +8,8 @@
     "lint:stylelint": "stylelint style.css",
     "lint:prettier": "prettier --check \"*.ts\"",
     "lint:eslint": "eslint --max-warnings 0 \"*.ts\"",
-    "lint": "npm run lint:prettier && npm run lint:eslint && npm run lint:stylelint",
+    "lint:eslintconfig": "tsc --checkJs --noEmit --module nodenext --strict eslint.config.mjs",
+    "lint": "npm run lint:prettier && npm run lint:eslint && npm run lint:stylelint && npm run lint:eslintconfig",
     "prettier": "prettier --write \"*.ts\"",
     "build": "tsc -p .",
     "watch": "tsc -p . --watch",
@@ -32,15 +33,15 @@
   "devDependencies": {
     "@peculiar/webcrypto": "^1.4.5",
     "@types/codemirror": "^5.60.15",
+    "@types/eslint__js": "^8.42.3",
     "@types/node": "^20.11.24",
     "@types/pako": "^2.0.3",
-    "@typescript-eslint/eslint-plugin": "^7.1.1",
-    "@typescript-eslint/parser": "^7.1.1",
     "eslint": "^8.57.0",
     "http-server": "^14.1.1",
     "prettier": "^3.2.5",
     "stylelint": "^16.2.1",
     "stylelint-config-standard": "^36.0.0",
-    "typescript": "^5.3.3"
+    "typescript": "^5.3.3",
+    "typescript-eslint": "^7.1.1"
   }
 }
