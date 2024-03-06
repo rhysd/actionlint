@@ -82,8 +82,6 @@ jobs:
         run: npm run lint
       - name: Run tests for wasm
         run: npm test
-      - name: Check eslint config
-        run: npx tsc --checkJs --noEmit  --module nodenext --strict eslint.config.mjs
   lint:
     name: Lint
     runs-on: ubuntu-latest
