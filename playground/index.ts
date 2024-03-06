@@ -264,6 +264,7 @@ jobs:
         }
     });
 
+    // eslint-disable-next-line @typescript-eslint/no-misused-promises
     checkUrlButton.addEventListener('click', async e => {
         e.preventDefault();
         const input = checkUrlInput.value;

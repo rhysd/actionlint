@@ -60,6 +60,9 @@ jobs:
   wasm:
     name: Wasm
     runs-on: ubuntu-latest
+    defaults:
+      run:
+        working-directory: ./playground
     steps:
       - uses: actions/checkout@v4
       - uses: actions/setup-go@v5
@@ -74,11 +77,13 @@ jobs:
           path: ./playground/node_modules
           key: ${{ hashFiles('./playground/package.json') }}
       - name: Build playground
-        run: cd ./playground && make build
+        run: make build
       - name: Lint playground
-        run: cd ./playground && npm run lint
+        run: npm run lint
       - name: Run tests for wasm
-        run: cd ./playground && npm test
+        run: npm test
+      - name: Check eslint config
+        run: npx tsc --checkJs --noEmit  --module nodenext --strict eslint.config.mjs
   lint:
     name: Lint
     runs-on: ubuntu-latest
