@@ -37,6 +37,7 @@
     "@types/node": "^20.11.24",
     "@types/pako": "^2.0.3",
     "eslint": "^8.57.0",
+    "eslint-plugin-mocha": "^10.4.0",
     "http-server": "^14.1.1",
     "prettier": "^3.2.5",
     "stylelint": "^16.2.1",

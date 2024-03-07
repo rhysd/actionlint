@@ -2,6 +2,7 @@
 
 import eslint from '@eslint/js';
 import ts from 'typescript-eslint';
+import mocha from 'eslint-plugin-mocha';
 
 export default ts.config(
     eslint.configs.recommended,
@@ -28,10 +29,15 @@ export default ts.config(
             '@typescript-eslint/no-unsafe-assignment': 'off',
         },
     },
+    mocha.configs.flat.recommended,
     {
         files: ['test.ts'],
         rules: {
             '@typescript-eslint/unbound-method': 'off', // For checking `window.runActionlint`
+            'mocha/no-exclusive-tests': 'error',
+            'mocha/no-pending-tests': 'error',
+            'mocha/no-skipped-tests': 'error',
+            'mocha/no-top-level-hooks': 'error',
         },
     }
 );
