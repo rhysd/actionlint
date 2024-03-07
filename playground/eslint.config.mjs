@@ -8,15 +8,15 @@ export default ts.config(
     eslint.configs.recommended,
     ...ts.configs.recommendedTypeChecked,
     {
+        files: ['index.ts', 'test.ts', 'lib.d.ts'],
         languageOptions: {
             parserOptions: {
-                project: true,
-                tsconfigRootDir: import.meta.dirname,
+                project: 'tsconfig.json',
             },
         },
     },
     {
-        files: ['index.ts', 'test.ts'],
+        files: ['*.ts', '*.mjs'],
         rules: {
             indent: ['error', 4],
             quotes: ['error', 'single'],
@@ -38,6 +38,14 @@ export default ts.config(
             'mocha/no-pending-tests': 'error',
             'mocha/no-skipped-tests': 'error',
             'mocha/no-top-level-hooks': 'error',
+        },
+    },
+    {
+        files: ['eslint.config.mjs', 'eslint.d.ts'],
+        languageOptions: {
+            parserOptions: {
+                project: 'tsconfig.eslint.json',
+            },
         },
     }
 );
