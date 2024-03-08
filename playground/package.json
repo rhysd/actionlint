@@ -33,6 +33,7 @@
   "devDependencies": {
     "@peculiar/webcrypto": "^1.4.5",
     "@types/codemirror": "^5.60.15",
+    "@types/eslint": "^8.56.5",
     "@types/eslint__js": "^8.42.3",
     "@types/node": "^20.11.24",
     "@types/pako": "^2.0.3",
