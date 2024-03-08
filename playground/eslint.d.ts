@@ -1,10 +1,17 @@
 declare module 'eslint-plugin-mocha' {
-    export default {
+    import type { ESLint, Linter } from 'eslint';
+
+    interface Configs {
         configs: {
+            recommended: Linter.Config;
+            all: Linter.Config;
             flat: {
-                all: unknown,
-                recommended: unknown,
-            },
-        },
-    };
+                recommended: Linter.FlatConfig;
+                all: Linter.FlatConfig;
+            };
+        };
+    }
+
+    const plugin: Configs & ESLint.Plugin;
+    export default plugin;
 }
