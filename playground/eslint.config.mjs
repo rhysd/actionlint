@@ -8,7 +8,7 @@ export default ts.config(
     eslint.configs.recommended,
     ...ts.configs.recommendedTypeChecked,
     {
-        files: ['index.ts', 'test.ts', 'lib.d.ts'],
+        files: ['*.ts'],
         languageOptions: {
             parserOptions: {
                 project: 'tsconfig.json',
@@ -41,7 +41,7 @@ export default ts.config(
         },
     },
     {
-        files: ['eslint.config.mjs', 'eslint.d.ts'],
+        files: ['eslint.config.mjs'],
         languageOptions: {
             parserOptions: {
                 project: 'tsconfig.eslint.json',
