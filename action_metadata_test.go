@@ -22,6 +22,9 @@ func testGetWantedActionMetadata() *ActionMetadata {
 		Outputs: ActionMetadataOutputs{
 			"user_id": {"user_id"},
 		},
+		Runs: ActionMetadataRuns{
+			Using: "node20",
+		},
 	}
 	return want
 }

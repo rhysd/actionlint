@@ -12,7 +12,7 @@ project directory.
 ├── some_project
 │   ├── actionlint.yaml
 │   ├── action
-│   │   └── action1.yaml
+│   │   └── action.yaml
 │   └── workflows
 │       ├── workflow1.yaml
 │       └── workflow2.yaml

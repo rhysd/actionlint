@@ -90,12 +90,19 @@ func (inputs *ActionMetadataOutputs) UnmarshalYAML(n *yaml.Node) error {
 	return nil
 }
 
+// ActionMetadataRuns is "runs" section of action.yaml. It defines how the action is run.
+// https://docs.github.com/en/actions/creating-actions/metadata-syntax-for-github-actions#runs
+type ActionMetadataRuns struct {
+	// Using is `using` configuration of action.yaml. It defines what runner is used for the action.
+	Using string `yaml:"using"`
+}
+
 // ActionMetadata represents structure of action.yaml.
 // https://docs.github.com/en/actions/creating-actions/metadata-syntax-for-github-actions
 type ActionMetadata struct {
-	// Name is "name" field of action.yaml
+	// Name is "name" field of action.yaml.
 	Name string `yaml:"name" json:"name"`
-	// Inputs is "inputs" field of action.yaml
+	// Inputs is "inputs" field of action.yaml.
 	Inputs ActionMetadataInputs `yaml:"inputs" json:"inputs"`
 	// Outputs is "outputs" field of action.yaml. Key is name of output. Description is omitted
 	// since actionlint does not use it.
@@ -106,6 +113,8 @@ type ActionMetadata struct {
 	// SkipOutputs is flag to specify a bit loose typing to outputs object. If it is set to
 	// true, the outputs object accepts any properties along with strictly typed props.
 	SkipOutputs bool `json:"skip_outputs"`
+	// Runs is "runs" field of action.yaml.
+	Runs ActionMetadataRuns `yaml:"runs"`
 }
 
 // LocalActionsCache is cache for local actions' metadata. It avoids repeating to find/read/parse
