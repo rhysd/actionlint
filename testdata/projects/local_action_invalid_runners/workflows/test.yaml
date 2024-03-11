@@ -1,0 +1,13 @@
+on: push
+
+jobs:
+  test:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: ./old_node
+      - uses: ./missing_runner
+      - uses: ./unknown_runner
+      - uses: ./invalid_node_version
+      - uses: ./ok_node
+      - uses: ./ok_composite
+      - uses: ./ok_docker
