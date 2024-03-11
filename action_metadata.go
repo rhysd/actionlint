@@ -114,7 +114,7 @@ type ActionMetadata struct {
 	// true, the outputs object accepts any properties along with strictly typed props.
 	SkipOutputs bool `json:"skip_outputs"`
 	// Runs is "runs" field of action.yaml.
-	Runs ActionMetadataRuns `yaml:"runs"`
+	Runs ActionMetadataRuns `yaml:"runs" json:"-"`
 }
 
 // LocalActionsCache is cache for local actions' metadata. It avoids repeating to find/read/parse

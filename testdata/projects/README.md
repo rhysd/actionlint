@@ -11,7 +11,9 @@ project directory.
 ```
 ├── some_project
 │   ├── actionlint.yaml
-│   ├── action
+│   ├── action1
+│   │   └── action.yaml
+│   ├── action2
 │   │   └── action.yaml
 │   └── workflows
 │       ├── workflow1.yaml
