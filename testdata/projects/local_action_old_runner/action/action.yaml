@@ -1,0 +1,7 @@
+name: 'Old Node.js'
+author: 'rhysd <https://rhysd.github.io>'
+description: 'Runner node version is too old'
+
+runs:
+  using: 'node14'
+  main: 'index.js'

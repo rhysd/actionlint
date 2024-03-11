@@ -553,7 +553,7 @@ outputs:
     description: some value returned from this action
 
 runs:
-  using: 'node14'
+  using: 'node20'
   main: 'index.js'
 ```
 
@@ -1650,7 +1650,7 @@ inputs:
     required: false
 
 runs:
-  using: 'node14'
+  using: 'node20'
   main: 'index.js'
 ```
 
