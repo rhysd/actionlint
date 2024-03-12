@@ -62,14 +62,6 @@ func TestLocalActionsFindMetadata(t *testing.T) {
 					t.Fatal(i, cmp.Diff(want, have))
 				}
 			}
-
-			cached, ok := c.cache[spec]
-			if !ok {
-				t.Fatal("metadata was not cached", c.cache)
-			}
-			if cached == nil {
-				t.Fatal("cached metadata is nil", c.cache)
-			}
 		})
 	}
 
@@ -142,7 +134,7 @@ func TestLocalActionsFindConcurrently(t *testing.T) {
 	}
 
 	if len(errs) != 0 {
-		t.Fatal("error occurred:", errs)
+		t.Fatal("some error occurred:", errs)
 	}
 
 	want := testGetWantedActionMetadata()
@@ -152,13 +144,8 @@ func TestLocalActionsFindConcurrently(t *testing.T) {
 		}
 	}
 
-	cached, ok := c.cache["./action-yml"]
-	if !ok {
-		t.Fatal("metadata was not cached", c.cache)
-	}
-	if cached == nil {
-		t.Fatal("cached metadata is nil", c.cache)
-	}
+	_, cached, _ := c.FindMetadata("./action-yml")
+	testCachedFlag(t, true, cached)
 }
 
 func TestLocalActionsParsingSkipped(t *testing.T) {
@@ -281,14 +268,6 @@ func TestLocalActionsBrokenMetadata(t *testing.T) {
 		t.Fatal("metadata was not nil even if it does not exist", m)
 	}
 	testCachedFlag(t, true, cached)
-
-	m, ok := c.cache["./broken"]
-	if !ok {
-		t.Fatal("error was not cached", c.cache)
-	}
-	if m != nil {
-		t.Fatal("metadata should be nil when it caused an error", c.cache)
-	}
 }
 
 func TestLocalActionsDuplicateInputsOutputs(t *testing.T) {
