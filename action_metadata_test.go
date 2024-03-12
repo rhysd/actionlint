@@ -31,6 +31,16 @@ func testGetWantedActionMetadata() *ActionMetadata {
 
 // Normal cases
 
+func testCachedFlag(t *testing.T, want, have bool) {
+	if want != have {
+		msg := "metadata should be cached but actually it is not cached"
+		if !want {
+			msg = "metadata should not be cached but actually it is cached"
+		}
+		t.Error(msg)
+	}
+}
+
 func TestLocalActionsFindMetadata(t *testing.T) {
 	proj := &Project{filepath.Join("testdata", "action_metadata"), nil}
 	c := NewLocalActionsCache(proj, nil)
@@ -40,13 +50,14 @@ func TestLocalActionsFindMetadata(t *testing.T) {
 		t.Run(spec, func(t *testing.T) {
 			// read metadata repeatedly (should be cached)
 			for i := 0; i < 3; i++ {
-				have, err := c.FindMetadata(spec)
+				have, cached, err := c.FindMetadata(spec)
 				if err != nil {
 					t.Fatal(i, err)
 				}
 				if have == nil {
 					t.Fatal(i, "metadata is nil")
 				}
+				testCachedFlag(t, cached, i > 0)
 				if !cmp.Equal(want, have) {
 					t.Fatal(i, cmp.Diff(want, have))
 				}
@@ -64,7 +75,7 @@ func TestLocalActionsFindMetadata(t *testing.T) {
 
 	t.Run("./empty", func(t *testing.T) {
 		for i := 0; i < 3; i++ {
-			m, err := c.FindMetadata("./empty")
+			m, cached, err := c.FindMetadata("./empty")
 			if err != nil {
 				t.Fatal(i, err)
 			}
@@ -77,6 +88,7 @@ func TestLocalActionsFindMetadata(t *testing.T) {
 			if len(m.Outputs) != 0 {
 				t.Fatal("outputs are not empty", m.Outputs)
 			}
+			testCachedFlag(t, cached, i > 0)
 		}
 	})
 
@@ -89,13 +101,14 @@ func TestLocalActionsFindMetadata(t *testing.T) {
 			o.Name = strings.ToUpper(o.Name)
 		}
 
-		have, err := c.FindMetadata("./uppercase")
+		have, cached, err := c.FindMetadata("./uppercase")
 		if err != nil {
 			t.Fatal(err)
 		}
 		if !cmp.Equal(want, have) {
 			t.Fatal(cmp.Diff(want, have))
 		}
+		testCachedFlag(t, cached, false)
 	})
 }
 
@@ -108,7 +121,7 @@ func TestLocalActionsFindConcurrently(t *testing.T) {
 
 	for i := 0; i < n; i++ {
 		go func() {
-			m, e := c.FindMetadata("./action-yml")
+			m, _, e := c.FindMetadata("./action-yml")
 			if e != nil {
 				err <- e
 				return
@@ -174,13 +187,15 @@ func TestLocalActionsParsingSkipped(t *testing.T) {
 	for _, tc := range tests {
 		t.Run(tc.what, func(t *testing.T) {
 			c := NewLocalActionsCache(tc.proj, nil)
-			m, err := c.FindMetadata(tc.spec)
+			m, cached, err := c.FindMetadata(tc.spec)
 			if err != nil {
 				t.Fatal(tc.spec, "error occurred:", err)
 			}
 			if m != nil {
 				t.Fatal(tc.spec, "metadata was parsed", m)
 			}
+			// FindMetadata should return as if it was cached
+			testCachedFlag(t, true, cached)
 		})
 	}
 }
@@ -189,13 +204,15 @@ func TestLocalActionsIgnoreRemoteActions(t *testing.T) {
 	proj := &Project{filepath.Join("testdata", "action_metadata"), nil}
 	c := NewLocalActionsCache(proj, nil)
 	for _, spec := range []string{"actions/checkout@v2", "docker://example.com/foo/bar"} {
-		m, err := c.FindMetadata(spec)
+		m, cached, err := c.FindMetadata(spec)
 		if err != nil {
 			t.Fatal(spec, "error occurred:", err)
 		}
 		if m != nil {
 			t.Fatal(spec, "metadata was parsed", m)
 		}
+		// FindMetadata should return as if it was cached
+		testCachedFlag(t, true, cached)
 	}
 }
 
@@ -206,7 +223,7 @@ func TestLocalActionsLogCacheHit(t *testing.T) {
 
 	want := testGetWantedActionMetadata()
 	for i := 0; i < 2; i++ {
-		have, err := c.FindMetadata("./action-yml")
+		have, _, err := c.FindMetadata("./action-yml")
 		if err != nil {
 			t.Fatal(err)
 		}
@@ -229,13 +246,15 @@ func TestLocalActionsLogCacheHit(t *testing.T) {
 
 func TestLocalActionsNullCache(t *testing.T) {
 	c := newNullLocalActionsCache(io.Discard)
-	m, err := c.FindMetadata("./path/to/action.yaml")
+	m, cached, err := c.FindMetadata("./path/to/action.yaml")
 	if m != nil {
 		t.Error("metadata should not be found:", m)
 	}
 	if err != nil {
-		t.Error("error should not happen:", err)
+		t.Error(err)
 	}
+	// FindMetadata should return as if it was cached
+	testCachedFlag(t, true, cached)
 }
 
 // Error cases
@@ -243,23 +262,25 @@ func TestLocalActionsNullCache(t *testing.T) {
 func TestLocalActionsBrokenMetadata(t *testing.T) {
 	proj := &Project{filepath.Join("testdata", "action_metadata"), nil}
 	c := NewLocalActionsCache(proj, nil)
-	m, err := c.FindMetadata("./broken")
+	m, cached, err := c.FindMetadata("./broken")
 	if err == nil {
 		t.Fatal("error was not returned", m)
 	}
 	if !strings.Contains(err.Error(), "could not parse action metadata") {
 		t.Fatal("unexpected error:", err)
 	}
+	testCachedFlag(t, false, cached)
 
 	// Second try does not return error, but metadata is also nil not to show the same error from
 	// multiple rules.
-	m, err = c.FindMetadata("./broken")
+	m, cached, err = c.FindMetadata("./broken")
 	if err != nil {
 		t.Fatal("error was returned at second try", err)
 	}
 	if m != nil {
 		t.Fatal("metadata was not nil even if it does not exist", m)
 	}
+	testCachedFlag(t, true, cached)
 
 	m, ok := c.cache["./broken"]
 	if !ok {
@@ -288,7 +309,7 @@ func TestLocalActionsDuplicateInputsOutputs(t *testing.T) {
 		},
 	} {
 		t.Run(tc.spec, func(t *testing.T) {
-			m, err := c.FindMetadata(tc.spec)
+			m, cached, err := c.FindMetadata(tc.spec)
 			if err == nil {
 				t.Fatal("error was not returned", m)
 			}
@@ -296,6 +317,7 @@ func TestLocalActionsDuplicateInputsOutputs(t *testing.T) {
 			if !strings.Contains(msg, tc.want) {
 				t.Fatalf("error %q was expected to include %q", msg, tc.want)
 			}
+			testCachedFlag(t, false, cached)
 		})
 	}
 }
@@ -308,7 +330,7 @@ func TestLocalActionsConcurrentFailures(t *testing.T) {
 
 	for i := 0; i < n; i++ {
 		go func() {
-			_, err := c.FindMetadata("./broken")
+			_, _, err := c.FindMetadata("./broken")
 			errC <- err
 		}()
 	}
@@ -362,7 +384,7 @@ func TestLocalActionsConcurrentMultipleMetadataAndFailures(t *testing.T) {
 			for {
 				select {
 				case spec := <-reqC:
-					m, err := c.FindMetadata(spec)
+					m, _, err := c.FindMetadata(spec)
 					if m == nil {
 						errC <- err
 						break

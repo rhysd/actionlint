@@ -169,14 +169,15 @@ func (c *LocalActionsCache) writeCache(key string, val *ActionMetadata) {
 // the action was not found. But at the second search, it does not return an error even if the result
 // is nil. This behavior prevents repeating to report the same error from multiple places.
 // Calling this method is thread-safe.
-func (c *LocalActionsCache) FindMetadata(spec string) (*ActionMetadata, error) {
+func (c *LocalActionsCache) FindMetadata(spec string) (*ActionMetadata, bool, error) {
 	if c.proj == nil || !strings.HasPrefix(spec, "./") {
-		return nil, nil
+		// Return as if this action was cached to suppress the following checks.
+		return nil, true, nil
 	}
 
 	if m, ok := c.readCache(spec); ok {
 		c.debug("Cache hit for %s: %v", spec, m)
-		return m, nil
+		return m, true, nil
 	}
 
 	dir := filepath.Join(c.proj.RootDir(), filepath.FromSlash(spec))
@@ -188,20 +189,20 @@ func (c *LocalActionsCache) FindMetadata(spec string) (*ActionMetadata, error) {
 		// Do not complain about the action does not exist (#25, #40).
 		// It seems a common pattern that the local action does not exist in the repository
 		// (e.g. Git submodule) and it is cloned at running workflow (due to a private repository).
-		return nil, nil
+		return nil, true, nil
 	}
 
 	var meta ActionMetadata
 	if err := yaml.Unmarshal(b, &meta); err != nil {
 		c.writeCache(spec, nil) // Remember action was invalid
 		msg := strings.ReplaceAll(err.Error(), "\n", " ")
-		return nil, fmt.Errorf("could not parse action metadata in %q: %s", dir, msg)
+		return nil, false, fmt.Errorf("could not parse action metadata in %q: %s", dir, msg)
 	}
 
 	c.debug("New metadata parsed from action %s: %v", dir, &meta)
 
 	c.writeCache(spec, &meta)
-	return &meta, nil
+	return &meta, false, nil
 }
 
 func (c *LocalActionsCache) readLocalActionMetadataFile(dir string) ([]byte, bool) {

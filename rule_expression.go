@@ -323,7 +323,7 @@ func (rule *RuleExpression) getActionOutputsType(spec *String) *ObjectType {
 	}
 
 	if strings.HasPrefix(spec.Value, "./") {
-		meta, err := rule.localActions.FindMetadata(spec.Value)
+		meta, _, err := rule.localActions.FindMetadata(spec.Value)
 		if err != nil {
 			rule.Error(spec.Pos, err.Error())
 			return NewMapObjectType(StringType{})
