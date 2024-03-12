@@ -97,11 +97,31 @@ func TestLocalActionsFindMetadata(t *testing.T) {
 		if err != nil {
 			t.Fatal(err)
 		}
+		testCachedFlag(t, cached, false)
 		if !cmp.Equal(want, have) {
 			t.Fatal(cmp.Diff(want, have))
 		}
-		testCachedFlag(t, cached, false)
 	})
+
+	for _, using := range []string{"docker", "composite"} {
+		a, u := "./"+using, using
+		t.Run(a, func(t *testing.T) {
+			want := &ActionMetadata{
+				Name: "My action",
+				Runs: ActionMetadataRuns{
+					Using: u,
+				},
+			}
+			have, cached, err := c.FindMetadata(a)
+			if err != nil {
+				t.Fatal(err)
+			}
+			testCachedFlag(t, cached, false)
+			if !cmp.Equal(want, have) {
+				t.Fatal(cmp.Diff(want, have))
+			}
+		})
+	}
 }
 
 func TestLocalActionsFindConcurrently(t *testing.T) {
