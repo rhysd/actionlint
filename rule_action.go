@@ -177,7 +177,7 @@ func (rule *RuleAction) checkDockerAction(uri string, exec *ExecAction) {
 
 // https://docs.github.com/en/actions/learn-github-actions/workflow-syntax-for-github-actions#example-using-action-in-the-same-repository-as-the-workflow
 func (rule *RuleAction) checkLocalAction(path string, action *ExecAction) {
-	meta, err := rule.cache.FindMetadata(path)
+	meta, cached, err := rule.cache.FindMetadata(path)
 	if err != nil {
 		rule.Error(action.Uses.Pos, err.Error())
 		return
@@ -186,7 +186,9 @@ func (rule *RuleAction) checkLocalAction(path string, action *ExecAction) {
 		return
 	}
 
-	rule.checkLocalActionRunner(path, meta, action.Uses.Pos)
+	if !cached {
+		rule.checkLocalActionRunner(path, meta, action.Uses.Pos)
+	}
 
 	rule.checkAction(meta, action, func(m *ActionMetadata) string {
 		return fmt.Sprintf("%q defined at %q", meta.Name, path)

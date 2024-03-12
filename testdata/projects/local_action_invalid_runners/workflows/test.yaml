@@ -11,3 +11,5 @@ jobs:
       - uses: ./ok_node
       - uses: ./ok_composite
       - uses: ./ok_docker
+      # ...
+      - uses: ./old_node
