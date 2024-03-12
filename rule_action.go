@@ -187,6 +187,7 @@ func (rule *RuleAction) checkLocalAction(path string, action *ExecAction) {
 	}
 
 	if !cached {
+		rule.Debug("Checking runner metadata of %s action %q at %q", meta.Runs, meta.Name, path)
 		rule.checkLocalActionRunner(path, meta, action.Uses.Pos)
 	}
 
