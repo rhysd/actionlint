@@ -11,10 +11,11 @@ import (
 	"gopkg.in/yaml.v3"
 )
 
-func expectedMapping(where string, n *yaml.Node) error {
+func unexpectedYAMLKind(where string, n *yaml.Node, want yaml.Kind) error {
 	return fmt.Errorf(
-		"yaml: %s must be mapping node but %s node was found at line:%d, col:%d",
+		"yaml: %s must be %s node but %s node was found at line:%d, col:%d",
 		where,
+		nodeKindName(want),
 		nodeKindName(n.Kind),
 		n.Line,
 		n.Column,
@@ -66,7 +67,7 @@ type ReusableWorkflowMetadataInputs map[string]*ReusableWorkflowMetadataInput
 // UnmarshalYAML implements yaml.Unmarshaler.
 func (inputs *ReusableWorkflowMetadataInputs) UnmarshalYAML(n *yaml.Node) error {
 	if n.Kind != yaml.MappingNode {
-		return expectedMapping("on.workflow_call.inputs", n)
+		return unexpectedYAMLKind("on.workflow_call.inputs", n, yaml.MappingNode)
 	}
 
 	md := make(ReusableWorkflowMetadataInputs, len(n.Content)/2)
@@ -105,7 +106,7 @@ type ReusableWorkflowMetadataSecrets map[string]*ReusableWorkflowMetadataSecret
 // UnmarshalYAML implements yaml.Unmarshaler.
 func (secrets *ReusableWorkflowMetadataSecrets) UnmarshalYAML(n *yaml.Node) error {
 	if n.Kind != yaml.MappingNode {
-		return expectedMapping("on.workflow_call.secrets", n)
+		return unexpectedYAMLKind("on.workflow_call.secrets", n, yaml.MappingNode)
 	}
 
 	md := make(ReusableWorkflowMetadataSecrets, len(n.Content)/2)
@@ -138,7 +139,7 @@ type ReusableWorkflowMetadataOutputs map[string]*ReusableWorkflowMetadataOutput
 // UnmarshalYAML implements yaml.Unmarshaler.
 func (outputs *ReusableWorkflowMetadataOutputs) UnmarshalYAML(n *yaml.Node) error {
 	if n.Kind != yaml.MappingNode {
-		return expectedMapping("on.workflow_call.outputs", n)
+		return unexpectedYAMLKind("on.workflow_call.outputs", n, yaml.MappingNode)
 	}
 
 	md := make(ReusableWorkflowMetadataOutputs, len(n.Content)/2)

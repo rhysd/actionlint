@@ -23,7 +23,10 @@ func testGetWantedActionMetadata() *ActionMetadata {
 			"user_id": {"user_id"},
 		},
 		Runs: ActionMetadataRuns{
-			Using: "node20",
+			Runner: &ActionRunnerJS{
+				Version: 20,
+				Main:    "index.js",
+			},
 		},
 	}
 	return want
@@ -103,25 +106,39 @@ func TestLocalActionsFindMetadata(t *testing.T) {
 		}
 	})
 
-	for _, using := range []string{"docker", "composite"} {
-		a, u := "./"+using, using
-		t.Run(a, func(t *testing.T) {
-			want := &ActionMetadata{
-				Name: "My action",
-				Runs: ActionMetadataRuns{
-					Using: u,
-				},
-			}
-			have, cached, err := c.FindMetadata(a)
-			if err != nil {
-				t.Fatal(err)
-			}
-			testCachedFlag(t, cached, false)
-			if !cmp.Equal(want, have) {
-				t.Fatal(cmp.Diff(want, have))
-			}
-		})
-	}
+	t.Run("./docker", func(t *testing.T) {
+		want := &ActionMetadata{
+			Name: "My action",
+			Runs: ActionMetadataRuns{
+				Runner: &ActionRunnerDocker{Image: "Dockerfile"},
+			},
+		}
+		have, cached, err := c.FindMetadata("./docker")
+		if err != nil {
+			t.Fatal(err)
+		}
+		testCachedFlag(t, cached, false)
+		if !cmp.Equal(want, have) {
+			t.Fatal(cmp.Diff(want, have))
+		}
+	})
+
+	t.Run("./composite", func(t *testing.T) {
+		want := &ActionMetadata{
+			Name: "My action",
+			Runs: ActionMetadataRuns{
+				Runner: &ActionRunnerComposite{},
+			},
+		}
+		have, cached, err := c.FindMetadata("./composite")
+		if err != nil {
+			t.Fatal(err)
+		}
+		testCachedFlag(t, cached, false)
+		if !cmp.Equal(want, have) {
+			t.Fatal(cmp.Diff(want, have))
+		}
+	})
 }
 
 func TestLocalActionsFindConcurrently(t *testing.T) {
