@@ -171,8 +171,7 @@ func (c *LocalActionsCache) writeCache(key string, val *ActionMetadata) {
 // Calling this method is thread-safe.
 func (c *LocalActionsCache) FindMetadata(spec string) (*ActionMetadata, bool, error) {
 	if c.proj == nil || !strings.HasPrefix(spec, "./") {
-		// Return as if this action was cached to suppress the following checks.
-		return nil, true, nil
+		return nil, false, nil
 	}
 
 	if m, ok := c.readCache(spec); ok {
@@ -189,7 +188,7 @@ func (c *LocalActionsCache) FindMetadata(spec string) (*ActionMetadata, bool, er
 		// Do not complain about the action does not exist (#25, #40).
 		// It seems a common pattern that the local action does not exist in the repository
 		// (e.g. Git submodule) and it is cloned at running workflow (due to a private repository).
-		return nil, true, nil
+		return nil, false, nil
 	}
 
 	var meta ActionMetadata

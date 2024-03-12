@@ -2,7 +2,7 @@ on: push
 
 jobs:
   test:
-    runs-on: ubuntu-22.04
+    runs-on: ubuntu-latest
     steps:
       - uses: ./action/broken_input
         with:
@@ -12,3 +12,5 @@ jobs:
         with:
           foo: ...
       - uses: ./action/duplicate_output
+      # Check: Do not repeat error
+      - uses: ./action/broken_output

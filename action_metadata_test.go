@@ -181,8 +181,7 @@ func TestLocalActionsParsingSkipped(t *testing.T) {
 			if m != nil {
 				t.Fatal(tc.spec, "metadata was parsed", m)
 			}
-			// FindMetadata should return as if it was cached
-			testCachedFlag(t, true, cached)
+			testCachedFlag(t, false, cached)
 		})
 	}
 }
@@ -198,8 +197,7 @@ func TestLocalActionsIgnoreRemoteActions(t *testing.T) {
 		if m != nil {
 			t.Fatal(spec, "metadata was parsed", m)
 		}
-		// FindMetadata should return as if it was cached
-		testCachedFlag(t, true, cached)
+		testCachedFlag(t, false, cached)
 	}
 }
 
@@ -240,8 +238,7 @@ func TestLocalActionsNullCache(t *testing.T) {
 	if err != nil {
 		t.Error(err)
 	}
-	// FindMetadata should return as if it was cached
-	testCachedFlag(t, true, cached)
+	testCachedFlag(t, false, cached)
 }
 
 // Error cases
