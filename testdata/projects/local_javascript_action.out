@@ -1,5 +1,4 @@
 workflows/test.yaml:9:15: "main" is required in "runs" section because "JavaScript action" is a JavaScript action. the action is defined at "./missing_main" [action]
-workflows/test.yaml:9:15: "main" is required in "runs" section because "JavaScript action" is a JavaScript action. the action is defined at "./missing_main" [action]
 workflows/test.yaml:10:15: "steps" is not allowed in "runs" section because "Composite action" is a JavaScript action. the action is defined at "./all_invalid_keys" [action]
 workflows/test.yaml:10:15: "image" is not allowed in "runs" section because "Composite action" is a JavaScript action. the action is defined at "./all_invalid_keys" [action]
 workflows/test.yaml:10:15: "pre-entrypoint" is not allowed in "runs" section because "Composite action" is a JavaScript action. the action is defined at "./all_invalid_keys" [action]
