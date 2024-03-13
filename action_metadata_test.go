@@ -8,6 +8,7 @@ import (
 	"testing"
 
 	"github.com/google/go-cmp/cmp"
+	"github.com/google/go-cmp/cmp/cmpopts"
 	"gopkg.in/yaml.v3"
 )
 
@@ -24,6 +25,7 @@ func testGetWantedActionMetadata() *ActionMetadata {
 		},
 		Runs: ActionMetadataRuns{
 			Using: "node20",
+			Main:  "index.js",
 		},
 	}
 	return want
@@ -103,25 +105,43 @@ func TestLocalActionsFindMetadata(t *testing.T) {
 		}
 	})
 
-	for _, using := range []string{"docker", "composite"} {
-		a, u := "./"+using, using
-		t.Run(a, func(t *testing.T) {
-			want := &ActionMetadata{
-				Name: "My action",
-				Runs: ActionMetadataRuns{
-					Using: u,
-				},
-			}
-			have, cached, err := c.FindMetadata(a)
-			if err != nil {
-				t.Fatal(err)
-			}
-			testCachedFlag(t, cached, false)
-			if !cmp.Equal(want, have) {
-				t.Fatal(cmp.Diff(want, have))
-			}
-		})
-	}
+	t.Run("./docker", func(t *testing.T) {
+		want := &ActionMetadata{
+			Name: "My action",
+			Runs: ActionMetadataRuns{
+				Using: "docker",
+				Image: "Dockerfile",
+			},
+		}
+		have, cached, err := c.FindMetadata("./docker")
+		if err != nil {
+			t.Fatal(err)
+		}
+		testCachedFlag(t, cached, false)
+		if !cmp.Equal(want, have) {
+			t.Fatal(cmp.Diff(want, have))
+		}
+	})
+
+	t.Run("./composite", func(t *testing.T) {
+		want := &ActionMetadata{
+			Name: "My action",
+			Runs: ActionMetadataRuns{
+				Using: "composite",
+			},
+		}
+		have, cached, err := c.FindMetadata("./composite")
+		if err != nil {
+			t.Fatal(err)
+		}
+		testCachedFlag(t, cached, false)
+		if !cmp.Equal(want, have, cmpopts.IgnoreFields(ActionMetadataRuns{}, "Steps")) {
+			t.Fatal(cmp.Diff(want, have))
+		}
+		if have.Runs.Steps == nil {
+			t.Fatal(`"steps" was not decoded`, have.Runs)
+		}
+	})
 }
 
 func TestLocalActionsFindConcurrently(t *testing.T) {

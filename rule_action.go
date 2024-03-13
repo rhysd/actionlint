@@ -110,25 +110,70 @@ func (rule *RuleAction) invalidActionFormat(pos *Pos, spec string, why string) {
 }
 
 func (rule *RuleAction) invalidRunnerName(pos *Pos, name, action, path string) {
-	rule.Errorf(pos, "invalid runner name %q at runs.using in the local action %q defined at %q. see https://docs.github.com/en/actions/creating-actions/metadata-syntax-for-github-actions#runs to know valid runner names", name, action, path)
+	rule.Errorf(pos, "invalid runner name %q at runs.using in local action %q defined at %q. see https://docs.github.com/en/actions/creating-actions/metadata-syntax-for-github-actions#runs to know valid runner names", name, action, path)
+}
+
+func (rule *RuleAction) missingRunnerProp(pos *Pos, prop, ty, action, path string) {
+	rule.Errorf(pos, `%q is required at "runs" section for %s action in local action %q defined at %q`, prop, ty, action, path)
+}
+
+func (rule *RuleAction) invalidRunnerProp(pos *Pos, prop, ty, action, path string) {
+	rule.Errorf(pos, `%q is not allowed at "runs" section for %s action in local action %q defined at %q`, prop, ty, action, path)
+}
+
+func (rule *RuleAction) checkInvalidRunnerProps(pos *Pos, r *ActionMetadataRuns, ty, action, path string, props []string) {
+	for _, prop := range props {
+		invalid := prop == "main" && r.Main != "" ||
+			prop == "pre" && r.Pre != "" ||
+			prop == "pre-if" && r.PreIf != "" ||
+			prop == "post" && r.Post != "" ||
+			prop == "post-if" && r.PostIf != "" ||
+			prop == "steps" && len(r.Steps) > 0 ||
+			prop == "image" && r.Image != "" ||
+			prop == "pre-entrypoint" && r.PreEntrypoint != "" ||
+			prop == "entrypoint" && r.Entrypoint != "" ||
+			prop == "post-entrypoint" && r.PostEntrypoint != "" ||
+			prop == "args" && r.Args != nil ||
+			prop == "env" && r.Env != nil
+
+		if invalid {
+			rule.Errorf(pos, `%q is not allowed at "runs" section because %q is a %s action. it is defined at %q`, prop, action, ty, path)
+		}
+	}
 }
 
 // https://docs.github.com/en/actions/creating-actions/metadata-syntax-for-github-actions#runs-for-javascript-actions
 // https://docs.github.com/en/actions/creating-actions/metadata-syntax-for-github-actions#runs-for-docker-container-actions
 // https://docs.github.com/en/actions/creating-actions/metadata-syntax-for-github-actions#runs-for-composite-actions
 func (rule *RuleAction) checkLocalActionRunner(path string, meta *ActionMetadata, pos *Pos) {
-	u := meta.Runs.Using
-	if u == "docker" || u == "composite" {
-		return
-	}
+	r := &meta.Runs
+	u := r.Using
 	if u == "" {
-		rule.Errorf(pos, `"runs.using" is missing in the local action %q defined at %q`, meta.Name, path)
+		rule.Errorf(pos, `"runs.using" is missing in local action %q defined at %q`, meta.Name, path)
 		return
 	}
+
+	if u == "docker" {
+		if r.Image == "" {
+			rule.missingRunnerProp(pos, "image", "Docker", meta.Name, path)
+		}
+		rule.checkInvalidRunnerProps(pos, r, "Docker", meta.Name, path, []string{"main", "pre", "pre-if", "post", "post-if", "steps"})
+		return
+	}
+
+	if u == "composite" {
+		if len(r.Steps) == 0 {
+			rule.missingRunnerProp(pos, "steps", "Composite", meta.Name, path)
+		}
+		rule.checkInvalidRunnerProps(pos, r, "Composite", meta.Name, path, []string{"main", "pre", "pre-if", "post", "post-if", "image", "pre-entrypoint", "entrypoint", "post-entrypoint", "args", "env"})
+		return
+	}
+
 	if !strings.HasPrefix(u, "node") {
 		rule.invalidRunnerName(pos, u, meta.Name, path)
 		return
 	}
+
 	v, err := strconv.ParseUint(u[len("node"):], 10, 0)
 	if err != nil {
 		rule.invalidRunnerName(pos, u, meta.Name, path)
@@ -137,7 +182,7 @@ func (rule *RuleAction) checkLocalActionRunner(path string, meta *ActionMetadata
 	if v < MinimumNodeRunnerVersion {
 		rule.Errorf(
 			pos,
-			`%q runner at "runs.using" is unavailable since the Node.js version is too old (%d < %d) in the local action %q defined at %q. see https://docs.github.com/en/actions/creating-actions/metadata-syntax-for-github-actions#runs-for-javascript-actions`,
+			`%q runner at "runs.using" is unavailable since the Node.js version is too old (%d < %d) in local action %q defined at %q. see https://docs.github.com/en/actions/creating-actions/metadata-syntax-for-github-actions#runs-for-javascript-actions`,
 			u,
 			v,
 			MinimumNodeRunnerVersion,
@@ -145,6 +190,10 @@ func (rule *RuleAction) checkLocalActionRunner(path string, meta *ActionMetadata
 			path,
 		)
 	}
+	if r.Main == "" {
+		rule.missingRunnerProp(pos, "main", "JavaScript", meta.Name, path)
+	}
+	rule.checkInvalidRunnerProps(pos, r, "JavaScript", meta.Name, path, []string{"steps", "image", "pre-entrypoint", "entrypoint", "post-entrypoint", "args", "env"})
 }
 
 // https://docs.github.com/en/actions/learn-github-actions/workflow-syntax-for-github-actions#example-using-the-github-packages-container-registry

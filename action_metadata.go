@@ -95,6 +95,30 @@ func (inputs *ActionMetadataOutputs) UnmarshalYAML(n *yaml.Node) error {
 type ActionMetadataRuns struct {
 	// Using is `using` configuration of action.yaml. It defines what runner is used for the action.
 	Using string `yaml:"using"`
+	// Main is `main` configuration of action.yaml for JavaScript action.
+	Main string `yaml:"main"`
+	// Pre is `pre` configuration of action.yaml for JavaScript action.
+	Pre string `yaml:"pre"`
+	// PreIf is `pre-if` configuration of action.yaml for JavaScript action.
+	PreIf string `yaml:"pre-if"`
+	// Post is `post` configuration of action.yaml for JavaScript action.
+	Post string `yaml:"post"`
+	// PostIf is `post-if` configuration of action.yaml for JavaScript action.
+	PostIf string `yaml:"post-if"`
+	// Steps is `steps` configuration of action.yaml for Composite action.
+	Steps []yaml.Node `yaml:"steps"`
+	// Image is `image` of action.yaml for Docker action.
+	Image string `yaml:"image"`
+	// PreEntrypoint is `pre-entrypoint` of action.yaml for Docker action.
+	PreEntrypoint string `yaml:"pre-entrypoint"`
+	// Entrypoint is `entrypoint` of action.yaml for Docker action.
+	Entrypoint string `yaml:"entrypoint"`
+	// PostEntrypoint is `post-entrypoint` of action.yaml for Docker action.
+	PostEntrypoint string `yaml:"post-entrypoint"`
+	// Args is `args` of action.yaml for Docker action.
+	Args []*yaml.Node `yaml:"args"`
+	// Env is `env` of action.yaml for Docker action.
+	Env map[string]*yaml.Node `yaml:"env"`
 }
 
 // ActionMetadata represents structure of action.yaml.
