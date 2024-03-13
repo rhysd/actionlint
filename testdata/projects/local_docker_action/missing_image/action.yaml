@@ -1,0 +1,6 @@
+name: 'Docker action'
+author: 'rhysd <https://rhysd.github.io>'
+description: 'Correct Docker action'
+
+runs:
+  using: 'docker'
