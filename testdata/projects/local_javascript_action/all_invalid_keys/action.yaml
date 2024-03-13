@@ -1,0 +1,16 @@
+name: 'Composite action'
+author: 'rhysd <https://rhysd.github.io>'
+description: 'Correct composite action'
+
+runs:
+  using: node20
+  main: index.js
+  steps:
+    - run: echo hello
+  image: 'docker://debian:stretch-slim'
+  pre-entrypoint: pre.sh
+  entrypoint: main.sh
+  post-entrypoint: post.sh
+  args: [foo, bar]
+  env:
+    FOO: BAR

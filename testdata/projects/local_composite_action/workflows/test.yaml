@@ -1,0 +1,9 @@
+on: push
+
+jobs:
+  test:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: ./ok
+      - uses: ./missing_steps
+      - uses: ./all_invalid_keys

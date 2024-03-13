@@ -5,11 +5,9 @@ jobs:
     runs-on: ubuntu-latest
     steps:
       - uses: ./old_node
-      - uses: ./missing_runner
+      - uses: ./missing_runs
+      - uses: ./missing_using
       - uses: ./unknown_runner
       - uses: ./invalid_node_version
-      - uses: ./ok_node
-      - uses: ./ok_composite
-      - uses: ./ok_docker
-      # ...
+      # Check using same invalid action twice does not duplicate the errors
       - uses: ./old_node

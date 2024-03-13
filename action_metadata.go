@@ -106,7 +106,7 @@ type ActionMetadataRuns struct {
 	// PostIf is `post-if` configuration of action.yaml for JavaScript action.
 	PostIf string `yaml:"post-if"`
 	// Steps is `steps` configuration of action.yaml for Composite action.
-	Steps []yaml.Node `yaml:"steps"`
+	Steps []any `yaml:"steps"`
 	// Image is `image` of action.yaml for Docker action.
 	Image string `yaml:"image"`
 	// PreEntrypoint is `pre-entrypoint` of action.yaml for Docker action.
@@ -116,9 +116,9 @@ type ActionMetadataRuns struct {
 	// PostEntrypoint is `post-entrypoint` of action.yaml for Docker action.
 	PostEntrypoint string `yaml:"post-entrypoint"`
 	// Args is `args` of action.yaml for Docker action.
-	Args []*yaml.Node `yaml:"args"`
+	Args []any `yaml:"args"`
 	// Env is `env` of action.yaml for Docker action.
-	Env map[string]*yaml.Node `yaml:"env"`
+	Env map[string]any `yaml:"env"`
 }
 
 // ActionMetadata represents structure of action.yaml.
