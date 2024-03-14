@@ -8,3 +8,5 @@ jobs:
       - uses: ./ok_all_optional
       - uses: ./missing_main
       - uses: ./all_invalid_keys
+      - uses: ./missing_files
+      - uses: ./invalid_if_sections

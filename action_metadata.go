@@ -124,6 +124,8 @@ type ActionMetadataRuns struct {
 // ActionMetadata represents structure of action.yaml.
 // https://docs.github.com/en/actions/creating-actions/metadata-syntax-for-github-actions
 type ActionMetadata struct {
+	dir  string
+	file string
 	// Name is "name" field of action.yaml.
 	Name string `yaml:"name" json:"name"`
 	// Inputs is "inputs" field of action.yaml.
@@ -133,12 +135,22 @@ type ActionMetadata struct {
 	Outputs ActionMetadataOutputs `yaml:"outputs" json:"outputs"`
 	// SkipInputs is flag to specify behavior of inputs check. When it is true, inputs for this
 	// action will not be checked.
-	SkipInputs bool `json:"skip_inputs"`
+	SkipInputs bool `yaml:"-" json:"skip_inputs"`
 	// SkipOutputs is flag to specify a bit loose typing to outputs object. If it is set to
 	// true, the outputs object accepts any properties along with strictly typed props.
-	SkipOutputs bool `json:"skip_outputs"`
+	SkipOutputs bool `yaml:"-" json:"skip_outputs"`
 	// Runs is "runs" field of action.yaml.
 	Runs ActionMetadataRuns `yaml:"runs" json:"-"`
+}
+
+// Dir returns a directory path of the action.
+func (md *ActionMetadata) Dir() string {
+	return md.dir
+}
+
+// Path returns a file path of the action's metadata file.
+func (md *ActionMetadata) Path() string {
+	return filepath.Join(md.dir, md.file)
 }
 
 // LocalActionsCache is cache for local actions' metadata. It avoids repeating to find/read/parse
@@ -204,7 +216,7 @@ func (c *LocalActionsCache) FindMetadata(spec string) (*ActionMetadata, bool, er
 	}
 
 	dir := filepath.Join(c.proj.RootDir(), filepath.FromSlash(spec))
-	b, ok := c.readLocalActionMetadataFile(dir)
+	b, f, ok := c.readLocalActionMetadataFile(dir)
 	if !ok {
 		c.debug("No action metadata found in %s", dir)
 		// Remember action was not found
@@ -221,6 +233,8 @@ func (c *LocalActionsCache) FindMetadata(spec string) (*ActionMetadata, bool, er
 		msg := strings.ReplaceAll(err.Error(), "\n", " ")
 		return nil, false, fmt.Errorf("could not parse action metadata in %q: %s", dir, msg)
 	}
+	meta.file = f
+	meta.dir = dir
 
 	c.debug("New metadata parsed from action %s: %v", dir, &meta)
 
@@ -228,17 +242,15 @@ func (c *LocalActionsCache) FindMetadata(spec string) (*ActionMetadata, bool, er
 	return &meta, false, nil
 }
 
-func (c *LocalActionsCache) readLocalActionMetadataFile(dir string) ([]byte, bool) {
-	for _, p := range []string{
-		filepath.Join(dir, "action.yaml"),
-		filepath.Join(dir, "action.yml"),
-	} {
+func (c *LocalActionsCache) readLocalActionMetadataFile(dir string) ([]byte, string, bool) {
+	for _, f := range []string{"action.yaml", "action.yml"} {
+		p := filepath.Join(dir, f)
 		if b, err := os.ReadFile(p); err == nil {
-			return b, true
+			return b, f, true
 		}
 	}
 
-	return nil, false
+	return nil, "", false
 }
 
 // LocalActionsCacheFactory is a factory to create LocalActionsCache instances. LocalActionsCache

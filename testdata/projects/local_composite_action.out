@@ -1,12 +1,12 @@
-workflows/test.yaml:8:15: "steps" is required in "runs" section because "Composite action" is a Composite action. the action is defined at "./missing_steps" [action]
-workflows/test.yaml:9:15: "main" is not allowed in "runs" section because "Composite action" is a Composite action. the action is defined at "./all_invalid_keys" [action]
-workflows/test.yaml:9:15: "pre" is not allowed in "runs" section because "Composite action" is a Composite action. the action is defined at "./all_invalid_keys" [action]
-workflows/test.yaml:9:15: "pre-if" is not allowed in "runs" section because "Composite action" is a Composite action. the action is defined at "./all_invalid_keys" [action]
-workflows/test.yaml:9:15: "post" is not allowed in "runs" section because "Composite action" is a Composite action. the action is defined at "./all_invalid_keys" [action]
-workflows/test.yaml:9:15: "post-if" is not allowed in "runs" section because "Composite action" is a Composite action. the action is defined at "./all_invalid_keys" [action]
-workflows/test.yaml:9:15: "image" is not allowed in "runs" section because "Composite action" is a Composite action. the action is defined at "./all_invalid_keys" [action]
-workflows/test.yaml:9:15: "pre-entrypoint" is not allowed in "runs" section because "Composite action" is a Composite action. the action is defined at "./all_invalid_keys" [action]
-workflows/test.yaml:9:15: "entrypoint" is not allowed in "runs" section because "Composite action" is a Composite action. the action is defined at "./all_invalid_keys" [action]
-workflows/test.yaml:9:15: "post-entrypoint" is not allowed in "runs" section because "Composite action" is a Composite action. the action is defined at "./all_invalid_keys" [action]
-workflows/test.yaml:9:15: "args" is not allowed in "runs" section because "Composite action" is a Composite action. the action is defined at "./all_invalid_keys" [action]
-workflows/test.yaml:9:15: "env" is not allowed in "runs" section because "Composite action" is a Composite action. the action is defined at "./all_invalid_keys" [action]
+/workflows/test\.yaml:8:15: "steps" is required in "runs" section because "Composite action" is a Composite action\. the action is defined at ".+missing_steps" \[action\]/
+/workflows/test\.yaml:9:15: "main" is not allowed in "runs" section because "Composite action" is a Composite action\. the action is defined at ".+all_invalid_keys" \[action\]/
+/workflows/test\.yaml:9:15: "pre" is not allowed in "runs" section because "Composite action" is a Composite action\. the action is defined at ".+all_invalid_keys" \[action\]/
+/workflows/test\.yaml:9:15: "pre-if" is not allowed in "runs" section because "Composite action" is a Composite action\. the action is defined at ".+all_invalid_keys" \[action\]/
+/workflows/test\.yaml:9:15: "post" is not allowed in "runs" section because "Composite action" is a Composite action\. the action is defined at ".+all_invalid_keys" \[action\]/
+/workflows/test\.yaml:9:15: "post-if" is not allowed in "runs" section because "Composite action" is a Composite action\. the action is defined at ".+all_invalid_keys" \[action\]/
+/workflows/test\.yaml:9:15: "image" is not allowed in "runs" section because "Composite action" is a Composite action\. the action is defined at ".+all_invalid_keys" \[action\]/
+/workflows/test\.yaml:9:15: "pre-entrypoint" is not allowed in "runs" section because "Composite action" is a Composite action\. the action is defined at ".+all_invalid_keys" \[action\]/
+/workflows/test\.yaml:9:15: "entrypoint" is not allowed in "runs" section because "Composite action" is a Composite action\. the action is defined at ".+all_invalid_keys" \[action\]/
+/workflows/test\.yaml:9:15: "post-entrypoint" is not allowed in "runs" section because "Composite action" is a Composite action\. the action is defined at ".+all_invalid_keys" \[action\]/
+/workflows/test\.yaml:9:15: "args" is not allowed in "runs" section because "Composite action" is a Composite action\. the action is defined at ".+all_invalid_keys" \[action\]/
+/workflows/test\.yaml:9:15: "env" is not allowed in "runs" section because "Composite action" is a Composite action\. the action is defined at ".+all_invalid_keys" \[action\]/

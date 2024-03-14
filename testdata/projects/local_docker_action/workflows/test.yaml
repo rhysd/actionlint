@@ -9,3 +9,4 @@ jobs:
       - uses: ./ok_all_keys
       - uses: ./missing_image
       - uses: ./all_invalid_keys
+      - uses: ./missing_files

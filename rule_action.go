@@ -1,8 +1,11 @@
 package actionlint
 
 import (
+	"errors"
 	"fmt"
 	"net/url"
+	"os"
+	"path/filepath"
 	"strconv"
 	"strings"
 )
@@ -138,41 +141,44 @@ func (rule *RuleAction) checkInvalidRunsProps(pos *Pos, r *ActionMetadataRuns, t
 	}
 }
 
-// https://docs.github.com/en/actions/creating-actions/metadata-syntax-for-github-actions#runs-for-javascript-actions
+func (rule *RuleAction) checkRunsFileExists(file, dir, prop, name string, pos *Pos) {
+	f := strings.TrimSpace(filepath.FromSlash(file))
+	if f == "" {
+		return
+	}
+	p := filepath.Join(dir, f)
+	if _, err := os.Stat(p); errors.Is(err, os.ErrNotExist) {
+		rule.Errorf(pos, `file %q does not exist in %q. it is specified at %q key in "runs" section in %q action`, f, dir, prop, name)
+	}
+}
+
 // https://docs.github.com/en/actions/creating-actions/metadata-syntax-for-github-actions#runs-for-docker-container-actions
+func (rule *RuleAction) checkLocalDockerActionRuns(r *ActionMetadataRuns, dir, name string, pos *Pos) {
+	if r.Image == "" {
+		rule.missingRunsProp(pos, "image", "Docker", name, dir)
+	} else if !strings.HasPrefix(r.Image, "docker://") {
+		rule.checkRunsFileExists(r.Image, dir, "image", name, pos)
+	}
+	rule.checkRunsFileExists(r.PreEntrypoint, dir, "pre-entrypoint", name, pos)
+	rule.checkRunsFileExists(r.Entrypoint, dir, "entrypoint", name, pos)
+	rule.checkRunsFileExists(r.PostEntrypoint, dir, "post-entrypoint", name, pos)
+	rule.checkInvalidRunsProps(pos, r, "Docker", name, dir, []string{"main", "pre", "pre-if", "post", "post-if", "steps"})
+}
+
 // https://docs.github.com/en/actions/creating-actions/metadata-syntax-for-github-actions#runs-for-composite-actions
-func (rule *RuleAction) checkLocalActionRuns(path string, meta *ActionMetadata, pos *Pos) {
-	r := &meta.Runs
+func (rule *RuleAction) checkLocalCompositeActionRuns(r *ActionMetadataRuns, dir, name string, pos *Pos) {
+	if r.Steps == nil {
+		rule.missingRunsProp(pos, "steps", "Composite", name, dir)
+	}
+	rule.checkInvalidRunsProps(pos, r, "Composite", name, dir, []string{"main", "pre", "pre-if", "post", "post-if", "image", "pre-entrypoint", "entrypoint", "post-entrypoint", "args", "env"})
+}
+
+// https://docs.github.com/en/actions/creating-actions/metadata-syntax-for-github-actions#runs-for-javascript-actions
+func (rule *RuleAction) checkLocalJavaScriptActionRuns(r *ActionMetadataRuns, dir, name string, pos *Pos) {
 	u := r.Using
-	if u == "" {
-		rule.Errorf(pos, `"runs.using" is missing in local action %q defined at %q`, meta.Name, path)
-		return
-	}
-
-	if u == "docker" {
-		if r.Image == "" {
-			rule.missingRunsProp(pos, "image", "Docker", meta.Name, path)
-		}
-		rule.checkInvalidRunsProps(pos, r, "Docker", meta.Name, path, []string{"main", "pre", "pre-if", "post", "post-if", "steps"})
-		return
-	}
-
-	if u == "composite" {
-		if len(r.Steps) == 0 {
-			rule.missingRunsProp(pos, "steps", "Composite", meta.Name, path)
-		}
-		rule.checkInvalidRunsProps(pos, r, "Composite", meta.Name, path, []string{"main", "pre", "pre-if", "post", "post-if", "image", "pre-entrypoint", "entrypoint", "post-entrypoint", "args", "env"})
-		return
-	}
-
-	if !strings.HasPrefix(u, "node") {
-		rule.invalidRunsName(pos, u, meta.Name, path)
-		return
-	}
-
 	v, err := strconv.ParseUint(u[len("node"):], 10, 0)
 	if err != nil {
-		rule.invalidRunsName(pos, u, meta.Name, path)
+		rule.invalidRunsName(pos, u, name, dir)
 		return
 	}
 	if v < MinimumNodeRunnerVersion {
@@ -182,14 +188,50 @@ func (rule *RuleAction) checkLocalActionRuns(path string, meta *ActionMetadata, 
 			u,
 			v,
 			MinimumNodeRunnerVersion,
-			meta.Name,
-			path,
+			name,
+			dir,
 		)
 	}
 	if r.Main == "" {
-		rule.missingRunsProp(pos, "main", "JavaScript", meta.Name, path)
+		rule.missingRunsProp(pos, "main", "JavaScript", name, dir)
+	} else {
+		rule.checkRunsFileExists(r.Main, dir, "main", name, pos)
 	}
-	rule.checkInvalidRunsProps(pos, r, "JavaScript", meta.Name, path, []string{"steps", "image", "pre-entrypoint", "entrypoint", "post-entrypoint", "args", "env"})
+	rule.checkRunsFileExists(r.Pre, dir, "pre", name, pos)
+	if r.Pre == "" && r.PreIf != "" {
+		rule.Errorf(pos, `"pre" is required when "pre-if" is specified in "runs" section in %q action. the action is defined at %q`, name, dir)
+	}
+	rule.checkRunsFileExists(r.Post, dir, "post", name, pos)
+	if r.Post == "" && r.PostIf != "" {
+		rule.Errorf(pos, `"post" is required when "post-if" is specified in "runs" section in %q action. the action is defined at %q`, name, dir)
+	}
+	rule.checkInvalidRunsProps(pos, r, "JavaScript", name, dir, []string{"steps", "image", "pre-entrypoint", "entrypoint", "post-entrypoint", "args", "env"})
+}
+
+// https://docs.github.com/en/actions/creating-actions/metadata-syntax-for-github-actions#runs
+func (rule *RuleAction) checkLocalActionRuns(meta *ActionMetadata, pos *Pos) {
+	r := &meta.Runs
+	if r.Using == "" {
+		rule.Errorf(pos, `"runs.using" is missing in local action %q defined at %q`, meta.Name, meta.Dir())
+		return
+	}
+
+	if r.Using == "docker" {
+		rule.checkLocalDockerActionRuns(r, meta.Dir(), meta.Name, pos)
+		return
+	}
+
+	if r.Using == "composite" {
+		rule.checkLocalCompositeActionRuns(r, meta.Dir(), meta.Name, pos)
+		return
+	}
+
+	if !strings.HasPrefix(r.Using, "node") {
+		rule.invalidRunsName(pos, r.Using, meta.Name, meta.Dir())
+		return
+	}
+
+	rule.checkLocalJavaScriptActionRuns(r, meta.Dir(), meta.Name, pos)
 }
 
 // https://docs.github.com/en/actions/learn-github-actions/workflow-syntax-for-github-actions#example-using-the-github-packages-container-registry
@@ -221,8 +263,8 @@ func (rule *RuleAction) checkDockerAction(uri string, exec *ExecAction) {
 }
 
 // https://docs.github.com/en/actions/learn-github-actions/workflow-syntax-for-github-actions#example-using-action-in-the-same-repository-as-the-workflow
-func (rule *RuleAction) checkLocalAction(path string, action *ExecAction) {
-	meta, cached, err := rule.cache.FindMetadata(path)
+func (rule *RuleAction) checkLocalAction(spec string, action *ExecAction) {
+	meta, cached, err := rule.cache.FindMetadata(spec)
 	if err != nil {
 		rule.Error(action.Uses.Pos, err.Error())
 		return
@@ -232,12 +274,12 @@ func (rule *RuleAction) checkLocalAction(path string, action *ExecAction) {
 	}
 
 	if !cached {
-		rule.Debug("Checking runner metadata of %s action %q at %q", meta.Runs, meta.Name, path)
-		rule.checkLocalActionRuns(path, meta, action.Uses.Pos)
+		rule.Debug("Checking runner metadata of %s action %q at %q", meta.Runs, meta.Name, spec)
+		rule.checkLocalActionRuns(meta, action.Uses.Pos)
 	}
 
 	rule.checkAction(meta, action, func(m *ActionMetadata) string {
-		return fmt.Sprintf("%q defined at %q", meta.Name, path)
+		return fmt.Sprintf("%q defined at %q", m.Name, spec)
 	})
 }
 

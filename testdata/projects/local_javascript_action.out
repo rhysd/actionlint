@@ -1,8 +1,13 @@
-workflows/test.yaml:9:15: "main" is required in "runs" section because "JavaScript action" is a JavaScript action. the action is defined at "./missing_main" [action]
-workflows/test.yaml:10:15: "steps" is not allowed in "runs" section because "Composite action" is a JavaScript action. the action is defined at "./all_invalid_keys" [action]
-workflows/test.yaml:10:15: "image" is not allowed in "runs" section because "Composite action" is a JavaScript action. the action is defined at "./all_invalid_keys" [action]
-workflows/test.yaml:10:15: "pre-entrypoint" is not allowed in "runs" section because "Composite action" is a JavaScript action. the action is defined at "./all_invalid_keys" [action]
-workflows/test.yaml:10:15: "entrypoint" is not allowed in "runs" section because "Composite action" is a JavaScript action. the action is defined at "./all_invalid_keys" [action]
-workflows/test.yaml:10:15: "post-entrypoint" is not allowed in "runs" section because "Composite action" is a JavaScript action. the action is defined at "./all_invalid_keys" [action]
-workflows/test.yaml:10:15: "args" is not allowed in "runs" section because "Composite action" is a JavaScript action. the action is defined at "./all_invalid_keys" [action]
-workflows/test.yaml:10:15: "env" is not allowed in "runs" section because "Composite action" is a JavaScript action. the action is defined at "./all_invalid_keys" [action]
+/workflows/test\.yaml:9:15: "main" is required in "runs" section because "JavaScript action" is a JavaScript action\. the action is defined at ".+missing_main" \[action\]/
+/workflows/test\.yaml:10:15: "steps" is not allowed in "runs" section because "Composite action" is a JavaScript action\. the action is defined at ".+all_invalid_keys" \[action\]/
+/workflows/test\.yaml:10:15: "image" is not allowed in "runs" section because "Composite action" is a JavaScript action\. the action is defined at ".+all_invalid_keys" \[action\]/
+/workflows/test\.yaml:10:15: "pre-entrypoint" is not allowed in "runs" section because "Composite action" is a JavaScript action\. the action is defined at ".+all_invalid_keys" \[action\]/
+/workflows/test\.yaml:10:15: "entrypoint" is not allowed in "runs" section because "Composite action" is a JavaScript action\. the action is defined at ".+all_invalid_keys" \[action\]/
+/workflows/test\.yaml:10:15: "post-entrypoint" is not allowed in "runs" section because "Composite action" is a JavaScript action\. the action is defined at ".+all_invalid_keys" \[action\]/
+/workflows/test\.yaml:10:15: "args" is not allowed in "runs" section because "Composite action" is a JavaScript action\. the action is defined at ".+all_invalid_keys" \[action\]/
+/workflows/test\.yaml:10:15: "env" is not allowed in "runs" section because "Composite action" is a JavaScript action\. the action is defined at ".+all_invalid_keys" \[action\]/
+/workflows/test\.yaml:11:15: file "index\.js" does not exist in ".+missing_files"\. it is specified at "main" key in "runs" section in "JavaScript action" action \[action\]/
+/workflows/test\.yaml:11:15: file "pre\.js" does not exist in ".+missing_files"\. it is specified at "pre" key in "runs" section in "JavaScript action" action \[action\]/
+/workflows/test\.yaml:11:15: file "pre\.js" does not exist in ".+missing_files"\. it is specified at "post" key in "runs" section in "JavaScript action" action \[action\]/
+/workflows/test\.yaml:12:15: "pre" is required when "pre-if" is specified in "runs" section in "JavaScript action" action\. the action is defined at ".+invalid_if_sections" \[action\]/
+/workflows/test\.yaml:12:15: "post" is required when "post-if" is specified in "runs" section in "JavaScript action" action\. the action is defined at ".+invalid_if_sections" \[action\]/
