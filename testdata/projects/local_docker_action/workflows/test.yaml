@@ -10,3 +10,5 @@ jobs:
       - uses: ./missing_image
       - uses: ./all_invalid_keys
       - uses: ./missing_files
+      - uses: ./ok_dockerfile_subdir
+      - uses: ./invalid_dockerfile
