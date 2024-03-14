@@ -4,3 +4,4 @@ description: 'Incorrect Docker action'
 
 runs:
   using: 'docker'
+  image: 'Dockerfile2'

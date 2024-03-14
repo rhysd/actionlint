@@ -142,7 +142,7 @@ func (rule *RuleAction) checkInvalidRunsProps(pos *Pos, r *ActionMetadataRuns, t
 }
 
 func (rule *RuleAction) checkRunsFileExists(file, dir, prop, name string, pos *Pos) {
-	f := strings.TrimSpace(filepath.FromSlash(file))
+	f := filepath.FromSlash(file)
 	if f == "" {
 		return
 	}
@@ -158,6 +158,9 @@ func (rule *RuleAction) checkLocalDockerActionRuns(r *ActionMetadataRuns, dir, n
 		rule.missingRunsProp(pos, "image", "Docker", name, dir)
 	} else if !strings.HasPrefix(r.Image, "docker://") {
 		rule.checkRunsFileExists(r.Image, dir, "image", name, pos)
+		if filepath.Base(filepath.FromSlash(r.Image)) != "Dockerfile" {
+			rule.Errorf(pos, `the local file %q referenced from "image" key must be named "Dockerfile" in %q action. the action is defined at %q`, r.Image, name, dir)
+		}
 	}
 	rule.checkRunsFileExists(r.PreEntrypoint, dir, "pre-entrypoint", name, pos)
 	rule.checkRunsFileExists(r.Entrypoint, dir, "entrypoint", name, pos)
@@ -192,19 +195,23 @@ func (rule *RuleAction) checkLocalJavaScriptActionRuns(r *ActionMetadataRuns, di
 			dir,
 		)
 	}
+
 	if r.Main == "" {
 		rule.missingRunsProp(pos, "main", "JavaScript", name, dir)
 	} else {
 		rule.checkRunsFileExists(r.Main, dir, "main", name, pos)
 	}
+
 	rule.checkRunsFileExists(r.Pre, dir, "pre", name, pos)
 	if r.Pre == "" && r.PreIf != "" {
 		rule.Errorf(pos, `"pre" is required when "pre-if" is specified in "runs" section in %q action. the action is defined at %q`, name, dir)
 	}
+
 	rule.checkRunsFileExists(r.Post, dir, "post", name, pos)
 	if r.Post == "" && r.PostIf != "" {
 		rule.Errorf(pos, `"post" is required when "post-if" is specified in "runs" section in %q action. the action is defined at %q`, name, dir)
 	}
+
 	rule.checkInvalidRunsProps(pos, r, "JavaScript", name, dir, []string{"steps", "image", "pre-entrypoint", "entrypoint", "post-entrypoint", "args", "env"})
 }
 
