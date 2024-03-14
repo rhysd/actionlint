@@ -1,7 +1,11 @@
-workflows/test.yaml:10:15: "image" is required in "runs" section because "Docker action" is a Docker action. the action is defined at "./missing_image" [action]
-workflows/test.yaml:11:15: "main" is not allowed in "runs" section because "Docker action" is a Docker action. the action is defined at "./all_invalid_keys" [action]
-workflows/test.yaml:11:15: "pre" is not allowed in "runs" section because "Docker action" is a Docker action. the action is defined at "./all_invalid_keys" [action]
-workflows/test.yaml:11:15: "pre-if" is not allowed in "runs" section because "Docker action" is a Docker action. the action is defined at "./all_invalid_keys" [action]
-workflows/test.yaml:11:15: "post" is not allowed in "runs" section because "Docker action" is a Docker action. the action is defined at "./all_invalid_keys" [action]
-workflows/test.yaml:11:15: "post-if" is not allowed in "runs" section because "Docker action" is a Docker action. the action is defined at "./all_invalid_keys" [action]
-workflows/test.yaml:11:15: "steps" is not allowed in "runs" section because "Docker action" is a Docker action. the action is defined at "./all_invalid_keys" [action]
+/workflows/test\.yaml:10:15: "image" is required in "runs" section because "Docker action" is a Docker action\. the action is defined at ".+missing_image" \[action\]/
+/workflows/test\.yaml:11:15: "main" is not allowed in "runs" section because "Docker action" is a Docker action\. the action is defined at ".+all_invalid_keys" \[action\]/
+/workflows/test\.yaml:11:15: "pre" is not allowed in "runs" section because "Docker action" is a Docker action\. the action is defined at ".+all_invalid_keys" \[action\]/
+/workflows/test\.yaml:11:15: "pre-if" is not allowed in "runs" section because "Docker action" is a Docker action\. the action is defined at ".+all_invalid_keys" \[action\]/
+/workflows/test\.yaml:11:15: "post" is not allowed in "runs" section because "Docker action" is a Docker action\. the action is defined at ".+all_invalid_keys" \[action\]/
+/workflows/test\.yaml:11:15: "post-if" is not allowed in "runs" section because "Docker action" is a Docker action\. the action is defined at ".+all_invalid_keys" \[action\]/
+/workflows/test\.yaml:11:15: "steps" is not allowed in "runs" section because "Docker action" is a Docker action\. the action is defined at ".+all_invalid_keys" \[action\]/
+/workflows/test\.yaml:12:15: file "Dockerfile" does not exist in ".+missing_files"\. it is specified at "image" key in "runs" section in "Docker action" action \[action\]/
+/workflows/test\.yaml:12:15: file "pre\.sh" does not exist in ".+missing_files"\. it is specified at "pre-entrypoint" key in "runs" section in "Docker action" action \[action\]/
+/workflows/test\.yaml:12:15: file "main\.sh" does not exist in ".+missing_files"\. it is specified at "entrypoint" key in "runs" section in "Docker action" action \[action\]/
+/workflows/test\.yaml:12:15: file "post\.sh" does not exist in ".+missing_files"\. it is specified at "post-entrypoint" key in "runs" section in "Docker action" action \[action\]/
