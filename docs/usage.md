@@ -416,6 +416,12 @@ on the fly when you edit GitHub Actions CI workflows. Please read the plugin's d
 actionlint and notifies errors on the fly when you edit GitHub Actions CI workflows. Please read the plugin's documentation for
 more details.
 
+### Pulsar Edit
+
+A [Linter package][pulsar-linter] for [Pulsar Edit][pulsar] is available. The package automatically detects a `workflows`
+directory, executes the `actionlint` command on any detected GitHub Actions files within the directory, and reports returned
+information in the code editor display tab while editing workflow files.
+
 ### Nova
 
 [Nova.app][nova] is a MacOS only editor and IDE. The [Actionlint for Nova][nova-extension] allows you to get inline feedback
@@ -488,6 +494,8 @@ You can also see actionlint issues inline in VS Code via the [Trunk VS Code exte
 [emacs-flycheck-extension]: https://github.com/tirimia/flycheck-actionlint
 [nvim-lint]: https://github.com/mfussenegger/nvim-lint
 [vim-ale]: https://github.com/dense-analysis/ale
+[pulsar]: https://pulsar-edit.dev/
+[pulsar-linter]: https://web.pulsar-edit.dev/packages/linter-github-actions
 [nova-extension]: https://extensions.panic.com/extensions/org.netwrk/org.netwrk.actionlint/
 [nova]: https://nova.app
 [trunk-io]: https://docs.trunk.io/docs

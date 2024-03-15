@@ -161,8 +161,8 @@
     },
     {
         "slug": "azure/aks-set-context",
-        "tags": ["v1", "v2", "v3"],
-        "next": "v4"
+        "tags": ["v1", "v2", "v3", "v4"],
+        "next": "v5"
     },
     {
         "slug": "azure/login",
@@ -342,8 +342,8 @@
     },
     {
         "slug": "nwtgck/actions-netlify",
-        "tags": ["v1", "v2"],
-        "next": "v3"
+        "tags": ["v1", "v2", "v3"],
+        "next": "v4"
     },
     {
         "slug": "octokit/request-action",
@@ -443,8 +443,8 @@
     },
     {
         "slug": "softprops/action-gh-release",
-        "tags": ["v1"],
-        "next": "v2"
+        "tags": ["v1", "v2"],
+        "next": "v3"
     },
     {
         "slug": "subosito/flutter-action",
