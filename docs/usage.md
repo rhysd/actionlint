@@ -384,6 +384,12 @@ As alternatives to `actionlint` hook, `actionlint-docker` or `actionlint-system`
 [Linter extension][vsc-extension] for [VS Code][vscode] is available. The extension automatically detects `.github/workflows`
 directory, runs `actionlint` command, and reports errors in the code editor while editing workflow files.
 
+### Pulsar Edit
+
+A [Linter package](https://web.pulsar-edit.dev/packages/linter-github-actions) for [Pulsar Edit](https://pulsar-edit.dev/) is
+available. The package automatically detects a `workflows` directory, executes the `actionlint` command on any detected Github
+Actions files within the directory, and reports returned information in the code editor display tab while editing workflow files.
+
 ### Emacs
 
 Plugins for both [Flycheck][emacs-flycheck] and [Flymake][emacs-flymake] are available via [MELPA][emacs-melpa].
