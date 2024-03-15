@@ -384,12 +384,6 @@ As alternatives to `actionlint` hook, `actionlint-docker` or `actionlint-system`
 [Linter extension][vsc-extension] for [VS Code][vscode] is available. The extension automatically detects `.github/workflows`
 directory, runs `actionlint` command, and reports errors in the code editor while editing workflow files.
 
-### Pulsar Edit
-
-A [Linter package](https://web.pulsar-edit.dev/packages/linter-github-actions) for [Pulsar Edit](https://pulsar-edit.dev/) is
-available. The package automatically detects a `workflows` directory, executes the `actionlint` command on any detected Github
-Actions files within the directory, and reports returned information in the code editor display tab while editing workflow files.
-
 ### Emacs
 
 Plugins for both [Flycheck][emacs-flycheck] and [Flymake][emacs-flymake] are available via [MELPA][emacs-melpa].
@@ -404,6 +398,12 @@ on the fly when you edit GitHub Actions CI workflows. Please read the plugin's d
 [ALE][vim-ale] supports actionlint on Vim and Neovim. Similar to nvim-lint, The plugin automatically and asynchronously runs
 actionlint and notifies errors on the fly when you edit GitHub Actions CI workflows. Please read the plugin's documentation for
 more details.
+
+### Pulsar Edit
+
+A [Linter package][pulsar-linter] for [Pulsar Edit][pulsar] is available. The package automatically detects a `workflows`
+directory, executes the `actionlint` command on any detected GitHub Actions files within the directory, and reports returned
+information in the code editor display tab while editing workflow files.
 
 ### Nova
 
@@ -477,6 +477,8 @@ You can also see actionlint issues inline in VS Code via the [Trunk VS Code exte
 [emacs-flycheck-extension]: https://github.com/tirimia/flycheck-actionlint
 [nvim-lint]: https://github.com/mfussenegger/nvim-lint
 [vim-ale]: https://github.com/dense-analysis/ale
+[pulsar]: https://pulsar-edit.dev/
+[pulsar-linter]: https://web.pulsar-edit.dev/packages/linter-github-actions
 [nova-extension]: https://extensions.panic.com/extensions/org.netwrk/org.netwrk.actionlint/
 [nova]: https://nova.app
 [trunk-io]: https://docs.trunk.io/docs
