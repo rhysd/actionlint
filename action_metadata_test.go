@@ -79,12 +79,70 @@ func TestLocalActionsFindMetadata(t *testing.T) {
 	proj := &Project{testdir, nil}
 	c := NewLocalActionsCache(proj, nil)
 
-	for _, spec := range []string{"./action-yml", "./action-yaml"} {
-		want := testGetWantedActionMetadata()
-		t.Run(spec, func(t *testing.T) {
+	want := testGetWantedActionMetadata()
+
+	wantEmpty := testGetWantedActionMetadata()
+	wantEmpty.Inputs = nil
+	wantEmpty.Outputs = nil
+
+	wantUpper := testGetWantedActionMetadata()
+	for _, i := range wantUpper.Inputs {
+		i.Name = strings.ToUpper(i.Name)
+	}
+	for _, o := range wantUpper.Outputs {
+		o.Name = strings.ToUpper(o.Name)
+	}
+
+	tests := []struct {
+		spec string
+		want *ActionMetadata
+		cmp  []cmp.Option
+	}{
+		{
+			spec: "./action-yml",
+			want: want,
+		},
+		{
+			spec: "./action-yaml",
+			want: want,
+		},
+		{
+			spec: "./empty",
+			want: wantEmpty,
+		},
+		{
+			spec: "./uppercase",
+			want: wantUpper,
+		},
+		{
+			spec: "./docker",
+			want: &ActionMetadata{
+				Name: "My action",
+				Runs: ActionMetadataRuns{
+					Using: "docker",
+					Image: "Dockerfile",
+				},
+			},
+		},
+		{
+			spec: "./composite",
+			want: &ActionMetadata{
+				Name: "My action",
+				Runs: ActionMetadataRuns{
+					Using: "composite",
+				},
+			},
+			cmp: []cmp.Option{
+				cmpopts.IgnoreFields(ActionMetadataRuns{}, "Steps"),
+			},
+		},
+	}
+
+	for _, tc := range tests {
+		t.Run(tc.spec, func(t *testing.T) {
 			// read metadata repeatedly (should be cached)
 			for i := 0; i < 3; i++ {
-				have, cached, err := c.FindMetadata(spec)
+				have, cached, err := c.FindMetadata(tc.spec)
 				if err != nil {
 					t.Fatal(i, err)
 				}
@@ -92,85 +150,11 @@ func TestLocalActionsFindMetadata(t *testing.T) {
 					t.Fatal(i, "metadata is nil")
 				}
 				testCheckCachedFlag(t, cached, i > 0)
-				testDiffActionMetadata(t, want, have)
-				testCheckActionMetadataPath(t, spec, have)
+				testDiffActionMetadata(t, tc.want, have, tc.cmp...)
+				testCheckActionMetadataPath(t, tc.spec, have)
 			}
 		})
 	}
-
-	t.Run("./empty", func(t *testing.T) {
-		for i := 0; i < 3; i++ {
-			m, cached, err := c.FindMetadata("./empty")
-			if err != nil {
-				t.Fatal(i, err)
-			}
-			if m == nil {
-				t.Fatal(i, "metadata is nil")
-			}
-			if len(m.Inputs) != 0 {
-				t.Fatal("inputs are not empty", m.Inputs)
-			}
-			if len(m.Outputs) != 0 {
-				t.Fatal("outputs are not empty", m.Outputs)
-			}
-			testCheckCachedFlag(t, cached, i > 0)
-			testCheckActionMetadataPath(t, "empty", m)
-		}
-	})
-
-	t.Run("./uppercase", func(t *testing.T) {
-		want := testGetWantedActionMetadata()
-		for _, i := range want.Inputs {
-			i.Name = strings.ToUpper(i.Name)
-		}
-		for _, o := range want.Outputs {
-			o.Name = strings.ToUpper(o.Name)
-		}
-
-		have, cached, err := c.FindMetadata("./uppercase")
-		if err != nil {
-			t.Fatal(err)
-		}
-		testCheckCachedFlag(t, cached, false)
-		testDiffActionMetadata(t, want, have)
-		testCheckActionMetadataPath(t, "uppercase", have)
-	})
-
-	t.Run("./docker", func(t *testing.T) {
-		want := &ActionMetadata{
-			Name: "My action",
-			Runs: ActionMetadataRuns{
-				Using: "docker",
-				Image: "Dockerfile",
-			},
-		}
-		have, cached, err := c.FindMetadata("./docker")
-		if err != nil {
-			t.Fatal(err)
-		}
-		testCheckCachedFlag(t, cached, false)
-		testDiffActionMetadata(t, want, have)
-		testCheckActionMetadataPath(t, "docker", have)
-	})
-
-	t.Run("./composite", func(t *testing.T) {
-		want := &ActionMetadata{
-			Name: "My action",
-			Runs: ActionMetadataRuns{
-				Using: "composite",
-			},
-		}
-		have, cached, err := c.FindMetadata("./composite")
-		if err != nil {
-			t.Fatal(err)
-		}
-		testCheckCachedFlag(t, cached, false)
-		testDiffActionMetadata(t, want, have, cmpopts.IgnoreFields(ActionMetadataRuns{}, "Steps"))
-		if have.Runs.Steps == nil {
-			t.Fatal(`"steps" was not decoded`, have.Runs)
-		}
-		testCheckActionMetadataPath(t, "composite", have)
-	})
 }
 
 func TestLocalActionsFindConcurrently(t *testing.T) {
