@@ -74,7 +74,7 @@ func testCheckCachedFlag(t *testing.T, want, have bool) {
 	}
 }
 
-func TestLocalActionsFindMetadata(t *testing.T) {
+func TestLocalActionsFindMetadataOK(t *testing.T) {
 	testdir := filepath.Join("testdata", "action_metadata")
 	proj := &Project{testdir, nil}
 	c := NewLocalActionsCache(proj, nil)
@@ -295,27 +295,46 @@ func TestLocalActionsNullCache(t *testing.T) {
 // Error cases
 
 func TestLocalActionsBrokenMetadata(t *testing.T) {
+	tests := []struct {
+		spec string
+		want string
+	}{
+		{
+			spec: "./broken",
+			want: "could not parse action metadata",
+		},
+		{
+			spec: "./no_name",
+			want: "name is required in action metadata ",
+		},
+	}
+
 	proj := &Project{filepath.Join("testdata", "action_metadata"), nil}
 	c := NewLocalActionsCache(proj, nil)
-	m, cached, err := c.FindMetadata("./broken")
-	if err == nil {
-		t.Fatal("error was not returned", m)
-	}
-	if !strings.Contains(err.Error(), "could not parse action metadata") {
-		t.Fatal("unexpected error:", err)
-	}
-	testCheckCachedFlag(t, false, cached)
 
-	// Second try does not return error, but metadata is also nil not to show the same error from
-	// multiple rules.
-	m, cached, err = c.FindMetadata("./broken")
-	if err != nil {
-		t.Fatal("error was returned at second try", err)
+	for _, tc := range tests {
+		t.Run(tc.spec, func(t *testing.T) {
+			m, cached, err := c.FindMetadata(tc.spec)
+			if err == nil {
+				t.Fatal("error was not returned", m)
+			}
+			if !strings.Contains(err.Error(), tc.want) {
+				t.Fatalf("expected error message %q to contain %q", err, tc.want)
+			}
+			testCheckCachedFlag(t, false, cached)
+
+			// Second try does not return error, but metadata is also nil not to show the same error from
+			// multiple rules.
+			m, cached, err = c.FindMetadata(tc.spec)
+			if err != nil {
+				t.Fatal("error was returned at second try", err)
+			}
+			if m != nil {
+				t.Fatal("metadata was not nil even if it does not exist", m)
+			}
+			testCheckCachedFlag(t, true, cached)
+		})
 	}
-	if m != nil {
-		t.Fatal("metadata was not nil even if it does not exist", m)
-	}
-	testCheckCachedFlag(t, true, cached)
 }
 
 func TestLocalActionsDuplicateInputsOutputs(t *testing.T) {

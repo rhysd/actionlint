@@ -236,8 +236,12 @@ func (c *LocalActionsCache) FindMetadata(spec string) (*ActionMetadata, bool, er
 	meta.file = f
 	meta.dir = dir
 
-	c.debug("New metadata parsed from action %s: %v", dir, &meta)
+	if meta.Name == "" {
+		c.writeCache(spec, nil) // Remember action was invalid
+		return nil, false, fmt.Errorf("name is required in action metadata %q", meta.Path())
+	}
 
+	c.debug("New metadata parsed from action %s: %v", dir, &meta)
 	c.writeCache(spec, &meta)
 	return &meta, false, nil
 }
