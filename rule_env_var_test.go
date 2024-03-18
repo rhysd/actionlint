@@ -3,6 +3,7 @@ package actionlint
 import "testing"
 
 func testValidateEnvVarName(t *testing.T, name string) []*Error {
+	t.Helper()
 	n := &String{Value: name, Pos: &Pos{}}
 	e := &Env{
 		Vars: map[string]*EnvVar{

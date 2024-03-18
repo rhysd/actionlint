@@ -15,7 +15,8 @@ import (
 
 func testGetWantedActionMetadata() *ActionMetadata {
 	want := &ActionMetadata{
-		Name: "My action",
+		Name:        "My action",
+		Description: "my action",
 		Inputs: ActionMetadataInputs{
 			"name":     {"name", false},
 			"message":  {"message", true},
@@ -33,6 +34,7 @@ func testGetWantedActionMetadata() *ActionMetadata {
 }
 
 func testDiffActionMetadata(t *testing.T, want, have *ActionMetadata, opts ...cmp.Option) {
+	t.Helper()
 	opts = append(opts, cmpopts.IgnoreUnexported(ActionMetadata{}))
 	if diff := cmp.Diff(want, have, opts...); diff != "" {
 		t.Fatal(diff)
@@ -40,6 +42,8 @@ func testDiffActionMetadata(t *testing.T, want, have *ActionMetadata, opts ...cm
 }
 
 func testCheckActionMetadataPath(t *testing.T, dir string, m *ActionMetadata) {
+	t.Helper()
+
 	var want string
 	d := filepath.Join("testdata", "action_metadata", dir)
 	for _, f := range []string{"action.yml", "action.yaml"} {
@@ -62,9 +66,8 @@ func testCheckActionMetadataPath(t *testing.T, dir string, m *ActionMetadata) {
 	}
 }
 
-// Normal cases
-
 func testCheckCachedFlag(t *testing.T, want, have bool) {
+	t.Helper()
 	if want != have {
 		msg := "metadata should be cached but actually it is not cached"
 		if !want {
@@ -73,6 +76,8 @@ func testCheckCachedFlag(t *testing.T, want, have bool) {
 		t.Error(msg)
 	}
 }
+
+// Normal cases
 
 func TestLocalActionsFindMetadataOK(t *testing.T) {
 	testdir := filepath.Join("testdata", "action_metadata")
@@ -117,7 +122,8 @@ func TestLocalActionsFindMetadataOK(t *testing.T) {
 		{
 			spec: "./docker",
 			want: &ActionMetadata{
-				Name: "My action",
+				Name:        "My action",
+				Description: "my action",
 				Runs: ActionMetadataRuns{
 					Using: "docker",
 					Image: "Dockerfile",
@@ -127,7 +133,8 @@ func TestLocalActionsFindMetadataOK(t *testing.T) {
 		{
 			spec: "./composite",
 			want: &ActionMetadata{
-				Name: "My action",
+				Name:        "My action",
+				Description: "my action",
 				Runs: ActionMetadataRuns{
 					Using: "composite",
 				},
@@ -306,6 +313,10 @@ func TestLocalActionsBrokenMetadata(t *testing.T) {
 		{
 			spec: "./no_name",
 			want: "name is required in action metadata ",
+		},
+		{
+			spec: "./no_description",
+			want: "description is required in action metadata ",
 		},
 	}
 
