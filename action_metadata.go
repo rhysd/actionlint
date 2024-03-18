@@ -128,6 +128,8 @@ type ActionMetadata struct {
 	file string
 	// Name is "name" field of action.yaml.
 	Name string `yaml:"name" json:"name"`
+	// Description is "description" field of action.yaml.
+	Description string `yaml:"description" json:"-"`
 	// Inputs is "inputs" field of action.yaml.
 	Inputs ActionMetadataInputs `yaml:"inputs" json:"inputs"`
 	// Outputs is "outputs" field of action.yaml. Key is name of output. Description is omitted
@@ -239,6 +241,10 @@ func (c *LocalActionsCache) FindMetadata(spec string) (*ActionMetadata, bool, er
 	if meta.Name == "" {
 		c.writeCache(spec, nil) // Remember action was invalid
 		return nil, false, fmt.Errorf("name is required in action metadata %q", meta.Path())
+	}
+	if meta.Description == "" {
+		c.writeCache(spec, nil) // Remember action was invalid
+		return nil, false, fmt.Errorf("description is required in action metadata %q", meta.Path())
 	}
 
 	c.debug("New metadata parsed from action %s: %v", dir, &meta)
