@@ -1361,6 +1361,7 @@ func TestExprSemanticsCheckerUpdateInputsMultipleTimes(t *testing.T) {
 }
 
 func testObjectPropertiesAreInLowerCase(t *testing.T, ty ExprType) {
+	t.Helper()
 	switch ty := ty.(type) {
 	case *ObjectType:
 		for n, ty := range ty.Props {
