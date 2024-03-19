@@ -310,14 +310,6 @@ func TestLocalActionsBrokenMetadata(t *testing.T) {
 			spec: "./broken",
 			want: "could not parse action metadata",
 		},
-		{
-			spec: "./no_name",
-			want: "name is required in action metadata ",
-		},
-		{
-			spec: "./no_description",
-			want: "description is required in action metadata ",
-		},
 	}
 
 	proj := &Project{filepath.Join("testdata", "action_metadata"), nil}

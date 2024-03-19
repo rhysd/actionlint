@@ -281,7 +281,13 @@ func (rule *RuleAction) checkLocalAction(spec string, action *ExecAction) {
 	}
 
 	if !cached {
-		rule.Debug("Checking runner metadata of %s action %q at %q", meta.Runs, meta.Name, spec)
+		rule.Debug("Checking metadata of %s action %q at %q", meta.Runs, meta.Name, spec)
+		if meta.Name == "" {
+			rule.Errorf(action.Uses.Pos, "name is required in action metadata %q", meta.Path())
+		}
+		if meta.Description == "" {
+			rule.Errorf(action.Uses.Pos, "description is required in metadata of %q action at %q", meta.Name, meta.Path())
+		}
 		rule.checkLocalActionRuns(meta, action.Uses.Pos)
 	}
 
