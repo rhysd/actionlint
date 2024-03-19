@@ -38,6 +38,7 @@ List of checks:
 - [Contexts and special functions availability](#ctx-spfunc-availability)
 - [Deprecated workflow commands](#check-deprecated-workflow-commands)
 - [Conditions always evaluated to true at `if:`](#if-cond-always-true)
+- [Action metadata syntax validation](#action-metadata-syntax)
 
 Note that actionlint focuses on catching mistakes in workflow files. If you want some general code style checks, please consider
 using a general YAML checker like [yamllint][].
@@ -2657,6 +2658,78 @@ works as intended.
 actionlint checks all `if:` conditions in workflow and reports error when some condition is always evaluated to true due to extra
 characters around `${{ }}`.
 
+<a name="action-metadata-syntax"></a>
+## Action metadata syntax validation
+
+Example workflow input:
+
+```yaml
+on: push
+
+jobs:
+  test:
+    runs-on: ubuntu-latest
+    steps:
+      # actionlint checks an action when it is actually used in a workflow
+      - uses: ./.github/actions/my-invalid-action
+```
+
+Example action metadata:
+
+```yaml
+# .github/actions/some-action/action.yml
+
+name: 'My action'
+author: '...'
+# ERROR: 'description' section is required
+
+runs:
+  # ERROR: Node.js runtime version is too old
+  using: 'node14'
+  # ERROR: The source file being run by this action does not exist
+  main: 'this-file-does-not-exist.js'
+  # ERROR: 'env' configuration is only allowed for Docker actions
+  env:
+    SOME_VAR: SOME_VALUE
+```
+
+Output:
+
+```
+test.yaml:8:15: description is required in metadata of "My action" action at "path/to/.github/actions/my-invalid-action/action.yml" [action]
+  |
+8 |       - uses: ./.github/actions/my-invalid-action
+  |               ^~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+test.yaml:8:15: "node14" runner at "runs.using" is unavailable since the Node.js version is too old (14 < 16) in local action "My action" defined at "path/to/.github/actions/my-invalid-action". see https://docs.github.com/en/actions/creating-actions/metadata-syntax-for-github-actions#runs-for-javascript-actions [action]
+  |
+8 |       - uses: ./.github/actions/my-invalid-action
+  |               ^~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+test.yaml:8:15: file "this-file-does-not-exist.js" does not exist in "path/to/.github/actions/my-invalid-action". it is specified at "main" key in "runs" section in "My action" action [action]
+  |
+8 |       - uses: ./.github/actions/my-invalid-action
+  |               ^~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+test.yaml:8:15: "env" is not allowed in "runs" section because "My action" is a JavaScript action. the action is defined at "path/to/.github/actions/my-invalid-action" [action]
+  |
+8 |       - uses: ./.github/actions/my-invalid-action
+  |               ^~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+```
+
+All actions require a metadata file `action.yml` or `aciton.yaml`. The syntax is defined in [the official document][action-metadata-doc].
+
+actionlint checks metadata files used in workflows and reports errors when they are not following the syntax.
+
+- `name:`, `description:`, `runs:` sections are required
+- Runner name at `using:` is one of `composite`, `docker`, `node16`, `node20`
+- Keys under `runs:` section are correct. Required/Valid keys are different depending on the type of action; Docker action or
+  Composite action or JavaScript action (e.g. `image:` is required for Docker action).
+- Files specified in some keys under `runs` are existing. For example, JavaScript action defines a script file path for
+  entrypoint at `main:`.
+
+actionlint checks action metadata files which are used by workflows. Currently it is not supported to specify `action.yml`
+directly via command line arguments.
+
+Note that `steps` in Composite action's metadata is not checked at this point. It will be supported in the future.
+
 ---
 
 [Installation](install.md) | [Usage](usage.md) | [Configuration](config.md) | [Go API](api.md) | [References](reference.md)
@@ -2710,3 +2783,4 @@ characters around `${{ }}`.
 [deprecate-set-output-save-state]: https://github.blog/changelog/2022-10-11-github-actions-deprecating-save-state-and-set-output-commands/
 [deprecate-set-env-add-path]: https://github.blog/changelog/2020-10-01-github-actions-deprecating-set-env-and-add-path-commands/
 [workflow-commands-doc]: https://docs.github.com/en/actions/using-workflows/workflow-commands-for-github-actions
+[action-metadata-doc]: https://docs.github.com/en/actions/creating-actions/metadata-syntax-for-github-actions

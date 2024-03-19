@@ -1,0 +1,4 @@
+/test\.yaml:8:15: description is required in metadata of "My action" action at ".+(\\\\|/)my-invalid-action(\\\\|/)action\.yml" \[action\]/
+/test\.yaml:8:15: invalid runner name \"node14\" at runs\.using in \"My action\" action defined at \".+(\\\\|/)actions(\\\\|/)my-invalid-action\"\. valid runners are \"composite\", \"docker\", \"node16\", and \"node20\"\. see https://.+ \[action\]/
+/test\.yaml:8:15: file "this-file-does-not-exist\.js" does not exist in ".+(\\\\|/)my-invalid-action"\. it is specified at "main" key in "runs" section in "My action" action \[action\]/
+/test\.yaml:8:15: "env" is not allowed in "runs" section because "My action" is a JavaScript action\. the action is defined at ".+(\\\\|/)my-invalid-action" \[action\]/

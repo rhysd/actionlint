@@ -105,10 +105,6 @@ func (rule *RuleAction) invalidActionFormat(pos *Pos, spec string, why string) {
 	rule.Errorf(pos, "specifying action %q in invalid format because %s. available formats are \"{owner}/{repo}@{ref}\" or \"{owner}/{repo}/{path}@{ref}\"", spec, why)
 }
 
-func (rule *RuleAction) invalidRunsName(pos *Pos, name, action, path string) {
-	rule.Errorf(pos, "invalid runner name %q at runs.using in local action %q defined at %q. see https://docs.github.com/en/actions/creating-actions/metadata-syntax-for-github-actions#runs to know valid runner names", name, action, path)
-}
-
 func (rule *RuleAction) missingRunsProp(pos *Pos, prop, ty, action, path string) {
 	rule.Errorf(pos, `%q is required in "runs" section because %q is a %s action. the action is defined at %q`, prop, action, ty, path)
 }
