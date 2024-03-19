@@ -1,2 +1,2 @@
 /workflows/test\.yaml:7:15: name is required in action metadata "testdata(\\\\|/)projects(\\\\|/)local_action_invalid(\\\\|/)no_name(\\\\|/)action\.yaml" \[action\]/
-/workflows/test\.yaml:8:15: description is required in action metadata "testdata(\\\\|/)projects(\\\\|/)local_action_invalid(\\\\|/)no_desc(\\\\|/)action\.yaml" \[action\]/
+/workflows/test\.yaml:8:15: description is required in metadata of "My action" action at "testdata(\\\\|/)projects(\\\\|/)local_action_invalid(\\\\|/)no_desc(\\\\|/)action\.yaml" \[action\]/

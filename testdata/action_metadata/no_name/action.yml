@@ -1,6 +1,0 @@
-author: 'rhysd <https://rhysd.github.io>'
-description: 'name is missing'
-
-runs:
-  using: 'node20'
-  main: index.js

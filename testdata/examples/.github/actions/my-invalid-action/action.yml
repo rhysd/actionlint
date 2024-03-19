@@ -1,0 +1,14 @@
+# .github/actions/some-action/action.yml
+
+name: 'My action'
+author: '...'
+# ERROR: 'description' section is required
+
+runs:
+  # ERROR: Node.js runtime version is too old
+  using: 'node14'
+  # ERROR: The source file being run by this action does not exist
+  main: 'this-file-does-not-exist.js'
+  # ERROR: 'env' configuration is only allowed for Docker actions
+  env:
+    SOME_VAR: SOME_VALUE
