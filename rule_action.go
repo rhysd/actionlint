@@ -10,13 +10,6 @@ import (
 	"strings"
 )
 
-// MinimumNodeRunnerVersion is the minimum supported Node.js version for JavaScript action runner.
-// This constant will be updated when GitHub bumps the version.
-// https://docs.github.com/en/actions/creating-actions/metadata-syntax-for-github-actions#runs-for-javascript-actions
-//
-// Note: "node16" runner is deprecated but still available: https://github.blog/changelog/2023-09-22-github-actions-transitioning-from-node-16-to-node-20/
-const MinimumNodeRunnerVersion uint64 = 16
-
 // RuleAction is a rule to check running action in steps of jobs.
 // https://docs.github.com/en/actions/learn-github-actions/workflow-syntax-for-github-actions#jobsjob_idstepsuses
 type RuleAction struct {
@@ -178,24 +171,6 @@ func (rule *RuleAction) checkLocalCompositeActionRuns(r *ActionMetadataRuns, dir
 
 // https://docs.github.com/en/actions/creating-actions/metadata-syntax-for-github-actions#runs-for-javascript-actions
 func (rule *RuleAction) checkLocalJavaScriptActionRuns(r *ActionMetadataRuns, dir, name string, pos *Pos) {
-	u := r.Using
-	v, err := strconv.ParseUint(u[len("node"):], 10, 0)
-	if err != nil {
-		rule.invalidRunsName(pos, u, name, dir)
-		return
-	}
-	if v < MinimumNodeRunnerVersion {
-		rule.Errorf(
-			pos,
-			`%q runner at "runs.using" is unavailable since the Node.js version is too old (%d < %d) in local action %q defined at %q. see https://docs.github.com/en/actions/creating-actions/metadata-syntax-for-github-actions#runs-for-javascript-actions`,
-			u,
-			v,
-			MinimumNodeRunnerVersion,
-			name,
-			dir,
-		)
-	}
-
 	if r.Main == "" {
 		rule.missingRunsProp(pos, "main", "JavaScript", name, dir)
 	} else {
@@ -217,28 +192,23 @@ func (rule *RuleAction) checkLocalJavaScriptActionRuns(r *ActionMetadataRuns, di
 
 // https://docs.github.com/en/actions/creating-actions/metadata-syntax-for-github-actions#runs
 func (rule *RuleAction) checkLocalActionRuns(meta *ActionMetadata, pos *Pos) {
-	r := &meta.Runs
-	if r.Using == "" {
+	switch r := &meta.Runs; r.Using {
+	case "":
 		rule.Errorf(pos, `"runs.using" is missing in local action %q defined at %q`, meta.Name, meta.Dir())
-		return
-	}
-
-	if r.Using == "docker" {
+	case "docker":
 		rule.checkLocalDockerActionRuns(r, meta.Dir(), meta.Name, pos)
-		return
-	}
-
-	if r.Using == "composite" {
+	case "composite":
 		rule.checkLocalCompositeActionRuns(r, meta.Dir(), meta.Name, pos)
-		return
-	}
+	case "node16", "node20":
+		rule.checkLocalJavaScriptActionRuns(r, meta.Dir(), meta.Name, pos)
+	default:
+		rule.Errorf(pos, `invalid runner name %q at runs.using in %q action defined at %q. valid runners are "composite", "docker", "node16", and "node20". see https://docs.github.com/en/actions/creating-actions/metadata-syntax-for-github-actions#runs`, r.Using, meta.Name, meta.Dir())
 
-	if !strings.HasPrefix(r.Using, "node") {
-		rule.invalidRunsName(pos, r.Using, meta.Name, meta.Dir())
-		return
+		// Probably invalid version of Node.js runner. Assume it is JavaScript action to find as many errors as possible
+		if strings.HasPrefix(r.Using, "node") {
+			rule.checkLocalJavaScriptActionRuns(r, meta.Dir(), meta.Name, pos)
+		}
 	}
-
-	rule.checkLocalJavaScriptActionRuns(r, meta.Dir(), meta.Name, pos)
 }
 
 // https://docs.github.com/en/actions/learn-github-actions/workflow-syntax-for-github-actions#example-using-the-github-packages-container-registry
