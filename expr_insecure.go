@@ -24,6 +24,10 @@ func (m *UntrustedInputMap) findObjectProp(name string) (*UntrustedInputMap, boo
 		if c, ok := m.Children[name]; ok {
 			return c, true
 		}
+		c, ok := m.Children["**"]
+		if name != "*" && ok {
+			return c, true
+		}
 	}
 	return nil, false
 }
@@ -132,6 +136,9 @@ var BuiltinUntrustedInputs = UntrustedInputSearchRoots{
 			),
 		),
 		NewUntrustedInputMap("head_ref"),
+	),
+	"env": NewUntrustedInputMap("env",
+		NewUntrustedInputMap("**"),
 	),
 }
 

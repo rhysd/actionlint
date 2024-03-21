@@ -13,8 +13,6 @@ jobs:
           path: bar
       # OK
       - run: echo "${{ 'hello' }} ${{ true }} ${{ 42 }}"
-      # OK: Any type
-      - run: echo "${{ env.FOO }}"
       # OK: Expanding object value
       - run: echo "$FOO"
         env: ${{ matrix.env }}
