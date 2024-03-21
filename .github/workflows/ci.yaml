@@ -22,7 +22,7 @@ jobs:
       - name: Install dependencies on Linux
         run: |
           set -x
-          sudo apt install shellcheck
+          sudo apt-get install -y shellcheck
           pip install pyflakes
           shellcheck --version
           pyflakes --version
@@ -90,6 +90,7 @@ jobs:
       - uses: actions/setup-go@v5
         with:
           go-version: '1.22'
+      - run: sudo apt-get install -y shellcheck
       - name: Check Go sources are formatted
         run: |
           diffs="$(gofmt -d ./*.go ./cmd/actionlint/*.go ./scripts/*/*.go ./playground/*.go)"
@@ -103,7 +104,7 @@ jobs:
           echo "$(go env GOPATH)/bin" >> "$GITHUB_PATH"
       - run: make lint SKIP_GO_GENERATE=true
       - name: Lint bash scripts
-        run: shellcheck ./scripts/download-actionlint.bash ./playground/post-install.bash ./playground/deploy.bash
+        run: shellcheck ./scripts/*.bash ./playground/*.bash
   docker:
     name: Dockerfile
     runs-on: ubuntu-latest
