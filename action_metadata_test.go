@@ -98,6 +98,10 @@ func TestLocalActionsFindMetadataOK(t *testing.T) {
 		o.Name = strings.ToUpper(o.Name)
 	}
 
+	wantBranding := testGetWantedActionMetadata()
+	wantBranding.Branding.Icon = "edit"
+	wantBranding.Branding.Color = "white"
+
 	tests := []struct {
 		spec string
 		want *ActionMetadata
@@ -142,6 +146,10 @@ func TestLocalActionsFindMetadataOK(t *testing.T) {
 			cmp: []cmp.Option{
 				cmpopts.IgnoreFields(ActionMetadataRuns{}, "Steps"),
 			},
+		},
+		{
+			spec: "./branding",
+			want: wantBranding,
 		},
 	}
 
