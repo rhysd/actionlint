@@ -121,6 +121,13 @@ type ActionMetadataRuns struct {
 	Env map[string]any `yaml:"env"`
 }
 
+// ActionMetadataBranding is "branding" section of action.yaml.
+// https://docs.github.com/en/actions/creating-actions/metadata-syntax-for-github-actions#branding
+type ActionMetadataBranding struct {
+	Icon  string `yaml:"icon"`
+	Color string `yaml:"color"`
+}
+
 // ActionMetadata represents structure of action.yaml.
 // https://docs.github.com/en/actions/creating-actions/metadata-syntax-for-github-actions
 type ActionMetadata struct {
@@ -143,6 +150,8 @@ type ActionMetadata struct {
 	SkipOutputs bool `yaml:"-" json:"skip_outputs"`
 	// Runs is "runs" field of action.yaml.
 	Runs ActionMetadataRuns `yaml:"runs" json:"-"`
+	// Branding is "branding" field of action.yaml.
+	Branding ActionMetadataBranding `yaml:"branding" json:"-"`
 }
 
 // Dir returns a directory path of the action.
