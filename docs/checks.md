@@ -2677,11 +2677,17 @@ jobs:
 Example action metadata:
 
 ```yaml
-# .github/actions/some-action/action.yml
+# .github/actions/my-invalid-action/action.yml
 
 name: 'My action'
 author: '...'
 # ERROR: 'description' section is required
+
+branding:
+  # ERROR: Invalid icon name
+  icon: dog
+  # ERROR: Unsupported icon color
+  color: black
 
 runs:
   # ERROR: Node.js runtime version is too old
@@ -2696,19 +2702,27 @@ runs:
 Output:
 
 ```
-test.yaml:8:15: description is required in metadata of "My action" action at "path/to/.github/actions/my-invalid-action/action.yml" [action]
+action_metadata_syntax_validation.yaml:8:15: description is required in metadata of "My action" action at "path/to/.github/actions/my-invalid-action/action.yml" [action]
   |
 8 |       - uses: ./.github/actions/my-invalid-action
   |               ^~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
-test.yaml:8:15: "node14" runner at "runs.using" is unavailable since the Node.js version is too old (14 < 16) in local action "My action" defined at "path/to/.github/actions/my-invalid-action". see https://docs.github.com/en/actions/creating-actions/metadata-syntax-for-github-actions#runs-for-javascript-actions [action]
+action_metadata_syntax_validation.yaml:8:15: incorrect icon name "dog" at branding.icon in metadata of "My action" action at "path/to/.github/actions/my-invalid-action/action.yml". see the official document to know the exhaustive list of supported icons: https://docs.github.com/en/actions/creating-actions/metadata-syntax-for-github-actions#brandingicon [action]
   |
 8 |       - uses: ./.github/actions/my-invalid-action
   |               ^~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
-test.yaml:8:15: file "this-file-does-not-exist.js" does not exist in "path/to/.github/actions/my-invalid-action". it is specified at "main" key in "runs" section in "My action" action [action]
+action_metadata_syntax_validation.yaml:8:15: incorrect color "black" at branding.icon in metadata of "My action" action at "path/to/.github/actions/my-invalid-action/action.yml". see the official document to know the exhaustive list of supported colors: https://docs.github.com/en/actions/creating-actions/metadata-syntax-for-github-actions#brandingcolor [action]
   |
 8 |       - uses: ./.github/actions/my-invalid-action
   |               ^~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
-test.yaml:8:15: "env" is not allowed in "runs" section because "My action" is a JavaScript action. the action is defined at "path/to/.github/actions/my-invalid-action" [action]
+action_metadata_syntax_validation.yaml:8:15: invalid runner name "node14" at runs.using in "My action" action defined at "path/to/.github/actions/my-invalid-action". valid runners are "composite", "docker", "node16", and "node20". see https://docs.github.com/en/actions/creating-actions/metadata-syntax-for-github-actions#runs [action]
+  |
+8 |       - uses: ./.github/actions/my-invalid-action
+  |               ^~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+action_metadata_syntax_validation.yaml:8:15: file "this-file-does-not-exist.js" does not exist in "path/to/.github/actions/my-invalid-action". it is specified at "main" key in "runs" section in "My action" action [action]
+  |
+8 |       - uses: ./.github/actions/my-invalid-action
+  |               ^~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+action_metadata_syntax_validation.yaml:8:15: "env" is not allowed in "runs" section because "My action" is a JavaScript action. the action is defined at "path/to/.github/actions/my-invalid-action" [action]
   |
 8 |       - uses: ./.github/actions/my-invalid-action
   |               ^~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
@@ -2724,6 +2738,10 @@ actionlint checks metadata files used in workflows and reports errors when they 
   Composite action or JavaScript action (e.g. `image:` is required for Docker action).
 - Files specified in some keys under `runs` are existing. For example, JavaScript action defines a script file path for
   entrypoint at `main:`.
+- Icon name at `icon:` in `branding:` section is correct. Supported icon names are listed in
+  [the official document][branding-icons-doc].
+- Icon color at `color:` in `branding:` section is correct. Supported icon colors are white, yellow, blue, green, orange, red,
+  purple, or gray-dark.
 
 actionlint checks action metadata files which are used by workflows. Currently it is not supported to specify `action.yml`
 directly via command line arguments.
@@ -2784,3 +2802,4 @@ Note that `steps` in Composite action's metadata is not checked at this point. I
 [deprecate-set-env-add-path]: https://github.blog/changelog/2020-10-01-github-actions-deprecating-set-env-and-add-path-commands/
 [workflow-commands-doc]: https://docs.github.com/en/actions/using-workflows/workflow-commands-for-github-actions
 [action-metadata-doc]: https://docs.github.com/en/actions/creating-actions/metadata-syntax-for-github-actions
+[branding-icons-doc]: https://github.com/github/docs/blob/main/content/actions/creating-actions/metadata-syntax-for-github-actions.md#exhaustive-list-of-all-currently-supported-icons

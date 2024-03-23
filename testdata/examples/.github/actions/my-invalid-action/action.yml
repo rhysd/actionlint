@@ -1,8 +1,14 @@
-# .github/actions/some-action/action.yml
+# .github/actions/my-invalid-action/action.yml
 
 name: 'My action'
 author: '...'
 # ERROR: 'description' section is required
+
+branding:
+  # ERROR: Invalid icon name
+  icon: dog
+  # ERROR: Unsupported icon color
+  color: black
 
 runs:
   # ERROR: Node.js runtime version is too old
