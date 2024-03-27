@@ -39,7 +39,7 @@ func (rule *RulePermissions) VisitJobPre(n *Job) error {
 }
 
 // VisitWorkflowPre is callback when visiting Workflow node before visiting its children.
-func (rule *RulePermissions) VisitWorkflowPre(n *Workflow) error {
+func (rule *RulePermissions) VisitWorkflowPre(_ string, n *Workflow) error {
 	rule.checkPermissions(n.Permissions)
 	return nil
 }

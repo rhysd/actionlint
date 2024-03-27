@@ -28,7 +28,7 @@ func NewRuleWorkflowCall(workflowPath string, cache *LocalReusableWorkflowCache)
 }
 
 // VisitWorkflowPre is callback when visiting Workflow node before visiting its children.
-func (rule *RuleWorkflowCall) VisitWorkflowPre(n *Workflow) error {
+func (rule *RuleWorkflowCall) VisitWorkflowPre(_ string, n *Workflow) error {
 	for _, e := range n.On {
 		if e, ok := e.(*WorkflowCallEvent); ok {
 			rule.workflowCallEventPos = e.Pos

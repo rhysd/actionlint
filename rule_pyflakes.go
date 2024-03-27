@@ -69,7 +69,7 @@ func (rule *RulePyflakes) VisitJobPost(n *Job) error {
 }
 
 // VisitWorkflowPre is callback when visiting Workflow node before visiting its children.
-func (rule *RulePyflakes) VisitWorkflowPre(n *Workflow) error {
+func (rule *RulePyflakes) VisitWorkflowPre(_ string, n *Workflow) error {
 	if n.Defaults != nil && n.Defaults.Run != nil {
 		rule.workflowShellIsPython = getShellIsPythonKind(n.Defaults.Run.Shell)
 	}

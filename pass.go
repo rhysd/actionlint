@@ -15,7 +15,7 @@ type Pass interface {
 	// VisitJobPost is callback when visiting Job node after visiting its children. It returns internal error when it cannot continue the process
 	VisitJobPost(node *Job) error
 	// VisitWorkflowPre is callback when visiting Workflow node before visiting its children. It returns internal error when it cannot continue the process
-	VisitWorkflowPre(node *Workflow) error
+	VisitWorkflowPre(path string, node *Workflow) error
 	// VisitWorkflowPost is callback when visiting Workflow node after visiting its children. It returns internal error when it cannot continue the process
 	VisitWorkflowPost(node *Workflow) error
 }
@@ -47,14 +47,14 @@ func (v *Visitor) reportElapsedTime(what string, start time.Time) {
 }
 
 // Visit visits given syntax tree in depth-first order
-func (v *Visitor) Visit(n *Workflow) error {
+func (v *Visitor) Visit(path string, n *Workflow) error {
 	var t time.Time
 	if v.dbg != nil {
 		t = time.Now()
 	}
 
 	for _, p := range v.passes {
-		if err := p.VisitWorkflowPre(n); err != nil {
+		if err := p.VisitWorkflowPre(path, n); err != nil {
 			return err
 		}
 	}

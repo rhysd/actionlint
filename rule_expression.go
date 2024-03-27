@@ -52,7 +52,7 @@ func NewRuleExpression(actionsCache *LocalActionsCache, workflowCache *LocalReus
 }
 
 // VisitWorkflowPre is callback when visiting Workflow node before visiting its children.
-func (rule *RuleExpression) VisitWorkflowPre(n *Workflow) error {
+func (rule *RuleExpression) VisitWorkflowPre(_ string, n *Workflow) error {
 	rule.checkString(n.Name, "")
 
 	for _, e := range n.On {

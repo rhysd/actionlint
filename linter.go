@@ -307,6 +307,7 @@ func (l *Linter) LintFiles(filepaths []string, project *Project) ([]*Error, erro
 	dbg := l.debugWriter()
 	acf := NewLocalActionsCacheFactory(dbg)
 	rwcf := NewLocalReusableWorkflowCacheFactory(cwd, dbg)
+	rwr := NewRuleWorkflowRun()
 
 	type workspace struct {
 		path string
@@ -350,7 +351,7 @@ func (l *Linter) LintFiles(filepaths []string, project *Project) ([]*Error, erro
 					w.path = r // Use relative path if possible
 				}
 			}
-			errs, err := l.check(w.path, src, proj, proc, ac, rwc)
+			errs, err := l.check(w.path, src, proj, proc, ac, rwc, rwr)
 			if err != nil {
 				return fmt.Errorf("fatal error while checking %s: %w", w.path, err)
 			}
@@ -371,6 +372,12 @@ func (l *Linter) LintFiles(filepaths []string, project *Project) ([]*Error, erro
 	// After traversing all workflows, `proc.run()` is no longer called so `proc.wait()` can be
 	// called safely.
 	proc.wait()
+
+	rwErrs := rwr.ComputeMissingReferences()
+	for i := range ws {
+		w := &ws[i]
+		w.errs = append(w.errs, rwErrs[w.path]...)
+	}
 
 	total := 0
 	for i := range ws {
@@ -429,7 +436,7 @@ func (l *Linter) LintFile(path string, project *Project) ([]*Error, error) {
 	dbg := l.debugWriter()
 	localActions := NewLocalActionsCache(project, dbg)
 	localReusableWorkflows := NewLocalReusableWorkflowCache(project, l.cwd, dbg)
-	errs, err := l.check(path, src, project, proc, localActions, localReusableWorkflows)
+	errs, err := l.check(path, src, project, proc, localActions, localReusableWorkflows, nil)
 	proc.wait()
 	if err != nil {
 		return nil, err
@@ -461,7 +468,7 @@ func (l *Linter) Lint(path string, content []byte, project *Project) ([]*Error, 
 	dbg := l.debugWriter()
 	localActions := NewLocalActionsCache(project, dbg)
 	localReusableWorkflows := NewLocalReusableWorkflowCache(project, l.cwd, dbg)
-	errs, err := l.check(path, content, project, proc, localActions, localReusableWorkflows)
+	errs, err := l.check(path, content, project, proc, localActions, localReusableWorkflows, nil)
 	proc.wait()
 	if err != nil {
 		return nil, err
@@ -481,6 +488,7 @@ func (l *Linter) check(
 	proc *concurrentProcess,
 	localActions *LocalActionsCache,
 	localReusableWorkflows *LocalReusableWorkflowCache,
+	ruleWorkflowRun *RuleWorkflowRun,
 ) ([]*Error, error) {
 	// Note: This method is called to check multiple files in parallel.
 	// It must be thread safe assuming fields of Linter are not modified while running.
@@ -555,6 +563,9 @@ func (l *Linter) check(
 		} else {
 			l.log("Rule \"pyflakes\" was disabled since pyflakes command name was empty")
 		}
+		if ruleWorkflowRun != nil {
+			rules = append(rules, ruleWorkflowRun)
+		}
 		if l.onRulesCreated != nil {
 			rules = l.onRulesCreated(rules)
 		}
@@ -575,7 +586,7 @@ func (l *Linter) check(
 			}
 		}
 
-		if err := v.Visit(w); err != nil {
+		if err := v.Visit(path, w); err != nil {
 			l.debug("error occurred while visiting workflow syntax tree: %v", err)
 			return nil, err
 		}

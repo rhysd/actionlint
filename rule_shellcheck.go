@@ -94,7 +94,7 @@ func (rule *RuleShellcheck) VisitJobPost(n *Job) error {
 }
 
 // VisitWorkflowPre is callback when visiting Workflow node before visiting its children.
-func (rule *RuleShellcheck) VisitWorkflowPre(n *Workflow) error {
+func (rule *RuleShellcheck) VisitWorkflowPre(_ string, n *Workflow) error {
 	if n.Defaults != nil && n.Defaults.Run != nil && n.Defaults.Run.Shell != nil {
 		rule.workflowShell = n.Defaults.Run.Shell.Value
 	}
