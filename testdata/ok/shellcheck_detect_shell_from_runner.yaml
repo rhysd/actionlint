@@ -1,0 +1,7 @@
+on: push
+jobs:
+  test:
+    runs-on: windows-latest
+    steps:
+      # This script should not be checked by shellcheck
+      - run: $Env:FOO = "FOO"

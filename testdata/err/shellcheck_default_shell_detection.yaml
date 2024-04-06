@@ -1,0 +1,42 @@
+on: push
+
+defaults:
+  run:
+    shell: pwsh
+
+jobs:
+  job-level:
+    runs-on: ubuntu-latest
+    defaults:
+      run:
+        shell: bash
+    steps:
+      # ERROR: shellcheck checks this script
+      - run: $Env:FOO = "FOO"
+  step-level:
+    runs-on: ubuntu-latest
+    steps:
+      # ERROR: shellcheck checks this script
+      - run: $Env:FOO = "FOO"
+        shell: bash
+  step-level-2:
+    # Even if pwsh is detected from runner or job's defaults
+    runs-on: windows-latest
+    defaults:
+      run:
+        shell: pwsh
+    steps:
+      # ERROR: shellcheck checks this script
+      - run: $Env:FOO = "FOO"
+        # Step-level `shell` is prioritized
+        shell: bash
+  step-level-1:
+    # Even if pwsh is detected from runner
+    runs-on: windows-latest
+    # `defaults` is prioritized
+    defaults:
+      run:
+        shell: bash
+    steps:
+      # ERROR: shellcheck checks this script
+      - run: $Env:FOO = "FOO"
