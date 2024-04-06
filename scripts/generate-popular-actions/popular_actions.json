@@ -241,12 +241,6 @@
         "next": "v5"
     },
     {
-        "slug": "getsentry/paths-filter",
-        "tags": ["v1", "v2"],
-        "next": "v3",
-        "skip_outputs": true
-    },
-    {
         "slug": "github/codeql-action",
         "path": "/analyze",
         "tags": ["v1", "v2", "v3"],
@@ -461,5 +455,10 @@
         "slug": "wearerequired/lint-action",
         "tags": ["v1", "v2"],
         "next": "v3"
+    },
+    {
+        "slug": "peaceiris/actions-hugo",
+        "tags": ["v3"],
+        "next": "v4"
     }
 ]

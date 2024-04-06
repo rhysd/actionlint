@@ -3251,27 +3251,6 @@ var PopularActions = map[string]*ActionMetadata{
 			"volume":             {"volume"},
 		},
 	},
-	"getsentry/paths-filter@v1": {
-		Name: "Pull request changed files filter",
-		Inputs: ActionMetadataInputs{
-			"filters": {"filters", true},
-			"token":   {"token", false},
-		},
-		SkipOutputs: true,
-	},
-	"getsentry/paths-filter@v2": {
-		Name: "Paths Changes Filter",
-		Inputs: ActionMetadataInputs{
-			"base":                {"base", false},
-			"filters":             {"filters", true},
-			"initial-fetch-depth": {"initial-fetch-depth", false},
-			"list-files":          {"list-files", false},
-			"ref":                 {"ref", false},
-			"token":               {"token", false},
-			"working-directory":   {"working-directory", false},
-		},
-		SkipOutputs: true,
-	},
 	"github/codeql-action/analyze@v1": {
 		Name: "CodeQL: Finish",
 		Inputs: ActionMetadataInputs{
@@ -4155,6 +4134,13 @@ var PopularActions = map[string]*ActionMetadata{
 			"tag_name":            {"tag_name", false},
 			"user_email":          {"user_email", false},
 			"user_name":           {"user_name", false},
+		},
+	},
+	"peaceiris/actions-hugo@v3": {
+		Name: "Hugo setup",
+		Inputs: ActionMetadataInputs{
+			"extended":     {"extended", false},
+			"hugo-version": {"hugo-version", false},
 		},
 	},
 	"peter-evans/create-pull-request@v1": {
