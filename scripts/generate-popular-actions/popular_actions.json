@@ -76,8 +76,8 @@
     },
     {
         "slug": "actions/configure-pages",
-        "tags": ["v1", "v2", "v3", "v4"],
-        "next": "v5"
+        "tags": ["v1", "v2", "v3", "v4", "v5"],
+        "next": "v6"
     },
     {
         "slug": "actions/deploy-pages",
@@ -239,12 +239,6 @@
         "slug": "game-ci/unity-builder",
         "tags": ["v2", "v3", "v4"],
         "next": "v5"
-    },
-    {
-        "slug": "getsentry/paths-filter",
-        "tags": ["v1", "v2"],
-        "next": "v3",
-        "skip_outputs": true
     },
     {
         "slug": "github/codeql-action",
@@ -448,8 +442,9 @@
     },
     {
         "slug": "subosito/flutter-action",
-        "tags": ["v1", "v2"],
-        "next": "v3"
+        "tags": ["v2"],
+        "next": "v3",
+        "file_ext": "yaml"
     },
     {
         "slug": "treosh/lighthouse-ci-action",
@@ -460,5 +455,10 @@
         "slug": "wearerequired/lint-action",
         "tags": ["v1", "v2"],
         "next": "v3"
+    },
+    {
+        "slug": "peaceiris/actions-hugo",
+        "tags": ["v3"],
+        "next": "v4"
     }
 ]

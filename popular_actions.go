@@ -655,6 +655,21 @@ var PopularActions = map[string]*ActionMetadata{
 			"origin":    {"origin"},
 		},
 	},
+	"actions/configure-pages@v5": {
+		Name: "Configure GitHub Pages",
+		Inputs: ActionMetadataInputs{
+			"enablement":            {"enablement", false},
+			"generator_config_file": {"generator_config_file", false},
+			"static_site_generator": {"static_site_generator", false},
+			"token":                 {"token", false},
+		},
+		Outputs: ActionMetadataOutputs{
+			"base_path": {"base_path"},
+			"base_url":  {"base_url"},
+			"host":      {"host"},
+			"origin":    {"origin"},
+		},
+	},
 	"actions/delete-package-versions@v1": {
 		Name: "Delete Package Versions",
 		Inputs: ActionMetadataInputs{
@@ -2238,6 +2253,7 @@ var PopularActions = map[string]*ActionMetadata{
 			"token":                      {"token", false},
 			"url":                        {"url", false},
 			"use_legacy_upload_endpoint": {"use_legacy_upload_endpoint", false},
+			"use_oidc":                   {"use_oidc", false},
 			"verbose":                    {"verbose", false},
 			"version":                    {"version", false},
 			"working-directory":          {"working-directory", false},
@@ -3235,27 +3251,6 @@ var PopularActions = map[string]*ActionMetadata{
 			"volume":             {"volume"},
 		},
 	},
-	"getsentry/paths-filter@v1": {
-		Name: "Pull request changed files filter",
-		Inputs: ActionMetadataInputs{
-			"filters": {"filters", true},
-			"token":   {"token", false},
-		},
-		SkipOutputs: true,
-	},
-	"getsentry/paths-filter@v2": {
-		Name: "Paths Changes Filter",
-		Inputs: ActionMetadataInputs{
-			"base":                {"base", false},
-			"filters":             {"filters", true},
-			"initial-fetch-depth": {"initial-fetch-depth", false},
-			"list-files":          {"list-files", false},
-			"ref":                 {"ref", false},
-			"token":               {"token", false},
-			"working-directory":   {"working-directory", false},
-		},
-		SkipOutputs: true,
-	},
 	"github/codeql-action/analyze@v1": {
 		Name: "CodeQL: Finish",
 		Inputs: ActionMetadataInputs{
@@ -4141,6 +4136,13 @@ var PopularActions = map[string]*ActionMetadata{
 			"user_name":           {"user_name", false},
 		},
 	},
+	"peaceiris/actions-hugo@v3": {
+		Name: "Hugo setup",
+		Inputs: ActionMetadataInputs{
+			"extended":     {"extended", false},
+			"hugo-version": {"hugo-version", false},
+		},
+	},
 	"peter-evans/create-pull-request@v1": {
 		Name: "Create Pull Request",
 		Inputs: ActionMetadataInputs{
@@ -4472,6 +4474,8 @@ var PopularActions = map[string]*ActionMetadata{
 			"replace":              {"replace", false},
 			"secrets-provider":     {"secrets-provider", false},
 			"stack-name":           {"stack-name", false},
+			"suppress-outputs":     {"suppress-outputs", false},
+			"suppress-progress":    {"suppress-progress", false},
 			"target":               {"target", false},
 			"target-dependents":    {"target-dependents", false},
 			"upsert":               {"upsert", false},
@@ -4794,24 +4798,19 @@ var PopularActions = map[string]*ActionMetadata{
 			"url":        {"url"},
 		},
 	},
-	"subosito/flutter-action@v1": {
-		Name: "Flutter action",
-		Inputs: ActionMetadataInputs{
-			"channel":         {"channel", false},
-			"flutter-version": {"flutter-version", false},
-		},
-	},
 	"subosito/flutter-action@v2": {
-		Name: "Flutter action",
+		Name: "Set up Flutter",
 		Inputs: ActionMetadataInputs{
-			"architecture":    {"architecture", false},
-			"cache":           {"cache", false},
-			"cache-key":       {"cache-key", false},
-			"cache-path":      {"cache-path", false},
-			"channel":         {"channel", false},
-			"flutter-version": {"flutter-version", false},
-			"pub-cache-key":   {"pub-cache-key", false},
-			"pub-cache-path":  {"pub-cache-path", false},
+			"architecture":         {"architecture", false},
+			"cache":                {"cache", false},
+			"cache-key":            {"cache-key", false},
+			"cache-path":           {"cache-path", false},
+			"channel":              {"channel", false},
+			"dry-run":              {"dry-run", false},
+			"flutter-version":      {"flutter-version", false},
+			"flutter-version-file": {"flutter-version-file", false},
+			"pub-cache-key":        {"pub-cache-key", false},
+			"pub-cache-path":       {"pub-cache-path", false},
 		},
 		Outputs: ActionMetadataOutputs{
 			"architecture":   {"ARCHITECTURE"},
