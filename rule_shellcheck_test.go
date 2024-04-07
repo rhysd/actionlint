@@ -146,13 +146,13 @@ func TestRuleShellcheckDetectShell(t *testing.T) {
 		},
 		{
 			what:     "custom bash",
-			want:     "bash {0}",
-			workflow: "bash {0}",
+			want:     "bash -e {0}",
+			workflow: "bash -e {0}",
 		},
 		{
 			what:     "custom sh",
-			want:     "sh {0}",
-			workflow: "sh {0}",
+			want:     "sh -e {0}",
+			workflow: "sh -e {0}",
 		},
 	}
 

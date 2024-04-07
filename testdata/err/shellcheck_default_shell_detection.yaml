@@ -40,3 +40,15 @@ jobs:
     steps:
       # ERROR: shellcheck checks this script
       - run: $Env:FOO = "FOO"
+  custom-bash:
+    runs-on: ubuntu-latest
+    steps:
+      # ERROR: shellcheck checks this script
+      - run: $Env:FOO = "FOO"
+        shell: 'bash -e {0}'
+  custom-sh:
+    runs-on: ubuntu-latest
+    steps:
+      # ERROR: shellcheck checks this script
+      - run: $Env:FOO = "FOO"
+        shell: 'sh -e {0}'

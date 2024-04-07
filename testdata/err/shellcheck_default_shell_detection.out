@@ -6,3 +6,7 @@
 /test\.yaml:30:9: shellcheck reported issue in this script: .+ \[shellcheck\]/
 /test\.yaml:42:9: shellcheck reported issue in this script: .+ \[shellcheck\]/
 /test\.yaml:42:9: shellcheck reported issue in this script: .+ \[shellcheck\]/
+/test\.yaml:47:9: shellcheck reported issue in this script: .+ \[shellcheck\]/
+/test\.yaml:47:9: shellcheck reported issue in this script: .+ \[shellcheck\]/
+/test\.yaml:53:9: shellcheck reported issue in this script: .+ \[shellcheck\]/
+/test\.yaml:53:9: shellcheck reported issue in this script: .+ \[shellcheck\]/

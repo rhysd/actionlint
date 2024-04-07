@@ -6,8 +6,11 @@ jobs:
         os: [ubuntu-latest, windows-latest]
     runs-on: ${{ matrix.os }}
     steps:
-      - name: Show file content
-        # This causes SC1001 if `shell: pwsh` is not set explicitly
-        run: cat xxx\yyy.txt
+      # This causes SC1001 if `shell:` is not set explicitly
+      - run: cat xxx\yyy.txt
         if: ${{ matrix.os == 'windows-latest' }}
         shell: pwsh
+      # This causes SC1001 if `shell:` is not set explicitly
+      - run: cat xxx\yyy.txt
+        if: ${{ matrix.os == 'windows-latest' }}
+        shell: 'python {0}'
