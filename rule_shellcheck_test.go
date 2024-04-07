@@ -144,6 +144,16 @@ func TestRuleShellcheckDetectShell(t *testing.T) {
 			want:   "bash",
 			runner: "ubuntu-latest",
 		},
+		{
+			what:     "custom bash",
+			want:     "bash {0}",
+			workflow: "bash {0}",
+		},
+		{
+			what:     "custom sh",
+			want:     "sh {0}",
+			workflow: "sh {0}",
+		},
 	}
 
 	for _, tc := range tests {

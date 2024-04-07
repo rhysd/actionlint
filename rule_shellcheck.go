@@ -57,12 +57,7 @@ func (rule *RuleShellcheck) VisitStep(n *Step) error {
 		return nil
 	}
 
-	sh := rule.getShellName(run)
-	if sh != "bash" && sh != "sh" {
-		return nil
-	}
-
-	rule.runShellcheck(run.Run.Value, sh, run.RunPos)
+	rule.runShellcheck(run.Run.Value, rule.getShellName(run), run.RunPos)
 	return nil
 }
 
@@ -165,7 +160,18 @@ func sanitizeExpressionsInScript(src string) string {
 	}
 }
 
-func (rule *RuleShellcheck) runShellcheck(src, sh string, pos *Pos) {
+func (rule *RuleShellcheck) runShellcheck(src, shell string, pos *Pos) {
+	var sh string
+	if shell == "bash" || shell == "sh" {
+		sh = shell
+	} else if strings.HasPrefix(shell, "bash ") {
+		sh = "bash"
+	} else if strings.HasPrefix(shell, "sh ") {
+		sh = "sh"
+	} else {
+		return // Skip checking this shell script since shellcheck doesn't support it
+	}
+
 	src = sanitizeExpressionsInScript(src)
 	rule.Debug("%s: Run shellcheck for %s script:\n%s", pos, sh, src)
 
