@@ -3,6 +3,7 @@ package actionlint
 import (
 	"bytes"
 	"fmt"
+	"strings"
 	"sync"
 )
 
@@ -18,7 +19,7 @@ func getShellIsPythonKind(shell *String) shellIsPythonKind {
 	if shell == nil {
 		return shellIsPythonKindUnspecified
 	}
-	if shell.Value == "python" {
+	if shell.Value == "python" || strings.HasPrefix(shell.Value, "python ") {
 		return shellIsPythonKindPython
 	}
 	return shellIsPythonKindNotPython
@@ -98,8 +99,8 @@ func (rule *RulePyflakes) VisitStep(n *Step) error {
 }
 
 func (rule *RulePyflakes) isPythonShell(r *ExecRun) bool {
-	if r.Shell != nil {
-		return r.Shell.Value == "python"
+	if k := getShellIsPythonKind(r.Shell); k != shellIsPythonKindUnspecified {
+		return k == shellIsPythonKindPython
 	}
 
 	if rule.jobShellIsPython != shellIsPythonKindUnspecified {
