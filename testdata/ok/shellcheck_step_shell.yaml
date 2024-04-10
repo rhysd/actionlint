@@ -13,4 +13,4 @@ jobs:
       # This causes SC1001 if `shell:` is not set explicitly
       - run: cat xxx\yyy.txt
         if: ${{ matrix.os == 'windows-latest' }}
-        shell: 'python {0}'
+        shell: 'pwsh {0}'

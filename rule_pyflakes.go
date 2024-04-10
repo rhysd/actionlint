@@ -126,8 +126,6 @@ func (rule *RulePyflakes) runPyflakes(src string, pos *Pos) {
 			return nil
 		}
 
-		rule.mu.Lock()
-		defer rule.mu.Unlock()
 		for len(stdout) > 0 {
 			if stdout, err = rule.parseNextError(stdout, pos); err != nil {
 				return err
@@ -157,7 +155,11 @@ func (rule *RulePyflakes) parseNextError(stdout []byte, pos *Pos) ([]byte, error
 	} else {
 		return nil, fmt.Errorf("error message from pyflakes does not end with \\n nor \\r\\n while checking script at %s. output: %q", pos, stdout)
 	}
+
+	// This method needs to be thread-safe since concurrentProcess.run calls its callback in a different goroutine.
+	rule.mu.Lock()
 	rule.Errorf(pos, "pyflakes reported issue in this script: %s", msg)
+	rule.mu.Unlock()
 
 	return b, nil
 }

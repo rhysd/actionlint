@@ -13,36 +13,36 @@ func TestRulePyflakesDetectPythonShell(t *testing.T) {
 		step     string // Shell name set at 'shell' in Step node
 	}{
 		{
-			what: "no default shell",
+			what:     "no default shell",
 			isPython: false,
 		},
 		{
-			what: "workflow default",
+			what:     "workflow default",
 			isPython: true,
 			workflow: "python",
 		},
 		{
-			what: "job default",
+			what:     "job default",
 			isPython: true,
-			job: "python",
+			job:      "python",
 		},
 		{
-			what: "step shell",
+			what:     "step shell",
 			isPython: true,
-			step: "python",
+			step:     "python",
 		},
 		{
-			what: "custom shell",
+			what:     "custom shell",
 			isPython: true,
 			workflow: "python {0}",
 		},
 		{
-			what: "other shell",
+			what:     "other shell",
 			isPython: false,
 			workflow: "pwsh",
 		},
 		{
-			what: "other custom shell",
+			what:     "other custom shell",
 			isPython: false,
 			workflow: "bash -e {0}",
 		},
