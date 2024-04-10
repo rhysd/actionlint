@@ -5,21 +5,22 @@ import (
 	"runtime"
 	"strings"
 	"sync"
+	"sync/atomic" // Note: atomic.Bool was added at Go 1.19
 	"testing"
 	"time"
 )
 
-func testStartEchoCommand(t *testing.T, proc *concurrentProcess, done *bool) {
+func testStartEchoCommand(t *testing.T, proc *concurrentProcess, done *atomic.Bool) {
 	t.Helper()
 
-	*done = false
+	done.Store(false)
 	echo := testSkipIfNoCommand(t, proc, "echo")
 	echo.run([]string{}, "", func(b []byte, err error) error {
 		if err != nil {
 			t.Error(err)
 			return err
 		}
-		*done = true
+		done.Store(true)
 		return nil
 	})
 	// This function does not wait the command finishes
@@ -218,8 +219,8 @@ func TestProcessErrorCommandNotFound(t *testing.T) {
 		return nil
 	})
 
-	var echoDone bool
-	testStartEchoCommand(t, p, &echoDone)
+	echoDone := &atomic.Bool{}
+	testStartEchoCommand(t, p, echoDone)
 
 	err := c.wait()
 	if err == nil || !strings.Contains(err.Error(), "yay! error found!") {
@@ -228,7 +229,7 @@ func TestProcessErrorCommandNotFound(t *testing.T) {
 
 	p.wait()
 
-	if !echoDone {
+	if !echoDone.Load() {
 		t.Fatal("a command following the error did not run")
 	}
 }
@@ -245,8 +246,8 @@ func TestProcessErrorInCallback(t *testing.T) {
 		return fmt.Errorf("dummy error")
 	})
 
-	var echoDone bool
-	testStartEchoCommand(t, p, &echoDone)
+	echoDone := &atomic.Bool{}
+	testStartEchoCommand(t, p, echoDone)
 
 	err := echo.wait()
 	if err == nil || err.Error() != "dummy error" {
@@ -255,7 +256,7 @@ func TestProcessErrorInCallback(t *testing.T) {
 
 	p.wait()
 
-	if !echoDone {
+	if !echoDone.Load() {
 		t.Fatal("a command following the error did not run")
 	}
 }
@@ -275,8 +276,8 @@ func TestProcessErrorLinterFailed(t *testing.T) {
 		return nil
 	})
 
-	var echoDone bool
-	testStartEchoCommand(t, p, &echoDone)
+	echoDone := &atomic.Bool{}
+	testStartEchoCommand(t, p, echoDone)
 
 	err := ls.wait()
 	if err == nil {
@@ -289,7 +290,7 @@ func TestProcessErrorLinterFailed(t *testing.T) {
 
 	p.wait()
 
-	if !echoDone {
+	if !echoDone.Load() {
 		t.Fatal("a command following the error did not run")
 	}
 }
