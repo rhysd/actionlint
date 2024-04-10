@@ -22,18 +22,12 @@ type RuleShellcheck struct {
 	cmd           *externalCommand
 	workflowShell string
 	jobShell      string
+	runnerShell   string
 	mu            sync.Mutex
 }
 
-// NewRuleShellcheck creates new RuleShellcheck instance. Parameter executable can be command name
-// or relative/absolute file path. When the given executable is not found in system, it returns an
-// error as 2nd return value.
-func NewRuleShellcheck(executable string, proc *concurrentProcess) (*RuleShellcheck, error) {
-	cmd, err := proc.newCommandRunner(executable)
-	if err != nil {
-		return nil, err
-	}
-	r := &RuleShellcheck{
+func newRuleShellcheck(cmd *externalCommand) *RuleShellcheck {
+	return &RuleShellcheck{
 		RuleBase: RuleBase{
 			name: "shellcheck",
 			desc: "Checks for shell script sources in \"run:\" using shellcheck",
@@ -41,8 +35,19 @@ func NewRuleShellcheck(executable string, proc *concurrentProcess) (*RuleShellch
 		cmd:           cmd,
 		workflowShell: "",
 		jobShell:      "",
+		runnerShell:   "",
 	}
-	return r, nil
+}
+
+// NewRuleShellcheck creates new RuleShellcheck instance. The executable argument can be command
+// name or relative/absolute file path. When the given executable is not found in system, it returns
+// an error as 2nd return value.
+func NewRuleShellcheck(executable string, proc *concurrentProcess) (*RuleShellcheck, error) {
+	cmd, err := proc.newCommandRunner(executable)
+	if err != nil {
+		return nil, err
+	}
+	return newRuleShellcheck(cmd), nil
 }
 
 // VisitStep is callback when visiting Step node.
@@ -52,12 +57,7 @@ func (rule *RuleShellcheck) VisitStep(n *Step) error {
 		return nil
 	}
 
-	name := rule.getShellName(run)
-	if name != "bash" && name != "sh" {
-		return nil
-	}
-
-	rule.runShellcheck(run.Run.Value, name, run.RunPos)
+	rule.runShellcheck(run.Run.Value, rule.getShellName(run), run.RunPos)
 	return nil
 }
 
@@ -65,24 +65,19 @@ func (rule *RuleShellcheck) VisitStep(n *Step) error {
 func (rule *RuleShellcheck) VisitJobPre(n *Job) error {
 	if n.Defaults != nil && n.Defaults.Run != nil && n.Defaults.Run.Shell != nil {
 		rule.jobShell = n.Defaults.Run.Shell.Value
-		return nil
 	}
 
-	if n.RunsOn == nil {
-		return nil
-	}
-
-	for _, label := range n.RunsOn.Labels {
-		l := strings.ToLower(label.Value)
-		// Default shell on Windows is PowerShell.
-		// https://docs.github.com/en/actions/learn-github-actions/workflow-syntax-for-github-actions#using-a-specific-shell
-		if l == "windows" || strings.HasPrefix(l, "windows-") {
-			return nil
+	if n.RunsOn != nil {
+		for _, label := range n.RunsOn.Labels {
+			l := strings.ToLower(label.Value)
+			// Default shell on Windows is PowerShell.
+			// https://docs.github.com/en/actions/learn-github-actions/workflow-syntax-for-github-actions#using-a-specific-shell
+			if l == "windows" || strings.HasPrefix(l, "windows-") {
+				rule.runnerShell = "pwsh"
+				break
+			}
 		}
 	}
-
-	// TODO: When bash is not found, GitHub-hosted runner fallbacks to sh. What OSes require this behavior?
-	rule.jobShell = "bash"
 
 	return nil
 }
@@ -90,6 +85,7 @@ func (rule *RuleShellcheck) VisitJobPre(n *Job) error {
 // VisitJobPost is callback when visiting Job node after visiting its children.
 func (rule *RuleShellcheck) VisitJobPost(n *Job) error {
 	rule.jobShell = ""
+	rule.runnerShell = ""
 	return nil
 }
 
@@ -114,7 +110,15 @@ func (rule *RuleShellcheck) getShellName(exec *ExecRun) string {
 	if rule.jobShell != "" {
 		return rule.jobShell
 	}
-	return rule.workflowShell
+	if rule.workflowShell != "" {
+		return rule.workflowShell
+	}
+	if rule.runnerShell != "" {
+		return rule.runnerShell
+	}
+	// Note: Default shell on Windows is pwsh so this value is not always correct.
+	// Note: When bash is not found, GitHub-hosted runner fallbacks to sh.
+	return "bash"
 }
 
 // Replace ${{ ... }} with underscores like __________
@@ -156,7 +160,18 @@ func sanitizeExpressionsInScript(src string) string {
 	}
 }
 
-func (rule *RuleShellcheck) runShellcheck(src, sh string, pos *Pos) {
+func (rule *RuleShellcheck) runShellcheck(src, shell string, pos *Pos) {
+	var sh string
+	if shell == "bash" || shell == "sh" {
+		sh = shell
+	} else if strings.HasPrefix(shell, "bash ") {
+		sh = "bash"
+	} else if strings.HasPrefix(shell, "sh ") {
+		sh = "sh"
+	} else {
+		return // Skip checking this shell script since shellcheck doesn't support it
+	}
+
 	src = sanitizeExpressionsInScript(src)
 	rule.Debug("%s: Run shellcheck for %s script:\n%s", pos, sh, src)
 

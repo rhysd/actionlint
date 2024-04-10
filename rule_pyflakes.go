@@ -3,6 +3,7 @@ package actionlint
 import (
 	"bytes"
 	"fmt"
+	"strings"
 	"sync"
 )
 
@@ -18,7 +19,7 @@ func getShellIsPythonKind(shell *String) shellIsPythonKind {
 	if shell == nil {
 		return shellIsPythonKindUnspecified
 	}
-	if shell.Value == "python" {
+	if shell.Value == "python" || strings.HasPrefix(shell.Value, "python ") {
 		return shellIsPythonKindPython
 	}
 	return shellIsPythonKindNotPython
@@ -34,15 +35,8 @@ type RulePyflakes struct {
 	mu                    sync.Mutex
 }
 
-// NewRulePyflakes creates new RulePyflakes instance. Parameter executable can be command name
-// or relative/absolute file path. When the given executable is not found in system, it returns
-// an error.
-func NewRulePyflakes(executable string, proc *concurrentProcess) (*RulePyflakes, error) {
-	cmd, err := proc.newCommandRunner(executable)
-	if err != nil {
-		return nil, err
-	}
-	r := &RulePyflakes{
+func newRulePyflakes(cmd *externalCommand) *RulePyflakes {
+	return &RulePyflakes{
 		RuleBase: RuleBase{
 			name: "pyflakes",
 			desc: "Checks for Python script when \"shell: python\" is configured using Pyflakes",
@@ -51,7 +45,17 @@ func NewRulePyflakes(executable string, proc *concurrentProcess) (*RulePyflakes,
 		workflowShellIsPython: shellIsPythonKindUnspecified,
 		jobShellIsPython:      shellIsPythonKindUnspecified,
 	}
-	return r, nil
+}
+
+// NewRulePyflakes creates new RulePyflakes instance. Parameter executable can be command name
+// or relative/absolute file path. When the given executable is not found in system, it returns
+// an error.
+func NewRulePyflakes(executable string, proc *concurrentProcess) (*RulePyflakes, error) {
+	cmd, err := proc.newCommandRunner(executable)
+	if err != nil {
+		return nil, err
+	}
+	return newRulePyflakes(cmd), nil
 }
 
 // VisitJobPre is callback when visiting Job node before visiting its children.
@@ -98,8 +102,8 @@ func (rule *RulePyflakes) VisitStep(n *Step) error {
 }
 
 func (rule *RulePyflakes) isPythonShell(r *ExecRun) bool {
-	if r.Shell != nil {
-		return r.Shell.Value == "python"
+	if k := getShellIsPythonKind(r.Shell); k != shellIsPythonKindUnspecified {
+		return k == shellIsPythonKindPython
 	}
 
 	if rule.jobShellIsPython != shellIsPythonKindUnspecified {
@@ -122,8 +126,6 @@ func (rule *RulePyflakes) runPyflakes(src string, pos *Pos) {
 			return nil
 		}
 
-		rule.mu.Lock()
-		defer rule.mu.Unlock()
 		for len(stdout) > 0 {
 			if stdout, err = rule.parseNextError(stdout, pos); err != nil {
 				return err
@@ -153,7 +155,11 @@ func (rule *RulePyflakes) parseNextError(stdout []byte, pos *Pos) ([]byte, error
 	} else {
 		return nil, fmt.Errorf("error message from pyflakes does not end with \\n nor \\r\\n while checking script at %s. output: %q", pos, stdout)
 	}
+
+	// This method needs to be thread-safe since concurrentProcess.run calls its callback in a different goroutine.
+	rule.mu.Lock()
 	rule.Errorf(pos, "pyflakes reported issue in this script: %s", msg)
+	rule.mu.Unlock()
 
 	return b, nil
 }
