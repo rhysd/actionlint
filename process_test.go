@@ -27,7 +27,7 @@ func testStartEchoCommand(t *testing.T, proc *concurrentProcess, done *bool) {
 
 func testSkipIfNoCommand(t *testing.T, p *concurrentProcess, cmd string) *externalCommand {
 	t.Helper()
-	c, err := p.newCommandRunner(cmd)
+	c, err := p.newCommandRunner(cmd, false)
 	if err != nil {
 		t.Skipf("%s command is necessary to run this test: %s", cmd, err)
 	}

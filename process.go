@@ -33,7 +33,7 @@ func newConcurrentProcess(par int) *concurrentProcess {
 	}
 }
 
-func runProcessWithStdin(exe string, args []string, stdin string) ([]byte, error) {
+func runProcessWithStdin(exe string, args []string, stdin string, combineOutput bool) ([]byte, error) {
 	cmd := exec.Command(exe, args...)
 	cmd.Stderr = nil
 
@@ -47,16 +47,30 @@ func runProcessWithStdin(exe string, args []string, stdin string) ([]byte, error
 	}
 	p.Close()
 
-	stdout, err := cmd.Output()
+	var stdout []byte
+	if combineOutput {
+		stdout, err = cmd.CombinedOutput()
+	} else {
+		stdout, err = cmd.Output()
+	}
+
 	if err != nil {
 		if exitErr, ok := err.(*exec.ExitError); ok {
 			code := exitErr.ExitCode()
+
+			stderr := exitErr.Stderr
+			if combineOutput {
+				stderr = stdout
+			}
+
 			if code < 0 {
-				return nil, fmt.Errorf("%s was terminated. stderr: %q", exe, exitErr.Stderr)
+				return nil, fmt.Errorf("%s was terminated. stderr: %q", exe, stderr)
 			}
+
 			if len(stdout) == 0 {
-				return nil, fmt.Errorf("%s exited with status %d but stdout was empty. stderr: %q", exe, code, exitErr.Stderr)
+				return nil, fmt.Errorf("%s exited with status %d but stdout was empty. stderr: %q", exe, code, stderr)
 			}
+
 			// Reaches here when exit status is non-zero and stdout is not empty, shellcheck successfully found some errors
 		} else {
 			return nil, err
@@ -66,12 +80,19 @@ func runProcessWithStdin(exe string, args []string, stdin string) ([]byte, error
 	return stdout, nil
 }
 
-func (proc *concurrentProcess) run(eg *errgroup.Group, exe string, args []string, stdin string, callback func([]byte, error) error) {
+func (proc *concurrentProcess) run(
+	eg *errgroup.Group,
+	exe string,
+	args []string,
+	stdin string,
+	combineOutput bool,
+	callback func([]byte, error) error,
+) {
 	proc.sema.Acquire(proc.ctx, 1)
 	proc.wg.Add(1)
 	eg.Go(func() error {
 		defer proc.wg.Done()
-		stdout, err := runProcessWithStdin(exe, args, stdin)
+		stdout, err := runProcessWithStdin(exe, args, stdin, combineOutput)
 		proc.sema.Release(1)
 		return callback(stdout, err)
 	})
@@ -84,14 +105,15 @@ func (proc *concurrentProcess) wait() {
 
 // newCommandRunner creates new external command runner for given executable. The executable path
 // is resolved in this function.
-func (proc *concurrentProcess) newCommandRunner(exe string) (*externalCommand, error) {
+func (proc *concurrentProcess) newCommandRunner(exe string, combineOutput bool) (*externalCommand, error) {
 	p, err := execabs.LookPath(exe)
 	if err != nil {
 		return nil, err
 	}
 	cmd := &externalCommand{
-		proc: proc,
-		exe:  p,
+		proc:          proc,
+		exe:           p,
+		combineOutput: combineOutput,
 	}
 	return cmd, nil
 }
@@ -101,16 +123,17 @@ func (proc *concurrentProcess) newCommandRunner(exe string) (*externalCommand, e
 // by using errgroup.Group. The wait() method must be called at the end for checking if some fatal
 // error occurred.
 type externalCommand struct {
-	proc *concurrentProcess
-	eg   errgroup.Group
-	exe  string
+	proc          *concurrentProcess
+	eg            errgroup.Group
+	exe           string
+	combineOutput bool
 }
 
 // run runs the command with given arguments and stdin. The callback function is called after the
 // process runs. First argument is stdout and the second argument is an error while running the
 // process.
 func (cmd *externalCommand) run(args []string, stdin string, callback func([]byte, error) error) {
-	cmd.proc.run(&cmd.eg, cmd.exe, args, stdin, callback)
+	cmd.proc.run(&cmd.eg, cmd.exe, args, stdin, cmd.combineOutput, callback)
 }
 
 // wait waits until all goroutines for this command finish. Note that it does not wait for
