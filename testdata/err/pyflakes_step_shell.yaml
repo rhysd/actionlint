@@ -1,0 +1,14 @@
+on: push
+jobs:
+  step-level:
+    runs-on: ubuntu-latest
+    steps:
+      # Lint check failed. The error is output to stdout (#411)
+      - run: print(unknown_var)
+        shell: python
+      # Syntax check failed. The error is output to stderr (#411)
+      - run: print(
+        shell: python
+      # Check custom shell
+      - run: print(unknown_var)
+        shell: 'python {0}'
