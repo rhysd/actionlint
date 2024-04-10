@@ -12,6 +12,61 @@ import (
 	"golang.org/x/sys/execabs"
 )
 
+// cmdExecution represents a single command line execution.
+type cmdExecution struct {
+	cmd           string
+	args          []string
+	stdin         string
+	combineOutput bool
+}
+
+func (e *cmdExecution) run() ([]byte, error) {
+	cmd := exec.Command(e.cmd, e.args...)
+	cmd.Stderr = nil
+
+	p, err := cmd.StdinPipe()
+	if err != nil {
+		return nil, fmt.Errorf("could not make stdin pipe for %s process: %w", e.cmd, err)
+	}
+	if _, err := io.WriteString(p, e.stdin); err != nil {
+		p.Close()
+		return nil, fmt.Errorf("could not write to stdin of %s process: %w", e.cmd, err)
+	}
+	p.Close()
+
+	var stdout []byte
+	if e.combineOutput {
+		stdout, err = cmd.CombinedOutput()
+	} else {
+		stdout, err = cmd.Output()
+	}
+
+	if err != nil {
+		if exitErr, ok := err.(*exec.ExitError); ok {
+			code := exitErr.ExitCode()
+
+			stderr := exitErr.Stderr
+			if e.combineOutput {
+				stderr = stdout
+			}
+
+			if code < 0 {
+				return nil, fmt.Errorf("%s was terminated. stderr: %q", e.cmd, stderr)
+			}
+
+			if len(stdout) == 0 {
+				return nil, fmt.Errorf("%s exited with status %d but stdout was empty. stderr: %q", e.cmd, code, stderr)
+			}
+
+			// Reaches here when exit status is non-zero and stdout is not empty, shellcheck successfully found some errors
+		} else {
+			return nil, err
+		}
+	}
+
+	return stdout, nil
+}
+
 // concurrentProcess is a manager to run process concurrently. Since running process consumes OS
 // resources, running too many processes concurrently causes some issues. On macOS, making too many
 // process makes the parent process hang (see issue #3). And running processes which open files can
@@ -33,66 +88,12 @@ func newConcurrentProcess(par int) *concurrentProcess {
 	}
 }
 
-func runProcessWithStdin(exe string, args []string, stdin string, combineOutput bool) ([]byte, error) {
-	cmd := exec.Command(exe, args...)
-	cmd.Stderr = nil
-
-	p, err := cmd.StdinPipe()
-	if err != nil {
-		return nil, fmt.Errorf("could not make stdin pipe for %s process: %w", exe, err)
-	}
-	if _, err := io.WriteString(p, stdin); err != nil {
-		p.Close()
-		return nil, fmt.Errorf("could not write to stdin of %s process: %w", exe, err)
-	}
-	p.Close()
-
-	var stdout []byte
-	if combineOutput {
-		stdout, err = cmd.CombinedOutput()
-	} else {
-		stdout, err = cmd.Output()
-	}
-
-	if err != nil {
-		if exitErr, ok := err.(*exec.ExitError); ok {
-			code := exitErr.ExitCode()
-
-			stderr := exitErr.Stderr
-			if combineOutput {
-				stderr = stdout
-			}
-
-			if code < 0 {
-				return nil, fmt.Errorf("%s was terminated. stderr: %q", exe, stderr)
-			}
-
-			if len(stdout) == 0 {
-				return nil, fmt.Errorf("%s exited with status %d but stdout was empty. stderr: %q", exe, code, stderr)
-			}
-
-			// Reaches here when exit status is non-zero and stdout is not empty, shellcheck successfully found some errors
-		} else {
-			return nil, err
-		}
-	}
-
-	return stdout, nil
-}
-
-func (proc *concurrentProcess) run(
-	eg *errgroup.Group,
-	exe string,
-	args []string,
-	stdin string,
-	combineOutput bool,
-	callback func([]byte, error) error,
-) {
+func (proc *concurrentProcess) run(eg *errgroup.Group, exec *cmdExecution, callback func([]byte, error) error) {
 	proc.sema.Acquire(proc.ctx, 1)
 	proc.wg.Add(1)
 	eg.Go(func() error {
 		defer proc.wg.Done()
-		stdout, err := runProcessWithStdin(exe, args, stdin, combineOutput)
+		stdout, err := exec.run()
 		proc.sema.Release(1)
 		return callback(stdout, err)
 	})
@@ -133,7 +134,8 @@ type externalCommand struct {
 // process runs. First argument is stdout and the second argument is an error while running the
 // process.
 func (cmd *externalCommand) run(args []string, stdin string, callback func([]byte, error) error) {
-	cmd.proc.run(&cmd.eg, cmd.exe, args, stdin, cmd.combineOutput, callback)
+	exec := &cmdExecution{cmd.exe, args, stdin, cmd.combineOutput}
+	cmd.proc.run(&cmd.eg, exec, callback)
 }
 
 // wait waits until all goroutines for this command finish. Note that it does not wait for
