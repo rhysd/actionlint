@@ -317,3 +317,57 @@ func TestProcessRunConcurrentlyAndWait(t *testing.T) {
 
 	p.wait()
 }
+
+func TestProcessCombineStdoutAndStderr(t *testing.T) {
+	p := newConcurrentProcess(1)
+	bash := testSkipIfNoCommand(t, p, "bash")
+	bash.combineOutput = true
+	script := "echo 'hello stdout'; echo 'hello stderr' >&2"
+	done := make(chan string)
+
+	bash.run([]string{"-c", script}, "", func(b []byte, err error) error {
+		if err != nil {
+			t.Fatal(err)
+			return err
+		}
+		done <- string(b)
+		return nil
+	})
+
+	out := <-done
+	if err := bash.wait(); err != nil {
+		t.Fatal(err)
+	}
+	p.wait()
+
+	if !strings.Contains(out, "hello stdout") {
+		t.Errorf("stdout was not captured: %q", out)
+	}
+	if !strings.Contains(out, "hello stderr") {
+		t.Errorf("stderr was not captured: %q", out)
+	}
+}
+
+func TestProcessCommandExitStatusNonZero(t *testing.T) {
+	p := newConcurrentProcess(1)
+	bash := testSkipIfNoCommand(t, p, "false")
+	done := make(chan error)
+
+	bash.run([]string{}, "", func(b []byte, err error) error {
+		done <- err
+		return nil
+	})
+
+	err := <-done
+	if err := bash.wait(); err != nil {
+		t.Fatal(err)
+	}
+	p.wait()
+	if err == nil {
+		t.Fatal("Error did not happen")
+	}
+	msg := err.Error()
+	if !strings.Contains(msg, "exited with status 1") {
+		t.Fatalf("Unexpected error happened: %q", msg)
+	}
+}
