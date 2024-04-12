@@ -43,7 +43,7 @@ func newRuleShellcheck(cmd *externalCommand) *RuleShellcheck {
 // name or relative/absolute file path. When the given executable is not found in system, it returns
 // an error as 2nd return value.
 func NewRuleShellcheck(executable string, proc *concurrentProcess) (*RuleShellcheck, error) {
-	cmd, err := proc.newCommandRunner(executable)
+	cmd, err := proc.newCommandRunner(executable, false)
 	if err != nil {
 		return nil, err
 	}

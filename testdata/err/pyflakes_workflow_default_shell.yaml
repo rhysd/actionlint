@@ -1,0 +1,11 @@
+on: push
+
+defaults:
+  run:
+    shell: python
+
+jobs:
+  job-level:
+    runs-on: ubuntu-latest
+    steps:
+      - run: print(unknown_var)
