@@ -37,18 +37,18 @@ func TestLinterLintOK(t *testing.T) {
 	}
 
 	proj := &Project{root: dir}
-	shellcheck, err := execabs.LookPath("shellcheck")
-	if err != nil {
-		t.Skip("skipped because \"shellcheck\" command does not exist in system")
-	}
-
-	pyflakes, err := execabs.LookPath("pyflakes")
-	if err != nil {
-		t.Skip("skipped because \"pyflakes\" command does not exist in system")
-	}
+	shellcheck, _ := execabs.LookPath("shellcheck")
+	pyflakes, _ := execabs.LookPath("pyflakes")
 
 	for _, f := range fs {
 		t.Run(filepath.Base(f), func(t *testing.T) {
+			if strings.Contains(f, "shellcheck") && shellcheck == "" {
+				t.Skip("skipping", f, "because \"shellcheck\" command does not exist in system")
+			}
+			if strings.Contains(f, "pyflakes") && pyflakes == "" {
+				t.Skip("skipping", f, "because \"pyflakes\" command does not exist in system")
+			}
+
 			opts := LinterOptions{
 				Shellcheck: shellcheck,
 				Pyflakes:   pyflakes,

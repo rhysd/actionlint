@@ -51,7 +51,8 @@ func newRulePyflakes(cmd *externalCommand) *RulePyflakes {
 // or relative/absolute file path. When the given executable is not found in system, it returns
 // an error.
 func NewRulePyflakes(executable string, proc *concurrentProcess) (*RulePyflakes, error) {
-	cmd, err := proc.newCommandRunner(executable)
+	// Combine output because pyflakes outputs lint errors to stdout and outputs syntax errors to stderr. (#411)
+	cmd, err := proc.newCommandRunner(executable, true)
 	if err != nil {
 		return nil, err
 	}
@@ -141,7 +142,16 @@ func (rule *RulePyflakes) parseNextError(stdout []byte, pos *Pos) ([]byte, error
 	// Eat "<stdin>:"
 	idx := bytes.Index(b, []byte("<stdin>:"))
 	if idx == -1 {
-		return nil, fmt.Errorf("error message from pyflakes does not start with \"<stdin>:\" while checking script at %s. stdout:\n%s", pos, stdout)
+		// Syntax errors from pyflake are consist of multiple lines. Skip parsing subsequent lines. (#411)
+		// ```
+		// <stdin>:1:7: unexpected EOF while parsing
+		// print(
+		//       ^
+		// ```
+		if idx := bytes.IndexByte(b, '\n'); idx >= 0 {
+			return b[idx+1:], nil
+		}
+		return nil, nil
 	}
 	b = b[idx+len("<stdin>:"):]
 
