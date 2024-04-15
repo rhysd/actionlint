@@ -163,7 +163,7 @@ func (rule *RulePyflakes) parseNextError(stdout []byte, pos *Pos) ([]byte, error
 		msg = b[:idx]
 		b = b[idx+1:]
 	} else {
-		return nil, fmt.Errorf("error message from pyflakes does not end with \\n nor \\r\\n while checking script at %s. output: %q", pos, stdout)
+		return nil, fmt.Errorf(`error message from pyflakes does not end with \n nor \r\n while checking script at %s. output: %q`, pos, stdout)
 	}
 
 	// This method needs to be thread-safe since concurrentProcess.run calls its callback in a different goroutine.
