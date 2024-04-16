@@ -256,12 +256,13 @@ var BuiltinGlobalVariableTypes = map[string]ExprType{
 	"steps": NewEmptyStrictObjectType(), // This value will be updated contextually
 	// https://docs.github.com/en/actions/learn-github-actions/contexts#runner-context
 	"runner": NewStrictObjectType(map[string]ExprType{
-		"name":       StringType{},
-		"os":         StringType{},
-		"arch":       StringType{},
-		"temp":       StringType{},
-		"tool_cache": StringType{},
-		"debug":      StringType{},
+		"name":        StringType{},
+		"os":          StringType{},
+		"arch":        StringType{},
+		"temp":        StringType{},
+		"tool_cache":  StringType{},
+		"debug":       StringType{},
+		"environment": StringType{}, // https://github.com/github/docs/issues/32443
 	}),
 	// https://docs.github.com/en/actions/learn-github-actions/contexts#secrets-context
 	"secrets": NewMapObjectType(StringType{}),
