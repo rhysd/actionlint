@@ -37,11 +37,11 @@ jobs:
     runs-on: ${{ matrix.os }}
     steps:
       - run: echo "Checking commit '${{ github.event.head_commit.message }}'"
-      - uses: actions/checkout@v3
-      - uses: actions/setup-node@v3
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
         with:
-          node_version: 16.x
-      - uses: actions/cache@v3
+          node_version: 18.x
+      - uses: actions/cache@v4
         with:
           path: ~/.npm
           key: ${{ matrix.platform }}-node-${{ hashFiles('**/package-lock.json') }}
@@ -68,9 +68,9 @@ test.yaml:13:41: "github.event.head_commit.message" is potentially untrusted. av
    |
 13 |       - run: echo "Checking commit '${{ github.event.head_commit.message }}'"
    |                                         ^~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
-test.yaml:17:11: input "node_version" is not defined in action "actions/setup-node@v3". available inputs are "always-auth", "architecture", "cache", "cache-dependency-path", "check-latest", "node-version", "node-version-file", "registry-url", "scope", "token" [action]
+test.yaml:17:11: input "node_version" is not defined in action "actions/setup-node@v4". available inputs are "always-auth", "architecture", "cache", "cache-dependency-path", "check-latest", "node-version", "node-version-file", "registry-url", "scope", "token" [action]
    |
-17 |           node_version: 16.x
+17 |           node_version: 18.x
    |           ^~~~~~~~~~~~~
 test.yaml:21:20: property "platform" is not defined in object type {os: string} [expression]
    |
