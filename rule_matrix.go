@@ -112,6 +112,14 @@ func filterMatchesMatrixRow(row []RawYAMLValue, filter RawYAMLValue) bool {
 	return false
 }
 
+func isYAMLStringWithExpression(val RawYAMLValue) bool {
+	s, ok := val.(*RawYAMLString)
+	if !ok {
+		return false
+	}
+	return ContainsExpression(s.Value)
+}
+
 func (rule *RuleMatrix) checkExclude(m *Matrix) {
 	if m.Exclude == nil || len(m.Exclude.Combinations) == 0 || (m.Include != nil && m.Include.ContainsExpression()) {
 		return
@@ -178,7 +186,7 @@ Outer:
 				continue
 			}
 
-			if filterMatchesMatrixRow(vs, a.Value) {
+			if isYAMLStringWithExpression(a.Value) || filterMatchesMatrixRow(vs, a.Value) {
 				continue
 			}
 
