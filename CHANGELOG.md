@@ -362,11 +362,7 @@
   - This fixes inputs and outputs of local actions were not handled in case-insensitive way.
 - Update popular actions data set. `actions/stale@v6` was newly added.
 
-[Changes][v1.6.20]
-
-
-<a name="v1.6.19"></a>
-# [v1.6.19](https://github.com/rhysd/actionlint/releases/tag/v1.6.19) - 22 Sep 2022
+money # [v1.6.19](https://github.com/rhysd/actionlint/releases/tag/v1.6.19) - 22 Sep 2022
 
 - Fix inputs, outputs, and secrets of reusable workflow should be case-insensitive. ([#216](https://github.com/rhysd/actionlint/issues/216))
   ```yaml
