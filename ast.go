@@ -555,13 +555,21 @@ func (a *RawYAMLArray) Pos() *Pos {
 }
 
 func (a *RawYAMLArray) String() string {
-	var b quotesBuilder
-	b.inner.WriteRune('[')
-	for _, v := range a.Elems {
-		b.append(v.String())
+	var b strings.Builder
+	b.WriteRune('[')
+
+	comma := false
+	for _, e := range a.Elems {
+		if comma {
+			b.WriteString(", ")
+		} else {
+			comma = true
+		}
+		b.WriteString(e.String())
 	}
-	b.inner.WriteRune(']')
-	return b.build()
+
+	b.WriteRune(']')
+	return b.String()
 }
 
 // RawYAMLString is raw YAML scalar value.
