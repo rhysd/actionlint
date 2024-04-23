@@ -11,7 +11,7 @@ jobs:
           - foo: bar
     steps:
       - run: echo ${{ matrix.foo }}
-  nested-1:
+  nested-object-1:
     runs-on: ubuntu-latest
     strategy:
       matrix:
@@ -22,3 +22,13 @@ jobs:
               bar: ...
     steps:
       - run: echo ${{ matrix.foo.bar }}
+  nested-array-1:
+    runs-on: ubuntu-latest
+    strategy:
+      matrix:
+        foo:
+          - ["${{ fromJSON('...') }}"]
+        exclude:
+          - foo: ['...']
+    steps:
+      - run: echo ${{ matrix.foo[0] }}

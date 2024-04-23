@@ -1,7 +1,7 @@
 on: push
 
 jobs:
-  test:
+  object:
     strategy:
       matrix:
         os:
@@ -29,3 +29,27 @@ jobs:
     runs-on: ${{ matrix.os.runner }}
     steps:
       - run: echo ${{ matrix.gui }}
+  array:
+    strategy:
+      matrix:
+        os:
+          - ['ubuntu', 'latest']
+        include:
+          - os: ['ubuntu', 'latest']
+            gui: ['gnome', 'gtk']
+        exclude:
+          # ERROR: Value mismatch at first element
+          - os: ['macos', 'latest']
+          # ERROR: Value mismatch at second element
+          - os: ['ubuntu', '22.04']
+          # ERROR: Type mismatch at second element
+          - os: ['ubuntu', {'version': '22.04'}]
+          # ERROR: Type mismatch in key added by `include`
+          - os: ['ubuntu', 'latest']
+            gui: [{'name': 'gnome'}]
+          # ERROR: Unknown value in key added by `include`
+          - os: ['ubuntu', 'latest']
+            gui: ['gnome', 'x11']
+    runs-on: ${{ matrix.os[0] }}-${{ matrix.os[1] }}
+    steps:
+      - run: echo '${{ matrix.gui[0] }} on ${{ matrix.gui[1] }}'

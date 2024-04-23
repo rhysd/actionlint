@@ -39,3 +39,29 @@ jobs:
                 piyo: ${{ fromJSON('...') }}
     steps:
       - run: echo ${{ matrix.foo.bar.piyo }}
+  nested-array-1:
+    runs-on: ubuntu-latest
+    strategy:
+      matrix:
+        foo:
+          - [aaa]
+        exclude:
+          - foo: ${{ fromJSON('...') }}
+          - foo:
+            - ${{ fromJSON('...') }}
+    steps:
+      - run: echo ${{ matrix.foo[0] }}
+  nested-array-2:
+    runs-on: ubuntu-latest
+    strategy:
+      matrix:
+        foo:
+          - [[aaa]]
+        exclude:
+          - foo: ${{ fromJSON('...') }}
+          - foo:
+            - ${{ fromJSON('...') }}
+          - foo:
+            - ["${{ fromJSON('...') }}"]
+    steps:
+      - run: echo ${{ matrix.foo[0][0] }}
