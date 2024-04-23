@@ -70,9 +70,21 @@ func (rule *RuleMatrix) checkDuplicateInRow(row *MatrixRow) {
 }
 
 func filterMatchesYAMLValue(v, filter RawYAMLValue) bool {
+	// When the filter side is dynamically contructed with some expression, it is not possible to statically check if the filter
+	// matches the value. To avoid false positives, assume such filter always matches to the value. (#414)
+	// ```
+	// matrix:
+	//   foo: ['a', 'b']
+	//   exclude:
+	//     foo: ${{ ... }}
+	// ```
+	if s, ok := filter.(*RawYAMLString); ok && ContainsExpression(s.Value) {
+		return true
+	}
+
 	switch v := v.(type) {
 	case *RawYAMLObject:
-		// `exclude` and `include` filter can match to objects in matrix as subset of them (#249).
+		// `exclude` filter can match to objects in matrix as subset of them (#249).
 		// For example,
 		//
 		// matrix:
@@ -98,6 +110,11 @@ func filterMatchesYAMLValue(v, filter RawYAMLValue) bool {
 		default:
 			return false
 		}
+	case *RawYAMLString:
+		if ContainsExpression(v.Value) {
+			return true
+		}
+		return v.Equals(filter)
 	default:
 		return v.Equals(filter)
 	}
@@ -112,14 +129,6 @@ func filterMatchesMatrixRow(row []RawYAMLValue, filter RawYAMLValue) bool {
 	return false
 }
 
-func isYAMLStringWithExpression(val RawYAMLValue) bool {
-	s, ok := val.(*RawYAMLString)
-	if !ok {
-		return false
-	}
-	return ContainsExpression(s.Value)
-}
-
 func (rule *RuleMatrix) checkExclude(m *Matrix) {
 	if m.Exclude == nil || len(m.Exclude.Combinations) == 0 || (m.Include != nil && m.Include.ContainsExpression()) {
 		return
@@ -132,7 +141,8 @@ func (rule *RuleMatrix) checkExclude(m *Matrix) {
 
 	vals := make(map[string][]RawYAMLValue, len(m.Rows))
 	ignored := map[string]struct{}{}
-Outer:
+
+Rows:
 	for name, row := range m.Rows {
 		if row.Expression != nil {
 			ignored[name] = struct{}{}
@@ -142,7 +152,7 @@ Outer:
 		for _, y := range row.Values {
 			if s, ok := y.(*RawYAMLString); ok && isExprAssigned(s.Value) {
 				ignored[name] = struct{}{}
-				continue Outer
+				continue Rows
 			}
 		}
 		vals[name] = row.Values
@@ -150,18 +160,18 @@ Outer:
 
 	if m.Include != nil {
 		for _, combi := range m.Include.Combinations {
+		Assigns:
 			for n, a := range combi.Assigns {
 				if _, ok := ignored[n]; ok {
 					continue
 				}
-				vs, ok := vals[n]
-				if !ok {
-					vals[n] = []RawYAMLValue{a.Value}
-					continue
+				vs := vals[n]
+				for _, v := range vs {
+					if v.Equals(a.Value) {
+						continue Assigns
+					}
 				}
-				if !filterMatchesMatrixRow(vs, a.Value) {
-					vals[n] = append(vs, a.Value)
-				}
+				vals[n] = append(vs, a.Value)
 			}
 		}
 	}
@@ -186,7 +196,7 @@ Outer:
 				continue
 			}
 
-			if isYAMLStringWithExpression(a.Value) || filterMatchesMatrixRow(vs, a.Value) {
+			if filterMatchesMatrixRow(vs, a.Value) {
 				continue
 			}
 

@@ -1,0 +1,7 @@
+test.yaml:14:13: "operating-system" in "exclude" section does not exist in matrix. available matrix configurations are "gui", "os" [matrix]
+test.yaml:16:17: value "ubuntu-latest" in "exclude" does not match in matrix "os" combinations. possible values are {"runner": "ubuntu-latest"} [matrix]
+test.yaml:18:17: value ["\"ubuntu-latest\""] in "exclude" does not match in matrix "os" combinations. possible values are {"runner": "ubuntu-latest"} [matrix]
+test.yaml:20:17: value {"runner": {"name": "ubuntu-latest"}} in "exclude" does not match in matrix "os" combinations. possible values are {"runner": "ubuntu-latest"} [matrix]
+test.yaml:22:17: value {"runner": "windows-latest"} in "exclude" does not match in matrix "os" combinations. possible values are {"runner": "ubuntu-latest"} [matrix]
+test.yaml:25:18: value ["\"gnome\""] in "exclude" does not match in matrix "gui" combinations. possible values are "gnome" [matrix]
+test.yaml:28:18: value "kde" in "exclude" does not match in matrix "gui" combinations. possible values are "gnome" [matrix]
