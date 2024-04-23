@@ -124,6 +124,7 @@ func isYAMLValueSubset(v, sub RawYAMLValue) bool {
 		}
 		return true
 	case *RawYAMLString:
+		// When some item is constructed with ${{ }} dynamically, give up checking combinations (#261)
 		if ContainsExpression(v.Value) {
 			return true
 		}
@@ -143,23 +144,15 @@ func (rule *RuleMatrix) checkExclude(m *Matrix) {
 		return
 	}
 
-	vals := make(map[string][]RawYAMLValue, len(m.Rows))
+	rows := make(map[string][]RawYAMLValue, len(m.Rows))
 	ignored := map[string]struct{}{}
 
-Rows:
-	for name, row := range m.Rows {
-		if row.Expression != nil {
-			ignored[name] = struct{}{}
+	for n, r := range m.Rows {
+		if r.Expression != nil {
+			ignored[n] = struct{}{}
 			continue
 		}
-		// When some item is constructed with ${{ }} dynamically, give up checking combination values (#261)
-		for _, y := range row.Values {
-			if s, ok := y.(*RawYAMLString); ok && isExprAssigned(s.Value) {
-				ignored[name] = struct{}{}
-				continue Rows
-			}
-		}
-		vals[name] = row.Values
+		rows[n] = r.Values
 	}
 
 	if m.Include != nil {
@@ -169,13 +162,13 @@ Rows:
 				if _, ok := ignored[n]; ok {
 					continue
 				}
-				vs := vals[n]
-				for _, v := range vs {
+				row := rows[n]
+				for _, v := range row {
 					if v.Equals(a.Value) {
 						continue Include
 					}
 				}
-				vals[n] = append(vs, a.Value)
+				rows[n] = append(row, a.Value)
 			}
 		}
 	}
@@ -186,10 +179,10 @@ Rows:
 			if _, ok := ignored[k]; ok {
 				continue
 			}
-			vs, ok := vals[k]
+			row, ok := rows[k]
 			if !ok {
-				ss := make([]string, 0, len(vals))
-				for k := range vals {
+				ss := make([]string, 0, len(rows))
+				for k := range rows {
 					ss = append(ss, k)
 				}
 				rule.Errorf(
@@ -201,14 +194,14 @@ Rows:
 				continue
 			}
 
-			for _, v := range vs {
+			for _, v := range row {
 				if isYAMLValueSubset(v, a.Value) {
 					continue Exclude
 				}
 			}
 
-			ss := make([]string, 0, len(vs))
-			for _, v := range vs {
+			ss := make([]string, 0, len(row))
+			for _, v := range row {
 				ss = append(ss, v.String())
 			}
 			rule.Errorf(
