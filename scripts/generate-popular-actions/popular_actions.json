@@ -260,8 +260,8 @@
     },
     {
         "slug": "github/super-linter",
-        "tags": ["v3", "v4", "v5"],
-        "next": "v6"
+        "tags": ["v3", "v4", "v5", "v6"],
+        "next": "v7"
     },
     {
         "slug": "githubocto/flat",
@@ -301,8 +301,8 @@
     },
     {
         "slug": "gradle/wrapper-validation-action",
-        "tags": ["v1", "v2"],
-        "next": "v3"
+        "tags": ["v1", "v2", "v3"],
+        "next": "v4"
     },
     {
         "slug": "haskell/actions",
@@ -347,8 +347,8 @@
     },
     {
         "slug": "peaceiris/actions-gh-pages",
-        "tags": ["v2", "v3"],
-        "next": "v4"
+        "tags": ["v2", "v3", "v4"],
+        "next": "v5"
     },
     {
         "slug": "peter-evans/create-pull-request",

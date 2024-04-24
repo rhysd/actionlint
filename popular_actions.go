@@ -591,6 +591,7 @@ var PopularActions = map[string]*ActionMetadata{
 			"ssh-key":                   {"ssh-key", false},
 			"ssh-known-hosts":           {"ssh-known-hosts", false},
 			"ssh-strict":                {"ssh-strict", false},
+			"ssh-user":                  {"ssh-user", false},
 			"submodules":                {"submodules", false},
 			"token":                     {"token", false},
 		},
@@ -2239,6 +2240,8 @@ var PopularActions = map[string]*ActionMetadata{
 			"handle_no_reports_found":    {"handle_no_reports_found", false},
 			"job_code":                   {"job_code", false},
 			"name":                       {"name", false},
+			"network_filter":             {"network_filter", false},
+			"network_prefix":             {"network_prefix", false},
 			"os":                         {"os", false},
 			"override_branch":            {"override_branch", false},
 			"override_build":             {"override_build", false},
@@ -3446,6 +3449,9 @@ var PopularActions = map[string]*ActionMetadata{
 	"github/super-linter@v5": {
 		Name: "Super-Linter",
 	},
+	"github/super-linter@v6": {
+		Name: "Super-Linter",
+	},
 	"githubocto/flat@v1": {
 		Name: "Flat Data",
 		Inputs: ActionMetadataInputs{
@@ -3745,6 +3751,17 @@ var PopularActions = map[string]*ActionMetadata{
 		},
 	},
 	"gradle/wrapper-validation-action@v2": {
+		Name: "Gradle Wrapper Validation",
+		Inputs: ActionMetadataInputs{
+			"allow-checksums":   {"allow-checksums", false},
+			"allow-snapshots":   {"allow-snapshots", false},
+			"min-wrapper-count": {"min-wrapper-count", false},
+		},
+		Outputs: ActionMetadataOutputs{
+			"failed-wrapper": {"failed-wrapper"},
+		},
+	},
+	"gradle/wrapper-validation-action@v3": {
 		Name: "Gradle Wrapper Validation",
 		Inputs: ActionMetadataInputs{
 			"allow-checksums":   {"allow-checksums", false},
@@ -4112,6 +4129,31 @@ var PopularActions = map[string]*ActionMetadata{
 		},
 	},
 	"peaceiris/actions-gh-pages@v3": {
+		Name: "GitHub Pages action",
+		Inputs: ActionMetadataInputs{
+			"allow_empty_commit":  {"allow_empty_commit", false},
+			"cname":               {"cname", false},
+			"commit_message":      {"commit_message", false},
+			"deploy_key":          {"deploy_key", false},
+			"destination_dir":     {"destination_dir", false},
+			"disable_nojekyll":    {"disable_nojekyll", false},
+			"enable_jekyll":       {"enable_jekyll", false},
+			"exclude_assets":      {"exclude_assets", false},
+			"external_repository": {"external_repository", false},
+			"force_orphan":        {"force_orphan", false},
+			"full_commit_message": {"full_commit_message", false},
+			"github_token":        {"github_token", false},
+			"keep_files":          {"keep_files", false},
+			"personal_token":      {"personal_token", false},
+			"publish_branch":      {"publish_branch", false},
+			"publish_dir":         {"publish_dir", false},
+			"tag_message":         {"tag_message", false},
+			"tag_name":            {"tag_name", false},
+			"user_email":          {"user_email", false},
+			"user_name":           {"user_name", false},
+		},
+	},
+	"peaceiris/actions-gh-pages@v4": {
 		Name: "GitHub Pages action",
 		Inputs: ActionMetadataInputs{
 			"allow_empty_commit":  {"allow_empty_commit", false},
