@@ -13,6 +13,7 @@ import (
 	"net/http"
 	"os"
 	"sort"
+	"strconv"
 	"strings"
 
 	"github.com/rhysd/actionlint"
@@ -60,6 +61,16 @@ func (r *registry) spec(tag string) string {
 
 //go:embed popular_actions.json
 var defaultPopularActionsJSON []byte
+
+const minNodeRunnerVersion = 16
+
+func isOutdatedRunner(r string) bool {
+	if !strings.HasPrefix(r, "node") {
+		return false
+	}
+	v, err := strconv.ParseUint(r[len("node"):], 10, 8)
+	return err == nil && v < minNodeRunnerVersion
+}
 
 type gen struct {
 	stdout      io.Writer
@@ -168,6 +179,10 @@ func (g *gen) fetchRemote() (map[string]*actionlint.ActionMetadata, error) {
 		if f.err != nil {
 			close(done)
 			return nil, f.err
+		}
+		if isOutdatedRunner(f.meta.Runs.Using) {
+			g.log.Printf("Ignore outdated action %q since runner is %q", f.spec, f.meta.Runs.Using)
+			continue
 		}
 		ret[f.spec] = f.meta
 	}

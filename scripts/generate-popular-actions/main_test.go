@@ -193,23 +193,35 @@ func TestWriteGoFile(t *testing.T) {
 }
 
 func TestFetchRemoteYAML(t *testing.T) {
-	f := filepath.Join("testdata", "registry", "fetch.json")
-	stdout := &bytes.Buffer{}
-	stderr := io.Discard
-	status := newGen(stdout, stderr, io.Discard).run([]string{"test", "-r", f})
-	if status != 0 {
-		t.Fatal("exit status is non-zero:", status)
+	tests := []struct {
+		registry string
+		want     string
+	}{
+		{"fetch.json", "fetched.go"},
+		{"outdated.json", "outdated.go"},
 	}
 
-	b, err := os.ReadFile(filepath.Join("testdata", "go", "fetched.go"))
-	if err != nil {
-		panic(err)
-	}
-	want := string(b)
-	have := stdout.String()
+	for _, tc := range tests {
+		t.Run(tc.registry, func(t *testing.T) {
+			f := filepath.Join("testdata", "registry", tc.registry)
+			stdout := &bytes.Buffer{}
+			stderr := io.Discard
+			status := newGen(stdout, stderr, io.Discard).run([]string{"test", "-r", f})
+			if status != 0 {
+				t.Fatal("exit status is non-zero:", status)
+			}
 
-	if !cmp.Equal(want, have) {
-		t.Fatalf("fetched JSONL data does not match: %s", cmp.Diff(want, have))
+			b, err := os.ReadFile(filepath.Join("testdata", "go", tc.want))
+			if err != nil {
+				panic(err)
+			}
+			want := string(b)
+			have := stdout.String()
+
+			if !cmp.Equal(want, have) {
+				t.Fatalf("fetched JSONL data does not match: %s", cmp.Diff(want, have))
+			}
+		})
 	}
 }
 
