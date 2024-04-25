@@ -13,11 +13,12 @@ jobs:
       - name: Install dependencies on macOS
         run: |
           set -x
-          brew install shellcheck python3
-          pip3 install pyflakes
+          brew install shellcheck python3 pipx
+          # https://pipx.pypa.io/stable/installation/
+          pipx ensurepath
+          pipx install pyflakes
           shellcheck --version
-          # https://github.com/actions/runner-images/issues/6496
-          python3 -m pyflakes --version
+          pyflakes --version
         if: ${{ matrix.os == 'macos-latest' }}
       - name: Install dependencies on Linux
         run: |
