@@ -270,8 +270,8 @@
     },
     {
         "slug": "golangci/golangci-lint-action",
-        "tags": ["v1", "v2", "v3", "v4"],
-        "next": "v5"
+        "tags": ["v1", "v2", "v3", "v4", "v5"],
+        "next": "v6"
     },
     {
         "slug": "google-github-actions/auth",
