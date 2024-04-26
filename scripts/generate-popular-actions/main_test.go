@@ -225,6 +225,21 @@ func TestFetchRemoteYAML(t *testing.T) {
 	}
 }
 
+func TestWriteOutdatedActionAsJSONL(t *testing.T) {
+	f := filepath.Join("testdata", "registry", "outdated.json")
+	stdout := &bytes.Buffer{}
+	stderr := io.Discard
+	status := newGen(stdout, stderr, io.Discard).run([]string{"test", "-r", f, "-f", "jsonl"})
+	if status != 0 {
+		t.Fatal("exit status is non-zero:", status)
+	}
+
+	out := stdout.String()
+	if len(out) > 0 {
+		t.Fatalf("empty output was expected but got %q", out)
+	}
+}
+
 func TestLogOutput(t *testing.T) {
 	f := filepath.Join("testdata", "actions", "test.jsonl")
 	stdout := &bytes.Buffer{}
