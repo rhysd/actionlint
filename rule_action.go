@@ -362,6 +362,10 @@ func (rule *RuleAction) checkRepoAction(spec string, exec *ExecAction) {
 
 	meta, ok := PopularActions[spec]
 	if !ok {
+		if _, ok := OutdatedPopularActionSpecs[spec]; ok {
+			rule.Errorf(exec.Uses.Pos, "the runner of %q action is too old to run on GitHub Actions. update the action's version to fix this issue", spec)
+			return
+		}
 		rule.Debug("This action is not found in popular actions data set: %s", spec)
 		return
 	}

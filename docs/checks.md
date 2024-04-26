@@ -938,12 +938,12 @@ jobs:
       - name: Print pull request title
         # ERROR: Using the potentially untrusted input can cause script injection
         run: echo '${{ github.event.pull_request.title }}'
-      - uses: actions/stale@v4
+      - uses: actions/stale@v9
         with:
           repo-token: ${{ secrets.TOKEN }}
           # This is OK because action input is not evaluated by shell
           stale-pr-message: ${{ github.event.pull_request.title }} was closed
-      - uses: actions/github-script@v4
+      - uses: actions/github-script@v7
         with:
           # ERROR: Using the potentially untrusted input can cause script injection
           script: console.log('${{ github.event.head_commit.author.name }}')
