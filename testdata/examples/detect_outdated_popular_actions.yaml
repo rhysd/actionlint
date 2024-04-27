@@ -1,0 +1,8 @@
+on: push
+
+jobs:
+  test:
+    runs-on: ubuntu-latest
+    steps:
+      # ERROR: actions/checkout@v2 is using the outdated runner 'node12'
+      - uses: actions/checkout@v2
