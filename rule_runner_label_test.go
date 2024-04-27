@@ -40,7 +40,7 @@ func TestRuleRunnerLabelCheckLabels(t *testing.T) {
 		},
 		{
 			what:   "self-hosted all macOS runner labels",
-			labels: []string{"self-hosted", "macOS", "macOS-latest", "macOS-12.0", "macOS-12"},
+			labels: []string{"self-hosted", "macOS", "macOS-latest", "macOS-14.0", "macOS-14"},
 		},
 		{
 			what:   "self-hosted Linux runner in upper case",

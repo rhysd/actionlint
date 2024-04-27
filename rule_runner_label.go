@@ -86,6 +86,10 @@ var defaultRunnerOSCompats = map[string]runnerOSCompat{
 	"ubuntu-latest-16-cores": compatUbuntu2204,
 	"ubuntu-22.04":           compatUbuntu2204,
 	"ubuntu-20.04":           compatUbuntu2004,
+	"macos-latest-xl":        compatMacOS140XL,
+	"macos-latest-xlarge":    compatMacOS140XL,
+	"macos-latest-large":     compatMacOS140L,
+	"macos-latest":           compatMacOS140,
 	"macos-14-xl":            compatMacOS140XL,
 	"macos-14-xlarge":        compatMacOS140XL,
 	"macos-14-large":         compatMacOS140L,
@@ -96,10 +100,6 @@ var defaultRunnerOSCompats = map[string]runnerOSCompat{
 	"macos-13-large":         compatMacOS130L,
 	"macos-13":               compatMacOS130,
 	"macos-13.0":             compatMacOS130,
-	"macos-latest-xl":        compatMacOS120XL,
-	"macos-latest-xlarge":    compatMacOS120XL,
-	"macos-latest-large":     compatMacOS120L,
-	"macos-latest":           compatMacOS120,
 	"macos-12-xl":            compatMacOS120XL,
 	"macos-12-xlarge":        compatMacOS120XL,
 	"macos-12-large":         compatMacOS120L,
@@ -114,7 +114,7 @@ var defaultRunnerOSCompats = map[string]runnerOSCompat{
 	"windows-2019":           compatWindows2019,
 	"windows-2016":           compatWindows2016,
 	"linux":                  compatUbuntu2204 | compatUbuntu2004, // Note: "linux" does not always indicate Ubuntu. It might be Fedora or Arch or ...
-	"macos":                  compatMacOS130 | compatMacOS130L | compatMacOS130XL | compatMacOS120 | compatMacOS120L | compatMacOS120XL | compatMacOS110 | compatMacOS1015,
+	"macos":                  compatMacOS140 | compatMacOS140L | compatMacOS140XL | compatMacOS130 | compatMacOS130L | compatMacOS130XL | compatMacOS120 | compatMacOS120L | compatMacOS120XL | compatMacOS110 | compatMacOS1015,
 	"windows":                compatWindows2022 | compatWindows2019 | compatWindows2016,
 }
 
