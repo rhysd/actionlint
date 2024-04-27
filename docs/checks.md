@@ -28,6 +28,7 @@ List of checks:
 - [Action format in `uses:`](#check-action-format)
 - [Local action inputs validation at `with:`](#check-local-action-inputs)
 - [Popular action inputs validation at `with:`](#check-popular-action-inputs)
+- [Outdated popular actions detection at `with:`](#detect-outdated-popular-actions)
 - [Shell name validation at `shell:`](#check-shell-names)
 - [Job ID and step ID uniqueness](#check-job-step-ids)
 - [Hardcoded credentials](#check-hardcoded-credentials)
@@ -938,12 +939,12 @@ jobs:
       - name: Print pull request title
         # ERROR: Using the potentially untrusted input can cause script injection
         run: echo '${{ github.event.pull_request.title }}'
-      - uses: actions/stale@v4
+      - uses: actions/stale@v9
         with:
           repo-token: ${{ secrets.TOKEN }}
           # This is OK because action input is not evaluated by shell
           stale-pr-message: ${{ github.event.pull_request.title }} was closed
-      - uses: actions/github-script@v4
+      - uses: actions/github-script@v7
         with:
           # ERROR: Using the potentially untrusted input can cause script injection
           script: console.log('${{ github.event.head_commit.author.name }}')
@@ -969,7 +970,7 @@ test.yaml:22:31: object filter extracts potentially untrusted properties "github
    |                               ^~~~~~~~~~~~~~~~~~~~
 ```
 
-[Playground](https://rhysd.github.io/actionlint#eJyFkUFLAzEQhe/9FXMQ2gqJF085eRFBoRXsvWSzQ3drNrNmJi1S+t9NdkupSvUUknnzvcdLsB0aWCHLhIKBPnm/jviRysNkSxWbCYDkWzkBYgqsijBVKUhS3pbZMGLBnkcVgIIwgF9jG2SgwokK0orHk2wAGkDXEExvDgfYtNKkSuMOg+jLMHpYg+NxenZIjGzAOmkp8B2L9fiwuz+T9xllzrfshD0poXfMhsWK0UUU1qvly+Migy+kA0v1UXXIbDc4LvyfDfaWwXlirK+kHBmKXWx7+SvtqDDg8hZ51J42s98NNWjrtaOua0XbJA1FXXovNc1//MQTChRlXuNr7Qs9vy0Xs28Wt7qi+nNekF/IR69F)
+[Playground](https://rhysd.github.io/actionlint#eJyFkUFLAzEQhe/9FXMQ2gqJRzGnXkRQaAV7L9ns0F3NZtbMpEVK/7vJbilVKZ5CMm++93gJtkMDa2SZUDDQJ+83ET9TeZi8U8VmAiD5Vk6AmAKrIkxVCpKUt2U2jFiw51EFoCAM4NfYBhmocKKCtOLxJBuABtA1BNObwwG2rTSp0rjDIPoyjB7W4Hicnh0SIxuwTloKfMdiPS52D2fyPqPM+ZadsCcl9IHZsFgxuojCer16eVxm8IV0YKk+qg6Z7RbHhf+zwd4yOE+M9ZWUI0Oxi20vi9391bSjwoDLW+RRe9rO/jbUoK03jrquFW2TNBR16b3UNP/1E08oUJR5ja+1L/T8tlrOfljc6orqr3lBfgPRHa9N)
 
 Since `${{ }}` placeholders are evaluated and replaced directly by GitHub Actions runtime, you need to use them carefully in
 inline scripts at `run:`. For example, if we have step as follows,
@@ -1739,6 +1740,41 @@ Note that it only supports the case of specifying major versions like `actions/c
 So far, actionlint supports more than 100 popular actions The data set is embedded at [`popular_actions.go`](../popular_actions.go)
 and were automatically collected by [a script][generate-popular-actions]. If you want more checks for other actions, please
 make a request [as an issue][issue-form].
+
+<a name="detect-outdated-popular-actions"></a>
+## Outdated popular actions detection at `with:`
+
+Example input:
+
+```yaml
+on: push
+
+jobs:
+  test:
+    runs-on: ubuntu-latest
+    steps:
+      # ERROR: actions/checkout@v2 is using the outdated runner 'node12'
+      - uses: actions/checkout@v2
+```
+
+Output:
+
+```
+test.yaml:8:15: the runner of "actions/checkout@v2" action is too old to run on GitHub Actions. update the action's version to fix this issue [action]
+  |
+8 |       - uses: actions/checkout@v2
+  |               ^~~~~~~~~~~~~~~~~~~
+```
+
+[Playground](https://rhysd.github.io/actionlint#eJwlyjkOwCAMRNGeU8wFUKSUVLkKICSyyEYZO+fPVv3ifZWE4ewhbFqYAmCN9hY4XRj1Gby4mMcjv/YRrQ3+FxDhbEzI1VYVTrW3uqvbcs03dIgdzQ==)
+
+In addition to the checks for inputs of actions described in [the previous section](#check-popular-action-inputs), actionlint
+reports an error when a popular action is 'outdated'. An action is outdated when the runner used by the action is no longer
+supported by GitHub Actions runtime. For example, `node12` is no longer available so any actions can use `node12` runner.
+
+Note that this check doesn't report that the action version is up-to-date. For example, even if you use `actions/checkout@v3` and
+newer version `actions/checkout@v4` is available, actionlint reports no error as long as `actions/checkout@v3` is not outdated.
+If you want to keep actions used by your workflows up-to-date, consider to use [Dependabot][dependabot-doc].
 
 <a name="check-shell-names"></a>
 ## Shell name validation at `shell:`
@@ -2778,6 +2814,7 @@ Note that `steps` in Composite action's metadata is not checked at this point. I
 [gh-hosted-runner]: https://docs.github.com/en/actions/using-github-hosted-runners/about-github-hosted-runners
 [self-hosted-runner]: https://docs.github.com/en/actions/hosting-your-own-runners/about-self-hosted-runners
 [action-uses-doc]: https://docs.github.com/en/actions/learn-github-actions/workflow-syntax-for-github-actions#jobsjob_idstepsuses
+[dependabot-doc]: https://docs.github.com/en/code-security/dependabot/working-with-dependabot/keeping-your-actions-up-to-date-with-dependabot
 [credentials-doc]: https://docs.github.com/en/actions/learn-github-actions/workflow-syntax-for-github-actions#jobsjob_idcontainercredentials
 [actions-cache]: https://github.com/actions/cache
 [permissions-doc]: https://docs.github.com/en/actions/security-guides/automatic-token-authentication#permissions-for-the-github_token

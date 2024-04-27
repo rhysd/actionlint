@@ -17,3 +17,7 @@ var PopularActions = map[string]*ActionMetadata{
 		},
 	},
 }
+
+// OutdatedPopularActionSpecs is a spec set of known outdated popular actions. The word 'outdated'
+// means that the runner used by the action is no longer available such as "node12".
+var OutdatedPopularActionSpecs = map[string]struct{}{}
