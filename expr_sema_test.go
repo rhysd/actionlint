@@ -685,12 +685,12 @@ func TestExprSemanticsCheckOK(t *testing.T) {
 			expected: NumberType{},
 		},
 		{
-			what:     "don't narrow type nested && operator",
+			what:     "don't narrow type on nested && operator",
 			input:    "('foo' && 10) && 20",
 			expected: StringType{},
 		},
 		{
-			what:     "don't narrow type nested || operator",
+			what:     "don't narrow type on nested || operator",
 			input:    "('foo' || 10) || 20",
 			expected: StringType{},
 		},

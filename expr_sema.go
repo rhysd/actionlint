@@ -867,18 +867,24 @@ func (sema *ExprSemanticsChecker) checkCompareOp(n *CompareOpNode) ExprType {
 	return BoolType{}
 }
 
-func (sema *ExprSemanticsChecker) checkWithAssuming(n ExprNode, isTruthy bool) ExprType {
+// checkWithNarrowing checks type of given expression with type narrowing. Type narrowing narrows
+// down the type of the expression by assuming its value. For example, `l && r` is typed as
+// `typeof(l) | typeof(r)` usually. However when the expression is assumed to be true, its type can
+// be narrowed down to `typeof(r)`.
+// This analysis is useful to make type checking more accurate. For example, `some_var && 60 || 20`
+// can be typed as `number` instead of `typeof(some_var) | number`. (#384)
+func (sema *ExprSemanticsChecker) checkWithNarrowing(n ExprNode, isTruthy bool) ExprType {
 	switch n := n.(type) {
 	case *LogicalOpNode:
 		switch n.Kind {
 		case LogicalOpNodeKindAnd:
-			// When `L && R` is true, its type is R
+			// When `l && r` is true, narrow its type to `typeof(r)`
 			if isTruthy {
 				sema.check(n.Left)
 				return sema.check(n.Right)
 			}
 		case LogicalOpNodeKindOr:
-			// When `L || R` is false, its type is R
+			// When `l || r` is false, narrow its type to `typeof(r)`
 			if !isTruthy {
 				sema.check(n.Left)
 				return sema.check(n.Right)
@@ -886,22 +892,25 @@ func (sema *ExprSemanticsChecker) checkWithAssuming(n ExprNode, isTruthy bool) E
 		}
 		return sema.checkLogicalOp(n)
 	case *NotOpNode:
-		return sema.checkWithAssuming(n.Operand, !isTruthy)
+		return sema.checkWithNarrowing(n.Operand, !isTruthy)
 	default:
 		return sema.check(n)
 	}
 }
 
 func (sema *ExprSemanticsChecker) checkLogicalOp(n *LogicalOpNode) ExprType {
-	rty := sema.check(n.Right)
 	switch n.Kind {
 	case LogicalOpNodeKindAnd:
-		// When L is false in L && R, its type is L. Otherwise R.
-		return sema.checkWithAssuming(n.Left, false).Merge(rty)
+		// When `l` is false in `l && r`, its type is `typeof(l)`. Otherwise `typeof(r)`.
+		// Narrow the type of LHS expression by assuming its value is falsy.
+		return sema.checkWithNarrowing(n.Left, false).Merge(sema.check(n.Right))
 	case LogicalOpNodeKindOr:
-		// When L is true in L || R, its type is L. Otherwise R.
-		return sema.checkWithAssuming(n.Left, true).Merge(rty)
+		// When `l` is true in `l || r`, its type is `typeof(l)`. Otherwise `typeof(r).
+		// Narrow the type of LHS expression by assuming its value is truthy.
+		return sema.checkWithNarrowing(n.Left, true).Merge(sema.check(n.Right))
 	default:
+		sema.check(n.Left)
+		sema.check(n.Right)
 		return AnyType{}
 	}
 }
