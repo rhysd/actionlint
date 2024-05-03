@@ -867,10 +867,43 @@ func (sema *ExprSemanticsChecker) checkCompareOp(n *CompareOpNode) ExprType {
 	return BoolType{}
 }
 
+func (sema *ExprSemanticsChecker) checkWithAssuming(n ExprNode, isTruthy bool) ExprType {
+	switch n := n.(type) {
+	case *LogicalOpNode:
+		switch n.Kind {
+		case LogicalOpNodeKindAnd:
+			// When `L && R` is true, its type is R
+			if isTruthy {
+				sema.check(n.Left)
+				return sema.check(n.Right)
+			}
+		case LogicalOpNodeKindOr:
+			// When `L || R` is false, its type is R
+			if !isTruthy {
+				sema.check(n.Left)
+				return sema.check(n.Right)
+			}
+		}
+		return sema.checkLogicalOp(n)
+	case *NotOpNode:
+		return sema.checkWithAssuming(n.Operand, !isTruthy)
+	default:
+		return sema.check(n)
+	}
+}
+
 func (sema *ExprSemanticsChecker) checkLogicalOp(n *LogicalOpNode) ExprType {
-	lty := sema.check(n.Left)
 	rty := sema.check(n.Right)
-	return lty.Merge(rty)
+	switch n.Kind {
+	case LogicalOpNodeKindAnd:
+		// When L is false in L && R, its type is L. Otherwise R.
+		return sema.checkWithAssuming(n.Left, false).Merge(rty)
+	case LogicalOpNodeKindOr:
+		// When L is true in L || R, its type is L. Otherwise R.
+		return sema.checkWithAssuming(n.Left, true).Merge(rty)
+	default:
+		return AnyType{}
+	}
 }
 
 func (sema *ExprSemanticsChecker) check(expr ExprNode) ExprType {

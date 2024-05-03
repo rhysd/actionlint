@@ -664,6 +664,61 @@ func TestExprSemanticsCheckOK(t *testing.T) {
 			expected:   StringType{},
 			configVars: []string{"some_variable"},
 		},
+		{
+			what:     "narrow type of && operator by assumed value (#384)",
+			input:    "('foo' && 10) || 20",
+			expected: NumberType{},
+		},
+		{
+			what:     "narrow type of || operator by assumed value (#384)",
+			input:    "('foo' || 10) && 20",
+			expected: NumberType{},
+		},
+		{
+			what:     "narrow type of nested && operator",
+			input:    "((('foo' && true) || false) && 10) || 20",
+			expected: NumberType{},
+		},
+		{
+			what:     "narrow type of nested || operator",
+			input:    "((('foo' || true) && false) || 10) && 20",
+			expected: NumberType{},
+		},
+		{
+			what:     "don't narrow type nested && operator",
+			input:    "('foo' && 10) && 20",
+			expected: StringType{},
+		},
+		{
+			what:     "don't narrow type nested || operator",
+			input:    "('foo' || 10) || 20",
+			expected: StringType{},
+		},
+		{
+			what:     "narrowed || operator at LHS and && operator at RHS",
+			input:    "('foo' || 10) && (('foo' && 10) || 20)",
+			expected: NumberType{},
+		},
+		{
+			what:     "narrowed && operator at LHS and || operator at RHS",
+			input:    "('foo' && 10) || (('foo' || 10) && 20)",
+			expected: NumberType{},
+		},
+		{
+			what:     "not operator negates && operator type narrowing",
+			input:    "!('foo' && 10) && 20",
+			expected: NumberType{},
+		},
+		{
+			what:     "not operator negates || operator type narrowing",
+			input:    "!('foo' || 10) || 20",
+			expected: NumberType{},
+		},
+		{
+			what:     "double not operators does nothing on type narrowing",
+			input:    "!!('foo' || 10) && 20",
+			expected: NumberType{},
+		},
 	}
 
 	allSPFuncs := []string{}
