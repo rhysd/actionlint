@@ -460,5 +460,10 @@
         "slug": "peaceiris/actions-hugo",
         "tags": ["v3"],
         "next": "v4"
+    },
+    {
+      "slug": "actions/attest-build-provenance",
+      "tags": ["v1"],
+      "next": "v2"
     }
 ]
