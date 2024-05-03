@@ -859,11 +859,20 @@ func (sema *ExprSemanticsChecker) checkNotOp(n *NotOpNode) ExprType {
 }
 
 func (sema *ExprSemanticsChecker) checkCompareOp(n *CompareOpNode) ExprType {
-	sema.check(n.Left)
-	sema.check(n.Right)
-	// Note: Comparing values is very loose. Any value can be compared with any value without an
-	// error.
-	// https://docs.github.com/en/actions/learn-github-actions/expressions#operators
+	l := sema.check(n.Left)
+	r := sema.check(n.Right)
+
+	ok := true
+	switch n.Kind {
+	case CompareOpNodeKindLess, CompareOpNodeKindLessEq, CompareOpNodeKindGreater, CompareOpNodeKindGreaterEq:
+		ok = IsOrdComparable(l, r)
+	case CompareOpNodeKindEq, CompareOpNodeKindNotEq:
+		ok = IsEqComparable(l, r)
+	}
+	if !ok {
+		sema.errorf(n, "%q value cannot be compared to %q value with %q operator", l.String(), r.String(), n.Kind.String())
+	}
+
 	return BoolType{}
 }
 

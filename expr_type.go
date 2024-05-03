@@ -427,3 +427,56 @@ func (ty *ArrayType) DeepCopy() ExprType {
 func EqualTypes(l, r ExprType) bool {
 	return l.Assignable(r) && r.Assignable(l)
 }
+
+// IsEqComparable returns if types can be compared with == or != operator.
+// For the equality comparison behavior, see https://docs.github.com/en/actions/learn-github-actions/expressions#operators
+func IsEqComparable(l, r ExprType) bool {
+	switch l := l.(type) {
+	case AnyType, NullType:
+		return true
+	case NumberType, BoolType, StringType:
+		switch r.(type) {
+		case *ObjectType, *ArrayType:
+			return false
+		default:
+			return true
+		}
+	case *ObjectType:
+		switch r.(type) {
+		case *ObjectType, NullType, AnyType:
+			return true
+		default:
+			return false
+		}
+	case *ArrayType:
+		switch r := r.(type) {
+		case *ArrayType:
+			return IsEqComparable(l.Elem, r.Elem)
+		case NullType, AnyType:
+			return true
+		default:
+			return false
+		}
+	default:
+		panic("unreachable")
+	}
+}
+
+// IsOrdComparable returns if types can be compared with < or <= or > or >= operator.
+// To know the comparison behavior, see https://docs.github.com/en/actions/learn-github-actions/expressions#operators
+func IsOrdComparable(l, r ExprType) bool {
+	// Object and array cannot be compared to even `any` type value
+	switch l.(type) {
+	case AnyType, NullType, NumberType, BoolType, StringType:
+		switch r.(type) {
+		case *ObjectType, *ArrayType:
+			return false // Objects and arrays are converted to NaN and not useful
+		default:
+			return true
+		}
+	case *ObjectType, *ArrayType:
+		return false
+	default:
+		panic("unreachable")
+	}
+}
