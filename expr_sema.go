@@ -858,19 +858,120 @@ func (sema *ExprSemanticsChecker) checkNotOp(n *NotOpNode) ExprType {
 	return BoolType{}
 }
 
+const compareAlwaysFalseNote = "this comparison is always evaluated to false"
+const compareStringAndBoolNote = "comparing bool with string doesn't work as intended (e.g. `'true' == true` is `false`, `'1' == true` is `true`)"
+const compareStringAndNullNote = "comparing string with null doesn't work as intended (e.g. `'0' == null` is `true`)"
+const compareBoolAndNullNote = "comparing bool with null doesn't work as inteded (e.g. `false == null` is `true`)"
+
+func validateEqOperands(l, r ExprType) (bool, string) {
+	// Note: Comparison behavior: https://docs.github.com/en/actions/learn-github-actions/expressions#operators
+	switch l := l.(type) {
+	case AnyType:
+		return true, ""
+	case NullType:
+		switch r.(type) {
+		case StringType:
+			return false, compareStringAndNullNote
+		case BoolType:
+			return false, compareBoolAndNullNote
+		default:
+			return true, ""
+		}
+	case NumberType:
+		switch r.(type) {
+		case *ObjectType, *ArrayType:
+			return false, compareAlwaysFalseNote
+		default:
+			// RHS will be coerced to number (true -> 1, false -> 0, '123' -> 123)
+			return true, ""
+		}
+	case BoolType:
+		switch r.(type) {
+		case *ObjectType, *ArrayType:
+			return false, compareAlwaysFalseNote
+		case StringType:
+			return false, compareStringAndBoolNote
+		case NullType:
+			return false, compareBoolAndNullNote
+		default:
+			return true, ""
+		}
+	case StringType:
+		switch r.(type) {
+		case *ObjectType, *ArrayType:
+			return false, compareAlwaysFalseNote
+		case BoolType:
+			return false, compareStringAndBoolNote
+		case NullType:
+			return false, compareStringAndNullNote
+		default:
+			return true, ""
+		}
+	case *ObjectType:
+		switch r.(type) {
+		case *ObjectType, NullType, AnyType:
+			return true, ""
+		default:
+			return false, compareAlwaysFalseNote
+		}
+	case *ArrayType:
+		switch r := r.(type) {
+		case *ArrayType:
+			return validateEqOperands(l.Elem, r.Elem)
+		case NullType, AnyType:
+			return true, ""
+		default:
+			return false, compareAlwaysFalseNote
+		}
+	default:
+		panic("unreachable")
+	}
+}
+
+func validateOrdOperands(l, r ExprType) bool {
+	// Object and array cannot be compared to even `any` type value
+	switch l.(type) {
+	case AnyType, NumberType:
+		switch r.(type) {
+		case NullType, *ObjectType, *ArrayType:
+			return false
+		default:
+			return true
+		}
+	case BoolType, StringType:
+		switch r.(type) {
+		case BoolType, StringType, NullType, *ObjectType, *ArrayType:
+			return false
+		default:
+			return true
+		}
+	case NullType, *ObjectType, *ArrayType:
+		return false
+	default:
+		panic("unreachable")
+	}
+}
+
+func validateCompareOperands(op CompareOpNodeKind, l, r ExprType) (bool, string) {
+	switch op {
+	case CompareOpNodeKindLess, CompareOpNodeKindLessEq, CompareOpNodeKindGreater, CompareOpNodeKindGreaterEq:
+		return validateOrdOperands(l, r), ""
+	case CompareOpNodeKindEq, CompareOpNodeKindNotEq:
+		return validateEqOperands(l, r)
+	default:
+		return true, ""
+	}
+}
+
 func (sema *ExprSemanticsChecker) checkCompareOp(n *CompareOpNode) ExprType {
 	l := sema.check(n.Left)
 	r := sema.check(n.Right)
 
-	ok := true
-	switch n.Kind {
-	case CompareOpNodeKindLess, CompareOpNodeKindLessEq, CompareOpNodeKindGreater, CompareOpNodeKindGreaterEq:
-		ok = IsOrdComparable(l, r)
-	case CompareOpNodeKindEq, CompareOpNodeKindNotEq:
-		ok = IsEqComparable(l, r)
-	}
-	if !ok {
-		sema.errorf(n, "%q value cannot be compared to %q value with %q operator", l.String(), r.String(), n.Kind.String())
+	if ok, note := validateCompareOperands(n.Kind, l, r); !ok {
+		if note != "" {
+			note = ". " + note
+		}
+		sema.errorf(n, "%q value cannot be compared to %q value with %q operator%s", l.String(), r.String(), n.Kind.String(), note)
 	}
 
 	return BoolType{}
