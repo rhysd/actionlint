@@ -2450,8 +2450,9 @@ var PopularActions = map[string]*ActionMetadata{
 		},
 	},
 	"golangci/golangci-lint-action@v5": {
-		Name: "Run golangci-lint",
+		Name: "Golangci-lint",
 		Inputs: ActionMetadataInputs{
+			"annotations":       {"annotations", false},
 			"args":              {"args", false},
 			"github-token":      {"github-token", false},
 			"install-mode":      {"install-mode", false},
