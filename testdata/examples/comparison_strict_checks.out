@@ -1,0 +1,2 @@
+test.yaml:13:17: "object" value cannot be compared to "string" value with "==" operator [expression]
+test.yaml:16:17: "bool" value cannot be compared to "number" value with ">" operator [expression]
