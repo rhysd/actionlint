@@ -1,0 +1,7 @@
+test.yaml:16:17: "string" value cannot be compared to "{}" value with "==" operator [expression]
+test.yaml:18:17: "number" value cannot be compared to "array<bool>" value with "!=" operator [expression]
+test.yaml:20:17: "array<bool>" value cannot be compared to "array<{}>" value with "==" operator [expression]
+test.yaml:22:17: "number" value cannot be compared to "null" value with ">" operator [expression]
+test.yaml:24:17: "bool" value cannot be compared to "bool" value with "<" operator [expression]
+test.yaml:26:17: "string" value cannot be compared to "{}" value with ">=" operator [expression]
+test.yaml:28:17: "bool" value cannot be compared to "array<bool>" value with "<=" operator [expression]
