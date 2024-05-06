@@ -250,6 +250,18 @@ var PopularActions = map[string]*ActionMetadata{
 			"issues":          {"issues"},
 		},
 	},
+	"actions/add-to-project@v1.0.1": {
+		Name: "Add To GitHub projects",
+		Inputs: ActionMetadataInputs{
+			"github-token":   {"github-token", true},
+			"label-operator": {"label-operator", false},
+			"labeled":        {"labeled", false},
+			"project-url":    {"project-url", true},
+		},
+		Outputs: ActionMetadataOutputs{
+			"itemid": {"itemId"},
+		},
+	},
 	"actions/attest-build-provenance@v1": {
 		Name: "Attest Build Provenance",
 		Inputs: ActionMetadataInputs{
@@ -2452,15 +2464,16 @@ var PopularActions = map[string]*ActionMetadata{
 	"golangci/golangci-lint-action@v5": {
 		Name: "Golangci-lint",
 		Inputs: ActionMetadataInputs{
-			"annotations":       {"annotations", false},
-			"args":              {"args", false},
-			"github-token":      {"github-token", false},
-			"install-mode":      {"install-mode", false},
-			"only-new-issues":   {"only-new-issues", false},
-			"skip-cache":        {"skip-cache", false},
-			"skip-save-cache":   {"skip-save-cache", false},
-			"version":           {"version", false},
-			"working-directory": {"working-directory", false},
+			"annotations":                 {"annotations", false},
+			"args":                        {"args", false},
+			"cache-invalidation-interval": {"cache-invalidation-interval", false},
+			"github-token":                {"github-token", false},
+			"install-mode":                {"install-mode", false},
+			"only-new-issues":             {"only-new-issues", false},
+			"skip-cache":                  {"skip-cache", false},
+			"skip-save-cache":             {"skip-save-cache", false},
+			"version":                     {"version", false},
+			"working-directory":           {"working-directory", false},
 		},
 	},
 	"google-github-actions/auth@v1": {
