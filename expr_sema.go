@@ -858,12 +858,68 @@ func (sema *ExprSemanticsChecker) checkNotOp(n *NotOpNode) ExprType {
 	return BoolType{}
 }
 
+func validateCompareOpOperands(op CompareOpNodeKind, l, r ExprType) bool {
+	// Comparison behavior: https://docs.github.com/en/actions/learn-github-actions/expressions#operators
+	switch op {
+	case CompareOpNodeKindEq, CompareOpNodeKindNotEq:
+		switch l := l.(type) {
+		case AnyType, NullType:
+			return true
+		case NumberType, BoolType, StringType:
+			switch r.(type) {
+			case *ObjectType, *ArrayType:
+				// These are coerced to NaN hence the comparison result is always false
+				return false
+			default:
+				return true
+			}
+		case *ObjectType:
+			switch r.(type) {
+			case *ObjectType, NullType, AnyType:
+				return true
+			default:
+				return false
+			}
+		case *ArrayType:
+			switch r := r.(type) {
+			case *ArrayType:
+				return validateCompareOpOperands(op, l.Elem, r.Elem)
+			case NullType, AnyType:
+				return true
+			default:
+				return false
+			}
+		default:
+			panic("unreachable")
+		}
+	case CompareOpNodeKindLess, CompareOpNodeKindLessEq, CompareOpNodeKindGreater, CompareOpNodeKindGreaterEq:
+		// null, bool, array, and object cannot be compared with these operators
+		switch l.(type) {
+		case AnyType, NumberType, StringType:
+			switch r.(type) {
+			case NullType, BoolType, *ObjectType, *ArrayType:
+				return false
+			default:
+				return true
+			}
+		case NullType, BoolType, *ObjectType, *ArrayType:
+			return false
+		default:
+			panic("unreachable")
+		}
+	default:
+		return true
+	}
+}
+
 func (sema *ExprSemanticsChecker) checkCompareOp(n *CompareOpNode) ExprType {
-	sema.check(n.Left)
-	sema.check(n.Right)
-	// Note: Comparing values is very loose. Any value can be compared with any value without an
-	// error.
-	// https://docs.github.com/en/actions/learn-github-actions/expressions#operators
+	l := sema.check(n.Left)
+	r := sema.check(n.Right)
+
+	if !validateCompareOpOperands(n.Kind, l, r) {
+		sema.errorf(n, "%q value cannot be compared to %q value with %q operator", l.String(), r.String(), n.Kind.String())
+	}
+
 	return BoolType{}
 }
 

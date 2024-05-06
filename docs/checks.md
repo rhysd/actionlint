@@ -15,6 +15,7 @@ List of checks:
 - [Contextual typing for `steps.<step_id>` objects](#check-contextual-step-object)
 - [Contextual typing for `matrix` object](#check-contextual-matrix-object)
 - [Contextual typing for `needs` object](#check-contextual-needs-object)
+- [Strict type checks for comparison operators](#check-comparison-types)
 - [shellcheck integration for `run:`](#check-shellcheck-integ)
 - [pyflakes integration for `run:`](#check-pyflakes-integ)
 - [Script injection by potentially untrusted inputs](#untrusted-inputs)
@@ -325,9 +326,9 @@ object or array, use `toJSON()` function.
 echo '${{ toJSON(github.event) }}'
 ```
 
-There are two types of object types internally. One is an object which is strict for properties, which causes a type error
-when trying to access unknown properties. And another is an object which is not strict for properties, which allows to access
-unknown properties. In the case, accessing unknown property is typed as `any`.
+There are two object types internally. One is an object which is strict for properties, which causes a type error when trying to
+access unknown properties. And another is an object which is not strict for properties, which allows to access unknown properties.
+In the case, accessing unknown property is typed as `any`.
 
 When the type check cannot be done statically, the type is deduced to `any` (e.g. return type of `toJSON()`).
 
@@ -751,6 +752,58 @@ Job dependencies can be defined at [`needs:`][needs-doc]. A job runs after all j
 Outputs from the jobs can be accessed only from jobs following them via [`needs` context][needs-context-doc].
 
 actionlint defines a type of `needs` variable contextually by looking at each job's `outputs:` section and `needs:` section.
+
+<a name="check-comparison-types"></a>
+## Strict type checks for comparison operators
+
+```yaml
+on:
+  workflow_call:
+    inputs:
+      timeout:
+        type: boolean
+
+jobs:
+  test:
+    runs-on: ubuntu-latest
+    steps:
+      - run: echo 'called!'
+        # ERROR: Comparing string to object is always evaluated to false
+        if: ${{ github.event == 'workflow_call' }}
+      - run: echo 'timeout is too long'
+        # ERROR: Comparing boolean value with `>` doesn't make sense
+        if: ${{ inputs.timeout > 60 }}
+```
+
+Output:
+
+```
+test.yaml:13:17: "object" value cannot be compared to "string" value with "==" operator [expression]
+   |
+13 |         if: ${{ github.event == 'workflow_call' }}
+   |                 ^~~~~~~~~~~~
+test.yaml:16:17: "bool" value cannot be compared to "number" value with ">" operator [expression]
+   |
+16 |         if: ${{ inputs.timeout > 60 }}
+   |                 ^~~~~~~~~~~~~~
+```
+
+Expressions in `${{ }}` placeholders support `==`, `!=`, `>`, `>=`, `<`, `<=` comparison operators. Arbitrary types of operands
+can be compared. When different type values are compared, they are implicitly converted to numbers before the comparison. Please
+see [the official document][operators-doc] to know the details of operators behavior.
+
+However, comparisons between some types are actually meaningless:
+
+- Objects and arrays are converted to `NaN`. Comparing an object or an array with other type is always evaluated to false.
+- Comparing booleans, null, objects, and arrays with `>`, `>=`, `<`, `<=` makes no sense.
+
+actionlint checks operands of comparison operators and reports errors in these cases.
+
+There are some additional surprising behaviors, but actioonlint allows them not to cause false positives as much as possible.
+
+- `0 == null`, `'0' == null`, `false == null` are true since they are implicitly converted to `0 == 0`
+- `'0' == false` and `0 == false` are true due to the same reason as above
+- Objects and arrays are only considered equal when they are the same instance
 
 <a name="check-shellcheck-integ"></a>
 ## [shellcheck][] integration for `run:`
@@ -2840,3 +2893,4 @@ Note that `steps` in Composite action's metadata is not checked at this point. I
 [workflow-commands-doc]: https://docs.github.com/en/actions/using-workflows/workflow-commands-for-github-actions
 [action-metadata-doc]: https://docs.github.com/en/actions/creating-actions/metadata-syntax-for-github-actions
 [branding-icons-doc]: https://github.com/github/docs/blob/main/content/actions/creating-actions/metadata-syntax-for-github-actions.md#exhaustive-list-of-all-currently-supported-icons
+[operators-doc]: https://docs.github.com/en/actions/learn-github-actions/expressions#operators
