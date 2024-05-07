@@ -2477,6 +2477,21 @@ var PopularActions = map[string]*ActionMetadata{
 			"working-directory":           {"working-directory", false},
 		},
 	},
+	"golangci/golangci-lint-action@v6": {
+		Name: "Golangci-lint",
+		Inputs: ActionMetadataInputs{
+			"args":                        {"args", false},
+			"cache-invalidation-interval": {"cache-invalidation-interval", false},
+			"github-token":                {"github-token", false},
+			"install-mode":                {"install-mode", false},
+			"only-new-issues":             {"only-new-issues", false},
+			"problem-matchers":            {"problem-matchers", false},
+			"skip-cache":                  {"skip-cache", false},
+			"skip-save-cache":             {"skip-save-cache", false},
+			"version":                     {"version", false},
+			"working-directory":           {"working-directory", false},
+		},
+	},
 	"google-github-actions/auth@v1": {
 		Name: "Authenticate to Google Cloud",
 		Inputs: ActionMetadataInputs{
