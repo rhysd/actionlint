@@ -180,6 +180,17 @@ func (g *gen) fetchRemote() (map[string]*actionlint.ActionMetadata, error) {
 			close(done)
 			return nil, f.err
 		}
+
+		// Workaround for #416.
+		// Once this PR is merged, remove this `if` statement and regenerate popular_actions.go.
+		// https://github.com/dorny/paths-filter/pull/236
+		if f.spec == "dorny/paths-filter@v3" {
+			f.meta.Inputs["predicate-quantifier"] = &actionlint.ActionMetadataInput{
+				Name:     "predicate-quantifier",
+				Required: false,
+			}
+		}
+
 		ret[f.spec] = f.meta
 	}
 
