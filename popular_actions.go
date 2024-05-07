@@ -2882,6 +2882,17 @@ var PopularActions = map[string]*ActionMetadata{
 			"deploy-url": {"deploy-url"},
 		},
 	},
+	"octokit/graphql-action@v2.x": {
+		Name: "GitHub GraphQL API Query",
+		Inputs: ActionMetadataInputs{
+			"mediatype": {"mediaType", false},
+			"query":     {"query", true},
+			"variables": {"variables", false},
+		},
+		Outputs: ActionMetadataOutputs{
+			"data": {"data"},
+		},
+	},
 	"octokit/request-action@v2.x": {
 		Name:       "GitHub API Request",
 		SkipInputs: true,

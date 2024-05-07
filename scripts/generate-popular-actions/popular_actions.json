@@ -462,13 +462,18 @@
         "next": "v4"
     },
     {
-      "slug": "actions/attest-build-provenance",
-      "tags": ["v1"],
-      "next": "v2"
+        "slug": "actions/attest-build-provenance",
+        "tags": ["v1"],
+        "next": "v2"
     },
     {
-      "slug": "actions/add-to-project",
-      "tags": ["v1.0.1"],
-      "next": "v2.0.0"
+        "slug": "actions/add-to-project",
+        "tags": ["v1.0.1"],
+        "next": "v2.0.0"
+    },
+    {
+        "slug": "octokit/graphql-action",
+        "tags": ["v2.x"],
+        "next": "v3.x"
     }
 ]
