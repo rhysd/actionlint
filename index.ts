@@ -87,11 +87,11 @@ jobs:
     runs-on: \${{ matrix.os }}
     steps:
       - run: echo "Checking commit '\${{ github.event.head_commit.message }}'"
-      - uses: actions/checkout@v3
-      - uses: actions/setup-node@v3
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
         with:
           node_version: 18.x
-      - uses: actions/cache@v3
+      - uses: actions/cache@v4
         with:
           path: ~/.npm
           key: \${{ matrix.platform }}-node-\${{ hashFiles('**/package-lock.json') }}
@@ -264,6 +264,7 @@ jobs:
         }
     });
 
+    // eslint-disable-next-line @typescript-eslint/no-misused-promises
     checkUrlButton.addEventListener('click', async e => {
         e.preventDefault();
         const input = checkUrlInput.value;
