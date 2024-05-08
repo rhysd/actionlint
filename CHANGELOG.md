@@ -1,3 +1,132 @@
+<a name="v1.7.0"></a>
+# [v1.7.0](https://github.com/rhysd/actionlint/releases/tag/v1.7.0) - 08 May 2024
+
+- From this version, actionlint starts to check action metadata file `action.yml` (or `action.yaml`). At this point, only very basic checks are implemented and contents of `steps:` are not checked yet.
+  - It checks properties under `runs:` section (e.g. `main:` can be specified when it is a JavaScript action), `branding:` properties, and so on.
+    ```yaml
+    name: 'My action'
+    author: '...'
+    # ERROR: 'description' section is missing
+
+    branding:
+      # ERROR: Invalid icon name
+      icon: dog
+
+    runs:
+      # ERROR: Node.js runtime version is too old
+      using: 'node12'
+      # ERROR: The source file being run by this action does not exist
+      main: 'this-file-does-not-exist.js'
+      # ERROR: 'env' configuration is only allowed for Docker actions
+      env:
+        SOME_VAR: SOME_VALUE
+    ```
+  - actionlint still focuses on checking workflow files. So there is no way to directly specify `action.yml` as an argument of `actionlint` command. actionlint checks all local actions which are used by given workflows. If you want to use actionlint for your action development, prepare a test/example workflow which uses your action, and check it with actionlint instead.
+  - Checks for `steps:` contents are planned to be implemented. Since several differences are expected between `steps:` in workflow file and `steps:` in action metadata file (e.g. available contexts), the implementation is delayed to later version. And the current implementation of action metadata parser is ad hoc. I'm planning a large refactorying and breaking changes Go API around it are expected.
+- Add `runner.environment` property. ([#412](https://github.com/rhysd/actionlint/issues/412))
+  ```yaml
+  - run: echo 'Run by GitHub-hosted runner'
+    if: runner.environment == 'github-hosted'
+  ```
+- Using outdated popular actions is now detected at error. See [the document](https://github.com/rhysd/actionlint/blob/main/docs/checks.md#detect-outdated-popular-actions) for more details.
+  - Here 'outdated' means actions which use runtimes no longer supported by GitHub-hosted runners such as `node12`.
+    ```yaml
+    # ERROR: actions/checkout@v2 is using the outdated runner 'node12'
+    - uses: actions/checkout@v2
+    ```
+- Support `attestations` permission which was [recently added to GitHub Actions as beta](https://docs.github.com/en/actions/security-guides/using-artifact-attestations-to-establish-provenance-for-builds). ([#418](https://github.com/rhysd/actionlint/issues/418), thanks [@bdehamer](https://github.com/bdehamer))
+  ```yaml
+  permissions:
+    id-token: write
+    contents: read
+    attestations: write
+  ```
+- Check comparison expressions more strictly. Arbitrary types of operands can be compared as [the official document](https://docs.github.com/en/actions/learn-github-actions/expressions#operators) explains. However, comparisons between some types are actually meaningless because the values are converted to numbers implicitly. actionlint catches such meaningless comparisons as errors. Please see [the check document](https://github.com/rhysd/actionlint/blob/main/docs/checks.md#check-comparison-types) for more details.
+  ```yaml
+  on:
+    workflow_call:
+      inputs:
+        timeout:
+          type: boolean
+
+  jobs:
+    test:
+      runs-on: ubuntu-latest
+      steps:
+        - run: echo 'called!'
+          # ERROR: Comparing string to object is always evaluated to false
+          if: ${{ github.event == 'workflow_call' }}
+        - run: echo 'timeout is too long'
+          # ERROR: Comparing boolean value with `>` doesn't make sense
+          if: ${{ inputs.timeout > 60 }}
+  ```
+- Follow the update that `macos-latest` is now an alias to `macos-14` runner.
+- Support a custom python shell by `pyflakes` rule.
+- Add workaround actionlint reports that `dorny/paths-filter`'s `predicate-quantifier` input is not defined. ([#416](https://github.com/rhysd/actionlint/issues/416))
+- Fix the type of a conditional expression by comparison operators is wider than expected by implementing type narrowing. ([#384](https://github.com/rhysd/actionlint/issues/384))
+  - For example, the type of following expression should be `number` but it was actually `string | number` and actionlint complained that `timeout-minutes` must take a number value.
+    ```yaml
+    timeout-minutes: ${{ env.FOO && 10 || 60 }}
+    ```
+- Fix `${{ }}` placeholder is not available at `jobs.<job_id>.services`. ([#402](https://github.com/rhysd/actionlint/issues/402))
+  ```yaml
+  jobs:
+    test:
+      services: ${{ fromJSON('...') }}
+      runs-on: ubuntu-latest
+      steps:
+        - run: ...
+  ```
+- Do not check outputs of `google-github-actions/get-secretmanager-secrets` because this action sets outputs dynamically. ([#404](https://github.com/rhysd/actionlint/issues/404))
+- Fix `defaults.run` is ignored on detecting the shell used in `run:`. ([#409](https://github.com/rhysd/actionlint/issues/409))
+  ```yaml
+  defaults:
+    run:
+      shell: pwsh
+  jobs:
+    test:
+      runs-on: ubuntu-latest
+      steps:
+        # This was wrongly detected as bash script
+        - run: $Env:FOO = "FOO"
+  ```
+- Fix parsing a syntax error reported from pyflakes when checking a Python script in `run:`. ([#411](https://github.com/rhysd/actionlint/issues/411))
+  ```yaml
+  - run: print(
+    shell: python
+  ```
+- Skip checking `exclude:` items in `matrix:` when they are constructed from `${{ }}` dynamically. ([#414](https://github.com/rhysd/actionlint/issues/414))
+  ```yaml
+  matrix:
+    foo: ['a', 'b']
+    exclude:
+      # actionlint complained this value didn't exist in matrix combinations
+      - foo: ${{ env.EXCLUDE_FOO }}
+  ```
+- Fix checking `exclude:` items when `${{ }}` is used in items of nested arrays.
+  ```yaml
+  matrix:
+    foo:
+      - ["${{ fromJSON('...') }}"]
+    exclude:
+      # actionlint complained this value didn't match to any matrix combinations
+      - foo: ['foo']
+  ```
+- Update popular actions data set. New major versions are added and the following actions are newly added.
+  - `peaceiris/actions-hugo`
+  - `actions/attest-build-provenance`
+  - `actions/add-to-project`
+  - `octokit/graphql-action`
+- Update Go dependencies to the latest.
+- Reduce the size of `actionlint` executable by removing redundant data from popular actions data set.
+  - x86_64 executable binary size was reduced from 6.9MB to 6.7MB (2.9% smaller).
+  - Wasm binary size was reduced from 9.4MB to 8.9MB (5.3% smaller).
+- Describe how to [integrate actionlint to Pulsar Edit](https://web.pulsar-edit.dev/packages/linter-github-actions) in [the document](https://github.com/rhysd/actionlint/blob/main/docs/usage.md#pulsar-edit). ([#408](https://github.com/rhysd/actionlint/issues/408), thanks [@mschuchard](https://github.com/mschuchard))
+- Update outdated action versions in the usage document. ([#413](https://github.com/rhysd/actionlint/issues/413), thanks [@naglis](https://github.com/naglis))
+
+[Changes][v1.7.0]
+
+
 <a name="v1.6.27"></a>
 # [v1.6.27](https://github.com/rhysd/actionlint/releases/tag/v1.6.27) - 24 Feb 2024
 
@@ -45,8 +174,8 @@
 - Prefer fixed revisions in the pre-commit usage. (thanks [@corneliusroemer](https://github.com/corneliusroemer), [#354](https://github.com/rhysd/actionlint/issues/354))
 - Add instructions to use actionlint with Emacs. (thanks [@tirimia](https://github.com/tirimia), [#341](https://github.com/rhysd/actionlint/issues/341))
 - Add instructions to use actionlint with Vim and Neovim text editors.
-- Add `actionlint.RuleBase.Config` method to get the actionlint configuration passed to rules. (thanks [@hugo-syn](https://github.com/hugo-syn), [#387](https://github.com/rhysd/actionlint/issues/387))
-- Add `actionlint.ContainsExpression` function to check if the given string contains `${{ }}` placeholders or not. (thanks [@hugo-syn](https://github.com/hugo-syn), [#388](https://github.com/rhysd/actionlint/issues/388))
+- Add [`actionlint.RuleBase.Config`](https://pkg.go.dev/github.com/rhysd/actionlint#RuleBase.Config) method to get the actionlint configuration passed to rules. (thanks [@hugo-syn](https://github.com/hugo-syn), [#387](https://github.com/rhysd/actionlint/issues/387))
+- Add [`actionlint.ContainsExpression`](https://pkg.go.dev/github.com/rhysd/actionlint#ContainsExpression) function to check if the given string contains `${{ }}` placeholders or not. (thanks [@hugo-syn](https://github.com/hugo-syn), [#388](https://github.com/rhysd/actionlint/issues/388))
 - Support Go 1.22 and set the minimum supported Go version to 1.18 for `x/sys` package.
 - Update Go dependencies to the latest.
 
@@ -1553,6 +1682,7 @@ See documentation for more details:
 [Changes][v1.0.0]
 
 
+[v1.7.0]: https://github.com/rhysd/actionlint/compare/v1.6.27...v1.7.0
 [v1.6.27]: https://github.com/rhysd/actionlint/compare/v1.6.26...v1.6.27
 [v1.6.26]: https://github.com/rhysd/actionlint/compare/v1.6.25...v1.6.26
 [v1.6.25]: https://github.com/rhysd/actionlint/compare/v1.6.24...v1.6.25
