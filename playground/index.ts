@@ -220,7 +220,7 @@ jobs:
 
             const pos = document.createElement('td');
             const tag = document.createElement('span');
-            tag.className = 'tag is-primary is-dark';
+            tag.className = 'tag is-dark is-medium';
             tag.textContent = `line:${error.line}, col:${error.column}`;
             pos.appendChild(tag);
             row.appendChild(pos);

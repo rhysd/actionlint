@@ -58,8 +58,11 @@ main {
 }
 
 #lint-result {
-  border-radius: 4px;
+  --bulma-table-background-color: #222;
+
+  border-radius: 8px;
   cursor: pointer;
+  margin-bottom: 0;
 }
 
 .sticky {
