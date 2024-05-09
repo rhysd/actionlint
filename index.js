@@ -174,14 +174,13 @@ jobs:
         }
         for (const error of errors) {
             const row = document.createElement('tr');
-            row.className = 'is-size-5';
             row.addEventListener('click', () => {
                 editor.setCursor({ line: error.line - 1, ch: error.column - 1 });
                 editor.focus();
             });
             const pos = document.createElement('td');
             const tag = document.createElement('span');
-            tag.className = 'tag is-primary is-dark';
+            tag.className = 'tag is-dark is-medium';
             tag.textContent = `line:${error.line}, col:${error.column}`;
             pos.appendChild(tag);
             row.appendChild(pos);
