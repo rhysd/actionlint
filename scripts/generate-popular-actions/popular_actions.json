@@ -42,27 +42,23 @@
     },
     {
         "slug": "actions-rs/audit-check",
-        "tags": ["v1"],
-        "next": "v2"
+        "tags": ["v1"]
     },
     {
         "slug": "actions-rs/cargo",
-        "tags": ["v1"],
-        "next": "v2"
+        "tags": ["v1"]
+    },
+    {
+        "slug": "actions-rs/clippy-check",
+        "tags": ["v1"]
+    },
+    {
+        "slug": "actions-rs/toolchain",
+        "tags": ["v1"]
     },
     {
         "slug": "dtolnay/rust-toolchain",
         "tags": ["stable", "beta", "nightly"]
-    },
-    {
-        "slug": "actions-rs/clippy-check",
-        "tags": ["v1"],
-        "next": "v2"
-    },
-    {
-        "slug": "actions-rs/toolchain",
-        "tags": ["v1"],
-        "next": "v2"
     },
     {
         "slug": "actions/cache",
