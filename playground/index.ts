@@ -212,7 +212,6 @@ jobs:
 
         for (const error of errors) {
             const row = document.createElement('tr');
-            row.className = 'is-size-5';
             row.addEventListener('click', () => {
                 editor.setCursor({ line: error.line - 1, ch: error.column - 1 });
                 editor.focus();
