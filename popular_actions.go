@@ -2619,6 +2619,20 @@ var PopularActions = map[string]*ActionMetadata{
 			"resumable":            {"resumable", false},
 		},
 	},
+	"goreleaser/goreleaser-action@v1": {
+		Name: "GoReleaser Action",
+		Inputs: ActionMetadataInputs{
+			"args":         {"args", false},
+			"distribution": {"distribution", false},
+			"install-only": {"install-only", false},
+			"version":      {"version", false},
+			"workdir":      {"workdir", false},
+		},
+		Outputs: ActionMetadataOutputs{
+			"artifacts": {"artifacts"},
+			"metadata":  {"metadata"},
+		},
+	},
 	"goreleaser/goreleaser-action@v3": {
 		Name: "GoReleaser Action",
 		Inputs: ActionMetadataInputs{
@@ -3083,6 +3097,25 @@ var PopularActions = map[string]*ActionMetadata{
 			"pull-request-number":    {"pull-request-number"},
 			"pull-request-operation": {"pull-request-operation"},
 			"pull-request-url":       {"pull-request-url"},
+		},
+	},
+	"preactjs/compressed-size-action@v2": {
+		Name: "compressed-size-action",
+		Inputs: ActionMetadataInputs{
+			"build-script":             {"build-script", false},
+			"clean-script":             {"clean-script", false},
+			"collapse-unchanged":       {"collapse-unchanged", false},
+			"compression":              {"compression", false},
+			"cwd":                      {"cwd", false},
+			"exclude":                  {"exclude", false},
+			"install-script":           {"install-script", false},
+			"minimum-change-threshold": {"minimum-change-threshold", false},
+			"omit-unchanged":           {"omit-unchanged", false},
+			"pattern":                  {"pattern", false},
+			"repo-token":               {"repo-token", false},
+			"show-total":               {"show-total", false},
+			"strip-hash":               {"strip-hash", false},
+			"use-check":                {"use-check", false},
 		},
 	},
 	"pulumi/actions@v1": {
@@ -3757,7 +3790,6 @@ var OutdatedPopularActionSpecs = map[string]struct{}{
 	"githubocto/flat@v3":                               {},
 	"golangci/golangci-lint-action@v1":                 {},
 	"golangci/golangci-lint-action@v2":                 {},
-	"goreleaser/goreleaser-action@v1":                  {},
 	"goreleaser/goreleaser-action@v2":                  {},
 	"haskell/actions/setup@v1":                         {},
 	"marvinpinto/action-automatic-releases@latest":     {},
@@ -3770,7 +3802,6 @@ var OutdatedPopularActionSpecs = map[string]struct{}{
 	"peter-evans/create-pull-request@v2":               {},
 	"peter-evans/create-pull-request@v3":               {},
 	"preactjs/compressed-size-action@v1":               {},
-	"preactjs/compressed-size-action@v2":               {},
 	"pulumi/actions@v2":                                {},
 	"pulumi/actions@v3":                                {},
 	"ridedott/merge-me-action@v1":                      {},
