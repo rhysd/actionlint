@@ -3770,7 +3770,6 @@ var OutdatedPopularActionSpecs = map[string]struct{}{
 	"peter-evans/create-pull-request@v2":               {},
 	"peter-evans/create-pull-request@v3":               {},
 	"preactjs/compressed-size-action@v1":               {},
-	"preactjs/compressed-size-action@v2":               {},
 	"pulumi/actions@v2":                                {},
 	"pulumi/actions@v3":                                {},
 	"ridedott/merge-me-action@v1":                      {},
