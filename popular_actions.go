@@ -2619,20 +2619,6 @@ var PopularActions = map[string]*ActionMetadata{
 			"resumable":            {"resumable", false},
 		},
 	},
-	"goreleaser/goreleaser-action@v1": {
-		Name: "GoReleaser Action",
-		Inputs: ActionMetadataInputs{
-			"args":         {"args", false},
-			"distribution": {"distribution", false},
-			"install-only": {"install-only", false},
-			"version":      {"version", false},
-			"workdir":      {"workdir", false},
-		},
-		Outputs: ActionMetadataOutputs{
-			"artifacts": {"artifacts"},
-			"metadata":  {"metadata"},
-		},
-	},
 	"goreleaser/goreleaser-action@v3": {
 		Name: "GoReleaser Action",
 		Inputs: ActionMetadataInputs{
@@ -3790,6 +3776,7 @@ var OutdatedPopularActionSpecs = map[string]struct{}{
 	"githubocto/flat@v3":                               {},
 	"golangci/golangci-lint-action@v1":                 {},
 	"golangci/golangci-lint-action@v2":                 {},
+	"goreleaser/goreleaser-action@v1":                  {},
 	"goreleaser/goreleaser-action@v2":                  {},
 	"haskell/actions/setup@v1":                         {},
 	"marvinpinto/action-automatic-releases@latest":     {},
