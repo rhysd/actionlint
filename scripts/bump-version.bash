@@ -46,6 +46,7 @@ pre_commit_hook='./.pre-commit-hooks.yaml'
 usage_doc='./docs/usage.md'
 tag="v${version}"
 job_url='https://github.com/rhysd/actionlint/actions/workflows/release.yaml'
+playground_html='./playground/index.html'
 
 echo "Bumping up version to ${version} (tag: ${tag})"
 
@@ -59,6 +60,9 @@ sed_ "\
     s/ actionlint@[0-9]+\.[0-9]+\.[0-9]+/ actionlint@${version}/g; \
     s/\`actionlint:[0-9]+\.[0-9]+\.[0-9]+\`/\`actionlint:${version}\`/g; \
     " "$usage_doc"
+
+echo "Updating $playground_html"
+sed_ "s/id=\"version\">v[0-9]+\.[0-9]+\.[0-9]+/id=\"version\">v${version}/" "$playground_html"
 
 echo 'Creating a version bump commit and a version tag'
 git add "$pre_commit_hook" "$usage_doc"
