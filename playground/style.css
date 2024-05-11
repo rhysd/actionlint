@@ -28,6 +28,12 @@ main {
   }
 }
 
+#controls {
+  display: flex;
+  margin-top: 8px;
+  margin-bottom: 8px;
+}
+
 .split-pane {
   box-sizing: border-box;
   padding: 8px;
