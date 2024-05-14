@@ -11,6 +11,7 @@ const (
 	compatInvalid                   = 0
 	compatUbuntu2004 runnerOSCompat = 1 << iota
 	compatUbuntu2204
+	compatUbuntu2404
 	compatMacOS1015
 	compatMacOS110
 	compatMacOS120
@@ -38,6 +39,7 @@ var allGitHubHostedRunnerLabels = []string{
 	"ubuntu-latest-4-cores",
 	"ubuntu-latest-8-cores",
 	"ubuntu-latest-16-cores",
+	"ubuntu-24.04",
 	"ubuntu-22.04",
 	"ubuntu-20.04",
 	"macos-latest",
@@ -84,6 +86,7 @@ var defaultRunnerOSCompats = map[string]runnerOSCompat{
 	"ubuntu-latest-4-cores":  compatUbuntu2204,
 	"ubuntu-latest-8-cores":  compatUbuntu2204,
 	"ubuntu-latest-16-cores": compatUbuntu2204,
+	"ubuntu-24.04":           compatUbuntu2404,
 	"ubuntu-22.04":           compatUbuntu2204,
 	"ubuntu-20.04":           compatUbuntu2004,
 	"macos-latest-xl":        compatMacOS140XL,
@@ -113,7 +116,7 @@ var defaultRunnerOSCompats = map[string]runnerOSCompat{
 	"windows-2022":           compatWindows2022,
 	"windows-2019":           compatWindows2019,
 	"windows-2016":           compatWindows2016,
-	"linux":                  compatUbuntu2204 | compatUbuntu2004, // Note: "linux" does not always indicate Ubuntu. It might be Fedora or Arch or ...
+	"linux":                  compatUbuntu2404 | compatUbuntu2204 | compatUbuntu2004, // Note: "linux" does not always indicate Ubuntu. It might be Fedora or Arch or ...
 	"macos":                  compatMacOS140 | compatMacOS140L | compatMacOS140XL | compatMacOS130 | compatMacOS130L | compatMacOS130XL | compatMacOS120 | compatMacOS120L | compatMacOS120XL | compatMacOS110 | compatMacOS1015,
 	"windows":                compatWindows2022 | compatWindows2019 | compatWindows2016,
 }
