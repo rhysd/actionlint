@@ -34,8 +34,18 @@ main {
 
 #controls {
   display: flex;
+  flex-wrap: wrap;
+  row-gap: 8px;
   margin-top: 8px;
-  margin-bottom: 8px;
+}
+
+#url-input {
+  margin-bottom: 0;
+}
+
+#invalid-input {
+  display: none;
+  word-break: break-all;
 }
 
 .split-pane {
