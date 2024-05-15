@@ -207,7 +207,7 @@ jobs:
             a.href = url;
             a.rel = 'noopener';
             a.textContent = url;
-            a.className = 'has-text-info-light is-underlined';
+            a.className = 'has-text-link-light is-underlined';
             a.addEventListener('click', e => e.stopPropagation());
             ret.push(a);
 
