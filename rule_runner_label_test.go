@@ -145,6 +145,10 @@ func TestRuleRunnerLabelCheckLabels(t *testing.T) {
 			what:   "use matrix value but no matrix exist",
 			labels: []string{"${{matrix.os}}"},
 		},
+		{
+			what:   "ubuntu-24.04",
+			labels: []string{"ubuntu-24.04"},
+		},
 		// TODO: Add tests for 'include:'
 		// TODO: Check matrix with 'include:'
 

@@ -1,0 +1,2 @@
+/test\.yaml:5:14: label "macos-10\.15" is unknown\. available labels are .+ \[runner-label\]/
+/test\.yaml:9:14: label "macos-10" is unknown\. available labels are .+ \[runner-label\]/
