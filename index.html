@@ -29,35 +29,51 @@
         <div class="control">
           <a id="permalink-btn" class="button">Permalink</a>
         </div>
-        <div class="field has-addons">
-          <div class="control">
-            <input id="check-url-input" class="input" type="text" placeholder="GitHub or Gist URL">
+        <div class="field">
+          <div id="url-input" class="field has-addons">
+            <div class="control">
+              <input id="check-url-input" class="input" type="text" placeholder="GitHub or Gist URL">
+            </div>
+            <div class="control">
+              <a id="check-url-btn" class="button">Check</a>
+            </div>
           </div>
-          <div class="control">
-            <a id="check-url-btn" class="button">Check</a>
-          </div>
+          <p id="invalid-input" class="help is-danger"></p>
         </div>
       </div>
 
     </nav>
     <main>
-      <div id="editor" class="split-pane"></div>
-      <div class="split-pane">
-        <div id="loading" class="notification sticky has-text-centered">Loading WebAssembly binary...</div>
-        <table id="lint-result" class="table sticky is-hoverable">
-          <tbody id="lint-result-body">
-          </tbody>
-        </table>
-        <div id="error-msg" class="notification sticky is-danger is-light">
+      <section id="linter">
+        <div id="editor" class="split-pane"></div>
+        <div class="split-pane">
+          <div id="loading" class="notification sticky has-text-centered">Loading WebAssembly binary...</div>
+          <table id="lint-result" class="table sticky is-hoverable">
+            <tbody id="lint-result-body"></tbody>
+          </table>
+          <div id="error-msg" class="notification sticky is-danger is-light"></div>
+          <div id="success-msg" class="notification sticky">Yay! No error was detected.</div>
         </div>
-        <div id="success-msg" class="notification sticky">Yay! No error was detected.</div>
-      </div>
+      </section>
+      <section id="resources" class="section">
+        <div class="container content">
+          <h2><i id="res-icon" class="devicon-githubactions-plain"></i>Resources</h2>
+          <p>
+            <ul>
+              <li><a class="has-text-link-light" target="_blank" rel="noopener" href="https://github.com/rhysd/actionlint/blob/main/docs/checks.md">Checks by actionlint</a></li>
+              <li><a class="has-text-link-light" target="_blank" rel="noopener" href="https://docs.github.com/en/actions/using-workflows/workflow-syntax-for-github-actions">Workflow syntax for GitHub Actions</a></li>
+              <li><a class="has-text-link-light" target="_blank" rel="noopener" href="https://docs.github.com/en/actions/learn-github-actions/contexts">Available contexts in workflow</a></li>
+              <li><a class="has-text-link-light" target="_blank" rel="noopener" href="https://docs.github.com/en/actions/security-guides/security-hardening-for-github-actions">Security hardening for GitHub Actions</a></li>
+            </ul>
+          </p>
+        </div>
+      </section>
     </main>
     <footer class="footer">
-      <div class="content has-text-centered has-text-grey-light">
+      <div class="content is-small has-text-centered has-text-grey-light">
         <p>
-          <a class="has-text-primary-light" rel="noopener" href="https://github.com/rhysd/actionlint">actionlint</a> by <a class="has-text-primary-light" rel="noopener" href="https://github.com/rhysd">@rhysd</a>.
-          The source code and website content are licensed <a class="has-text-primary-light" rel="noopener" href="https://github.com/rhysd/actionlint/blob/main/LICENSE.txt">MIT</a>.
+          <a class="has-text-link-light" rel="noopener" href="https://github.com/rhysd/actionlint">actionlint</a> by <a class="has-text-link-light" rel="noopener" href="https://github.com/rhysd">@rhysd</a>.
+          The source code and website content are licensed <a class="has-text-link-light" rel="noopener" href="https://github.com/rhysd/actionlint/blob/main/LICENSE.txt">MIT</a>.
         </p>
       </div>
     </footer>

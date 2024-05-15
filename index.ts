@@ -18,6 +18,7 @@
     const checkUrlButton = getElementById('check-url-btn');
     const checkUrlInput = getElementById('check-url-input') as HTMLInputElement;
     const permalinkButton = getElementById('permalink-btn');
+    const invalidInputMessage = getElementById('invalid-input');
 
     async function getRemoteSource(url: string): Promise<string> {
         function getUrlToFetch(u: string): string {
@@ -137,6 +138,7 @@ jobs:
             debounceId = null;
             errorMessage.style.display = 'none';
             successMessage.style.display = 'none';
+            invalidInputMessage.style.display = 'none';
             editor.clearGutter('error-marker');
             // eslint-disable-next-line @typescript-eslint/no-non-null-assertion
             window.runActionlint!(editor.getValue());
@@ -157,6 +159,17 @@ jobs:
     function showError(message: string): void {
         errorMessage.textContent = message;
         errorMessage.style.display = 'block';
+    }
+
+    function showInvalidInputMessage(message: string): void {
+        invalidInputMessage.textContent = message;
+        invalidInputMessage.style.display = 'block';
+        checkUrlInput.classList.add('is-danger');
+    }
+
+    function clearInvalidInputMessage(): void {
+        checkUrlInput.classList.remove('is-danger');
+        invalidInputMessage.style.display = 'none';
     }
 
     function dismissLoading(): void {
@@ -194,7 +207,7 @@ jobs:
             a.href = url;
             a.rel = 'noopener';
             a.textContent = url;
-            a.className = 'has-text-info-light is-underlined';
+            a.className = 'has-text-link-light is-underlined';
             a.addEventListener('click', e => e.stopPropagation());
             ret.push(a);
 
@@ -261,6 +274,9 @@ jobs:
             e.preventDefault();
             checkUrlButton.click();
         }
+        if (checkUrlInput.value === '') {
+            clearInvalidInputMessage();
+        }
     });
 
     // eslint-disable-next-line @typescript-eslint/no-misused-promises
@@ -274,9 +290,10 @@ jobs:
             if (!(err instanceof Error)) {
                 throw err;
             }
-            showError(`Incorrect input "${input}": ${err.message}`);
+            showInvalidInputMessage(`Incorrect input "${input}": ${err.message}`);
             return;
         }
+        clearInvalidInputMessage();
         editor.setValue(src);
     });
 

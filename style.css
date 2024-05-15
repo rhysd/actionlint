@@ -17,13 +17,18 @@ body {
 }
 
 main {
+  display: flex;
+  flex-direction: column;
+}
+
+#linter {
   width: 100%;
   display: flex;
   flex-direction: row;
 }
 
 @media (width <= 1200px) {
-  main {
+  #linter {
     flex-direction: column;
   }
 }
@@ -34,8 +39,18 @@ main {
 
 #controls {
   display: flex;
+  flex-wrap: wrap;
+  row-gap: 8px;
   margin-top: 8px;
-  margin-bottom: 8px;
+}
+
+#url-input {
+  margin-bottom: 0;
+}
+
+#invalid-input {
+  display: none;
+  word-break: break-all;
 }
 
 .split-pane {
@@ -73,6 +88,10 @@ main {
   border-radius: 8px;
   cursor: pointer;
   margin-bottom: 0;
+}
+
+#res-icon {
+  margin-right: 0.3em;
 }
 
 .sticky {

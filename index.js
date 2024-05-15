@@ -14,6 +14,7 @@
     const checkUrlButton = getElementById('check-url-btn');
     const checkUrlInput = getElementById('check-url-input');
     const permalinkButton = getElementById('permalink-btn');
+    const invalidInputMessage = getElementById('invalid-input');
     async function getRemoteSource(url) {
         function getUrlToFetch(u) {
             const url = new URL(u);
@@ -114,6 +115,7 @@ jobs:
             debounceId = null;
             errorMessage.style.display = 'none';
             successMessage.style.display = 'none';
+            invalidInputMessage.style.display = 'none';
             editor.clearGutter('error-marker');
             window.runActionlint(editor.getValue());
         }
@@ -129,6 +131,15 @@ jobs:
     function showError(message) {
         errorMessage.textContent = message;
         errorMessage.style.display = 'block';
+    }
+    function showInvalidInputMessage(message) {
+        invalidInputMessage.textContent = message;
+        invalidInputMessage.style.display = 'block';
+        checkUrlInput.classList.add('is-danger');
+    }
+    function clearInvalidInputMessage() {
+        checkUrlInput.classList.remove('is-danger');
+        invalidInputMessage.style.display = 'none';
     }
     function dismissLoading() {
         nowLoading.style.display = 'none';
@@ -160,7 +171,7 @@ jobs:
             a.href = url;
             a.rel = 'noopener';
             a.textContent = url;
-            a.className = 'has-text-info-light is-underlined';
+            a.className = 'has-text-link-light is-underlined';
             a.addEventListener('click', e => e.stopPropagation());
             ret.push(a);
             rest = rest.slice(idx + url.length);
@@ -216,6 +227,9 @@ jobs:
             e.preventDefault();
             checkUrlButton.click();
         }
+        if (checkUrlInput.value === '') {
+            clearInvalidInputMessage();
+        }
     });
     checkUrlButton.addEventListener('click', async (e) => {
         e.preventDefault();
@@ -228,9 +242,10 @@ jobs:
             if (!(err instanceof Error)) {
                 throw err;
             }
-            showError(`Incorrect input "${input}": ${err.message}`);
+            showInvalidInputMessage(`Incorrect input "${input}": ${err.message}`);
             return;
         }
+        clearInvalidInputMessage();
         editor.setValue(src);
     });
     permalinkButton.addEventListener('click', e => {
