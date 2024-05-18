@@ -2539,6 +2539,7 @@ var PopularActions = map[string]*ActionMetadata{
 			"id_token_audience":            {"id_token_audience", false},
 			"id_token_include_email":       {"id_token_include_email", false},
 			"project_id":                   {"project_id", false},
+			"request_reason":               {"request_reason", false},
 			"retries":                      {"retries", false},
 			"service_account":              {"service_account", false},
 			"token_format":                 {"token_format", false},
