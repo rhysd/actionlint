@@ -4,6 +4,7 @@ import (
 	"flag"
 	"fmt"
 	"io"
+	"regexp"
 	"runtime"
 	"runtime/debug"
 )
@@ -25,7 +26,14 @@ const (
 	ExitStatusFailure = 3
 )
 
-const commandUsageHeader = `Usage: actionlint [FLAGS] [FILES...] [-]
+func printUsageHeader(out io.Writer) {
+	v := getCommandVersion()
+	b := "main"
+	if regexp.MustCompile(`^\d+\.\d+\.\d+$`).MatchString(v) {
+		b = "v" + v
+	}
+
+	fmt.Fprintf(out, `Usage: actionlint [FLAGS] [FILES...] [-]
 
   actionlint is a linter for GitHub Actions workflow files.
 
@@ -50,9 +58,11 @@ const commandUsageHeader = `Usage: actionlint [FLAGS] [FILES...] [-]
 
 Documents:
 
-  https://github.com/rhysd/actionlint/tree/main/docs
+  https://github.com/rhysd/actionlint/tree/%s/docs
 
-Flags:`
+Flags:
+`, b)
+}
 
 func getCommandVersion() string {
 	if version != "" {
@@ -143,7 +153,7 @@ func (cmd *Command) Main(args []string) int {
 	flags.BoolVar(&ver, "version", false, "Show version and how this binary was installed")
 	flags.StringVar(&opts.StdinFileName, "stdin-filename", "", "File name when reading input from stdin")
 	flags.Usage = func() {
-		fmt.Fprintln(cmd.Stderr, commandUsageHeader)
+		printUsageHeader(cmd.Stderr)
 		flags.PrintDefaults()
 	}
 	if err := flags.Parse(args[1:]); err != nil {

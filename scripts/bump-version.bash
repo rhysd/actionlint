@@ -62,7 +62,10 @@ sed_ "\
     " "$usage_doc"
 
 echo "Updating $playground_html"
-sed_ "s/id=\"version\">v[0-9]+\.[0-9]+\.[0-9]+/id=\"version\">v${version}/" "$playground_html"
+sed_ "\
+    s/id=\"version\">v[0-9]+\.[0-9]+\.[0-9]+/id=\"version\">v${version}/; \
+    s/\/blob\/v[0-9]+\.[0-9]+\.[0-9]+\/docs\/checks\.md/\/blob\/v${version}\/docs\/checks\.md/; \
+    " "$playground_html"
 
 echo 'Creating a version bump commit and a version tag'
 git add "$pre_commit_hook" "$usage_doc"
