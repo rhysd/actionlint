@@ -284,6 +284,13 @@ var BrandingIcons = map[string]struct{}{
 	"zoom-out":           {},
 }
 
+// https://docs.github.com/en/actions/creating-actions/metadata-syntax-for-github-actions#runsimage
+func isImageOnDockerRegistry(image string) bool {
+	return strings.HasPrefix(image, "docker://") ||
+		strings.HasPrefix(image, "ghcr.io/") ||
+		strings.HasPrefix(image, "docker.io/")
+}
+
 // RuleAction is a rule to check running action in steps of jobs.
 // https://docs.github.com/en/actions/learn-github-actions/workflow-syntax-for-github-actions#jobsjob_idstepsuses
 type RuleAction struct {
@@ -423,7 +430,7 @@ func (rule *RuleAction) checkRunsFileExists(file, dir, prop, name string, pos *P
 func (rule *RuleAction) checkLocalDockerActionRuns(r *ActionMetadataRuns, dir, name string, pos *Pos) {
 	if r.Image == "" {
 		rule.missingRunsProp(pos, "image", "Docker", name, dir)
-	} else if !strings.HasPrefix(r.Image, "docker://") {
+	} else if !isImageOnDockerRegistry(r.Image) {
 		rule.checkRunsFileExists(r.Image, dir, "image", name, pos)
 		if filepath.Base(filepath.FromSlash(r.Image)) != "Dockerfile" {
 			rule.Errorf(pos, `the local file %q referenced from "image" key must be named "Dockerfile" in %q action. the action is defined at %q`, r.Image, name, dir)
