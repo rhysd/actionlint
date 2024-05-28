@@ -68,7 +68,7 @@ sed_ "\
     " "$playground_html"
 
 echo 'Creating a version bump commit and a version tag'
-git add "$pre_commit_hook" "$usage_doc"
+git add "$pre_commit_hook" "$usage_doc" "$playground_html"
 git commit -m "bump up version to ${tag}"
 git tag "$tag"
 
