@@ -19,7 +19,7 @@
   "author": "rhysd <lin90162@yahoo.co.jp> (https://rhysd.github.io/)",
   "license": "MIT",
   "dependencies": {
-    "bulma": "^1.0.0",
+    "bulma": "^1.0.1",
     "codemirror": "^5.65.8",
     "devicon": "^2.16.0",
     "ismobilejs": "^1.1.1",
@@ -38,12 +38,12 @@
     "eslint": "^8.57.0",
     "eslint-plugin-mocha": "^10.4.3",
     "http-server": "^14.1.1",
-    "jsdom": "^24.0.0",
+    "jsdom": "^24.1.0",
     "mocha": "^10.4.0",
     "prettier": "^3.2.5",
-    "stylelint": "^16.5.0",
+    "stylelint": "^16.6.0",
     "stylelint-config-standard": "^36.0.0",
     "typescript": "^5.4.5",
-    "typescript-eslint": "^7.9.0"
+    "typescript-eslint": "^7.11.0"
   }
 }
