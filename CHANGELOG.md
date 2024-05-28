@@ -1,3 +1,29 @@
+<a name="v1.7.1"></a>
+# [v1.7.1](https://github.com/rhysd/actionlint/releases/tag/v1.7.1) - 28 May 2024
+
+- Support `ubuntu-24.04` runner label, which was [recently introduced as beta](https://github.blog/changelog/2024-05-14-github-hosted-runners-public-beta-of-ubuntu-24-04-is-now-available/). ([#425](https://github.com/rhysd/actionlint/issues/425), thanks [@bitcoin-tools](https://github.com/bitcoin-tools))
+- Remove the support for `macos-10` runner label which was [officially dropped about 2 years ago](https://github.blog/changelog/2022-07-20-github-actions-the-macos-10-15-actions-runner-image-is-being-deprecated-and-will-be-removed-by-8-30-22/).
+- Remove the support for `windows-2016` runner label which was [officially dropped about 2 years ago](https://github.blog/changelog/2021-10-19-github-actions-the-windows-2016-runner-image-will-be-removed-from-github-hosted-runners-on-march-15-2022/).
+- Document URLs used in help output and links in the playground prefer specific version tag rather than `main` branch. For example,
+  - Before: https://github.com/rhysd/actionlint/tree/main/docs
+  - After: https://github.com/rhysd/actionlint/tree/v1.7.1/docs
+- Fix actionlint wrongly reports an error when using `ghcr.io` or `docker.io` at `image` field of action metadata file of Docker action without `docker://` scheme. ([#428](https://github.com/rhysd/actionlint/issues/428))
+  ```yaml
+  runs:
+    using: 'docker'
+    # This should be OK
+    image: 'ghcr.io/user/repo:latest'
+  ```
+- Fix checking `preactjs/compressed-size-action@v2` usage caused a false positive. ([#422](https://github.com/rhysd/actionlint/issues/422))
+- Fix an error message when invalid escaping is found in globs.
+- The design of the [playground page](https://rhysd.github.io/actionlint/) is overhauled following the upgrade of bulma package to v1.
+  - Current actionlint version is shown in the heading.
+  - The color theme is changed to the official dark theme.
+  - The list of useful links is added to the bottom of the page as 'Resources' section.
+
+[Changes][v1.7.1]
+
+
 <a name="v1.7.0"></a>
 # [v1.7.0](https://github.com/rhysd/actionlint/releases/tag/v1.7.0) - 08 May 2024
 
@@ -103,7 +129,7 @@
       # actionlint complained this value didn't exist in matrix combinations
       - foo: ${{ env.EXCLUDE_FOO }}
   ```
-- Fix checking `exclude:` items when `${{ }}` is used in items of nested arrays.
+- Fix checking `exclude:` items when `${{ }}` is used in nested arrays at matrix items.
   ```yaml
   matrix:
     foo:
@@ -1682,6 +1708,7 @@ See documentation for more details:
 [Changes][v1.0.0]
 
 
+[v1.7.1]: https://github.com/rhysd/actionlint/compare/v1.7.0...v1.7.1
 [v1.7.0]: https://github.com/rhysd/actionlint/compare/v1.6.27...v1.7.0
 [v1.6.27]: https://github.com/rhysd/actionlint/compare/v1.6.26...v1.6.27
 [v1.6.26]: https://github.com/rhysd/actionlint/compare/v1.6.25...v1.6.26
