@@ -31,9 +31,11 @@ var PopularActions = map[string]*ActionMetadata{
 			"enable-oryx-build":              {"enable-oryx-build", false},
 			"package":                        {"package", false},
 			"publish-profile":                {"publish-profile", false},
+			"remote-build":                   {"remote-build", false},
 			"respect-funcignore":             {"respect-funcignore", false},
 			"respect-pom-xml":                {"respect-pom-xml", false},
 			"scm-do-build-during-deployment": {"scm-do-build-during-deployment", false},
+			"sku":                            {"sku", false},
 			"slot-name":                      {"slot-name", false},
 		},
 		Outputs: ActionMetadataOutputs{
@@ -2565,6 +2567,7 @@ var PopularActions = map[string]*ActionMetadata{
 	"google-github-actions/get-secretmanager-secrets@v2": {
 		Name: "Get Secret Manager secrets",
 		Inputs: ActionMetadataInputs{
+			"encoding":              {"encoding", false},
 			"export_to_environment": {"export_to_environment", false},
 			"min_mask_length":       {"min_mask_length", false},
 			"secrets":               {"secrets", true},
