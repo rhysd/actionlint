@@ -4,7 +4,13 @@ Go API
 
 This document describes how to use [actionlint](..) as Go library.
 
-actionlint can be used from Go programs. See [the documentation][apidoc] to know the list of all APIs. It contains
+actionlint can be used from Go programs by importing the module.
+
+```go
+import "github.com/rhysd/actionlint"
+```
+
+See [the documentation][apidoc] to know the list of all APIs. It contains
 a workflow file parser built on top of `go-yaml/yaml`, expression `${{ }}` lexer/parser/checker, etc.
 
 Followings are unexhaustive list of interesting APIs.
