@@ -29,7 +29,7 @@ List of checks:
 - [Action format in `uses:`](#check-action-format)
 - [Local action inputs validation at `with:`](#check-local-action-inputs)
 - [Popular action inputs validation at `with:`](#check-popular-action-inputs)
-- [Outdated popular actions detection at `with:`](#detect-outdated-popular-actions)
+- [Outdated popular actions detection at `uses:`](#detect-outdated-popular-actions)
 - [Shell name validation at `shell:`](#check-shell-names)
 - [Job ID and step ID uniqueness](#check-job-step-ids)
 - [Hardcoded credentials](#check-hardcoded-credentials)
@@ -1795,7 +1795,7 @@ and were automatically collected by [a script][generate-popular-actions]. If you
 make a request [as an issue][issue-form].
 
 <a name="detect-outdated-popular-actions"></a>
-## Outdated popular actions detection at `with:`
+## Outdated popular actions detection at `uses:`
 
 Example input:
 
