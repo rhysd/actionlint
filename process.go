@@ -93,7 +93,7 @@ func (proc *concurrentProcess) run(eg *errgroup.Group, exec *cmdExecution, callb
 	eg.Go(func() error {
 		defer proc.wg.Done()
 		if err := proc.sema.Acquire(proc.ctx, 1); err != nil {
-			return nil
+			return fmt.Errorf("could not acquire semaphore to run %q: %w", exec.cmd, err)
 		}
 		stdout, err := exec.run()
 		proc.sema.Release(1)
