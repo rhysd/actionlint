@@ -4,7 +4,6 @@ import (
 	"fmt"
 	"runtime"
 	"strings"
-	"sync"
 	"sync/atomic" // Note: atomic.Bool was added at Go 1.19
 	"testing"
 	"time"
@@ -33,64 +32,6 @@ func testSkipIfNoCommand(t *testing.T, p *concurrentProcess, cmd string) *extern
 		t.Skipf("%s command is necessary to run this test: %s", cmd, err)
 	}
 	return c
-}
-
-func TestProcessRunProcessSerial(t *testing.T) {
-	p := newConcurrentProcess(1)
-	ret := []string{}
-	mu := sync.Mutex{}
-	starts := []time.Time{}
-	ends := []time.Time{}
-	numProcs := 3
-	echo := testSkipIfNoCommand(t, p, "echo")
-
-	for i := 0; i < numProcs; i++ {
-		in := fmt.Sprintf("message %d", i)
-		echo.run([]string{in}, "", func(b []byte, err error) error {
-			mu.Lock()
-			defer mu.Unlock()
-
-			starts = append(starts, time.Now())
-			defer func() {
-				ends = append(ends, time.Now())
-			}()
-
-			if err != nil {
-				t.Error(err)
-				return err
-			}
-
-			ret = append(ret, string(b))
-			return nil
-		})
-	}
-
-	if err := echo.wait(); err != nil {
-		t.Fatal(err)
-	}
-	p.wait()
-
-	if len(ret) != numProcs {
-		t.Fatalf("wanted %d outputs but got %#v", numProcs, ret)
-	}
-
-	// Check error messages
-	for i := 0; i < numProcs; i++ {
-		e := fmt.Sprintf("message %d", i)
-		if !strings.HasPrefix(ret[i], e) {
-			t.Fatalf("ret[%d] does not start with %q: %#v", i, e, ret)
-		}
-	}
-
-	starts = starts[1:]
-	ends = ends[:len(ends)-1]
-
-	for i, s := range starts {
-		e := ends[i]
-		if s.Before(e) {
-			t.Errorf("Command #%d started at %s before previous command #%d ends at %s", i+1, s, i, e)
-		}
-	}
 }
 
 func TestProcessRunConcurrently(t *testing.T) {

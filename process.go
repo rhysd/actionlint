@@ -89,10 +89,12 @@ func newConcurrentProcess(par int) *concurrentProcess {
 }
 
 func (proc *concurrentProcess) run(eg *errgroup.Group, exec *cmdExecution, callback func([]byte, error) error) {
-	proc.sema.Acquire(proc.ctx, 1)
 	proc.wg.Add(1)
 	eg.Go(func() error {
 		defer proc.wg.Done()
+		if err := proc.sema.Acquire(proc.ctx, 1); err != nil {
+			return nil
+		}
 		stdout, err := exec.run()
 		proc.sema.Release(1)
 		return callback(stdout, err)
