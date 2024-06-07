@@ -666,7 +666,7 @@
 - Allow workflow calls are available in matrix jobs. See [the official announcement](https://github.blog/changelog/2022-08-22-github-actions-improvements-to-reusable-workflows-2/) for more details. ([#197](https://github.com/rhysd/actionlint/issues/197))
   ```yaml
   jobs:
-    ReuseableMatrixJobForDeployment:
+    ReusableMatrixJobForDeployment:
       strategy:
         matrix:
           target: [dev, stage, prod]
