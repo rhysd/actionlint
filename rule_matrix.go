@@ -70,7 +70,7 @@ func (rule *RuleMatrix) checkDuplicateInRow(row *MatrixRow) {
 }
 
 func isYAMLValueSubset(v, sub RawYAMLValue) bool {
-	// When the filter side is dynamically contructed with some expression, it is not possible to statically check if the filter
+	// When the filter side is dynamically constructed with some expression, it is not possible to statically check if the filter
 	// matches the value. To avoid false positives, assume such filter always matches to the value. (#414)
 	// ```
 	// matrix:

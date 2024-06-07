@@ -176,7 +176,7 @@ line is 21, col is 20, message is "property \"platform\" is not defined in objec
 In `{{ }}` placeholder, input can be piped and action can be used to transform texts. In above example, the message is piped with
 `|` and transformed with `printf "%q"`.
 
-Note that special characters escaped with back slash like `\n` in the format string are automatically unespcaed.
+Note that special characters escaped with backslash like `\n` in the format string are automatically unescaped.
 
 ### Exit status
 
@@ -255,7 +255,7 @@ jobs:
 
 ## Online playground
 
-Thanks to WebAssembly, actionlint playground is available on your browser. It never sends any data to outside of your browser.
+Thanks to WebAssembly, actionlint playground is available on your browser. It never sends any data to outside your browser.
 
 https://rhysd.github.io/actionlint/
 
@@ -428,7 +428,7 @@ or if you'd like a specific version:
 trunk check enable actionlint@1.7.1
 ```
 
-or modify `.trunk/trunk.yaml` in your repo to contain:
+or modify `.trunk/trunk.yaml` in your repository to contain:
 
 ```yaml
 lint:

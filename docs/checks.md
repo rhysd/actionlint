@@ -85,7 +85,7 @@ the workflow run fail.
 
 actionlint can detect unexpected keys while parsing workflow syntax and report them as an error.
 
-Key names are basically case sensitive (though some specific key names are case insensitive). This check is useful to catch
+Key names are basically case-sensitive (though some specific key names are case-insensitive). This check is useful to catch
 case-sensitivity mistakes.
 
 <a name="check-missing-required-duplicate-keys"></a>
@@ -98,7 +98,7 @@ on: push
 jobs:
   test:
     strategy:
-      # ERROR: Matrix name is duplicated. These keys are case insensitive
+      # ERROR: Matrix name is duplicated. These keys are case-insensitive
       matrix:
         version_name: [v1, v2]
         VERSION_NAME: [V1, V2]
@@ -114,7 +114,7 @@ test.yaml:3:3: "runs-on" section is missing in job "test" [syntax-check]
   |
 3 |   test:
   |   ^~~~~
-test.yaml:8:9: key "version_name" is duplicated in "matrix" section. previously defined at line:7,col:9. note that key names are case insensitive [syntax-check]
+test.yaml:8:9: key "version_name" is duplicated in "matrix" section. previously defined at line:7,col:9. note that key names are case-insensitive [syntax-check]
   |
 8 |         VERSION_NAME: [V1, V2]
   |         ^~~~~~~~~~~~~
@@ -124,7 +124,7 @@ test.yaml:8:9: key "version_name" is duplicated in "matrix" section. previously 
 
 Some mappings must include specific keys. For example, job mappings must include `runs-on:` and `steps:`.
 
-And duplicate keys are not allowed. In workflow syntax, comparing some keys is **case insensitive**. For example, the job ID
+And duplicate keys are not allowed. In workflow syntax, comparing some keys is **case-insensitive**. For example, the job ID
 `test` in lower case and the job ID `TEST` in upper case are not able to exist in the same workflow.
 
 actionlint checks these missing required keys and duplicate keys while parsing, and reports an error.
@@ -246,7 +246,7 @@ test.yaml:13:38: unexpected end of input while parsing object property dereferen
 [Playground](https://rhysd.github.io/actionlint#eJx1jTEOwjAMRfeewoqQUgptxZoDMHCLJLJwIYor7LBUvTsNrHT48pfekz9nB3MRah4cxDUAiqL1ArxKlp43XkLJWvrkK/siUZzlZwH01XSAkRjsYVnAEKbEBtbV7ikXOG35L5gqKN+Ec0te6DollNZ23Zg4Pu0Zao0+Eo72uP0weyP3SamEAd+YdahjH8ffRDM=)
 
 actionlint lexes and parses expression in `${{ }}` following [the expression syntax document][expr-doc]. It can detect
-many syntax errors like invalid characters, missing parens, unexpected end of input, ...
+many syntax errors like invalid characters, missing parentheses, unexpected end of input, ...
 
 <a name="check-type-check-expression"></a>
 ## Type checks for expression syntax in `${{ }}`
@@ -266,7 +266,7 @@ checker.
 | Strict object | Object whose properties are strictly typed                                                 | `{prop1: T1, prop2: T2}` |
 | Map object    | Object who has specific type values like `env` context                                     | `{string => T}`          |
 
-Type check by actionlint is more strict than GitHub Actions runtime.
+Type check by actionlint is stricter than GitHub Actions runtime.
 
 - Only `any` and `number` are allowed to be converted to string implicitly
 - Implicit conversion to `number` is not allowed
@@ -327,7 +327,7 @@ echo '${{ toJSON(github.event) }}'
 ```
 
 There are two object types internally. One is an object which is strict for properties, which causes a type error when trying to
-access unknown properties. And another is an object which is not strict for properties, which allows to access unknown properties.
+access unknown properties. And another is an object which is not strict for properties, which allows accessing unknown properties.
 In the case, accessing unknown property is typed as `any`.
 
 When the type check cannot be done statically, the type is deduced to `any` (e.g. return type of `toJSON()`).
@@ -443,7 +443,7 @@ The semantics checker can properly handle that
 In addition, `format()` function has a special check for placeholders in the first parameter which represents the formatting
 string.
 
-Note that context names and function names are case insensitive. For example, `toJSON` and `toJson` are the same function.
+Note that context names and function names are case-insensitive. For example, `toJSON` and `toJson` are the same function.
 
 <a name="check-contextual-step-object"></a>
 ## Contextual typing for `steps.<step_id>` objects
@@ -799,7 +799,7 @@ However, comparisons between some types are actually meaningless:
 
 actionlint checks operands of comparison operators and reports errors in these cases.
 
-There are some additional surprising behaviors, but actioonlint allows them not to cause false positives as much as possible.
+There are some additional surprising behaviors, but actionlint allows them not to cause false positives as much as possible.
 
 - `0 == null`, `'0' == null`, `false == null` are true since they are implicitly converted to `0 == 0`
 - `'0' == false` and `0 == false` are true due to the same reason as above
@@ -878,7 +878,7 @@ steps:
     if: ${{ matrix.os == 'windows-latest' }}
 ```
 
-The 'Show file content' script is only run by `pwsh` due to `matrix.os == 'windows-latest'` guard. However actionlint does not
+The 'Show file content' script is only run by `pwsh` due to `matrix.os == 'windows-latest'` guard. However, actionlint does not
 know that. It checks the script with shellcheck and it'd probably cause a false-positive (due to file separator). This kind of
 false positives can be avoided by showing the shell name explicitly. It is also better in terms of maintenance of the workflow.
 
@@ -1146,7 +1146,7 @@ jobs:
 Output:
 
 ```
-test.yaml:4:18: job ID "BAR" duplicates in "needs" section. note that job ID is case insensitive [job-needs]
+test.yaml:4:18: job ID "BAR" duplicates in "needs" section. note that job ID is case-insensitive [job-needs]
   |
 4 |     needs: [bar, BAR]
   |                  ^~~~
@@ -1925,11 +1925,11 @@ jobs:
 Output:
 
 ```
-test.yaml:10:13: step ID "STEP_ID" duplicates. previously defined at line:7,col:13. step ID must be unique within a job. note that step ID is case insensitive [id]
+test.yaml:10:13: step ID "STEP_ID" duplicates. previously defined at line:7,col:13. step ID must be unique within a job. note that step ID is case-insensitive [id]
    |
 10 |         id: STEP_ID
    |             ^~~~~~~
-test.yaml:12:3: key "TEST" is duplicated in "jobs" section. previously defined at line:3,col:3. note that key names are case insensitive [syntax-check]
+test.yaml:12:3: key "TEST" is duplicated in "jobs" section. previously defined at line:3,col:3. note that key names are case-insensitive [syntax-check]
    |
 12 |   TEST:
    |   ^~~~~
@@ -1937,7 +1937,7 @@ test.yaml:12:3: key "TEST" is duplicated in "jobs" section. previously defined a
 
 [Playground](https://rhysd.github.io/actionlint#eJzLz7NSKCgtzuDKyk8qtuJSUChJLS4B0QoKRaV5xbr5QPnSpNK8klLdnESQHFiquCS1oBiiSkFBF6TSSiE1OSNfQT0jNScnXx0qo6CQmWIFVhyfmYJNdVJlKqra4BDXgHhPF6BYiGtwCE3cAQCKgUNq)
 
-Job IDs and step IDs in each jobs must be unique. IDs are compared in case insensitive. actionlint checks all job IDs
+Job IDs and step IDs in each jobs must be unique. IDs are compared in case-insensitive. actionlint checks all job IDs
 and step IDs, and reports errors when some IDs duplicate.
 
 <a name="check-hardcoded-credentials"></a>
@@ -2019,7 +2019,7 @@ test.yaml:7:7: environment variable name "FOO BAR" is invalid. '&', '=' and spac
 [Playground](https://rhysd.github.io/actionlint#eJzLz7NSKCgtzuDKyk8qtuJSUChJLS4B0QoKRaV5xbr5QPnSpNK8klLdnESQHFgqNa8MokZBwc3f39bJMchKIS0/HyGkgCJUXJJaUAzToAsy2EohNTkjX0E9IzUnJ18dAPhYJMc=)
 
 `=` must not be included in environment variable names. And `&` and spaces should not be included in them. In almost all
-cases they are mistakes and they may cause some issues on using them in shell since they have special meaning in shell syntax.
+cases they are mistakes, and they may cause some issues on using them in shell since they have special meaning in shell syntax.
 
 actionlint checks environment variable names are correct in `env:` configuration.
 
@@ -2604,7 +2604,7 @@ test.yaml:24:33: calling function "success" is not allowed here. "success" is on
 
 [Playground](https://rhysd.github.io/actionlint#eJx9jkEOgjAURPc9xSxM1AUcoBvjwqVuPAGUr6DQkv5flRDvLhVRExO7aWbmTTvOarSBS6XIXrQCduvtRsOXHRdKnVzO0RRiiTfA4jOhYzcqoMnEV7dJAUXlyYjz3ccCEsz6HsdKypCnV+fPh9pdcb//ID5YSz4VatopHixO3LAy5MFKSOosjnlGr8XxjKvjE4OZRjX1WajlCUu+O/97r781yJQO830whphXT5ZHsVgO8PxNVwf9SR5WsV7P)
 
-Some contexts are only available in some places. For example, `env` context is not available at `jobs.<job_id>.env` but it is
+Some contexts are only available in some places. For example, `env` context is not available at `jobs.<job_id>.env`, but it is
 available at `jobs.<job_id>.steps.env`.
 
 Similarly, some status functions are special since they limit where they can be called. For example, `success()`, `failure()`,
@@ -2718,7 +2718,7 @@ test.yaml:26:13: if: condition "${{ github.event_name == 'push' }} && ${{ github
 [Playground](https://rhysd.github.io/actionlint#eJy1j00OgjAQhfec4oUYusIDNGHlQQzoIDW2JXTqBrm7FP8wJogaV5PJ+/K9GWskau+qKNrbwskIYHIcJtB441LbA77whn16yEM2RI6pdhcKSAMpQZvKQqys1oqh3KClrbhCgColFm2LneLKF0s6kuG1yTUhyyACLdB1nztP9w1T7t/E/zg8fi9FPEcLttC5Ms/6KXOS3OKGykc4lnzROOOfvnhEvZb3zBmiAMLK)
 
 Evaluation of `${{ }}` at `if:` condition is tricky. When the expression in `${{ }}` is evaluated to boolean value and there is
-no extra characters around the `${{ }}`, the condition is evaluated to the boolean value. Otherwise the condition is treated as
+no extra characters around the `${{ }}`, the condition is evaluated to the boolean value. Otherwise, the condition is treated as
 string hence it is **always** evaluated to `true`.
 
 It means that multi-line string must not be used at `if:` condition (`if: |`) because the condition is always evaluated to true.
@@ -2832,7 +2832,7 @@ actionlint checks metadata files used in workflows and reports errors when they 
 - Icon color at `color:` in `branding:` section is correct. Supported icon colors are white, yellow, blue, green, orange, red,
   purple, or gray-dark.
 
-actionlint checks action metadata files which are used by workflows. Currently it is not supported to specify `action.yml`
+actionlint checks action metadata files which are used by workflows. Currently, it is not supported to specify `action.yml`
 directly via command line arguments.
 
 Note that `steps` in Composite action's metadata is not checked at this point. It will be supported in the future.

@@ -497,7 +497,7 @@ func (l *Linter) check(
 
 	var cfg *Config
 	if l.defaultConfig != nil {
-		// `-config-file` option has higher prioritiy than repository config file
+		// `-config-file` option has higher priority than repository config file
 		cfg = l.defaultConfig
 	} else if project != nil {
 		cfg = project.Config()

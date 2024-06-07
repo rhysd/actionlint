@@ -19,7 +19,7 @@ jobs:
   test:
     runs-on: ubuntu-latest
     steps:
-      # Unkown input name
+      # Unknown input name
       - run: echo "${{ inputs.select }}"
       - run: echo "${{ github.event.inputs.select }}"
       # Bool value is not available for object key
