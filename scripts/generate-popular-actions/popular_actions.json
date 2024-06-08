@@ -177,8 +177,8 @@
     },
     {
         "slug": "dawidd6/action-download-artifact",
-        "tags": ["v2", "v3"],
-        "next": "v4"
+        "tags": ["v2", "v3", "v5"],
+        "next": "v6"
     },
     {
         "slug": "dawidd6/action-send-mail",
@@ -292,8 +292,8 @@
     },
     {
         "slug": "goreleaser/goreleaser-action",
-        "tags": ["v1", "v2", "v3", "v4", "v5"],
-        "next": "v6"
+        "tags": ["v1", "v2", "v3", "v4", "v5", "v6"],
+        "next": "v7"
     },
     {
         "slug": "gradle/wrapper-validation-action",

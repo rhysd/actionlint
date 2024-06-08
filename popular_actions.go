@@ -1601,6 +1601,37 @@ var PopularActions = map[string]*ActionMetadata{
 			"found_artifact": {"found_artifact"},
 		},
 	},
+	"dawidd6/action-download-artifact@v5": {
+		Name: "Download workflow artifact",
+		Inputs: ActionMetadataInputs{
+			"allow_forks":          {"allow_forks", false},
+			"branch":               {"branch", false},
+			"check_artifacts":      {"check_artifacts", false},
+			"commit":               {"commit", false},
+			"dry_run":              {"dry_run", false},
+			"event":                {"event", false},
+			"github_token":         {"github_token", false},
+			"if_no_artifact_found": {"if_no_artifact_found", false},
+			"name":                 {"name", false},
+			"name_is_regexp":       {"name_is_regexp", false},
+			"path":                 {"path", false},
+			"pr":                   {"pr", false},
+			"repo":                 {"repo", false},
+			"run_id":               {"run_id", false},
+			"run_number":           {"run_number", false},
+			"search_artifacts":     {"search_artifacts", false},
+			"skip_unpack":          {"skip_unpack", false},
+			"workflow":             {"workflow", false},
+			"workflow_conclusion":  {"workflow_conclusion", false},
+			"workflow_search":      {"workflow_search", false},
+		},
+		Outputs: ActionMetadataOutputs{
+			"artifacts":      {"artifacts"},
+			"dry_run":        {"dry_run"},
+			"error_message":  {"error_message"},
+			"found_artifact": {"found_artifact"},
+		},
+	},
 	"dawidd6/action-send-mail@v1": {
 		Name: "Send email",
 		Inputs: ActionMetadataInputs{
@@ -2653,6 +2684,20 @@ var PopularActions = map[string]*ActionMetadata{
 		},
 	},
 	"goreleaser/goreleaser-action@v5": {
+		Name: "GoReleaser Action",
+		Inputs: ActionMetadataInputs{
+			"args":         {"args", false},
+			"distribution": {"distribution", false},
+			"install-only": {"install-only", false},
+			"version":      {"version", false},
+			"workdir":      {"workdir", false},
+		},
+		Outputs: ActionMetadataOutputs{
+			"artifacts": {"artifacts"},
+			"metadata":  {"metadata"},
+		},
+	},
+	"goreleaser/goreleaser-action@v6": {
 		Name: "GoReleaser Action",
 		Inputs: ActionMetadataInputs{
 			"args":         {"args", false},
