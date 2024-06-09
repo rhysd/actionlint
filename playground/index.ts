@@ -19,6 +19,11 @@
     const checkUrlInput = getElementById('check-url-input') as HTMLInputElement;
     const permalinkButton = getElementById('permalink-btn');
     const invalidInputMessage = getElementById('invalid-input');
+    const preferDark = window.matchMedia('(prefers-color-scheme: dark)');
+
+    function colorTheme(isDark: boolean): 'material-darker' | 'default' {
+        return isDark ? 'material-darker' : 'default';
+    }
 
     async function getRemoteSource(url: string): Promise<string> {
         function getUrlToFetch(u: string): string {
@@ -104,7 +109,7 @@ jobs:
 
     const editorConfig: CodeMirror.EditorConfiguration = {
         mode: 'yaml',
-        theme: 'material-darker',
+        theme: colorTheme(preferDark.matches),
         lineNumbers: true,
         lineWrapping: true,
         autofocus: true,
@@ -207,7 +212,7 @@ jobs:
             a.href = url;
             a.rel = 'noopener';
             a.textContent = url;
-            a.className = 'has-text-link-light is-underlined';
+            a.className = 'has-text-link-my-light is-underlined';
             a.addEventListener('click', e => e.stopPropagation());
             ret.push(a);
 
@@ -304,6 +309,10 @@ jobs:
         const compressed = pako.deflate(bin);
         const b64 = btoa(String.fromCharCode(...compressed));
         window.location.hash = b64;
+    });
+
+    preferDark.addListener(event => {
+        editor.setOption('theme', colorTheme(event.matches));
     });
 
     const go = new Go();
