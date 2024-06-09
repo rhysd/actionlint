@@ -62,7 +62,7 @@ main {
 
 .CodeMirror {
   height: auto;
-  border: solid 1px #555;
+  border: solid 1px #ccc;
   border-radius: 4px;
 }
 
@@ -102,6 +102,10 @@ footer {
 }
 
 @media (prefers-color-scheme: dark) {
+  .CodeMirror {
+    border: solid 1px #555;
+  }
+
   #lint-result {
     --bulma-table-background-color: #222;
   }
