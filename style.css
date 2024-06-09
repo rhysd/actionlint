@@ -27,12 +27,6 @@ main {
   flex-direction: row;
 }
 
-@media (width <= 1200px) {
-  #linter {
-    flex-direction: column;
-  }
-}
-
 #version {
   margin-left: 1em;
 }
@@ -61,12 +55,6 @@ main {
   flex-direction: column;
 }
 
-@media (width <= 1200px) {
-  .split-pane {
-    width: 100%;
-  }
-}
-
 #error-msg,
 #success-msg {
   display: none;
@@ -83,7 +71,7 @@ main {
 }
 
 #lint-result {
-  --bulma-table-background-color: #222;
+  --bulma-table-background-color: #efeff8;
 
   border-radius: 8px;
   cursor: pointer;
@@ -101,4 +89,25 @@ main {
 
 footer {
   margin-top: 32px;
+}
+
+@media (width <= 1200px) {
+  #linter {
+    flex-direction: column;
+  }
+
+  .split-pane {
+    width: 100%;
+  }
+}
+
+@media (prefers-color-scheme: dark) {
+  #lint-result {
+    --bulma-table-background-color: #222;
+  }
+
+  /* Similar to `.has-text-link-light`, but use a light color only in dark mode */
+  .has-text-link-my-light {
+    --bulma-color-l: var(--bulma-link-light-l);
+  }
 }
