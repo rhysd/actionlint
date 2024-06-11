@@ -31,7 +31,13 @@ files=(
 )
 
 if [[ "$SKIP_BUILD_WASM" != "" ]]; then
-    files=("${files[@]/main.wasm}")
+    # Remove main.wasm from $files
+    for i in "${!files[@]}"; do
+        if [[ "${files[i]}" == "main.wasm" ]]; then
+            unset 'files[i]'
+            break
+        fi
+    done
 fi
 
 echo "Copying built assets from ./playground to ./playground-dist: " "${files[@]}"
