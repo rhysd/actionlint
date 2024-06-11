@@ -102,6 +102,10 @@ footer {
 }
 
 @media (prefers-color-scheme: dark) {
+  :root {
+    color-scheme: dark;
+  }
+
   .CodeMirror {
     border: solid 1px #555;
   }
