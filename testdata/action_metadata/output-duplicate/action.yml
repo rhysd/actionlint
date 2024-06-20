@@ -9,5 +9,5 @@ outputs:
     description: ...
 
 runs:
-  using: 'node14'
+  using: 'node20'
   main: 'index.js'

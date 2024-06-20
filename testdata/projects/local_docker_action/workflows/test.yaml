@@ -1,0 +1,16 @@
+on: push
+
+jobs:
+  test:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: ./ok_dockerfile
+      - uses: ./ok_registry
+      - uses: ./ok_all_keys
+      - uses: ./missing_image
+      - uses: ./all_invalid_keys
+      - uses: ./missing_files
+      - uses: ./ok_dockerfile_subdir
+      - uses: ./invalid_dockerfile
+      - uses: ./ok_docker_ghcr.io
+      - uses: ./ok_docker_docker.io

@@ -1,0 +1,30 @@
+on: push
+
+jobs:
+  test:
+    runs-on: ubuntu-latest
+    strategy:
+      matrix:
+        o:
+          - {}
+        a:
+          - [true]
+    steps:
+      - run: echo 'string is converted to number implicitly'
+        if: ${{ '42' == 42 }}
+      - run: echo 'bool is converted to number implicitly'
+        if: ${{ true == 1 }}
+      - run: echo 'null is converted to number implicitly'
+        if: ${{ null == 0 }}
+      - run: echo 'string and bool implicit conversions are allowed though it is problematic'
+        if: ${{ '1' == true }}
+      - run: echo 'string and null implicit conversions are allowed though it is problematic'
+        if: ${{ '0' == null }}
+      - run: echo 'comparing null to any value is allowed'
+        if: ${{ null == matrix.o }}
+      - run: echo 'comparing object to object is allowed'
+        if: ${{ matrix.o == matrix.o }}
+      - run: echo 'comparing object to object is allowed'
+        if: ${{ matrix.a == matrix.a }}
+      - run: echo 'string is converted to number implicitly on <'
+        if: ${{ '41' < 42 }}

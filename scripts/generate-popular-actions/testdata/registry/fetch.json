@@ -1,0 +1,13 @@
+[
+    {
+      "slug": "rhysd/action-setup-vim",
+      "tags": ["v1.3.2"],
+      "next": "v2"
+    },
+    {
+      "slug": "rhysd/changelog-from-release",
+      "path": "/action",
+      "tags": ["v2.2.2"],
+      "next": "v3"
+    }
+]

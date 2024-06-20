@@ -24,7 +24,7 @@ func FuzzCheck(data []byte) int {
 		actionlint.NewRuleMatrix(),
 		actionlint.NewRuleCredentials(),
 		actionlint.NewRuleShellName(),
-		actionlint.NewRuleRunnerLabel([]string{}),
+		actionlint.NewRuleRunnerLabel(),
 		actionlint.NewRuleEvents(),
 		actionlint.NewRuleGlob(),
 		actionlint.NewRuleJobNeeds(),
@@ -32,6 +32,10 @@ func FuzzCheck(data []byte) int {
 		actionlint.NewRuleEnvVar(),
 		actionlint.NewRuleID(),
 		actionlint.NewRuleExpression(ac, wc),
+		actionlint.NewRuleWorkflowCall("test.yaml", wc),
+		actionlint.NewRulePermissions(),
+		actionlint.NewRuleDeprecatedCommands(),
+		actionlint.NewRuleIfCond(),
 	}
 
 	v := actionlint.NewVisitor()

@@ -8,6 +8,7 @@ import (
 	"io"
 	"sort"
 	"strings"
+	"sync"
 	"text/template"
 
 	"github.com/fatih/color"
@@ -251,8 +252,9 @@ func (by byRuleNameField) Swap(i, j int) {
 // ErrorFormatter is a formatter to format a slice of ErrorTemplateFields. It is used for
 // formatting error messages with -format option.
 type ErrorFormatter struct {
-	temp  *template.Template
-	rules map[string]*ruleTemplateFields
+	temp    *template.Template
+	rules   map[string]*ruleTemplateFields
+	rulesMu sync.Mutex
 }
 
 // NewErrorFormatter creates new ErrorFormatter instance. Given format must contain at least one
@@ -294,7 +296,7 @@ func NewErrorFormatter(format string) (*ErrorFormatter, error) {
 		return nil, fmt.Errorf("template %q to format error messages could not be parsed: %w", format, err)
 	}
 
-	return &ErrorFormatter{t, r}, nil
+	return &ErrorFormatter{t, r, sync.Mutex{}}, nil
 }
 
 // Print formats the slice of template fields and prints it with given writer.
@@ -315,8 +317,13 @@ func (f *ErrorFormatter) PrintErrors(out io.Writer, errs []*Error, src []byte) e
 }
 
 // RegisterRule registers the rule. Registered rules are used to get description and index of error
-// kinds when you use `kindDescription` or `kindIndex` functions in an error format template.
+// kinds when you use `kindDescription` or `kindIndex` functions in an error format template. This
+// method can be called multiple times safely in parallel.
 func (f *ErrorFormatter) RegisterRule(r Rule) {
+	// Synchronize access to f.rules (#370)
+	f.rulesMu.Lock()
+	defer f.rulesMu.Unlock()
+
 	n := r.Name()
 	if _, ok := f.rules[n]; !ok {
 		f.rules[n] = &ruleTemplateFields{n, r.Description()}

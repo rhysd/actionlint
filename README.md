@@ -37,11 +37,11 @@ jobs:
     runs-on: ${{ matrix.os }}
     steps:
       - run: echo "Checking commit '${{ github.event.head_commit.message }}'"
-      - uses: actions/checkout@v3
-      - uses: actions/setup-node@v3
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
         with:
-          node_version: 16.x
-      - uses: actions/cache@v3
+          node_version: 18.x
+      - uses: actions/cache@v4
         with:
           path: ~/.npm
           key: ${{ matrix.platform }}-node-${{ hashFiles('**/package-lock.json') }}
@@ -56,7 +56,7 @@ test.yaml:3:5: unexpected key "branch" for "push" section. expected one of "bran
   |
 3 |     branch: main
   |     ^~~~~~~
-test.yaml:5:11: character '\' is invalid for branch and tag names. only special characters [, ?, +, *, \ ! can be escaped with \. see `man git-check-ref-format` for more details. note that regular expression is unavailable. note: filter pattern syntax is explained at https://docs.github.com/en/actions/using-workflows/workflow-syntax-for-github-actions#filter-pattern-cheat-sheet [glob]
+test.yaml:5:11: character '\' is invalid for branch and tag names. only special characters [, ?, +, *, \, ! can be escaped with \. see `man git-check-ref-format` for more details. note that regular expression is unavailable. note: filter pattern syntax is explained at https://docs.github.com/en/actions/using-workflows/workflow-syntax-for-github-actions#filter-pattern-cheat-sheet [glob]
   |
 5 |       - 'v\d+'
   |           ^~~~
@@ -68,9 +68,9 @@ test.yaml:13:41: "github.event.head_commit.message" is potentially untrusted. av
    |
 13 |       - run: echo "Checking commit '${{ github.event.head_commit.message }}'"
    |                                         ^~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
-test.yaml:17:11: input "node_version" is not defined in action "actions/setup-node@v3". available inputs are "always-auth", "architecture", "cache", "cache-dependency-path", "check-latest", "node-version", "node-version-file", "registry-url", "scope", "token" [action]
+test.yaml:17:11: input "node_version" is not defined in action "actions/setup-node@v4". available inputs are "always-auth", "architecture", "cache", "cache-dependency-path", "check-latest", "node-version", "node-version-file", "registry-url", "scope", "token" [action]
    |
-17 |           node_version: 16.x
+17 |           node_version: 18.x
    |           ^~~~~~~~~~~~~
 test.yaml:21:20: property "platform" is not defined in object type {os: string} [expression]
    |
@@ -119,12 +119,12 @@ See [the usage document](docs/usage.md) for more details.
 ## Documents
 
 - [Checks](docs/checks.md): Full list of all checks done by actionlint with example inputs, outputs, and playground links.
-- [Installation](docs/install.md): Installation instructions. Prebuilt binaries, Homebrew package, a Docker image, building from
-  source, a download script (for CI) are available.
+- [Installation](docs/install.md): Installation instructions. Prebuilt binaries, a Docker image, building from
+  source, a download script (for CI), supports by several package managers are available.
 - [Usage](docs/usage.md): How to use `actionlint` command locally or on GitHub Actions, the online playground, an official Docker
   image, and integrations with reviewdog, Problem Matchers, super-linter, pre-commit, VS Code.
-- [Configuration](docs/config.md): How to configure actionlint behavior. Currently only labels of self-hosted runners can be
-  configured.
+- [Configuration](docs/config.md): How to configure actionlint behavior. Currently, the labels of self-hosted runners and the
+  configuration variables can be set.
 - [Go API](docs/api.md): How to use actionlint as Go library.
 - [References](docs/reference.md): Links to resources.
 

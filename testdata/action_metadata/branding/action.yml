@@ -1,0 +1,25 @@
+name: 'My action'
+author: 'rhysd <https://rhysd.github.io>'
+description: 'my action'
+branding:
+  icon: edit
+  color: white
+
+inputs:
+  name:
+    description: your name
+    default: anonymous
+  message:
+    description: message to this action
+    required: true
+  addition:
+    description: additional information
+    required: false
+
+outputs:
+  user_id:
+    description: user ID
+
+runs:
+  using: 'node20'
+  main: 'index.js'

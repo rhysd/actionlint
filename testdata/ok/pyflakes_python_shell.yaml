@@ -1,0 +1,23 @@
+on: push
+defaults:
+  run:
+    shell: python
+jobs:
+  step-level:
+    runs-on: ubuntu-latest
+    steps:
+      - run: print('hello')
+        shell: python
+      - run: print('hello')
+        shell: 'python {0}'
+  job-level:
+    runs-on: ubuntu-latest
+    defaults:
+      run:
+        shell: python
+    steps:
+      - run: print('hello')
+  workflow-level:
+    runs-on: ubuntu-latest
+    steps:
+      - run: print('hello')

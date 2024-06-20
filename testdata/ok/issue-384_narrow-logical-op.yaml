@@ -1,0 +1,19 @@
+on: push
+
+jobs:
+  and_op_narrowing:
+    runs-on: ubuntu-latest
+    # `timeout-minutes` only allow number type value
+    timeout-minutes: ${{ '...' && 60 || 20 }}
+    steps:
+      - run: echo hello
+        # `timeout-minutes` only allow number type value
+        timeout-minutes: ${{ '...' && 60 || 20 }}
+  or_op_narrowing:
+    runs-on: ubuntu-latest
+    # `timeout-minutes` only allow number type value
+    timeout-minutes: ${{ ('...' || 60) && 20 }}
+    steps:
+      - run: echo hello
+        # `timeout-minutes` only allow number type value
+        timeout-minutes: ${{ ('...' || 60) && 20 }}

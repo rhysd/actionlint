@@ -69,6 +69,7 @@ func TestExprInsecureBuiltinUntrustedInputs(t *testing.T) {
 }
 
 func testRunTrustedInputsCheckerForNode(t *testing.T, c *UntrustedInputChecker, input string) {
+	t.Helper()
 	n, err := NewExprParser().Parse(NewExprLexer(input + "}}"))
 	if err != nil {
 		t.Fatal(err)

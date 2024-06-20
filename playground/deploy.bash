@@ -30,18 +30,32 @@ files=(
     style.css
 )
 
-echo 'Copying built assets from ./playground to ./playground-dist'
+if [[ "$SKIP_BUILD_WASM" != "" ]]; then
+    # Remove main.wasm from $files
+    for i in "${!files[@]}"; do
+        if [[ "${files[i]}" == "main.wasm" ]]; then
+            unset 'files[i]'
+            break
+        fi
+    done
+fi
+
+echo "Copying built assets from ./playground to ./playground-dist: " "${files[@]}"
 for f in "${files[@]}"; do
     cp -R "./playground/${f}" "./playground-dist/${f}"
 done
 
-echo 'Applying wasm-opt to ./playground-dist/main.wasm'
-wasm-opt -O -o ./playground-dist/opt.wasm ./playground-dist/main.wasm --enable-bulk-memory
-mv ./playground-dist/opt.wasm ./playground-dist/main.wasm
+if [[ "$SKIP_BUILD_WASM" == "" ]]; then
+    echo 'Applying wasm-opt to ./playground-dist/main.wasm'
+    wasm-opt -O -o ./playground-dist/opt.wasm ./playground-dist/main.wasm --enable-bulk-memory
+    mv ./playground-dist/opt.wasm ./playground-dist/main.wasm
+else
+    echo 'Skipped applying wasm-opt because SKIP_BUILD_WASM environment variable is set'
+fi
 
 echo 'Generating and copying manual'
 make ./man/actionlint.1.html
-cp ./man/actionlint.1.html ./playground-dist/usage.html
+cp ./man/actionlint.1.html ./playground-dist/man.html
 
 echo 'Switching to gh-pages branch'
 git checkout gh-pages
@@ -59,8 +73,8 @@ for f in "${files[@]}"; do
 done
 
 echo 'Adding manual'
-cp ./playground-dist/usage.html ./usage.html
-git add ./usage.html
+cp ./playground-dist/man.html ./man.html
+git add ./man.html
 
 echo 'Making commit for new deploy'
 git commit -m "deploy from ${sha}"

@@ -6,23 +6,24 @@ jobs:
     name: Unit tests
     strategy:
       matrix:
-        os: [ubuntu-latest, macos-latest, windows-latest]
-        go: ['1.20', '1.21']
+        os: [ubuntu-latest, macos-latest, windows-latest, macos-12]
+        go: ['1.21', '1.22']
     runs-on: ${{ matrix.os }}
     steps:
       - name: Install dependencies on macOS
         run: |
           set -x
-          brew install shellcheck python3
-          pip3 install pyflakes
+          brew install shellcheck python3 pipx
+          # https://pipx.pypa.io/stable/installation/
+          pipx ensurepath
+          pipx install pyflakes
           shellcheck --version
-          # https://github.com/actions/runner-images/issues/6496
-          python3 -m pyflakes --version
+          pyflakes --version
         if: ${{ matrix.os == 'macos-latest' }}
       - name: Install dependencies on Linux
         run: |
           set -x
-          sudo apt install shellcheck
+          sudo apt-get install -y shellcheck
           pip install pyflakes
           shellcheck --version
           pyflakes --version
@@ -35,7 +36,7 @@ jobs:
           pyflakes --version
         if: ${{ matrix.os == 'windows-latest' }}
       - uses: actions/checkout@v4
-      - uses: actions/setup-go@v4
+      - uses: actions/setup-go@v5
         with:
           go-version: ${{ matrix.go }}
       - run: go test -v -race -coverprofile coverage.txt -covermode=atomic ./...
@@ -51,41 +52,46 @@ jobs:
         run: |
           echo "::add-matcher::.github/actionlint-matcher.json"
           ./actionlint -color
-      - uses: codecov/codecov-action@v3
+      - uses: codecov/codecov-action@v4
         with:
           env_vars: OS
+          token: ${{ secrets.CODECOV_TOKEN }}
         env:
           OS: ${{ matrix.os }}
   wasm:
     name: Wasm
     runs-on: ubuntu-latest
+    defaults:
+      run:
+        working-directory: ./playground
     steps:
       - uses: actions/checkout@v4
-      - uses: actions/setup-go@v4
+      - uses: actions/setup-go@v5
         with:
-          go-version: '1.21'
-      - uses: actions/setup-node@v3
+          go-version: '1.22'
+      - uses: actions/setup-node@v4
         with:
           node-version: "lts/*"
       - name: Cache node_modules
-        uses: actions/cache@v3
+        uses: actions/cache@v4
         with:
           path: ./playground/node_modules
           key: ${{ hashFiles('./playground/package.json') }}
       - name: Build playground
-        run: cd ./playground && make build
+        run: make build
       - name: Lint playground
-        run: cd ./playground && npm run lint
+        run: npm run lint
       - name: Run tests for wasm
-        run: cd ./playground && npm test
+        run: npm test
   lint:
     name: Lint
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v4
-      - uses: actions/setup-go@v4
+      - uses: actions/setup-go@v5
         with:
-          go-version: '1.21'
+          go-version: '1.22'
+      - run: sudo apt-get install -y shellcheck
       - name: Check Go sources are formatted
         run: |
           diffs="$(gofmt -d ./*.go ./cmd/actionlint/*.go ./scripts/*/*.go ./playground/*.go)"
@@ -99,7 +105,7 @@ jobs:
           echo "$(go env GOPATH)/bin" >> "$GITHUB_PATH"
       - run: make lint SKIP_GO_GENERATE=true
       - name: Lint bash scripts
-        run: shellcheck ./scripts/download-actionlint.bash ./playground/post-install.bash ./playground/deploy.bash
+        run: shellcheck ./scripts/*.bash ./playground/*.bash
   docker:
     name: Dockerfile
     runs-on: ubuntu-latest
@@ -107,10 +113,10 @@ jobs:
       - uses: actions/checkout@v4
       - name: Build image
         id: image
-        uses: docker/build-push-action@v3
+        uses: docker/build-push-action@v5
         with:
           build-args: |
-            GOLANG_VER=1.21
+            GOLANG_VER=1.22
           push: false
       - name: Test Docker image
         run: docker container run

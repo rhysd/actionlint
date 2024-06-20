@@ -48,10 +48,10 @@ archives:
 
 brews:
   - name: actionlint
-    tap:
+    repository:
       owner: rhysd
       name: actionlint
-    folder: HomebrewFormula
+    directory: HomebrewFormula
     commit_author:
       name: 'github-actions[bot]'
       email: '41898282+github-actions[bot]@users.noreply.github.com'

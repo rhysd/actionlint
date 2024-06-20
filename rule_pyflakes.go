@@ -3,6 +3,7 @@ package actionlint
 import (
 	"bytes"
 	"fmt"
+	"strings"
 	"sync"
 )
 
@@ -18,7 +19,7 @@ func getShellIsPythonKind(shell *String) shellIsPythonKind {
 	if shell == nil {
 		return shellIsPythonKindUnspecified
 	}
-	if shell.Value == "python" {
+	if shell.Value == "python" || strings.HasPrefix(shell.Value, "python ") {
 		return shellIsPythonKindPython
 	}
 	return shellIsPythonKindNotPython
@@ -34,15 +35,8 @@ type RulePyflakes struct {
 	mu                    sync.Mutex
 }
 
-// NewRulePyflakes creates new RulePyflakes instance. Parameter executable can be command name
-// or relative/absolute file path. When the given executable is not found in system, it returns
-// an error.
-func NewRulePyflakes(executable string, proc *concurrentProcess) (*RulePyflakes, error) {
-	cmd, err := proc.newCommandRunner(executable)
-	if err != nil {
-		return nil, err
-	}
-	r := &RulePyflakes{
+func newRulePyflakes(cmd *externalCommand) *RulePyflakes {
+	return &RulePyflakes{
 		RuleBase: RuleBase{
 			name: "pyflakes",
 			desc: "Checks for Python script when \"shell: python\" is configured using Pyflakes",
@@ -51,7 +45,18 @@ func NewRulePyflakes(executable string, proc *concurrentProcess) (*RulePyflakes,
 		workflowShellIsPython: shellIsPythonKindUnspecified,
 		jobShellIsPython:      shellIsPythonKindUnspecified,
 	}
-	return r, nil
+}
+
+// NewRulePyflakes creates new RulePyflakes instance. Parameter executable can be command name
+// or relative/absolute file path. When the given executable is not found in system, it returns
+// an error.
+func NewRulePyflakes(executable string, proc *concurrentProcess) (*RulePyflakes, error) {
+	// Combine output because pyflakes outputs lint errors to stdout and outputs syntax errors to stderr. (#411)
+	cmd, err := proc.newCommandRunner(executable, true)
+	if err != nil {
+		return nil, err
+	}
+	return newRulePyflakes(cmd), nil
 }
 
 // VisitJobPre is callback when visiting Job node before visiting its children.
@@ -98,8 +103,8 @@ func (rule *RulePyflakes) VisitStep(n *Step) error {
 }
 
 func (rule *RulePyflakes) isPythonShell(r *ExecRun) bool {
-	if r.Shell != nil {
-		return r.Shell.Value == "python"
+	if k := getShellIsPythonKind(r.Shell); k != shellIsPythonKindUnspecified {
+		return k == shellIsPythonKindPython
 	}
 
 	if rule.jobShellIsPython != shellIsPythonKindUnspecified {
@@ -122,8 +127,6 @@ func (rule *RulePyflakes) runPyflakes(src string, pos *Pos) {
 			return nil
 		}
 
-		rule.mu.Lock()
-		defer rule.mu.Unlock()
 		for len(stdout) > 0 {
 			if stdout, err = rule.parseNextError(stdout, pos); err != nil {
 				return err
@@ -136,24 +139,34 @@ func (rule *RulePyflakes) runPyflakes(src string, pos *Pos) {
 func (rule *RulePyflakes) parseNextError(stdout []byte, pos *Pos) ([]byte, error) {
 	b := stdout
 
-	// Eat "<stdin>:"
+	// Search the start of error message.
 	idx := bytes.Index(b, []byte("<stdin>:"))
 	if idx == -1 {
-		return nil, fmt.Errorf("error message from pyflakes does not start with \"<stdin>:\" while checking script at %s. stdout:\n%s", pos, stdout)
+		// Syntax errors from pyflake consist of multiple lines. Skip subsequent lines. (#411)
+		// ```
+		// <stdin>:1:7: unexpected EOF while parsing
+		// print(
+		//       ^
+		// ```
+		return nil, nil
 	}
 	b = b[idx+len("<stdin>:"):]
 
-	var msg []byte
-	if idx := bytes.Index(b, []byte("\r\n")); idx >= 0 {
-		msg = b[:idx]
-		b = b[idx+2:]
-	} else if idx := bytes.IndexByte(b, '\n'); idx >= 0 {
-		msg = b[:idx]
-		b = b[idx+1:]
-	} else {
-		return nil, fmt.Errorf("error message from pyflakes does not end with \\n nor \\r\\n while checking script at %s. output: %q", pos, stdout)
+	idx = bytes.IndexByte(b, '\n')
+	if idx == -1 {
+		return nil, fmt.Errorf(`error message from pyflakes does not end with \n nor \r\n while checking script at %s. output: %q`, pos, stdout)
 	}
+
+	msg := b[:idx]
+	if i := len(msg) - 1; i >= 0 && msg[i] == '\r' {
+		msg = msg[:i]
+	}
+	b = b[idx+1:]
+
+	// This method needs to be thread-safe since concurrentProcess.run calls its callback in a different goroutine.
+	rule.mu.Lock()
 	rule.Errorf(pos, "pyflakes reported issue in this script: %s", msg)
+	rule.mu.Unlock()
 
 	return b, nil
 }

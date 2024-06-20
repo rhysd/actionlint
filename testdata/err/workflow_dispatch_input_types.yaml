@@ -1,5 +1,5 @@
 name: Test for workflow_dispatch input types (part1)
-# Note: Maxium number of inputs is 10. Continues to workflow_dispatch_input_types_2.yaml
+# Note: Maximum number of inputs is 10. Continues to workflow_dispatch_input_types_2.yaml
 # https://docs.github.com/en/actions/using-workflows/events-that-trigger-workflows#providing-inputs
 on:
   workflow_dispatch:

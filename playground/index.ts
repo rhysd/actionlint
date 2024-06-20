@@ -18,6 +18,12 @@
     const checkUrlButton = getElementById('check-url-btn');
     const checkUrlInput = getElementById('check-url-input') as HTMLInputElement;
     const permalinkButton = getElementById('permalink-btn');
+    const invalidInputMessage = getElementById('invalid-input');
+    const preferDark = window.matchMedia('(prefers-color-scheme: dark)');
+
+    function colorTheme(isDark: boolean): 'material-darker' | 'default' {
+        return isDark ? 'material-darker' : 'default';
+    }
 
     async function getRemoteSource(url: string): Promise<string> {
         function getUrlToFetch(u: string): string {
@@ -87,11 +93,11 @@ jobs:
     runs-on: \${{ matrix.os }}
     steps:
       - run: echo "Checking commit '\${{ github.event.head_commit.message }}'"
-      - uses: actions/checkout@v3
-      - uses: actions/setup-node@v3
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
         with:
           node_version: 18.x
-      - uses: actions/cache@v3
+      - uses: actions/cache@v4
         with:
           path: ~/.npm
           key: \${{ matrix.platform }}-node-\${{ hashFiles('**/package-lock.json') }}
@@ -103,7 +109,7 @@ jobs:
 
     const editorConfig: CodeMirror.EditorConfiguration = {
         mode: 'yaml',
-        theme: 'material-darker',
+        theme: colorTheme(preferDark.matches),
         lineNumbers: true,
         lineWrapping: true,
         autofocus: true,
@@ -137,6 +143,7 @@ jobs:
             debounceId = null;
             errorMessage.style.display = 'none';
             successMessage.style.display = 'none';
+            invalidInputMessage.style.display = 'none';
             editor.clearGutter('error-marker');
             // eslint-disable-next-line @typescript-eslint/no-non-null-assertion
             window.runActionlint!(editor.getValue());
@@ -157,6 +164,17 @@ jobs:
     function showError(message: string): void {
         errorMessage.textContent = message;
         errorMessage.style.display = 'block';
+    }
+
+    function showInvalidInputMessage(message: string): void {
+        invalidInputMessage.textContent = message;
+        invalidInputMessage.style.display = 'block';
+        checkUrlInput.classList.add('is-danger');
+    }
+
+    function clearInvalidInputMessage(): void {
+        checkUrlInput.classList.remove('is-danger');
+        invalidInputMessage.style.display = 'none';
     }
 
     function dismissLoading(): void {
@@ -194,7 +212,7 @@ jobs:
             a.href = url;
             a.rel = 'noopener';
             a.textContent = url;
-            a.className = 'has-text-info-light is-underlined';
+            a.className = 'has-text-link-my-light is-underlined';
             a.addEventListener('click', e => e.stopPropagation());
             ret.push(a);
 
@@ -212,7 +230,6 @@ jobs:
 
         for (const error of errors) {
             const row = document.createElement('tr');
-            row.className = 'is-size-5';
             row.addEventListener('click', () => {
                 editor.setCursor({ line: error.line - 1, ch: error.column - 1 });
                 editor.focus();
@@ -220,7 +237,7 @@ jobs:
 
             const pos = document.createElement('td');
             const tag = document.createElement('span');
-            tag.className = 'tag is-primary is-dark';
+            tag.className = 'tag is-dark is-medium';
             tag.textContent = `line:${error.line}, col:${error.column}`;
             pos.appendChild(tag);
             row.appendChild(pos);
@@ -262,8 +279,12 @@ jobs:
             e.preventDefault();
             checkUrlButton.click();
         }
+        if (checkUrlInput.value === '') {
+            clearInvalidInputMessage();
+        }
     });
 
+    // eslint-disable-next-line @typescript-eslint/no-misused-promises
     checkUrlButton.addEventListener('click', async e => {
         e.preventDefault();
         const input = checkUrlInput.value;
@@ -274,9 +295,10 @@ jobs:
             if (!(err instanceof Error)) {
                 throw err;
             }
-            showError(`Incorrect input "${input}": ${err.message}`);
+            showInvalidInputMessage(`Incorrect input "${input}": ${err.message}`);
             return;
         }
+        clearInvalidInputMessage();
         editor.setValue(src);
     });
 
@@ -287,6 +309,10 @@ jobs:
         const compressed = pako.deflate(bin);
         const b64 = btoa(String.fromCharCode(...compressed));
         window.location.hash = b64;
+    });
+
+    preferDark.addListener(event => {
+        editor.setOption('theme', colorTheme(event.matches));
     });
 
     const go = new Go();

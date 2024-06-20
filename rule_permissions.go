@@ -2,6 +2,7 @@ package actionlint
 
 var allPermissionScopes = map[string]struct{}{
 	"actions":             {},
+	"attestations":        {},
 	"checks":              {},
 	"contents":            {},
 	"deployments":         {},

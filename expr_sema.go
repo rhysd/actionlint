@@ -256,12 +256,13 @@ var BuiltinGlobalVariableTypes = map[string]ExprType{
 	"steps": NewEmptyStrictObjectType(), // This value will be updated contextually
 	// https://docs.github.com/en/actions/learn-github-actions/contexts#runner-context
 	"runner": NewStrictObjectType(map[string]ExprType{
-		"name":       StringType{},
-		"os":         StringType{},
-		"arch":       StringType{},
-		"temp":       StringType{},
-		"tool_cache": StringType{},
-		"debug":      StringType{},
+		"name":        StringType{},
+		"os":          StringType{},
+		"arch":        StringType{},
+		"temp":        StringType{},
+		"tool_cache":  StringType{},
+		"debug":       StringType{},
+		"environment": StringType{}, // https://github.com/github/docs/issues/32443
 	}),
 	// https://docs.github.com/en/actions/learn-github-actions/contexts#secrets-context
 	"secrets": NewMapObjectType(StringType{}),
@@ -857,19 +858,117 @@ func (sema *ExprSemanticsChecker) checkNotOp(n *NotOpNode) ExprType {
 	return BoolType{}
 }
 
+func validateCompareOpOperands(op CompareOpNodeKind, l, r ExprType) bool {
+	// Comparison behavior: https://docs.github.com/en/actions/learn-github-actions/expressions#operators
+	switch op {
+	case CompareOpNodeKindEq, CompareOpNodeKindNotEq:
+		switch l := l.(type) {
+		case AnyType, NullType:
+			return true
+		case NumberType, BoolType, StringType:
+			switch r.(type) {
+			case *ObjectType, *ArrayType:
+				// These are coerced to NaN hence the comparison result is always false
+				return false
+			default:
+				return true
+			}
+		case *ObjectType:
+			switch r.(type) {
+			case *ObjectType, NullType, AnyType:
+				return true
+			default:
+				return false
+			}
+		case *ArrayType:
+			switch r := r.(type) {
+			case *ArrayType:
+				return validateCompareOpOperands(op, l.Elem, r.Elem)
+			case NullType, AnyType:
+				return true
+			default:
+				return false
+			}
+		default:
+			panic("unreachable")
+		}
+	case CompareOpNodeKindLess, CompareOpNodeKindLessEq, CompareOpNodeKindGreater, CompareOpNodeKindGreaterEq:
+		// null, bool, array, and object cannot be compared with these operators
+		switch l.(type) {
+		case AnyType, NumberType, StringType:
+			switch r.(type) {
+			case NullType, BoolType, *ObjectType, *ArrayType:
+				return false
+			default:
+				return true
+			}
+		case NullType, BoolType, *ObjectType, *ArrayType:
+			return false
+		default:
+			panic("unreachable")
+		}
+	default:
+		return true
+	}
+}
+
 func (sema *ExprSemanticsChecker) checkCompareOp(n *CompareOpNode) ExprType {
-	sema.check(n.Left)
-	sema.check(n.Right)
-	// Note: Comparing values is very loose. Any value can be compared with any value without an
-	// error.
-	// https://docs.github.com/en/actions/learn-github-actions/expressions#operators
+	l := sema.check(n.Left)
+	r := sema.check(n.Right)
+
+	if !validateCompareOpOperands(n.Kind, l, r) {
+		sema.errorf(n, "%q value cannot be compared to %q value with %q operator", l.String(), r.String(), n.Kind.String())
+	}
+
 	return BoolType{}
 }
 
+// checkWithNarrowing checks type of given expression with type narrowing. Type narrowing narrows
+// down the type of the expression by assuming its value. For example, `l && r` is typed as
+// `typeof(l) | typeof(r)` usually. However when the expression is assumed to be true, its type can
+// be narrowed down to `typeof(r)`.
+// This analysis is useful to make type checking more accurate. For example, `some_var && 60 || 20`
+// can be typed as `number` instead of `typeof(some_var) | number`. (#384)
+func (sema *ExprSemanticsChecker) checkWithNarrowing(n ExprNode, isTruthy bool) ExprType {
+	switch n := n.(type) {
+	case *LogicalOpNode:
+		switch n.Kind {
+		case LogicalOpNodeKindAnd:
+			// When `l && r` is true, narrow its type to `typeof(r)`
+			if isTruthy {
+				sema.check(n.Left)
+				return sema.check(n.Right)
+			}
+		case LogicalOpNodeKindOr:
+			// When `l || r` is false, narrow its type to `typeof(r)`
+			if !isTruthy {
+				sema.check(n.Left)
+				return sema.check(n.Right)
+			}
+		}
+		return sema.checkLogicalOp(n)
+	case *NotOpNode:
+		return sema.checkWithNarrowing(n.Operand, !isTruthy)
+	default:
+		return sema.check(n)
+	}
+}
+
 func (sema *ExprSemanticsChecker) checkLogicalOp(n *LogicalOpNode) ExprType {
-	lty := sema.check(n.Left)
-	rty := sema.check(n.Right)
-	return lty.Merge(rty)
+	switch n.Kind {
+	case LogicalOpNodeKindAnd:
+		// When `l` is false in `l && r`, its type is `typeof(l)`. Otherwise `typeof(r)`.
+		// Narrow the type of LHS expression by assuming its value is falsy.
+		return sema.checkWithNarrowing(n.Left, false).Merge(sema.check(n.Right))
+	case LogicalOpNodeKindOr:
+		// When `l` is true in `l || r`, its type is `typeof(l)`. Otherwise `typeof(r).
+		// Narrow the type of LHS expression by assuming its value is truthy.
+		return sema.checkWithNarrowing(n.Left, true).Merge(sema.check(n.Right))
+	default:
+		sema.check(n.Left)
+		sema.check(n.Right)
+		return AnyType{}
+	}
 }
 
 func (sema *ExprSemanticsChecker) check(expr ExprNode) ExprType {

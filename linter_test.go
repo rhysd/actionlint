@@ -37,18 +37,18 @@ func TestLinterLintOK(t *testing.T) {
 	}
 
 	proj := &Project{root: dir}
-	shellcheck, err := execabs.LookPath("shellcheck")
-	if err != nil {
-		t.Skip("skipped because \"shellcheck\" command does not exist in system")
-	}
-
-	pyflakes, err := execabs.LookPath("pyflakes")
-	if err != nil {
-		t.Skip("skipped because \"pyflakes\" command does not exist in system")
-	}
+	shellcheck, _ := execabs.LookPath("shellcheck")
+	pyflakes, _ := execabs.LookPath("pyflakes")
 
 	for _, f := range fs {
 		t.Run(filepath.Base(f), func(t *testing.T) {
+			if strings.Contains(f, "shellcheck") && shellcheck == "" {
+				t.Skip("skipping", f, "because \"shellcheck\" command does not exist in system")
+			}
+			if strings.Contains(f, "pyflakes") && pyflakes == "" {
+				t.Skip("skipping", f, "because \"pyflakes\" command does not exist in system")
+			}
+
 			opts := LinterOptions{
 				Shellcheck: shellcheck,
 				Pyflakes:   pyflakes,
@@ -195,6 +195,62 @@ func TestLinterLintError(t *testing.T) {
 
 				checkErrors(t, base+".out", errs)
 			})
+		}
+	}
+}
+
+func TestLinterLintAllErrorWorkflowsAtOnce(t *testing.T) {
+	shellcheck, err := execabs.LookPath("shellcheck")
+	if err != nil {
+		t.Skipf("shellcheck is not found: %s", err)
+	}
+
+	pyflakes, err := execabs.LookPath("pyflakes")
+	if err != nil {
+		t.Skipf("pyflakes is not found: %s", err)
+	}
+
+	dir, files, err := testFindAllWorkflowsInDir("examples")
+	if err != nil {
+		panic(err)
+	}
+
+	// Root directory must be testdata/examples/ since some workflow assumes it
+	proj := &Project{root: dir}
+
+	_, fs, err := testFindAllWorkflowsInDir("err")
+	if err != nil {
+		panic(err)
+	}
+	files = append(files, fs...)
+
+	o := LinterOptions{
+		Shellcheck: shellcheck,
+		Pyflakes:   pyflakes,
+	}
+
+	l, err := NewLinter(io.Discard, &o)
+	if err != nil {
+		t.Fatal(err)
+	}
+
+	l.defaultConfig = &Config{}
+
+	errs, err := l.LintFiles(files, proj)
+	if err != nil {
+		t.Fatal(err)
+	}
+
+	// Check each example workflow file caused at least one error
+CheckFiles:
+	for _, f := range files {
+		for _, e := range errs {
+			if e.Filepath == f {
+				continue CheckFiles
+			}
+		}
+		if !strings.Contains(f, "pyflakes") && !strings.Contains(f, "shellcheck") {
+			t.Errorf("Workflow %q caused no error: %v", f, errs)
 		}
 	}
 }

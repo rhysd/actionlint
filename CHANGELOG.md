@@ -1,3 +1,213 @@
+<a name="v1.7.1"></a>
+# [v1.7.1](https://github.com/rhysd/actionlint/releases/tag/v1.7.1) - 28 May 2024
+
+- Support `ubuntu-24.04` runner label, which was [recently introduced as beta](https://github.blog/changelog/2024-05-14-github-hosted-runners-public-beta-of-ubuntu-24-04-is-now-available/). ([#425](https://github.com/rhysd/actionlint/issues/425), thanks [@bitcoin-tools](https://github.com/bitcoin-tools))
+- Remove the support for `macos-10` runner label which was [officially dropped about 2 years ago](https://github.blog/changelog/2022-07-20-github-actions-the-macos-10-15-actions-runner-image-is-being-deprecated-and-will-be-removed-by-8-30-22/).
+- Remove the support for `windows-2016` runner label which was [officially dropped about 2 years ago](https://github.blog/changelog/2021-10-19-github-actions-the-windows-2016-runner-image-will-be-removed-from-github-hosted-runners-on-march-15-2022/).
+- Document URLs used in help output and links in the playground prefer specific version tag rather than `main` branch. For example,
+  - Before: https://github.com/rhysd/actionlint/tree/main/docs
+  - After: https://github.com/rhysd/actionlint/tree/v1.7.1/docs
+- Fix actionlint wrongly reports an error when using `ghcr.io` or `docker.io` at `image` field of action metadata file of Docker action without `docker://` scheme. ([#428](https://github.com/rhysd/actionlint/issues/428))
+  ```yaml
+  runs:
+    using: 'docker'
+    # This should be OK
+    image: 'ghcr.io/user/repo:latest'
+  ```
+- Fix checking `preactjs/compressed-size-action@v2` usage caused a false positive. ([#422](https://github.com/rhysd/actionlint/issues/422))
+- Fix an error message when invalid escaping is found in globs.
+- The design of the [playground page](https://rhysd.github.io/actionlint/) is overhauled following the upgrade of bulma package to v1.
+  - Current actionlint version is shown in the heading.
+  - The color theme is changed to the official dark theme.
+  - The list of useful links is added to the bottom of the page as 'Resources' section.
+
+[Changes][v1.7.1]
+
+
+<a name="v1.7.0"></a>
+# [v1.7.0](https://github.com/rhysd/actionlint/releases/tag/v1.7.0) - 08 May 2024
+
+- From this version, actionlint starts to check action metadata file `action.yml` (or `action.yaml`). At this point, only very basic checks are implemented and contents of `steps:` are not checked yet.
+  - It checks properties under `runs:` section (e.g. `main:` can be specified when it is a JavaScript action), `branding:` properties, and so on.
+    ```yaml
+    name: 'My action'
+    author: '...'
+    # ERROR: 'description' section is missing
+
+    branding:
+      # ERROR: Invalid icon name
+      icon: dog
+
+    runs:
+      # ERROR: Node.js runtime version is too old
+      using: 'node12'
+      # ERROR: The source file being run by this action does not exist
+      main: 'this-file-does-not-exist.js'
+      # ERROR: 'env' configuration is only allowed for Docker actions
+      env:
+        SOME_VAR: SOME_VALUE
+    ```
+  - actionlint still focuses on checking workflow files. So there is no way to directly specify `action.yml` as an argument of `actionlint` command. actionlint checks all local actions which are used by given workflows. If you want to use actionlint for your action development, prepare a test/example workflow which uses your action, and check it with actionlint instead.
+  - Checks for `steps:` contents are planned to be implemented. Since several differences are expected between `steps:` in workflow file and `steps:` in action metadata file (e.g. available contexts), the implementation is delayed to later version. And the current implementation of action metadata parser is ad hoc. I'm planning a large refactorying and breaking changes Go API around it are expected.
+- Add `runner.environment` property. ([#412](https://github.com/rhysd/actionlint/issues/412))
+  ```yaml
+  - run: echo 'Run by GitHub-hosted runner'
+    if: runner.environment == 'github-hosted'
+  ```
+- Using outdated popular actions is now detected at error. See [the document](https://github.com/rhysd/actionlint/blob/main/docs/checks.md#detect-outdated-popular-actions) for more details.
+  - Here 'outdated' means actions which use runtimes no longer supported by GitHub-hosted runners such as `node12`.
+    ```yaml
+    # ERROR: actions/checkout@v2 is using the outdated runner 'node12'
+    - uses: actions/checkout@v2
+    ```
+- Support `attestations` permission which was [recently added to GitHub Actions as beta](https://docs.github.com/en/actions/security-guides/using-artifact-attestations-to-establish-provenance-for-builds). ([#418](https://github.com/rhysd/actionlint/issues/418), thanks [@bdehamer](https://github.com/bdehamer))
+  ```yaml
+  permissions:
+    id-token: write
+    contents: read
+    attestations: write
+  ```
+- Check comparison expressions more strictly. Arbitrary types of operands can be compared as [the official document](https://docs.github.com/en/actions/learn-github-actions/expressions#operators) explains. However, comparisons between some types are actually meaningless because the values are converted to numbers implicitly. actionlint catches such meaningless comparisons as errors. Please see [the check document](https://github.com/rhysd/actionlint/blob/main/docs/checks.md#check-comparison-types) for more details.
+  ```yaml
+  on:
+    workflow_call:
+      inputs:
+        timeout:
+          type: boolean
+
+  jobs:
+    test:
+      runs-on: ubuntu-latest
+      steps:
+        - run: echo 'called!'
+          # ERROR: Comparing string to object is always evaluated to false
+          if: ${{ github.event == 'workflow_call' }}
+        - run: echo 'timeout is too long'
+          # ERROR: Comparing boolean value with `>` doesn't make sense
+          if: ${{ inputs.timeout > 60 }}
+  ```
+- Follow the update that `macos-latest` is now an alias to `macos-14` runner.
+- Support a custom python shell by `pyflakes` rule.
+- Add workaround actionlint reports that `dorny/paths-filter`'s `predicate-quantifier` input is not defined. ([#416](https://github.com/rhysd/actionlint/issues/416))
+- Fix the type of a conditional expression by comparison operators is wider than expected by implementing type narrowing. ([#384](https://github.com/rhysd/actionlint/issues/384))
+  - For example, the type of following expression should be `number` but it was actually `string | number` and actionlint complained that `timeout-minutes` must take a number value.
+    ```yaml
+    timeout-minutes: ${{ env.FOO && 10 || 60 }}
+    ```
+- Fix `${{ }}` placeholder is not available at `jobs.<job_id>.services`. ([#402](https://github.com/rhysd/actionlint/issues/402))
+  ```yaml
+  jobs:
+    test:
+      services: ${{ fromJSON('...') }}
+      runs-on: ubuntu-latest
+      steps:
+        - run: ...
+  ```
+- Do not check outputs of `google-github-actions/get-secretmanager-secrets` because this action sets outputs dynamically. ([#404](https://github.com/rhysd/actionlint/issues/404))
+- Fix `defaults.run` is ignored on detecting the shell used in `run:`. ([#409](https://github.com/rhysd/actionlint/issues/409))
+  ```yaml
+  defaults:
+    run:
+      shell: pwsh
+  jobs:
+    test:
+      runs-on: ubuntu-latest
+      steps:
+        # This was wrongly detected as bash script
+        - run: $Env:FOO = "FOO"
+  ```
+- Fix parsing a syntax error reported from pyflakes when checking a Python script in `run:`. ([#411](https://github.com/rhysd/actionlint/issues/411))
+  ```yaml
+  - run: print(
+    shell: python
+  ```
+- Skip checking `exclude:` items in `matrix:` when they are constructed from `${{ }}` dynamically. ([#414](https://github.com/rhysd/actionlint/issues/414))
+  ```yaml
+  matrix:
+    foo: ['a', 'b']
+    exclude:
+      # actionlint complained this value didn't exist in matrix combinations
+      - foo: ${{ env.EXCLUDE_FOO }}
+  ```
+- Fix checking `exclude:` items when `${{ }}` is used in nested arrays at matrix items.
+  ```yaml
+  matrix:
+    foo:
+      - ["${{ fromJSON('...') }}"]
+    exclude:
+      # actionlint complained this value didn't match to any matrix combinations
+      - foo: ['foo']
+  ```
+- Update popular actions data set. New major versions are added and the following actions are newly added.
+  - `peaceiris/actions-hugo`
+  - `actions/attest-build-provenance`
+  - `actions/add-to-project`
+  - `octokit/graphql-action`
+- Update Go dependencies to the latest.
+- Reduce the size of `actionlint` executable by removing redundant data from popular actions data set.
+  - x86_64 executable binary size was reduced from 6.9MB to 6.7MB (2.9% smaller).
+  - Wasm binary size was reduced from 9.4MB to 8.9MB (5.3% smaller).
+- Describe how to [integrate actionlint to Pulsar Edit](https://web.pulsar-edit.dev/packages/linter-github-actions) in [the document](https://github.com/rhysd/actionlint/blob/main/docs/usage.md#pulsar-edit). ([#408](https://github.com/rhysd/actionlint/issues/408), thanks [@mschuchard](https://github.com/mschuchard))
+- Update outdated action versions in the usage document. ([#413](https://github.com/rhysd/actionlint/issues/413), thanks [@naglis](https://github.com/naglis))
+
+[Changes][v1.7.0]
+
+
+<a name="v1.6.27"></a>
+# [v1.6.27](https://github.com/rhysd/actionlint/releases/tag/v1.6.27) - 24 Feb 2024
+
+- Add macOS 14 runner labels for [Apple Silicon support](https://github.blog/changelog/2024-01-30-github-actions-macos-14-sonoma-is-now-available/). The following labels are added. (thanks [@harryzcy](https://github.com/harryzcy), [#392](https://github.com/rhysd/actionlint/issues/392))
+  - `macos-14`
+  - `macos-14-xlarge`
+  - `macos-14-large`
+- Remove `ubuntu-18.04` runner label from runners list since [it is no longer supported](https://github.blog/changelog/2022-08-09-github-actions-the-ubuntu-18-04-actions-runner-image-is-being-deprecated-and-will-be-removed-by-12-1-22/). ([#363](https://github.com/rhysd/actionlint/issues/363))
+- Allow glob patterns in `self-hosted-runner.labels` configuration. For example, the following configuration defines any runner labels prefixed with `private-linux-`. (thanks [@kishaningithub](https://github.com/kishaningithub), [#378](https://github.com/rhysd/actionlint/issues/378))
+  ```yaml
+  self-hosted-runner:
+      labels:
+        - private-linux-*
+  ```
+- Fix a race condition bug when `-format` option is used for linting multiple workflow files. Thanks [@ReinAchten-TomTom](https://github.com/ReinAchten-TomTom) for your help on the investigation. ([#370](https://github.com/rhysd/actionlint/issues/370))
+- Fix a race condition due to conflicts between some goroutine which starts to run shellcheck process and other goroutine which starts to wait until all processes finish.
+- The popular actions data set was updated to the latest and the following actions were newly added. (thanks [@jmarshall](https://github.com/jmarshall), [#380](https://github.com/rhysd/actionlint/issues/380))
+  - `google-github-actions/auth`
+  - `google-github-actions/get-secretmanager-secrets`
+  - `google-github-actions/setup-gcloud`
+  - `google-github-actions/upload-cloud-storage`
+  - `pulumi/actions`
+  - `pypa/gh-action-pypi-publish`
+- Add support for larger runner labels. The following labels are added. (thanks [@therealdwright](https://github.com/therealdwright), [#371](https://github.com/rhysd/actionlint/issues/371))
+  - `windows-latest-8-cores`
+  - `ubuntu-latest-4-cores`
+  - `ubuntu-latest-8-cores`
+  - `ubuntu-latest-16-cores`
+- The following WebHook types are supported for `pull_request` event.
+  - `enqueued`
+  - `dequeued`
+  - `milestoned`
+  - `demilestoned`
+- Explain how to control shellckeck behavior in the [shellcheck rule document](https://github.com/rhysd/actionlint/blob/main/docs/checks.md#check-shellcheck-integ). Use `SHELLCHECK_OPTS` environment variable to pass arguments to shellcheck. See [the shellcheck's official document](https://github.com/koalaman/shellcheck/wiki/Integration#environment-variables) for more details.
+  ```
+  # Enable some optional rules
+  SHELLCHECK_OPTS='--enable=avoid-nullary-conditions' actionlint
+  # Disable some rules
+  SHELLCHECK_OPTS='--exclude=SC2129' actionlint
+  ```
+- Explicitly specify `docker.io` host name in pre-commit hook. (thanks [@gotmax23](https://github.com/gotmax23), [#382](https://github.com/rhysd/actionlint/issues/382))
+- Explain how to report issues and send patches in [CONTRIBUTING.md](https://github.com/rhysd/actionlint/blob/main/CONTRIBUTING.md).
+- Fix the link to super-linter project. (thanks [@zkoppert](https://github.com/zkoppert), [#376](https://github.com/rhysd/actionlint/issues/376))
+- Add the instruction to install actionlint via the Arch Linux's official repository. (thanks [@sorairolake](https://github.com/sorairolake), [#381](https://github.com/rhysd/actionlint/issues/381))
+- Prefer fixed revisions in the pre-commit usage. (thanks [@corneliusroemer](https://github.com/corneliusroemer), [#354](https://github.com/rhysd/actionlint/issues/354))
+- Add instructions to use actionlint with Emacs. (thanks [@tirimia](https://github.com/tirimia), [#341](https://github.com/rhysd/actionlint/issues/341))
+- Add instructions to use actionlint with Vim and Neovim text editors.
+- Add [`actionlint.RuleBase.Config`](https://pkg.go.dev/github.com/rhysd/actionlint#RuleBase.Config) method to get the actionlint configuration passed to rules. (thanks [@hugo-syn](https://github.com/hugo-syn), [#387](https://github.com/rhysd/actionlint/issues/387))
+- Add [`actionlint.ContainsExpression`](https://pkg.go.dev/github.com/rhysd/actionlint#ContainsExpression) function to check if the given string contains `${{ }}` placeholders or not. (thanks [@hugo-syn](https://github.com/hugo-syn), [#388](https://github.com/rhysd/actionlint/issues/388))
+- Support Go 1.22 and set the minimum supported Go version to 1.18 for `x/sys` package.
+- Update Go dependencies to the latest.
+
+[Changes][v1.6.27]
+
+
 <a name="v1.6.26"></a>
 # [v1.6.26](https://github.com/rhysd/actionlint/releases/tag/v1.6.26) - 18 Sep 2023
 
@@ -456,7 +666,7 @@
 - Allow workflow calls are available in matrix jobs. See [the official announcement](https://github.blog/changelog/2022-08-22-github-actions-improvements-to-reusable-workflows-2/) for more details. ([#197](https://github.com/rhysd/actionlint/issues/197))
   ```yaml
   jobs:
-    ReuseableMatrixJobForDeployment:
+    ReusableMatrixJobForDeployment:
       strategy:
         matrix:
           target: [dev, stage, prod]
@@ -1498,6 +1708,9 @@ See documentation for more details:
 [Changes][v1.0.0]
 
 
+[v1.7.1]: https://github.com/rhysd/actionlint/compare/v1.7.0...v1.7.1
+[v1.7.0]: https://github.com/rhysd/actionlint/compare/v1.6.27...v1.7.0
+[v1.6.27]: https://github.com/rhysd/actionlint/compare/v1.6.26...v1.6.27
 [v1.6.26]: https://github.com/rhysd/actionlint/compare/v1.6.25...v1.6.26
 [v1.6.25]: https://github.com/rhysd/actionlint/compare/v1.6.24...v1.6.25
 [v1.6.24]: https://github.com/rhysd/actionlint/compare/v1.6.23...v1.6.24
@@ -1542,4 +1755,4 @@ See documentation for more details:
 [v1.1.0]: https://github.com/rhysd/actionlint/compare/v1.0.0...v1.1.0
 [v1.0.0]: https://github.com/rhysd/actionlint/tree/v1.0.0
 
-<!-- Generated by https://github.com/rhysd/changelog-from-release v3.7.0 -->
+<!-- Generated by https://github.com/rhysd/changelog-from-release v3.7.2 -->

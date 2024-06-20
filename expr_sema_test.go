@@ -664,6 +664,61 @@ func TestExprSemanticsCheckOK(t *testing.T) {
 			expected:   StringType{},
 			configVars: []string{"some_variable"},
 		},
+		{
+			what:     "narrow type of && operator by assumed value (#384)",
+			input:    "('foo' && 10) || 20",
+			expected: NumberType{},
+		},
+		{
+			what:     "narrow type of || operator by assumed value (#384)",
+			input:    "('foo' || 10) && 20",
+			expected: NumberType{},
+		},
+		{
+			what:     "narrow type of nested && operator",
+			input:    "((('foo' && true) || false) && 10) || 20",
+			expected: NumberType{},
+		},
+		{
+			what:     "narrow type of nested || operator",
+			input:    "((('foo' || true) && false) || 10) && 20",
+			expected: NumberType{},
+		},
+		{
+			what:     "don't narrow type on nested && operator",
+			input:    "('foo' && 10) && 20",
+			expected: StringType{},
+		},
+		{
+			what:     "don't narrow type on nested || operator",
+			input:    "('foo' || 10) || 20",
+			expected: StringType{},
+		},
+		{
+			what:     "narrowed || operator at LHS and && operator at RHS",
+			input:    "('foo' || 10) && (('foo' && 10) || 20)",
+			expected: NumberType{},
+		},
+		{
+			what:     "narrowed && operator at LHS and || operator at RHS",
+			input:    "('foo' && 10) || (('foo' || 10) && 20)",
+			expected: NumberType{},
+		},
+		{
+			what:     "not operator negates && operator type narrowing",
+			input:    "!('foo' && 10) && 20",
+			expected: NumberType{},
+		},
+		{
+			what:     "not operator negates || operator type narrowing",
+			input:    "!('foo' || 10) || 20",
+			expected: NumberType{},
+		},
+		{
+			what:     "double not operators does nothing on type narrowing",
+			input:    "!!('foo' || 10) && 20",
+			expected: NumberType{},
+		},
 	}
 
 	allSPFuncs := []string{}
@@ -718,34 +773,6 @@ func TestExprSemanticsCheckOK(t *testing.T) {
 				t.Fatalf("wanted: %s\nbut got:%s\ndiff:\n%s", tc.expected.String(), ty.String(), cmp.Diff(tc.expected, ty))
 			}
 		})
-	}
-}
-
-func TestExprBuiltinFunctionSignatures(t *testing.T) {
-	for name, sigs := range BuiltinFuncSignatures {
-		if len(sigs) == 0 {
-			t.Errorf("overload candidates of %q should not be empty", name)
-		}
-		{
-			ok := true
-			for _, r := range name {
-				if !unicode.IsLower(r) {
-					ok = false
-					break
-				}
-			}
-			if !ok {
-				t.Errorf("name of function must be in lower case to check in case insensitive: %q", name)
-			}
-		}
-		for i, sig := range sigs {
-			if name != strings.ToLower(sig.Name) {
-				t.Errorf("name of %dth overload is different from its key: name=%q vs key=%q", i+1, sig.Name, name)
-			}
-			if sig.VariableLengthParams && len(sig.Params) == 0 {
-				t.Errorf("number of arguments of %dth overload of %q must not be empty because VariableLengthParams is set to true", i+1, name)
-			}
-		}
 	}
 }
 
@@ -1233,6 +1260,7 @@ func TestExprSemanticsCheckError(t *testing.T) {
 			} else {
 				c.SetSpecialFunctionAvailability(allSP)
 			}
+
 			_, errs := c.Check(e)
 			if len(errs) != len(tc.expected) {
 				t.Fatalf("semantics check should report %d errors but got %d errors: %v", len(tc.expected), len(errs), errs)
@@ -1247,6 +1275,242 @@ func TestExprSemanticsCheckError(t *testing.T) {
 				t.Fatalf("error %q did not match any expected error messages %#v", err.Error(), tc.expected)
 			}
 		})
+	}
+}
+
+func TestExprCompareOperandsCheck(t *testing.T) {
+	// Matrix of operator -> lhs type -> rhs type -> result
+	// Result `true` means the comparison is allowed. `false` means the comparison causes an error.
+	matrix := map[string]map[string]map[string]bool{
+		"==": {
+			"number": {
+				"any":    true,
+				"number": true,
+				"string": true,
+				"bool":   true,
+				"null":   true,
+				"object": false,
+				"array":  false,
+			},
+			"string": {
+				"any":    true,
+				"number": true,
+				"string": true,
+				"bool":   true,
+				"null":   true,
+				"object": false,
+				"array":  false,
+			},
+			"bool": {
+				"any":    true,
+				"number": true,
+				"string": true,
+				"bool":   true,
+				"null":   true,
+				"object": false,
+				"array":  false,
+			},
+			"null": {
+				"any":    true,
+				"number": true,
+				"string": true,
+				"bool":   true,
+				"null":   true,
+				"object": true,
+				"array":  true,
+			},
+			"object": {
+				"any":    true,
+				"number": false,
+				"string": false,
+				"bool":   false,
+				"null":   true,
+				"object": true,
+				"array":  false,
+			},
+			"array": {
+				"any":      true,
+				"number":   false,
+				"string":   false,
+				"bool":     false,
+				"null":     true,
+				"object":   false,
+				"array":    true,
+				"array_2d": false,
+			},
+			"array_2d": {
+				"any":      true,
+				"number":   false,
+				"string":   false,
+				"bool":     false,
+				"null":     true,
+				"object":   false,
+				"array":    false,
+				"array_2d": true,
+			},
+			"any": {
+				"any":    true,
+				"number": true,
+				"string": true,
+				"bool":   true,
+				"null":   true,
+				"object": true,
+				"array":  true,
+			},
+		},
+		"<": {
+			"number": {
+				"any":    true,
+				"number": true,
+				"string": true,
+				"bool":   false,
+				"null":   false,
+				"object": false,
+				"array":  false,
+			},
+			"string": {
+				"any":    true,
+				"number": true,
+				"string": true,
+				"bool":   false,
+				"null":   false,
+				"object": false,
+				"array":  false,
+			},
+			"bool": {
+				"any":    false,
+				"number": false,
+				"string": false,
+				"bool":   false,
+				"null":   false,
+				"object": false,
+				"array":  false,
+			},
+			"null": {
+				"any":    false,
+				"number": false,
+				"string": false,
+				"bool":   false,
+				"null":   false,
+				"object": false,
+				"array":  false,
+			},
+			"any": {
+				"any":    true,
+				"number": true,
+				"string": true,
+				"bool":   false,
+				"null":   false,
+				"object": false,
+				"array":  false,
+			},
+			"object": {
+				"any":    false,
+				"number": false,
+				"string": false,
+				"bool":   false,
+				"null":   false,
+				"object": false,
+				"array":  false,
+			},
+			"array": {
+				"any":      false,
+				"number":   false,
+				"string":   false,
+				"bool":     false,
+				"null":     false,
+				"object":   false,
+				"array":    false,
+				"array_2d": false,
+			},
+		},
+	}
+
+	for op, expr := range matrix {
+		for lhs, rest := range expr {
+			for rhs, ok := range rest {
+				input := lhs + " " + op + " " + rhs
+				t.Run(input, func(t *testing.T) {
+					p := NewExprParser()
+					e, err := p.Parse(NewExprLexer(input + "}}"))
+					if err != nil {
+						t.Fatal("Parse error:", input)
+					}
+
+					c := NewExprSemanticsChecker(false, nil)
+					c.vars = map[string]ExprType{
+						"number": NumberType{},
+						"string": StringType{},
+						"bool":   BoolType{},
+						"object": NewEmptyObjectType(),
+						"array":  &ArrayType{Elem: NumberType{}},
+						"array_2d": &ArrayType{
+							Elem: &ArrayType{Elem: NumberType{}},
+						},
+						"any": AnyType{},
+					}
+
+					ty, errs := c.Check(e)
+					if ok {
+						if len(errs) > 0 {
+							t.Fatal("semantics check failed:", errs)
+						}
+						if _, ok := ty.(BoolType); !ok {
+							t.Fatalf("wanted bool type but have %q", ty)
+						}
+					} else {
+						if len(errs) != 1 {
+							t.Fatal("more than one error occurred", errs)
+						}
+						msg := errs[0].Error()
+
+						toType := func(n string) string {
+							switch n {
+							case "array":
+								return "array<number>"
+							case "array_2d":
+								return "array<array<number>>"
+							default:
+								return n
+							}
+						}
+						want := fmt.Sprintf("%q value cannot be compared to %q value with %q operator", toType(lhs), toType(rhs), op)
+
+						if !strings.Contains(msg, want) {
+							t.Fatalf("error message %q doesn't contain expected message %q", msg, want)
+						}
+					}
+				})
+			}
+		}
+	}
+}
+
+func TestExprBuiltinFunctionSignatures(t *testing.T) {
+	for name, sigs := range BuiltinFuncSignatures {
+		if len(sigs) == 0 {
+			t.Errorf("overload candidates of %q should not be empty", name)
+		}
+		{
+			ok := true
+			for _, r := range name {
+				if !unicode.IsLower(r) {
+					ok = false
+					break
+				}
+			}
+			if !ok {
+				t.Errorf("name of function must be in lower case to check in case insensitive: %q", name)
+			}
+		}
+		for i, sig := range sigs {
+			if name != strings.ToLower(sig.Name) {
+				t.Errorf("name of %dth overload is different from its key: name=%q vs key=%q", i+1, sig.Name, name)
+			}
+			if sig.VariableLengthParams && len(sig.Params) == 0 {
+				t.Errorf("number of arguments of %dth overload of %q must not be empty because VariableLengthParams is set to true", i+1, name)
+			}
+		}
 	}
 }
 
@@ -1361,6 +1625,7 @@ func TestExprSemanticsCheckerUpdateInputsMultipleTimes(t *testing.T) {
 }
 
 func testObjectPropertiesAreInLowerCase(t *testing.T, ty ExprType) {
+	t.Helper()
 	switch ty := ty.(type) {
 	case *ObjectType:
 		for n, ty := range ty.Props {

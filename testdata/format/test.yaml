@@ -3,6 +3,9 @@ on:
     branch: main
 jobs:
   test:
-    runs-on: linux-latest
+    runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v3
+      - run: echo ${{ matrix.msg }}
+        with:
+          arg: foo

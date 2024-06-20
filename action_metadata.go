@@ -11,7 +11,7 @@ import (
 	"gopkg.in/yaml.v3"
 )
 
-//go:generate go run ./scripts/generate-popular-actions -s remote -f go ./popular_actions.go
+//go:generate go run ./scripts/generate-popular-actions ./popular_actions.go
 
 // ActionMetadataInput is input metadata in "inputs" section in action.yml metadata file.
 // https://docs.github.com/en/actions/creating-actions/metadata-syntax-for-github-actions#inputs
@@ -90,22 +90,78 @@ func (inputs *ActionMetadataOutputs) UnmarshalYAML(n *yaml.Node) error {
 	return nil
 }
 
+// ActionMetadataRuns is "runs" section of action.yaml. It defines how the action is run.
+// https://docs.github.com/en/actions/creating-actions/metadata-syntax-for-github-actions#runs
+type ActionMetadataRuns struct {
+	// Using is `using` configuration of action.yaml. It defines what runner is used for the action.
+	Using string `yaml:"using"`
+	// Main is `main` configuration of action.yaml for JavaScript action.
+	Main string `yaml:"main"`
+	// Pre is `pre` configuration of action.yaml for JavaScript action.
+	Pre string `yaml:"pre"`
+	// PreIf is `pre-if` configuration of action.yaml for JavaScript action.
+	PreIf string `yaml:"pre-if"`
+	// Post is `post` configuration of action.yaml for JavaScript action.
+	Post string `yaml:"post"`
+	// PostIf is `post-if` configuration of action.yaml for JavaScript action.
+	PostIf string `yaml:"post-if"`
+	// Steps is `steps` configuration of action.yaml for Composite action.
+	Steps []any `yaml:"steps"`
+	// Image is `image` of action.yaml for Docker action.
+	Image string `yaml:"image"`
+	// PreEntrypoint is `pre-entrypoint` of action.yaml for Docker action.
+	PreEntrypoint string `yaml:"pre-entrypoint"`
+	// Entrypoint is `entrypoint` of action.yaml for Docker action.
+	Entrypoint string `yaml:"entrypoint"`
+	// PostEntrypoint is `post-entrypoint` of action.yaml for Docker action.
+	PostEntrypoint string `yaml:"post-entrypoint"`
+	// Args is `args` of action.yaml for Docker action.
+	Args []any `yaml:"args"`
+	// Env is `env` of action.yaml for Docker action.
+	Env map[string]any `yaml:"env"`
+}
+
+// ActionMetadataBranding is "branding" section of action.yaml.
+// https://docs.github.com/en/actions/creating-actions/metadata-syntax-for-github-actions#branding
+type ActionMetadataBranding struct {
+	Icon  string `yaml:"icon"`
+	Color string `yaml:"color"`
+}
+
 // ActionMetadata represents structure of action.yaml.
 // https://docs.github.com/en/actions/creating-actions/metadata-syntax-for-github-actions
 type ActionMetadata struct {
-	// Name is "name" field of action.yaml
+	dir  string
+	file string
+	// Name is "name" field of action.yaml.
 	Name string `yaml:"name" json:"name"`
-	// Inputs is "inputs" field of action.yaml
+	// Description is "description" field of action.yaml.
+	Description string `yaml:"description" json:"-"`
+	// Inputs is "inputs" field of action.yaml.
 	Inputs ActionMetadataInputs `yaml:"inputs" json:"inputs"`
 	// Outputs is "outputs" field of action.yaml. Key is name of output. Description is omitted
 	// since actionlint does not use it.
 	Outputs ActionMetadataOutputs `yaml:"outputs" json:"outputs"`
 	// SkipInputs is flag to specify behavior of inputs check. When it is true, inputs for this
 	// action will not be checked.
-	SkipInputs bool `json:"skip_inputs"`
+	SkipInputs bool `yaml:"-" json:"skip_inputs"`
 	// SkipOutputs is flag to specify a bit loose typing to outputs object. If it is set to
 	// true, the outputs object accepts any properties along with strictly typed props.
-	SkipOutputs bool `json:"skip_outputs"`
+	SkipOutputs bool `yaml:"-" json:"skip_outputs"`
+	// Runs is "runs" field of action.yaml.
+	Runs ActionMetadataRuns `yaml:"runs" json:"-"`
+	// Branding is "branding" field of action.yaml.
+	Branding ActionMetadataBranding `yaml:"branding" json:"-"`
+}
+
+// Dir returns a directory path of the action.
+func (md *ActionMetadata) Dir() string {
+	return md.dir
+}
+
+// Path returns a file path of the action's metadata file.
+func (md *ActionMetadata) Path() string {
+	return filepath.Join(md.dir, md.file)
 }
 
 // LocalActionsCache is cache for local actions' metadata. It avoids repeating to find/read/parse
@@ -160,18 +216,18 @@ func (c *LocalActionsCache) writeCache(key string, val *ActionMetadata) {
 // the action was not found. But at the second search, it does not return an error even if the result
 // is nil. This behavior prevents repeating to report the same error from multiple places.
 // Calling this method is thread-safe.
-func (c *LocalActionsCache) FindMetadata(spec string) (*ActionMetadata, error) {
+func (c *LocalActionsCache) FindMetadata(spec string) (*ActionMetadata, bool, error) {
 	if c.proj == nil || !strings.HasPrefix(spec, "./") {
-		return nil, nil
+		return nil, false, nil
 	}
 
 	if m, ok := c.readCache(spec); ok {
 		c.debug("Cache hit for %s: %v", spec, m)
-		return m, nil
+		return m, true, nil
 	}
 
 	dir := filepath.Join(c.proj.RootDir(), filepath.FromSlash(spec))
-	b, ok := c.readLocalActionMetadataFile(dir)
+	b, f, ok := c.readLocalActionMetadataFile(dir)
 	if !ok {
 		c.debug("No action metadata found in %s", dir)
 		// Remember action was not found
@@ -179,33 +235,32 @@ func (c *LocalActionsCache) FindMetadata(spec string) (*ActionMetadata, error) {
 		// Do not complain about the action does not exist (#25, #40).
 		// It seems a common pattern that the local action does not exist in the repository
 		// (e.g. Git submodule) and it is cloned at running workflow (due to a private repository).
-		return nil, nil
+		return nil, false, nil
 	}
 
 	var meta ActionMetadata
 	if err := yaml.Unmarshal(b, &meta); err != nil {
 		c.writeCache(spec, nil) // Remember action was invalid
 		msg := strings.ReplaceAll(err.Error(), "\n", " ")
-		return nil, fmt.Errorf("could not parse action metadata in %q: %s", dir, msg)
+		return nil, false, fmt.Errorf("could not parse action metadata in %q: %s", dir, msg)
 	}
+	meta.file = f
+	meta.dir = dir
 
 	c.debug("New metadata parsed from action %s: %v", dir, &meta)
-
 	c.writeCache(spec, &meta)
-	return &meta, nil
+	return &meta, false, nil
 }
 
-func (c *LocalActionsCache) readLocalActionMetadataFile(dir string) ([]byte, bool) {
-	for _, p := range []string{
-		filepath.Join(dir, "action.yaml"),
-		filepath.Join(dir, "action.yml"),
-	} {
+func (c *LocalActionsCache) readLocalActionMetadataFile(dir string) ([]byte, string, bool) {
+	for _, f := range []string{"action.yaml", "action.yml"} {
+		p := filepath.Join(dir, f)
 		if b, err := os.ReadFile(p); err == nil {
-			return b, true
+			return b, f, true
 		}
 	}
 
-	return nil, false
+	return nil, "", false
 }
 
 // LocalActionsCacheFactory is a factory to create LocalActionsCache instances. LocalActionsCache

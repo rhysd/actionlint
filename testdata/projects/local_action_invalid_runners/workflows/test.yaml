@@ -1,0 +1,13 @@
+on: push
+
+jobs:
+  test:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: ./old_node
+      - uses: ./missing_runs
+      - uses: ./missing_using
+      - uses: ./unknown_runner
+      - uses: ./invalid_node_version
+      # Check using same invalid action twice does not duplicate the errors
+      - uses: ./old_node

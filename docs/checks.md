@@ -15,6 +15,7 @@ List of checks:
 - [Contextual typing for `steps.<step_id>` objects](#check-contextual-step-object)
 - [Contextual typing for `matrix` object](#check-contextual-matrix-object)
 - [Contextual typing for `needs` object](#check-contextual-needs-object)
+- [Strict type checks for comparison operators](#check-comparison-types)
 - [shellcheck integration for `run:`](#check-shellcheck-integ)
 - [pyflakes integration for `run:`](#check-pyflakes-integ)
 - [Script injection by potentially untrusted inputs](#untrusted-inputs)
@@ -28,6 +29,7 @@ List of checks:
 - [Action format in `uses:`](#check-action-format)
 - [Local action inputs validation at `with:`](#check-local-action-inputs)
 - [Popular action inputs validation at `with:`](#check-popular-action-inputs)
+- [Outdated popular actions detection at `uses:`](#detect-outdated-popular-actions)
 - [Shell name validation at `shell:`](#check-shell-names)
 - [Job ID and step ID uniqueness](#check-job-step-ids)
 - [Hardcoded credentials](#check-hardcoded-credentials)
@@ -38,6 +40,7 @@ List of checks:
 - [Contexts and special functions availability](#ctx-spfunc-availability)
 - [Deprecated workflow commands](#check-deprecated-workflow-commands)
 - [Conditions always evaluated to true at `if:`](#if-cond-always-true)
+- [Action metadata syntax validation](#action-metadata-syntax)
 
 Note that actionlint focuses on catching mistakes in workflow files. If you want some general code style checks, please consider
 using a general YAML checker like [yamllint][].
@@ -82,7 +85,7 @@ the workflow run fail.
 
 actionlint can detect unexpected keys while parsing workflow syntax and report them as an error.
 
-Key names are basically case sensitive (though some specific key names are case insensitive). This check is useful to catch
+Key names are basically case-sensitive (though some specific key names are case-insensitive). This check is useful to catch
 case-sensitivity mistakes.
 
 <a name="check-missing-required-duplicate-keys"></a>
@@ -95,7 +98,7 @@ on: push
 jobs:
   test:
     strategy:
-      # ERROR: Matrix name is duplicated. These keys are case insensitive
+      # ERROR: Matrix name is duplicated. These keys are case-insensitive
       matrix:
         version_name: [v1, v2]
         VERSION_NAME: [V1, V2]
@@ -111,7 +114,7 @@ test.yaml:3:3: "runs-on" section is missing in job "test" [syntax-check]
   |
 3 |   test:
   |   ^~~~~
-test.yaml:8:9: key "version_name" is duplicated in "matrix" section. previously defined at line:7,col:9. note that key names are case insensitive [syntax-check]
+test.yaml:8:9: key "version_name" is duplicated in "matrix" section. previously defined at line:7,col:9. note that key names are case-insensitive [syntax-check]
   |
 8 |         VERSION_NAME: [V1, V2]
   |         ^~~~~~~~~~~~~
@@ -121,7 +124,7 @@ test.yaml:8:9: key "version_name" is duplicated in "matrix" section. previously 
 
 Some mappings must include specific keys. For example, job mappings must include `runs-on:` and `steps:`.
 
-And duplicate keys are not allowed. In workflow syntax, comparing some keys is **case insensitive**. For example, the job ID
+And duplicate keys are not allowed. In workflow syntax, comparing some keys is **case-insensitive**. For example, the job ID
 `test` in lower case and the job ID `TEST` in upper case are not able to exist in the same workflow.
 
 actionlint checks these missing required keys and duplicate keys while parsing, and reports an error.
@@ -243,7 +246,7 @@ test.yaml:13:38: unexpected end of input while parsing object property dereferen
 [Playground](https://rhysd.github.io/actionlint#eJx1jTEOwjAMRfeewoqQUgptxZoDMHCLJLJwIYor7LBUvTsNrHT48pfekz9nB3MRah4cxDUAiqL1ArxKlp43XkLJWvrkK/siUZzlZwH01XSAkRjsYVnAEKbEBtbV7ikXOG35L5gqKN+Ec0te6DollNZ23Zg4Pu0Zao0+Eo72uP0weyP3SamEAd+YdahjH8ffRDM=)
 
 actionlint lexes and parses expression in `${{ }}` following [the expression syntax document][expr-doc]. It can detect
-many syntax errors like invalid characters, missing parens, unexpected end of input, ...
+many syntax errors like invalid characters, missing parentheses, unexpected end of input, ...
 
 <a name="check-type-check-expression"></a>
 ## Type checks for expression syntax in `${{ }}`
@@ -263,7 +266,7 @@ checker.
 | Strict object | Object whose properties are strictly typed                                                 | `{prop1: T1, prop2: T2}` |
 | Map object    | Object who has specific type values like `env` context                                     | `{string => T}`          |
 
-Type check by actionlint is more strict than GitHub Actions runtime.
+Type check by actionlint is stricter than GitHub Actions runtime.
 
 - Only `any` and `number` are allowed to be converted to string implicitly
 - Implicit conversion to `number` is not allowed
@@ -323,9 +326,9 @@ object or array, use `toJSON()` function.
 echo '${{ toJSON(github.event) }}'
 ```
 
-There are two types of object types internally. One is an object which is strict for properties, which causes a type error
-when trying to access unknown properties. And another is an object which is not strict for properties, which allows to access
-unknown properties. In the case, accessing unknown property is typed as `any`.
+There are two object types internally. One is an object which is strict for properties, which causes a type error when trying to
+access unknown properties. And another is an object which is not strict for properties, which allows accessing unknown properties.
+In the case, accessing unknown property is typed as `any`.
 
 When the type check cannot be done statically, the type is deduced to `any` (e.g. return type of `toJSON()`).
 
@@ -440,7 +443,7 @@ The semantics checker can properly handle that
 In addition, `format()` function has a special check for placeholders in the first parameter which represents the formatting
 string.
 
-Note that context names and function names are case insensitive. For example, `toJSON` and `toJson` are the same function.
+Note that context names and function names are case-insensitive. For example, `toJSON` and `toJson` are the same function.
 
 <a name="check-contextual-step-object"></a>
 ## Contextual typing for `steps.<step_id>` objects
@@ -553,7 +556,7 @@ outputs:
     description: some value returned from this action
 
 runs:
-  using: 'node14'
+  using: 'node20'
   main: 'index.js'
 ```
 
@@ -677,6 +680,8 @@ steps:
   - run: echo ${{ matrix.foo }}
   # matrix.bar is array<any> type value
   - run: echo ${{ matrix.bar[0] }}
+  # ERROR: Array cannot be evaluated as string
+  - run: echo ${{ matrix.bar }}
 ```
 
 <a name="check-contextual-needs-object"></a>
@@ -747,6 +752,58 @@ Job dependencies can be defined at [`needs:`][needs-doc]. A job runs after all j
 Outputs from the jobs can be accessed only from jobs following them via [`needs` context][needs-context-doc].
 
 actionlint defines a type of `needs` variable contextually by looking at each job's `outputs:` section and `needs:` section.
+
+<a name="check-comparison-types"></a>
+## Strict type checks for comparison operators
+
+```yaml
+on:
+  workflow_call:
+    inputs:
+      timeout:
+        type: boolean
+
+jobs:
+  test:
+    runs-on: ubuntu-latest
+    steps:
+      - run: echo 'called!'
+        # ERROR: Comparing string to object is always evaluated to false
+        if: ${{ github.event == 'workflow_call' }}
+      - run: echo 'timeout is too long'
+        # ERROR: Comparing boolean value with `>` doesn't make sense
+        if: ${{ inputs.timeout > 60 }}
+```
+
+Output:
+
+```
+test.yaml:13:17: "object" value cannot be compared to "string" value with "==" operator [expression]
+   |
+13 |         if: ${{ github.event == 'workflow_call' }}
+   |                 ^~~~~~~~~~~~
+test.yaml:16:17: "bool" value cannot be compared to "number" value with ">" operator [expression]
+   |
+16 |         if: ${{ inputs.timeout > 60 }}
+   |                 ^~~~~~~~~~~~~~
+```
+
+Expressions in `${{ }}` placeholders support `==`, `!=`, `>`, `>=`, `<`, `<=` comparison operators. Arbitrary types of operands
+can be compared. When different type values are compared, they are implicitly converted to numbers before the comparison. Please
+see [the official document][operators-doc] to know the details of operators behavior.
+
+However, comparisons between some types are actually meaningless:
+
+- Objects and arrays are converted to `NaN`. Comparing an object or an array with other type is always evaluated to false.
+- Comparing booleans, null, objects, and arrays with `>`, `>=`, `<`, `<=` makes no sense.
+
+actionlint checks operands of comparison operators and reports errors in these cases.
+
+There are some additional surprising behaviors, but actionlint allows them not to cause false positives as much as possible.
+
+- `0 == null`, `'0' == null`, `false == null` are true since they are implicitly converted to `0 == 0`
+- `'0' == false` and `0 == false` are true due to the same reason as above
+- Objects and arrays are only considered equal when they are the same instance
 
 <a name="check-shellcheck-integ"></a>
 ## [shellcheck][] integration for `run:`
@@ -821,7 +878,7 @@ steps:
     if: ${{ matrix.os == 'windows-latest' }}
 ```
 
-The 'Show file content' script is only run by `pwsh` due to `matrix.os == 'windows-latest'` guard. However actionlint does not
+The 'Show file content' script is only run by `pwsh` due to `matrix.os == 'windows-latest'` guard. However, actionlint does not
 know that. It checks the script with shellcheck and it'd probably cause a false-positive (due to file separator). This kind of
 false positives can be avoided by showing the shell name explicitly. It is also better in terms of maintenance of the workflow.
 
@@ -830,6 +887,26 @@ false positives can be avoided by showing the shell name explicitly. It is also 
   run: Get-Content -Path xxx\yyy.txt
   if: ${{ matrix.os == 'windows-latest' }}
   shell: pwsh
+```
+
+When you want to control shellcheck behavior, [`SHELLCHECK_OPTS` environment variable][shellcheck-env-var] is useful.
+
+From command line:
+
+```sh
+# Enable some optional rules
+SHELLCHECK_OPTS='--enable=avoid-nullary-conditions' actionlint
+
+# Disable some rules
+SHELLCHECK_OPTS='--exclude=SC2129' actionlint
+```
+
+On GitHub Actions:
+
+```yaml
+- run: actionlint
+  env:
+    SHELLCHECK_OPTS: --exclude=SC2129
 ```
 
 <a name="check-pyflakes-integ"></a>
@@ -915,12 +992,12 @@ jobs:
       - name: Print pull request title
         # ERROR: Using the potentially untrusted input can cause script injection
         run: echo '${{ github.event.pull_request.title }}'
-      - uses: actions/stale@v4
+      - uses: actions/stale@v9
         with:
           repo-token: ${{ secrets.TOKEN }}
           # This is OK because action input is not evaluated by shell
           stale-pr-message: ${{ github.event.pull_request.title }} was closed
-      - uses: actions/github-script@v4
+      - uses: actions/github-script@v7
         with:
           # ERROR: Using the potentially untrusted input can cause script injection
           script: console.log('${{ github.event.head_commit.author.name }}')
@@ -946,7 +1023,7 @@ test.yaml:22:31: object filter extracts potentially untrusted properties "github
    |                               ^~~~~~~~~~~~~~~~~~~~
 ```
 
-[Playground](https://rhysd.github.io/actionlint#eJyFkUFLAzEQhe/9FXMQ2gqJF085eRFBoRXsvWSzQ3drNrNmJi1S+t9NdkupSvUUknnzvcdLsB0aWCHLhIKBPnm/jviRysNkSxWbCYDkWzkBYgqsijBVKUhS3pbZMGLBnkcVgIIwgF9jG2SgwokK0orHk2wAGkDXEExvDgfYtNKkSuMOg+jLMHpYg+NxenZIjGzAOmkp8B2L9fiwuz+T9xllzrfshD0poXfMhsWK0UUU1qvly+Migy+kA0v1UXXIbDc4LvyfDfaWwXlirK+kHBmKXWx7+SvtqDDg8hZ51J42s98NNWjrtaOua0XbJA1FXXovNc1//MQTChRlXuNr7Qs9vy0Xs28Wt7qi+nNekF/IR69F)
+[Playground](https://rhysd.github.io/actionlint#eJyFkUFLAzEQhe/9FXMQ2gqJRzGnXkRQaAV7L9ns0F3NZtbMpEVK/7vJbilVKZ5CMm++93gJtkMDa2SZUDDQJ+83ET9TeZi8U8VmAiD5Vk6AmAKrIkxVCpKUt2U2jFiw51EFoCAM4NfYBhmocKKCtOLxJBuABtA1BNObwwG2rTSp0rjDIPoyjB7W4Hicnh0SIxuwTloKfMdiPS52D2fyPqPM+ZadsCcl9IHZsFgxuojCer16eVxm8IV0YKk+qg6Z7RbHhf+zwd4yOE+M9ZWUI0Oxi20vi9391bSjwoDLW+RRe9rO/jbUoK03jrquFW2TNBR16b3UNP/1E08oUJR5ja+1L/T8tlrOfljc6orqr3lBfgPRHa9N)
 
 Since `${{ }}` placeholders are evaluated and replaced directly by GitHub Actions runtime, you need to use them carefully in
 inline scripts at `run:`. For example, if we have step as follows,
@@ -1069,7 +1146,7 @@ jobs:
 Output:
 
 ```
-test.yaml:4:18: job ID "BAR" duplicates in "needs" section. note that job ID is case insensitive [job-needs]
+test.yaml:4:18: job ID "BAR" duplicates in "needs" section. note that job ID is case-insensitive [job-needs]
   |
 4 |     needs: [bar, BAR]
   |                  ^~~~
@@ -1495,15 +1572,15 @@ jobs:
 Output:
 
 ```
-test.yaml:10:13: label "linux-latest" is unknown. available labels are "windows-latest", "windows-2022", "windows-2019", "windows-2016", "ubuntu-latest", ... [runner-label]
+test.yaml:10:13: label "linux-latest" is unknown. available labels are "windows-latest", "windows-2022", "windows-2019", "ubuntu-latest", ... [runner-label]
    |
 10 |           - linux-latest
    |             ^~~~~~~~~~~~
-test.yaml:16:13: label "gpu" is unknown. available labels are "windows-latest", "windows-2022", "windows-2019", "windows-2016", "ubuntu-latest", ... [runner-label]
+test.yaml:16:13: label "gpu" is unknown. available labels are "windows-latest", "windows-2022", "windows-2019", "ubuntu-latest", ... [runner-label]
    |
 16 |           - gpu
    |             ^~~
-test.yaml:23:14: label "macos-10.13" is unknown. available labels are "windows-latest", "windows-2022", "windows-2019", "windows-2016", "ubuntu-latest", ... [runner-label]
+test.yaml:23:14: label "macos-10.13" is unknown. available labels are "windows-latest", "windows-2022", "windows-2019", "ubuntu-latest", ... [runner-label]
    |
 23 |     runs-on: macos-10.13
    |              ^~~~~~~~~~~
@@ -1628,7 +1705,7 @@ inputs:
     required: false
 
 runs:
-  using: 'node14'
+  using: 'node20'
   main: 'index.js'
 ```
 
@@ -1716,6 +1793,41 @@ Note that it only supports the case of specifying major versions like `actions/c
 So far, actionlint supports more than 100 popular actions The data set is embedded at [`popular_actions.go`](../popular_actions.go)
 and were automatically collected by [a script][generate-popular-actions]. If you want more checks for other actions, please
 make a request [as an issue][issue-form].
+
+<a name="detect-outdated-popular-actions"></a>
+## Outdated popular actions detection at `uses:`
+
+Example input:
+
+```yaml
+on: push
+
+jobs:
+  test:
+    runs-on: ubuntu-latest
+    steps:
+      # ERROR: actions/checkout@v2 is using the outdated runner 'node12'
+      - uses: actions/checkout@v2
+```
+
+Output:
+
+```
+test.yaml:8:15: the runner of "actions/checkout@v2" action is too old to run on GitHub Actions. update the action's version to fix this issue [action]
+  |
+8 |       - uses: actions/checkout@v2
+  |               ^~~~~~~~~~~~~~~~~~~
+```
+
+[Playground](https://rhysd.github.io/actionlint#eJwlyjkOwCAMRNGeU8wFUKSUVLkKICSyyEYZO+fPVv3ifZWE4ewhbFqYAmCN9hY4XRj1Gby4mMcjv/YRrQ3+FxDhbEzI1VYVTrW3uqvbcs03dIgdzQ==)
+
+In addition to the checks for inputs of actions described in [the previous section](#check-popular-action-inputs), actionlint
+reports an error when a popular action is 'outdated'. An action is outdated when the runner used by the action is no longer
+supported by GitHub Actions runtime. For example, `node12` is no longer available so any actions can use `node12` runner.
+
+Note that this check doesn't report that the action version is up-to-date. For example, even if you use `actions/checkout@v3` and
+newer version `actions/checkout@v4` is available, actionlint reports no error as long as `actions/checkout@v3` is not outdated.
+If you want to keep actions used by your workflows up-to-date, consider to use [Dependabot][dependabot-doc].
 
 <a name="check-shell-names"></a>
 ## Shell name validation at `shell:`
@@ -1813,11 +1925,11 @@ jobs:
 Output:
 
 ```
-test.yaml:10:13: step ID "STEP_ID" duplicates. previously defined at line:7,col:13. step ID must be unique within a job. note that step ID is case insensitive [id]
+test.yaml:10:13: step ID "STEP_ID" duplicates. previously defined at line:7,col:13. step ID must be unique within a job. note that step ID is case-insensitive [id]
    |
 10 |         id: STEP_ID
    |             ^~~~~~~
-test.yaml:12:3: key "TEST" is duplicated in "jobs" section. previously defined at line:3,col:3. note that key names are case insensitive [syntax-check]
+test.yaml:12:3: key "TEST" is duplicated in "jobs" section. previously defined at line:3,col:3. note that key names are case-insensitive [syntax-check]
    |
 12 |   TEST:
    |   ^~~~~
@@ -1825,7 +1937,7 @@ test.yaml:12:3: key "TEST" is duplicated in "jobs" section. previously defined a
 
 [Playground](https://rhysd.github.io/actionlint#eJzLz7NSKCgtzuDKyk8qtuJSUChJLS4B0QoKRaV5xbr5QPnSpNK8klLdnESQHFiquCS1oBiiSkFBF6TSSiE1OSNfQT0jNScnXx0qo6CQmWIFVhyfmYJNdVJlKqra4BDXgHhPF6BYiGtwCE3cAQCKgUNq)
 
-Job IDs and step IDs in each jobs must be unique. IDs are compared in case insensitive. actionlint checks all job IDs
+Job IDs and step IDs in each jobs must be unique. IDs are compared in case-insensitive. actionlint checks all job IDs
 and step IDs, and reports errors when some IDs duplicate.
 
 <a name="check-hardcoded-credentials"></a>
@@ -1907,7 +2019,7 @@ test.yaml:7:7: environment variable name "FOO BAR" is invalid. '&', '=' and spac
 [Playground](https://rhysd.github.io/actionlint#eJzLz7NSKCgtzuDKyk8qtuJSUChJLS4B0QoKRaV5xbr5QPnSpNK8klLdnESQHFgqNa8MokZBwc3f39bJMchKIS0/HyGkgCJUXJJaUAzToAsy2EohNTkjX0E9IzUnJ18dAPhYJMc=)
 
 `=` must not be included in environment variable names. And `&` and spaces should not be included in them. In almost all
-cases they are mistakes and they may cause some issues on using them in shell since they have special meaning in shell syntax.
+cases they are mistakes, and they may cause some issues on using them in shell since they have special meaning in shell syntax.
 
 actionlint checks environment variable names are correct in `env:` configuration.
 
@@ -1941,7 +2053,7 @@ test.yaml:4:14: "write" is invalid for permission for all the scopes. available 
   |
 4 | permissions: write
   |              ^~~~~
-test.yaml:11:7: unknown permission scope "check". all available permission scopes are "actions", "checks", "contents", "deployments", "discussions", "id-token", "issues", "packages", "pages", "pull-requests", "repository-projects", "security-events", "statuses" [permissions]
+test.yaml:11:7: unknown permission scope "check". all available permission scopes are "actions", "attestations", "checks", "contents", "deployments", "discussions", "id-token", "issues", "packages", "pages", "pull-requests", "repository-projects", "security-events", "statuses" [permissions]
    |
 11 |       check: write
    |       ^~~~~~
@@ -2492,7 +2604,7 @@ test.yaml:24:33: calling function "success" is not allowed here. "success" is on
 
 [Playground](https://rhysd.github.io/actionlint#eJx9jkEOgjAURPc9xSxM1AUcoBvjwqVuPAGUr6DQkv5flRDvLhVRExO7aWbmTTvOarSBS6XIXrQCduvtRsOXHRdKnVzO0RRiiTfA4jOhYzcqoMnEV7dJAUXlyYjz3ccCEsz6HsdKypCnV+fPh9pdcb//ID5YSz4VatopHixO3LAy5MFKSOosjnlGr8XxjKvjE4OZRjX1WajlCUu+O/97r781yJQO830whphXT5ZHsVgO8PxNVwf9SR5WsV7P)
 
-Some contexts are only available in some places. For example, `env` context is not available at `jobs.<job_id>.env` but it is
+Some contexts are only available in some places. For example, `env` context is not available at `jobs.<job_id>.env`, but it is
 available at `jobs.<job_id>.steps.env`.
 
 Similarly, some status functions are special since they limit where they can be called. For example, `success()`, `failure()`,
@@ -2606,7 +2718,7 @@ test.yaml:26:13: if: condition "${{ github.event_name == 'push' }} && ${{ github
 [Playground](https://rhysd.github.io/actionlint#eJy1j00OgjAQhfec4oUYusIDNGHlQQzoIDW2JXTqBrm7FP8wJogaV5PJ+/K9GWskau+qKNrbwskIYHIcJtB441LbA77whn16yEM2RI6pdhcKSAMpQZvKQqys1oqh3KClrbhCgColFm2LneLKF0s6kuG1yTUhyyACLdB1nztP9w1T7t/E/zg8fi9FPEcLttC5Ms/6KXOS3OKGykc4lnzROOOfvnhEvZb3zBmiAMLK)
 
 Evaluation of `${{ }}` at `if:` condition is tricky. When the expression in `${{ }}` is evaluated to boolean value and there is
-no extra characters around the `${{ }}`, the condition is evaluated to the boolean value. Otherwise the condition is treated as
+no extra characters around the `${{ }}`, the condition is evaluated to the boolean value. Otherwise, the condition is treated as
 string hence it is **always** evaluated to `true`.
 
 It means that multi-line string must not be used at `if:` condition (`if: |`) because the condition is always evaluated to true.
@@ -2635,6 +2747,96 @@ works as intended.
 actionlint checks all `if:` conditions in workflow and reports error when some condition is always evaluated to true due to extra
 characters around `${{ }}`.
 
+<a name="action-metadata-syntax"></a>
+## Action metadata syntax validation
+
+Example workflow input:
+
+```yaml
+on: push
+
+jobs:
+  test:
+    runs-on: ubuntu-latest
+    steps:
+      # actionlint checks an action when it is actually used in a workflow
+      - uses: ./.github/actions/my-invalid-action
+```
+
+Example action metadata:
+
+```yaml
+# .github/actions/my-invalid-action/action.yml
+
+name: 'My action'
+author: '...'
+# ERROR: 'description' section is required
+
+branding:
+  # ERROR: Invalid icon name
+  icon: dog
+  # ERROR: Unsupported icon color
+  color: black
+
+runs:
+  # ERROR: Node.js runtime version is too old
+  using: 'node14'
+  # ERROR: The source file being run by this action does not exist
+  main: 'this-file-does-not-exist.js'
+  # ERROR: 'env' configuration is only allowed for Docker actions
+  env:
+    SOME_VAR: SOME_VALUE
+```
+
+Output:
+
+```
+action_metadata_syntax_validation.yaml:8:15: description is required in metadata of "My action" action at "path/to/.github/actions/my-invalid-action/action.yml" [action]
+  |
+8 |       - uses: ./.github/actions/my-invalid-action
+  |               ^~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+action_metadata_syntax_validation.yaml:8:15: incorrect icon name "dog" at branding.icon in metadata of "My action" action at "path/to/.github/actions/my-invalid-action/action.yml". see the official document to know the exhaustive list of supported icons: https://docs.github.com/en/actions/creating-actions/metadata-syntax-for-github-actions#brandingicon [action]
+  |
+8 |       - uses: ./.github/actions/my-invalid-action
+  |               ^~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+action_metadata_syntax_validation.yaml:8:15: incorrect color "black" at branding.icon in metadata of "My action" action at "path/to/.github/actions/my-invalid-action/action.yml". see the official document to know the exhaustive list of supported colors: https://docs.github.com/en/actions/creating-actions/metadata-syntax-for-github-actions#brandingcolor [action]
+  |
+8 |       - uses: ./.github/actions/my-invalid-action
+  |               ^~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+action_metadata_syntax_validation.yaml:8:15: invalid runner name "node14" at runs.using in "My action" action defined at "path/to/.github/actions/my-invalid-action". valid runners are "composite", "docker", "node16", and "node20". see https://docs.github.com/en/actions/creating-actions/metadata-syntax-for-github-actions#runs [action]
+  |
+8 |       - uses: ./.github/actions/my-invalid-action
+  |               ^~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+action_metadata_syntax_validation.yaml:8:15: file "this-file-does-not-exist.js" does not exist in "path/to/.github/actions/my-invalid-action". it is specified at "main" key in "runs" section in "My action" action [action]
+  |
+8 |       - uses: ./.github/actions/my-invalid-action
+  |               ^~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+action_metadata_syntax_validation.yaml:8:15: "env" is not allowed in "runs" section because "My action" is a JavaScript action. the action is defined at "path/to/.github/actions/my-invalid-action" [action]
+  |
+8 |       - uses: ./.github/actions/my-invalid-action
+  |               ^~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+```
+
+All actions require a metadata file `action.yml` or `aciton.yaml`. The syntax is defined in [the official document][action-metadata-doc].
+
+actionlint checks metadata files used in workflows and reports errors when they are not following the syntax.
+
+- `name:`, `description:`, `runs:` sections are required
+- Runner name at `using:` is one of `composite`, `docker`, `node16`, `node20`
+- Keys under `runs:` section are correct. Required/Valid keys are different depending on the type of action; Docker action or
+  Composite action or JavaScript action (e.g. `image:` is required for Docker action).
+- Files specified in some keys under `runs` are existing. For example, JavaScript action defines a script file path for
+  entrypoint at `main:`.
+- Icon name at `icon:` in `branding:` section is correct. Supported icon names are listed in
+  [the official document][branding-icons-doc].
+- Icon color at `color:` in `branding:` section is correct. Supported icon colors are white, yellow, blue, green, orange, red,
+  purple, or gray-dark.
+
+actionlint checks action metadata files which are used by workflows. Currently, it is not supported to specify `action.yml`
+directly via command line arguments.
+
+Note that `steps` in Composite action's metadata is not checked at this point. It will be supported in the future.
+
 ---
 
 [Installation](install.md) | [Usage](usage.md) | [Configuration](config.md) | [Go API](api.md) | [References](reference.md)
@@ -2650,6 +2852,7 @@ characters around `${{ }}`.
 [SC2194]: https://github.com/koalaman/shellcheck/wiki/SC2194
 [SC2154]: https://github.com/koalaman/shellcheck/wiki/SC2154
 [SC2157]: https://github.com/koalaman/shellcheck/wiki/SC2157
+[shellcheck-env-var]: https://github.com/koalaman/shellcheck/wiki/Integration#environment-variables
 [pyflakes]: https://github.com/PyCQA/pyflakes
 [expr-doc]: https://docs.github.com/en/actions/learn-github-actions/expressions
 [contexts-doc]: https://docs.github.com/en/actions/learn-github-actions/contexts
@@ -2664,6 +2867,7 @@ characters around `${{ }}`.
 [gh-hosted-runner]: https://docs.github.com/en/actions/using-github-hosted-runners/about-github-hosted-runners
 [self-hosted-runner]: https://docs.github.com/en/actions/hosting-your-own-runners/about-self-hosted-runners
 [action-uses-doc]: https://docs.github.com/en/actions/learn-github-actions/workflow-syntax-for-github-actions#jobsjob_idstepsuses
+[dependabot-doc]: https://docs.github.com/en/code-security/dependabot/working-with-dependabot/keeping-your-actions-up-to-date-with-dependabot
 [credentials-doc]: https://docs.github.com/en/actions/learn-github-actions/workflow-syntax-for-github-actions#jobsjob_idcontainercredentials
 [actions-cache]: https://github.com/actions/cache
 [permissions-doc]: https://docs.github.com/en/actions/security-guides/automatic-token-authentication#permissions-for-the-github_token
@@ -2687,3 +2891,6 @@ characters around `${{ }}`.
 [deprecate-set-output-save-state]: https://github.blog/changelog/2022-10-11-github-actions-deprecating-save-state-and-set-output-commands/
 [deprecate-set-env-add-path]: https://github.blog/changelog/2020-10-01-github-actions-deprecating-set-env-and-add-path-commands/
 [workflow-commands-doc]: https://docs.github.com/en/actions/using-workflows/workflow-commands-for-github-actions
+[action-metadata-doc]: https://docs.github.com/en/actions/creating-actions/metadata-syntax-for-github-actions
+[branding-icons-doc]: https://github.com/github/docs/blob/main/content/actions/creating-actions/metadata-syntax-for-github-actions.md#exhaustive-list-of-all-currently-supported-icons
+[operators-doc]: https://docs.github.com/en/actions/learn-github-actions/expressions#operators

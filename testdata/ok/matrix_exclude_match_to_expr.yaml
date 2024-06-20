@@ -1,0 +1,34 @@
+on: push
+
+jobs:
+  nested-0:
+    runs-on: ubuntu-latest
+    strategy:
+      matrix:
+        foo:
+          - ${{ fromJSON('...') }}
+        exclude:
+          - foo: bar
+    steps:
+      - run: echo ${{ matrix.foo }}
+  nested-object-1:
+    runs-on: ubuntu-latest
+    strategy:
+      matrix:
+        foo:
+          - bar: ${{ fromJSON('...') }}
+        exclude:
+          - foo:
+              bar: ...
+    steps:
+      - run: echo ${{ matrix.foo.bar }}
+  nested-array-1:
+    runs-on: ubuntu-latest
+    strategy:
+      matrix:
+        foo:
+          - ["${{ fromJSON('...') }}"]
+        exclude:
+          - foo: ['...']
+    steps:
+      - run: echo ${{ matrix.foo[0] }}

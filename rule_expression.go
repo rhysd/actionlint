@@ -238,8 +238,11 @@ func (rule *RuleExpression) VisitJobPre(n *Job) error {
 	rule.checkFloat(n.TimeoutMinutes, "jobs.<job_id>.timeout-minutes")
 	rule.checkContainer(n.Container, "jobs.<job_id>.container", "")
 
-	for _, s := range n.Services {
-		rule.checkContainer(s.Container, "jobs.<job_id>.services", "<service_id>")
+	if n.Services != nil {
+		rule.checkObjectExpression(n.Services.Expression, "services", "jobs.<job_id>.services")
+		for _, s := range n.Services.Value {
+			rule.checkContainer(s.Container, "jobs.<job_id>.services", "<service_id>")
+		}
 	}
 
 	rule.checkWorkflowCall(n.WorkflowCall)
@@ -320,7 +323,7 @@ func (rule *RuleExpression) getActionOutputsType(spec *String) *ObjectType {
 	}
 
 	if strings.HasPrefix(spec.Value, "./") {
-		meta, err := rule.localActions.FindMetadata(spec.Value)
+		meta, _, err := rule.localActions.FindMetadata(spec.Value)
 		if err != nil {
 			rule.Error(spec.Pos, err.Error())
 			return NewMapObjectType(StringType{})
@@ -778,7 +781,7 @@ func (rule *RuleExpression) checkSemanticsOfExprNode(expr ExprNode, line, col in
 	if workflowKey != "" {
 		ctx, sp := WorkflowKeyAvailability(workflowKey)
 		if len(ctx) == 0 {
-			rule.Debug("No context avaiability was found for workflow key %q", workflowKey)
+			rule.Debug("No context availability was found for workflow key %q", workflowKey)
 		}
 		c.SetContextAvailability(ctx)
 		c.SetSpecialFunctionAvailability(sp)
