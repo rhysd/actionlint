@@ -1,0 +1,10 @@
+on: push
+
+jobs:
+  test:
+    runs-on: ubuntu-latest
+    steps:
+      - run: |
+          if [[ -z ${{ env.FOO }} ]]; then
+            echo "FOO is empty"
+          fi

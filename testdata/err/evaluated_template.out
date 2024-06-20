@@ -1,4 +1,4 @@
-test.yaml:20:20: object, array, and null values should not be evaluated in template with ${{ }} but evaluating the value of type object [expression]
-test.yaml:20:38: object, array, and null values should not be evaluated in template with ${{ }} but evaluating the value of type {cache-hit: string} [expression]
-test.yaml:20:63: object, array, and null values should not be evaluated in template with ${{ }} but evaluating the value of type array<any> [expression]
-test.yaml:22:20: object, array, and null values should not be evaluated in template with ${{ }} but evaluating the value of type null [expression]
+test.yaml:22:20: object, array, and null values should not be evaluated in template with ${{ }} but evaluating the value of type object [expression]
+test.yaml:22:38: object, array, and null values should not be evaluated in template with ${{ }} but evaluating the value of type {cache-hit: string} [expression]
+test.yaml:22:63: object, array, and null values should not be evaluated in template with ${{ }} but evaluating the value of type array<any> [expression]
+test.yaml:24:20: object, array, and null values should not be evaluated in template with ${{ }} but evaluating the value of type null [expression]
