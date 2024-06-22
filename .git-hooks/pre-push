@@ -1,0 +1,12 @@
+#!/bin/bash
+
+set -e -o pipefail
+
+if [[ "$CI" != "" ]]; then
+    exit
+fi
+
+set +x
+
+make test
+make lint
