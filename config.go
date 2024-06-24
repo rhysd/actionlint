@@ -22,6 +22,8 @@ type Config struct {
 	// listed here as undefined config variables.
 	// https://docs.github.com/en/actions/learn-github-actions/variables
 	ConfigVariables []string `yaml:"config-variables"`
+	// Requires action and docker versions to use a commit hash instead of version/branch.
+	RequireCommitHash bool `yaml:"require-commit-hash"`
 }
 
 func parseConfig(b []byte, path string) (*Config, error) {

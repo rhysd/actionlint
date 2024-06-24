@@ -1,0 +1,2 @@
+test.yaml:7:15: specifying action "actions/checkout@main" in invalid format because action versions must be pinned to SHA1 hash. available formats are "{owner}/{repo}@{sha}" or "{owner}/{repo}/{path}@{sha}" [action]
+test.yaml:9:15: docker versions must be pinned to SHA1 hash: "docker://image" [action]

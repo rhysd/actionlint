@@ -6,6 +6,7 @@ import (
 	"net/url"
 	"os"
 	"path/filepath"
+	"regexp"
 	"strconv"
 	"strings"
 )
@@ -284,6 +285,8 @@ var BrandingIcons = map[string]struct{}{
 	"zoom-out":           {},
 }
 
+var hashRegex = regexp.MustCompile("^[0-9a-f]{40}$")
+
 // https://docs.github.com/en/actions/creating-actions/metadata-syntax-for-github-actions#runsimage
 func isImageOnDockerRegistry(image string) bool {
 	return strings.HasPrefix(image, "docker://") ||
@@ -367,6 +370,10 @@ func (rule *RuleAction) checkRepoAction(spec string, exec *ExecAction) {
 		rule.invalidActionFormat(exec.Uses.Pos, spec, "owner and repo and ref should not be empty")
 	}
 
+	if rule.config != nil && rule.config.RequireCommitHash && !hashRegex.MatchString(ref) {
+		rule.invalidActionFormatCommitHash(exec.Uses.Pos, spec, "action versions must be pinned to SHA1 hash")
+	}
+
 	meta, ok := PopularActions[spec]
 	if !ok {
 		if _, ok := OutdatedPopularActionSpecs[spec]; ok {
@@ -388,6 +395,10 @@ func (rule *RuleAction) checkRepoAction(spec string, exec *ExecAction) {
 
 func (rule *RuleAction) invalidActionFormat(pos *Pos, spec string, why string) {
 	rule.Errorf(pos, "specifying action %q in invalid format because %s. available formats are \"{owner}/{repo}@{ref}\" or \"{owner}/{repo}/{path}@{ref}\"", spec, why)
+}
+
+func (rule *RuleAction) invalidActionFormatCommitHash(pos *Pos, spec string, why string) {
+	rule.Errorf(pos, "specifying action %q in invalid format because %s. available formats are \"{owner}/{repo}@{sha}\" or \"{owner}/{repo}/{path}@{sha}\"", spec, why)
 }
 
 func (rule *RuleAction) missingRunsProp(pos *Pos, prop, ty, action, path string) {
@@ -517,6 +528,10 @@ func (rule *RuleAction) checkDockerAction(uri string, exec *ExecAction) {
 
 	if tagExists && tag == "" {
 		rule.Errorf(exec.Uses.Pos, "tag of Docker action should not be empty: %q", uri)
+	}
+
+	if rule.config != nil && rule.config.RequireCommitHash && !hashRegex.MatchString(tag) {
+		rule.Errorf(exec.Uses.Pos, "docker versions must be pinned to SHA1 hash: %q", uri)
 	}
 }
 
