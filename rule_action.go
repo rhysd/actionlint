@@ -287,6 +287,8 @@ var BrandingIcons = map[string]struct{}{
 
 var hashRegex = regexp.MustCompile("^[0-9a-f]{40}$")
 
+var dockerDigestHashRegex = regexp.MustCompile("^sha256:")
+
 // https://docs.github.com/en/actions/creating-actions/metadata-syntax-for-github-actions#runsimage
 func isImageOnDockerRegistry(image string) bool {
 	return strings.HasPrefix(image, "docker://") ||
@@ -371,7 +373,7 @@ func (rule *RuleAction) checkRepoAction(spec string, exec *ExecAction) {
 	}
 
 	if rule.config != nil && rule.config.RequireCommitHash && !hashRegex.MatchString(ref) {
-		rule.invalidActionFormatCommitHash(exec.Uses.Pos, spec, "action versions must be pinned to SHA1 hash")
+		rule.invalidActionFormatCommitHash(exec.Uses.Pos, spec, "action versions must be pinned to a SHA hash")
 	}
 
 	meta, ok := PopularActions[spec]
@@ -530,8 +532,8 @@ func (rule *RuleAction) checkDockerAction(uri string, exec *ExecAction) {
 		rule.Errorf(exec.Uses.Pos, "tag of Docker action should not be empty: %q", uri)
 	}
 
-	if rule.config != nil && rule.config.RequireCommitHash && !hashRegex.MatchString(tag) {
-		rule.Errorf(exec.Uses.Pos, "docker versions must be pinned to SHA1 hash: %q", uri)
+	if rule.config != nil && rule.config.RequireCommitHash && !dockerDigestHashRegex.MatchString(tag) {
+		rule.Errorf(exec.Uses.Pos, "docker versions must be pinned to a SHA hash: %q", uri)
 	}
 }
 

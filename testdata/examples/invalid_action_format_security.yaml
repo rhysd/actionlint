@@ -9,3 +9,5 @@ jobs:
       - uses: 'docker://image:latest'
       # OK: pinned to commit hash
       - uses: actions/checkout@db41740e12847bb616a339b75eb9414e711417df
+      # OK: docker image pinned to commit hash
+      - uses: docker://image:sha256:3235326357dfb65f1781dbc4df3b834546d8bf914e82cce58e6e6b676e23ce8f

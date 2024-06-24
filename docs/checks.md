@@ -1646,6 +1646,9 @@ jobs:
       - uses: 'docker://image:'
       # ERROR: local action must start with './'
       - uses: .github/my-actions/do-something
+      # Optional when `require-commit-hash: true` is set in .github/actionlint.yaml:
+      # ERROR: not pinned to commit hash
+      - uses: actions/checkout@main
 ```
 
 Output:
@@ -1667,6 +1670,10 @@ test.yaml:13:15: specifying action ".github/my-actions/do-something" in invalid 
    |
 13 |       - uses: .github/my-actions/do-something
    |               ^~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+test.yaml:16:15: specifying action "actions/checkout@main" in invalid format because action versions must be pinned to a SHA hash. available formats are "{owner}/{repo}@{sha}" or "{owner}/{repo}/{path}@{sha}" [action]
+   |
+16 |       - uses: actions/checkout@main
+   |               ^~~~~~~~~~~~~~~~~~~~~
 ```
 
 [Playground](https://rhysd.github.io/actionlint#eJxdzTEOgzAMBdCdU3hjSi119NSrJKlFUkqMsF2pty8UsWTy139fsjSC1bUML0lKA4Cx2nEBNm8aZHdP3szDOx72JzVe9VwBBHBlJYjZqjTFXDjP4tbxVT8+907Gp+SZN0KsS5yYxs5vOFUrnvD6sHzDGX98DjoH)
