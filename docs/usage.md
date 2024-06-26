@@ -233,7 +233,7 @@ to the script for more usage details.
 If you want to enable [shellcheck integration](checks.md#check-shellcheck-integ), install `shellcheck` command. Note that
 shellcheck is [pre-installed on Ubuntu worker][preinstall-ubuntu].
 
-If you want to [annotate errors][ga-annotate-error] from actionlint on GitHub, consider to use
+If you want to [annotate errors][ga-annotate-error] from actionlint on GitHub, consider using
 [Problem Matchers](#problem-matchers).
 
 If you prefer Docker image to running a downloaded executable, using [actionlint Docker image](#docker) is another option.
