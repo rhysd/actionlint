@@ -49,7 +49,7 @@ jobs:
     runs-on: ubuntu-latest
     needs: release
     steps:
-      - uses: vedantmgoyal2009/winget-releaser@v2
+      - uses: vedantmgoyal9/winget-releaser@main
         with:
           identifier: rhysd.actionlint
           installers-regex: '_windows_\w+\.zip$'
