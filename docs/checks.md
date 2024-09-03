@@ -1276,14 +1276,14 @@ actionlint validates the Webhook configurations:
   - Some filters are only available for specific events as explained in [the official document][specific-paths-doc]
     (see the following table).
 
-| Filter name       | Events where the filter is available                         |
-|-------------------|--------------------------------------------------------------|
-| `paths`           | `push`, `pull_request`, `pull_request_target`                |
-| `paths-ignore`    | `push`, `pull_request`, `pull_request_target`                |
-| `branches`        | `merge_group`, `push`, `pull_request`, `pull_request_target` |
-| `branches-ignore` | `merge_group`, `push`, `pull_request`, `pull_request_target` |
-| `tags`            | `push`                                                       |
-| `tags-ignore`     | `push`                                                       |
+| Filter name       | Events where the filter is available                                         |
+|-------------------|------------------------------------------------------------------------------|
+| `paths`           | `push`, `pull_request`, `pull_request_target`                                |
+| `paths-ignore`    | `push`, `pull_request`, `pull_request_target`                                |
+| `branches`        | `merge_group`, `push`, `pull_request`, `pull_request_target`, `workflow_run` |
+| `branches-ignore` | `merge_group`, `push`, `pull_request`, `pull_request_target`, `workflow_run` |
+| `tags`            | `push`                                                                       |
+| `tags-ignore`     | `push`                                                                       |
 
 The table of available Webhooks and their types are defined in [`all_webhooks.go`](../all_webhooks.go). It is generated
 by [a script][generate-webhook-events] and kept to the latest by CI workflow triggered weekly.
