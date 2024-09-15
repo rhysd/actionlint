@@ -6,7 +6,7 @@ import mocha from 'eslint-plugin-mocha';
 
 export default ts.config(
     eslint.configs.recommended,
-    ...ts.configs.recommendedTypeChecked,
+    ...ts.configs.strictTypeChecked,
     {
         files: ['*.ts'],
         languageOptions: {
@@ -21,10 +21,11 @@ export default ts.config(
         files: ['*.ts', '*.mjs'],
         rules: {
             eqeqeq: ['error', 'always'],
-            'no-constant-condition': ['error', { checkLoops: false }],
+            '@typescript-eslint/no-unnecessary-condition': ['error', { allowConstantLoopConditions: true }],
             '@typescript-eslint/no-unsafe-member-access': 'off',
             '@typescript-eslint/no-unsafe-argument': 'off',
             '@typescript-eslint/no-unsafe-assignment': 'off',
+            '@typescript-eslint/restrict-template-expressions': 'off',
         },
     },
     mocha.configs.flat.recommended,
