@@ -18,6 +18,8 @@ import (
 	"github.com/yuin/goldmark/text"
 )
 
+const theURL = "https://raw.githubusercontent.com/github/docs/main/content/actions/writing-workflows/choosing-when-your-workflow-runs/events-that-trigger-workflows.md"
+
 var dbg = log.New(io.Discard, "", log.LstdFlags)
 
 func getFirstLinkText(n ast.Node, src []byte) (string, bool) {
@@ -273,5 +275,5 @@ func run(args []string, stdout, stderr, dbgout io.Writer, srcURL string) int {
 }
 
 func main() {
-	os.Exit(run(os.Args[1:], os.Stdout, os.Stderr, os.Stderr, "https://raw.githubusercontent.com/github/docs/main/content/actions/using-workflows/events-that-trigger-workflows.md"))
+	os.Exit(run(os.Args[1:], os.Stdout, os.Stderr, os.Stderr, theURL))
 }
