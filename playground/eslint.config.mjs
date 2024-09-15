@@ -11,17 +11,15 @@ export default ts.config(
         files: ['*.ts'],
         languageOptions: {
             parserOptions: {
-                project: 'tsconfig.json',
+                projectService: true,
+                project: './tsconfig.json',
+                tsconfigRootDir: import.meta.dirname,
             },
         },
     },
     {
         files: ['*.ts', '*.mjs'],
         rules: {
-            indent: ['error', 4],
-            quotes: ['error', 'single'],
-            'linebreak-style': ['error', 'unix'],
-            semi: ['error', 'always'],
             eqeqeq: ['error', 'always'],
             'no-constant-condition': ['error', { checkLoops: false }],
             '@typescript-eslint/no-unsafe-member-access': 'off',
@@ -44,6 +42,7 @@ export default ts.config(
         files: ['eslint.config.mjs'],
         languageOptions: {
             parserOptions: {
+                projectService: false,
                 project: 'tsconfig.eslint.json',
             },
         },

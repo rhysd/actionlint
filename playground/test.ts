@@ -9,8 +9,8 @@ if (typeof globalThis.crypto === 'undefined') {
     globalThis.crypto = new Crypto();
 }
 
-// Inject global.Go
-require('./lib/js/wasm_exec.js');
+// Inject global.Go for testing `main.wasm`.
+require('./lib/js/wasm_exec.js'); // eslint-disable-line @typescript-eslint/no-require-imports
 
 class CheckResults {
     errors: ActionlintError[] | null = null;
@@ -76,7 +76,6 @@ jobs:
         const json = JSON.stringify(errors);
         assert.equal(errors.length, 1, json);
 
-        // eslint-disable-next-line @typescript-eslint/no-non-null-assertion
         const err = errors[0]!;
         assert.equal(err.message, '"runs-on" section is missing in job "test"', `message is unexpected: ${json}`);
         assert.equal(err.line, 5, `line is unexpected: ${json}`);
@@ -102,7 +101,6 @@ jobs:
         const json = JSON.stringify(errors);
         assert.equal(errors.length, 1, json);
 
-        // eslint-disable-next-line @typescript-eslint/no-non-null-assertion
         const err = errors[0]!;
         assert.ok(err.message.includes('unknown Webhook event "foo"'), `message is unexpected: ${json}`);
         assert.equal(err.line, 2, `line is unexpected: ${json}`);
