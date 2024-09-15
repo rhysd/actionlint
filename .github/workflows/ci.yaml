@@ -13,7 +13,7 @@ jobs:
       - name: Install dependencies on macOS
         run: |
           set -x
-          brew install shellcheck python3 pipx
+          brew install --quiet shellcheck python3 pipx
           # https://pipx.pypa.io/stable/installation/
           pipx ensurepath
           pipx install pyflakes
