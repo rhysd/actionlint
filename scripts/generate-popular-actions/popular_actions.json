@@ -348,8 +348,8 @@
     },
     {
         "slug": "peter-evans/create-pull-request",
-        "tags": ["v1", "v2", "v3", "v4", "v5", "v6"],
-        "next": "v7"
+        "tags": ["v1", "v2", "v3", "v4", "v5", "v6", "v7"],
+        "next": "v8"
     },
     {
         "slug": "preactjs/compressed-size-action",
