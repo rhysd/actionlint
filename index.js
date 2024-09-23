@@ -127,7 +127,9 @@ jobs:
             startActionlint();
             return;
         }
-        debounceId = window.setTimeout(() => startActionlint(), debounceInterval);
+        debounceId = window.setTimeout(() => {
+            startActionlint();
+        }, debounceInterval);
     });
     function getSource() {
         return editor.getValue();
@@ -159,7 +161,7 @@ jobs:
         let rest = text;
         while (true) {
             const m = rest.match(reUrl);
-            if (m === null || m.index === undefined || m[0] === undefined) {
+            if (m === null || m.index === undefined) {
                 if (rest.length > 0) {
                     ret.push(span(rest));
                 }
@@ -176,7 +178,9 @@ jobs:
             a.rel = 'noopener';
             a.textContent = url;
             a.className = 'has-text-link-my-light is-underlined';
-            a.addEventListener('click', e => e.stopPropagation());
+            a.addEventListener('click', e => {
+                e.stopPropagation();
+            });
             ret.push(a);
             rest = rest.slice(idx + url.length);
         }
@@ -223,11 +227,10 @@ jobs:
     window.addEventListener('beforeunload', e => {
         if (contentChanged) {
             e.preventDefault();
-            e.returnValue = '';
         }
     });
     checkUrlInput.addEventListener('keyup', e => {
-        if (e.key === 'Enter' || e.keyCode === 13) {
+        if (e.key === 'Enter') {
             e.preventDefault();
             checkUrlButton.click();
         }
@@ -260,7 +263,7 @@ jobs:
         const b64 = btoa(String.fromCharCode(...compressed));
         window.location.hash = b64;
     });
-    preferDark.addListener(event => {
+    preferDark.addEventListener('change', event => {
         editor.setOption('theme', colorTheme(event.matches));
     });
     const go = new Go();
@@ -274,8 +277,9 @@ jobs:
         result = await WebAssembly.instantiate(mod, go.importObject);
     }
     await go.run(result.instance);
-})().catch(err => {
+})().catch((err) => {
     console.error('ERROR!:', err);
-    alert(`${err.name}: ${err.message}\n\n${err.stack}`);
+    const msg = err instanceof Error ? `${err.name}: ${err.message}\n\n${err.stack}` : `Error: ${err}`;
+    alert(msg);
 });
 //# sourceMappingURL=index.js.map
