@@ -1,3 +1,13 @@
+<a name="v1.7.2"></a>
+# [v1.7.2](https://github.com/rhysd/actionlint/releases/tag/v1.7.2) - 23 Sep 2024
+
+- Fix child processes to run in parallel.
+- Update popular actions data set to the latest. ([#442](https://github.com/rhysd/actionlint/issues/442), [#445](https://github.com/rhysd/actionlint/issues/445), [#446](https://github.com/rhysd/actionlint/issues/446), [#447](https://github.com/rhysd/actionlint/issues/447), # thanks @ maikelvdh)
+- [The playground](https://rhysd.github.io/actionlint/) now supports both light and dark modes and automatically applies the system's theme.
+
+[Changes][v1.7.2]
+
+
 <a name="v1.7.1"></a>
 # [v1.7.1](https://github.com/rhysd/actionlint/releases/tag/v1.7.1) - 28 May 2024
 
@@ -164,8 +174,8 @@
 - Allow glob patterns in `self-hosted-runner.labels` configuration. For example, the following configuration defines any runner labels prefixed with `private-linux-`. (thanks [@kishaningithub](https://github.com/kishaningithub), [#378](https://github.com/rhysd/actionlint/issues/378))
   ```yaml
   self-hosted-runner:
-      labels:
-        - private-linux-*
+    labels:
+      - private-linux-*
   ```
 - Fix a race condition bug when `-format` option is used for linting multiple workflow files. Thanks [@ReinAchten-TomTom](https://github.com/ReinAchten-TomTom) for your help on the investigation. ([#370](https://github.com/rhysd/actionlint/issues/370))
 - Fix a race condition due to conflicts between some goroutine which starts to run shellcheck process and other goroutine which starts to wait until all processes finish.
@@ -666,7 +676,7 @@
 - Allow workflow calls are available in matrix jobs. See [the official announcement](https://github.blog/changelog/2022-08-22-github-actions-improvements-to-reusable-workflows-2/) for more details. ([#197](https://github.com/rhysd/actionlint/issues/197))
   ```yaml
   jobs:
-    ReusableMatrixJobForDeployment:
+    ReuseableMatrixJobForDeployment:
       strategy:
         matrix:
           target: [dev, stage, prod]
@@ -1708,6 +1718,7 @@ See documentation for more details:
 [Changes][v1.0.0]
 
 
+[v1.7.2]: https://github.com/rhysd/actionlint/compare/v1.7.1...v1.7.2
 [v1.7.1]: https://github.com/rhysd/actionlint/compare/v1.7.0...v1.7.1
 [v1.7.0]: https://github.com/rhysd/actionlint/compare/v1.6.27...v1.7.0
 [v1.6.27]: https://github.com/rhysd/actionlint/compare/v1.6.26...v1.6.27
