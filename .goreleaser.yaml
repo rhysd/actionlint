@@ -33,6 +33,10 @@ builds:
     goos: [freebsd]
     goarch: [386, amd64]
 
+checksum:
+  name_template: "actionlint_{{.Version}}_checksums.txt"
+  algorithm: sha256
+
 archives:
   - <<: &archives_defaults
       files:
