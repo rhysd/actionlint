@@ -24,11 +24,11 @@ func TestRuleRunnerLabelCheckLabels(t *testing.T) {
 		},
 		{
 			what:   "simple GH-hosted macOS runner label",
-			labels: []string{"macos-11.0"},
+			labels: []string{"macos-14.0"},
 		},
 		{
 			what:   "simple GH-hosted runner label in upper case",
-			labels: []string{"macOS-11"},
+			labels: []string{"macOS-14"},
 		},
 		{
 			what:   "self-hosted Linux runner",
@@ -228,8 +228,8 @@ func TestRuleRunnerLabelCheckLabels(t *testing.T) {
 		},
 		{
 			what:   "macOS labels conflict",
-			labels: []string{"macos-11", "macos-12"},
-			errs:   []string{`label "macos-12" conflicts with label "macos-11"`},
+			labels: []string{"macos-13", "macos-14"},
+			errs:   []string{`label "macos-14" conflicts with label "macos-13"`},
 		},
 		{
 			what:   "macOS XL and normal labels conflict",

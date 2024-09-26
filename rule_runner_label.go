@@ -12,7 +12,6 @@ const (
 	compatUbuntu2004 runnerOSCompat = 1 << iota
 	compatUbuntu2204
 	compatUbuntu2404
-	compatMacOS110
 	compatMacOS120
 	compatMacOS120L
 	compatMacOS120XL
@@ -58,7 +57,6 @@ var allGitHubHostedRunnerLabels = []string{
 	"macos-12-large",
 	"macos-12",
 	"macos-12.0",
-	"macos-11.0",
 }
 
 // https://docs.github.com/en/actions/hosting-your-own-runners/using-self-hosted-runners-in-a-workflow#using-default-labels-to-route-jobs
@@ -103,13 +101,12 @@ var defaultRunnerOSCompats = map[string]runnerOSCompat{
 	"macos-12-large":         compatMacOS120L,
 	"macos-12":               compatMacOS120,
 	"macos-12.0":             compatMacOS120,
-	"macos-11.0":             compatMacOS110,
 	"windows-latest":         compatWindows2022,
 	"windows-latest-8-cores": compatWindows2022,
 	"windows-2022":           compatWindows2022,
 	"windows-2019":           compatWindows2019,
 	"linux":                  compatUbuntu2404 | compatUbuntu2204 | compatUbuntu2004, // Note: "linux" does not always indicate Ubuntu. It might be Fedora or Arch or ...
-	"macos":                  compatMacOS140 | compatMacOS140L | compatMacOS140XL | compatMacOS130 | compatMacOS130L | compatMacOS130XL | compatMacOS120 | compatMacOS120L | compatMacOS120XL | compatMacOS110,
+	"macos":                  compatMacOS140 | compatMacOS140L | compatMacOS140XL | compatMacOS130 | compatMacOS130L | compatMacOS130XL | compatMacOS120 | compatMacOS120L | compatMacOS120XL,
 	"windows":                compatWindows2022 | compatWindows2019,
 }
 
