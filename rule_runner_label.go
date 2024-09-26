@@ -58,7 +58,6 @@ var allGitHubHostedRunnerLabels = []string{
 	"macos-12-large",
 	"macos-12",
 	"macos-12.0",
-	"macos-11",
 	"macos-11.0",
 }
 
@@ -104,7 +103,6 @@ var defaultRunnerOSCompats = map[string]runnerOSCompat{
 	"macos-12-large":         compatMacOS120L,
 	"macos-12":               compatMacOS120,
 	"macos-12.0":             compatMacOS120,
-	"macos-11":               compatMacOS110,
 	"macos-11.0":             compatMacOS110,
 	"windows-latest":         compatWindows2022,
 	"windows-latest-8-cores": compatWindows2022,

@@ -60,7 +60,7 @@ test.yaml:5:11: character '\' is invalid for branch and tag names. only special 
   |
 5 |       - 'v\d+'
   |           ^~~~
-test.yaml:10:28: label "linux-latest" is unknown. available labels are "windows-latest", "windows-2022", "windows-2019", "windows-2016", "ubuntu-latest", "ubuntu-22.04", "ubuntu-20.04", "ubuntu-18.04", "macos-latest", "macos-12", "macos-12.0", "macos-11", "macos-11.0", "macos-10.15", "self-hosted", "x64", "arm", "arm64", "linux", "macos", "windows". if it is a custom label for self-hosted runner, set list of labels in actionlint.yaml config file [runner-label]
+test.yaml:10:28: label "linux-latest" is unknown. available labels are "windows-latest", "windows-2022", "windows-2019", "windows-2016", "ubuntu-latest", "ubuntu-22.04", "ubuntu-20.04", "ubuntu-18.04", "macos-latest", "macos-12", "macos-12.0", "macos-11.0", "macos-10.15", "self-hosted", "x64", "arm", "arm64", "linux", "macos", "windows". if it is a custom label for self-hosted runner, set list of labels in actionlint.yaml config file [runner-label]
    |
 10 |         os: [macos-latest, linux-latest]
    |                            ^~~~~~~~~~~~~
