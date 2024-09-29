@@ -616,6 +616,9 @@ var PopularActions = map[string]*ActionMetadata{
 			"name": {"name", false},
 			"path": {"path", false},
 		},
+		Outputs: ActionMetadataOutputs{
+			"download-path": {"download-path"},
+		},
 	},
 	"actions/download-artifact@v4": {
 		Name: "Download a Build Artifact",
