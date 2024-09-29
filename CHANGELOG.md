@@ -1,9 +1,25 @@
+<a name="v1.7.3"></a>
+# [v1.7.3](https://github.com/rhysd/actionlint/releases/tag/v1.7.3) - 29 Sep 2024
+
+- Remove `macos-11` runner labels because [macOS 11 runner was dropped on 6/28/2024](https://github.blog/changelog/2024-05-20-actions-upcoming-changes-to-github-hosted-macos-runners/#macos-11-deprecation-and-removal). ([#451](https://github.com/rhysd/actionlint/issues/451), thanks [@muzimuzhi](https://github.com/muzimuzhi))
+- Support `macos-15`, `macos-15-large`, and `macos-15-xlarge` runner labels. The macOS 15 runner is not globally available yet, but [they are available in beta](https://github.com/actions/runner-images?tab=readme-ov-file#available-images). ([#453](https://github.com/rhysd/actionlint/issues/453), thanks [@muzimuzhi](https://github.com/muzimuzhi))
+- Release artifact includes checksums for the released binaries. The file name is `actionlint_{version}_checksums.txt`. ([#449](https://github.com/rhysd/actionlint/issues/449))
+  - For example, the checksums for v1.7.3 can be found [here](https://github.com/rhysd/actionlint/releases/download/v1.7.3/actionlint_1.7.3_checksums.txt).
+- Fix `download-path` output is missing in `actions/download-artifact@v3` action. ([#442](https://github.com/rhysd/actionlint/issues/442))
+  - Note that the latest version `actions/download-artifact@v4` was not affected by this issue.
+- Support Go 1.23.
+
+[Changes][v1.7.3]
+
+
 <a name="v1.7.2"></a>
 # [v1.7.2](https://github.com/rhysd/actionlint/releases/tag/v1.7.2) - 23 Sep 2024
 
 - Fix child processes to run in parallel.
-- Update popular actions data set to the latest. ([#442](https://github.com/rhysd/actionlint/issues/442), [#445](https://github.com/rhysd/actionlint/issues/445), [#446](https://github.com/rhysd/actionlint/issues/446), [#447](https://github.com/rhysd/actionlint/issues/447), # thanks @ maikelvdh)
+- Update the popular actions data set to the latest. ([#442](https://github.com/rhysd/actionlint/issues/442), [#445](https://github.com/rhysd/actionlint/issues/445), [#446](https://github.com/rhysd/actionlint/issues/446), [#447](https://github.com/rhysd/actionlint/issues/447), thanks [@maikelvdh](https://github.com/maikelvdh))
+- Add support for checking branch filters on [`merge_group` event](https://docs.github.com/en/actions/writing-workflows/choosing-when-your-workflow-runs/events-that-trigger-workflows#merge_group). ([#448](https://github.com/rhysd/actionlint/issues/448), thanks [@muzimuzhi](https://github.com/muzimuzhi))
 - [The playground](https://rhysd.github.io/actionlint/) now supports both light and dark modes and automatically applies the system's theme.
+- Fix releasing a failure on making a new winget package. ([#438](https://github.com/rhysd/actionlint/issues/438), thanks [@vedantmgoyal9](https://github.com/vedantmgoyal9))
 
 [Changes][v1.7.2]
 
@@ -1718,6 +1734,7 @@ See documentation for more details:
 [Changes][v1.0.0]
 
 
+[v1.7.3]: https://github.com/rhysd/actionlint/compare/v1.7.2...v1.7.3
 [v1.7.2]: https://github.com/rhysd/actionlint/compare/v1.7.1...v1.7.2
 [v1.7.1]: https://github.com/rhysd/actionlint/compare/v1.7.0...v1.7.1
 [v1.7.0]: https://github.com/rhysd/actionlint/compare/v1.6.27...v1.7.0
