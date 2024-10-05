@@ -3315,6 +3315,7 @@ var PopularActions = map[string]*ActionMetadata{
 			"build-script":             {"build-script", false},
 			"clean-script":             {"clean-script", false},
 			"collapse-unchanged":       {"collapse-unchanged", false},
+			"comment-key":              {"comment-key", false},
 			"compression":              {"compression", false},
 			"cwd":                      {"cwd", false},
 			"exclude":                  {"exclude", false},
