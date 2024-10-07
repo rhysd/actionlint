@@ -1,0 +1,24 @@
+name: Lint GitHub Actions workflows
+on:
+  push:
+
+jobs:
+  actionlint:
+    runs-on: ubuntu-latest
+    steps:
+      # ERROR: this step contains an actionlint error
+      - name: Print pull request title
+        run: echo '${{ github.event.pull_request.title }}'
+      # OK: ignore error (using environment variable is more better solution)
+      - name: Print pull request title
+        # actionlint ignore=potentially untrusted
+        run: echo '${{ github.event.pull_request.title }}'
+      # ERROR: this step contains a shellcheck error
+      - name: Run Actionlint
+        run: |
+          actionlint -format '{{range $err := .}}::error file={{$err.Filepath}},line={{$err.Line}},col={{$err.Column}}::{{$err.Message}}{{end}}' .github/workflows/*.yml
+      # OK: ignore error
+      - name: Run Actionlint
+        # actionlint ignore=SC2016
+        run: |
+          actionlint -format '{{range $err := .}}::error file={{$err.Filepath}},line={{$err.Line}},col={{$err.Column}}::{{$err.Message}}{{end}}' .github/workflows/*.yml
