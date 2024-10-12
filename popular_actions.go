@@ -369,6 +369,10 @@ var PopularActions = map[string]*ActionMetadata{
 			"submodules":                {"submodules", false},
 			"token":                     {"token", false},
 		},
+		Outputs: ActionMetadataOutputs{
+			"commit": {"commit"},
+			"ref":    {"ref"},
+		},
 	},
 	"actions/configure-pages@v1": {
 		Name: "Configure GitHub Pages",
