@@ -2,7 +2,6 @@ package actionlint
 
 import (
 	"path"
-	"sort"
 	"strings"
 )
 
@@ -28,15 +27,6 @@ const (
 	compatWindows2019
 	compatWindows2022
 )
-
-func buildAllGitHubHostedRunnerLabels() []string {
-	l := make([]string, 0, len(defaultRunnerOSCompats))
-	for k := range defaultRunnerOSCompats {
-		l = append(l, k)
-	}
-	sort.Strings(l)
-	return l
-}
 
 // https://docs.github.com/en/actions/using-github-hosted-runners/about-github-hosted-runners
 var allGitHubHostedRunnerLabels = []string{
