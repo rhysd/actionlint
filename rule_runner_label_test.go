@@ -24,7 +24,7 @@ func TestRuleRunnerLabelCheckLabels(t *testing.T) {
 		},
 		{
 			what:   "simple GH-hosted macOS runner label",
-			labels: []string{"macos-14.0"},
+			labels: []string{"macos-14"},
 		},
 		{
 			what:   "simple GH-hosted runner label in upper case",
@@ -40,7 +40,7 @@ func TestRuleRunnerLabelCheckLabels(t *testing.T) {
 		},
 		{
 			what:   "self-hosted all macOS runner labels",
-			labels: []string{"self-hosted", "macOS", "macOS-latest", "macOS-14.0", "macOS-14"},
+			labels: []string{"self-hosted", "macOS", "macOS-latest", "macOS-14"},
 		},
 		{
 			what:   "self-hosted Linux runner in upper case",

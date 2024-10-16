@@ -2,6 +2,7 @@ package actionlint
 
 import (
 	"path"
+	"sort"
 	"strings"
 )
 
@@ -28,6 +29,15 @@ const (
 	compatWindows2022
 )
 
+func buildAllGitHubHostedRunnerLabels() []string {
+	l := make([]string, 0, len(defaultRunnerOSCompats))
+	for k := range defaultRunnerOSCompats {
+		l = append(l, k)
+	}
+	sort.Strings(l)
+	return l
+}
+
 // https://docs.github.com/en/actions/using-github-hosted-runners/about-github-hosted-runners
 var allGitHubHostedRunnerLabels = []string{
 	"windows-latest",
@@ -52,17 +62,14 @@ var allGitHubHostedRunnerLabels = []string{
 	"macos-14-xlarge",
 	"macos-14-large",
 	"macos-14",
-	"macos-14.0",
 	"macos-13-xl",
 	"macos-13-xlarge",
 	"macos-13-large",
 	"macos-13",
-	"macos-13.0",
 	"macos-12-xl",
 	"macos-12-xlarge",
 	"macos-12-large",
 	"macos-12",
-	"macos-12.0",
 }
 
 // https://docs.github.com/en/actions/hosting-your-own-runners/using-self-hosted-runners-in-a-workflow#using-default-labels-to-route-jobs
@@ -99,17 +106,14 @@ var defaultRunnerOSCompats = map[string]runnerOSCompat{
 	"macos-14-xlarge":        compatMacOS140XL,
 	"macos-14-large":         compatMacOS140L,
 	"macos-14":               compatMacOS140,
-	"macos-14.0":             compatMacOS140,
 	"macos-13-xl":            compatMacOS130XL,
 	"macos-13-xlarge":        compatMacOS130XL,
 	"macos-13-large":         compatMacOS130L,
 	"macos-13":               compatMacOS130,
-	"macos-13.0":             compatMacOS130,
 	"macos-12-xl":            compatMacOS120XL,
 	"macos-12-xlarge":        compatMacOS120XL,
 	"macos-12-large":         compatMacOS120L,
 	"macos-12":               compatMacOS120,
-	"macos-12.0":             compatMacOS120,
 	"windows-latest":         compatWindows2022,
 	"windows-latest-8-cores": compatWindows2022,
 	"windows-2022":           compatWindows2022,
