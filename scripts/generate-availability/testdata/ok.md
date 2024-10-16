@@ -74,69 +74,69 @@ The following table indicates where each context and special function can be use
 
 | Workflow key | Context | Special functions |
 | ---- | ------- | ----------------- |
-| <code>concurrency</code> | <code>github, inputs</code> | None |
-| <code>env</code> | <code>github, secrets, inputs</code> | None |
-| <code>jobs.&lt;job_id&gt;.concurrency</code> | <code>github, needs, strategy, matrix, inputs</code> | None |
-| <code>jobs.&lt;job_id&gt;.container</code> | <code>github, needs, strategy, matrix, env, secrets, inputs</code> | None |
-| <code>jobs.&lt;job_id&gt;.container.credentials</code> | <code>github, needs, strategy, matrix, env, secrets, inputs</code> | None |
-| <code>jobs.&lt;job_id&gt;.container.env.&lt;env_id&gt;</code> | <code>github, needs, strategy, matrix, job, runner, env, secrets, inputs</code> | None |
-| <code>jobs.&lt;job_id&gt;.continue-on-error</code> | <code>github, needs, strategy, matrix, inputs</code> | None |
-| <code>jobs.&lt;job_id&gt;.defaults.run</code> | <code>github, needs, strategy, matrix, env, inputs</code> | None |
-| <code>jobs.&lt;job_id&gt;.env</code> | <code>github, needs, strategy, matrix, secrets, inputs</code> | None |
-| <code>jobs.&lt;job_id&gt;.environment</code> | <code>github, needs, strategy, matrix, inputs</code> | None |
-| <code>jobs.&lt;job_id&gt;.environment.url</code> | <code>github, needs, strategy, matrix, job, runner, env, steps, inputs</code> | None |
-| <code>jobs.&lt;job_id&gt;.if</code> | <code>github, needs, inputs</code> | <code>always, cancelled, success, failure</code> |
-| <code>jobs.&lt;job_id&gt;.name</code> | <code>github, needs, strategy, matrix, inputs</code> | None |
-| <code>jobs.&lt;job_id&gt;.outputs.&lt;output_id&gt;</code> | <code>github, needs, strategy, matrix, job, runner, env, secrets, steps, inputs</code> | None |
-| <code>jobs.&lt;job_id&gt;.runs-on</code> | <code>github, needs, strategy, matrix, inputs</code> | None |
-| <code>jobs.&lt;job_id&gt;.secrets.&lt;secrets_id&gt;</code> | <code>github, needs,{% ifversion actions-reusable-workflow-matrix %} strategy, matrix,{% endif %} secrets{% ifversion actions-unified-inputs %}, inputs{% endif %}</code> | None |
-| <code>jobs.&lt;job_id&gt;.services</code> | <code>github, needs, strategy, matrix, inputs</code> | None |
-| <code>jobs.&lt;job_id&gt;.services.&lt;service_id&gt;.credentials</code> | <code>github, needs, strategy, matrix, env, secrets, inputs</code> | None |
-| <code>jobs.&lt;job_id&gt;.services.&lt;service_id&gt;.env.&lt;env_id&gt;</code> | <code>github, needs, strategy, matrix, job, runner, env, secrets, inputs</code> | None |
-| <code>jobs.&lt;job_id&gt;.steps.continue-on-error</code> | <code>github, needs, strategy, matrix, job, runner, env, secrets, steps, inputs</code> | <code>hashFiles</code> |
-| <code>jobs.&lt;job_id&gt;.steps.env</code> | <code>github, needs, strategy, matrix, job, runner, env, secrets, steps, inputs</code> | <code>hashFiles</code> |
-| <code>jobs.&lt;job_id&gt;.steps.if</code> | <code>github, needs, strategy, matrix, job, runner, env, steps, inputs</code> | <code>always, cancelled, success, failure, hashFiles</code> |
-| <code>jobs.&lt;job_id&gt;.steps.name</code> | <code>github, needs, strategy, matrix, job, runner, env, secrets, steps, inputs</code> | <code>hashFiles</code> |
-| <code>jobs.&lt;job_id&gt;.steps.run</code> | <code>github, needs, strategy, matrix, job, runner, env, secrets, steps, inputs</code> | <code>hashFiles</code> |
-| <code>jobs.&lt;job_id&gt;.steps.timeout-minutes</code> | <code>github, needs, strategy, matrix, job, runner, env, secrets, steps, inputs</code> | <code>hashFiles</code> |
-| <code>jobs.&lt;job_id&gt;.steps.with</code> | <code>github, needs, strategy, matrix, job, runner, env, secrets, steps, inputs</code> | <code>hashFiles</code> |
-| <code>jobs.&lt;job_id&gt;.steps.working-directory</code> | <code>github, needs, strategy, matrix, job, runner, env, secrets, steps, inputs</code> | <code>hashFiles</code> |
-| <code>jobs.&lt;job_id&gt;.strategy</code> | <code>github, needs, inputs</code> | None |
-| <code>jobs.&lt;job_id&gt;.timeout-minutes</code> | <code>github, needs, strategy, matrix, inputs</code> | None |
-| <code>jobs.&lt;job_id&gt;.with.&lt;with_id&gt;</code> | <code>github, needs{% ifversion actions-reusable-workflow-matrix %}, strategy, matrix{% endif %}{% ifversion actions-unified-inputs %}, inputs{% endif %}</code> | None |
-| <code>on.workflow_call.inputs.&lt;inputs_id&gt;.default</code> | <code>github{% ifversion actions-unified-inputs %}, inputs{% endif %}</code> | None |
-| <code>on.workflow_call.outputs.&lt;output_id&gt;.value</code> | <code>github, jobs, inputs</code> | None |
+| `concurrency` | `github, inputs` | None |
+| `env` | `github, secrets, inputs` | None |
+| `jobs.<job_id>.concurrency` | `github, needs, strategy, matrix, inputs` | None |
+| `jobs.<job_id>.container` | `github, needs, strategy, matrix, env, secrets, inputs` | None |
+| `jobs.<job_id>.container.credentials` | `github, needs, strategy, matrix, env, secrets, inputs` | None |
+| `jobs.<job_id>.container.env.<env_id>` | `github, needs, strategy, matrix, job, runner, env, secrets, inputs` | None |
+| `jobs.<job_id>.continue-on-error` | `github, needs, strategy, matrix, inputs` | None |
+| `jobs.<job_id>.defaults.run` | `github, needs, strategy, matrix, env, inputs` | None |
+| `jobs.<job_id>.env` | `github, needs, strategy, matrix, secrets, inputs` | None |
+| `jobs.<job_id>.environment` | `github, needs, strategy, matrix, inputs` | None |
+| `jobs.<job_id>.environment.url` | `github, needs, strategy, matrix, job, runner, env, steps, inputs` | None |
+| `jobs.<job_id>.if` | `github, needs, inputs` | `always, cancelled, success, failure` |
+| `jobs.<job_id>.name` | `github, needs, strategy, matrix, inputs` | None |
+| `jobs.<job_id>.outputs.<output_id>` | `github, needs, strategy, matrix, job, runner, env, secrets, steps, inputs` | None |
+| `jobs.<job_id>.runs-on` | `github, needs, strategy, matrix, inputs` | None |
+| `jobs.<job_id>.secrets.<secrets_id>` | `github, needs,{% ifversion actions-reusable-workflow-matrix %} strategy, matrix,{% endif %} secrets{% ifversion actions-unified-inputs %}, inputs{% endif %}` | None |
+| `jobs.<job_id>.services` | `github, needs, strategy, matrix, inputs` | None |
+| `jobs.<job_id>.services.<service_id>.credentials` | `github, needs, strategy, matrix, env, secrets, inputs` | None |
+| `jobs.<job_id>.services.<service_id>.env.<env_id>` | `github, needs, strategy, matrix, job, runner, env, secrets, inputs` | None |
+| `jobs.<job_id>.steps.continue-on-error` | `github, needs, strategy, matrix, job, runner, env, secrets, steps, inputs` | `hashFiles` |
+| `jobs.<job_id>.steps.env` | `github, needs, strategy, matrix, job, runner, env, secrets, steps, inputs` | `hashFiles` |
+| `jobs.<job_id>.steps.if` | `github, needs, strategy, matrix, job, runner, env, steps, inputs` | `always, cancelled, success, failure, hashFiles` |
+| `jobs.<job_id>.steps.name` | `github, needs, strategy, matrix, job, runner, env, secrets, steps, inputs` | `hashFiles` |
+| `jobs.<job_id>.steps.run` | `github, needs, strategy, matrix, job, runner, env, secrets, steps, inputs` | `hashFiles` |
+| `jobs.<job_id>.steps.timeout-minutes` | `github, needs, strategy, matrix, job, runner, env, secrets, steps, inputs` | `hashFiles` |
+| `jobs.<job_id>.steps.with` | `github, needs, strategy, matrix, job, runner, env, secrets, steps, inputs` | `hashFiles` |
+| `jobs.<job_id>.steps.working-directory` | `github, needs, strategy, matrix, job, runner, env, secrets, steps, inputs` | `hashFiles` |
+| `jobs.<job_id>.strategy` | `github, needs, inputs` | None |
+| `jobs.<job_id>.timeout-minutes` | `github, needs, strategy, matrix, inputs` | None |
+| `jobs.<job_id>.with.<with_id>` | `github, needs{% ifversion actions-reusable-workflow-matrix %}, strategy, matrix{% endif %}{% ifversion actions-unified-inputs %}, inputs{% endif %}` | None |
+| `on.workflow_call.inputs.<inputs_id>.default` | `github{% ifversion actions-unified-inputs %}, inputs{% endif %}` | None |
+| `on.workflow_call.outputs.<output_id>.value` | `github, jobs, inputs` | None |
 {% else %}
 | Path | Context | Special functions |
 | ---- | ------- | ----------------- |
-| <code>concurrency</code> | <code>github</code> | None |
-| <code>env</code> | <code>github, secrets</code> | None |
-| <code>jobs.&lt;job_id&gt;.concurrency</code> | <code>github, needs, strategy, matrix</code> | None |
-| <code>jobs.&lt;job_id&gt;.container</code> | <code>github, needs, strategy, matrix</code> | None |
-| <code>jobs.&lt;job_id&gt;.container.credentials</code> | <code>github, needs, strategy, matrix, env, secrets</code> | None |
-| <code>jobs.&lt;job_id&gt;.container.env.&lt;env_id&gt;</code> | <code>github, needs, strategy, matrix, job, runner, env, secrets</code> | None |
-| <code>jobs.&lt;job_id&gt;.continue-on-error</code> | <code>github, needs, strategy, matrix</code> | None |
-| <code>jobs.&lt;job_id&gt;.defaults.run</code> | <code>github, needs, strategy, matrix, env</code> | None |
-| <code>jobs.&lt;job_id&gt;.env</code> | <code>github, needs, strategy, matrix, secrets</code> | None |
-| <code>jobs.&lt;job_id&gt;.environment</code> | <code>github, needs, strategy, matrix</code> | None |
-| <code>jobs.&lt;job_id&gt;.environment.url</code> | <code>github, needs, strategy, matrix, job, runner, env, steps</code> | None |
-| <code>jobs.&lt;job_id&gt;.if</code> | <code>github, needs</code> | <code>always, cancelled, success, failure</code> |
-| <code>jobs.&lt;job_id&gt;.name</code> | <code>github, needs, strategy, matrix</code> | None |
-| <code>jobs.&lt;job_id&gt;.outputs.&lt;output_id&gt;</code> | <code>github, needs, strategy, matrix, job, runner, env, secrets, steps</code> | None |
-| <code>jobs.&lt;job_id&gt;.runs-on</code> | <code>github, needs, strategy, matrix</code> | None |
-| <code>jobs.&lt;job_id&gt;.services</code> | <code>github, needs, strategy, matrix</code> | None |
-| <code>jobs.&lt;job_id&gt;.services.&lt;service_id&gt;.credentials</code> | <code>github, needs, strategy, matrix, env, secrets</code> | None |
-| <code>jobs.&lt;job_id&gt;.services.&lt;service_id&gt;.env.&lt;env_id&gt;</code> | <code>github, needs, strategy, matrix, job, runner, env, secrets</code> | None |
-| <code>jobs.&lt;job_id&gt;.steps.continue-on-error</code> | <code>github, needs, strategy, matrix, job, runner, env, secrets, steps</code> | <code>hashFiles</code> |
-| <code>jobs.&lt;job_id&gt;.steps.env</code> | <code>github, needs, strategy, matrix, job, runner, env, secrets, steps</code> | <code>hashFiles</code> |
-| <code>jobs.&lt;job_id&gt;.steps.if</code> | <code>github, needs, strategy, matrix, job, runner, env, steps</code> | <code>always, cancelled, success, failure, hashFiles</code> |
-| <code>jobs.&lt;job_id&gt;.steps.name</code> | <code>github, needs, strategy, matrix, job, runner, env, secrets, steps</code> | <code>hashFiles</code> |
-| <code>jobs.&lt;job_id&gt;.steps.run</code> | <code>github, needs, strategy, matrix, job, runner, env, secrets, steps</code> | <code>hashFiles</code> |
-| <code>jobs.&lt;job_id&gt;.steps.timeout-minutes</code> | <code>github, needs, strategy, matrix, job, runner, env, secrets, steps</code> | <code>hashFiles</code> |
-| <code>jobs.&lt;job_id&gt;.steps.with</code> | <code>github, needs, strategy, matrix, job, runner, env, secrets, steps</code> | <code>hashFiles</code> |
-| <code>jobs.&lt;job_id&gt;.steps.working-directory</code> | <code>github, needs, strategy, matrix, job, runner, env, secrets, steps</code> | <code>hashFiles</code> |
-| <code>jobs.&lt;job_id&gt;.strategy</code> | <code>github, needs</code> | None |
-| <code>jobs.&lt;job_id&gt;.timeout-minutes</code> | <code>github, needs, strategy, matrix</code> | None |
+| `concurrency` | `github` | None |
+| `env` | `github, secrets` | None |
+| `jobs.<job_id>.concurrency` | `github, needs, strategy, matrix` | None |
+| `jobs.<job_id>.container` | `github, needs, strategy, matrix` | None |
+| `jobs.<job_id>.container.credentials` | `github, needs, strategy, matrix, env, secrets` | None |
+| `jobs.<job_id>.container.env.<env_id>` | `github, needs, strategy, matrix, job, runner, env, secrets` | None |
+| `jobs.<job_id>.continue-on-error` | `github, needs, strategy, matrix` | None |
+| `jobs.<job_id>.defaults.run` | `github, needs, strategy, matrix, env` | None |
+| `jobs.<job_id>.env` | `github, needs, strategy, matrix, secrets` | None |
+| `jobs.<job_id>.environment` | `github, needs, strategy, matrix` | None |
+| `jobs.<job_id>.environment.url` | `github, needs, strategy, matrix, job, runner, env, steps` | None |
+| `jobs.<job_id>.if` | `github, needs` | `always, cancelled, success, failure` |
+| `jobs.<job_id>.name` | `github, needs, strategy, matrix` | None |
+| `jobs.<job_id>.outputs.<output_id>` | `github, needs, strategy, matrix, job, runner, env, secrets, steps` | None |
+| `jobs.<job_id>.runs-on` | `github, needs, strategy, matrix` | None |
+| `jobs.<job_id>.services` | `github, needs, strategy, matrix` | None |
+| `jobs.<job_id>.services.<service_id>.credentials` | `github, needs, strategy, matrix, env, secrets` | None |
+| `jobs.<job_id>.services.<service_id>.env.<env_id>` | `github, needs, strategy, matrix, job, runner, env, secrets` | None |
+| `jobs.<job_id>.steps.continue-on-error` | `github, needs, strategy, matrix, job, runner, env, secrets, steps` | `hashFiles` |
+| `jobs.<job_id>.steps.env` | `github, needs, strategy, matrix, job, runner, env, secrets, steps` | `hashFiles` |
+| `jobs.<job_id>.steps.if` | `github, needs, strategy, matrix, job, runner, env, steps` | `always, cancelled, success, failure, hashFiles` |
+| `jobs.<job_id>.steps.name` | `github, needs, strategy, matrix, job, runner, env, secrets, steps` | `hashFiles` |
+| `jobs.<job_id>.steps.run` | `github, needs, strategy, matrix, job, runner, env, secrets, steps` | `hashFiles` |
+| `jobs.<job_id>.steps.timeout-minutes` | `github, needs, strategy, matrix, job, runner, env, secrets, steps` | `hashFiles` |
+| `jobs.<job_id>.steps.with` | `github, needs, strategy, matrix, job, runner, env, secrets, steps` | `hashFiles` |
+| `jobs.<job_id>.steps.working-directory` | `github, needs, strategy, matrix, job, runner, env, secrets, steps` | `hashFiles` |
+| `jobs.<job_id>.strategy` | `github, needs` | None |
+| `jobs.<job_id>.timeout-minutes` | `github, needs, strategy, matrix` | None |
 {% endif %}
 
 ### Context availability 2
@@ -151,67 +151,67 @@ The following table indicates where each context and special function can be use
 
 | Workflow key | Context | Special functions |
 | ---- | ------- | ----------------- |
-| <code>concurrency</code> | <code>github, inputs</code> | |
-| <code>env</code> | <code>github, secrets, inputs</code> | |
-| <code>jobs.&lt;job_id&gt;.concurrency</code> | <code>github, needs, strategy, matrix, inputs</code> | |
-| <code>jobs.&lt;job_id&gt;.container</code> | <code>github, needs, strategy, matrix, env, secrets, inputs</code> | |
-| <code>jobs.&lt;job_id&gt;.container.credentials</code> | <code>github, needs, strategy, matrix, env, secrets, inputs</code> | |
-| <code>jobs.&lt;job_id&gt;.container.env.&lt;env_id&gt;</code> | <code>github, needs, strategy, matrix, job, runner, env, secrets, inputs</code> | |
-| <code>jobs.&lt;job_id&gt;.continue-on-error</code> | <code>github, needs, strategy, matrix, inputs</code> | |
-| <code>jobs.&lt;job_id&gt;.defaults.run</code> | <code>github, needs, strategy, matrix, env, inputs</code> | |
-| <code>jobs.&lt;job_id&gt;.env</code> | <code>github, needs, strategy, matrix, secrets, inputs</code> | |
-| <code>jobs.&lt;job_id&gt;.environment</code> | <code>github, needs, strategy, matrix, inputs</code> | |
-| <code>jobs.&lt;job_id&gt;.environment.url</code> | <code>github, needs, strategy, matrix, job, runner, env, steps, inputs</code> | |
-| <code>jobs.&lt;job_id&gt;.if</code> | <code>github, needs, inputs</code> | <code>always, cancelled, success, failure</code> |
-| <code>jobs.&lt;job_id&gt;.name</code> | <code>github, needs, strategy, matrix, inputs</code> | |
-| <code>jobs.&lt;job_id&gt;.outputs.&lt;output_id&gt;</code> | <code>github, needs, strategy, matrix, job, runner, env, secrets, steps, inputs</code> | |
-| <code>jobs.&lt;job_id&gt;.runs-on</code> | <code>github, needs, strategy, matrix, inputs</code> | |
-| <code>jobs.&lt;job_id&gt;.secrets.&lt;secrets_id&gt;</code> | <code>github, needs,{% ifversion actions-reusable-workflow-matrix %} strategy, matrix,{% endif %} secrets{% ifversion actions-unified-inputs %}, inputs{% endif %}</code> | |
-| <code>jobs.&lt;job_id&gt;.services</code> | <code>github, needs, strategy, matrix, inputs</code> | |
-| <code>jobs.&lt;job_id&gt;.services.&lt;service_id&gt;.credentials</code> | <code>github, needs, strategy, matrix, env, secrets, inputs</code> | |
-| <code>jobs.&lt;job_id&gt;.services.&lt;service_id&gt;.env.&lt;env_id&gt;</code> | <code>github, needs, strategy, matrix, job, runner, env, secrets, inputs</code> | |
-| <code>jobs.&lt;job_id&gt;.steps.continue-on-error</code> | <code>github, needs, strategy, matrix, job, runner, env, secrets, steps, inputs</code> | <code>hashFiles</code> |
-| <code>jobs.&lt;job_id&gt;.steps.env</code> | <code>github, needs, strategy, matrix, job, runner, env, secrets, steps, inputs</code> | <code>hashFiles</code> |
-| <code>jobs.&lt;job_id&gt;.steps.if</code> | <code>github, needs, strategy, matrix, job, runner, env, steps, inputs</code> | <code>always, cancelled, success, failure, hashFiles</code> |
-| <code>jobs.&lt;job_id&gt;.steps.name</code> | <code>github, needs, strategy, matrix, job, runner, env, secrets, steps, inputs</code> | <code>hashFiles</code> |
-| <code>jobs.&lt;job_id&gt;.steps.run</code> | <code>github, needs, strategy, matrix, job, runner, env, secrets, steps, inputs</code> | <code>hashFiles</code> |
-| <code>jobs.&lt;job_id&gt;.steps.timeout-minutes</code> | <code>github, needs, strategy, matrix, job, runner, env, secrets, steps, inputs</code> | <code>hashFiles</code> |
-| <code>jobs.&lt;job_id&gt;.steps.with</code> | <code>github, needs, strategy, matrix, job, runner, env, secrets, steps, inputs</code> | <code>hashFiles</code> |
-| <code>jobs.&lt;job_id&gt;.steps.working-directory</code> | <code>github, needs, strategy, matrix, job, runner, env, secrets, steps, inputs</code> | <code>hashFiles</code> |
-| <code>jobs.&lt;job_id&gt;.strategy</code> | <code>github, needs, inputs</code> | |
-| <code>jobs.&lt;job_id&gt;.timeout-minutes</code> | <code>github, needs, strategy, matrix, inputs</code> | |
-| <code>jobs.&lt;job_id&gt;.with.&lt;with_id&gt;</code> | <code>github, needs{% ifversion actions-reusable-workflow-matrix %}, strategy, matrix{% endif %}{% ifversion actions-unified-inputs %}, inputs{% endif %}</code> | |
-| <code>on.workflow_call.inputs.&lt;inputs_id&gt;.default</code> | <code>github{% ifversion actions-unified-inputs %}, inputs{% endif %}</code> | |
-| <code>on.workflow_call.outputs.&lt;output_id&gt;.value</code> | <code>github, jobs, inputs</code> | |
+| `concurrency` | `github, inputs` | |
+| `env` | `github, secrets, inputs` | |
+| `jobs.<job_id>.concurrency` | `github, needs, strategy, matrix, inputs` | |
+| `jobs.<job_id>.container` | `github, needs, strategy, matrix, env, secrets, inputs` | |
+| `jobs.<job_id>.container.credentials` | `github, needs, strategy, matrix, env, secrets, inputs` | |
+| `jobs.<job_id>.container.env.<env_id>` | `github, needs, strategy, matrix, job, runner, env, secrets, inputs` | |
+| `jobs.<job_id>.continue-on-error` | `github, needs, strategy, matrix, inputs` | |
+| `jobs.<job_id>.defaults.run` | `github, needs, strategy, matrix, env, inputs` | |
+| `jobs.<job_id>.env` | `github, needs, strategy, matrix, secrets, inputs` | |
+| `jobs.<job_id>.environment` | `github, needs, strategy, matrix, inputs` | |
+| `jobs.<job_id>.environment.url` | `github, needs, strategy, matrix, job, runner, env, steps, inputs` | |
+| `jobs.<job_id>.if` | `github, needs, inputs` | `always, cancelled, success, failure` |
+| `jobs.<job_id>.name` | `github, needs, strategy, matrix, inputs` | |
+| `jobs.<job_id>.outputs.<output_id>` | `github, needs, strategy, matrix, job, runner, env, secrets, steps, inputs` | |
+| `jobs.<job_id>.runs-on` | `github, needs, strategy, matrix, inputs` | |
+| `jobs.<job_id>.secrets.<secrets_id>` | `github, needs,{% ifversion actions-reusable-workflow-matrix %} strategy, matrix,{% endif %} secrets{% ifversion actions-unified-inputs %}, inputs{% endif %}` | |
+| `jobs.<job_id>.services` | `github, needs, strategy, matrix, inputs` | |
+| `jobs.<job_id>.services.<service_id>.credentials` | `github, needs, strategy, matrix, env, secrets, inputs` | |
+| `jobs.<job_id>.services.<service_id>.env.<env_id>` | `github, needs, strategy, matrix, job, runner, env, secrets, inputs` | |
+| `jobs.<job_id>.steps.continue-on-error` | `github, needs, strategy, matrix, job, runner, env, secrets, steps, inputs` | `hashFiles` |
+| `jobs.<job_id>.steps.env` | `github, needs, strategy, matrix, job, runner, env, secrets, steps, inputs` | `hashFiles` |
+| `jobs.<job_id>.steps.if` | `github, needs, strategy, matrix, job, runner, env, steps, inputs` | `always, cancelled, success, failure, hashFiles` |
+| `jobs.<job_id>.steps.name` | `github, needs, strategy, matrix, job, runner, env, secrets, steps, inputs` | `hashFiles` |
+| `jobs.<job_id>.steps.run` | `github, needs, strategy, matrix, job, runner, env, secrets, steps, inputs` | `hashFiles` |
+| `jobs.<job_id>.steps.timeout-minutes` | `github, needs, strategy, matrix, job, runner, env, secrets, steps, inputs` | `hashFiles` |
+| `jobs.<job_id>.steps.with` | `github, needs, strategy, matrix, job, runner, env, secrets, steps, inputs` | `hashFiles` |
+| `jobs.<job_id>.steps.working-directory` | `github, needs, strategy, matrix, job, runner, env, secrets, steps, inputs` | `hashFiles` |
+| `jobs.<job_id>.strategy` | `github, needs, inputs` | |
+| `jobs.<job_id>.timeout-minutes` | `github, needs, strategy, matrix, inputs` | |
+| `jobs.<job_id>.with.<with_id>` | `github, needs{% ifversion actions-reusable-workflow-matrix %}, strategy, matrix{% endif %}{% ifversion actions-unified-inputs %}, inputs{% endif %}` | |
+| `on.workflow_call.inputs.<inputs_id>.default` | `github{% ifversion actions-unified-inputs %}, inputs{% endif %}` | |
+| `on.workflow_call.outputs.<output_id>.value` | `github, jobs, inputs` | |
 {% else %}
 | Path | Context | Special functions |
 | ---- | ------- | ----------------- |
-| <code>concurrency</code> | <code>github</code> | |
-| <code>env</code> | <code>github, secrets</code> | |
-| <code>jobs.&lt;job_id&gt;.concurrency</code> | <code>github, needs, strategy, matrix</code> | |
-| <code>jobs.&lt;job_id&gt;.container</code> | <code>github, needs, strategy, matrix</code> | |
-| <code>jobs.&lt;job_id&gt;.container.credentials</code> | <code>github, needs, strategy, matrix, env, secrets</code> | |
-| <code>jobs.&lt;job_id&gt;.container.env.&lt;env_id&gt;</code> | <code>github, needs, strategy, matrix, job, runner, env, secrets</code> | |
-| <code>jobs.&lt;job_id&gt;.continue-on-error</code> | <code>github, needs, strategy, matrix</code> | |
-| <code>jobs.&lt;job_id&gt;.defaults.run</code> | <code>github, needs, strategy, matrix, env</code> | |
-| <code>jobs.&lt;job_id&gt;.env</code> | <code>github, needs, strategy, matrix, secrets</code> | |
-| <code>jobs.&lt;job_id&gt;.environment</code> | <code>github, needs, strategy, matrix</code> | |
-| <code>jobs.&lt;job_id&gt;.environment.url</code> | <code>github, needs, strategy, matrix, job, runner, env, steps</code> | |
-| <code>jobs.&lt;job_id&gt;.if</code> | <code>github, needs</code> | <code>always, cancelled, success, failure</code> |
-| <code>jobs.&lt;job_id&gt;.name</code> | <code>github, needs, strategy, matrix</code> | |
-| <code>jobs.&lt;job_id&gt;.outputs.&lt;output_id&gt;</code> | <code>github, needs, strategy, matrix, job, runner, env, secrets, steps</code> | |
-| <code>jobs.&lt;job_id&gt;.runs-on</code> | <code>github, needs, strategy, matrix</code> | |
-| <code>jobs.&lt;job_id&gt;.services</code> | <code>github, needs, strategy, matrix</code> | |
-| <code>jobs.&lt;job_id&gt;.services.&lt;service_id&gt;.credentials</code> | <code>github, needs, strategy, matrix, env, secrets</code> | |
-| <code>jobs.&lt;job_id&gt;.services.&lt;service_id&gt;.env.&lt;env_id&gt;</code> | <code>github, needs, strategy, matrix, job, runner, env, secrets</code> | |
-| <code>jobs.&lt;job_id&gt;.steps.continue-on-error</code> | <code>github, needs, strategy, matrix, job, runner, env, secrets, steps</code> | <code>hashFiles</code> |
-| <code>jobs.&lt;job_id&gt;.steps.env</code> | <code>github, needs, strategy, matrix, job, runner, env, secrets, steps</code> | <code>hashFiles</code> |
-| <code>jobs.&lt;job_id&gt;.steps.if</code> | <code>github, needs, strategy, matrix, job, runner, env, steps</code> | <code>always, cancelled, success, failure, hashFiles</code> |
-| <code>jobs.&lt;job_id&gt;.steps.name</code> | <code>github, needs, strategy, matrix, job, runner, env, secrets, steps</code> | <code>hashFiles</code> |
-| <code>jobs.&lt;job_id&gt;.steps.run</code> | <code>github, needs, strategy, matrix, job, runner, env, secrets, steps</code> | <code>hashFiles</code> |
-| <code>jobs.&lt;job_id&gt;.steps.timeout-minutes</code> | <code>github, needs, strategy, matrix, job, runner, env, secrets, steps</code> | <code>hashFiles</code> |
-| <code>jobs.&lt;job_id&gt;.steps.with</code> | <code>github, needs, strategy, matrix, job, runner, env, secrets, steps</code> | <code>hashFiles</code> |
-| <code>jobs.&lt;job_id&gt;.steps.working-directory</code> | <code>github, needs, strategy, matrix, job, runner, env, secrets, steps</code> | <code>hashFiles</code> |
-| <code>jobs.&lt;job_id&gt;.strategy</code> | <code>github, needs</code> | |
-| <code>jobs.&lt;job_id&gt;.timeout-minutes</code> | <code>github, needs, strategy, matrix</code> | |
+| `concurrency` | `github` | |
+| `env` | `github, secrets` | |
+| `jobs.<job_id>.concurrency` | `github, needs, strategy, matrix` | |
+| `jobs.<job_id>.container` | `github, needs, strategy, matrix` | |
+| `jobs.<job_id>.container.credentials` | `github, needs, strategy, matrix, env, secrets` | |
+| `jobs.<job_id>.container.env.<env_id>` | `github, needs, strategy, matrix, job, runner, env, secrets` | |
+| `jobs.<job_id>.continue-on-error` | `github, needs, strategy, matrix` | |
+| `jobs.<job_id>.defaults.run` | `github, needs, strategy, matrix, env` | |
+| `jobs.<job_id>.env` | `github, needs, strategy, matrix, secrets` | |
+| `jobs.<job_id>.environment` | `github, needs, strategy, matrix` | |
+| `jobs.<job_id>.environment.url` | `github, needs, strategy, matrix, job, runner, env, steps` | |
+| `jobs.<job_id>.if` | `github, needs` | `always, cancelled, success, failure` |
+| `jobs.<job_id>.name` | `github, needs, strategy, matrix` | |
+| `jobs.<job_id>.outputs.<output_id>` | `github, needs, strategy, matrix, job, runner, env, secrets, steps` | |
+| `jobs.<job_id>.runs-on` | `github, needs, strategy, matrix` | |
+| `jobs.<job_id>.services` | `github, needs, strategy, matrix` | |
+| `jobs.<job_id>.services.<service_id>.credentials` | `github, needs, strategy, matrix, env, secrets` | |
+| `jobs.<job_id>.services.<service_id>.env.<env_id>` | `github, needs, strategy, matrix, job, runner, env, secrets` | |
+| `jobs.<job_id>.steps.continue-on-error` | `github, needs, strategy, matrix, job, runner, env, secrets, steps` | `hashFiles` |
+| `jobs.<job_id>.steps.env` | `github, needs, strategy, matrix, job, runner, env, secrets, steps` | `hashFiles` |
+| `jobs.<job_id>.steps.if` | `github, needs, strategy, matrix, job, runner, env, steps` | `always, cancelled, success, failure, hashFiles` |
+| `jobs.<job_id>.steps.name` | `github, needs, strategy, matrix, job, runner, env, secrets, steps` | `hashFiles` |
+| `jobs.<job_id>.steps.run` | `github, needs, strategy, matrix, job, runner, env, secrets, steps` | `hashFiles` |
+| `jobs.<job_id>.steps.timeout-minutes` | `github, needs, strategy, matrix, job, runner, env, secrets, steps` | `hashFiles` |
+| `jobs.<job_id>.steps.with` | `github, needs, strategy, matrix, job, runner, env, secrets, steps` | `hashFiles` |
+| `jobs.<job_id>.steps.working-directory` | `github, needs, strategy, matrix, job, runner, env, secrets, steps` | `hashFiles` |
+| `jobs.<job_id>.strategy` | `github, needs` | |
+| `jobs.<job_id>.timeout-minutes` | `github, needs, strategy, matrix` | |
 {% endif %}
