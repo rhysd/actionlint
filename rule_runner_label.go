@@ -2,6 +2,7 @@ package actionlint
 
 import (
 	"path"
+	"slices"
 	"sort"
 	"strings"
 )
@@ -32,45 +33,15 @@ const (
 func buildAllGitHubHostedRunnerLabels() []string {
 	l := make([]string, 0, len(defaultRunnerOSCompats))
 	for k := range defaultRunnerOSCompats {
-		l = append(l, k)
+		if !slices.Contains(selfHostedRunnerPresetOSLabels, k) {
+			l = append(l, k)
+		}
 	}
 	sort.Strings(l)
 	return l
 }
 
-// https://docs.github.com/en/actions/using-github-hosted-runners/about-github-hosted-runners
-var allGitHubHostedRunnerLabels = []string{
-	"windows-latest",
-	"windows-latest-8-cores",
-	"windows-2022",
-	"windows-2019",
-	"ubuntu-latest",
-	"ubuntu-latest-4-cores",
-	"ubuntu-latest-8-cores",
-	"ubuntu-latest-16-cores",
-	"ubuntu-24.04",
-	"ubuntu-22.04",
-	"ubuntu-20.04",
-	"macos-latest",
-	"macos-latest-xl",
-	"macos-latest-xlarge",
-	"macos-latest-large",
-	"macos-15-xlarge",
-	"macos-15-large",
-	"macos-15",
-	"macos-14-xl",
-	"macos-14-xlarge",
-	"macos-14-large",
-	"macos-14",
-	"macos-13-xl",
-	"macos-13-xlarge",
-	"macos-13-large",
-	"macos-13",
-	"macos-12-xl",
-	"macos-12-xlarge",
-	"macos-12-large",
-	"macos-12",
-}
+var allGitHubHostedRunnerLabels = buildAllGitHubHostedRunnerLabels()
 
 // https://docs.github.com/en/actions/hosting-your-own-runners/using-self-hosted-runners-in-a-workflow#using-default-labels-to-route-jobs
 var selfHostedRunnerPresetOSLabels = []string{
