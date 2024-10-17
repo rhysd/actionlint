@@ -26,22 +26,18 @@ const theURL = "https://raw.githubusercontent.com/github/docs/main/content/actio
 var dbg = log.New(io.Discard, "", log.LstdFlags)
 var reReplaceholder = regexp.MustCompile("{%[^%]+%}")
 
-// `ast.Walk` doesn't work for `TableCell`'s children.
-func buildTextOf(n ast.Node, src []byte, b *strings.Builder) {
-	for c := n.FirstChild(); c != nil; c = c.NextSibling() {
-		if t, ok := c.(*ast.Text); ok {
-			b.Write(t.Value(src))
-		} else {
-			buildTextOf(c, src, b)
-		}
-	}
-}
-
 // `Node.Text` method was deprecated. This is alternative to it.
 // https://github.com/yuin/goldmark/issues/471
 func textOf(n ast.Node, src []byte) string {
 	var b strings.Builder
-	buildTextOf(n, src, &b)
+	ast.Walk(n, func(n ast.Node, entering bool) (ast.WalkStatus, error) {
+		if entering {
+			if t, ok := n.(*ast.Text); ok {
+				b.Write(t.Value(src))
+			}
+		}
+		return ast.WalkContinue, nil
+	})
 	return b.String()
 }
 

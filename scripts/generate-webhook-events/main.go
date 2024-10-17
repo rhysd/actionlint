@@ -29,7 +29,7 @@ func textOf(n ast.Node, src []byte) string {
 
 	ast.Walk(n, func(n ast.Node, entering bool) (ast.WalkStatus, error) {
 		if !entering {
-			return ast.WalkStop, nil
+			return ast.WalkContinue, nil
 		}
 		if t, ok := n.(*ast.Text); ok {
 			b.Write(t.Value(src))
@@ -44,7 +44,7 @@ func getFirstLinkText(n ast.Node, src []byte) (string, bool) {
 	var link *ast.Link
 	ast.Walk(n, func(n ast.Node, entering bool) (ast.WalkStatus, error) {
 		if !entering {
-			return ast.WalkStop, nil
+			return ast.WalkContinue, nil
 		}
 
 		if l, ok := n.(*ast.Link); ok {
