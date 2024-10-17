@@ -1,0 +1,45 @@
+on:
+  push:
+
+jobs:
+  actionlint:
+    runs-on: ubuntu-latest
+    steps:
+      # ignore one error
+      # actionlint ignore=undefined variable ".*"
+      - run: echo '${{ foo }}'
+      # multiple ignores
+      # actionlint ignore=undefined variable, potentially untrusted
+      - run: |
+          echo '${{ foo }}'
+          echo '${{ github.event.head_commit.author.name }}'
+      - name: ignore shellcheck errors
+        # actionlint ignore=SC2016
+        run: |
+          actionlint -format '{{range $err := .}}::error file={{$err.Filepath}},line={{$err.Line}},col={{$err.Column}}::{{$err.Message}}{{end}}' .github/workflows/*.yml
+      - name: ignore actionlint errors
+        # actionlint ignore=potentially untrusted
+        run: echo '${{ github.event.head_commit.author.name }}'
+      - name: ignore errors by regexp
+        # actionlint ignore=po.*ly un[r-u]*ed
+        run: echo '${{ github.event.head_commit.author.name }}'
+      - name: multiline command
+        # actionlint ignore=potentially untrusted
+        run: |
+          echo "hello"
+          echo '${{ github.event.head_commit.author.name }}'
+          echo "hello"
+      - name: ignore shellcheck errors in multiline command
+        # actionlint ignore=SC2016
+        run: |
+          echo "hello"
+          actionlint -format '{{range $err := .}}::error file={{$err.Filepath}},line={{$err.Line}},col={{$err.Column}}::{{$err.Message}}{{end}}' .github/workflows/*.yml
+          echo "hello"
+      # actionlint ignore=SC2016
+      - run: |
+          actionlint -format '{{range $err := .}}::error file={{$err.Filepath}},line={{$err.Line}},col={{$err.Column}}::{{$err.Message}}{{end}}' .github/workflows/*.yml
+      # actionlint ignore=undefined variable
+      - run: |
+          echo "hello"
+          echo "${{foo}}"
+          echo "hello"
