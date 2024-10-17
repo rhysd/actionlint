@@ -26,6 +26,25 @@ const theURL = "https://raw.githubusercontent.com/github/docs/main/content/actio
 var dbg = log.New(io.Discard, "", log.LstdFlags)
 var reReplaceholder = regexp.MustCompile("{%[^%]+%}")
 
+// `ast.Walk` doesn't work for `TableCell`'s children.
+func buildTextOf(n ast.Node, src []byte, b *strings.Builder) {
+	for c := n.FirstChild(); c != nil; c = c.NextSibling() {
+		if t, ok := c.(*ast.Text); ok {
+			b.Write(t.Value(src))
+		} else {
+			buildTextOf(c, src, b)
+		}
+	}
+}
+
+// `Node.Text` method was deprecated. This is alternative to it.
+// https://github.com/yuin/goldmark/issues/471
+func textOf(n ast.Node, src []byte) string {
+	var b strings.Builder
+	buildTextOf(n, src, &b)
+	return b.String()
+}
+
 type switchCase struct {
 	ctx  []string
 	sp   []string
@@ -62,7 +81,7 @@ func parseContextAvailabilityTable(src []byte) (*extast.Table, bool) {
 	n := root.FirstChild()
 
 	for ; n != nil; n = n.NextSibling() {
-		if h, ok := n.(*ast.Heading); ok && h.Level == 3 && bytes.Equal(h.Text(src), []byte("Context availability")) {
+		if h, ok := n.(*ast.Heading); ok && h.Level == 3 && textOf(h, src) == "Context availability" {
 			n = n.NextSibling()
 			break
 		}
@@ -84,7 +103,7 @@ func cells(n *extast.TableRow, src []byte) []string {
 	t := []string{}
 	for c := n.FirstChild(); c != nil; c = c.NextSibling() {
 		if tc, ok := c.(*extast.TableCell); ok {
-			t = append(t, string(tc.Text(src)))
+			t = append(t, textOf(tc, src))
 		}
 	}
 	return t
@@ -162,7 +181,7 @@ func WorkflowKeyAvailability(key string) ([]string, []string) {
 
 		key := cs[0]
 		if key == "" {
-			dbg.Printf("Skip %q due to empty key\n", r.Text(src))
+			dbg.Printf("Skip %q due to empty key\n", textOf(r, src))
 			continue
 		}
 		ctx := split(cs[1])
