@@ -366,3 +366,18 @@ func visitExprNode(n, p ExprNode, f VisitExprNodeFunc) {
 func VisitExprNode(n ExprNode, f VisitExprNodeFunc) {
 	visitExprNode(n, nil, f)
 }
+
+// FindParent applies predicate to each parent of this node until predicate returns true.
+// Then it returns result of predicate. If no parent found, returns nil, false.
+func FindParent[T ExprNode](n ExprNode, predicate func(n ExprNode) (T, bool)) (T, bool) {
+	parent := n.Parent()
+	for parent != nil {
+		t, ok := predicate(parent)
+		if ok {
+			return t, true
+		}
+		parent = parent.Parent()
+	}
+	var zero T
+	return zero, false
+}
