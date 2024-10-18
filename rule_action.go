@@ -323,6 +323,11 @@ func (rule *RuleAction) VisitStep(n *Step) error {
 
 	spec := e.Uses.Value
 
+	if rule.isReusableWorkflow(spec) {
+		rule.errorReusableWorkflow(spec, e)
+		return nil
+	}
+
 	if strings.HasPrefix(spec, "./") {
 		// Relative to repository root
 		rule.checkLocalAction(spec, e)
@@ -551,6 +556,19 @@ func (rule *RuleAction) checkLocalActionMetadata(meta *ActionMetadata, action *E
 		}
 	}
 	rule.checkLocalActionRuns(meta, action.Uses.Pos)
+}
+
+// isReusableWorkflow checks if the given spec refers to a reusable workflow.
+func (rule *RuleAction) isReusableWorkflow(spec string) bool {
+	return strings.HasSuffix(spec, ".yml") || strings.HasSuffix(spec, ".yaml") ||
+		strings.Contains(spec, "/.github/workflows/")
+}
+
+// errorReusableWorkflow emits an error for attempting to use a reusable workflow as a step.
+func (rule *RuleAction) errorReusableWorkflow(spec string, exec *ExecAction) {
+	rule.Errorf(exec.Uses.Pos, "The step uses %q which appears to be a reusable workflow. "+
+		"Reusable workflows cannot be used as steps. "+
+		"Use 'jobs.<job_id>.uses' to call reusable workflows at the job level instead.", spec)
 }
 
 // https://docs.github.com/en/actions/learn-github-actions/workflow-syntax-for-github-actions#example-using-action-in-the-same-repository-as-the-workflow
