@@ -512,7 +512,7 @@ jobs:
       # ERROR: The step is not run yet at this point
       - run: echo ${{ steps.cache.outputs.cache-hit }}
       # actions/cache sets cache-hit output
-      - uses: actions/cache@v3
+      - uses: actions/cache@v4
         id: cache
         with:
           key: ${{ hashFiles('**/*.lock') }}
@@ -1755,7 +1755,7 @@ jobs:
   test:
     runs-on: ubuntu-latest
     steps:
-      - uses: actions/cache@v3
+      - uses: actions/cache@v4
         with:
           keys: |
             ${{ hashFiles('**/*.lock') }}
@@ -1767,11 +1767,11 @@ jobs:
 Output:
 
 ```
-test.yaml:7:15: missing input "key" which is required by action "actions/cache@v3". all required inputs are "key", "path" [action]
+test.yaml:7:15: missing input "key" which is required by action "actions/cache@v4". all required inputs are "key", "path" [action]
   |
-7 |       - uses: actions/cache@v3
+7 |       - uses: actions/cache@v4
   |               ^~~~~~~~~~~~~~~~
-test.yaml:9:11: input "keys" is not defined in action "actions/cache@v3". available inputs are "key", "path", "restore-keys", "upload-chunk-size" [action]
+test.yaml:9:11: input "keys" is not defined in action "actions/cache@v4". available inputs are "key", "path", "restore-keys", "upload-chunk-size" [action]
   |
 9 |           keys: |
   |           ^~~~~
@@ -1779,7 +1779,7 @@ test.yaml:9:11: input "keys" is not defined in action "actions/cache@v3". availa
 
 [Playground](https://rhysd.github.io/actionlint#eJyFj0EKwjAQRfc9xV8I1UJbcJmVK+8xDYOpqUlwEkVq725apYgbV8PMe/Dne6cQkpiiOPtOVAFEljhP4Jqc1D4LqUsupnqgmS1IIgd5W0CNJCwKpGPvnbSatOHDbf/BwL2PRq0bYPmR9efXBdiMIwyJOfYDy7asqrZqBq9tucM0/TWXyF81UI5F0wbSlk4s67u5mMKFLL8A+h9EEw==)
 
-actionlint checks inputs of many popular actions such as `actions/checkout@v3`. It checks
+actionlint checks inputs of many popular actions such as `actions/checkout@v4`. It checks
 
 - some input is required by the action but it is not set at `with:`
 - input set at `with:` is not defined in the action (this commonly occurs by a typo)
@@ -1787,8 +1787,8 @@ actionlint checks inputs of many popular actions such as `actions/checkout@v3`. 
 this is done by checking `with:` section items with a small database collected at building `actionlint` binary. actionlint
 can check popular actions without fetching any `action.yml` of the actions from the remote so that it can run efficiently.
 
-Note that it only supports the case of specifying major versions like `actions/checkout@v3`. Fixing version of action like
-`actions/checkout@v3.0.2` and using the HEAD of action like `actions/checkout@main` are not supported for now.
+Note that it only supports the case of specifying major versions like `actions/checkout@v4`. Fixing version of action like
+`actions/checkout@v4.0.1` and using the HEAD of action like `actions/checkout@main` are not supported for now.
 
 So far, actionlint supports more than 100 popular actions The data set is embedded at [`popular_actions.go`](../popular_actions.go)
 and were automatically collected by [a script][generate-popular-actions]. If you want more checks for other actions, please
@@ -1806,16 +1806,16 @@ jobs:
   test:
     runs-on: ubuntu-latest
     steps:
-      # ERROR: actions/checkout@v2 is using the outdated runner 'node12'
-      - uses: actions/checkout@v2
+      # ERROR: actions/checkout@v3 is using the outdated runner 'node16'
+      - uses: actions/checkout@v3
 ```
 
 Output:
 
 ```
-test.yaml:8:15: the runner of "actions/checkout@v2" action is too old to run on GitHub Actions. update the action's version to fix this issue [action]
+test.yaml:8:15: the runner of "actions/checkout@v3" action is too old to run on GitHub Actions. update the action's version to fix this issue [action]
   |
-8 |       - uses: actions/checkout@v2
+8 |       - uses: actions/checkout@v3
   |               ^~~~~~~~~~~~~~~~~~~
 ```
 
@@ -1823,10 +1823,10 @@ test.yaml:8:15: the runner of "actions/checkout@v2" action is too old to run on 
 
 In addition to the checks for inputs of actions described in [the previous section](#check-popular-action-inputs), actionlint
 reports an error when a popular action is 'outdated'. An action is outdated when the runner used by the action is no longer
-supported by GitHub Actions runtime. For example, `node12` is no longer available so any actions can use `node12` runner.
+supported by GitHub Actions runtime. For example, `node12` is no longer available so any actions can not use `node12` runner.
 
-Note that this check doesn't report that the action version is up-to-date. For example, even if you use `actions/checkout@v3` and
-newer version `actions/checkout@v4` is available, actionlint reports no error as long as `actions/checkout@v3` is not outdated.
+Note that this check doesn't report that the action version is up-to-date. For example, even if you use `actions/checkout@v4` and
+newer version `actions/checkout@v5` is available, actionlint reports no error as long as `actions/checkout@v4` is not outdated.
 If you want to keep actions used by your workflows up-to-date, consider to use [Dependabot][dependabot-doc].
 
 <a name="check-shell-names"></a>

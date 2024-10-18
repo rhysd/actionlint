@@ -58,7 +58,7 @@ func ExampleLinter_yourOwnRule() {
 	//
 	// testdata/examples/main.yaml:14:9: every step must have its name [step-name]
 	//    |
-	// 14 |       - uses: actions/checkout@v3
+	// 14 |       - uses: actions/checkout@v4
 	//    |         ^~~~~
 	fmt.Println(len(errs), "lint errors found by actionlint")
 	// Output: 1 lint errors found by actionlint

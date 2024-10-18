@@ -62,7 +62,7 @@ func (r *registry) spec(tag string) string {
 //go:embed popular_actions.json
 var defaultPopularActionsJSON []byte
 
-const minNodeRunnerVersion = 16
+const minNodeRunnerVersion = 20
 
 func isOutdatedRunner(r string) bool {
 	if !strings.HasPrefix(r, "node") {
@@ -299,7 +299,7 @@ var PopularActions = map[string]*ActionMetadata{
 	fmt.Fprintln(b, "}")
 
 	fmt.Fprintln(b, `// OutdatedPopularActionSpecs is a spec set of known outdated popular actions. The word 'outdated'
-// means that the runner used by the action is no longer available such as "node12".
+// means that the runner used by the action is no longer available such as "node12", "node16".
 var OutdatedPopularActionSpecs = map[string]struct{}{`)
 	for _, s := range outdated {
 		fmt.Fprintf(b, "%q: {},\n", s)

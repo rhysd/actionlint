@@ -1,7 +1,7 @@
-name: 'Old Node.js'
+name: 'Node.js v12 runner'
 author: 'rhysd <https://rhysd.github.io>'
 description: 'Runner node version is too old'
 
 runs:
-  using: 'node16'
+  using: 'node12'
   main: 'index.js'

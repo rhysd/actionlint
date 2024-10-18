@@ -480,10 +480,10 @@ func (rule *RuleAction) checkLocalActionRuns(meta *ActionMetadata, pos *Pos) {
 		rule.checkLocalDockerActionRuns(r, meta.Dir(), meta.Name, pos)
 	case "composite":
 		rule.checkLocalCompositeActionRuns(r, meta.Dir(), meta.Name, pos)
-	case "node16", "node20":
+	case "node20":
 		rule.checkLocalJavaScriptActionRuns(r, meta.Dir(), meta.Name, pos)
 	default:
-		rule.Errorf(pos, `invalid runner name %q at runs.using in %q action defined at %q. valid runners are "composite", "docker", "node16", and "node20". see https://docs.github.com/en/actions/creating-actions/metadata-syntax-for-github-actions#runs`, r.Using, meta.Name, meta.Dir())
+		rule.Errorf(pos, `invalid runner name %q at runs.using in %q action defined at %q. valid runners are "composite", "docker", and "node20". see https://docs.github.com/en/actions/creating-actions/metadata-syntax-for-github-actions#runs`, r.Using, meta.Name, meta.Dir())
 
 		// Probably invalid version of Node.js runner. Assume it is JavaScript action to find as many errors as possible
 		if strings.HasPrefix(r.Using, "node") {

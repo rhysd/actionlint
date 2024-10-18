@@ -40,12 +40,12 @@ func TestOKWriteStdout(t *testing.T) {
 func TestOKWriteFile(t *testing.T) {
 	in := filepath.Join("testdata", "ok.md")
 	out := filepath.Join("testdata", "_test_output.go")
-	defer os.Remove(out)
 
 	stdout, stderr, status := testRunMain([]string{in, out})
 	if status != 0 {
 		t.Fatalf("status was non-zero: %d: %q", status, stderr)
 	}
+	defer os.Remove(out)
 
 	b, err := os.ReadFile(filepath.Join("testdata", "ok.go"))
 	if err != nil {
