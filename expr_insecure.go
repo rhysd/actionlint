@@ -135,6 +135,15 @@ var BuiltinUntrustedInputs = UntrustedInputSearchRoots{
 	),
 }
 
+// Contains functions which are considered to be safe.
+// No script injection is possible if unsafe expression is used inside these functions
+// because they have stable determined output
+var safeFunctions = map[string]bool{
+	"contains":   true,
+	"startswith": true,
+	"endswith":   true,
+}
+
 // UntrustedInputChecker is a checker to detect untrusted inputs in an expression syntax tree.
 // This checker checks object property accesses, array index accesses, and object filters. And
 // detects paths to untrusted inputs. Found errors are stored in this instance and can be get via
@@ -292,8 +301,25 @@ func (u *UntrustedInputChecker) end() {
 	u.reset()
 }
 
+// IsFunctionSafe Checks if this function is safe in terms of script injection possibility when using unsafe args
+func (u *UntrustedInputChecker) IsFunctionSafe(name string) bool {
+	return safeFunctions[strings.ToLower(name)]
+}
+
 // OnVisitNodeLeave is a callback which should be called on visiting node after visiting its children.
 func (u *UntrustedInputChecker) OnVisitNodeLeave(n ExprNode) {
+	_, isInsideSafeFunctionCall := FindParent(n, func(n ExprNode) (*FuncCallNode, bool) {
+		if funcCall, ok := n.(*FuncCallNode); ok && u.IsFunctionSafe(funcCall.Callee) {
+			return funcCall, true
+		}
+		return nil, false
+	})
+
+	// Skip unsafe checks if we are inside of safe function call expression
+	if isInsideSafeFunctionCall {
+		return
+	}
+
 	switch n := n.(type) {
 	case *VariableNode:
 		u.end()
