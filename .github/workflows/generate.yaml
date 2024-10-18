@@ -15,6 +15,7 @@ on:
 
 jobs:
   go-generate:
+    if: ${{ github.repository == 'rhysd/actionlint' }}
     runs-on: ubuntu-latest
     permissions:
       contents: write
@@ -47,4 +48,4 @@ jobs:
             This PR was created by [this workflow run](https://github.com/rhysd/actionlint/actions/runs/${{ github.run_id }}) automatically.
             List of workflow runs is [here](https://github.com/rhysd/actionlint/actions/workflows/generate.yaml).
           assignees: rhysd
-        if: ${{ steps.diff.outputs.pr == 'true' && github.repository == 'rhysd/actionlint' }}
+        if: ${{ steps.diff.outputs.pr == 'true' }}
