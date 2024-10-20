@@ -1124,7 +1124,7 @@ jobs:
 Output:
 
 ```
-test.yaml:3:3: cyclic dependencies in "needs" configurations of jobs are detected. detected cycle is "prepare" -> "build" -> "install" -> "prepare" [job-needs]
+test.yaml:3:3: cyclic dependencies in "needs" job configurations are detected. detected cycle is "prepare" -> "build" -> "install" -> "prepare" [job-needs]
   |
 3 |   prepare:
   |   ^~~~~~~~

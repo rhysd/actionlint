@@ -1,7 +1,7 @@
 package actionlint
 
 import (
-	"fmt"
+	"strconv"
 	"strings"
 )
 
@@ -44,7 +44,7 @@ func NewRuleJobNeeds() *RuleJobNeeds {
 	}
 }
 
-func contains(heystack []string, needle string) bool {
+func contains[T comparable](heystack []T, needle T) bool {
 	for _, s := range heystack {
 		if s == needle {
 			return true
@@ -107,39 +107,53 @@ func (rule *RuleJobNeeds) VisitWorkflowPost(n *Workflow) error {
 		return nil
 	}
 
-	if edge := detectCyclic(rule.nodes); edge != nil {
-		edges := map[string]string{}
-		edges[edge.from.id] = edge.to.id
-		collectCyclic(edge.to, edges)
+	// Note: Only the first cycle can be detected even if there are multiple cycles in "needs:" configurations.
+	if edge := detectFirstCycle(rule.nodes); edge != nil {
+		edges := map[*jobNode]*jobNode{}
+		edges[edge.from] = edge.to
+		collectCycle(edge.to, edges)
 
-		desc := make([]string, 0, len(edges))
-		for from, to := range edges {
-			desc = append(desc, fmt.Sprintf("%q -> %q", from, to))
+		// Start cycle from the smallest position to make the error message deterministic
+		start := edge.from
+		for n := range edges {
+			if n.pos.IsBefore(start.pos) {
+				start = n
+			}
 		}
 
-		rule.Errorf(
-			edge.from.pos,
-			"cyclic dependencies in \"needs\" configurations of jobs are detected. detected cycle is %s",
-			strings.Join(desc, ", "),
-		)
+		var msg strings.Builder
+		msg.WriteString("cyclic dependencies in \"needs\" job configurations are detected. detected cycle is ")
+
+		msg.WriteString(strconv.Quote(start.id))
+		from, to := start, edges[start]
+		for {
+			msg.WriteString(" -> ")
+			msg.WriteString(strconv.Quote(to.id))
+			from, to = to, edges[to]
+			if from == start {
+				break
+			}
+		}
+
+		rule.Error(start.pos, msg.String())
 	}
 
 	return nil
 }
 
-func collectCyclic(src *jobNode, edges map[string]string) bool {
+func collectCycle(src *jobNode, edges map[*jobNode]*jobNode) bool {
 	for _, dest := range src.resolved {
 		if dest.status != nodeStatusActive {
 			continue
 		}
-		edges[src.id] = dest.id
-		if _, ok := edges[dest.id]; ok {
+		edges[src] = dest
+		if _, ok := edges[dest]; ok {
 			return true
 		}
-		if collectCyclic(dest, edges) {
+		if collectCycle(dest, edges) {
 			return true
 		}
-		delete(edges, src.id)
+		delete(edges, src)
 	}
 	return false
 }
@@ -147,7 +161,7 @@ func collectCyclic(src *jobNode, edges map[string]string) bool {
 // Detect cyclic dependencies
 // https://inzkyk.xyz/algorithms/depth_first_search/detecting_cycles/
 
-func detectCyclic(nodes map[string]*jobNode) *edge {
+func detectFirstCycle(nodes map[string]*jobNode) *edge {
 	for _, v := range nodes {
 		if v.status == nodeStatusNew {
 			if e := detectCyclicNode(v); e != nil {
