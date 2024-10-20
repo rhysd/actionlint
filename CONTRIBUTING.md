@@ -5,7 +5,7 @@ To report a bug, please submit a new ticket on GitHub. It's helpful to search si
 https://github.com/rhysd/actionlint/issues/new
 
 Providing a reproducible workflow content is much appreciated. If only a small snippet of workflow is provided or no
-input is provided at all, such issue tickets may get lower priority since they are occasionally time consuming to
+input is provided at all, such issue tickets may get lower priority because they are occasionally time consuming to
 investigate.
 
 # Sending a patch
@@ -21,6 +21,10 @@ Before submitting your PR, please ensure the following points:
 - Confirm build/tests/lints passed. How to run them is described in the following sections.
 - If you added a new feature, consider to add tests and explain it in [the usage document](docs/usage.md).
 - If you added a new public API, consider to add tests and a doc comment for the API.
+- If you updated [the checks document](docs/checks.md), ensure to run [the maintenance script](#about-checks-doc).
+
+Special thanks to the native English speakers for proofreading the documentation and error messages, as the author is not
+proficient in English.
 
 # Development
 
@@ -219,3 +223,14 @@ All tests are automated.
   - `testdata/projects/` contains 'Project' tests. Each directories represent a single project (meaning a repository on GitHub).
     Corresponding `*.out` files are expected error messages. Empty `*.out` file means the test case should cause no errors.
     'Project' test is used for use cases where multiple files are related (reusable workflows, local actions, config files, ...).
+
+<a id="about-checks-doc"></a>
+## How to write checks document
+
+The ['Checks' document](./docs/checks.md) is a large document to explain all checks by actionlint.
+
+This document is maintained with [`update-checks-doc`](./scripts/update-checks-doc) script. This script automatically updates
+the code blocks after `Output:` and the `Playground` links. This script should be run after modifying the document.
+
+Please see [the readme of the script](./scripts/update-checks-doc/README.md) for the usage and knowing the details of the
+document format that this script assumes.
