@@ -64,8 +64,12 @@ func Actionlint(src []byte) ([]byte, error) {
 	if err != nil {
 		return nil, err
 	}
-	if _, err := l.Lint("test.yaml", src, p); err != nil {
+	errs, err := l.Lint("test.yaml", src, p)
+	if err != nil {
 		return nil, err
+	}
+	if len(errs) == 0 {
+		return nil, errors.New("the input example caused no error")
 	}
 
 	// Some error message contains absolute file paths. Replace them not to make the document depend
