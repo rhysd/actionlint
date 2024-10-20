@@ -41,7 +41,7 @@ func generatePermalink(src []byte) (string, error) {
 	comp.Close()
 	b64.Close()
 
-	return fmt.Sprintf("[Playground](https://rhysd.github.io/actionlint#%s)", out.Bytes()), nil
+	return fmt.Sprintf("[Playground](https://rhysd.github.io/actionlint/#%s)", out.Bytes()), nil
 }
 
 func runActionlint(src []byte) ([]byte, error) {
@@ -59,7 +59,11 @@ func runActionlint(src []byte) ([]byte, error) {
 		return nil, err
 	}
 
-	if _, err := l.Lint("test.yaml", src, nil); err != nil {
+	p, err := actionlint.NewProjects().At(".")
+	if err != nil {
+		return nil, err
+	}
+	if _, err := l.Lint("test.yaml", src, p); err != nil {
 		return nil, err
 	}
 
@@ -144,7 +148,7 @@ func update(in []byte) ([]byte, error) {
 			log.Printf("Skip updating output for %q due to the comment at line %d", section, lnum)
 			outputHeader = false
 		}
-		if strings.HasPrefix(l, "[Playground](https://rhysd.github.io/actionlint#") && strings.HasSuffix(l, ")") {
+		if strings.HasPrefix(l, "[Playground](https://rhysd.github.io/actionlint/#") && strings.HasSuffix(l, ")") {
 			if input.Len() == 0 {
 				return nil, fmt.Errorf("playground link cannot be generated because example input for %q does not exist", section)
 			}
