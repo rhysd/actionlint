@@ -11,6 +11,7 @@ import (
 	"os"
 	"strings"
 
+	"github.com/google/go-cmp/cmp"
 	"github.com/rhysd/actionlint"
 )
 
@@ -180,15 +181,26 @@ func update(in []byte) ([]byte, error) {
 }
 
 func Main(args []string) error {
-	if len(os.Args) < 2 {
-		return errors.New("usage: update-checks-doc FILE")
+	var path string
+	var check bool
+	switch len(args) {
+	case 2:
+		path = args[1]
+	case 3:
+		if args[1] != "-check" && args[1] != "--check" {
+			return errors.New("usage: update-checks-doc [-check] FILE")
+		}
+		path = args[2]
+		check = true
+	default:
+		return errors.New("usage: update-checks-doc [-check] FILE")
 	}
-	p := os.Args[1]
-	in, err := os.ReadFile(p)
+
+	in, err := os.ReadFile(path)
 	if err != nil {
 		return err
 	}
-	log.Printf("Read %d bytes from %q", len(in), p)
+	log.Printf("Read %d bytes from %q", len(in), path)
 
 	out, err := update(in)
 	if err != nil {
@@ -196,12 +208,16 @@ func Main(args []string) error {
 	}
 
 	if bytes.Equal(in, out) {
-		log.Printf("Do nothing because there is no update in %q", p)
+		log.Printf("Do nothing because there is no update in %q", path)
 		return nil
 	}
 
-	log.Printf("Generate the updated content (%d bytes) for %q", len(out), p)
-	if err := os.WriteFile(p, out, 0666); err != nil {
+	if check {
+		return errors.New("checks document has some update. run `go run ./scripts/update-checks-doc ./docs/checks.md` and commit the changes. the diff:\n\n" + cmp.Diff(in, out))
+	}
+
+	log.Printf("Generate the updated content (%d bytes) for %q", len(out), path)
+	if err := os.WriteFile(path, out, 0666); err != nil {
 		return err
 	}
 
