@@ -107,8 +107,8 @@ func Update(in []byte) ([]byte, error) {
 			skipOutput = false
 			count = 0
 		}
-		if strings.HasPrefix(l, `<a name="`) && strings.HasSuffix(l, `"></a>`) {
-			anchor = strings.TrimSuffix(strings.TrimPrefix(l, `<a name="`), `"></a>`)
+		if strings.HasPrefix(l, `<a id="`) && strings.HasSuffix(l, `"></a>`) {
+			anchor = strings.TrimSuffix(strings.TrimPrefix(l, `<a id="`), `"></a>`)
 		}
 		if l == "Example input:" {
 			log.Printf("Found example input header for %q at line %d", section, lnum)

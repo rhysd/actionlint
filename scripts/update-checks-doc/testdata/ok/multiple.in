@@ -1,4 +1,4 @@
-<a name="hello1"></a>
+<a id="hello1"></a>
 ## Hello 1
 
 Example input:
@@ -22,7 +22,7 @@ This section will be generated
 
 This is minimal test case.
 
-<a name="hello2"></a>
+<a id="hello2"></a>
 ## Hello 2
 
 Example input:
@@ -46,7 +46,7 @@ This section will be generated
 
 This is minimal test case.
 
-<a name="hello3"></a>
+<a id="hello3"></a>
 ## Hello 3
 
 Example input:

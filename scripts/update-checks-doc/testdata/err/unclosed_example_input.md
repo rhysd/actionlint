@@ -1,4 +1,4 @@
-<a name="hello"></a>
+<a id="hello"></a>
 ## Hello
 
 Example input:

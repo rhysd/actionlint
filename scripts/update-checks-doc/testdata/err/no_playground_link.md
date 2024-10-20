@@ -1,4 +1,4 @@
-<a name="hello"></a>
+<a id="hello"></a>
 ## Hello
 
 Example input:
@@ -18,7 +18,7 @@ Output:
 This section will be generated
 ```
 
-<a name="hello2"></a>
+<a id="hello2"></a>
 ## Hello2
 
 ...

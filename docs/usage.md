@@ -42,7 +42,7 @@ processes.
 actionlint -shellcheck= -pyflakes=
 ```
 
-<a name="format"></a>
+<a id="format"></a>
 ### Format error messages
 
 `-format` option can flexibly format error messages with [Go template syntax][go-template].
@@ -189,7 +189,7 @@ Note that special characters escaped with backslash like `\n` in the format stri
 | `2`    | The command failed due to invalid command line option   |
 | `3`    | The command failed due to some fatal error              |
 
-<a name="on-github-actions"></a>
+<a id="on-github-actions"></a>
 ## Use actionlint on GitHub Actions
 
 Preparing `actionlint` executable with the download script is recommended. See [the instruction](install.md#download-script) for
@@ -263,7 +263,7 @@ Paste your workflow content to the code editor at left pane. It automatically sh
 the workflow content in the code editor, the results will be updated on the fly. Clicking an error message in the results
 table moves a cursor to position of the error in the code editor.
 
-<a name="docker"></a>
+<a id="docker"></a>
 ## [Docker][docker] image
 
 [Official Docker image][docker-image] is available. The image contains `actionlint` executable and all dependencies (shellcheck
@@ -304,7 +304,7 @@ docker run --rm -v /path/to/workflows:/workflows rhysd/actionlint:latest -color 
 Go APIs are available. See [the Go API document](api.md) for more details.
 
 
-<a name="tools-integ"></a>
+<a id="tools-integ"></a>
 ## Tools integration
 
 ### reviewdog
@@ -325,7 +325,7 @@ jobs:
       - uses: reviewdog/action-actionlint@v1
 ```
 
-<a name="problem-matchers"></a>
+<a id="problem-matchers"></a>
 ### Problem Matchers
 
 [Problem Matchers][problem-matchers] is a feature to extract GitHub Actions annotations from terminal outputs of linters.
