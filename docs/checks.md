@@ -2196,7 +2196,7 @@ test.yaml:12:5: "with" is only available for a reusable workflow call with "uses
    |
 12 |     with:
    |     ^~~~~
-test.yaml:19:11: could not read reusable workflow file for "./.github/workflows/not-existing.yml": open /Users/rhysd/.go/src/github.com/rhysd/actionlint/.github/workflows/not-existing.yml: no such file or directory [workflow-call]
+test.yaml:19:11: could not read reusable workflow file for "./.github/workflows/not-existing.yml": open /path/to/repo/.github/workflows/not-existing.yml: no such file or directory [workflow-call]
    |
 19 |     uses: ./.github/workflows/not-existing.yml
    |           ^~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~

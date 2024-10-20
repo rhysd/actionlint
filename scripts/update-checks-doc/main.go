@@ -68,7 +68,11 @@ func runActionlint(src []byte) ([]byte, error) {
 		return nil, err
 	}
 
-	return out.Bytes(), nil
+	// Some error message contains absolute file paths. Replace them not to make the document depend
+	// on the current file system.
+	b := bytes.ReplaceAll(out.Bytes(), []byte(p.RootDir()), []byte("/path/to/repo"))
+
+	return b, nil
 }
 
 func update(in []byte) ([]byte, error) {
