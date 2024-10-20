@@ -581,6 +581,7 @@ jobs:
 ```
 
 Output:
+<!-- Skip update output -->
 
 ```
 test.yaml:8:23: property "my_action" is not defined in object type {} [expression]
@@ -592,6 +593,8 @@ test.yaml:15:23: property "some-value" is not defined in object type {some_value
 15 |       - run: echo ${{ steps.my_action.outputs.some-value }}
    |                       ^~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 ```
+
+<!-- Skip playground link -->
 
 The 'My action with output' action defines one output `some_value`. The property is typed at `steps.my_action.outputs` object
 so that actionlint can check incorrect property accesses like a typo in the output name.
@@ -756,6 +759,8 @@ actionlint defines a type of `needs` variable contextually by looking at each jo
 <a name="check-comparison-types"></a>
 ## Strict type checks for comparison operators
 
+Example input:
+
 ```yaml
 on:
   workflow_call:
@@ -787,6 +792,8 @@ test.yaml:16:17: "bool" value cannot be compared to "number" value with ">" oper
 16 |         if: ${{ inputs.timeout > 60 }}
    |                 ^~~~~~~~~~~~~~
 ```
+
+[Playground](https://rhysd.github.io/actionlint#MISSING)
 
 Expressions in `${{ }}` placeholders support `==`, `!=`, `>`, `>=`, `<`, `<=` comparison operators. Arbitrary types of operands
 can be compared. When different type values are compared, they are implicitly converted to numbers before the comparison. Please
@@ -840,6 +847,8 @@ test.yaml:14:9: shellcheck reported issue in this script: SC2086:info:1:6: Doubl
 14 |       - run: echo $FOO
    |         ^~~~
 ```
+
+<!-- Skip playground link -->
 
 [shellcheck][] is a famous linter for ShellScript. actionlint runs shellcheck for scripts at `run:` step in a workflow.
 For installing shellcheck, see [the official installation document][shellcheck-install].
@@ -958,6 +967,8 @@ test.yaml:23:9: pyflakes reported issue in this script: 1:1: 'time.sleep' import
 23 |       - run: |
    |         ^~~~
 ```
+
+<!-- Skip playground link -->
 
 Python script can be written in `run:` when `shell: python` is configured.
 
@@ -1728,6 +1739,7 @@ jobs:
 ```
 
 Output:
+<!-- Skip update output -->
 
 ```
 test.yaml:7:15: missing input "message" which is required by action "My action" defined at "./.github/actions/my-action". all required inputs are "message" [action]
@@ -1739,6 +1751,8 @@ test.yaml:13:11: input "additions" is not defined in action "My action" defined 
 13 |           additions: foo, bar
    |           ^~~~~~~~~~
 ```
+
+<!-- Skip playground link -->
 
 When a local action is run in `uses:` of `step:`, actionlint reads `action.yml` file in the local action directory and
 validates inputs at `with:` in the workflow are correct. Missing required inputs and unexpected inputs can be detected.
@@ -2401,6 +2415,7 @@ jobs:
 ```
 
 Output:
+<!-- Skip update output -->
 
 ```
 test.yaml:6:11: input "name" is required by "./.github/workflows/reusable.yaml" reusable workflow [workflow-call]
@@ -2428,6 +2443,8 @@ test.yaml:24:16: input "message" is typed as string by reusable workflow "./.git
 24 |       message: null
    |                ^~~~
 ```
+
+<!-- Skip playground link -->
 
 Reusable workflows can define required/optional inputs and secrets. When they are missing or some undefined input is used in a
 workflow call, actionlint reports an error.
@@ -2480,6 +2497,7 @@ jobs:
 ```
 
 Output:
+<!-- Skip update output -->
 
 ```
 test.yaml:13:24: property "tag" is not defined in object type {version: string} [expression]
@@ -2487,6 +2505,8 @@ test.yaml:13:24: property "tag" is not defined in object type {version: string} 
 13 |       - run: echo '${{ needs.get_build_info.outputs.tag }}'
    |                        ^~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 ```
+
+<!-- Skip playground link -->
 
 Outputs of workflow call are set to the job's outputs object. They can be accessed by downstream jobs specified with `needs:`.
 What outputs are set is defined in the reusable workflow. actionlint types outputs objects from workflow calls and check the
@@ -2750,19 +2770,6 @@ characters around `${{ }}`.
 <a name="action-metadata-syntax"></a>
 ## Action metadata syntax validation
 
-Example workflow input:
-
-```yaml
-on: push
-
-jobs:
-  test:
-    runs-on: ubuntu-latest
-    steps:
-      # actionlint checks an action when it is actually used in a workflow
-      - uses: ./.github/actions/my-invalid-action
-```
-
 Example action metadata:
 
 ```yaml
@@ -2788,7 +2795,21 @@ runs:
     SOME_VAR: SOME_VALUE
 ```
 
+Example input:
+
+```yaml
+on: push
+
+jobs:
+  test:
+    runs-on: ubuntu-latest
+    steps:
+      # actionlint checks an action when it is actually used in a workflow
+      - uses: ./.github/actions/my-invalid-action
+```
+
 Output:
+<!-- Skip update output -->
 
 ```
 action_metadata_syntax_validation.yaml:8:15: description is required in metadata of "My action" action at "path/to/.github/actions/my-invalid-action/action.yml" [action]
@@ -2816,6 +2837,8 @@ action_metadata_syntax_validation.yaml:8:15: "env" is not allowed in "runs" sect
 8 |       - uses: ./.github/actions/my-invalid-action
   |               ^~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 ```
+
+<!-- Skip playground link -->
 
 All actions require a metadata file `action.yml` or `aciton.yaml`. The syntax is defined in [the official document][action-metadata-doc].
 
