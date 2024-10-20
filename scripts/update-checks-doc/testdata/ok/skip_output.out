@@ -1,0 +1,24 @@
+<a name="hello"></a>
+## Hello
+
+Example input:
+
+```yaml
+on: push
+jobs:
+  test:
+    runs-on: ubuntu-latest
+    steps:
+      - run: echo ${{ unknown }}
+```
+
+Output:
+<!-- Skip update output -->
+
+```
+This section will NOT be updated
+```
+
+[Playground](https://rhysd.github.io/actionlint/#eNokyjEOhSAQRdGeVbzit2yA3XwMCVEzQ5x5sSDs3YxWtzhXpWDQetq1WkmAN/MocFEsh7NSnPn8h71k3oZ9F5DjLGhbV/zmBOUQvQVrPQEAAP//SLkdHQ==)
+
+Skip updating the output.

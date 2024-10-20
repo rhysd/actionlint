@@ -1,0 +1,24 @@
+<a name="hello"></a>
+## Hello
+
+Example input:
+
+```yaml
+on: push
+jobs:
+  test:
+    runs-on: ubuntu-latest
+    steps:
+      - run: echo ${{ unknown }}
+```
+
+Output:
+<!-- Skip update output -->
+
+```
+This section will NOT be updated
+```
+
+<!-- Skip playground link -->
+
+Skip both the output and the playground link.

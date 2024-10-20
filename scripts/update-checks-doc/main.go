@@ -15,7 +15,7 @@ import (
 	"github.com/rhysd/actionlint"
 )
 
-func generatePermalink(src []byte) (string, error) {
+func GeneratePermalink(src []byte) (string, error) {
 	var out bytes.Buffer
 
 	b64 := base64.NewEncoder(base64.StdEncoding, &out)
@@ -45,7 +45,7 @@ func generatePermalink(src []byte) (string, error) {
 	return fmt.Sprintf("[Playground](https://rhysd.github.io/actionlint/#%s)", out.Bytes()), nil
 }
 
-func runActionlint(src []byte) ([]byte, error) {
+func Actionlint(src []byte) ([]byte, error) {
 	var out bytes.Buffer
 
 	opts := &actionlint.LinterOptions{
@@ -75,7 +75,7 @@ func runActionlint(src []byte) ([]byte, error) {
 	return b, nil
 }
 
-func update(in []byte) ([]byte, error) {
+func Update(in []byte) ([]byte, error) {
 	var buf bytes.Buffer
 
 	var input bytes.Buffer
@@ -84,6 +84,7 @@ func update(in []byte) ([]byte, error) {
 	var inputHeader bool
 	var outputHeader bool
 	var inInput bool
+	var skipOutput bool
 	var count int
 	lnum := 0
 	scan := bufio.NewScanner(bytes.NewReader(in))
@@ -103,6 +104,7 @@ func update(in []byte) ([]byte, error) {
 			inputHeader = false
 			outputHeader = false
 			inInput = false
+			skipOutput = false
 			count = 0
 		}
 		if strings.HasPrefix(l, `<a name="`) && strings.HasSuffix(l, `"></a>`) {
@@ -138,7 +140,7 @@ func update(in []byte) ([]byte, error) {
 					return nil, fmt.Errorf("output cannot be generated because example input for %q does not exist", section)
 				}
 				log.Printf("Generating output for the input example for %q at line %d", section, lnum)
-				out, err := runActionlint(input.Bytes())
+				out, err := Actionlint(input.Bytes())
 				if err != nil {
 					return nil, err
 				}
@@ -152,15 +154,16 @@ func update(in []byte) ([]byte, error) {
 		if l == "<!-- Skip update output -->" {
 			log.Printf("Skip updating output for %q due to the comment at line %d", section, lnum)
 			outputHeader = false
+			skipOutput = true
 		}
 		if strings.HasPrefix(l, "[Playground](https://rhysd.github.io/actionlint/#") && strings.HasSuffix(l, ")") {
 			if input.Len() == 0 {
 				return nil, fmt.Errorf("playground link cannot be generated because example input for %q does not exist", section)
 			}
-			if !outputHeader {
+			if !outputHeader && !skipOutput {
 				return nil, fmt.Errorf("output code block is missing for %q", section)
 			}
-			link, err := generatePermalink(input.Bytes())
+			link, err := GeneratePermalink(input.Bytes())
 			if err != nil {
 				return nil, err
 			}
@@ -175,11 +178,20 @@ func update(in []byte) ([]byte, error) {
 		if l == "<!-- Skip playground link -->" {
 			log.Printf("Skip generating playground link for %q due to the comment at line %d", section, lnum)
 			outputHeader = false
+			if input.Len() == 0 {
+				return nil, fmt.Errorf("example input for %q is empty", section)
+			}
 			input.Reset()
 			count++
 		}
 		buf.WriteString(l)
 		buf.WriteByte('\n')
+	}
+	if err := scan.Err(); err != nil {
+		return nil, err
+	}
+	if inInput {
+		return nil, fmt.Errorf("code block for example input for %q is not closed", section)
 	}
 	return buf.Bytes(), scan.Err()
 }
@@ -202,11 +214,11 @@ func Main(args []string) error {
 
 	in, err := os.ReadFile(path)
 	if err != nil {
-		return err
+		return fmt.Errorf("could not read the document file: %w", err)
 	}
 	log.Printf("Read %d bytes from %q", len(in), path)
 
-	out, err := update(in)
+	out, err := Update(in)
 	if err != nil {
 		return err
 	}
@@ -221,11 +233,7 @@ func Main(args []string) error {
 	}
 
 	log.Printf("Generate the updated content (%d bytes) for %q", len(out), path)
-	if err := os.WriteFile(path, out, 0666); err != nil {
-		return err
-	}
-
-	return nil
+	return os.WriteFile(path, out, 0666)
 }
 
 func main() {

@@ -1,0 +1,27 @@
+<a name="hello"></a>
+## Hello
+
+Example input:
+
+```yaml
+# This line is not included
+on: push
+jobs:
+  test:
+    # This line is not included
+    runs-on: ubuntu-latest
+    steps:
+      # This line is not included
+      - run: echo ${{ unknown }}
+# This line is not included
+```
+
+Output:
+
+```
+This section will be generated
+```
+
+[Playground](https://rhysd.github.io/actionlint/#THIS_URL_WILL_BE_UPDATED)
+
+This is minimal test case.
