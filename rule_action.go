@@ -287,6 +287,8 @@ var BrandingIcons = map[string]struct{}{
 // https://docs.github.com/en/actions/creating-actions/metadata-syntax-for-github-actions#runsimage
 func isImageOnDockerRegistry(image string) bool {
 	return strings.HasPrefix(image, "docker://") ||
+		strings.HasPrefix(image, "gcr.io/") ||
+		strings.HasPrefix(image, "pkg.dev/") ||
 		strings.HasPrefix(image, "ghcr.io/") ||
 		strings.HasPrefix(image, "docker.io/")
 }
