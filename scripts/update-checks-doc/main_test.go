@@ -162,3 +162,28 @@ func TestUpdateError(t *testing.T) {
 		})
 	}
 }
+
+func TestStateString(t *testing.T) {
+	tests := []struct {
+		state state
+		want  string
+	}{
+		{stateInit, "init"},
+		{stateAnchor, "anchor"},
+		{stateTitle, "title"},
+		{stateInputHeader, "input header"},
+		{stateInputBlock, "input block"},
+		{stateAfterInput, "after input"},
+		{stateOutputHeader, "output header"},
+		{stateAfterOutput, "after output"},
+		{stateOutputBlock, "output block"},
+		{stateEnd, "end"},
+	}
+
+	for _, tc := range tests {
+		have := tc.state.String()
+		if have != tc.want {
+			t.Errorf("wanted %q for state %d but have %q", tc.want, tc.state, have)
+		}
+	}
+}

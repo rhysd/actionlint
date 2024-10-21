@@ -112,16 +112,19 @@ func NewUpdater(in []byte) *Updater {
 
 func (u *Updater) err(err error) {
 	if u.firstErr == nil && err != nil {
-		u.firstErr = fmt.Errorf("error at line %d while generating %q: %w", u.lnum, u.title, err)
+		u.firstErr = fmt.Errorf("error at line %d while generating section %q: %w", u.lnum, u.title, err)
 	}
 }
 
 func (u *Updater) End() ([]byte, error) {
+	u.err(u.lines.Err())
+	if u.firstErr != nil {
+		return nil, u.firstErr
+	}
 	if u.cur != stateEnd {
 		return nil, fmt.Errorf("unexpected state %q after generating all. this happens when a block is unclosed or some part was missing", u.cur)
 	}
-	u.err(u.lines.Err())
-	return u.out.Bytes(), u.firstErr
+	return u.out.Bytes(), nil
 }
 
 func (u *Updater) GeneratePermalink(src []byte) string {
@@ -165,12 +168,41 @@ func (u *Updater) Next() bool {
 	return true
 }
 
+func (u *Updater) expect(states ...state) {
+	for _, s := range states {
+		if s == u.cur {
+			return
+		}
+	}
+	u.err(fmt.Errorf("unexpected state %q. expected %q", u.cur, states))
+}
+
 func (u *Updater) Line() {
 	l := u.lines.Text()
 
+	isHeading := strings.HasPrefix(l, "## ")
+	isInputHeader := l == "Example input:"
+	isOutputHeader := l == "Output:"
+	isSkipOutput := l == "<!-- Skip update output -->"
+	isSkipPlaygroundLink := l == "<!-- Skip playground link -->"
+	isPlaygroundLink := strings.HasPrefix(l, "[Playground](") && strings.HasSuffix(l, ")")
+
+	switch {
+	case isHeading:
+		u.expect(stateAnchor)
+	case isInputHeader:
+		u.expect(stateTitle, stateEnd)
+	case isOutputHeader:
+		u.expect(stateAfterInput)
+	case isSkipOutput:
+		u.expect(stateOutputHeader)
+	case isSkipPlaygroundLink, isPlaygroundLink:
+		u.expect(stateAfterOutput)
+	}
+
 	switch u.cur {
 	case stateInit, stateEnd:
-		if u.cur == stateEnd && l == "Example input:" {
+		if u.cur == stateEnd && isInputHeader {
 			u.state(stateTitle, "Found more example input")
 			u.Line()
 			return
@@ -189,11 +221,7 @@ func (u *Updater) Line() {
 			u.state(stateAnchor, "Found new <a> ID "+id)
 		}
 	case stateAnchor:
-		if strings.HasPrefix(l, "## ") {
-			if u.prev != stateInit && u.prev != stateEnd {
-				u.err(fmt.Errorf("either output or playground link was missing, or no example was found. every section must have at least one example"))
-				return
-			}
+		if isHeading {
 			t := l[3:]
 			if n, ok := u.titles[t]; ok {
 				u.err(fmt.Errorf("title %q was already used at line %d", t, n))
@@ -204,9 +232,11 @@ func (u *Updater) Line() {
 			u.state(stateTitle, "Entering new section")
 		} else {
 			u.state(u.prev, "Back to previous state because this <a> is not part of section title")
+			u.Line()
+			return
 		}
 	case stateTitle:
-		if l == "Example input:" {
+		if isInputHeader {
 			u.state(stateInputHeader, "Found example input header")
 		}
 	case stateInputHeader:
@@ -225,14 +255,13 @@ func (u *Updater) Line() {
 			u.input.WriteByte('\n')
 		}
 	case stateAfterInput:
-		if l == "Output:" {
+		if isOutputHeader {
 			u.state(stateOutputHeader, "Found example output header")
 		}
 	case stateOutputHeader:
-		switch l {
-		case "<!-- Skip update output -->":
+		if isSkipOutput {
 			u.state(stateAfterOutput, "Skip updating output due to the comment")
-		case "```":
+		} else if l == "```" {
 			u.state(stateOutputBlock, "Start code block for output")
 		}
 	case stateOutputBlock:
@@ -246,10 +275,10 @@ func (u *Updater) Line() {
 		u.out.Write(out)
 		u.state(stateAfterOutput, "Generated output for the input example and end code block for output")
 	case stateAfterOutput:
-		if l == "<!-- Skip playground link -->" {
+		if isSkipPlaygroundLink {
 			u.input.Reset()
 			u.state(stateEnd, "Skip updating playground link due to the comment")
-		} else if strings.HasPrefix(l, "[Playground](") && strings.HasSuffix(l, ")") {
+		} else if isPlaygroundLink {
 			link := u.GeneratePermalink(u.input.Bytes())
 			u.out.WriteString(link)
 			u.out.WriteByte('\n')
