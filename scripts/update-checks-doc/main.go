@@ -90,7 +90,9 @@ func Update(in []byte) ([]byte, error) {
 	var inInput bool
 	var skipOutput bool
 	var count int
-	lnum := 0
+	var lnum int
+	anchors := map[string]int{}
+	sections := map[string]int{}
 	scan := bufio.NewScanner(bytes.NewReader(in))
 	for scan.Scan() {
 		lnum++
@@ -104,6 +106,10 @@ func Update(in []byte) ([]byte, error) {
 			}
 			section = l[3:]
 			log.Printf("Entering new section %q (%s) at line %d", section, anchor, lnum)
+			if n, ok := sections[section]; ok {
+				return nil, fmt.Errorf("section %q at line %d was already used at line %d", section, lnum, n)
+			}
+			sections[section] = lnum
 			anchor = ""
 			inputHeader = false
 			outputHeader = false
@@ -116,6 +122,10 @@ func Update(in []byte) ([]byte, error) {
 			if len(anchor) == 0 {
 				return nil, fmt.Errorf("id for <a> tag is empty at line %d", lnum)
 			}
+			if n, ok := anchors[anchor]; ok {
+				return nil, fmt.Errorf("id %q at line %d was already used at line %d", anchor, lnum, n)
+			}
+			anchors[anchor] = lnum
 		}
 		if l == "Example input:" {
 			log.Printf("Found example input header for %q at line %d", section, lnum)
