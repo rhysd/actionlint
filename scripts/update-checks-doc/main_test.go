@@ -170,7 +170,7 @@ func TestStateString(t *testing.T) {
 	}{
 		{stateInit, "init"},
 		{stateAnchor, "anchor"},
-		{stateTitle, "title"},
+		{stateHeading, "heading"},
 		{stateInputHeader, "input header"},
 		{stateInputBlock, "input block"},
 		{stateAfterInput, "after input"},

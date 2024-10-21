@@ -54,7 +54,7 @@ type state int
 const (
 	stateInit state = iota
 	stateAnchor
-	stateTitle
+	stateHeading
 	stateInputHeader
 	stateInputBlock
 	stateAfterInput
@@ -68,8 +68,8 @@ func (s state) String() string {
 	switch s {
 	case stateAnchor:
 		return "anchor"
-	case stateTitle:
-		return "title"
+	case stateHeading:
+		return "heading"
 	case stateInputHeader:
 		return "input header"
 	case stateInputBlock:
@@ -94,25 +94,25 @@ type Updater struct {
 	cur      state
 	lines    *bufio.Scanner
 	out      bytes.Buffer
-	title    string
+	heading  string
 	input    bytes.Buffer
 	lnum     int
 	ids      map[string]int
-	titles   map[string]int
+	headings map[string]int
 	firstErr error
 }
 
 func NewUpdater(in []byte) *Updater {
 	return &Updater{
-		lines:  bufio.NewScanner(bytes.NewReader(in)),
-		ids:    map[string]int{},
-		titles: map[string]int{},
+		lines:    bufio.NewScanner(bytes.NewReader(in)),
+		ids:      map[string]int{},
+		headings: map[string]int{},
 	}
 }
 
 func (u *Updater) err(err error) {
 	if u.firstErr == nil && err != nil {
-		u.firstErr = fmt.Errorf("error at line %d while generating section %q: %w", u.lnum, u.title, err)
+		u.firstErr = fmt.Errorf("error at line %d while generating section %q: %w", u.lnum, u.heading, err)
 	}
 }
 
@@ -155,8 +155,8 @@ func (u *Updater) GeneratePermalink(src []byte) string {
 	return fmt.Sprintf("[Playground](https://rhysd.github.io/actionlint/#%s)", out.Bytes())
 }
 
-func (u *Updater) state(s state, where string) {
-	log.Printf("%s at line %d in section %q (%q -> %q)", where, u.lnum, u.title, u.cur, s)
+func (u *Updater) state(s state, reason string) {
+	log.Printf("%s at line %d in section %q (%q -> %q)", reason, u.lnum, u.heading, u.cur, s)
 	u.prev, u.cur = u.cur, s
 }
 
@@ -187,11 +187,12 @@ func (u *Updater) Line() {
 	isSkipPlaygroundLink := l == "<!-- Skip playground link -->"
 	isPlaygroundLink := strings.HasPrefix(l, "[Playground](") && strings.HasSuffix(l, ")")
 
+	// Validation
 	switch {
 	case isHeading:
 		u.expect(stateAnchor)
 	case isInputHeader:
-		u.expect(stateTitle, stateEnd)
+		u.expect(stateHeading, stateEnd)
 	case isOutputHeader:
 		u.expect(stateAfterInput)
 	case isSkipOutput:
@@ -200,10 +201,11 @@ func (u *Updater) Line() {
 		u.expect(stateAfterOutput)
 	}
 
+	// Transition
 	switch u.cur {
 	case stateInit, stateEnd:
 		if u.cur == stateEnd && isInputHeader {
-			u.state(stateTitle, "Found more example input")
+			u.state(stateHeading, "Found more example input")
 			u.Line()
 			return
 		}
@@ -222,20 +224,20 @@ func (u *Updater) Line() {
 		}
 	case stateAnchor:
 		if isHeading {
-			t := l[3:]
-			if n, ok := u.titles[t]; ok {
-				u.err(fmt.Errorf("title %q was already used at line %d", t, n))
+			h := l[3:]
+			if n, ok := u.headings[h]; ok {
+				u.err(fmt.Errorf("heading %q was already used at line %d", h, n))
 				return
 			}
-			u.titles[t] = u.lnum
-			u.title = t
-			u.state(stateTitle, "Entering new section")
+			u.headings[h] = u.lnum
+			u.heading = h
+			u.state(stateHeading, "Entering new section")
 		} else {
-			u.state(u.prev, "Back to previous state because this <a> is not part of section title")
+			u.state(u.prev, "Back to previous state because the next line to <a> is not a section heading")
 			u.Line()
 			return
 		}
-	case stateTitle:
+	case stateHeading:
 		if isInputHeader {
 			u.state(stateInputHeader, "Found example input header")
 		}
@@ -246,7 +248,7 @@ func (u *Updater) Line() {
 	case stateInputBlock:
 		if l == "```" {
 			if u.input.Len() == 0 {
-				u.err(errors.New("empty example input does not exist"))
+				u.err(errors.New("empty example input is not allowed"))
 				return
 			}
 			u.state(stateAfterInput, "End code block for input example")
