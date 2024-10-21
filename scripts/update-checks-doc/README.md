@@ -8,10 +8,20 @@ This script does:
 - update the outputs of the example inputs; the code blocks after `Output:` header
 - update the links to the [playground](https://rhysd.github.io/actionlint/) for the example inputs
 
-For making the implementation simple, this script does not support Windows. Please run this script
-on Linux or macOS.
+For making the implementation simple, this script does not support Windows.
+
+## Prerequisites
+
+- Go
+- Linux or macOS
+- `shellcheck` command
+- `pyflakes` command
 
 ## Usage
+
+```
+go run ./scripts/update-checks-doc [-check] FILE
+```
 
 Update the document. This command directly modifies the file.
 

@@ -113,6 +113,9 @@ func Update(in []byte) ([]byte, error) {
 		}
 		if strings.HasPrefix(l, `<a id="`) && strings.HasSuffix(l, `"></a>`) {
 			anchor = strings.TrimSuffix(strings.TrimPrefix(l, `<a id="`), `"></a>`)
+			if len(anchor) == 0 {
+				return nil, fmt.Errorf("id for <a> tag is empty at line %d", lnum)
+			}
 		}
 		if l == "Example input:" {
 			log.Printf("Found example input header for %q at line %d", section, lnum)
