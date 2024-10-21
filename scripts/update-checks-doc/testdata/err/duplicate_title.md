@@ -13,7 +13,7 @@ Output:
 This block will be auto-generated
 ```
 
-[Playground](https://rhysd.github.io/actionlint/#THIS_URL_WILL_BE_UPDATED)
+[Playground](URL_WILL_BE_GENERATED)
 
 This section causes no error.
 
@@ -32,6 +32,6 @@ Output:
 This block will be auto-generated
 ```
 
-[Playground](https://rhysd.github.io/actionlint/#THIS_URL_WILL_BE_UPDATED)
+[Playground](URL_WILL_BE_GENERATED)
 
 This section causes an error since same section title is used.

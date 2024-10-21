@@ -1,5 +1,5 @@
-<a id="hello1"></a>
-## Hello 1
+<a id="hello"></a>
+## Hello
 
 Example input:
 
@@ -18,12 +18,31 @@ Output:
 This section will be generated
 ```
 
-[Playground](https://rhysd.github.io/actionlint/#THIS_URL_WILL_BE_UPDATED)
+[Playground](URL_WILL_BE_GENERATED)
 
-This is minimal test case.
+This is the first example.
 
-<a id="hello2"></a>
-## Hello 2
+Example input:
+
+```yaml
+on: push
+jobs:
+  test:
+    runs-on: ubuntu-latest
+    steps:
+      - run: echo ${{ unknown }}
+```
+
+Output:
+<!-- Skip update output -->
+
+```
+This section will not be generated
+```
+
+[Playground](URL_WILL_BE_GENERATED)
+
+This is the second example.
 
 Example input:
 
@@ -42,30 +61,6 @@ Output:
 This section will be generated
 ```
 
-[Playground](https://rhysd.github.io/actionlint/#THIS_URL_WILL_BE_UPDATED)
+<!-- Skip playground link -->
 
-This is minimal test case.
-
-<a id="hello3"></a>
-## Hello 3
-
-Example input:
-
-```yaml
-on: push
-jobs:
-  test:
-    runs-on: ubuntu-latest
-    steps:
-      - run: echo ${{ unknown }}
-```
-
-Output:
-
-```
-This section will be generated
-```
-
-[Playground](https://rhysd.github.io/actionlint/#THIS_URL_WILL_BE_UPDATED)
-
-This is minimal test case.
+This is the third example.

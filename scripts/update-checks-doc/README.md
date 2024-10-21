@@ -57,7 +57,7 @@ Output:
 This section will be auto-generated
 ```
 
-[Playground](https://rhysd.github.io/actionlint/#THIS_HASH_PART_WILL_BE_AUTO_GENERATED)
+[Playground](URL_WILL_BE_AUTO_GENERATED)
 
 Explanation for the check...
 ````
