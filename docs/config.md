@@ -21,7 +21,7 @@ actionlint -init-config
 vim .github/actionlint.yaml
 ```
 
-Currently only one item can be configured.
+Here are the items that can be configured:
 
 ```yaml
 self-hosted-runner:
@@ -35,6 +35,8 @@ config-variables:
   - DEFAULT_RUNNER
   - JOB_NAME
   - ENVIRONMENT_STAGE
+# Require actions to be pinned to commit hashes instead of tags/branches
+require-commit-hash: true
 ```
 
 - `self-hosted-runner`: Configuration for your self-hosted runner environment.
@@ -42,6 +44,7 @@ config-variables:
     is available.
 - `config-variables`: [Configuration variables][vars]. When an array is set, actionlint will check `vars` properties strictly.
   An empty array means no variable is allowed. The default value `null` disables the check.
+- `require-commit-hash`: Optional lint to require actions to be pinned to commit hashes instead of tags/branches. Defaults to `false`.
 
 ---
 
