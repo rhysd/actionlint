@@ -7,6 +7,7 @@ This script does:
 
 - update the outputs of the example inputs; the code blocks after `Output:` header
 - update the links to the [playground](https://rhysd.github.io/actionlint/) for the example inputs
+- check the document is up-to-date
 
 For making the implementation simple, this script does not support Windows.
 
@@ -39,7 +40,7 @@ The check is run on the [CI workflow](../../.github/workflows/ci.yaml).
 
 ## Format
 
-The format of the check document is:
+The format of the section is:
 
 ````markdown
 <a id="some-id"></a>
@@ -48,19 +49,30 @@ The format of the check document is:
 Example input:
 
 ```yaml
-This section is referred to generate the output and the playground link
+# This section is referred to generate the output and the playground link
+on: push
+jobs:
+  test:
+    runs-on: linux-latest # oops
+    steps:
+      - run: echo hello
 ```
 
 Output:
 
 ```
-This section will be auto-generated
+THIS CODE BLOCK WILL BE AUTO-GENERATED
 ```
 
 [Playground](URL_WILL_BE_AUTO_GENERATED)
 
 Explanation for the check...
 ````
+
+Multiple examples within a section are allowed. You can show multiple examples to explain one check
+rule.
+
+The example input code block must not be empty and must contain at least one error.
 
 When you don't want to update the output by this script, put the comment as follows. This script
 will ignore the code block. Instead you need to write the output in the code blcok manually.
