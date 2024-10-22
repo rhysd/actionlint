@@ -17,6 +17,6 @@ Output:
 ```
 ```
 
-[Playground](https://rhysd.github.io/actionlint/#THIS_URL_WILL_BE_UPDATED)
+[Playground](URL_WILL_BE_GENERATED)
 
 The example input does not cause any error.

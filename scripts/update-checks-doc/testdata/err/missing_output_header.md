@@ -12,16 +12,13 @@ jobs:
       - run: echo ${{ unknown }}
 ```
 
-Output:
-<!-- Skip update output -->
-
 ```
-This section will NOT be updated
+This section will be generated
 ```
 
 [Playground](URL_WILL_BE_GENERATED)
 
-Skip updating the output.
+Output header is missing in this example.
 
 <a id="hello2"></a>
 ## Hello 2
@@ -38,12 +35,11 @@ jobs:
 ```
 
 Output:
-<!-- Skip update output -->
 
 ```
-This section will NOT be updated
+This section will be generated
 ```
 
 [Playground](URL_WILL_BE_GENERATED)
 
-Skip updating the output.
+This is minimal test case.

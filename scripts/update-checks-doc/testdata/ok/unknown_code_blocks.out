@@ -1,7 +1,15 @@
 <a id="hello"></a>
 ## Hello
 
+```
+code block
+```
+
 Example input:
+
+```
+code block
+```
 
 ```yaml
 on: push
@@ -10,6 +18,10 @@ jobs:
     runs-on: ubuntu-latest
     steps:
       - run: echo ${{ unknown }}
+```
+
+```
+code block
 ```
 
 Output:
@@ -21,7 +33,18 @@ test.yaml:6:23: undefined variable "unknown". available variables are "env", "gi
   |                       ^~~~~~~
 ```
 
-<a id="hello2"></a>
-## Hello2
+```
+code block
+```
 
-...
+[Playground](https://rhysd.github.io/actionlint/#eNokyjEOhSAQRdGeVbzit2yA3XwMCVEzQ5x5sSDs3YxWtzhXpWDQetq1WkmAN/MocFEsh7NSnPn8h71k3oZ9F5DjLGhbV/zmBOUQvQVrPQEAAP//SLkdHQ==)
+
+```
+code block
+```
+
+This is description.
+
+```
+code block
+```

@@ -1,8 +1,10 @@
-<a id=""></a>
+<a id="hello"></a>
 ## Hello
 
+<a id="example-input"></a>
 Example input:
 
+<a id="code-block"></a>
 ```yaml
 on: push
 jobs:
@@ -12,12 +14,16 @@ jobs:
       - run: echo ${{ unknown }}
 ```
 
+<a id="output-header"></a>
 Output:
 
+<a id="output-block"></a>
 ```
 This section will be generated
 ```
 
+<a id="playground-link"></a>
 [Playground](URL_WILL_BE_GENERATED)
 
-The `id` attribute of the `<a>` is an empty string.
+<a id="description"></a>
+This is minimal test case.

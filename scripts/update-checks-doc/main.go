@@ -15,36 +15,6 @@ import (
 	"github.com/rhysd/actionlint"
 )
 
-func GeneratePermalink(src []byte) (string, error) {
-	var out bytes.Buffer
-
-	b64 := base64.NewEncoder(base64.StdEncoding, &out)
-	comp, _ := zlib.NewWriterLevel(b64, zlib.BestCompression)
-
-	scan := bufio.NewScanner(bytes.NewReader(src))
-	first := true
-	for scan.Scan() {
-		l := scan.Bytes()
-		if bytes.HasPrefix(bytes.TrimSpace(l), []byte("#")) {
-			continue
-		}
-		if first {
-			first = false
-		} else {
-			comp.Write([]byte{'\n'})
-		}
-		comp.Write(l)
-	}
-	if err := scan.Err(); err != nil {
-		return "", err
-	}
-
-	comp.Close()
-	b64.Close()
-
-	return fmt.Sprintf("[Playground](https://rhysd.github.io/actionlint/#%s)", out.Bytes()), nil
-}
-
 func Actionlint(src []byte) ([]byte, error) {
 	var out bytes.Buffer
 
@@ -79,138 +49,264 @@ func Actionlint(src []byte) ([]byte, error) {
 	return b, nil
 }
 
-func Update(in []byte) ([]byte, error) {
-	var buf bytes.Buffer
+type state int
 
-	var input bytes.Buffer
-	var anchor string
-	var section string
-	var inputHeader bool
-	var outputHeader bool
-	var inInput bool
-	var skipOutput bool
-	var count int
-	var lnum int
-	anchors := map[string]int{}
-	sections := map[string]int{}
-	scan := bufio.NewScanner(bytes.NewReader(in))
+const (
+	stateInit state = iota
+	stateAnchor
+	stateHeading
+	stateInputHeader
+	stateInputBlock
+	stateAfterInput
+	stateOutputHeader
+	stateAfterOutput
+	stateOutputBlock
+	stateEnd
+)
+
+func (s state) String() string {
+	switch s {
+	case stateAnchor:
+		return "anchor"
+	case stateHeading:
+		return "heading"
+	case stateInputHeader:
+		return "input header"
+	case stateInputBlock:
+		return "input block"
+	case stateAfterInput:
+		return "after input"
+	case stateOutputHeader:
+		return "output header"
+	case stateAfterOutput:
+		return "after output"
+	case stateOutputBlock:
+		return "output block"
+	case stateEnd:
+		return "end"
+	default:
+		return "init"
+	}
+}
+
+type Updater struct {
+	prev, cur state
+	lines     *bufio.Scanner
+	out       bytes.Buffer
+	heading   string
+	input     bytes.Buffer
+	lnum      int
+	ids       map[string]int
+	headings  map[string]int
+	firstErr  error
+}
+
+func NewUpdater(in []byte) *Updater {
+	return &Updater{
+		lines:    bufio.NewScanner(bytes.NewReader(in)),
+		ids:      map[string]int{},
+		headings: map[string]int{},
+	}
+}
+
+func (u *Updater) err(err error) {
+	if u.firstErr == nil && err != nil {
+		u.firstErr = fmt.Errorf("error at line %d while generating section %q: %w", u.lnum, u.heading, err)
+	}
+}
+
+func (u *Updater) End() ([]byte, error) {
+	u.err(u.lines.Err())
+	if u.cur != stateEnd {
+		u.err(fmt.Errorf("unexpected state %q after generating all. this happens when a block is unclosed or some part was missing", u.cur))
+	}
+	log.Printf("Scanned %d lines and %d sections", u.lnum, len(u.headings))
+	return u.out.Bytes(), u.firstErr
+}
+
+func (u *Updater) PlaygroundLink(src []byte) string {
+	var out bytes.Buffer
+
+	b64 := base64.NewEncoder(base64.StdEncoding, &out)
+	comp, _ := zlib.NewWriterLevel(b64, zlib.BestCompression)
+
+	scan := bufio.NewScanner(bytes.NewReader(src))
+	first := true
 	for scan.Scan() {
-		lnum++
-		l := scan.Text()
-		if strings.HasPrefix(l, "## ") && anchor != "" {
-			if input.Len() > 0 {
-				return nil, fmt.Errorf("example input for %q was not consumed. playground link may not exist", section)
-			}
-			if section != "" && count == 0 {
-				log.Printf("Section %q contains NO example", section)
-			}
-			section = l[3:]
-			log.Printf("Entering new section %q (%s) at line %d", section, anchor, lnum)
-			if n, ok := sections[section]; ok {
-				return nil, fmt.Errorf("section %q at line %d was already used at line %d", section, lnum, n)
-			}
-			sections[section] = lnum
-			anchor = ""
-			inputHeader = false
-			outputHeader = false
-			inInput = false
-			skipOutput = false
-			count = 0
-		}
-		if strings.HasPrefix(l, `<a id="`) && strings.HasSuffix(l, `"></a>`) {
-			anchor = strings.TrimSuffix(strings.TrimPrefix(l, `<a id="`), `"></a>`)
-			if len(anchor) == 0 {
-				return nil, fmt.Errorf("id for <a> tag is empty at line %d", lnum)
-			}
-			if n, ok := anchors[anchor]; ok {
-				return nil, fmt.Errorf("id %q at line %d was already used at line %d", anchor, lnum, n)
-			}
-			anchors[anchor] = lnum
-		}
-		if l == "Example input:" {
-			log.Printf("Found example input header for %q at line %d", section, lnum)
-			inputHeader = true
-		}
-		if l == "```yaml" && inputHeader {
-			inputHeader = false
-			inInput = true
-		} else if inInput && l != "```" {
-			input.WriteString(l)
-			input.WriteByte('\n')
-		}
-		if l == "```" {
-			if inInput {
-				log.Printf("Found an input example (%d bytes) for %q at line %d", input.Len(), section, lnum)
-				inInput = false
-			} else if outputHeader {
-				buf.WriteString("```\n")
-				for {
-					if !scan.Scan() {
-						return nil, fmt.Errorf("code block for output of %q does not close", section)
-					}
-					lnum++
-					if scan.Text() == "```" {
-						break
-					}
-				}
-				if input.Len() == 0 {
-					return nil, fmt.Errorf("output cannot be generated because example input for %q does not exist", section)
-				}
-				log.Printf("Generating output for the input example for %q at line %d", section, lnum)
-				out, err := Actionlint(input.Bytes())
-				if err != nil {
-					return nil, err
-				}
-				buf.Write(out)
-			}
-		}
-		if l == "Output:" {
-			log.Printf("Found example output header for %q at line %d", section, lnum)
-			outputHeader = true
-		}
-		if l == "<!-- Skip update output -->" {
-			log.Printf("Skip updating output for %q due to the comment at line %d", section, lnum)
-			outputHeader = false
-			skipOutput = true
-		}
-		if strings.HasPrefix(l, "[Playground](https://rhysd.github.io/actionlint/#") && strings.HasSuffix(l, ")") {
-			if input.Len() == 0 {
-				return nil, fmt.Errorf("playground link cannot be generated because example input for %q does not exist", section)
-			}
-			if !outputHeader && !skipOutput {
-				return nil, fmt.Errorf("output code block is missing for %q", section)
-			}
-			link, err := GeneratePermalink(input.Bytes())
-			if err != nil {
-				return nil, err
-			}
-			buf.WriteString(link)
-			buf.WriteByte('\n')
-			log.Printf("Generate playground link for %q at line %d: %s", section, lnum, link)
-			outputHeader = false
-			input.Reset()
-			count++
+		l := scan.Bytes()
+		if bytes.HasPrefix(bytes.TrimSpace(l), []byte("#")) {
 			continue
 		}
-		if l == "<!-- Skip playground link -->" {
-			log.Printf("Skip generating playground link for %q due to the comment at line %d", section, lnum)
-			outputHeader = false
-			if input.Len() == 0 {
-				return nil, fmt.Errorf("example input for %q is empty", section)
-			}
-			input.Reset()
-			count++
+		if first {
+			first = false
+		} else {
+			comp.Write([]byte{'\n'})
 		}
-		buf.WriteString(l)
-		buf.WriteByte('\n')
+		comp.Write(l)
 	}
-	if err := scan.Err(); err != nil {
-		return nil, err
+	u.err(scan.Err())
+
+	u.err(comp.Close())
+	u.err(b64.Close())
+
+	return fmt.Sprintf("[Playground](https://rhysd.github.io/actionlint/#%s)", out.Bytes())
+}
+
+func (u *Updater) state(s state, reason string) {
+	log.Printf("%s at line %d in section %q (%q -> %q)", reason, u.lnum, u.heading, u.cur, s)
+	u.prev, u.cur = u.cur, s
+}
+
+func (u *Updater) Scan() bool {
+	if u.firstErr != nil || !u.lines.Scan() {
+		return false
 	}
-	if inInput {
-		return nil, fmt.Errorf("code block for example input for %q is not closed", section)
+	u.lnum++
+	return true
+}
+
+func (u *Updater) expect(states ...state) {
+	for _, s := range states {
+		if s == u.cur {
+			return
+		}
 	}
-	return buf.Bytes(), scan.Err()
+	u.err(fmt.Errorf("unexpected state %q. expected %q", u.cur, states))
+}
+
+func (u *Updater) Update() {
+	l := u.lines.Text()
+
+	isHeading := strings.HasPrefix(l, "## ")
+	isInputHeader := l == "Example input:"
+	isOutputHeader := l == "Output:"
+	isSkipOutput := l == "<!-- Skip update output -->"
+	isSkipPlaygroundLink := l == "<!-- Skip playground link -->"
+	isPlaygroundLink := strings.HasPrefix(l, "[Playground](") && strings.HasSuffix(l, ")")
+
+	// Validation
+	switch {
+	case isHeading:
+		u.expect(stateAnchor)
+	case isInputHeader:
+		u.expect(stateHeading, stateEnd)
+	case isOutputHeader:
+		u.expect(stateAfterInput)
+	case isSkipOutput:
+		u.expect(stateOutputHeader)
+	case isSkipPlaygroundLink, isPlaygroundLink:
+		u.expect(stateAfterOutput)
+	}
+
+	// State transition
+	//
+	// ┌────┐  ┌──────┐  ┌───────┐  ┌──────┐  ┌─────┐  ┌─────┐
+	// │init│─►│anchor│─►│heading│─►│input │─►│input│─►│after│────┐
+	// └────┘  │      │  │       │  │header│  │block│  │input│    │
+	//         └──▲───┘  └───────┘  └──▲───┘  └─────┘  └─────┘ ┌──▼───┐
+	//            │                    │                       │output│
+	//            │                    │                       │header│
+	//            │                  ┌─┴─┐  ┌──────┐  ┌──────┐ └──┬───┘
+	// ┌────┐     └──────────────────┤end│◄─│output│◄─│after │◄───┘
+	// │done│◄───────────────────────┤   │  │block │  │output│
+	// └────┘                        └─▲─┘  └──────┘  └───┬──┘
+	//                                 └──────────────────┘
+	//
+	switch u.cur {
+	case stateInit, stateEnd:
+		if u.cur == stateEnd && isInputHeader {
+			u.state(stateInputHeader, "Found more example input")
+			break
+		}
+		if strings.HasPrefix(l, `<a id="`) && strings.HasSuffix(l, `"></a>`) {
+			id := strings.TrimSuffix(strings.TrimPrefix(l, `<a id="`), `"></a>`)
+			if len(id) == 0 {
+				u.err(errors.New("id for <a> tag is empty"))
+				return
+			}
+			if n, ok := u.ids[id]; ok {
+				u.err(fmt.Errorf("id %q was already used at line %d", id, n))
+				return
+			}
+			u.ids[id] = u.lnum
+			u.state(stateAnchor, "Found new <a> ID "+id)
+		}
+	case stateAnchor:
+		if isHeading {
+			h := strings.TrimPrefix(l, "## ")
+			if n, ok := u.headings[h]; ok {
+				u.err(fmt.Errorf("heading %q was already used at line %d", h, n))
+				return
+			}
+			u.headings[h] = u.lnum
+			u.heading = h
+			u.state(stateHeading, "Entering new section")
+		} else {
+			u.state(u.prev, "Back to previous state because the next line to <a> is not a section heading")
+			u.Update()
+			return
+		}
+	case stateHeading:
+		if isInputHeader {
+			u.state(stateInputHeader, "Found example input header")
+		}
+	case stateInputHeader:
+		if l == "```yaml" {
+			u.state(stateInputBlock, "Start code block for input example")
+		}
+	case stateInputBlock:
+		if l == "```" {
+			if u.input.Len() == 0 {
+				u.err(errors.New("empty example input is not allowed"))
+				return
+			}
+			u.state(stateAfterInput, "End code block for input example")
+		} else {
+			u.input.WriteString(l)
+			u.input.WriteByte('\n')
+		}
+	case stateAfterInput:
+		if isOutputHeader {
+			u.state(stateOutputHeader, "Found example output header")
+		}
+	case stateOutputHeader:
+		if isSkipOutput {
+			u.state(stateAfterOutput, "Skip updating output due to the comment")
+		} else if l == "```" {
+			u.state(stateOutputBlock, "Start code block for output")
+		}
+	case stateOutputBlock:
+		if l != "```" {
+			return // Output block will be generated by actionlint
+		}
+		out, err := Actionlint(u.input.Bytes())
+		u.err(err)
+		u.out.Write(out)
+		u.state(stateAfterOutput, "End code block for output and generate actionlint output")
+	case stateAfterOutput:
+		if isSkipPlaygroundLink {
+			u.input.Reset()
+			u.state(stateEnd, "Skip updating playground link due to the comment")
+		} else if isPlaygroundLink {
+			ln := u.PlaygroundLink(u.input.Bytes())
+			u.out.WriteString(ln)
+			u.out.WriteByte('\n')
+			u.input.Reset()
+			u.state(stateEnd, "Generate playground link "+ln)
+			return
+		}
+	}
+
+	u.out.WriteString(l)
+	u.out.WriteByte('\n')
+}
+
+func Update(in []byte) ([]byte, error) {
+	u := NewUpdater(in)
+	for u.Scan() {
+		u.Update()
+	}
+	return u.End()
 }
 
 func Main(args []string) error {
@@ -249,7 +345,7 @@ func Main(args []string) error {
 		return errors.New("checks document has some update. run `go run ./scripts/update-checks-doc ./docs/checks.md` and commit the changes. the diff:\n\n" + cmp.Diff(in, out))
 	}
 
-	log.Printf("Generate the updated content (%d bytes) for %q", len(out), path)
+	log.Printf("Overwrite the file with the updated content (%d bytes) at %q", len(out), path)
 	return os.WriteFile(path, out, 0666)
 }
 

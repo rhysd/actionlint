@@ -1,7 +1,15 @@
-<a id=""></a>
+<a id="hello"></a>
 ## Hello
 
+```
+code block
+```
+
 Example input:
+
+```
+code block
+```
 
 ```yaml
 on: push
@@ -12,12 +20,28 @@ jobs:
       - run: echo ${{ unknown }}
 ```
 
+```
+code block
+```
+
 Output:
 
 ```
 This section will be generated
 ```
 
+```
+code block
+```
+
 [Playground](URL_WILL_BE_GENERATED)
 
-The `id` attribute of the `<a>` is an empty string.
+```
+code block
+```
+
+This is description.
+
+```
+code block
+```
