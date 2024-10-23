@@ -17,7 +17,7 @@ Features:
 - **Other several useful checks**; [glob syntax][filter-pattern-doc] validation, dependencies check for `needs:`,
   runner label validation, cron syntax validation, ...
 
-See [the full list](docs/checks.md) of checks done by actionlint.
+See [the full list][checks] of checks done by actionlint.
 
 <img src="https://github.com/rhysd/ss/blob/master/actionlint/main.gif?raw=true" alt="actionlint reports 7 errors" width="806" height="492"/>
 
@@ -118,7 +118,7 @@ See [the usage document](docs/usage.md) for more details.
 
 ## Documents
 
-- [Checks](docs/checks.md): Full list of all checks done by actionlint with example inputs, outputs, and playground links.
+- [Checks][checks]: Full list of all checks done by actionlint with example inputs, outputs, and playground links.
 - [Installation](docs/install.md): Installation instructions. Prebuilt binaries, a Docker image, building from
   source, a download script (for CI), supports by several package managers are available.
 - [Usage](docs/usage.md): How to use `actionlint` command locally or on GitHub Actions, the online playground, an official Docker
@@ -151,3 +151,4 @@ actionlint is distributed under [the MIT license](./LICENSE.txt).
 [script-injection-doc]: https://docs.github.com/en/actions/learn-github-actions/security-hardening-for-github-actions#understanding-the-risk-of-script-injections
 [issue-form]: https://github.com/rhysd/actionlint/issues/new
 [releases]: https://github.com/rhysd/actionlint/releases
+[checks]: https://github.com/rhysd/actionlint/blob/v1.7.3/docs/checks.md
