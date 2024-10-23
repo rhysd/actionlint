@@ -13,9 +13,10 @@ import (
 	"github.com/google/go-cmp/cmp"
 )
 
-// Disable trace logs while running tests. Commenting out this function is useful when debugging test cases.
+// Do not mess up the test output. Temporarily commenting out this function may be helpful when debugging some test cases.
 func init() {
 	log.SetOutput(io.Discard)
+	stderr = io.Discard
 }
 
 func must[T any](v T, err error) T {
@@ -72,6 +73,12 @@ func TestMainCheckOK(t *testing.T) {
 	}
 }
 
+func TestMainPrintHelp(t *testing.T) {
+	if err := Main([]string{"exe", "-help"}); err != nil {
+		t.Fatal(err)
+	}
+}
+
 func TestMainCheckError(t *testing.T) {
 	if runtime.GOOS == "windows" {
 		t.Skip("update-checks-doc doesn't support Windows")
@@ -85,11 +92,11 @@ func TestMainFileNotFound(t *testing.T) {
 }
 
 func TestMainTooManyArgs(t *testing.T) {
-	testErr(t, Main([]string{"exe", "a", "b", "c"}), "usage: update-checks-doc [-check] FILE")
+	testErr(t, Main([]string{"exe", "a", "b", "c"}), "this command should take exact one file path but got")
 }
 
 func TestMainInvalidCheckFlag(t *testing.T) {
-	testErr(t, Main([]string{"exe", "-c", "foo.md"}), "usage: update-checks-doc [-check] FILE")
+	testErr(t, Main([]string{"exe", "-c", "foo.md"}), "flag provided but not defined")
 }
 
 func TestMainNoUpdate(t *testing.T) {

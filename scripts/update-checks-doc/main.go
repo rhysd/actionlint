@@ -6,7 +6,9 @@ import (
 	"compress/zlib"
 	"encoding/base64"
 	"errors"
+	"flag"
 	"fmt"
+	"io"
 	"log"
 	"os"
 	"strings"
@@ -204,13 +206,12 @@ func (u *Updater) Update() {
 	// │init│─►│anchor│─►│heading│─►│input │─►│input│─►│after│────┐
 	// └────┘  │      │  │       │  │header│  │block│  │input│    │
 	//         └──▲───┘  └───────┘  └──▲───┘  └─────┘  └─────┘ ┌──▼───┐
-	//            │                    │                       │output│
-	//            │                    │                       │header│
-	//            │                  ┌─┴─┐  ┌──────┐  ┌──────┐ └──┬───┘
-	// ┌────┐     └──────────────────┤end│◄─│output│◄─│after │◄───┘
-	// │done│◄───────────────────────┤   │  │block │  │output│
-	// └────┘                        └─▲─┘  └──────┘  └───┬──┘
-	//                                 └──────────────────┘
+	//     next   │             more   │            skip       │output│
+	//     section│             example│        ┌──────────────│header│
+	//            │                  ┌─┴─┐  ┌───▼──┐  ┌──────┐ └──┬───┘
+	// ┌────┐     └──────────────────┤end│◄─│after │◄─│output│◄───┘
+	// │done│◄───────────────────────┤   │  │output│  │block │
+	// └────┘                        └───┘  └──────┘  └──────┘
 	//
 	switch u.cur {
 	case stateInit, stateEnd:
@@ -309,21 +310,27 @@ func Update(in []byte) ([]byte, error) {
 	return u.End()
 }
 
+var stderr io.Writer = os.Stderr
+
 func Main(args []string) error {
-	var path string
 	var check bool
-	switch len(args) {
-	case 2:
-		path = args[1]
-	case 3:
-		if args[1] != "-check" && args[1] != "--check" {
-			return errors.New("usage: update-checks-doc [-check] FILE")
-		}
-		path = args[2]
-		check = true
-	default:
-		return errors.New("usage: update-checks-doc [-check] FILE")
+	flags := flag.NewFlagSet(args[0], flag.ContinueOnError)
+	flags.BoolVar(&check, "check", false, "check the document is up-to-date")
+	flags.SetOutput(stderr)
+	flags.Usage = func() {
+		fmt.Fprintln(stderr, "Usage: update-checks-doc [FLAGS] FILE\n\nFlags:")
+		flags.PrintDefaults()
 	}
+	if err := flags.Parse(args[1:]); err != nil {
+		if err == flag.ErrHelp {
+			return nil
+		}
+		return err
+	}
+	if flags.NArg() != 1 {
+		return fmt.Errorf("this command should take exact one file path but got %v", flags.Args())
+	}
+	path := flags.Arg(0)
 
 	in, err := os.ReadFile(path)
 	if err != nil {
@@ -342,7 +349,7 @@ func Main(args []string) error {
 	}
 
 	if check {
-		return errors.New("checks document has some update. run `go run ./scripts/update-checks-doc ./docs/checks.md` and commit the changes. the diff:\n\n" + cmp.Diff(in, out))
+		return fmt.Errorf("checks document has some update. run `go run ./scripts/update-checks-doc %s` and commit the changes. the diff:\n\n%s", path, cmp.Diff(in, out))
 	}
 
 	log.Printf("Overwrite the file with the updated content (%d bytes) at %q", len(out), path)
