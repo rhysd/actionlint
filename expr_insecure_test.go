@@ -54,7 +54,7 @@ func TestExprInsecureBuiltinUntrustedInputs(t *testing.T) {
 	rec = func(m map[string]*UntrustedInputMap, path []string) {
 		for k, v := range m {
 			p := append(path, k)
-			if k == "*" {
+			if k == "*" || k == "**" {
 				if len(m) != 1 {
 					t.Errorf("%v has * key but it also has other keys in %v", k, p)
 				}
