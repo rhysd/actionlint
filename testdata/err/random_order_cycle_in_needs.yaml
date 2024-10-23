@@ -2,7 +2,7 @@ on: push
 jobs:
   # Order of jobs is random
   a:
-    needs: [b, e]
+    needs: [b]
     runs-on: ubuntu-latest
     steps:
       - run: echo 'a'
