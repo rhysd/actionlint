@@ -317,13 +317,16 @@ var stderr io.Writer = os.Stderr
 
 func Main(args []string) error {
 	var check bool
+	var quiet bool
 	flags := flag.NewFlagSet(args[0], flag.ContinueOnError)
 	flags.BoolVar(&check, "check", false, "check the document is up-to-date")
+	flags.BoolVar(&quiet, "quiet", false, "disable trace logs")
 	flags.SetOutput(stderr)
 	flags.Usage = func() {
 		fmt.Fprintln(stderr, "Usage: update-checks-doc [FLAGS] FILE\n\nFlags:")
 		flags.PrintDefaults()
 	}
+
 	if err := flags.Parse(args[1:]); err != nil {
 		if err == flag.ErrHelp {
 			return nil
@@ -334,6 +337,10 @@ func Main(args []string) error {
 		return fmt.Errorf("this command should take exact one file path but got %v", flags.Args())
 	}
 	path := flags.Arg(0)
+
+	if quiet {
+		log.SetOutput(io.Discard)
+	}
 
 	in, err := os.ReadFile(path)
 	if err != nil {

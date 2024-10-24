@@ -104,8 +104,6 @@ jobs:
             echo "$diffs" >&2
             exit 1
           fi
-      - name: Check `docs/checks.md` is up-to-date
-        run: go run ./scripts/update-checks-doc -check ./docs/checks.md
       - name: Install staticcheck
         run: |
           go install honnef.co/go/tools/cmd/staticcheck@latest

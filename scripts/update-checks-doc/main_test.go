@@ -73,6 +73,16 @@ func TestMainCheckOK(t *testing.T) {
 	}
 }
 
+func TestMainCheckQuietOK(t *testing.T) {
+	if runtime.GOOS == "windows" {
+		t.Skip("update-checks-doc doesn't support Windows")
+	}
+	path := filepath.FromSlash("testdata/ok/minimal.out")
+	if err := Main([]string{"exe", "-check", "-quiet", path}); err != nil {
+		t.Fatal(err)
+	}
+}
+
 func TestMainPrintHelp(t *testing.T) {
 	if err := Main([]string{"exe", "-help"}); err != nil {
 		t.Fatal(err)
