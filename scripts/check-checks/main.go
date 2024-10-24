@@ -316,14 +316,14 @@ func Update(in []byte) ([]byte, error) {
 var stderr io.Writer = os.Stderr
 
 func Main(args []string) error {
-	var check bool
+	var fix bool
 	var quiet bool
 	flags := flag.NewFlagSet(args[0], flag.ContinueOnError)
-	flags.BoolVar(&check, "check", false, "check the document is up-to-date")
+	flags.BoolVar(&fix, "fix", false, "fix the outdated document automatically")
 	flags.BoolVar(&quiet, "quiet", false, "disable trace logs")
 	flags.SetOutput(stderr)
 	flags.Usage = func() {
-		fmt.Fprintln(stderr, "Usage: update-checks-doc [FLAGS] FILE\n\nFlags:")
+		fmt.Fprintln(stderr, "Usage: check-checks [FLAGS] FILE\n\nFlags:")
 		flags.PrintDefaults()
 	}
 
@@ -358,8 +358,8 @@ func Main(args []string) error {
 		return nil
 	}
 
-	if check {
-		return fmt.Errorf("checks document has some update. run `go run ./scripts/update-checks-doc %s` and commit the changes. the diff:\n\n%s", path, cmp.Diff(in, out))
+	if !fix {
+		return fmt.Errorf("checks document has some update. run `go run ./scripts/check-checks -fix %s` and commit the changes on Linux or macOS. the diff:\n\n%s", path, cmp.Diff(in, out))
 	}
 
 	log.Printf("Overwrite the file with the updated content (%d bytes) at %q", len(out), path)

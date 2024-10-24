@@ -41,7 +41,7 @@ func testErr(t *testing.T, err error, want ...string) {
 
 func TestMainGenerateOK(t *testing.T) {
 	if runtime.GOOS == "windows" {
-		t.Skip("update-checks-doc doesn't support Windows")
+		t.Skip("check-checks doesn't support Windows")
 	}
 	root := t.TempDir()
 
@@ -52,7 +52,7 @@ func TestMainGenerateOK(t *testing.T) {
 	in.Close()
 	tmp.Close()
 
-	if err := Main([]string{"exe", path}); err != nil {
+	if err := Main([]string{"exe", "-fix", path}); err != nil {
 		t.Fatal(err)
 	}
 
@@ -65,20 +65,20 @@ func TestMainGenerateOK(t *testing.T) {
 
 func TestMainCheckOK(t *testing.T) {
 	if runtime.GOOS == "windows" {
-		t.Skip("update-checks-doc doesn't support Windows")
+		t.Skip("check-checks doesn't support Windows")
 	}
 	path := filepath.FromSlash("testdata/ok/minimal.out")
-	if err := Main([]string{"exe", "-check", path}); err != nil {
+	if err := Main([]string{"exe", path}); err != nil {
 		t.Fatal(err)
 	}
 }
 
 func TestMainCheckQuietOK(t *testing.T) {
 	if runtime.GOOS == "windows" {
-		t.Skip("update-checks-doc doesn't support Windows")
+		t.Skip("check-checks doesn't support Windows")
 	}
 	path := filepath.FromSlash("testdata/ok/minimal.out")
-	if err := Main([]string{"exe", "-check", "-quiet", path}); err != nil {
+	if err := Main([]string{"exe", "-quiet", path}); err != nil {
 		t.Fatal(err)
 	}
 }
@@ -91,14 +91,14 @@ func TestMainPrintHelp(t *testing.T) {
 
 func TestMainCheckError(t *testing.T) {
 	if runtime.GOOS == "windows" {
-		t.Skip("update-checks-doc doesn't support Windows")
+		t.Skip("check-checks doesn't support Windows")
 	}
 	path := filepath.FromSlash("testdata/ok/minimal.in")
-	testErr(t, Main([]string{"exe", "-check", path}), "checks document has some update")
+	testErr(t, Main([]string{"exe", path}), "checks document has some update")
 }
 
 func TestMainFileNotFound(t *testing.T) {
-	testErr(t, Main([]string{"exe", "-check", "this-file-does-not-exist.md"}), "could not read the document file")
+	testErr(t, Main([]string{"exe", "this-file-does-not-exist.md"}), "could not read the document file")
 }
 
 func TestMainTooManyArgs(t *testing.T) {
@@ -107,16 +107,6 @@ func TestMainTooManyArgs(t *testing.T) {
 
 func TestMainInvalidCheckFlag(t *testing.T) {
 	testErr(t, Main([]string{"exe", "-c", "foo.md"}), "flag provided but not defined")
-}
-
-func TestMainNoUpdate(t *testing.T) {
-	if runtime.GOOS == "windows" {
-		t.Skip("update-checks-doc doesn't support Windows")
-	}
-	path := filepath.FromSlash("testdata/ok/minimal.out")
-	if err := Main([]string{"exe", path}); err != nil {
-		t.Fatal(err)
-	}
 }
 
 func TestMainUpdateError(t *testing.T) {
@@ -128,7 +118,7 @@ func TestMainUpdateError(t *testing.T) {
 
 func TestUpdateOK(t *testing.T) {
 	if runtime.GOOS == "windows" {
-		t.Skip("update-checks-doc doesn't support Windows")
+		t.Skip("check-checks doesn't support Windows")
 	}
 
 	dir := filepath.FromSlash("testdata/ok")

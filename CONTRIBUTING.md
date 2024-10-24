@@ -229,8 +229,8 @@ All tests are automated.
 
 The ['Checks' document](./docs/checks.md) is a large document to explain all checks by actionlint.
 
-This document is maintained with [`update-checks-doc`](./scripts/update-checks-doc) script. This script automatically updates
+This document is maintained with [`check-checks`](./scripts/check-checks) script. This script automatically updates
 the code blocks after `Output:` and the `Playground` links. This script should be run after modifying the document.
 
-Please see [the readme of the script](./scripts/update-checks-doc/README.md) for the usage and knowing the details of the
+Please see [the readme of the script](./scripts/check-checks/README.md) for the usage and knowing the details of the
 document format that this script assumes.

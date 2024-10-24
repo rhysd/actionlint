@@ -1,5 +1,5 @@
-update-checks-doc
-=================
+check-checks
+============
 
 This is a script to maintain [the 'Checks' document](../../docs/checks.md).
 
@@ -21,19 +21,19 @@ For making the implementation simple, this script does not support Windows.
 ## Usage
 
 ```
-go run ./scripts/update-checks-doc [-check] FILE
-```
-
-Update the document. This command directly modifies the file.
-
-```sh
-go run ./scripts/update-checks-doc ./docs/checks.md
+go run ./scripts/check-checks [FLAGS] FILE
 ```
 
 Check the document is up-to-date.
 
 ```sh
-go run ./scripts/update-checks-doc -check ./docs/checks.md
+go run ./scripts/check-checks ./docs/checks.md
+```
+
+Update the document. This command directly modifies the file.
+
+```sh
+go run ./scripts/check-checks -fix ./docs/checks.md
 ```
 
 The check is run on the [CI workflow](../../.github/workflows/ci.yaml).

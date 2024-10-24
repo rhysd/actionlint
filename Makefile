@@ -26,7 +26,7 @@ t test: .testtimestamp
 .staticchecktimestamp: $(TESTS) $(SRCS) $(TOOL)
 	staticcheck ./...
 	GOOS=js GOARCH=wasm staticcheck ./playground
-	go run ./scripts/update-checks-doc -check -quiet ./docs/checks.md
+	go run ./scripts/check-checks -quiet ./docs/checks.md
 	touch .staticchecktimestamp
 
 l lint: .staticchecktimestamp
