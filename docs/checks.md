@@ -2182,6 +2182,7 @@ jobs:
 ```
 
 Output:
+<!-- Skip update output on Windows -->
 
 ```
 test.yaml:6:5: when a reusable workflow is called with "uses", "runs-on" is not available. only following keys are allowed: "name", "uses", "with", "secrets", "needs", "if", and "permissions" in job "job1" [syntax-check]

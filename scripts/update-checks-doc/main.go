@@ -11,6 +11,7 @@ import (
 	"io"
 	"log"
 	"os"
+	"runtime"
 	"strings"
 
 	"github.com/google/go-cmp/cmp"
@@ -183,6 +184,7 @@ func (u *Updater) Update() {
 	isInputHeader := l == "Example input:"
 	isOutputHeader := l == "Output:"
 	isSkipOutput := l == "<!-- Skip update output -->"
+	isSkipOutputWin := l == "<!-- Skip update output on Windows -->"
 	isSkipPlaygroundLink := l == "<!-- Skip playground link -->"
 	isPlaygroundLink := strings.HasPrefix(l, "[Playground](") && strings.HasSuffix(l, ")")
 
@@ -194,7 +196,7 @@ func (u *Updater) Update() {
 		u.expect(stateHeading, stateEnd)
 	case isOutputHeader:
 		u.expect(stateAfterInput)
-	case isSkipOutput:
+	case isSkipOutput, isSkipOutputWin:
 		u.expect(stateOutputHeader)
 	case isSkipPlaygroundLink, isPlaygroundLink:
 		u.expect(stateAfterOutput)
@@ -274,8 +276,12 @@ func (u *Updater) Update() {
 			u.state(stateOutputHeader, "Found example output header")
 		}
 	case stateOutputHeader:
-		if isSkipOutput {
-			u.state(stateAfterOutput, "Skip updating output due to the comment")
+		if isSkipOutput || isSkipOutputWin && runtime.GOOS == "windows" {
+			reason := "Skip updating output due to the comment"
+			if isSkipOutputWin {
+				reason += " only on Windows"
+			}
+			u.state(stateAfterOutput, reason)
 		} else if l == "```" {
 			u.state(stateOutputBlock, "Start code block for output")
 		}
@@ -317,8 +323,10 @@ var stderr io.Writer = os.Stderr
 
 func Main(args []string) error {
 	var check bool
+	var quiet bool
 	flags := flag.NewFlagSet(args[0], flag.ContinueOnError)
 	flags.BoolVar(&check, "check", false, "check the document is up-to-date")
+	flags.BoolVar(&quiet, "quiet", false, "disable trace log")
 	flags.SetOutput(stderr)
 	flags.Usage = func() {
 		fmt.Fprintln(stderr, "Usage: update-checks-doc [FLAGS] FILE\n\nFlags:")
@@ -335,11 +343,19 @@ func Main(args []string) error {
 	}
 	path := flags.Arg(0)
 
+	if quiet {
+		log.SetOutput(io.Discard)
+	}
+
 	in, err := os.ReadFile(path)
 	if err != nil {
 		return fmt.Errorf("could not read the document file: %w", err)
 	}
 	log.Printf("Read %d bytes from %q", len(in), path)
+
+	if runtime.GOOS == "windows" {
+		in = bytes.ReplaceAll(in, []byte{'\r', '\n'}, []byte{'\n'})
+	}
 
 	out, err := Update(in)
 	if err != nil {

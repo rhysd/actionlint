@@ -40,9 +40,6 @@ func testErr(t *testing.T, err error, want ...string) {
 }
 
 func TestMainGenerateOK(t *testing.T) {
-	if runtime.GOOS == "windows" {
-		t.Skip("update-checks-doc doesn't support Windows")
-	}
 	root := t.TempDir()
 
 	in := must(os.Open(filepath.FromSlash("testdata/ok/minimal.in")))
@@ -64,11 +61,15 @@ func TestMainGenerateOK(t *testing.T) {
 }
 
 func TestMainCheckOK(t *testing.T) {
-	if runtime.GOOS == "windows" {
-		t.Skip("update-checks-doc doesn't support Windows")
-	}
 	path := filepath.FromSlash("testdata/ok/minimal.out")
 	if err := Main([]string{"exe", "-check", path}); err != nil {
+		t.Fatal(err)
+	}
+}
+
+func TestMainCheckQuietOK(t *testing.T) {
+	path := filepath.FromSlash("testdata/ok/minimal.out")
+	if err := Main([]string{"exe", "-check", "-quiet", path}); err != nil {
 		t.Fatal(err)
 	}
 }
@@ -80,9 +81,6 @@ func TestMainPrintHelp(t *testing.T) {
 }
 
 func TestMainCheckError(t *testing.T) {
-	if runtime.GOOS == "windows" {
-		t.Skip("update-checks-doc doesn't support Windows")
-	}
 	path := filepath.FromSlash("testdata/ok/minimal.in")
 	testErr(t, Main([]string{"exe", "-check", path}), "checks document has some update")
 }
@@ -100,9 +98,6 @@ func TestMainInvalidCheckFlag(t *testing.T) {
 }
 
 func TestMainNoUpdate(t *testing.T) {
-	if runtime.GOOS == "windows" {
-		t.Skip("update-checks-doc doesn't support Windows")
-	}
 	path := filepath.FromSlash("testdata/ok/minimal.out")
 	if err := Main([]string{"exe", path}); err != nil {
 		t.Fatal(err)
@@ -117,10 +112,6 @@ func TestMainUpdateError(t *testing.T) {
 }
 
 func TestUpdateOK(t *testing.T) {
-	if runtime.GOOS == "windows" {
-		t.Skip("update-checks-doc doesn't support Windows")
-	}
-
 	dir := filepath.FromSlash("testdata/ok")
 
 	tests := []string{}
@@ -129,7 +120,18 @@ func TestUpdateOK(t *testing.T) {
 		if !strings.HasSuffix(n, ".in") {
 			continue
 		}
-		tests = append(tests, strings.TrimSuffix(n, filepath.Ext(n)))
+
+		id := strings.TrimSuffix(n, filepath.Ext(n))
+		// This test case does not work on Windows
+		if runtime.GOOS == "windows" && id == "replace_absolute_path" {
+			continue
+		}
+		// This test case only works on Windows
+		if runtime.GOOS != "windows" && id == "skip_output_on_windows" {
+			continue
+		}
+
+		tests = append(tests, id)
 	}
 
 	for _, tc := range tests {
