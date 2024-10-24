@@ -9,9 +9,12 @@ This script does:
 - update the links to the [playground](https://rhysd.github.io/actionlint/) for the example inputs
 - check the document is up-to-date
 
+For making the implementation simple, this script does not support Windows.
+
 ## Prerequisites
 
 - Go
+- Linux or macOS
 - `shellcheck` command
 - `pyflakes` command
 

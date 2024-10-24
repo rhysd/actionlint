@@ -23,10 +23,9 @@ all: build test lint
 
 t test: .testtimestamp
 
-.staticchecktimestamp: $(TESTS) $(SRCS) $(TOOL) docs/checks.md
+.staticchecktimestamp: $(TESTS) $(SRCS) $(TOOL)
 	staticcheck ./...
 	GOOS=js GOARCH=wasm staticcheck ./playground
-	go run ./scripts/update-checks-doc -check -quiet docs/checks.md
 	touch .staticchecktimestamp
 
 l lint: .staticchecktimestamp

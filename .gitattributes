@@ -3,4 +3,3 @@
 /scripts/generate-webhook-events/testdata/** -text
 /scripts/generate-availability/testdata/** -text
 /scripts/generate-actionlint-matcher/test/** -text
-/scripts/update-checks-doc/testdata/** -text
