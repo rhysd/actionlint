@@ -872,7 +872,7 @@ shellcheck. To avoid it, actionlint replaces `${{ }}` with underscores. For exam
 with `echo '________________'`.
 
 Some shellcheck rules conflict with the `${{ }}` expression syntax. To avoid errors due to the syntax, [SC1091][], [SC2050][],
-[SC2194][], [SC2154][], [SC2157][] are disabled.
+[SC2194][], [SC2154][], [SC2157][], [SC2043][] are disabled.
 
 When what shell is used cannot be determined statically, actionlint assumes `shell: bash` optimistically. For example,
 
@@ -2871,6 +2871,7 @@ Note that `steps` in Composite action's metadata is not checked at this point. I
 [SC2194]: https://github.com/koalaman/shellcheck/wiki/SC2194
 [SC2154]: https://github.com/koalaman/shellcheck/wiki/SC2154
 [SC2157]: https://github.com/koalaman/shellcheck/wiki/SC2157
+[SC2043]: https://github.com/koalaman/shellcheck/wiki/SC2043
 [shellcheck-env-var]: https://github.com/koalaman/shellcheck/wiki/Integration#environment-variables
 [pyflakes]: https://github.com/PyCQA/pyflakes
 [expr-doc]: https://docs.github.com/en/actions/learn-github-actions/expressions
