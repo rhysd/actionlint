@@ -495,7 +495,7 @@ func TestExprSemanticsCheckOK(t *testing.T) {
 			expected: StringType{},
 		},
 		{
-			what:     "format() function arguments varlidation",
+			what:     "format() function arguments validation",
 			input:    "format('{0}{0}{0} {1}{2}{1} {1}{2}{1}{2} {0} {1}{1}{1} {2}{2}{2} {0}{0}{0}{0} {0}', 1, 'foo', true)",
 			expected: StringType{},
 		},
@@ -1014,6 +1014,13 @@ func TestExprSemanticsCheckError(t *testing.T) {
 			input: "format('hi')",
 			expected: []string{
 				"takes at least 2 parameters but 1 arguments are given",
+			},
+		},
+		{
+			what:  "function name of format() call check is case insensitive",
+			input: "Format('{0}', 1, 2)",
+			expected: []string{
+				`format string "{0}" does not contain placeholder {1}`,
 			},
 		},
 		{

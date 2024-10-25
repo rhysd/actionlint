@@ -195,14 +195,14 @@ func TestExprInsecureDetectUntrustedValue(t *testing.T) {
 			},
 		},
 		testCase{
-			"format('{} {}', github.event.pages.*.page_name, github.event.issue.title)",
+			"format('{0} {1}', github.event.pages.*.page_name, github.event.issue.title)",
 			[]string{
 				"github.event.pages.*.page_name",
 				"github.event.issue.title",
 			},
 		},
 		testCase{
-			"format('{} {}', github.event.*.body, github.event.*.*)",
+			"format('{0} {1}', github.event.*.body, github.event.*.*)",
 			[]string{
 				"github.event.",
 				"github.event.",
