@@ -75,7 +75,9 @@ func testRunTrustedInputsCheckerForNode(t *testing.T, c *UntrustedInputChecker, 
 		t.Fatal(err)
 	}
 	VisitExprNode(n, func(n, p ExprNode, entering bool) {
-		if !entering {
+		if entering {
+			c.OnVisitNodeEnter(n)
+		} else {
 			c.OnVisitNodeLeave(n)
 		}
 	})
@@ -193,14 +195,14 @@ func TestExprInsecureDetectUntrustedValue(t *testing.T) {
 			},
 		},
 		testCase{
-			"fromJson(github.event.pages.*.page_name, github.event.issue.title)",
+			"format('{} {}', github.event.pages.*.page_name, github.event.issue.title)",
 			[]string{
 				"github.event.pages.*.page_name",
 				"github.event.issue.title",
 			},
 		},
 		testCase{
-			"fromJson(github.event.*.body, github.event.*.*)",
+			"format('{} {}', github.event.*.body, github.event.*.*)",
 			[]string{
 				"github.event.",
 				"github.event.",
@@ -325,7 +327,7 @@ func TestExprInsecureNoUntrustedValue(t *testing.T) {
 			c := NewUntrustedInputChecker(BuiltinUntrustedInputs)
 			testRunTrustedInputsCheckerForNode(t, c, input)
 			if errs := c.Errs(); len(errs) > 0 {
-				t.Fatalf("%d error(s) occurred: %v", len(errs), errs)
+				t.Fatalf("%q caused %d error(s): %v", input, len(errs), errs)
 			}
 		})
 	}

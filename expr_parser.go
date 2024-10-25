@@ -66,41 +66,6 @@ func (p *ExprParser) peek() *Token {
 	return p.cur
 }
 
-func (p *ExprParser) setParent(parent ExprNode, children ...ExprNode) {
-	for _, child := range children {
-		if child != nil {
-			switch n := child.(type) {
-			case *VariableNode:
-				n.parent = parent
-			case *NullNode:
-				n.parent = parent
-			case *BoolNode:
-				n.parent = parent
-			case *IntNode:
-				n.parent = parent
-			case *FloatNode:
-				n.parent = parent
-			case *StringNode:
-				n.parent = parent
-			case *ObjectDerefNode:
-				n.parent = parent
-			case *ArrayDerefNode:
-				n.parent = parent
-			case *IndexAccessNode:
-				n.parent = parent
-			case *NotOpNode:
-				n.parent = parent
-			case *CompareOpNode:
-				n.parent = parent
-			case *LogicalOpNode:
-				n.parent = parent
-			case *FuncCallNode:
-				n.parent = parent
-			}
-		}
-	}
-}
-
 func (p *ExprParser) parseIdent() ExprNode {
 	ident := p.next() // eat ident
 	switch p.peek().Kind {
@@ -137,21 +102,19 @@ func (p *ExprParser) parseIdent() ExprNode {
 				}
 			}
 		}
-		node := &FuncCallNode{ident.Value, args, ident, nil}
-		p.setParent(node, args...)
-		return node
+		return &FuncCallNode{ident.Value, args, ident}
 	default:
 		// Handle keywords. Note that keywords are case sensitive. TRUE, FALSE, NULL are invalid named value.
 		switch ident.Value {
 		case "null":
-			return &NullNode{ident, nil}
+			return &NullNode{ident}
 		case "true":
-			return &BoolNode{true, ident, nil}
+			return &BoolNode{true, ident}
 		case "false":
-			return &BoolNode{false, ident, nil}
+			return &BoolNode{false, ident}
 		default:
 			// Variable name access is case insensitive. github.event and GITHUB.event are the same.
-			return &VariableNode{strings.ToLower(ident.Value), ident, nil}
+			return &VariableNode{strings.ToLower(ident.Value), ident}
 		}
 	}
 }
@@ -184,7 +147,7 @@ func (p *ExprParser) parseInt() ExprNode {
 
 	p.next() // eat int
 
-	return &IntNode{int(i), t, nil}
+	return &IntNode{int(i), t}
 }
 
 func (p *ExprParser) parseFloat() ExprNode {
@@ -197,7 +160,7 @@ func (p *ExprParser) parseFloat() ExprNode {
 
 	p.next() // eat float
 
-	return &FloatNode{f, t, nil}
+	return &FloatNode{f, t}
 }
 
 func (p *ExprParser) parseString() ExprNode {
@@ -205,7 +168,7 @@ func (p *ExprParser) parseString() ExprNode {
 	s := t.Value
 	s = s[1 : len(s)-1]                  // strip first and last single quotes
 	s = strings.ReplaceAll(s, "''", "'") // unescape ''
-	return &StringNode{s, t, nil}
+	return &StringNode{s, t}
 }
 
 func (p *ExprParser) parsePrimaryExpr() ExprNode {
@@ -248,15 +211,11 @@ func (p *ExprParser) parsePostfixOp() ExprNode {
 			switch p.peek().Kind {
 			case TokenKindStar:
 				p.next() // eat '*'
-				node := &ArrayDerefNode{ret, nil}
-				p.setParent(node, ret)
-				ret = node
+				ret = &ArrayDerefNode{ret}
 			case TokenKindIdent:
 				t := p.next() // eat 'b' of 'a.b'
 				// Property name is case insensitive. github.event and github.EVENT are the same
-				node := &ObjectDerefNode{ret, strings.ToLower(t.Value), nil}
-				p.setParent(node, ret)
-				ret = node
+				ret = &ObjectDerefNode{ret, strings.ToLower(t.Value)}
 			default:
 				p.unexpected(
 					"object property dereference like 'a.b' or array element dereference like 'a.*'",
@@ -270,9 +229,7 @@ func (p *ExprParser) parsePostfixOp() ExprNode {
 			if idx == nil {
 				return nil
 			}
-			node := &IndexAccessNode{ret, idx, nil}
-			p.setParent(node, ret, idx)
-			ret = node
+			ret = &IndexAccessNode{ret, idx}
 			if p.peek().Kind != TokenKindRightBracket {
 				p.unexpected("closing bracket ']' for index access", []TokenKind{TokenKindRightBracket})
 				return nil
@@ -296,9 +253,7 @@ func (p *ExprParser) parsePrefixOp() ExprNode {
 		return nil
 	}
 
-	node := &NotOpNode{o, t, nil}
-	p.setParent(node, o)
-	return node
+	return &NotOpNode{o, t}
 }
 
 func (p *ExprParser) parseCompareBinOp() ExprNode {
@@ -331,9 +286,7 @@ func (p *ExprParser) parseCompareBinOp() ExprNode {
 		return nil
 	}
 
-	node := &CompareOpNode{k, l, r, nil}
-	p.setParent(node, l, r)
-	return node
+	return &CompareOpNode{k, l, r}
 }
 
 func (p *ExprParser) parseLogicalAnd() ExprNode {
@@ -349,9 +302,7 @@ func (p *ExprParser) parseLogicalAnd() ExprNode {
 	if r == nil {
 		return nil
 	}
-	node := &LogicalOpNode{LogicalOpNodeKindAnd, l, r, nil}
-	p.setParent(node, l, r)
-	return node
+	return &LogicalOpNode{LogicalOpNodeKindAnd, l, r}
 }
 
 func (p *ExprParser) parseLogicalOr() ExprNode {
@@ -367,9 +318,7 @@ func (p *ExprParser) parseLogicalOr() ExprNode {
 	if r == nil {
 		return nil
 	}
-	node := &LogicalOpNode{LogicalOpNodeKindOr, l, r, nil}
-	p.setParent(node, l, r)
-	return node
+	return &LogicalOpNode{LogicalOpNodeKindOr, l, r}
 }
 
 // Err returns an error which was caused while previous parsing.
