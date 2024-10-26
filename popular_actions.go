@@ -1500,6 +1500,7 @@ var PopularActions = map[string]*ActionMetadata{
 			"export_to_environment": {"export_to_environment", false},
 			"min_mask_length":       {"min_mask_length", false},
 			"secrets":               {"secrets", true},
+			"universe":              {"universe", false},
 		},
 		SkipOutputs: true,
 	},
