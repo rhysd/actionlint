@@ -75,7 +75,7 @@ rule.
 The example input code block must not be empty and must contain at least one error.
 
 When you don't want to update the output by this script, put the comment as follows. This script
-will ignore the code block. Instead you need to write the output in the code blcok manually.
+will ignore the code block. Instead you need to write the output in the code block manually.
 
 ```yaml
 Output:

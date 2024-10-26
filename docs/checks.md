@@ -2846,7 +2846,7 @@ action_metadata_syntax_validation.yaml:8:15: "env" is not allowed in "runs" sect
 
 <!-- Skip playground link -->
 
-All actions require a metadata file `action.yml` or `aciton.yaml`. The syntax is defined in [the official document][action-metadata-doc].
+All actions require a metadata file `action.yml` or `action.yaml`. The syntax is defined in [the official document][action-metadata-doc].
 
 actionlint checks metadata files used in workflows and reports errors when they are not following the syntax.
 

@@ -34,7 +34,7 @@ func testErr(t *testing.T, err error, want ...string) {
 	msg := err.Error()
 	for _, w := range want {
 		if !strings.Contains(msg, w) {
-			t.Errorf("error message %q does not cotnain expected text %q", msg, w)
+			t.Errorf("error message %q does not contain expected text %q", msg, w)
 		}
 	}
 }
