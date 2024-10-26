@@ -305,6 +305,9 @@ func (u *UntrustedInputChecker) OnVisitNodeEnter(n ExprNode) {
 func (u *UntrustedInputChecker) OnVisitNodeLeave(n ExprNode) {
 	// Skip unsafe checks if we are inside of safe function call expression
 	if u.safeCalls > 0 {
+		if f, ok := n.(*FuncCallNode); ok && isSafeFuncCall(f) {
+			u.safeCalls--
+		}
 		return
 	}
 
@@ -323,11 +326,6 @@ func (u *UntrustedInputChecker) OnVisitNodeLeave(n ExprNode) {
 		u.onIndexAccess()
 	case *ArrayDerefNode:
 		u.onObjectFilter()
-	case *FuncCallNode:
-		if isSafeFuncCall(n) {
-			u.safeCalls--
-		}
-		u.end()
 	default:
 		u.end()
 	}

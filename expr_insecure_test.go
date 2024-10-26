@@ -82,6 +82,9 @@ func testRunTrustedInputsCheckerForNode(t *testing.T, c *UntrustedInputChecker, 
 		}
 	})
 	c.OnVisitEnd()
+	if c.safeCalls != 0 {
+		t.Fatalf("%q safe calls counter is not zero: %d", input, c.safeCalls)
+	}
 }
 
 func TestExprInsecureDetectUntrustedValue(t *testing.T) {
