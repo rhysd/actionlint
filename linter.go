@@ -103,6 +103,7 @@ type Linter struct {
 	shellcheck     string
 	pyflakes       string
 	ignorePats     []*regexp.Regexp
+	stdin          string
 	defaultConfig  *Config
 	errFmt         *ErrorFormatter
 	cwd            string
@@ -172,6 +173,11 @@ func NewLinter(out io.Writer, opts *LinterOptions) (*Linter, error) {
 		}
 	}
 
+	stdin := "<stdin>"
+	if opts.StdinFileName != "" {
+		stdin = opts.StdinFileName
+	}
+
 	return &Linter{
 		NewProjects(),
 		out,
@@ -181,6 +187,7 @@ func NewLinter(out io.Writer, opts *LinterOptions) (*Linter, error) {
 		opts.Shellcheck,
 		opts.Pyflakes,
 		ignore,
+		stdin,
 		cfg,
 		formatter,
 		cwd,
@@ -443,9 +450,20 @@ func (l *Linter) LintFile(path string, project *Project) ([]*Error, error) {
 	return errs, err
 }
 
+// LintStdin lints the content read from STDIN. The stdin parameter is a reader to read from STDIN,
+// which is usually os.Stdin. The file name is determined by LinterOptions.StdinFileName. When the
+// option is empty, "<stdin>" is the default value.
+func (l *Linter) LintStdin(stdin io.Reader) ([]*Error, error) {
+	l.log("Reading the input from stdin")
+	b, err := io.ReadAll(stdin)
+	if err != nil {
+		return nil, fmt.Errorf("could not read stdin: %w", err)
+	}
+	return l.Lint(l.stdin, b, nil)
+}
+
 // Lint lints YAML workflow file content given as byte slice. The path parameter is used as file
-// path where the content came from. Setting "<stdin>" to path parameter indicates the output came
-// from STDIN.
+// path where the content came from.
 // When nil is passed to the project parameter, it tries to find the project from the path parameter.
 func (l *Linter) Lint(path string, content []byte, project *Project) ([]*Error, error) {
 	if project == nil && path != "<stdin>" {

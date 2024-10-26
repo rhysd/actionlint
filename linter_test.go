@@ -2,7 +2,9 @@ package actionlint
 
 import (
 	"bufio"
+	"bytes"
 	"encoding/json"
+	"errors"
 	"fmt"
 	"io"
 	"os"
@@ -16,6 +18,12 @@ import (
 	"github.com/google/go-cmp/cmp"
 	"golang.org/x/sys/execabs"
 )
+
+type testErrorReader struct{}
+
+func (r testErrorReader) Read(p []byte) (int, error) {
+	return 0, errors.New("dummy read error")
+}
 
 func TestLinterLintOK(t *testing.T) {
 	dir := filepath.Join("testdata", "ok")
@@ -432,7 +440,7 @@ func TestLinterFormatErrorMessageInSARIF(t *testing.T) {
 
 	var have interface{}
 	if err := json.Unmarshal([]byte(out), &have); err != nil {
-		t.Fatalf("Output is not JSON: %v: %q", err, out)
+		t.Fatalf("output is not JSON: %v: %q", err, out)
 	}
 
 	bytes, err = os.ReadFile(filepath.Join(dir, "test.sarif"))
@@ -446,6 +454,53 @@ func TestLinterFormatErrorMessageInSARIF(t *testing.T) {
 
 	if !cmp.Equal(want, have) {
 		t.Fatal(cmp.Diff(want, have))
+	}
+}
+
+func TestLinterLintStdinOK(t *testing.T) {
+	for _, f := range []string{"", "foo.yaml"} {
+		l, err := NewLinter(io.Discard, &LinterOptions{StdinFileName: f})
+		if err != nil {
+			t.Fatalf("creating Linter object with stdin file name %q caused error: %v", f, err)
+		}
+
+		in := []byte(`on: push
+jobs:
+  job:
+    runs-on: foo
+	steps:
+	  - run: echo`)
+		errs, err := l.LintStdin(bytes.NewReader(in))
+		if err != nil {
+			t.Fatalf("linting input with stdin file name %q caused error: %v", f, err)
+		}
+		if len(errs) != 1 {
+			t.Fatalf("unexpected number of errors with stdin file name %q: %v", f, errs)
+		}
+
+		want := f
+		if want == "" {
+			want = "<stdin>"
+		}
+		if errs[0].Filepath != want {
+			t.Fatalf("file path in the error with stdin file name %q should be %q but got %q", f, want, errs[0].Filepath)
+		}
+	}
+}
+
+func TestLinterLintStdinReadError(t *testing.T) {
+	l, err := NewLinter(io.Discard, &LinterOptions{})
+	if err != nil {
+		t.Fatal(err)
+	}
+	_, err = l.LintStdin(testErrorReader{})
+	if err == nil {
+		t.Fatal("error did not occur")
+	}
+	want := "could not read stdin: dummy read error"
+	have := err.Error()
+	if want != have {
+		t.Fatalf("wanted error message %q but have %q", want, have)
 	}
 }
 

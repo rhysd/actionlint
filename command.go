@@ -102,15 +102,7 @@ func (cmd *Command) runLinter(args []string, opts *LinterOptions, initConfig boo
 	}
 
 	if len(args) == 1 && args[0] == "-" {
-		b, err := io.ReadAll(cmd.Stdin)
-		if err != nil {
-			return nil, fmt.Errorf("could not read stdin: %w", err)
-		}
-		n := "<stdin>"
-		if opts.StdinFileName != "" {
-			n = opts.StdinFileName
-		}
-		return l.Lint(n, b, nil)
+		return l.LintStdin(cmd.Stdin)
 	}
 
 	return l.LintFiles(args, nil)
@@ -151,7 +143,7 @@ func (cmd *Command) Main(args []string) int {
 	flags.BoolVar(&opts.Verbose, "verbose", false, "Enable verbose output")
 	flags.BoolVar(&opts.Debug, "debug", false, "Enable debug output (for development)")
 	flags.BoolVar(&ver, "version", false, "Show version and how this binary was installed")
-	flags.StringVar(&opts.StdinFileName, "stdin-filename", "", "File name when reading input from stdin")
+	flags.StringVar(&opts.StdinFileName, "stdin-filename", "<stdin>", "File name when reading input from stdin")
 	flags.Usage = func() {
 		printUsageHeader(cmd.Stderr)
 		flags.PrintDefaults()
