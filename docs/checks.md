@@ -1015,6 +1015,9 @@ jobs:
       - name: Get comments
         # ERROR: Accessing untrusted inputs via `.*` object filter; bodies of comment, review, and review_comment
         run: echo '${{ toJSON(github.event.*.body) }}'
+      - name: Do something with checking skip
+        # OK: This placeholder uses an untrusted input, but the input cannot be injected to the script
+        run: if [ "${{ contains(github.event.pull_request.author.title, '[SKIP]') }}" = "true" ]; then echo "skip"; fi
 ```
 
 Output:
@@ -1034,7 +1037,7 @@ test.yaml:22:31: object filter extracts potentially untrusted properties "github
    |                               ^~~~~~~~~~~~~~~~~~~~
 ```
 
-[Playground](https://rhysd.github.io/actionlint/#eNqEkUFLAzEQhe/9FXMQ2gqJRzGnXkRQaAV7L9l06EazmTUzaZGy/12yW5aqLJ5CMm++93iJtkEDW2SZUTTQ5hB2CT9zeZi9U8VmBiDIUk6AlCOrIsxVjpJVsGXWj1iw5UEFoGAAvyYfpafChQriJeBF1gMNoKsJ5jfnMxy81LnSeMQo+jqM7teg6+ajQ2ZkA9aJp8h3LDbg6vgwkk9eajPeABK2pIQ+MBooVowuobDebl4e19B1V9KepdqkGmS2BxwW/s8GJ8vgAjHuJ1IODMUu+VZWx/vJtIPCgKPIFFAHOiz+NlSj3e8cNY0XbbPUlHTpvdS0/PUTTyhQlBiFp9oXen7brBc/LG51RfuvZUF+BwAA///RHa9N)
+[Playground](https://rhysd.github.io/actionlint/#eNqEkUFr20AQhe/+FQ9RsFMq9Vi6oZBDS2kDSSC5hRDW64l369WOujPrUIL/e1nJmLjF5CRG8+Z7T0/J9mRwR6IzTgZDifEx0+9SX8x+8VLMDFASrU8glyRtFZZlSVraaOtuXInSIJMKaDGBb3JIOlKxp0KDRtrLRqABOc+Yv3t5wTqoL8uOtpS0ex2mG8+w280PDkVIDKzTwEk+itpIF9vPB/JzUG8OE5Bp4FZ5Q8mgWgm5TCrd3fXltyvsdq+kI6sdctuTiF3TdPB2NjxbgYsstDqRcmK04nIY9GL76WTaSWHgOAlH6iKvF/835MmuHh33fdDOFvWcu9p7rensnz/xnRRVSUnlVPvKP2+vrxZHFu+7Ja/+nB01PxG/MoR7Uh/SeswP58lt6iSbMBybhCfco6kmjpPakGRxus/9p4y1fsD8/vbyx83DvGZo8AWN5kINHs6hntIUv6mOzTmewt8AAAD//6j/5EY=)
 
 Since `${{ }}` placeholders are evaluated and replaced directly by GitHub Actions runtime, you need to use them carefully in
 inline scripts at `run:`. For example, if we have step as follows,
@@ -1092,6 +1095,13 @@ Instead, you should store the JSON string in an environment variable:
   env:
     BODIES: '${{ toJSON(github.event.*.body) }}'
 ```
+
+The following functions return a boolean value so it is not possible to inject anything as the result of the returned value.
+actionlint does not report an error even if untrusted inputs are passed to these function calls.
+
+- `contains()`
+- `startswith()`
+- `endswith()`
 
 At last, the popular action [actions/github-script][github-script] has the same issue in its `script` input. actionlint also
 checks the input.

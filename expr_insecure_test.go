@@ -211,6 +211,25 @@ func TestExprInsecureDetectUntrustedValue(t *testing.T) {
 				"github.event.",
 			},
 		},
+		testCase{
+			"contains(github.event.issue.body, 'foo') || github.event.issue.title",
+			[]string{
+				"github.event.issue.title",
+			},
+		},
+		testCase{
+			"github.event.issue.title && contains(github.event.issue.body, 'foo')",
+			[]string{
+				"github.event.issue.title",
+			},
+		},
+		testCase{
+			"format('{0}{1}{2}', github.event.issue.title, contains(github.event.issue.body, 'foo'), github.event.issue.title)",
+			[]string{
+				"github.event.issue.title",
+				"github.event.issue.title",
+			},
+		},
 	)
 
 	for _, tc := range tests {
@@ -297,6 +316,7 @@ func TestExprInsecureNoUntrustedValue(t *testing.T) {
 		"matrix.github.event.issue.title",
 		"matrix.event.issue.title",
 		"github",
+		"github.event",
 		"github.event.issue",
 		"github.event.commits.foo.message",
 		"github.event.commits[0]",
@@ -315,14 +335,12 @@ func TestExprInsecureNoUntrustedValue(t *testing.T) {
 		"matrix.foo[github.event.pages].page_name",
 		"github.event.issue.body.foo.bar",
 		"github.event.issue.body[0]",
-
-		"contains(github.event.issue.title, 'bug')",
 		"contains(github.event.issue.body, github.event.issue.title)",
 		"startsWith(github.event.comment.body, 'LGTM')",
 		"endsWith(github.event.pull_request.title, github.event.issue.title)",
-		"contains(github.event.*.body, 'sensitive')",
-		"startsWith(github.event.*.body[0], 'Important')",
-		"endsWith(github.event.commits[0].message, github.event.pull_request.title)",
+		"contains(contains(github.event.issue.body, github.event.issue.title), github.event.issue.title)", // safe -> safe
+		"contains(fromJSON(github.event.issue.body), github.event.issue.title)",                           // safe -> unsafe
+		"fromJSON(contains(github.event.issue.body, github.event.issue.title))",                           // unsafe -> safe
 	}
 
 	for _, input := range inputs {
