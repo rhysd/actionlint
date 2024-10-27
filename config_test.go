@@ -1,7 +1,6 @@
 package actionlint
 
 import (
-	"os"
 	"path/filepath"
 	"strings"
 	"testing"
@@ -105,13 +104,7 @@ func TestConfigReadFileParseError(t *testing.T) {
 }
 
 func TestConfigGenerateDefaultConfigFileOK(t *testing.T) {
-	dir, err := os.MkdirTemp(filepath.Join("testdata", "config"), "generate")
-	if err != nil {
-		panic(err)
-	}
-	defer os.RemoveAll(dir)
-
-	f := filepath.Join(dir, "test.yml")
+	f := filepath.Join(t.TempDir(), "default-config-for-test.yml")
 	if err := writeDefaultConfigFile(f); err != nil {
 		t.Fatal(err)
 	}
@@ -124,6 +117,9 @@ func TestConfigGenerateDefaultConfigFileOK(t *testing.T) {
 	}
 	if c.ConfigVariables != nil {
 		t.Fatal(c.SelfHostedRunner.Labels)
+	}
+	if len(c.Paths) != 0 {
+		t.Fatal(c.Paths)
 	}
 }
 

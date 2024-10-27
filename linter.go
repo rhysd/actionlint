@@ -594,7 +594,7 @@ func (l *Linter) check(
 		}
 
 		if err := v.Visit(w); err != nil {
-			l.debug("error occurred while visiting workflow syntax tree: %v", err)
+			l.debug("Error occurred while visiting workflow syntax tree: %v", err)
 			return nil, err
 		}
 
@@ -611,19 +611,7 @@ func (l *Linter) check(
 		}
 	}
 
-	if len(l.ignorePats) > 0 {
-		filtered := make([]*Error, 0, len(all))
-	Loop:
-		for _, err := range all {
-			for _, pat := range l.ignorePats {
-				if pat.MatchString(err.Message) {
-					continue Loop
-				}
-			}
-			filtered = append(filtered, err)
-		}
-		all = filtered
-	}
+	all = l.filterErrors(all, cfg.PathConfigsFor(path))
 
 	for _, err := range all {
 		err.Filepath = path // Populate filename in the error
@@ -637,6 +625,34 @@ func (l *Linter) check(
 	}
 
 	return all, nil
+}
+
+func (l *Linter) filterErrors(errs []*Error, cfgs []*PathConfig) []*Error {
+	if len(l.ignorePats) == 0 && len(cfgs) == 0 {
+		return errs
+	}
+
+	filtered := make([]*Error, 0, len(errs))
+Loop:
+	for _, err := range errs {
+		for _, pat := range l.ignorePats {
+			if pat.MatchString(err.Message) {
+				l.debug("Error %q is ignored due to -ignore pattern %q", err.Message, pat.String())
+				continue Loop
+			}
+		}
+		for _, c := range cfgs {
+			if c.Ignores(err) {
+				l.debug("Error %q is ignored due to the \"ignore\" config in the config file", err.Message)
+				continue Loop
+			}
+		}
+		filtered = append(filtered, err)
+	}
+	if len(filtered) != len(errs) {
+		l.log("Filtered", len(errs)-len(filtered), "error(s) due to \"-ignore\" command line option and \"ignore\" configuration")
+	}
+	return filtered
 }
 
 func (l *Linter) printErrors(errs []*Error, src []byte) {

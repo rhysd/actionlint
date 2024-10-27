@@ -4,6 +4,7 @@ go 1.18
 
 require (
 	github.com/fatih/color v1.17.0
+	github.com/gobwas/glob v0.2.3
 	github.com/google/go-cmp v0.6.0
 	github.com/mattn/go-colorable v0.1.13
 	github.com/mattn/go-runewidth v0.0.16
