@@ -59,7 +59,7 @@ func (cfg *PathConfig) Ignores(err *Error) bool {
 }
 
 // PathConfigs is a "paths" mapping in the configuration file. The keys are glob patterns matching to
-// file paths. And the values are corresponding configurations.
+// file paths relative to the repository root. And the values are the corresponding configurations.
 type PathConfigs map[string]*PathConfig
 
 func (cfgs *PathConfigs) UnmarshalYAML(n *yaml.Node) error {
@@ -107,8 +107,11 @@ type Config struct {
 	Paths PathConfigs `yaml:"paths"`
 }
 
-// PathConfigsFor returns a list of all PathConfig values matching to the given path.
+// PathConfigsFor returns a list of all PathConfig values matching to the given file path. The path must
+// be relative to the root of the project.
 func (cfg *Config) PathConfigsFor(path string) []*PathConfig {
+	path = filepath.ToSlash(path)
+
 	var ret []*PathConfig
 	if cfg != nil {
 		for _, c := range cfg.Paths {
@@ -160,16 +163,18 @@ func writeDefaultConfigFile(path string) error {
 	b := []byte(`self-hosted-runner:
   # Labels of self-hosted runner in array of strings.
   labels: []
+
 # Configuration variables in array of strings defined in your repository or
 # organization. ` + "`null`" + ` means disabling configuration variables check.
 # Empty array means no configuration variable is allowed.
 config-variables: null
 
 # Configuration for file paths. The keys are glob patterns to match to file
-# paths. The values are the configurations for the file paths. Currently only
-# "ignore" is available.
-# "ignore" is an array of regular expression patterns. Matched errors are
-# ignored. This is similar to "-ignore" command line option.
+# paths relative to the repository root. The values are the configurations for
+# the file paths. The following configurations are available.
+#
+# "ignore" is an array of regular expression patterns. Matched error messages
+# are ignored. This is similar to the "-ignore" command line option.
 paths:
 #  .github/workflows/**/*.yml:
 #    ignore: []
