@@ -1,7 +1,7 @@
 /actionlint
 /actionlint.exe
 /.testtimestamp
-/.staticchecktimestamp
+/.linttimestamp
 /env.sh
 /.github/actionlint.yaml
 /.github/actionlint.yml
