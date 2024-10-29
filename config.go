@@ -20,6 +20,8 @@ type PathConfig struct {
 	Ignore []*regexp.Regexp
 }
 
+// UnmarshalYAML impelements yaml.Unmarshaler. This function partially initializes the PathConfig object
+// and is for internal implementation purpose.
 func (cfg *PathConfig) UnmarshalYAML(n *yaml.Node) error {
 	for i := 0; i < len(n.Content); i += 2 {
 		k, v := n.Content[i], n.Content[i+1]
@@ -62,6 +64,9 @@ func (cfg *PathConfig) Ignores(err *Error) bool {
 // file paths relative to the repository root. And the values are the corresponding configurations.
 type PathConfigs map[string]*PathConfig
 
+// UnmarshalYAML impelements yaml.Unmarshaler.
+//
+// https://pkg.go.dev/gopkg.in/yaml.v3?utm_source=godoc#Unmarshaler
 func (cfgs *PathConfigs) UnmarshalYAML(n *yaml.Node) error {
 	if n.Kind != yaml.MappingNode {
 		return expectedMapping("paths", n)
@@ -83,6 +88,9 @@ func (cfgs *PathConfigs) UnmarshalYAML(n *yaml.Node) error {
 			return fmt.Errorf("error while processing \"paths\" config: %w", err)
 		}
 
+		if _, ok := ret[pat]; ok {
+			return fmt.Errorf("key duplicates within \"paths\" config: %q", pat)
+		}
 		ret[pat] = &cfg
 	}
 	*cfgs = ret
