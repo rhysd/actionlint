@@ -102,7 +102,7 @@ type Linter struct {
 	oneline        bool
 	shellcheck     string
 	pyflakes       string
-	ignorePats     []*regexp.Regexp
+	ignorePats     IgnorePatterns
 	stdin          string
 	defaultConfig  *Config
 	errFmt         *ErrorFormatter
@@ -178,7 +178,7 @@ func NewLinter(out io.Writer, opts *LinterOptions) (*Linter, error) {
 		stdin = opts.StdinFileName
 	}
 
-	return &Linter{
+	l := &Linter{
 		NewProjects(),
 		out,
 		lout,
@@ -192,7 +192,10 @@ func NewLinter(out io.Writer, opts *LinterOptions) (*Linter, error) {
 		formatter,
 		cwd,
 		opts.OnRulesCreated,
-	}, nil
+	}
+
+	l.debug("Create a Linter instance with option %#v", opts)
+	return l, nil
 }
 
 func (l *Linter) log(args ...interface{}) {
@@ -627,7 +630,7 @@ func (l *Linter) check(
 	return all, nil
 }
 
-func (l *Linter) filterErrors(errs []*Error, cfgs []*PathConfig) []*Error {
+func (l *Linter) filterErrors(errs []*Error, cfgs []PathConfig) []*Error {
 	if len(l.ignorePats) == 0 && len(cfgs) == 0 {
 		return errs
 	}
@@ -635,14 +638,12 @@ func (l *Linter) filterErrors(errs []*Error, cfgs []*PathConfig) []*Error {
 	filtered := make([]*Error, 0, len(errs))
 Loop:
 	for _, err := range errs {
-		for _, pat := range l.ignorePats {
-			if pat.MatchString(err.Message) {
-				l.debug("Error %q is ignored due to -ignore pattern %q", err.Message, pat.String())
-				continue Loop
-			}
+		if l.ignorePats.Match(err) {
+			l.debug("Error %q is ignored due to -ignore command line option", err.Message)
+			continue Loop
 		}
 		for _, c := range cfgs {
-			if c.Ignores(err) {
+			if c.Ignore.Match(err) {
 				l.debug("Error %q is ignored due to the \"ignore\" config in the config file", err.Message)
 				continue Loop
 			}

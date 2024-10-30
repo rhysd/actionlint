@@ -2,7 +2,6 @@ package actionlint
 
 import (
 	"path/filepath"
-	"sort"
 	"strings"
 	"testing"
 
@@ -57,130 +56,48 @@ func TestConfigParseSelfHostedRunnerOK(t *testing.T) {
 	}
 }
 
-func TestConfigParseSelfHostedRunnerError(t *testing.T) {
-	input := "self-hosted-runner: 42\n"
-	_, err := parseConfig([]byte(input), "/path/to/file.yml")
-	if err == nil {
-		t.Fatal("error did not occur")
-	}
-	msg := err.Error()
-	if !strings.Contains(msg, "could not parse config file \"/path/to/file.yml\"") {
-		t.Fatalf("unexpected error message: %q", msg)
-	}
-}
-
-func TestConfigParsePathConfigsOK(t *testing.T) {
+func TestConfigParseError(t *testing.T) {
 	tests := []struct {
-		what  string
-		input string
-		want  map[string][]string
+		in   string
+		want string
 	}{
 		{
-			what:  "empty",
-			input: "",
-			want:  map[string][]string{},
+			in:   `self-hosted-runner: 42`,
+			want: `cannot unmarshal`,
 		},
 		{
-			what:  "no config",
-			input: ".github/**/*.yaml:\n",
-			want: map[string][]string{
-				".github/**/*.yaml": {},
-			},
-		},
-		{
-			what: "empty ignore",
-			input: `
-.github/**/*.yaml:
-  ignore: []
+			in: `
+paths:
+  foo:
+    ignore: foo+
 `,
-			want: map[string][]string{
-				".github/**/*.yaml": {},
-			},
+			want: `"ignore" must be a sequence node`,
 		},
 		{
-			what: "ignore",
-			input: `
-.github/**/*.yaml:
-  ignore:
-    - ^foo.+bar$
-    - aaa\s+bbb
+			in: `
+paths:
+  foo:
+    ignore: ['(foo']
 `,
-			want: map[string][]string{
-				".github/**/*.yaml": {"^foo.+bar$", `aaa\s+bbb`},
-			},
+			want: `invalid regular expression "(foo" in "ignore"`,
 		},
 		{
-			what: "multiple cofigs",
-			input: `
-.github/**/*.yaml:
-  ignore: [aaa]
-.github/**/foo.yaml:
-  ignore:
-    - bbb
-    - ccc
-.github/**/bar.yaml:
+			in: `
+paths:
+  foo.{txt,xml:
 `,
-			want: map[string][]string{
-				".github/**/*.yaml":   {"aaa"},
-				".github/**/foo.yaml": {"bbb", "ccc"},
-				".github/**/bar.yaml": {},
-			},
+			want: `invalid glob pattern`,
 		},
-		{
-			what: "non-string regex",
-			input: `
-.github/**/*.yaml:
-  ignore: [true]
-`,
-			want: map[string][]string{
-				".github/**/*.yaml": {"true"},
-			},
-		},
-	}
-
-	for _, tc := range tests {
-		t.Run(tc.what, func(t *testing.T) {
-			var c PathConfigs
-			if err := yaml.Unmarshal([]byte(tc.input), &c); err != nil {
-				t.Fatal(err)
-			}
-			have := map[string][]string{}
-			for glob, cfg := range c {
-				ignore := []string{}
-				for _, i := range cfg.Ignore {
-					ignore = append(ignore, i.String())
-				}
-				have[glob] = ignore
-			}
-			if !cmp.Equal(tc.want, have) {
-				t.Fatal(cmp.Diff(tc.want, have))
-			}
-		})
-	}
-}
-
-func TestConfigParsePathConfigsError(t *testing.T) {
-	tests := []struct {
-		input string
-		want  string
-	}{
-		{"42\n", "paths must be mapping node"},
-		{"foo:\nfoo:\n", "key duplicates"},
-		{"foo:\n  unknown: 42\n", `invalid key "unknown"`},
-		{"foo:\n  ignore: 42\n", `"ignore" must be a sequence node`},
-		{"foo:\n  ignore: ['(foo']\n", "invalid regular expression"},
 	}
 
 	for _, tc := range tests {
 		t.Run(tc.want, func(t *testing.T) {
-			var c PathConfigs
-			err := yaml.Unmarshal([]byte(tc.input), &c)
+			_, err := parseConfig([]byte(tc.in), "/path/to/file.yml")
 			if err == nil {
-				t.Fatal("error did not occur")
+				t.Fatal("no error occurred")
 			}
-			msg := err.Error()
-			if !strings.Contains(msg, tc.want) {
-				t.Fatalf("error message %q doesn't contain expected message %q", msg, tc.want)
+			if !strings.Contains(err.Error(), tc.want) {
+				t.Fatalf("wanted error message %q to contain %q", err.Error(), tc.want)
 			}
 		})
 	}
@@ -225,7 +142,7 @@ func TestConfigPathConfigIgnores(t *testing.T) {
 			if err := yaml.Unmarshal([]byte(tc.input), &c); err != nil {
 				t.Fatal(err)
 			}
-			have := c.Ignores(&Error{Message: tc.msg})
+			have := c.Ignore.Match(&Error{Message: tc.msg})
 			if tc.want != have {
 				t.Fatalf("wanted %v but got %v for message %q and input %q", tc.want, have, tc.msg, tc.input)
 			}
@@ -233,81 +150,70 @@ func TestConfigPathConfigIgnores(t *testing.T) {
 	}
 }
 
-func TestConfigGetPathConfigs(t *testing.T) {
+func TestConfigIgnoreErrors(t *testing.T) {
+	src := `
+paths:
+  .github/workflows/**/*.yaml:
+    ignore: [xxx]
+  .github/workflows/*.yaml:
+    ignore: [yyy]
+  .github/workflows/a/*.yaml:
+    ignore: [zzz]
+  .github/workflows/*/b.yaml:
+    ignore: [uuu]
+  .github/workflows/a/b.yaml:
+    ignore: [vvv]
+  .github/workflows/**/x.yaml:
+    ignore: [www]
+`
+
+	var cfg Config
+	if err := yaml.Unmarshal([]byte(src), &cfg); err != nil {
+		t.Fatal(err)
+	}
+
 	tests := []struct {
-		what  string
-		input string
-		path  string
-		want  []string
+		path string
+		msg  string
+		want bool
 	}{
-		{
-			what:  "empty",
-			input: "",
-			path:  ".github/workflows/foo.yaml",
-			want:  []string{},
-		},
-		{
-			what:  "single",
-			input: ".github/workflows/*.yaml:",
-			path:  ".github/workflows/foo.yaml",
-			want:  []string{".github/workflows/*.yaml"},
-		},
-		{
-			what: "multiple",
-			input: `
-.github/workflows/**/*.yaml:
-.github/workflows/foo/bar.yaml:
-.github/workflows/foo/*.yaml:
-.github/workflows/foo/piyo.yaml:
-.github/workflows/*/bar.yaml:
-.github/workflows/piyo/bar.yaml:
-`,
-			path: ".github/workflows/foo/bar.yaml",
-			want: []string{
-				".github/workflows/**/*.yaml",
-				".github/workflows/foo/bar.yaml",
-				".github/workflows/foo/*.yaml",
-				".github/workflows/*/bar.yaml",
-			},
-		},
-		{
-			what: "not found",
-			input: `
-.github/workflows/foo/bar.yaml:
-.github/workflows/foo/*.yaml:
-.github/workflows/foo/piyo.yaml:
-.github/workflows/*/bar.yaml:
-.github/workflows/piyo/bar.yaml:
-`,
-			path: ".github/workflows/woo/boo.yaml",
-			want: []string{},
-		},
+		{"foo.yaml", "xxx", false},
+		{".github/workflows/a.yaml", "xxx", true},
+		{".github/workflows/a/b.yaml", "xxx", true},
+		{".github/workflows/a/b/c/d/e/f/g/h.yaml", "xxx", true},
+		{".github/workflows/a.yaml", "yyy", true},
+		{".github/workflows/a/b.yaml", "yyy", false},
+		{".github/workflows/a/b.yaml", "zzz", true},
+		{".github/workflows/a/a.yaml", "zzz", true},
+		{".github/workflows/b/b.yaml", "zzz", false},
+		{".github/workflows/a/b.yaml", "uuu", true},
+		{".github/workflows/b/b.yaml", "uuu", true},
+		{".github/workflows/a/a.yaml", "uuu", false},
+		{".github/workflows/a/b.yaml", "vvv", true},
+		{".github/workflows/b/b.yaml", "vvv", false},
+		{".github/workflows/a/a.yaml", "vvv", false},
+		{".github/workflows/x.yaml", "www", true},
+		{".github/workflows/a/x.yaml", "www", true},
+		{".github/workflows/a/b/x.yaml", "www", true},
+		{".github/workflows/a/b/c/x.yaml", "www", true},
+		{".github/workflows/a/b.yaml", "this is not ignored", false},
 	}
 
 	for _, tc := range tests {
-		t.Run(tc.what, func(t *testing.T) {
-			var pc PathConfigs
-			if err := yaml.Unmarshal([]byte(tc.input), &pc); err != nil {
-				t.Fatal(err)
+		var ignored bool
+		for _, c := range cfg.PathConfigsFor(tc.path) {
+			if c.Ignore.Match(&Error{Message: tc.msg}) {
+				ignored = true
+				break
 			}
-
-			cfg := &Config{Paths: pc}
-			have := []string{}
-			for _, c := range cfg.PathConfigsFor(tc.path) {
-				for k, v := range pc {
-					if c == v {
-						have = append(have, k)
-						break
-					}
-				}
+		}
+		if ignored != tc.want {
+			want, have := "not be ignored", "was ignored"
+			if tc.want {
+				want, have = "be ignored", "was not ignored"
 			}
-			sort.Strings(have)
-			sort.Strings(tc.want)
-
-			if !cmp.Equal(tc.want, have) {
-				t.Fatal(cmp.Diff(tc.want, have))
-			}
-		})
+			t.Fatalf("error message %q with path %q should %s but actually %s", tc.msg, tc.path, want, have)
+		}
 	}
 }
 
