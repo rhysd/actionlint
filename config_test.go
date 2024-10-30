@@ -44,7 +44,7 @@ func TestConfigParseSelfHostedRunnerOK(t *testing.T) {
 
 	for _, tc := range testCases {
 		t.Run(tc.what, func(t *testing.T) {
-			c, err := parseConfig([]byte(tc.input), "/path/to/file.yml")
+			c, err := ParseConfig([]byte(tc.input))
 			if err != nil {
 				t.Fatal(err)
 			}
@@ -92,7 +92,7 @@ paths:
 
 	for _, tc := range tests {
 		t.Run(tc.want, func(t *testing.T) {
-			_, err := parseConfig([]byte(tc.in), "/path/to/file.yml")
+			_, err := ParseConfig([]byte(tc.in))
 			if err == nil {
 				t.Fatal("no error occurred")
 			}

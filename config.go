@@ -1,6 +1,7 @@
 package actionlint
 
 import (
+	"errors"
 	"fmt"
 	"os"
 	"path/filepath"
@@ -15,7 +16,7 @@ import (
 // to the error messages.
 type IgnorePatterns []*regexp.Regexp
 
-// Ignores returns whether the given error should be ignored due to the "ignore" configuration.
+// Match returns whether the given error should be ignored due to the "ignore" configuration.
 func (pats IgnorePatterns) Match(err *Error) bool {
 	for _, r := range pats {
 		if r.MatchString(err.Message) {
@@ -76,7 +77,7 @@ func (cfg *Config) PathConfigsFor(path string) []PathConfig {
 	var ret []PathConfig
 	if cfg != nil {
 		for p, c := range cfg.Paths {
-			// Glob patterns were validated in `parseConfig()`
+			// Glob patterns were validated in `ParseConfig()`
 			if doublestar.MatchUnvalidated(p, path) {
 				ret = append(ret, c)
 			}
@@ -85,15 +86,17 @@ func (cfg *Config) PathConfigsFor(path string) []PathConfig {
 	return ret
 }
 
-func parseConfig(b []byte, path string) (*Config, error) {
+// ParseConfig parses the given bytes as an actionlint config file. When deserializing the YAML file
+// or the config validation fails, this function returns an error.
+func ParseConfig(b []byte) (*Config, error) {
 	var c Config
 	if err := yaml.Unmarshal(b, &c); err != nil {
 		msg := strings.ReplaceAll(err.Error(), "\n", " ")
-		return nil, fmt.Errorf("could not parse config file %q: %s", path, msg)
+		return nil, errors.New(msg)
 	}
 	for pat := range c.Paths {
 		if !doublestar.ValidatePattern(pat) {
-			return nil, fmt.Errorf("could not parse config file %q: invalid glob pattern %q in \"paths\"", path, pat)
+			return nil, fmt.Errorf("invalid glob pattern %q in \"paths\"", pat)
 		}
 	}
 	return &c, nil
@@ -105,23 +108,27 @@ func ReadConfigFile(path string) (*Config, error) {
 	if err != nil {
 		return nil, fmt.Errorf("could not read config file %q: %w", path, err)
 	}
-	return parseConfig(b, path)
+	c, err := ParseConfig(b)
+	if err != nil {
+		return nil, fmt.Errorf("could not parse config file %q: %w", path, err)
+	}
+	return c, nil
 }
 
 // loadRepoConfig reads config file from the repository's .github/actionlint.yml or
 // .github/actionlint.yaml.
 func loadRepoConfig(root string) (*Config, error) {
 	for _, f := range []string{"actionlint.yaml", "actionlint.yml"} {
-		path := filepath.Join(root, ".github", f)
-		b, err := os.ReadFile(path)
-		if err != nil {
-			continue // file does not exist
+		p := filepath.Join(root, ".github", f)
+		c, err := ReadConfigFile(p)
+		switch {
+		case errors.Is(err, os.ErrNotExist):
+			continue
+		case err != nil:
+			return nil, fmt.Errorf("could not parse config file %q: %w", p, err)
+		default:
+			return c, nil
 		}
-		cfg, err := parseConfig(b, path)
-		if err != nil {
-			return nil, err
-		}
-		return cfg, nil
 	}
 	return nil, nil
 }
