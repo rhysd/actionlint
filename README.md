@@ -123,8 +123,8 @@ See [the usage document](docs/usage.md) for more details.
   source, a download script (for CI), supports by several package managers are available.
 - [Usage](docs/usage.md): How to use `actionlint` command locally or on GitHub Actions, the online playground, an official Docker
   image, and integrations with reviewdog, Problem Matchers, super-linter, pre-commit, VS Code.
-- [Configuration](docs/config.md): How to configure actionlint behavior. Currently, the labels of self-hosted runners and the
-  configuration variables can be set.
+- [Configuration](docs/config.md): How to configure actionlint behavior. Currently, the labels of self-hosted runners,
+  configuration variables, and optional security lints can be set.
 - [Go API](docs/api.md): How to use actionlint as Go library.
 - [References](docs/reference.md): Links to resources.
 
