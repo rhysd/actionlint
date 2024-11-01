@@ -221,29 +221,33 @@ func (l *Linter) debugWriter() io.Writer {
 	return l.logOut
 }
 
-// GenerateDefaultConfig generates default config file at ".github/actionlint.yaml" in project
+// GenerateDefaultConfig generates default config file at ".github/actionlint.yaml" in the project
 // which the given directory path belongs to.
 func (l *Linter) GenerateDefaultConfig(dir string) error {
 	l.log("Generating default actionlint.yaml in repository:", dir)
 
-	p, err := l.projects.At(dir)
+	proj, err := l.projects.At(dir)
 	if err != nil {
 		return err
 	}
-	if p == nil {
+	if proj == nil {
 		return errors.New("project is not found. check current project is initialized as Git repository and \".github/workflows\" directory exists")
 	}
 
-	path := filepath.Join(p.RootDir(), ".github", "actionlint.yaml")
-	if _, err := os.Stat(path); err == nil {
-		return fmt.Errorf("config file already exists at %q", path)
+	d := filepath.Join(proj.RootDir(), ".github")
+	for _, f := range []string{"actionlint.yaml", "actionlint.yml"} {
+		p := filepath.Join(d, f)
+		if _, err := os.Stat(p); err == nil {
+			return fmt.Errorf("config file already exists at %q", p)
+		}
 	}
 
-	if err := writeDefaultConfigFile(path); err != nil {
+	p := filepath.Join(d, "actionlint.yaml")
+	if err := writeDefaultConfigFile(p); err != nil {
 		return err
 	}
 
-	fmt.Fprintf(l.out, "Config file was generated at %q\n", path)
+	fmt.Fprintf(l.out, "Config file was generated at %q\n", p)
 	return nil
 }
 
