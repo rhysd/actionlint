@@ -222,8 +222,13 @@ func (l *Linter) debugWriter() io.Writer {
 }
 
 // GenerateDefaultConfig generates default config file at ".github/actionlint.yaml" in the project
-// which the given directory path belongs to.
+// which the given directory path belongs to. When the directory path is empty, the current directory
+// will be used instead.
 func (l *Linter) GenerateDefaultConfig(dir string) error {
+	if dir == "" {
+		dir = l.cwd
+	}
+
 	l.log("Generating default actionlint.yaml in repository:", dir)
 
 	proj, err := l.projects.At(dir)
@@ -251,10 +256,15 @@ func (l *Linter) GenerateDefaultConfig(dir string) error {
 	return nil
 }
 
-// LintRepository lints YAML workflow files and outputs the errors to given writer. It finds the nearest
-// `.github/workflows` directory based on `dir` and applies lint rules to all YAML workflow files
-// under the directory.
+// LintRepository lints YAML workflow files and outputs the errors to given writer. It finds the
+// nearest `.github/workflows` directory based on `dir` and applies lint rules to all YAML workflow
+// files under the directory. When the directory path is empty, the current working directory will
+// be used instead.
 func (l *Linter) LintRepository(dir string) ([]*Error, error) {
+	if dir == "" {
+		dir = l.cwd
+	}
+
 	l.log("Linting all workflow files in repository:", dir)
 
 	p, err := l.projects.At(dir)

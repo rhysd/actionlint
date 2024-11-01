@@ -94,11 +94,11 @@ func (cmd *Command) runLinter(args []string, opts *LinterOptions, initConfig boo
 	}
 
 	if initConfig {
-		return nil, l.GenerateDefaultConfig(".")
+		return nil, l.GenerateDefaultConfig("")
 	}
 
 	if len(args) == 0 {
-		return l.LintRepository(".")
+		return l.LintRepository("")
 	}
 
 	if len(args) == 1 && args[0] == "-" {
