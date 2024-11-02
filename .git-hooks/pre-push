@@ -8,5 +8,5 @@ fi
 
 set +x
 
-make test
-make lint
+make test SKIP_GO_GENERATE=true
+make lint SKIP_GO_GENERATE=true
