@@ -1,0 +1,13 @@
+# This error will be ignored by workflows/**/*.yaml config
+on: unknown
+
+# This error will be ignored by workflows/*.yaml config
+env:
+  FOO: ${{ env.FOO }}
+
+jobs:
+  test:
+    # This error will be ignored by workflows/bar.yaml config
+    runs-on: unknown
+    steps:
+      - run: echo
