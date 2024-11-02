@@ -12,8 +12,8 @@ import (
 	"gopkg.in/yaml.v3"
 )
 
-// IgnorePatterns is a list of regular expressions. They are used for ignoring errors by matching
-// to the error messages.
+// IgnorePatterns is a list of regular expressions. These patterns are used for filtering errors by
+// matching the error messages.
 type IgnorePatterns []*regexp.Regexp
 
 // Match returns whether the given error should be ignored due to the "ignore" configuration.
@@ -69,9 +69,9 @@ type Config struct {
 	Paths map[string]PathConfig `yaml:"paths"`
 }
 
-// PathConfigsFor returns a list of all PathConfig values matching to the given file path. The path must
+// PathConfigs returns a list of all PathConfig values matching to the given file path. The path must
 // be relative to the root of the project.
-func (cfg *Config) PathConfigsFor(path string) []PathConfig {
+func (cfg *Config) PathConfigs(path string) []PathConfig {
 	path = filepath.ToSlash(path)
 
 	var ret []PathConfig

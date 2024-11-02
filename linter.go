@@ -166,11 +166,11 @@ func NewLinter(out io.Writer, opts *LinterOptions) (*Linter, error) {
 		formatter = f
 	}
 
-	cwd := opts.WorkingDir
-	if cwd == "" {
-		if d, err := os.Getwd(); err == nil {
-			cwd = d
-		}
+	cwd := "."
+	if opts.WorkingDir != "" {
+		cwd = opts.WorkingDir
+	} else if d, err := os.Getwd(); err == nil {
+		cwd = d
 	}
 
 	stdin := "<stdin>"
@@ -628,7 +628,7 @@ func (l *Linter) check(
 		}
 	}
 
-	all = l.filterErrors(all, cfg.PathConfigsFor(path))
+	all = l.filterErrors(all, cfg.PathConfigs(path))
 
 	for _, err := range all {
 		err.Filepath = path // Populate filename in the error

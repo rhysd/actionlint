@@ -201,7 +201,7 @@ paths:
 
 	for _, tc := range tests {
 		var ignored bool
-		for _, c := range cfg.PathConfigsFor(tc.path) {
+		for _, c := range cfg.PathConfigs(tc.path) {
 			if c.Ignore.Match(&Error{Message: tc.msg}) {
 				ignored = true
 				break
