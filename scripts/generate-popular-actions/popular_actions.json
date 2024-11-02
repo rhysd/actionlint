@@ -66,6 +66,18 @@
         "next": "v5"
     },
     {
+        "slug": "actions/cache",
+        "path": "/save",
+        "tags": ["v4"],
+        "next": "v5"
+    },
+    {
+        "slug": "actions/cache",
+        "path": "/restore",
+        "tags": ["v4"],
+        "next": "v5"
+    },
+    {
         "slug": "actions/checkout",
         "tags": ["v1", "v2", "v3", "v4"],
         "next": "v5"

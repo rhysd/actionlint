@@ -279,6 +279,31 @@ var PopularActions = map[string]*ActionMetadata{
 			"bundle-path": {"bundle-path"},
 		},
 	},
+	"actions/cache/restore@v4": {
+		Name: "Restore Cache",
+		Inputs: ActionMetadataInputs{
+			"enablecrossosarchive": {"enableCrossOsArchive", false},
+			"fail-on-cache-miss":   {"fail-on-cache-miss", false},
+			"key":                  {"key", true},
+			"lookup-only":          {"lookup-only", false},
+			"path":                 {"path", true},
+			"restore-keys":         {"restore-keys", false},
+		},
+		Outputs: ActionMetadataOutputs{
+			"cache-hit":         {"cache-hit"},
+			"cache-matched-key": {"cache-matched-key"},
+			"cache-primary-key": {"cache-primary-key"},
+		},
+	},
+	"actions/cache/save@v4": {
+		Name: "Save a cache",
+		Inputs: ActionMetadataInputs{
+			"enablecrossosarchive": {"enableCrossOsArchive", false},
+			"key":                  {"key", true},
+			"path":                 {"path", true},
+			"upload-chunk-size":    {"upload-chunk-size", false},
+		},
+	},
 	"actions/cache@v4": {
 		Name: "Cache",
 		Inputs: ActionMetadataInputs{

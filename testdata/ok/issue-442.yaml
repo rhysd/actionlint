@@ -1,9 +1,0 @@
-on: push
-
-jobs:
-  test:
-    runs-on: ubuntu-latest
-    steps:
-      - uses: actions/download-artifact@v4
-        id: dl
-      - run: echo "Download path is ${{ steps.dl.outputs.download-path}}"
