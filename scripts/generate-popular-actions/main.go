@@ -21,8 +21,9 @@ import (
 )
 
 type actionOutput struct {
-	Spec string                     `json:"spec"`
-	Meta *actionlint.ActionMetadata `json:"metadata"`
+	Spec     string                     `json:"spec"`
+	Meta     *actionlint.ActionMetadata `json:"metadata"`
+	Outdated bool                       `json:"outdated"`
 }
 
 type registry struct {
@@ -201,11 +202,7 @@ func (g *gen) fetchRemote() (map[string]*actionlint.ActionMetadata, error) {
 func (g *gen) writeJSONL(out io.Writer, actions map[string]*actionlint.ActionMetadata) error {
 	enc := json.NewEncoder(out)
 	for spec, meta := range actions {
-		if isOutdatedRunner(meta.Runs.Using) {
-			g.log.Printf("Ignore outdated action %q since runner is %q", spec, meta.Runs.Using)
-			continue
-		}
-		j := actionOutput{spec, meta}
+		j := actionOutput{spec, meta, isOutdatedRunner(meta.Runs.Using)}
 		if err := enc.Encode(&j); err != nil {
 			return fmt.Errorf("could not encode action %q data into JSON: %w", spec, err)
 		}

@@ -62,9 +62,12 @@ func TestDefaultPopularActions(t *testing.T) {
 
 func TestReadWriteJSONL(t *testing.T) {
 	files := []string{
-		"test.jsonl",
+		"no_new_version.jsonl",
 		"skip_inputs.jsonl",
 		"skip_outputs.jsonl",
+		"skip_both.jsonl",
+		"skip_both.jsonl",
+		"outdated.jsonl",
 	}
 
 	for _, file := range files {
@@ -98,16 +101,24 @@ func TestWriteGoToStdout(t *testing.T) {
 		want string
 	}{
 		{
-			in:   "test.jsonl",
-			want: "want.go",
+			in:   "no_new_version.jsonl",
+			want: "no_new_version.go",
 		},
 		{
 			in:   "skip_inputs.jsonl",
-			want: "skip_inputs_want.go",
+			want: "skip_inputs.go",
 		},
 		{
 			in:   "skip_outputs.jsonl",
-			want: "skip_outputs_want.go",
+			want: "skip_outputs.go",
+		},
+		{
+			in:   "skip_both.jsonl",
+			want: "skip_both.go",
+		},
+		{
+			in:   "outdated.jsonl",
+			want: "outdated.go",
 		},
 	}
 
@@ -135,7 +146,7 @@ func TestWriteGoToStdout(t *testing.T) {
 }
 
 func TestWriteJSONLFile(t *testing.T) {
-	in := filepath.Join("testdata", "actions", "test.jsonl")
+	in := filepath.Join("testdata", "actions", "no_new_version.jsonl")
 	b, err := os.ReadFile(in)
 	if err != nil {
 		panic(err)
@@ -164,7 +175,7 @@ func TestWriteJSONLFile(t *testing.T) {
 }
 
 func TestWriteGoFile(t *testing.T) {
-	in := filepath.Join("testdata", "actions", "test.jsonl")
+	in := filepath.Join("testdata", "actions", "no_new_version.jsonl")
 	out := filepath.Join("testdata", "go", "out.go")
 	defer os.Remove(out)
 
@@ -175,7 +186,7 @@ func TestWriteGoFile(t *testing.T) {
 		t.Fatal("exit status is non-zero:", status)
 	}
 
-	b, err := os.ReadFile(filepath.Join("testdata", "go", "want.go"))
+	b, err := os.ReadFile(filepath.Join("testdata", "go", "no_new_version.go"))
 	if err != nil {
 		panic(err)
 	}
@@ -199,6 +210,7 @@ func TestFetchRemoteYAML(t *testing.T) {
 	}{
 		{"fetch.json", "fetched.go"},
 		{"outdated.json", "outdated.go"},
+		{"skip_both.json", "skip_both.go"},
 	}
 
 	for _, tc := range tests {
@@ -234,14 +246,18 @@ func TestWriteOutdatedActionAsJSONL(t *testing.T) {
 		t.Fatal("exit status is non-zero:", status)
 	}
 
-	out := stdout.String()
-	if len(out) > 0 {
-		t.Fatalf("empty output was expected but got %q", out)
+	b, err := os.ReadFile(filepath.Join("testdata", "actions", "outdated.jsonl"))
+	if err != nil {
+		panic(err)
+	}
+	want, have := string(b), stdout.String()
+	if want != have {
+		t.Fatal(cmp.Diff(want, have))
 	}
 }
 
 func TestLogOutput(t *testing.T) {
-	f := filepath.Join("testdata", "actions", "test.jsonl")
+	f := filepath.Join("testdata", "actions", "no_new_version.jsonl")
 	stdout := &bytes.Buffer{}
 	logged := &bytes.Buffer{}
 	status := newGen(stdout, io.Discard, logged).run([]string{"test", "-s", f, "-f", "jsonl"})
@@ -357,7 +373,7 @@ func TestCouldNotReadJSONLFile(t *testing.T) {
 }
 
 func TestCouldNotCreateOutputFile(t *testing.T) {
-	f := filepath.Join("testdata", "actions", "test.jsonl")
+	f := filepath.Join("testdata", "actions", "no_new_version.jsonl")
 	out := filepath.Join("testdata", "this-dir-does-not-exit", "foo.jsonl")
 	stdout := io.Discard
 	stderr := &bytes.Buffer{}
@@ -382,7 +398,7 @@ func (w testErrorWriter) Write(b []byte) (int, error) {
 func TestWriteError(t *testing.T) {
 	for _, format := range []string{"go", "jsonl"} {
 		t.Run(format, func(t *testing.T) {
-			f := filepath.Join("testdata", "actions", "test.jsonl")
+			f := filepath.Join("testdata", "actions", "no_new_version.jsonl")
 			stdout := testErrorWriter{}
 			stderr := &bytes.Buffer{}
 

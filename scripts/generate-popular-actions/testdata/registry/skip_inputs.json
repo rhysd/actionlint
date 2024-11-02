@@ -1,8 +1,8 @@
 [
     {
         "slug": "rhysd/action-setup-vim",
-        "skip_inputs": true,
         "tags": ["v1"],
-        "next": "this-is-awesome-new-version"
+        "next": "this-is-awesome-new-version",
+        "skip_inputs": true
     }
 ]
