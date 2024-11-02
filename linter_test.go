@@ -634,6 +634,28 @@ func TestLinterRemoveRuleOnRulesCreatedHook(t *testing.T) {
 	}
 }
 
+func TestLinterGenerateDefaultConfigAlreadyExists(t *testing.T) {
+	l, err := NewLinter(io.Discard, &LinterOptions{})
+	if err != nil {
+		t.Fatal(err)
+	}
+
+	for _, n := range []string{"ok", "yml"} {
+		d := filepath.Join("testdata", "config", "projects", n)
+		testEnsureDotGitDir(d)
+
+		err := l.GenerateDefaultConfig(d)
+		if err == nil {
+			t.Fatal("error did not occur for project", d)
+		}
+		want := "config file already exists at"
+		msg := err.Error()
+		if !strings.Contains(msg, want) {
+			t.Fatalf("error message %q does not contain expected text %q", msg, want)
+		}
+	}
+}
+
 func BenchmarkLintWorkflowFiles(b *testing.B) {
 	large := filepath.Join("testdata", "bench", "many_scripts.yaml")
 	small := filepath.Join("testdata", "bench", "small.yaml")
