@@ -1,7 +1,7 @@
 actionlint
 ==========
 [![CI Badge][]][CI]
-[![API Document][api-badge]][apidoc]
+[![API Document][apidoc-badge]][apidoc]
 
 [actionlint][repo] is a static checker for GitHub Actions workflow files. [Try it online!][playground]
 
@@ -97,7 +97,7 @@ test.yaml:22:17: receiver of object dereference "permissions" must be type of ob
 ## Quick start
 
 Install `actionlint` command by downloading [the released binary][releases] or by Homebrew or by `go install`. See
-[the installation document](docs/install.md) for more details like how to manage the command with several package managers
+[the installation document][install] for more details like how to manage the command with several package managers
 or run via Docker container.
 
 ```sh
@@ -114,19 +114,19 @@ actionlint
 
 Another option to try actionlint is [the online playground][playground]. Your browser can run actionlint through WebAssembly.
 
-See [the usage document](docs/usage.md) for more details.
+See [the usage document][usage] for more details.
 
 ## Documents
 
 - [Checks][checks]: Full list of all checks done by actionlint with example inputs, outputs, and playground links.
-- [Installation](docs/install.md): Installation instructions. Prebuilt binaries, a Docker image, building from
-  source, a download script (for CI), supports by several package managers are available.
-- [Usage](docs/usage.md): How to use `actionlint` command locally or on GitHub Actions, the online playground, an official Docker
-  image, and integrations with reviewdog, Problem Matchers, super-linter, pre-commit, VS Code.
-- [Configuration](docs/config.md): How to configure actionlint behavior. Currently, the labels of self-hosted runners and the
-  configuration variables can be set.
-- [Go API](docs/api.md): How to use actionlint as Go library.
-- [References](docs/reference.md): Links to resources.
+- [Installation][install]: Installation instructions. Prebuilt binaries, a Docker image, building from source, a download script
+  (for CI), supports by several package managers are available.
+- [Usage][usage]: How to use `actionlint` command locally or on GitHub Actions, the online playground, an official Docker image,
+  and integrations with reviewdog, Problem Matchers, super-linter, pre-commit, VS Code.
+- [Configuration][config]: How to configure actionlint behavior. Currently, the labels of self-hosted runners, the configuration
+  variables, and ignore patterns of errors for each file paths can be set.
+- [Go API][api]: How to use actionlint as Go library.
+- [References][refs]: Links to resources.
 
 ## Bug reporting
 
@@ -139,7 +139,7 @@ actionlint is distributed under [the MIT license](./LICENSE.txt).
 
 [CI Badge]: https://github.com/rhysd/actionlint/workflows/CI/badge.svg?branch=main&event=push
 [CI]: https://github.com/rhysd/actionlint/actions?query=workflow%3ACI+branch%3Amain
-[api-badge]: https://pkg.go.dev/badge/github.com/rhysd/actionlint.svg
+[apidoc-badge]: https://pkg.go.dev/badge/github.com/rhysd/actionlint.svg
 [apidoc]: https://pkg.go.dev/github.com/rhysd/actionlint
 [repo]: https://github.com/rhysd/actionlint
 [playground]: https://rhysd.github.io/actionlint/
@@ -149,6 +149,11 @@ actionlint is distributed under [the MIT license](./LICENSE.txt).
 [syntax-doc]: https://docs.github.com/en/actions/reference/workflow-syntax-for-github-actions
 [filter-pattern-doc]: https://docs.github.com/en/actions/using-workflows/workflow-syntax-for-github-actions#filter-pattern-cheat-sheet
 [script-injection-doc]: https://docs.github.com/en/actions/learn-github-actions/security-hardening-for-github-actions#understanding-the-risk-of-script-injections
-[issue-form]: https://github.com/rhysd/actionlint/issues/new
 [releases]: https://github.com/rhysd/actionlint/releases
 [checks]: https://github.com/rhysd/actionlint/blob/v1.7.3/docs/checks.md
+[install]: https://github.com/rhysd/actionlint/blob/v1.7.3/docs/install.md
+[usage]: https://github.com/rhysd/actionlint/blob/v1.7.3/docs/usage.md
+[config]: https://github.com/rhysd/actionlint/blob/v1.7.3/docs/config.md
+[api]: https://github.com/rhysd/actionlint/blob/v1.7.3/docs/api.md
+[refs]: https://github.com/rhysd/actionlint/blob/v1.7.3/docs/reference.md
+[issue-form]: https://github.com/rhysd/actionlint/issues/new
