@@ -6,7 +6,12 @@ if [[ "$CI" != "" ]]; then
     exit
 fi
 
-set +x
+set -x
 
+make build SKIP_GO_GENERATE=true
 make test SKIP_GO_GENERATE=true
 make lint SKIP_GO_GENERATE=true
+
+if [ -x ./actionlint ]; then
+    ./actionlint
+fi
