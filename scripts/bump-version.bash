@@ -72,7 +72,7 @@ echo "Updating $readme_doc"
 sed_ "s/\/rhysd\/actionlint\/blob\/v[0-9]+\.[0-9]+\.[0-9]+\//\/rhysd\/actionlint\/blob\/v${version}\//g" "$readme_doc"
 
 echo 'Creating a version bump commit and a version tag'
-git add "$pre_commit_hook" "$usage_doc" "$playground_html"
+git add "$pre_commit_hook" "$usage_doc" "$playground_html" "$readme_doc"
 git commit -m "bump up version to ${tag}"
 git tag "$tag"
 
