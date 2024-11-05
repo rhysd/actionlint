@@ -2793,7 +2793,7 @@ branding:
 
 runs:
   # ERROR: Node.js runtime version is too old
-  using: 'node14'
+  using: 'node16'
   # ERROR: The source file being run by this action does not exist
   main: 'this-file-does-not-exist.js'
   # ERROR: 'env' configuration is only allowed for Docker actions
@@ -2818,27 +2818,27 @@ Output:
 <!-- Skip update output -->
 
 ```
-action_metadata_syntax_validation.yaml:8:15: description is required in metadata of "My action" action at "path/to/.github/actions/my-invalid-action/action.yml" [action]
+test.yaml:8:15: description is required in metadata of "My action" action at "/Users/rhysd/.go/src/github.com/rhysd/actionlint/.github/actions/my-invalid-action/action.yml" [action]
   |
 8 |       - uses: ./.github/actions/my-invalid-action
   |               ^~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
-action_metadata_syntax_validation.yaml:8:15: incorrect icon name "dog" at branding.icon in metadata of "My action" action at "path/to/.github/actions/my-invalid-action/action.yml". see the official document to know the exhaustive list of supported icons: https://docs.github.com/en/actions/creating-actions/metadata-syntax-for-github-actions#brandingicon [action]
+test.yaml:8:15: incorrect icon name "dog" at branding.icon in metadata of "My action" action at "/Users/rhysd/.go/src/github.com/rhysd/actionlint/.github/actions/my-invalid-action/action.yml". see the official document to know the exhaustive list of supported icons: https://docs.github.com/en/actions/creating-actions/metadata-syntax-for-github-actions#brandingicon [action]
   |
 8 |       - uses: ./.github/actions/my-invalid-action
   |               ^~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
-action_metadata_syntax_validation.yaml:8:15: incorrect color "black" at branding.icon in metadata of "My action" action at "path/to/.github/actions/my-invalid-action/action.yml". see the official document to know the exhaustive list of supported colors: https://docs.github.com/en/actions/creating-actions/metadata-syntax-for-github-actions#brandingcolor [action]
+test.yaml:8:15: incorrect color "black" at branding.icon in metadata of "My action" action at "/Users/rhysd/.go/src/github.com/rhysd/actionlint/.github/actions/my-invalid-action/action.yml". see the official document to know the exhaustive list of supported colors: https://docs.github.com/en/actions/creating-actions/metadata-syntax-for-github-actions#brandingcolor [action]
   |
 8 |       - uses: ./.github/actions/my-invalid-action
   |               ^~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
-action_metadata_syntax_validation.yaml:8:15: invalid runner name "node14" at runs.using in "My action" action defined at "path/to/.github/actions/my-invalid-action". valid runners are "composite", "docker", "node16", and "node20". see https://docs.github.com/en/actions/creating-actions/metadata-syntax-for-github-actions#runs [action]
+test.yaml:8:15: invalid runner name "node16" at runs.using in "My action" action defined at "/Users/rhysd/.go/src/github.com/rhysd/actionlint/.github/actions/my-invalid-action". valid runners are "composite", "docker", and "node20". see https://docs.github.com/en/actions/creating-actions/metadata-syntax-for-github-actions#runs [action]
   |
 8 |       - uses: ./.github/actions/my-invalid-action
   |               ^~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
-action_metadata_syntax_validation.yaml:8:15: file "this-file-does-not-exist.js" does not exist in "path/to/.github/actions/my-invalid-action". it is specified at "main" key in "runs" section in "My action" action [action]
+test.yaml:8:15: file "this-file-does-not-exist.js" does not exist in "/Users/rhysd/.go/src/github.com/rhysd/actionlint/.github/actions/my-invalid-action". it is specified at "main" key in "runs" section in "My action" action [action]
   |
 8 |       - uses: ./.github/actions/my-invalid-action
   |               ^~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
-action_metadata_syntax_validation.yaml:8:15: "env" is not allowed in "runs" section because "My action" is a JavaScript action. the action is defined at "path/to/.github/actions/my-invalid-action" [action]
+test.yaml:8:15: "env" is not allowed in "runs" section because "My action" is a JavaScript action. the action is defined at "/Users/rhysd/.go/src/github.com/rhysd/actionlint/.github/actions/my-invalid-action" [action]
   |
 8 |       - uses: ./.github/actions/my-invalid-action
   |               ^~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
@@ -2851,7 +2851,7 @@ All actions require a metadata file `action.yml` or `action.yaml`. The syntax is
 actionlint checks metadata files used in workflows and reports errors when they are not following the syntax.
 
 - `name:`, `description:`, `runs:` sections are required
-- Runner name at `using:` is one of `composite`, `docker`, `node16`, `node20`
+- Runner name at `using:` is one of `composite`, `docker`, `node20`
 - Keys under `runs:` section are correct. Required/Valid keys are different depending on the type of action; Docker action or
   Composite action or JavaScript action (e.g. `image:` is required for Docker action).
 - Files specified in some keys under `runs` are existing. For example, JavaScript action defines a script file path for
