@@ -1,20 +1,20 @@
 <a id="v1.7.4"></a>
 # [v1.7.4](https://github.com/rhysd/actionlint/releases/tag/v1.7.4) - 2024-11-04
 
-- Disallow using popular actions which run on `node16` runner. The `node16` runner [will reach the end of life on November 12](https://github.blog/changelog/2024-09-25-end-of-life-for-actions-node16/).
+- Disallow the usage of popular actions that run on `node16` runner. The `node16` runner [will reach the end of life on November 12](https://github.blog/changelog/2024-09-25-end-of-life-for-actions-node16/).
   - In case of the error, please update your actions to the latest version so that they run on the latest `node20` runner.
   - If you're using self-hosted runner and you cannot upgrade your runner to `node20` soon, please consider to ignore the error by the `paths` configuration described below.
 - Provide the configuration for ignoring errors by regular expressions in `actionlint.yml` (or `actionlint.yaml`). Please see the [document](https://github.com/rhysd/actionlint/blob/v1.7.4/docs/config.md) for more details. ([#217](https://github.com/rhysd/actionlint/issues/217), [#342](https://github.com/rhysd/actionlint/issues/342))
-  - The `paths` in the configuration file is a mapping from the file path glob pattern to the corresponding configuration. The `ignore` configuration is a list of regular expressions to match error messages (similar to the `-ignore` command line option).
+  - The `paths` is a mapping from the file path glob pattern to the corresponding configuration. The `ignore` configuration is a list of regular expressions to match error messages (similar to the `-ignore` command line option).
     ```yaml
     paths:
       # This pattern matches any YAML file under the '.github/workflows/' directory.
-      .github/workflows/**/*.yaml
+      .github/workflows/**/*.yaml:
         ignore:
           # Ignore the specific error from shellcheck
           - 'shellcheck reported issue in this script: SC2086:.+'
       # This pattern only matches '.github/workflows/release.yaml' file.
-      .github/workflows/self-hosted.yaml
+      .github/workflows/self-hosted.yaml:
         ignore:
           # Ignore errors from the old runner check. This may be useful for (outdated) self-hosted runner environment.
           - 'the runner of ".+" action is too old to run on GitHub Actions'
@@ -31,7 +31,7 @@
 - Remove `macos-x.0` runner labels which are no longer available. ([#452](https://github.com/rhysd/actionlint/issues/452))
 - Disable shellcheck [`SC2043`](https://www.shellcheck.net/wiki/SC2043) rule because it can cause false positives on checking `run:`. ([#355](https://github.com/rhysd/actionlint/issues/355))
   - The [rule document](https://github.com/rhysd/actionlint/blob/v1.7.4/docs/checks.md#check-shellcheck-integ) was updated as well. ([#466](https://github.com/rhysd/actionlint/issues/466), thanks [@risu729](https://github.com/risu729))
-- Fix the error message when detecting cycles in `needs` dependencies was not deterministic.
+- Fix the error message was not deterministic when detecting cycles in `needs` dependencies.
 - Fix the check for `format()` function was not applied when the function name contains upper case like `Format()`. Note that function names in `${{ }}` placeholders are case-insensitive.
 - Update the popular actions data set to the latest.
   - This includes the [new `ref` and `commit` outputs](https://github.com/actions/checkout/pull/1180) of `actions/checkout`.
