@@ -16,7 +16,7 @@ Note: If you're using [Super-Linter][], the file should be placed in a different
 ```yaml
 # Configuration related to self-hosted runner.
 self-hosted-runner:
-  # Labels of self-hosted runner in array of string.
+  # Labels of self-hosted runner in array of strings.
   labels:
     - linux.2xlarge
     - windows-latest-xl
@@ -35,8 +35,13 @@ paths:
   .github/workflows/**/*.yaml:
     # List of regular expressions to filter errors by the error messages.
     ignore:
-      - context ".+" is not allowed here
-      - label ".+" is unknown\. available labels are
+      # Ignore the specific error from shellcheck
+      - 'shellcheck reported issue in this script: SC2086:.+'
+  # This pattern only matches '.github/workflows/release.yaml' file.
+  .github/workflows/release.yaml:
+    ignore:
+      # Ignore errors from the old runner check. This may be useful for (outdated) self-hosted runner environment.
+      - 'the runner of ".+" action is too old to run on GitHub Actions'
 ```
 
 - `self-hosted-runner`: Configuration for your self-hosted runner environment.
@@ -44,13 +49,14 @@ paths:
     is available.
 - `config-variables`: [Configuration variables][vars]. When an array is set, actionlint will check `vars` properties strictly.
   An empty array means no variable is allowed. The default value `null` disables the check.
-- `paths`: Configurations for specific file paths. This is a mapping from a file path glob pattern and the corresponding
+- `paths`: Configurations for specific file path patterns. This is a mapping from a glob pattern and the corresponding
   configuration.
-  - `{glob}`: A file path glob pattern to apply the configuration. The path separator is always '/'. it is matched to the
-    relative path from the repository root. For example, `.github/workflows/**/*.yaml` matches all the workflow files (its
-    name ending with `.yaml`). For the glob syntax, please read the [doublestar][] library's documentation.
-    - `ignore`: The configuration to ignore (filter) the errors by the error messages. This is an array of regular expressions.
-      It is similar to the `-ignore` command line option.
+  - `{glob}`: A file path glob pattern to apply the configuration. The path separator is always '/'. It is matched to the
+    relative path from the repository root. For example `.github/workflows/**/*.yaml` matches all the workflow files (with
+    `.yaml` file extension). For the glob syntax, please read the [doublestar][] library's documentation.
+    - `ignore`: The configuration to ignore (filter) the errors by the error messages. This is an array of regular
+      expressions. When one of the patterns matches the error message, the error will be ignored. It's similar to the
+      `-ignore` command line option.
 
 ## Generate the initial configuration
 
