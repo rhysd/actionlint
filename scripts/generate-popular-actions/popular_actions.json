@@ -99,7 +99,7 @@
     },
     {
         "slug": "actions/download-artifact",
-        "tags": ["v1", "v2", "v3", "v4"],
+        "tags": ["v1", "v2", "v3", "v3-node20", "v4"],
         "next": "v5"
     },
     {
@@ -149,7 +149,7 @@
     },
     {
         "slug": "actions/upload-artifact",
-        "tags": ["v1", "v2", "v3", "v4"],
+        "tags": ["v1", "v2", "v3", "v3-node20", "v4"],
         "next": "v5"
     },
     {

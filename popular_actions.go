@@ -475,6 +475,16 @@ var PopularActions = map[string]*ActionMetadata{
 			"path": {"path", false},
 		},
 	},
+	"actions/download-artifact@v3-node20": {
+		Name: "Download a Build Artifact",
+		Inputs: ActionMetadataInputs{
+			"name": {"name", false},
+			"path": {"path", false},
+		},
+		Outputs: ActionMetadataOutputs{
+			"download-path": {"download-path"},
+		},
+	},
 	"actions/download-artifact@v4": {
 		Name: "Download a Build Artifact",
 		Inputs: ActionMetadataInputs{
@@ -698,6 +708,16 @@ var PopularActions = map[string]*ActionMetadata{
 		Inputs: ActionMetadataInputs{
 			"name": {"name", true},
 			"path": {"path", true},
+		},
+	},
+	"actions/upload-artifact@v3-node20": {
+		Name: "Upload a Build Artifact",
+		Inputs: ActionMetadataInputs{
+			"if-no-files-found":    {"if-no-files-found", false},
+			"include-hidden-files": {"include-hidden-files", false},
+			"name":                 {"name", false},
+			"path":                 {"path", true},
+			"retention-days":       {"retention-days", false},
 		},
 	},
 	"actions/upload-artifact@v4": {

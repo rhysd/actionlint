@@ -192,6 +192,17 @@ func (g *gen) fetchRemote() (map[string]*actionlint.ActionMetadata, error) {
 			}
 		}
 
+		// Workaround for #442.
+		// https://github.com/actions/download-artifact/issues/355
+		if f.spec == "actions/download-artifact@v3-node20" {
+			if f.meta.Outputs == nil {
+				f.meta.Outputs = actionlint.ActionMetadataOutputs{}
+			}
+			f.meta.Outputs["download-path"] = &actionlint.ActionMetadataOutput{
+				Name: "download-path",
+			}
+		}
+
 		ret[f.spec] = f.meta
 	}
 
