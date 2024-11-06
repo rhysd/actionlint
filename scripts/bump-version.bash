@@ -64,16 +64,12 @@ sed_ "\
     " "$usage_doc"
 
 echo "Updating $playground_html"
-sed_ "\
-    s/id=\"version\">v[0-9]+\.[0-9]+\.[0-9]+/id=\"version\">v${version}/; \
-    s/\/blob\/v[0-9]+\.[0-9]+\.[0-9]+\/docs\/checks\.md/\/blob\/v${version}\/docs\/checks\.md/; \
-    " "$playground_html"
+sed_ "s/id=\"version\">v[0-9]+\.[0-9]+\.[0-9]+/id=\"version\">v${version}/" "$playground_html"
 
-echo "Updating $readme_doc"
-sed_ "s/\/rhysd\/actionlint\/blob\/v[0-9]+\.[0-9]+\.[0-9]+\//\/rhysd\/actionlint\/blob\/v${version}\//g" "$readme_doc"
-
-echo "Updating $man_ronn"
-sed_ "s/\/rhysd\/actionlint\/blob\/v[0-9]+\.[0-9]+\.[0-9]+\//\/rhysd\/actionlint\/blob\/v${version}\//g" "$man_ronn"
+for f in "$readme_doc" "$man_ronn" "$playground_html"; do
+    echo "Updating document links in $f"
+    sed_ "s/\/rhysd\/actionlint\/blob\/v[0-9]+\.[0-9]+\.[0-9]+\/docs\//\/rhysd\/actionlint\/blob\/v${version}\/docs\//g" "$f"
+done
 
 echo 'Creating a version bump commit and a version tag'
 git add "$pre_commit_hook" "$usage_doc" "$playground_html" "$readme_doc" "$man_ronn"

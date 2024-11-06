@@ -58,10 +58,12 @@ func printUsageHeader(out io.Writer) {
 
 Documents:
 
-  https://github.com/rhysd/actionlint/tree/%s/docs
+  - List of checks: https://github.com/rhysd/actionlint/tree/%s/docs/checks.md
+  - Usage:          https://github.com/rhysd/actionlint/tree/%s/docs/usage.md
+  - Configuration:  https://github.com/rhysd/actionlint/tree/%s/docs/config.md
 
 Flags:
-`, b)
+`, b, b, b)
 }
 
 func getCommandVersion() string {
@@ -135,7 +137,7 @@ func (cmd *Command) Main(args []string) int {
 	flags.StringVar(&opts.Shellcheck, "shellcheck", "shellcheck", "Command name or file path of \"shellcheck\" external command. If empty, shellcheck integration will be disabled")
 	flags.StringVar(&opts.Pyflakes, "pyflakes", "pyflakes", "Command name or file path of \"pyflakes\" external command. If empty, pyflakes integration will be disabled")
 	flags.BoolVar(&opts.Oneline, "oneline", false, "Use one line per one error. Useful for reading error messages from programs")
-	flags.StringVar(&opts.Format, "format", "", "Custom template to format error messages in Go template syntax. See https://github.com/rhysd/actionlint/tree/main/docs/usage.md#format")
+	flags.StringVar(&opts.Format, "format", "", "Custom template to format error messages in Go template syntax. See the usage documentation for more details")
 	flags.StringVar(&opts.ConfigFile, "config-file", "", "File path to config file")
 	flags.BoolVar(&initConfig, "init-config", false, "Generate default config file at .github/actionlint.yaml in current project")
 	flags.BoolVar(&noColor, "no-color", false, "Disable colorful output")
