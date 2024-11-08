@@ -1,6 +1,7 @@
 package actionlint
 
 import (
+	"encoding/json"
 	"fmt"
 	"regexp"
 	"strconv"
@@ -786,7 +787,7 @@ func checkFuncSignature(n *FuncCallNode, sig *FuncSignature, args []ExprType) *E
 	return nil
 }
 
-func (sema *ExprSemanticsChecker) checkBuiltinFunctionCall(n *FuncCallNode, _ *FuncSignature) {
+func (sema *ExprSemanticsChecker) checkBuiltinFuncCall(n *FuncCallNode, sig *FuncSignature) ExprType {
 	sema.checkSpecialFunctionAvailability(n)
 
 	// Special checks for specific built-in functions
@@ -794,7 +795,7 @@ func (sema *ExprSemanticsChecker) checkBuiltinFunctionCall(n *FuncCallNode, _ *F
 	case "format":
 		lit, ok := n.Args[0].(*StringNode)
 		if !ok {
-			return
+			return sig.Ret
 		}
 		l := len(n.Args) - 1 // -1 means removing first format string argument
 
@@ -817,7 +818,22 @@ func (sema *ExprSemanticsChecker) checkBuiltinFunctionCall(n *FuncCallNode, _ *F
 		for i := range holders {
 			sema.errorf(n, "format string %q contains placeholder {%d} but only %d arguments are given to format", lit.Value, i, l)
 		}
+	case "fromjson":
+		lit, ok := n.Args[0].(*StringNode)
+		if !ok {
+			return sig.Ret
+		}
+		var v any
+		err := json.Unmarshal([]byte(lit.Value), &v)
+		if err == nil {
+			return typeOfJSONValue(v)
+		}
+		if s, ok := err.(*json.SyntaxError); ok {
+			sema.errorf(lit, "broken JSON string is passed to fromJSON() at offset %d: %s", s.Offset, s)
+		}
 	}
+
+	return sig.Ret
 }
 
 func (sema *ExprSemanticsChecker) checkFuncCall(n *FuncCallNode) ExprType {
@@ -844,8 +860,7 @@ func (sema *ExprSemanticsChecker) checkFuncCall(n *FuncCallNode) ExprType {
 		err := checkFuncSignature(n, sig, tys)
 		if err == nil {
 			// When one of overload pass type check, overload was resolved correctly
-			sema.checkBuiltinFunctionCall(n, sig)
-			return sig.Ret
+			return sema.checkBuiltinFuncCall(n, sig)
 		}
 		errs = append(errs, err)
 	}

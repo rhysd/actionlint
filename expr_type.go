@@ -427,3 +427,46 @@ func (ty *ArrayType) DeepCopy() ExprType {
 func EqualTypes(l, r ExprType) bool {
 	return l.Assignable(r) && r.Assignable(l)
 }
+
+func typeOfJSONValue(v any) ExprType {
+	// https://pkg.go.dev/encoding/json#Unmarshal
+	// To unmarshal JSON into an interface value, Unmarshal stores one of these in the interface value:
+	// - bool, for JSON booleans
+	// - float64, for JSON numbers
+	// - string, for JSON strings
+	// - []interface{}, for JSON arrays
+	// - map[string]interface{}, for JSON objects
+	// - nil for JSON null
+	switch v := v.(type) {
+	case bool:
+		return BoolType{}
+	case float64:
+		return NumberType{}
+	case string:
+		return StringType{}
+	case []any:
+		var elem ExprType
+		for _, e := range v {
+			t := typeOfJSONValue(e)
+			if elem == nil {
+				elem = t
+			} else {
+				elem = elem.Merge(t)
+			}
+		}
+		if elem == nil {
+			elem = AnyType{}
+		}
+		return &ArrayType{Elem: elem}
+	case map[string]any:
+		props := make(map[string]ExprType, len(v))
+		for k, v := range v {
+			props[k] = typeOfJSONValue(v)
+		}
+		return NewStrictObjectType(props)
+	case nil:
+		return NullType{}
+	default:
+		panic(v) // Unreachable
+	}
+}
