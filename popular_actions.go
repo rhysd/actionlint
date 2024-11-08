@@ -124,7 +124,7 @@ var PopularActions = map[string]*ActionMetadata{
 			"json": {"json"},
 		},
 	},
-	"JamesIves/github-pages-deploy-action@releases/v4": {
+	"JamesIves/github-pages-deploy-action@v4": {
 		Name: "Deploy to GitHub Pages",
 		Inputs: ActionMetadataInputs{
 			"branch":           {"branch", false},

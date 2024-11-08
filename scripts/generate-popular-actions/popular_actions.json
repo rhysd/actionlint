@@ -22,8 +22,8 @@
     },
     {
         "slug": "JamesIves/github-pages-deploy-action",
-        "tags": ["releases/v3", "releases/v4"],
-        "next": "release/v5"
+        "tags": ["releases/v3", "v4"],
+        "next": "v5"
     },
     {
         "slug": "ReactiveCircus/android-emulator-runner",
