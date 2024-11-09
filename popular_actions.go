@@ -1428,6 +1428,7 @@ var PopularActions = map[string]*ActionMetadata{
 			"debug":                     {"debug", false},
 			"debug-artifact-name":       {"debug-artifact-name", false},
 			"debug-database-name":       {"debug-database-name", false},
+			"dependency-caching":        {"dependency-caching", false},
 			"external-repository-token": {"external-repository-token", false},
 			"languages":                 {"languages", false},
 			"matrix":                    {"matrix", false},
