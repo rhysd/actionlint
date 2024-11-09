@@ -68,11 +68,12 @@ func TestReadWriteJSONL(t *testing.T) {
 		"skip_both.jsonl",
 		"skip_both.jsonl",
 		"outdated.jsonl",
+		"known_outdated.jsonl",
 	}
 
 	for _, file := range files {
 		t.Run(file, func(t *testing.T) {
-			f := filepath.Join("testdata", "actions", file)
+			f := filepath.Join("testdata", "jsonl", file)
 			stdout := &bytes.Buffer{}
 			stderr := &bytes.Buffer{}
 
@@ -126,7 +127,7 @@ func TestWriteGoToStdout(t *testing.T) {
 		t.Run(tc.in, func(t *testing.T) {
 			stdout := &bytes.Buffer{}
 			stderr := &bytes.Buffer{}
-			status := newGen(stdout, stderr, io.Discard).run([]string{"test", "-s", filepath.Join("testdata", "actions", tc.in)})
+			status := newGen(stdout, stderr, io.Discard).run([]string{"test", "-s", filepath.Join("testdata", "jsonl", tc.in)})
 			if status != 0 {
 				t.Fatalf("exit status is non-zero: %d: %s", status, stderr.Bytes())
 			}
@@ -146,7 +147,7 @@ func TestWriteGoToStdout(t *testing.T) {
 }
 
 func TestWriteJSONLFile(t *testing.T) {
-	in := filepath.Join("testdata", "actions", "no_new_version.jsonl")
+	in := filepath.Join("testdata", "jsonl", "no_new_version.jsonl")
 	b, err := os.ReadFile(in)
 	if err != nil {
 		panic(err)
@@ -175,7 +176,7 @@ func TestWriteJSONLFile(t *testing.T) {
 }
 
 func TestWriteGoFile(t *testing.T) {
-	in := filepath.Join("testdata", "actions", "no_new_version.jsonl")
+	in := filepath.Join("testdata", "jsonl", "no_new_version.jsonl")
 	out := filepath.Join("testdata", "go", "out.go")
 	defer os.Remove(out)
 
@@ -246,7 +247,7 @@ func TestWriteOutdatedActionAsJSONL(t *testing.T) {
 		t.Fatal("exit status is non-zero:", status)
 	}
 
-	b, err := os.ReadFile(filepath.Join("testdata", "actions", "outdated.jsonl"))
+	b, err := os.ReadFile(filepath.Join("testdata", "jsonl", "outdated.jsonl"))
 	if err != nil {
 		panic(err)
 	}
@@ -257,7 +258,7 @@ func TestWriteOutdatedActionAsJSONL(t *testing.T) {
 }
 
 func TestLogOutput(t *testing.T) {
-	f := filepath.Join("testdata", "actions", "no_new_version.jsonl")
+	f := filepath.Join("testdata", "jsonl", "no_new_version.jsonl")
 	stdout := &bytes.Buffer{}
 	logged := &bytes.Buffer{}
 	status := newGen(stdout, io.Discard, logged).run([]string{"test", "-s", f, "-f", "jsonl"})
@@ -355,7 +356,7 @@ func TestCouldNotReadJSONLFile(t *testing.T) {
 	}
 	for _, tc := range testCases {
 		t.Run(tc.file, func(t *testing.T) {
-			f := filepath.Join("testdata", "actions", tc.file)
+			f := filepath.Join("testdata", "jsonl", tc.file)
 			stdout := io.Discard
 			stderr := &bytes.Buffer{}
 
@@ -373,7 +374,7 @@ func TestCouldNotReadJSONLFile(t *testing.T) {
 }
 
 func TestCouldNotCreateOutputFile(t *testing.T) {
-	f := filepath.Join("testdata", "actions", "no_new_version.jsonl")
+	f := filepath.Join("testdata", "jsonl", "no_new_version.jsonl")
 	out := filepath.Join("testdata", "this-dir-does-not-exit", "foo.jsonl")
 	stdout := io.Discard
 	stderr := &bytes.Buffer{}
@@ -398,7 +399,7 @@ func (w testErrorWriter) Write(b []byte) (int, error) {
 func TestWriteError(t *testing.T) {
 	for _, format := range []string{"go", "jsonl"} {
 		t.Run(format, func(t *testing.T) {
-			f := filepath.Join("testdata", "actions", "no_new_version.jsonl")
+			f := filepath.Join("testdata", "jsonl", "no_new_version.jsonl")
 			stdout := testErrorWriter{}
 			stderr := &bytes.Buffer{}
 

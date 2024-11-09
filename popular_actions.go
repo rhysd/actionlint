@@ -320,19 +320,6 @@ var PopularActions = map[string]*ActionMetadata{
 			"cache-hit": {"cache-hit"},
 		},
 	},
-	"actions/checkout@v1": {
-		Name: "Checkout",
-		Inputs: ActionMetadataInputs{
-			"clean":       {"clean", false},
-			"fetch-depth": {"fetch-depth", false},
-			"lfs":         {"lfs", false},
-			"path":        {"path", false},
-			"ref":         {"ref", false},
-			"repository":  {"repository", false},
-			"submodules":  {"submodules", false},
-			"token":       {"token", false},
-		},
-	},
 	"actions/checkout@v4": {
 		Name: "Checkout",
 		Inputs: ActionMetadataInputs{
@@ -466,13 +453,6 @@ var PopularActions = map[string]*ActionMetadata{
 		},
 		Outputs: ActionMetadataOutputs{
 			"page_url": {"page_url"},
-		},
-	},
-	"actions/download-artifact@v1": {
-		Name: "Download a Build Artifact",
-		Inputs: ActionMetadataInputs{
-			"name": {"name", true},
-			"path": {"path", false},
 		},
 	},
 	"actions/download-artifact@v3-node20": {
@@ -701,13 +681,6 @@ var PopularActions = map[string]*ActionMetadata{
 		Outputs: ActionMetadataOutputs{
 			"closed-issues-prs": {"closed-issues-prs"},
 			"staled-issues-prs": {"staled-issues-prs"},
-		},
-	},
-	"actions/upload-artifact@v1": {
-		Name: "Upload a Build Artifact",
-		Inputs: ActionMetadataInputs{
-			"name": {"name", true},
-			"path": {"path", true},
 		},
 	},
 	"actions/upload-artifact@v3-node20": {
@@ -2392,6 +2365,7 @@ var OutdatedPopularActionSpecs = map[string]struct{}{
 	"actions/cache@v1":                                   {},
 	"actions/cache@v2":                                   {},
 	"actions/cache@v3":                                   {},
+	"actions/checkout@v1":                                {},
 	"actions/checkout@v2":                                {},
 	"actions/checkout@v3":                                {},
 	"actions/configure-pages@v1":                         {},
@@ -2404,6 +2378,7 @@ var OutdatedPopularActionSpecs = map[string]struct{}{
 	"actions/dependency-review-action@v3":                {},
 	"actions/deploy-pages@v1":                            {},
 	"actions/deploy-pages@v2":                            {},
+	"actions/download-artifact@v1":                       {},
 	"actions/download-artifact@v2":                       {},
 	"actions/download-artifact@v3":                       {},
 	"actions/github-script@v1":                           {},
@@ -2440,6 +2415,7 @@ var OutdatedPopularActionSpecs = map[string]struct{}{
 	"actions/stale@v6":                                   {},
 	"actions/stale@v7":                                   {},
 	"actions/stale@v8":                                   {},
+	"actions/upload-artifact@v1":                         {},
 	"actions/upload-artifact@v2":                         {},
 	"actions/upload-artifact@v3":                         {},
 	"aws-actions/configure-aws-credentials@v1":           {},

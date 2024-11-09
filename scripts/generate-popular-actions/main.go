@@ -20,6 +20,14 @@ import (
 	"gopkg.in/yaml.v3"
 )
 
+// List of known outdated actions which cannot be detected from 'runs' in action.yml
+var outdatedActions = []string{
+	"actions/labeler@v1",
+	"actions/checkout@v1",
+	"actions/upload-artifact@v1",
+	"actions/download-artifact@v1",
+}
+
 type actionOutput struct {
 	Spec     string                     `json:"spec"`
 	Meta     *actionlint.ActionMetadata `json:"metadata"`
@@ -65,11 +73,16 @@ var defaultPopularActionsJSON []byte
 
 const minNodeRunnerVersion = 20
 
-func isOutdatedRunner(r string) bool {
-	if !strings.HasPrefix(r, "node") {
+func isOutdated(spec, runs string) bool {
+	for _, s := range outdatedActions {
+		if s == spec {
+			return true
+		}
+	}
+	if !strings.HasPrefix(runs, "node") {
 		return false
 	}
-	v, err := strconv.ParseUint(r[len("node"):], 10, 8)
+	v, err := strconv.ParseUint(runs[len("node"):], 10, 8)
 	return err == nil && v < minNodeRunnerVersion
 }
 
@@ -213,7 +226,7 @@ func (g *gen) fetchRemote() (map[string]*actionlint.ActionMetadata, error) {
 func (g *gen) writeJSONL(out io.Writer, actions map[string]*actionlint.ActionMetadata) error {
 	enc := json.NewEncoder(out)
 	for spec, meta := range actions {
-		j := actionOutput{spec, meta, isOutdatedRunner(meta.Runs.Using)}
+		j := actionOutput{spec, meta, isOutdated(spec, meta.Runs.Using)}
 		if err := enc.Encode(&j); err != nil {
 			return fmt.Errorf("could not encode action %q data into JSON: %w", spec, err)
 		}
@@ -242,7 +255,7 @@ var PopularActions = map[string]*ActionMetadata{
 	outdated := []string{}
 	for _, spec := range specs {
 		meta := actions[spec]
-		if isOutdatedRunner(meta.Runs.Using) {
+		if isOutdated(spec, meta.Runs.Using) {
 			outdated = append(outdated, spec)
 			continue
 		}
