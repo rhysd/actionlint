@@ -396,8 +396,8 @@ func TestLinterFormatErrorMessageOK(t *testing.T) {
 				have = strings.ReplaceAll(have, escaped, slash)
 			}
 
-			if !cmp.Equal(want, have) {
-				t.Fatal(cmp.Diff(want, have))
+			if diff := cmp.Diff(want, have); diff != "" {
+				t.Fatal(diff)
 			}
 		})
 	}
@@ -452,8 +452,8 @@ func TestLinterFormatErrorMessageInSARIF(t *testing.T) {
 		panic(err)
 	}
 
-	if !cmp.Equal(want, have) {
-		t.Fatal(cmp.Diff(want, have))
+	if diff := cmp.Diff(want, have); diff != "" {
+		t.Fatal(diff)
 	}
 }
 

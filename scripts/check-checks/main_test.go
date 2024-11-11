@@ -1,7 +1,6 @@
 package main
 
 import (
-	"bytes"
 	"io"
 	"log"
 	"os"
@@ -58,8 +57,8 @@ func TestMainGenerateOK(t *testing.T) {
 
 	want := must(os.ReadFile(filepath.FromSlash("testdata/ok/minimal.out")))
 	have := must(os.ReadFile(path))
-	if !bytes.Equal(want, have) {
-		t.Fatal(cmp.Diff(want, have))
+	if diff := cmp.Diff(want, have); diff != "" {
+		t.Fatal(diff)
 	}
 }
 
@@ -141,8 +140,8 @@ func TestUpdateOK(t *testing.T) {
 				t.Fatal(err)
 			}
 			want := must(os.ReadFile(out))
-			if !bytes.Equal(want, have) {
-				t.Fatal(cmp.Diff(want, have))
+			if diff := cmp.Diff(want, have); diff != "" {
+				t.Fatal(diff)
 			}
 		})
 	}

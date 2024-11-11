@@ -117,8 +117,8 @@ func TestRuleDeprecatedCommandsDetectTargetCommands(t *testing.T) {
 				have = append(have, ss[1])
 			}
 
-			if !cmp.Equal(have, tc.want) {
-				t.Fatal(cmp.Diff(have, tc.want))
+			if diff := cmp.Diff(have, tc.want); diff != "" {
+				t.Fatal(diff)
 			}
 		})
 	}
