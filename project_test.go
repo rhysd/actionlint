@@ -12,10 +12,10 @@ import (
 // doesn't exist. When cloning actionlint repository with Git, it never happens. However, when
 // downloading sources tarball from github.com, it doesn't contain `.git` directory so it
 // happens. Please see #307 for more details.
-func testEnsureDotGitDir(dir string) {
+func testEnsureDotGitDir(t *testing.T, dir string) {
 	d := filepath.Join(dir, ".git")
 	if err := os.MkdirAll(d, 0750); err != nil {
-		panic(err)
+		t.Fatal(err)
 	}
 }
 
@@ -23,9 +23,9 @@ func TestProjectsFindProjectFromPath(t *testing.T) {
 	d := filepath.Join("testdata", "find_project")
 	abs, err := filepath.Abs(d)
 	if err != nil {
-		panic(err)
+		t.Fatal(err)
 	}
-	testEnsureDotGitDir(d)
+	testEnsureDotGitDir(t, d)
 
 	ps := NewProjects()
 	for _, tc := range []struct {
@@ -84,9 +84,9 @@ func TestProjectsDoesNotFindProjectFromOutside(t *testing.T) {
 	d := filepath.Join("testdata", "find_project")
 	abs, err := filepath.Abs(d)
 	if err != nil {
-		panic(err)
+		t.Fatal(err)
 	}
-	testEnsureDotGitDir(d)
+	testEnsureDotGitDir(t, d)
 
 	outside := filepath.Join(d, "..")
 	ps := NewProjects()
@@ -102,7 +102,7 @@ func TestProjectsDoesNotFindProjectFromOutside(t *testing.T) {
 func TestProjectsLoadProjectConfig(t *testing.T) {
 	for _, n := range []string{"ok", "yml"} {
 		d := filepath.Join("testdata", "config", "projects", n)
-		testEnsureDotGitDir(d)
+		testEnsureDotGitDir(t, d)
 		ps := NewProjects()
 		p, err := ps.At(d)
 		if err != nil {
@@ -119,7 +119,7 @@ func TestProjectsLoadProjectConfig(t *testing.T) {
 
 func TestProjectsLoadingNoProjectConfig(t *testing.T) {
 	d := filepath.Join("testdata", "config", "projects", "none")
-	testEnsureDotGitDir(d)
+	testEnsureDotGitDir(t, d)
 	ps := NewProjects()
 	p, err := ps.At(d)
 	if err != nil {
@@ -136,7 +136,7 @@ func TestProjectsLoadingNoProjectConfig(t *testing.T) {
 func TestProjectsLoadingBrokenProjectConfig(t *testing.T) {
 	want := "could not parse config file"
 	d := filepath.Join("testdata", "config", "projects", "err")
-	testEnsureDotGitDir(d)
+	testEnsureDotGitDir(t, d)
 	ps := NewProjects()
 	p, err := ps.At(d)
 	if err == nil {

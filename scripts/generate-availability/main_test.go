@@ -28,7 +28,7 @@ func TestOKWriteStdout(t *testing.T) {
 
 	b, err := os.ReadFile(filepath.Join("testdata", "ok.go"))
 	if err != nil {
-		panic(err)
+		t.Fatal(err)
 	}
 	want := string(b)
 
@@ -49,7 +49,7 @@ func TestOKWriteFile(t *testing.T) {
 
 	b, err := os.ReadFile(filepath.Join("testdata", "ok.go"))
 	if err != nil {
-		panic(err)
+		t.Fatal(err)
 	}
 	want := string(b)
 

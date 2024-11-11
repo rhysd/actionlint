@@ -84,7 +84,7 @@ func TestReadWriteJSONL(t *testing.T) {
 
 			b, err := os.ReadFile(f)
 			if err != nil {
-				panic(err)
+				t.Fatal(err)
 			}
 			want := string(b)
 			have := stdout.String()
@@ -134,7 +134,7 @@ func TestWriteGoToStdout(t *testing.T) {
 
 			b, err := os.ReadFile(filepath.Join("testdata", "go", tc.want))
 			if err != nil {
-				panic(err)
+				t.Fatal(err)
 			}
 			want := string(b)
 			have := stdout.String()
@@ -150,7 +150,7 @@ func TestWriteJSONLFile(t *testing.T) {
 	in := filepath.Join("testdata", "jsonl", "no_new_version.jsonl")
 	b, err := os.ReadFile(in)
 	if err != nil {
-		panic(err)
+		t.Fatal(err)
 	}
 
 	out := filepath.Join("testdata", "out.jsonl")
@@ -189,7 +189,7 @@ func TestWriteGoFile(t *testing.T) {
 
 	b, err := os.ReadFile(filepath.Join("testdata", "go", "no_new_version.go"))
 	if err != nil {
-		panic(err)
+		t.Fatal(err)
 	}
 	want := string(b)
 
@@ -226,7 +226,7 @@ func TestFetchRemoteYAML(t *testing.T) {
 
 			b, err := os.ReadFile(filepath.Join("testdata", "go", tc.want))
 			if err != nil {
-				panic(err)
+				t.Fatal(err)
 			}
 			want := string(b)
 			have := stdout.String()
@@ -249,7 +249,7 @@ func TestWriteOutdatedActionAsJSONL(t *testing.T) {
 
 	b, err := os.ReadFile(filepath.Join("testdata", "jsonl", "outdated.jsonl"))
 	if err != nil {
-		panic(err)
+		t.Fatal(err)
 	}
 	want, have := string(b), stdout.String()
 	if want != have {

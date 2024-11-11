@@ -10,7 +10,7 @@ import (
 func TestExprSemanticsCheckRealWorld(t *testing.T) {
 	f, err := os.Open(filepath.Join("testdata", "bench", "expressions.txt"))
 	if err != nil {
-		panic(err)
+		t.Fatal(err)
 	}
 	defer f.Close()
 

@@ -30,7 +30,7 @@ func TestLinterLintOK(t *testing.T) {
 
 	es, err := os.ReadDir(dir)
 	if err != nil {
-		panic(err)
+		t.Fatal(err)
 	}
 
 	fs := make([]string, 0, len(es))
@@ -108,14 +108,14 @@ func checkErrors(t *testing.T, outfile string, errs []*Error) {
 	{
 		f, err := os.Open(outfile)
 		if err != nil {
-			panic(err)
+			t.Fatal(err)
 		}
 		s := bufio.NewScanner(f)
 		for s.Scan() {
 			expected = append(expected, s.Text())
 		}
 		if err := s.Err(); err != nil {
-			panic(err)
+			t.Fatal(err)
 		}
 	}
 
@@ -149,7 +149,7 @@ func TestLinterLintError(t *testing.T) {
 	for _, subdir := range []string{"examples", "err"} {
 		dir, infiles, err := testFindAllWorkflowsInDir(subdir)
 		if err != nil {
-			panic(err)
+			t.Fatal(err)
 		}
 
 		proj := &Project{root: dir}
@@ -170,7 +170,7 @@ func TestLinterLintError(t *testing.T) {
 			t.Run(subdir+"/"+testName, func(t *testing.T) {
 				b, err := os.ReadFile(infile)
 				if err != nil {
-					panic(err)
+					t.Fatal(err)
 				}
 
 				o := LinterOptions{}
@@ -220,7 +220,7 @@ func TestLinterLintAllErrorWorkflowsAtOnce(t *testing.T) {
 
 	dir, files, err := testFindAllWorkflowsInDir("examples")
 	if err != nil {
-		panic(err)
+		t.Fatal(err)
 	}
 
 	// Root directory must be testdata/examples/ since some workflow assumes it
@@ -228,7 +228,7 @@ func TestLinterLintAllErrorWorkflowsAtOnce(t *testing.T) {
 
 	_, fs, err := testFindAllWorkflowsInDir("err")
 	if err != nil {
-		panic(err)
+		t.Fatal(err)
 	}
 	files = append(files, fs...)
 
@@ -268,10 +268,10 @@ func TestLintFindProjectFromPath(t *testing.T) {
 	f := filepath.Join(d, ".github", "workflows", "test.yaml")
 	b, err := os.ReadFile(f)
 	if err != nil {
-		panic(err)
+		t.Fatal(err)
 	}
 
-	testEnsureDotGitDir(d)
+	testEnsureDotGitDir(t, d)
 
 	lint := func(path string) []*Error {
 		l, err := NewLinter(io.Discard, &LinterOptions{})
@@ -306,7 +306,7 @@ func TestLinterLintProject(t *testing.T) {
 	root := filepath.Join("testdata", "projects")
 	entries, err := os.ReadDir(root)
 	if err != nil {
-		panic(err)
+		t.Fatal(err)
 	}
 
 	for _, info := range entries {
@@ -383,7 +383,7 @@ func TestLinterFormatErrorMessageOK(t *testing.T) {
 
 			buf, err := os.ReadFile(filepath.Join(dir, tc.file))
 			if err != nil {
-				panic(err)
+				t.Fatal(err)
 			}
 			want := string(buf)
 
@@ -410,7 +410,7 @@ func TestLinterFormatErrorMessageInSARIF(t *testing.T) {
 
 	bytes, err := os.ReadFile(filepath.Join(dir, "sarif_template.txt"))
 	if err != nil {
-		panic(err)
+		t.Fatal(err)
 	}
 	format := string(bytes)
 
@@ -445,11 +445,11 @@ func TestLinterFormatErrorMessageInSARIF(t *testing.T) {
 
 	bytes, err = os.ReadFile(filepath.Join(dir, "test.sarif"))
 	if err != nil {
-		panic(err)
+		t.Fatal(err)
 	}
 	var want interface{}
 	if err := json.Unmarshal(bytes, &want); err != nil {
-		panic(err)
+		t.Fatal(err)
 	}
 
 	if !cmp.Equal(want, have) {
@@ -512,7 +512,7 @@ func TestLinterPathsNotFound(t *testing.T) {
 
 	cwd, err := os.Getwd()
 	if err != nil {
-		panic(err)
+		t.Fatal(err)
 	}
 
 	paths := []string{
@@ -642,7 +642,7 @@ func TestLinterGenerateDefaultConfigAlreadyExists(t *testing.T) {
 
 	for _, n := range []string{"ok", "yml"} {
 		d := filepath.Join("testdata", "config", "projects", n)
-		testEnsureDotGitDir(d)
+		testEnsureDotGitDir(t, d)
 
 		err := l.GenerateDefaultConfig(d)
 		if err == nil {
@@ -673,7 +673,7 @@ func BenchmarkLintWorkflowFiles(b *testing.B) {
 		d := filepath.Join(".github", "workflows")
 		es, err := os.ReadDir(d)
 		if err != nil {
-			panic(err)
+			b.Fatal(err)
 		}
 		for _, e := range es {
 			ours = append(ours, filepath.Join(d, e.Name()))
@@ -796,7 +796,7 @@ func BenchmarkLintWorkflowFiles(b *testing.B) {
 func BenchmarkLintWorkflowContent(b *testing.B) {
 	dir, err := os.Getwd()
 	if err != nil {
-		panic(err)
+		b.Fatal(err)
 	}
 	proj := &Project{root: dir}
 
@@ -841,7 +841,7 @@ func BenchmarkLintWorkflowContent(b *testing.B) {
 func BenchmarkExamplesLintFiles(b *testing.B) {
 	dir, files, err := testFindAllWorkflowsInDir("examples")
 	if err != nil {
-		panic(err)
+		b.Fatal(err)
 	}
 
 	proj := &Project{root: dir}

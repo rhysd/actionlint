@@ -19,13 +19,6 @@ func init() {
 	stderr = io.Discard
 }
 
-func must[T any](v T, err error) T {
-	if err != nil {
-		panic(err)
-	}
-	return v
-}
-
 func testErr(t *testing.T, err error, want ...string) {
 	t.Helper()
 	if err == nil {
@@ -45,10 +38,19 @@ func TestMainGenerateOK(t *testing.T) {
 	}
 	root := t.TempDir()
 
-	in := must(os.Open(filepath.FromSlash("testdata/ok/minimal.in")))
+	in, err := os.Open(filepath.FromSlash("testdata/ok/minimal.in"))
+	if err != nil {
+		t.Fatal(err)
+	}
 	path := filepath.FromSlash(root + "/minimal.in")
-	tmp := must(os.Create(path))
-	must(io.Copy(tmp, in))
+	tmp, err := os.Create(path)
+	if err != nil {
+		t.Fatal(err)
+	}
+	_, err = io.Copy(tmp, in)
+	if err != nil {
+		t.Fatal(err)
+	}
 	in.Close()
 	tmp.Close()
 
@@ -56,8 +58,14 @@ func TestMainGenerateOK(t *testing.T) {
 		t.Fatal(err)
 	}
 
-	want := must(os.ReadFile(filepath.FromSlash("testdata/ok/minimal.out")))
-	have := must(os.ReadFile(path))
+	want, err := os.ReadFile(filepath.FromSlash("testdata/ok/minimal.out"))
+	if err != nil {
+		t.Fatal(err)
+	}
+	have, err := os.ReadFile(path)
+	if err != nil {
+		t.Fatal(err)
+	}
 	if !bytes.Equal(want, have) {
 		t.Fatal(cmp.Diff(want, have))
 	}
@@ -124,7 +132,11 @@ func TestUpdateOK(t *testing.T) {
 	dir := filepath.FromSlash("testdata/ok")
 
 	tests := []string{}
-	for _, e := range must(os.ReadDir(dir)) {
+	dirEntries, err := os.ReadDir(dir)
+	if err != nil {
+		t.Fatal(err)
+	}
+	for _, e := range dirEntries {
 		n := e.Name()
 		if !strings.HasSuffix(n, ".in") {
 			continue
@@ -136,11 +148,18 @@ func TestUpdateOK(t *testing.T) {
 		in := filepath.Join(dir, tc+".in")
 		out := filepath.Join(dir, tc+".out")
 		t.Run(tc, func(t *testing.T) {
-			have, err := Update(must(os.ReadFile(in)))
+			inBytes, err := os.ReadFile(in)
 			if err != nil {
 				t.Fatal(err)
 			}
-			want := must(os.ReadFile(out))
+			have, err := Update(inBytes)
+			if err != nil {
+				t.Fatal(err)
+			}
+			want, err := os.ReadFile(out)
+			if err != nil {
+				t.Fatal(err)
+			}
 			if !bytes.Equal(want, have) {
 				t.Fatal(cmp.Diff(want, have))
 			}
@@ -152,7 +171,11 @@ func TestUpdateError(t *testing.T) {
 	dir := filepath.FromSlash("testdata/err")
 
 	tests := []string{}
-	for _, e := range must(os.ReadDir(dir)) {
+	dirEntries, err := os.ReadDir(dir)
+	if err != nil {
+		t.Fatal(err)
+	}
+	for _, e := range dirEntries {
 		n := e.Name()
 		if !strings.HasSuffix(n, ".md") {
 			continue
@@ -163,7 +186,11 @@ func TestUpdateError(t *testing.T) {
 	for _, tc := range tests {
 		path := filepath.Join(dir, tc+".md")
 		t.Run(tc, func(t *testing.T) {
-			if _, err := Update(must(os.ReadFile(path))); err == nil {
+			inBytes, err := os.ReadFile(path)
+			if err != nil {
+				t.Fatal(err)
+			}
+			if _, err := Update(inBytes); err == nil {
 				t.Fatal("no error occurred")
 			}
 		})
