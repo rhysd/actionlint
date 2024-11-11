@@ -26,24 +26,24 @@
     "pako": "^2.1.0"
   },
   "devDependencies": {
-    "@eslint/js": "^9.13.0",
+    "@eslint/js": "^9.14.0",
     "@peculiar/webcrypto": "^1.5.0",
     "@types/codemirror": "^5.60.15",
     "@types/eslint__js": "^8.42.3",
     "@types/eslint-plugin-mocha": "^10.4.0",
     "@types/jsdom": "^21.1.7",
     "@types/mocha": "^10.0.9",
-    "@types/node": "^22.7.6",
+    "@types/node": "^22.9.0",
     "@types/pako": "^2.0.3",
-    "eslint": "^9.13.0",
+    "eslint": "^9.14.0",
     "eslint-plugin-mocha": "^10.5.0",
     "http-server": "^14.1.1",
     "jsdom": "^25.0.1",
-    "mocha": "^10.7.3",
+    "mocha": "^10.8.2",
     "prettier": "^3.3.3",
     "stylelint": "^16.10.0",
     "stylelint-config-standard": "^36.0.1",
     "typescript": "^5.6.3",
-    "typescript-eslint": "^8.10.0"
+    "typescript-eslint": "^8.13.0"
   }
 }
