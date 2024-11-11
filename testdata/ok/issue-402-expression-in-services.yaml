@@ -2,6 +2,6 @@ on: push
 jobs:
   tests:
     runs-on: ubuntu-latest
-    services: ${{ fromJSON('...') }}
+    services: ${{ fromJSON('{}') }}
     steps:
       - run: echo

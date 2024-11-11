@@ -638,7 +638,7 @@ func TestExprSemanticsCheckOK(t *testing.T) {
 		{
 			what:         "non-special function",
 			input:        "fromJSON('{}')",
-			expected:     AnyType{},
+			expected:     NewEmptyStrictObjectType(),
 			availSPFuncs: []string{"always"},
 		},
 		{

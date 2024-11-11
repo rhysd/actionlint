@@ -1,7 +1,7 @@
 on: push
 jobs:
   ok1:
-    services: ${{ fromJSON('...') }}
+    services: ${{ fromJSON('{}') }}
     runs-on: ubuntu-latest
     steps:
       - run: echo
