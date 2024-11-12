@@ -28,6 +28,55 @@ func ordinal(i int) string {
 	return fmt.Sprintf("%d%s", i, suffix)
 }
 
+// parseFormatFuncSpecifiers parses the format string passed to `format()` calls.
+// https://docs.github.com/en/actions/writing-workflows/choosing-what-your-workflow-does/evaluate-expressions-in-workflows-and-actions#format
+func parseFormatFuncSpecifiers(f string, n int) map[int]struct{} {
+	ret := make(map[int]struct{}, n)
+
+	type state int
+	const (
+		init  state = iota // Initial state
+		brace              // {
+		digit              // 0..9
+	)
+
+	var cur state
+	var start int
+	for i, r := range f {
+		switch cur {
+		case init:
+			switch r {
+			case '{':
+				cur = brace
+				start = i + 1 // `+ 1` because `i` points char '{'
+			}
+		case brace:
+			switch {
+			case '0' <= r && r <= '9':
+				cur = digit
+			default:
+				cur = init
+			}
+		case digit:
+			switch {
+			case '0' <= r && r <= '9':
+				// Do nothing
+			case r == '{':
+				cur = brace
+				start = i + 1
+			case r == '}':
+				i, _ := strconv.Atoi(f[start:i])
+				ret[i] = struct{}{}
+				cur = init
+			default:
+				cur = init
+			}
+		}
+	}
+
+	return ret
+}
+
 // Functions
 
 // FuncSignature is a signature of function, which holds return and arguments types.
@@ -798,16 +847,10 @@ func (sema *ExprSemanticsChecker) checkBuiltinFunctionCall(n *FuncCallNode, _ *F
 		}
 		l := len(n.Args) - 1 // -1 means removing first format string argument
 
-		// Find all placeholders in format string
-		holders := make(map[int]struct{}, l)
-		for _, m := range reFormatPlaceholder.FindAllString(lit.Value, -1) {
-			i, _ := strconv.Atoi(m[1 : len(m)-1])
-			holders[i] = struct{}{}
-		}
+		holders := parseFormatFuncSpecifiers(lit.Value, l)
 
 		for i := 0; i < l; i++ {
-			_, ok := holders[i]
-			if !ok {
+			if _, ok := holders[i]; !ok {
 				sema.errorf(n, "format string %q does not contain placeholder {%d}. remove argument which is unused in the format string", lit.Value, i)
 				continue
 			}

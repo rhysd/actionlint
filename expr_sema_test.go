@@ -719,6 +719,16 @@ func TestExprSemanticsCheckOK(t *testing.T) {
 			input:    "!!('foo' || 10) && 20",
 			expected: NumberType{},
 		},
+		{
+			what:     "escaped braces in format string",
+			input:    "format('hello {{1}} {0}', 42)",
+			expected: StringType{},
+		},
+		{
+			what:     "format specifier is escaped",
+			input:    "format('hello {{{0}', 'world')", // First {{ is escaped. {0} is not escaped
+			expected: StringType{},
+		},
 	}
 
 	allSPFuncs := []string{}
@@ -1021,6 +1031,20 @@ func TestExprSemanticsCheckError(t *testing.T) {
 			input: "Format('{0}', 1, 2)",
 			expected: []string{
 				`format string "{0}" does not contain placeholder {1}`,
+			},
+		},
+		{
+			what:  "format specifier is escaped",
+			input: "format('hello {{0}}', 'world')",
+			expected: []string{
+				"does not contain placeholder {0}",
+			},
+		},
+		{
+			what:  "format specifier is still escaped",
+			input: "format('hello {{{{0}}', 'world')", // First {{ is escaped. {{0}} is still escaped
+			expected: []string{
+				"does not contain placeholder {0}",
 			},
 		},
 		{
@@ -1660,3 +1684,95 @@ func TestBuiltinGlobalVariableTypesValidation(t *testing.T) {
 		testObjectPropertiesAreInLowerCase(t, ty)
 	}
 }
+
+func TestParseFormatSpecifiers(t *testing.T) {
+	tests := []struct {
+		what string
+		in   string
+		want []int // Specifiers in the `in` string
+	}{
+		{
+			what: "empty input",
+			in:   "",
+		},
+		{
+			what: "no specifier",
+			in:   "hello, world!",
+		},
+		{
+			what: "single specifier",
+			in:   "Hello{0}specifier",
+			want: []int{0},
+		},
+		{
+			what: "mutliple specifiers",
+			in:   "{0} {1}{2}x{3}}{4}!",
+			want: []int{0, 1, 2, 3, 4},
+		},
+		{
+			what: "many specifiers",
+			in:   "{0}{1}{2}{3}{4}{5}{6}{7}{8}{9}{10}!",
+			want: []int{0, 1, 2, 3, 4, 5, 6, 7, 8, 9, 10},
+		},
+		{
+			what: "unordered",
+			in:   "{2}foo{4} {0}{3}",
+			want: []int{2, 4, 0, 3},
+		},
+		{
+			what: "uncontiguous",
+			in:   "{0} {2}foo{5} {1}",
+			want: []int{0, 2, 5, 1},
+		},
+		{
+			what: "unclosed",
+			in:   "{12foo",
+		},
+		{
+			what: "not digit",
+			in:   "{hello}",
+		},
+		{
+			what: "space in digits",
+			in:   "{1 2}",
+		},
+		{
+			what: "empty",
+			in:   "{}",
+		},
+		{
+			what: "specifier inside specifier",
+			in:   "{1{0}2}",
+			want: []int{0},
+		},
+		{
+			what: "escaped",
+			in:   "{{hello{{0}{{{{1}world}}",
+		},
+		{
+			what: "after escaped",
+			in:   "{{{{{0}",
+			want: []int{0},
+		},
+		{
+			what: "kuma-",
+			in:   "{・{ᴥ}・}",
+		},
+	}
+
+	for _, tc := range tests {
+		t.Run(tc.what, func(t *testing.T) {
+			want := map[int]struct{}{}
+			for _, i := range tc.want {
+				want[i] = struct{}{}
+			}
+			have := parseFormatFuncSpecifiers(tc.in, len(tc.want))
+
+			if !cmp.Equal(want, have) {
+				t.Fatal(cmp.Diff(want, have))
+			}
+		})
+	}
+}
+
+// vim: nofoldenable
