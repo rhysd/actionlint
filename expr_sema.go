@@ -2,12 +2,9 @@ package actionlint
 
 import (
 	"fmt"
-	"regexp"
 	"strconv"
 	"strings"
 )
-
-var reFormatPlaceholder = regexp.MustCompile(`{\d+}`)
 
 func ordinal(i int) string {
 	suffix := "th"
@@ -32,48 +29,25 @@ func ordinal(i int) string {
 // https://docs.github.com/en/actions/writing-workflows/choosing-what-your-workflow-does/evaluate-expressions-in-workflows-and-actions#format
 func parseFormatFuncSpecifiers(f string, n int) map[int]struct{} {
 	ret := make(map[int]struct{}, n)
-
-	type state int
-	const (
-		init  state = iota // Initial state
-		brace              // {
-		digit              // 0..9
-	)
-
-	var cur state
-	var start int
+	start := -1
 	for i, r := range f {
-		switch cur {
-		case init:
-			switch r {
-			case '{':
-				cur = brace
+		if r == '{' {
+			if start == i {
+				start = -1 // When the '{' is escaped like '{{'
+			} else {
 				start = i + 1 // `+ 1` because `i` points char '{'
 			}
-		case brace:
-			switch {
-			case '0' <= r && r <= '9':
-				cur = digit
-			default:
-				cur = init
+		} else if start >= 0 {
+			if '0' <= r && r <= '9' {
+				continue
 			}
-		case digit:
-			switch {
-			case '0' <= r && r <= '9':
-				// Do nothing
-			case r == '{':
-				cur = brace
-				start = i + 1
-			case r == '}':
+			if r == '}' && start < i {
 				i, _ := strconv.Atoi(f[start:i])
 				ret[i] = struct{}{}
-				cur = init
-			default:
-				cur = init
 			}
+			start = -1 // Done
 		}
 	}
-
 	return ret
 }
 
