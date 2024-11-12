@@ -428,15 +428,17 @@ func EqualTypes(l, r ExprType) bool {
 	return l.Assignable(r) && r.Assignable(l)
 }
 
+// typeOfJSONValue returns the type of the given JSON value. The JSON value is an any value decoded by json.Unmarshal.
+// https://pkg.go.dev/encoding/json#Unmarshal
+//
+// To unmarshal JSON into an interface value, Unmarshal stores one of these in the interface value:
+//   - bool, for JSON booleans
+//   - float64, for JSON numbers
+//   - string, for JSON strings
+//   - []interface{}, for JSON arrays
+//   - map[string]interface{}, for JSON objects
+//   - nil for JSON null
 func typeOfJSONValue(v any) ExprType {
-	// https://pkg.go.dev/encoding/json#Unmarshal
-	// To unmarshal JSON into an interface value, Unmarshal stores one of these in the interface value:
-	// - bool, for JSON booleans
-	// - float64, for JSON numbers
-	// - string, for JSON strings
-	// - []interface{}, for JSON arrays
-	// - map[string]interface{}, for JSON objects
-	// - nil for JSON null
 	switch v := v.(type) {
 	case bool:
 		return BoolType{}

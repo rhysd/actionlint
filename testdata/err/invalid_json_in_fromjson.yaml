@@ -1,0 +1,28 @@
+on: push
+
+jobs:
+  foo:
+    strategy:
+      matrix:
+        include:
+          - string: ${{ fromJSON('"hello"') }}
+          - null: ${{ fromJSON('null') }}
+          - array: ${{ fromJSON('["foo", 1.2]') }}
+          - object: ${{ fromJSON('{"bool":true,"array":[false]}') }}
+          - invalid-1: ${{ fromJSON('"foo') }}
+          - invalid-2: ${{ fromJSON('["foo"') }}
+          - invalid-3: ${{ fromJSON('') }}
+    runs-on: ubuntu-latest
+    steps:
+      # OK
+      - run: echo ${{ matrix.string }}
+      - run: echo ${{ matrix.array[0] }}
+      - run: echo ${{ matrix.object.bool }}
+      - run: echo ${{ contains(matrix.array, matrix.string) }}
+      - run: echo ${{ matrix.invalid-1 }}
+      # ERROR
+      - run: echo ${{ matrix.null }}
+      - run: echo ${{ matrix.array }}
+      - run: echo ${{ matrix.object }}
+      - run: echo ${{ matrix.object.array }}
+      - run: echo ${{ contains(matrix.object, matrix.string) }}

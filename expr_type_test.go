@@ -929,3 +929,118 @@ func TestExprTypeDeepCopy(t *testing.T) {
 		}
 	}
 }
+
+func TestExprTypeTypeOfJSONValue(t *testing.T) {
+	tests := []struct {
+		what  string
+		value any
+		want  ExprType
+	}{
+		{
+			what:  "null",
+			value: nil,
+			want:  NullType{},
+		},
+		{
+			what:  "num",
+			value: 1.0,
+			want:  NumberType{},
+		},
+		{
+			what:  "string",
+			value: "hello",
+			want:  StringType{},
+		},
+		{
+			what:  "bool",
+			value: true,
+			want:  BoolType{},
+		},
+		{
+			what:  "empty array",
+			value: []any{},
+			want:  &ArrayType{Elem: AnyType{}},
+		},
+		{
+			what:  "array",
+			value: []any{"hello", "world"},
+			want:  &ArrayType{Elem: StringType{}},
+		},
+		{
+			what:  "nested array",
+			value: []any{[]any{[]any{[]any{"hi"}}}},
+			want: &ArrayType{
+				Elem: &ArrayType{
+					Elem: &ArrayType{
+						Elem: &ArrayType{
+							Elem: StringType{},
+						},
+					},
+				},
+			},
+		},
+		{
+			what:  "merged array element",
+			value: []any{"hello", 1.0, true},
+			want:  &ArrayType{Elem: StringType{}},
+		},
+		{
+			what:  "recursively merged array element",
+			value: []any{[]any{"hello"}, []any{1.0}, []any{true}},
+			want:  &ArrayType{Elem: &ArrayType{Elem: StringType{}}},
+		},
+		{
+			what:  "array element fallback to any",
+			value: []any{"hello", nil},
+			want:  &ArrayType{Elem: AnyType{}},
+		},
+		{
+			what:  "empty object",
+			value: map[string]any{},
+			want:  NewEmptyStrictObjectType(),
+		},
+		{
+			what:  "object",
+			value: map[string]any{"hello": 1.0, "world": true},
+			want: NewStrictObjectType(map[string]ExprType{
+				"hello": NumberType{},
+				"world": BoolType{},
+			}),
+		},
+		{
+			what: "nested object",
+			value: map[string]any{
+				"hello": []any{1.0},
+				"world": map[string]any{
+					"foo": true,
+					"bar": "x",
+				},
+			},
+			want: NewStrictObjectType(map[string]ExprType{
+				"hello": &ArrayType{Elem: NumberType{}},
+				"world": NewStrictObjectType(map[string]ExprType{
+					"foo": BoolType{},
+					"bar": StringType{},
+				}),
+			}),
+		},
+	}
+
+	for _, tc := range tests {
+		t.Run(tc.what, func(t *testing.T) {
+			have := typeOfJSONValue(tc.value)
+			if !cmp.Equal(tc.want, have) {
+				t.Fatal(cmp.Diff(tc.want, have))
+			}
+		})
+	}
+}
+
+func TestExprTypePanicTypeOfJSONValue(t *testing.T) {
+	defer func() {
+		if r := recover(); r == nil {
+			t.Fatal("error didn't occur")
+		}
+	}()
+	typeOfJSONValue(struct{}{})
+}
