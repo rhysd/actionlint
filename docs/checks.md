@@ -37,7 +37,7 @@ List of checks:
 - [Permissions](#permissions)
 - [Reusable workflows](#check-reusable-workflows)
 - [ID naming convention](#id-naming-convention)
-- [Contexts and special functions availability](#ctx-spfunc-availability)
+- [Availability of contexts and special functions](#ctx-spfunc-availability)
 - [Deprecated workflow commands](#check-deprecated-workflow-commands)
 - [Conditions always evaluated to true at `if:`](#if-cond-always-true)
 - [Action metadata syntax validation](#action-metadata-syntax)
@@ -395,8 +395,6 @@ jobs:
       # Function overloads can be handled properly. contains() has string version and array version
       - run: echo "${{ contains('hello, world', 'lo,') }}"
       - run: echo "${{ contains(github.event.labels.*.name, 'enhancement') }}"
-      # format() has a special check for formatting string
-      - run: echo "${{ format('{0}{1}', 1, 2, 3) }}"
 ```
 
 Output:
@@ -422,13 +420,9 @@ test.yaml:15:51: 2nd argument of function call is not assignable. "object" canno
    |
 15 |       - run: echo "${{ startsWith('hello, world', github.event) }}"
    |                                                   ^~~~~~~~~~~~~
-test.yaml:20:24: format string "{0}{1}" does not contain placeholder {2}. remove argument which is unused in the format string [expression]
-   |
-20 |       - run: echo "${{ format('{0}{1}', 1, 2, 3) }}"
-   |                        ^~~~~~~~~~~~~~~~
 ```
 
-[Playground](https://rhysd.github.io/actionlint/#eNqckMFOwzAQRO/9ilGF5IKciMItP8IROWHBAWe3yq4pUuR/Ry4SAqnNoScf5r3xaIU7HLLGzbv02m0AI7X6AnNmbWqe+8yWmxRqdorU6KA/FNBUsgMNUeBulgWZP1iO/DwIG30ZSnGX0LfRYu5b+iQ2vQBuK6gWZnsaLe5cpJTE4yhzenEeLol3tyhlu+rqGfk6y/9bvdpRLxBG1itG/6p/P2tT6Clpe9dymMjDEcfAA03Etl73KvMUbOeW+7Lsi/PYezx4PJ6k7wAAAP//nfWd6A==)
+[Playground](https://rhysd.github.io/actionlint/#eNqckEFKxjAQhfc9xVCEqKQ5QC/iUpI6mGo6UzoTK5TcXWJB/OFvF11l8b7v5TFMPcxZYvPBQfoGQFG0vgBLJulqnkMmzV3yNfuNRHGWnQLoKtkDDpHBPGwbZPokXul1YFL8VijFHKHvo8YcHH4hqRyAbQVF/aIvo8ZHEzEltrDykt6MBZPYmicopT115Y58zbI3q0876gX8SHJh9J/6/zOXfMAk7tmRn9CCQYqeBpyQdK/7CQAA//9h6o/Y)
 
 [Contexts][contexts-doc] and [built-in functions][funcs-doc] are strongly typed. Typos in property access of contexts and
 function names can be checked. And invalid function calls like wrong number of arguments or type mismatch at parameter also
@@ -440,10 +434,57 @@ The semantics checker can properly handle that
 - some parameters are optional (e.g. `join(strings, sep)` and `join(strings)`)
 - some parameters are repeatable (e.g. `hashFiles(file1, file2, ...)`)
 
-In addition, `format()` function has a special check for placeholders in the first parameter which represents the formatting
-string.
-
 Note that context names and function names are case-insensitive. For example, `toJSON` and `toJson` are the same function.
+
+In addition, actionlint performs special checks on some built-in functions.
+
+- `format()`: Checks placeholders in the first parameter which represents the format string.
+- `fromJSON()`: Checks the JSON string is valid and the return value is strongly typed.
+
+Example input:
+
+```yaml
+on: push
+
+jobs:
+  test:
+    # ERROR: Key 'mac' does not exist in the object returned by the fromJSON()
+    runs-on: ${{ fromJSON('{"win":"windows-latest","linux":"ubuntul-latest"}')['mac'] }}
+    steps:
+      # ERROR: {2} is missing in the first argument of format()
+      - run: echo "${{ format('{0}{1}', 1, 2, 3) }}"
+      # ERROR: Argument for {2} is missing in the arguments of format()
+      - run: echo "${{ format('{0}{1}{2}', 1, 2) }}"
+      - run: echo This is a special branch!
+        # ERROR: Broken JSON string. Special check for fromJSON()
+        if: contains(fromJson('["main","release","dev"'), github.ref_name)
+```
+
+Output:
+
+```
+test.yaml:6:18: property "mac" is not defined in object type {linux: string; win: string} [expression]
+  |
+6 |     runs-on: ${{ fromJSON('{"win":"windows-latest","linux":"ubuntul-latest"}')['mac'] }}
+  |                  ^~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+test.yaml:9:24: format string "{0}{1}" does not contain placeholder {2}. remove argument which is unused in the format string [expression]
+  |
+9 |       - run: echo "${{ format('{0}{1}', 1, 2, 3) }}"
+  |                        ^~~~~~~~~~~~~~~~
+test.yaml:11:24: format string "{0}{1}{2}" contains placeholder {2} but only 2 arguments are given to format [expression]
+   |
+11 |       - run: echo "${{ format('{0}{1}{2}', 1, 2) }}"
+   |                        ^~~~~~~~~~~~~~~~~~~
+test.yaml:14:31: broken JSON string is passed to fromJSON() at offset 23: unexpected end of JSON input [expression]
+   |
+14 |         if: contains(fromJson('["main","release","dev"'), github.ref_name)
+   |                               ^~~~~~~~~~~~~~~~~~~~~~~~~~~
+```
+
+[Playground](https://rhysd.github.io/actionlint/#eNqMj0FL9DAQhu/7K95v+CAtZMVdb/kJHvSgt0Uk7aY20k5KJnGFkP8ure5R8DJzmPeZhzewwZJl3O3eQydmByQnad1AzCz7NfC/FAwxzPdPjw+NKnTxTGad53CR/WRXhDRNnvMnGcpd5pSn66Gq9qRm26sX1Lo9luQW+XYA+9Vj4PoxgDZTiLNNjSq3tRyq0jhoHDXuWtRKf4PK8cr9Bj2PXuAFFrK43tsJXbTcj/9+soAfDPrAyXqWZmsvgRt1otl6Jk3RTc6KI01n90Gq1XjzaczdTXTDK9vZtV8BAAD//8ITaRA=)
+
+GitHub Actions does not provide the syntax to create an array or object constant. It [is popular](https://github.com/search?q=fromJSON%28%27+lang%3Ayaml&type=code)
+to create such constants via `fromJSON()`.
 
 <a id="check-contextual-step-object"></a>
 ## Contextual typing for `steps.<step_id>` objects
@@ -2578,7 +2619,7 @@ IDs must start with a letter or `_` and contain only alphanumeric characters, `-
 convention, and reports invalid IDs as errors.
 
 <a id="ctx-spfunc-availability"></a>
-## Contexts and special functions availability
+## Availability of contexts and special functions
 
 Example input:
 
