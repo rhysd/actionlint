@@ -11,7 +11,7 @@ on:
         required: 'this is true'
 
 # OK
-env: ${{ fromJSON('...') }}
+env: ${{ fromJSON('{"FOO":"BAR"}') }}
 
 jobs:
   test1:
@@ -19,7 +19,7 @@ jobs:
       # ERROR
       max-parallel: 'max is 3'
       # OK
-      matrix: ${{ fromJSON('...') }}
+      matrix: ${{ fromJSON('{}') }}
     # ERROR
     timeout-minutes: '4 minutes'
     # OK
@@ -30,7 +30,7 @@ jobs:
     strategy:
       matrix:
         # OK
-        include: ${{ fromJSON('...') }}
+        include: ${{ fromJSON('{}') }}
     runs-on:
       # OK
       labels: ${{ 'ubuntu-latest' }}
@@ -41,7 +41,7 @@ jobs:
       matrix:
         include:
           # OK
-          - ${{ fromJSON('...') }}
+          - ${{ fromJSON('{}') }}
     runs-on: ubuntu-latest
     steps:
       - run: echo hello
@@ -49,7 +49,7 @@ jobs:
     strategy:
       matrix:
         # OK
-        foo: ${{ fromJSON('...') }}
+        foo: ${{ fromJSON('["x"]') }}
     runs-on: ubuntu-latest
     steps:
       - run: echo hello

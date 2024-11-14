@@ -637,8 +637,8 @@ func TestExprSemanticsCheckOK(t *testing.T) {
 		},
 		{
 			what:         "non-special function",
-			input:        "fromJSON('{}')",
-			expected:     AnyType{},
+			input:        "contains('hello, world', 'o, w')",
+			expected:     BoolType{},
 			availSPFuncs: []string{"always"},
 		},
 		{
@@ -728,6 +728,15 @@ func TestExprSemanticsCheckOK(t *testing.T) {
 			what:     "format specifier is escaped",
 			input:    "format('hello {{{0}', 'world')", // First {{ is escaped. {0} is not escaped
 			expected: StringType{},
+		},
+		{
+			what:  "fromJSON with JSON constant value",
+			input: `fromJSON('{"foo":true,"bar":["foo", 12.3],"piyo":null}')`,
+			expected: NewStrictObjectType(map[string]ExprType{
+				"foo":  BoolType{},
+				"bar":  &ArrayType{Elem: StringType{}}, // Element type was merged
+				"piyo": NullType{},
+			}),
 		},
 	}
 
@@ -1253,6 +1262,13 @@ func TestExprSemanticsCheckError(t *testing.T) {
 			input: "vars.GITHUB_FOOOOOOOO",
 			expected: []string{
 				"must not start with the GITHUB_ prefix",
+			},
+		},
+		{
+			what:  "broken JSON value at fromJSON argument",
+			input: `fromJSON('{"foo": true')`,
+			expected: []string{
+				"broken JSON string is passed to fromJSON() at offset 12",
 			},
 		},
 	}
