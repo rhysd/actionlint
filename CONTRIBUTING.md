@@ -120,7 +120,7 @@ ronn ./man/actionlint.1.ronn
 or
 
 ```sh
-make ./man/actionlint.1
+make man
 ```
 
 ## How to develop playground

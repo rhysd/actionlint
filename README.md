@@ -17,7 +17,7 @@ Features:
 - **Other several useful checks**; [glob syntax][filter-pattern-doc] validation, dependencies check for `needs:`,
   runner label validation, cron syntax validation, ...
 
-See [the full list][checks] of checks done by actionlint.
+See the [full list][checks] of checks done by actionlint.
 
 <img src="https://github.com/rhysd/ss/blob/master/actionlint/main.gif?raw=true" alt="actionlint reports 7 errors" width="806" height="492"/>
 
@@ -82,18 +82,6 @@ test.yaml:22:17: receiver of object dereference "permissions" must be type of ob
    |                 ^~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 ```
 
-## Why?
-
-- **Running a workflow is time consuming.** You need to push the changes and wait until the workflow runs on GitHub even if
-  it contains some trivial mistakes. [act][] is useful to debug the workflow locally. But it is not suitable for CI and still
-  time consuming when your workflow gets larger.
-- **Checks of workflow files by GitHub are very loose.** It reports no error even if unexpected keys are in mappings
-  (meant that some typos in keys). And also it reports no error when accessing to property which is actually not existing.
-  For example `matrix.foo` when no `foo` is defined in `matrix:` section, it is evaluated to `null` and causes no error.
-- **Some mistakes silently break a workflow.** Most common case I saw is specifying missing property to cache key. In the
-  case cache silently does not work properly but a workflow itself runs without error. So you might not notice the mistake
-  forever.
-
 ## Quick start
 
 Install `actionlint` command by downloading [the released binary][releases] or by Homebrew or by `go install`. See
@@ -133,6 +121,8 @@ See [the usage document][usage] for more details.
 When you see some bugs or false positives, it is helpful to [file a new issue][issue-form] with a minimal example
 of input. Giving me some feedbacks like feature requests or ideas of additional checks is also welcome.
 
+See the [contribution guide](./CONTRIBUTING.md) for more details.
+
 ## License
 
 actionlint is distributed under [the MIT license](./LICENSE.txt).
@@ -145,7 +135,6 @@ actionlint is distributed under [the MIT license](./LICENSE.txt).
 [playground]: https://rhysd.github.io/actionlint/
 [shellcheck]: https://github.com/koalaman/shellcheck
 [pyflakes]: https://github.com/PyCQA/pyflakes
-[act]: https://github.com/nektos/act
 [syntax-doc]: https://docs.github.com/en/actions/reference/workflow-syntax-for-github-actions
 [filter-pattern-doc]: https://docs.github.com/en/actions/using-workflows/workflow-syntax-for-github-actions#filter-pattern-cheat-sheet
 [script-injection-doc]: https://docs.github.com/en/actions/learn-github-actions/security-hardening-for-github-actions#understanding-the-risk-of-script-injections

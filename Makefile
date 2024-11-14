@@ -23,7 +23,7 @@ all: build test lint
 
 t test: .testtimestamp
 
-.linttimestamp: $(TESTS) $(SRCS) $(TOOL)
+.linttimestamp: $(TESTS) $(SRCS) $(TOOL) docs/checks.md
 	go vet ./...
 	staticcheck ./...
 	GOOS=js GOARCH=wasm staticcheck ./playground
