@@ -242,8 +242,8 @@ func TestReusableWorkflowUnmarshalOK(t *testing.T) {
 				t.Fatal(err)
 			}
 
-			if !cmp.Equal(m, tc.want) {
-				t.Fatal("Parse result is unexpected. diff:\n" + cmp.Diff(m, tc.want))
+			if diff := cmp.Diff(m, tc.want); diff != "" {
+				t.Fatal("Parse result is unexpected. diff:\n" + diff)
 			}
 		})
 	}
@@ -363,8 +363,8 @@ func TestReusableWorkflowCacheFindMetadataOK(t *testing.T) {
 	if err != nil {
 		t.Fatal(err)
 	}
-	if !cmp.Equal(m, testReusableWorkflowWantedMetadata) {
-		t.Fatal(cmp.Diff(m, testReusableWorkflowWantedMetadata))
+	if diff := cmp.Diff(m, testReusableWorkflowWantedMetadata); diff != "" {
+		t.Fatal(diff)
 	}
 
 	m2, err := c.FindMetadata("./ok.yaml")
@@ -630,8 +630,8 @@ func TestReusableWorkflowMetadataFromASTNodeInputs(t *testing.T) {
 				t.Fatal("Event was not converted to event")
 			}
 
-			if !cmp.Equal(m.Inputs, tc.want) {
-				t.Error(cmp.Diff(m.Inputs, tc.want))
+			if diff := cmp.Diff(m.Inputs, tc.want); diff != "" {
+				t.Fatal(diff)
 			}
 			if len(m.Outputs) != 0 {
 				t.Error("Outputs are not empty", m.Outputs)
@@ -674,8 +674,8 @@ func TestReusableWorkflowMetadataFromASTNodeOutputs(t *testing.T) {
 				want[strings.ToLower(o)] = &ReusableWorkflowMetadataOutput{o}
 			}
 
-			if !cmp.Equal(m.Outputs, want) {
-				t.Error(cmp.Diff(m.Outputs, want))
+			if diff := cmp.Diff(m.Outputs, want); diff != "" {
+				t.Fatal(diff)
 			}
 			if len(m.Inputs) != 0 {
 				t.Error("Inputs are not empty", m.Inputs)
@@ -733,8 +733,8 @@ func TestReusableWorkflowMetadataFromASTNodeSecrets(t *testing.T) {
 				}
 			}
 
-			if !cmp.Equal(m.Secrets, want) {
-				t.Error(cmp.Diff(m.Secrets, want))
+			if diff := cmp.Diff(m.Secrets, want); diff != "" {
+				t.Fatal(diff)
 			}
 			if len(m.Inputs) != 0 {
 				t.Error("Inputs are not empty", m.Inputs)
@@ -811,8 +811,8 @@ func TestReusableWorkflowMetadataCacheFindOneMetadataConcurrently(t *testing.T) 
 	}
 
 	for _, m := range ms {
-		if !cmp.Equal(testReusableWorkflowWantedMetadata, m) {
-			t.Fatal(cmp.Diff(testReusableWorkflowWantedMetadata, m))
+		if diff := cmp.Diff(testReusableWorkflowWantedMetadata, m); diff != "" {
+			t.Fatal(diff)
 		}
 	}
 

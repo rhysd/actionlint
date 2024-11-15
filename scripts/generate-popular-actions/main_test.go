@@ -89,8 +89,8 @@ func TestReadWriteJSONL(t *testing.T) {
 			want := string(b)
 			have := stdout.String()
 
-			if want != have {
-				t.Fatalf("read content and output content differ\n%s", cmp.Diff(want, have))
+			if diff := cmp.Diff(want, have); diff != "" {
+				t.Fatalf("read content and output content differ\n%s", diff)
 			}
 		})
 	}
@@ -139,8 +139,8 @@ func TestWriteGoToStdout(t *testing.T) {
 			want := string(b)
 			have := stdout.String()
 
-			if want != have {
-				t.Fatalf("read content and output content differ\n%s", cmp.Diff(want, have))
+			if diff := cmp.Diff(want, have); diff != "" {
+				t.Fatalf("read content and output content differ\n%s", diff)
 			}
 		})
 	}
@@ -170,8 +170,8 @@ func TestWriteJSONLFile(t *testing.T) {
 	}
 	have := string(b)
 
-	if want != have {
-		t.Fatalf("read content and output content differ\n%s", cmp.Diff(want, have))
+	if diff := cmp.Diff(want, have); diff != "" {
+		t.Fatalf("read content and output content differ\n%s", diff)
 	}
 }
 
@@ -199,8 +199,8 @@ func TestWriteGoFile(t *testing.T) {
 	}
 	have := string(b)
 
-	if want != have {
-		t.Fatalf("read content and output content differ\n%s", cmp.Diff(want, have))
+	if diff := cmp.Diff(want, have); diff != "" {
+		t.Fatalf("read content and output content differ\n%s", diff)
 	}
 }
 
@@ -231,8 +231,8 @@ func TestFetchRemoteYAML(t *testing.T) {
 			want := string(b)
 			have := stdout.String()
 
-			if !cmp.Equal(want, have) {
-				t.Fatalf("fetched JSONL data does not match: %s", cmp.Diff(want, have))
+			if diff := cmp.Diff(want, have); diff != "" {
+				t.Fatalf("fetched JSONL data does not match: %s", diff)
 			}
 		})
 	}
@@ -252,8 +252,8 @@ func TestWriteOutdatedActionAsJSONL(t *testing.T) {
 		panic(err)
 	}
 	want, have := string(b), stdout.String()
-	if want != have {
-		t.Fatal(cmp.Diff(want, have))
+	if diff := cmp.Diff(want, have); diff != "" {
+		t.Fatal(diff)
 	}
 }
 

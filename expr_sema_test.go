@@ -788,8 +788,8 @@ func TestExprSemanticsCheckOK(t *testing.T) {
 				t.Fatal("semantics check failed:", errs)
 			}
 
-			if !cmp.Equal(tc.expected, ty) {
-				t.Fatalf("wanted: %s\nbut got:%s\ndiff:\n%s", tc.expected.String(), ty.String(), cmp.Diff(tc.expected, ty))
+			if diff := cmp.Diff(tc.expected, ty); diff != "" {
+				t.Fatalf("wanted: %s\nbut got:%s\ndiff:\n%s", tc.expected.String(), ty.String(), diff)
 			}
 		})
 	}

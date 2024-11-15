@@ -32,8 +32,8 @@ func TestOKWriteStdout(t *testing.T) {
 	}
 	want := string(b)
 
-	if stdout != want {
-		t.Fatal(cmp.Diff(want, stdout))
+	if diff := cmp.Diff(want, stdout); diff != "" {
+		t.Fatal(diff)
 	}
 }
 
@@ -63,8 +63,8 @@ func TestOKWriteFile(t *testing.T) {
 	}
 	have := string(b)
 
-	if want != have {
-		t.Fatal(cmp.Diff(want, have))
+	if diff := cmp.Diff(want, have); diff != "" {
+		t.Fatal(diff)
 	}
 }
 

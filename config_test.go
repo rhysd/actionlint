@@ -49,8 +49,8 @@ func TestConfigParseSelfHostedRunnerOK(t *testing.T) {
 				t.Fatal(err)
 			}
 
-			if !cmp.Equal(c.SelfHostedRunner.Labels, tc.labels) {
-				t.Fatal(cmp.Diff(c.SelfHostedRunner.Labels, tc.labels))
+			if diff := cmp.Diff(c.SelfHostedRunner.Labels, tc.labels); diff != "" {
+				t.Fatal(diff)
 			}
 		})
 	}
@@ -224,8 +224,8 @@ func TestConfigReadFileOK(t *testing.T) {
 		t.Fatal(err)
 	}
 	labels := []string{"foo", "bar"}
-	if !cmp.Equal(c.SelfHostedRunner.Labels, labels) {
-		t.Fatal(cmp.Diff(c.SelfHostedRunner.Labels, labels))
+	if diff := cmp.Diff(c.SelfHostedRunner.Labels, labels); diff != "" {
+		t.Fatal(diff)
 	}
 }
 
