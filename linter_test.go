@@ -70,6 +70,7 @@ func TestLinterLintOK(t *testing.T) {
 			config := Config{}
 			linter.defaultConfig = &config
 
+			t.Log("Linting workflow file", f)
 			errs, err := linter.LintFile(f, proj)
 			if err != nil {
 				t.Fatal(err)
@@ -104,6 +105,9 @@ func testFindAllWorkflowsInDir(subdir string) (string, []string, error) {
 }
 
 func checkErrors(t *testing.T, outfile string, errs []*Error) {
+	t.Helper()
+	t.Log("Checking errors with", outfile)
+
 	expected := []string{}
 	{
 		f, err := os.Open(outfile)
@@ -168,6 +172,7 @@ func TestLinterLintError(t *testing.T) {
 			base := strings.TrimSuffix(infile, filepath.Ext(infile))
 			testName := filepath.Base(base)
 			t.Run(subdir+"/"+testName, func(t *testing.T) {
+				t.Log("Linting workflow file", infile)
 				b, err := os.ReadFile(infile)
 				if err != nil {
 					panic(err)
@@ -317,6 +322,8 @@ func TestLinterLintProject(t *testing.T) {
 		name := info.Name()
 		t.Run("project/"+name, func(t *testing.T) {
 			repo := filepath.Join(root, name)
+			t.Log("Linting project at", repo)
+
 			opts := LinterOptions{
 				WorkingDir: repo,
 			}
