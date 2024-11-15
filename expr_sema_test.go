@@ -1664,8 +1664,8 @@ func TestExprSemanticsCheckerUpdateInputsMultipleTimes(t *testing.T) {
 			c.UpdateInputs(tc.first)
 			c.UpdateDispatchInputs(tc.second)
 			have := c.vars["inputs"]
-			if !cmp.Equal(have, tc.want) {
-				t.Fatal("Merged `inputs` type is unexpected", have, "v.s.", tc.want)
+			if diff := cmp.Diff(have, tc.want); diff != "" {
+				t.Fatal(diff)
 			}
 		})
 	}
@@ -1784,8 +1784,8 @@ func TestParseFormatSpecifiers(t *testing.T) {
 			}
 			have := parseFormatFuncSpecifiers(tc.in, len(tc.want))
 
-			if !cmp.Equal(want, have) {
-				t.Fatal(cmp.Diff(want, have))
+			if diff := cmp.Diff(want, have); diff != "" {
+				t.Fatal(diff)
 			}
 		})
 	}

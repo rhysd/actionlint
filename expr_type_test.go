@@ -1029,8 +1029,8 @@ func TestExprTypeTypeOfJSONValue(t *testing.T) {
 	for _, tc := range tests {
 		t.Run(tc.what, func(t *testing.T) {
 			have := typeOfJSONValue(tc.value)
-			if !cmp.Equal(tc.want, have) {
-				t.Fatal(cmp.Diff(tc.want, have))
+			if diff := cmp.Diff(tc.want, have); diff != "" {
+				t.Fatal(diff)
 			}
 		})
 	}
