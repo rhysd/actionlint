@@ -4,6 +4,7 @@
 - Disallow the usage of popular actions that run on `node16` runner. The `node16` runner [will reach the end of life on November 12](https://github.blog/changelog/2024-09-25-end-of-life-for-actions-node16/).
   - In case of the error, please update your actions to the latest version so that they run on the latest `node20` runner.
   - If you're using self-hosted runner and you cannot upgrade your runner to `node20` soon, please consider to ignore the error by the `paths` configuration described below.
+  - If you're using `actions/upload-artifact@v3` and `actions/download-artifact@v3` on GHES, please replace them with `actions/upload-artifact@v3-node20` and `actions/download-artifact@v3-node20`. ([#468](https://github.com/rhysd/actionlint/issues/468))
 - Provide the configuration for ignoring errors by regular expressions in `actionlint.yml` (or `actionlint.yaml`). Please see the [document](https://github.com/rhysd/actionlint/blob/v1.7.4/docs/config.md) for more details. ([#217](https://github.com/rhysd/actionlint/issues/217), [#342](https://github.com/rhysd/actionlint/issues/342))
   - The `paths` is a mapping from the file path glob pattern to the corresponding configuration. The `ignore` configuration is a list of regular expressions to match error messages (similar to the `-ignore` command line option).
     ```yaml
@@ -14,7 +15,7 @@
           # Ignore the specific error from shellcheck
           - 'shellcheck reported issue in this script: SC2086:.+'
       # This pattern only matches '.github/workflows/release.yaml' file.
-      .github/workflows/self-hosted.yaml:
+      .github/workflows/release.yaml:
         ignore:
           # Ignore errors from the old runner check. This may be useful for (outdated) self-hosted runner environment.
           - 'the runner of ".+" action is too old to run on GitHub Actions'

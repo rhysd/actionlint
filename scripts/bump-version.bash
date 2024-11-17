@@ -88,4 +88,7 @@ if [[ "$OSTYPE" == darwin* ]]; then
     open "$job_url"
 fi
 
+echo "Update version bump timestamp"
+touch .bumptimestamp
+
 echo 'Done.'

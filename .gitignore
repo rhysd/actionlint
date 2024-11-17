@@ -2,6 +2,7 @@
 /actionlint.exe
 /.testtimestamp
 /.linttimestamp
+/.bumptimestamp
 /env.sh
 /.github/actionlint.yaml
 /.github/actionlint.yml

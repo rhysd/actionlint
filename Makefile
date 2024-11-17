@@ -68,6 +68,9 @@ scripts/generate-actionlint-matcher/test/no_escape.txt: actionlint
 scripts/generate-actionlint-matcher/test/want.json: actionlint
 	./actionlint -format '{{json .}}' ./testdata/err/one_error.yaml > scripts/generate-actionlint-matcher/test/want.json || true
 
+CHANGELOG.md: .bumptimestamp
+	changelog-from-release > CHANGELOG.md
+
 c clean:
 	rm -f ./actionlint ./.testtimestamp ./.linttimestamp ./actionlint_fuzz-fuzz.zip ./man/actionlint.1 ./man/actionlint.1.html ./actionlint-workflow-ast
 	rm -rf ./corpus ./crashers
