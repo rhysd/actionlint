@@ -1,5 +1,6 @@
-/workflows/test\.yaml:7:15: invalid runner name "node14" at runs\.using in "Old Node\.js" action defined at ".+old_node"\. valid runners are "composite", "docker", "node16", and "node20"\. see https://.+ \[action\]/
+/workflows/test\.yaml:7:15: invalid runner name "node16" at runs\.using in "Old Node\.js" action defined at ".+old_node"\. valid runners are "composite", "docker", and "node20"\. see https://.+ \[action\]/
 /workflows/test\.yaml:8:15: "runs\.using" is missing in local action "Missing runner name" defined at ".+missing_runs" \[action\]/
 /workflows/test\.yaml:9:15: "runs\.using" is missing in local action "No using" defined at ".+missing_using" \[action\]/
-/workflows/test\.yaml:10:15: invalid runner name "what-is-this-runner" at runs\.using in "Unknown runner name" action defined at ".+unknown_runner"\. valid runners are "composite", "docker", "node16", and "node20"\. see https://.+ \[action\]/
-/workflows/test\.yaml:11:15: invalid runner name "nodenext" at runs\.using in "Invalid node version" action defined at ".+invalid_node_version"\. valid runners are "composite", "docker", "node16", and "node20"\. see https://.+ \[action\]/
+/workflows/test\.yaml:10:15: invalid runner name "what-is-this-runner" at runs\.using in "Unknown runner name" action defined at ".+unknown_runner"\. valid runners are "composite", "docker", and "node20"\. see https://.+ \[action\]/
+/workflows/test\.yaml:11:15: invalid runner name "nodenext" at runs\.using in "Invalid node version" action defined at ".+invalid_node_version"\. valid runners are "composite", "docker", and "node20"\. see https://.+ \[action\]/
+/workflows/test\.yaml:12:15: invalid runner name "node12" at runs\.using in "Node\.js v12 runner" action defined at ".+node12"\. valid runners are "composite", "docker", and "node20"\. see https://.+ \[action\]/

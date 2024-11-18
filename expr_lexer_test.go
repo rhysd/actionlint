@@ -576,11 +576,11 @@ func TestLexExpression(t *testing.T) {
 				values = append(values, t.Value)
 			}
 
-			if !cmp.Equal(kinds, tc.tokens) {
-				t.Errorf("wanted token kinds %#v but got %#v", tc.tokens, kinds)
+			if diff := cmp.Diff(kinds, tc.tokens); diff != "" {
+				t.Error("unexpectedtoken kinds:", diff)
 			}
-			if !cmp.Equal(values, tc.values) {
-				t.Errorf("wanted values %#v but got %#v", tc.values, values)
+			if diff := cmp.Diff(values, tc.values); diff != "" {
+				t.Error("unexpectedtoken values:", diff)
 			}
 
 			if offset != len(tc.input)+len("}}") {

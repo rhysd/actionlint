@@ -22,8 +22,8 @@
     },
     {
         "slug": "JamesIves/github-pages-deploy-action",
-        "tags": ["releases/v3", "releases/v4"],
-        "next": "release/v5"
+        "tags": ["releases/v3", "v4"],
+        "next": "v5"
     },
     {
         "slug": "ReactiveCircus/android-emulator-runner",
@@ -42,31 +42,39 @@
     },
     {
         "slug": "actions-rs/audit-check",
-        "tags": ["v1"],
-        "next": "v2"
+        "tags": ["v1"]
     },
     {
         "slug": "actions-rs/cargo",
-        "tags": ["v1"],
-        "next": "v2"
+        "tags": ["v1"]
+    },
+    {
+        "slug": "actions-rs/clippy-check",
+        "tags": ["v1"]
+    },
+    {
+        "slug": "actions-rs/toolchain",
+        "tags": ["v1"]
     },
     {
         "slug": "dtolnay/rust-toolchain",
         "tags": ["stable", "beta", "nightly"]
     },
     {
-        "slug": "actions-rs/clippy-check",
-        "tags": ["v1"],
-        "next": "v2"
-    },
-    {
-        "slug": "actions-rs/toolchain",
-        "tags": ["v1"],
-        "next": "v2"
+        "slug": "actions/cache",
+        "tags": ["v1", "v2", "v3", "v4"],
+        "next": "v5"
     },
     {
         "slug": "actions/cache",
-        "tags": ["v1", "v2", "v3", "v4"],
+        "path": "/save",
+        "tags": ["v4"],
+        "next": "v5"
+    },
+    {
+        "slug": "actions/cache",
+        "path": "/restore",
+        "tags": ["v4"],
         "next": "v5"
     },
     {
@@ -91,7 +99,7 @@
     },
     {
         "slug": "actions/download-artifact",
-        "tags": ["v1", "v2", "v3", "v4"],
+        "tags": ["v1", "v2", "v3", "v3-node20", "v4"],
         "next": "v5"
     },
     {
@@ -141,7 +149,7 @@
     },
     {
         "slug": "actions/upload-artifact",
-        "tags": ["v1", "v2", "v3", "v4"],
+        "tags": ["v1", "v2", "v3", "v3-node20", "v4"],
         "next": "v5"
     },
     {
@@ -181,8 +189,8 @@
     },
     {
         "slug": "dawidd6/action-download-artifact",
-        "tags": ["v2", "v3"],
-        "next": "v4"
+        "tags": ["v2", "v3", "v5", "v6"],
+        "next": "v7"
     },
     {
         "slug": "dawidd6/action-send-mail",
@@ -196,8 +204,8 @@
     },
     {
         "slug": "docker/build-push-action",
-        "tags": ["v1", "v2", "v3", "v4", "v5"],
-        "next": "v6"
+        "tags": ["v1", "v2", "v3", "v4", "v5", "v6"],
+        "next": "v7"
     },
     {
         "slug": "docker/login-action",
@@ -260,8 +268,8 @@
     },
     {
         "slug": "github/super-linter",
-        "tags": ["v3", "v4", "v5"],
-        "next": "v6"
+        "tags": ["v3", "v4", "v5", "v6", "v7"],
+        "next": "v8"
     },
     {
         "slug": "githubocto/flat",
@@ -270,8 +278,8 @@
     },
     {
         "slug": "golangci/golangci-lint-action",
-        "tags": ["v1", "v2", "v3", "v4"],
-        "next": "v5"
+        "tags": ["v1", "v2", "v3", "v4", "v5", "v6"],
+        "next": "v7"
     },
     {
         "slug": "google-github-actions/auth",
@@ -296,13 +304,13 @@
     },
     {
         "slug": "goreleaser/goreleaser-action",
-        "tags": ["v1", "v2", "v3", "v4", "v5"],
-        "next": "v6"
+        "tags": ["v1", "v2", "v3", "v4", "v5", "v6"],
+        "next": "v7"
     },
     {
         "slug": "gradle/wrapper-validation-action",
-        "tags": ["v1", "v2"],
-        "next": "v3"
+        "tags": ["v1", "v2", "v3"],
+        "next": "v4"
     },
     {
         "slug": "haskell/actions",
@@ -321,8 +329,8 @@
     },
     {
         "slug": "mikepenz/release-changelog-builder-action",
-        "tags": ["v1", "v2", "v3", "v4"],
-        "next": "v5"
+        "tags": ["v1", "v2", "v3", "v4", "v5"],
+        "next": "v6"
     },
     {
         "slug": "msys2/setup-msys2",
@@ -347,13 +355,13 @@
     },
     {
         "slug": "peaceiris/actions-gh-pages",
-        "tags": ["v2", "v3"],
-        "next": "v4"
+        "tags": ["v2", "v3", "v4"],
+        "next": "v5"
     },
     {
         "slug": "peter-evans/create-pull-request",
-        "tags": ["v1", "v2", "v3", "v4", "v5", "v6"],
-        "next": "v7"
+        "tags": ["v1", "v2", "v3", "v4", "v5", "v6", "v7"],
+        "next": "v8"
     },
     {
         "slug": "preactjs/compressed-size-action",
@@ -362,8 +370,8 @@
     },
     {
         "slug": "pulumi/actions",
-        "tags": ["v1", "v2", "v3", "v4", "v5"],
-        "next": "v6"
+        "tags": ["v1", "v2", "v3", "v4", "v5", "v6"],
+        "next": "v7"
     },
     {
         "slug": "pypa/gh-action-pypi-publish",
@@ -448,8 +456,8 @@
     },
     {
         "slug": "treosh/lighthouse-ci-action",
-        "tags": ["v1", "v2", "v3", "v7", "v8", "v9", "v10", "v11"],
-        "next": "v12"
+        "tags": ["v1", "v2", "v3", "v7", "v8", "v9", "v10", "v11", "v12"],
+        "next": "v13"
     },
     {
         "slug": "wearerequired/lint-action",
@@ -460,5 +468,20 @@
         "slug": "peaceiris/actions-hugo",
         "tags": ["v3"],
         "next": "v4"
+    },
+    {
+        "slug": "actions/attest-build-provenance",
+        "tags": ["v1"],
+        "next": "v2"
+    },
+    {
+        "slug": "actions/add-to-project",
+        "tags": ["v1.0.1"],
+        "next": "v2.0.0"
+    },
+    {
+        "slug": "octokit/graphql-action",
+        "tags": ["v2.x"],
+        "next": "v3.x"
     }
 ]

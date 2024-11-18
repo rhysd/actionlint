@@ -69,10 +69,22 @@ func (rule *RuleMatrix) checkDuplicateInRow(row *MatrixRow) {
 	}
 }
 
-func filterMatchesYAMLValue(v, filter RawYAMLValue) bool {
+func isYAMLValueSubset(v, sub RawYAMLValue) bool {
+	// When the filter side is dynamically constructed with some expression, it is not possible to statically check if the filter
+	// matches the value. To avoid false positives, assume such filter always matches to the value. (#414)
+	// ```
+	// matrix:
+	//   foo: ['a', 'b']
+	//   exclude:
+	//     foo: ${{ fromJSON('...') }}
+	// ```
+	if s, ok := sub.(*RawYAMLString); ok && ContainsExpression(s.Value) {
+		return true
+	}
+
 	switch v := v.(type) {
 	case *RawYAMLObject:
-		// `exclude` and `include` filter can match to objects in matrix as subset of them (#249).
+		// `exclude` filter can match to objects in matrix as subset of them (#249).
 		// For example,
 		//
 		// matrix:
@@ -87,29 +99,39 @@ func filterMatchesYAMLValue(v, filter RawYAMLValue) bool {
 		//       arch: { matrix: arm }
 		//
 		// The `exclude` filters out `{ os: { name: Windows, matrix: windows }, arch: {name: ARM, matrix: arm } }`
-		switch filter := filter.(type) {
-		case *RawYAMLObject:
-			for n, f := range filter.Props {
-				if p, ok := v.Props[n]; !ok || !filterMatchesYAMLValue(p, f) {
-					return false
-				}
-			}
-			return true
-		default:
+		sub, ok := sub.(*RawYAMLObject)
+		if !ok {
 			return false
 		}
-	default:
-		return v.Equals(filter)
-	}
-}
-
-func filterMatchesMatrixRow(row []RawYAMLValue, filter RawYAMLValue) bool {
-	for _, v := range row {
-		if filterMatchesYAMLValue(v, filter) {
+		for n, s := range sub.Props {
+			if p, ok := v.Props[n]; !ok || !isYAMLValueSubset(p, s) {
+				return false
+			}
+		}
+		return true
+	case *RawYAMLArray:
+		sub, ok := sub.(*RawYAMLArray)
+		if !ok {
+			return false
+		}
+		if len(v.Elems) != len(sub.Elems) {
+			return false
+		}
+		for i, v := range v.Elems {
+			if !isYAMLValueSubset(v, sub.Elems[i]) {
+				return false
+			}
+		}
+		return true
+	case *RawYAMLString:
+		// When some item is constructed with ${{ }} dynamically, give up checking combinations (#261)
+		if ContainsExpression(v.Value) {
 			return true
 		}
+		return v.Equals(sub)
+	default:
+		return v.Equals(sub)
 	}
-	return false
 }
 
 func (rule *RuleMatrix) checkExclude(m *Matrix) {
@@ -122,51 +144,45 @@ func (rule *RuleMatrix) checkExclude(m *Matrix) {
 		return
 	}
 
-	vals := make(map[string][]RawYAMLValue, len(m.Rows))
+	rows := make(map[string][]RawYAMLValue, len(m.Rows))
 	ignored := map[string]struct{}{}
-Outer:
-	for name, row := range m.Rows {
-		if row.Expression != nil {
-			ignored[name] = struct{}{}
+
+	for n, r := range m.Rows {
+		if r.Expression != nil {
+			ignored[n] = struct{}{}
 			continue
 		}
-		// When some item is constructed with ${{ }} dynamically, give up checking combination values (#261)
-		for _, y := range row.Values {
-			if s, ok := y.(*RawYAMLString); ok && isExprAssigned(s.Value) {
-				ignored[name] = struct{}{}
-				continue Outer
-			}
-		}
-		vals[name] = row.Values
+		rows[n] = r.Values
 	}
 
 	if m.Include != nil {
-		for _, combi := range m.Include.Combinations {
-			for n, a := range combi.Assigns {
+		for _, c := range m.Include.Combinations {
+		Include:
+			for n, a := range c.Assigns {
 				if _, ok := ignored[n]; ok {
 					continue
 				}
-				vs, ok := vals[n]
-				if !ok {
-					vals[n] = []RawYAMLValue{a.Value}
-					continue
+				row := rows[n]
+				for _, v := range row {
+					if v.Equals(a.Value) {
+						continue Include
+					}
 				}
-				if !filterMatchesMatrixRow(vs, a.Value) {
-					vals[n] = append(vs, a.Value)
-				}
+				rows[n] = append(row, a.Value)
 			}
 		}
 	}
 
-	for _, combi := range m.Exclude.Combinations {
-		for k, a := range combi.Assigns {
+	for _, c := range m.Exclude.Combinations {
+	Exclude:
+		for k, a := range c.Assigns {
 			if _, ok := ignored[k]; ok {
 				continue
 			}
-			vs, ok := vals[k]
+			row, ok := rows[k]
 			if !ok {
-				ss := make([]string, 0, len(vals))
-				for k := range vals {
+				ss := make([]string, 0, len(rows))
+				for k := range rows {
 					ss = append(ss, k)
 				}
 				rule.Errorf(
@@ -178,12 +194,14 @@ Outer:
 				continue
 			}
 
-			if filterMatchesMatrixRow(vs, a.Value) {
-				continue
+			for _, v := range row {
+				if isYAMLValueSubset(v, a.Value) {
+					continue Exclude
+				}
 			}
 
-			ss := make([]string, 0, len(vs))
-			for _, v := range vs {
+			ss := make([]string, 0, len(row))
+			for _, v := range row {
 				ss = append(ss, v.String())
 			}
 			rule.Errorf(

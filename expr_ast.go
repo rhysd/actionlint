@@ -156,6 +156,30 @@ const (
 	CompareOpNodeKindNotEq
 )
 
+// IsEqualityOp returns true when it represents == or != operator.
+func (kind CompareOpNodeKind) IsEqualityOp() bool {
+	return kind == CompareOpNodeKindEq || kind == CompareOpNodeKindNotEq
+}
+
+func (kind CompareOpNodeKind) String() string {
+	switch kind {
+	case CompareOpNodeKindLess:
+		return "<"
+	case CompareOpNodeKindLessEq:
+		return "<="
+	case CompareOpNodeKindGreater:
+		return ">"
+	case CompareOpNodeKindGreaterEq:
+		return ">="
+	case CompareOpNodeKindEq:
+		return "=="
+	case CompareOpNodeKindNotEq:
+		return "!="
+	default:
+		return ""
+	}
+}
+
 // CompareOpNode is node for binary expression to compare values; ==, !=, <, <=, > or >=.
 type CompareOpNode struct {
 	// Kind is a kind of this expression to show which operator is used.

@@ -7,7 +7,7 @@ This document describes how to install [actionlint](../docs).
 
 ### [Chocolatey](https://chocolatey.org/)
 
-[`actionlint` package][chocolatey] is available in the community repo:
+[`actionlint` package][chocolatey] is available in the community repository:
 
 ```powershell
 choco install actionlint
@@ -23,7 +23,7 @@ scoop install actionlint
 
 ### [Winget](https://learn.microsoft.com/en-us/windows/package-manager/)
 
-[`actionlint` package][winget] is available in the winget-pkgs repo:
+[`actionlint` package][winget] is available in the winget-pkgs repository:
 
 ```powershell
 winget install actionlint
@@ -33,7 +33,7 @@ winget install actionlint
 
 ### [Arch Linux](https://archlinux.org/)
 
-[`actionlint` package][archlinux] is available in the official repo:
+[`actionlint` package][archlinux] is available in the official repository:
 
 ```sh
 pacman -S actionlint
@@ -70,7 +70,7 @@ nix-env -iA nixpkgs.actionlint
 brew install actionlint
 ```
 
-Alternatively rhysd/actionlint repository also provides its own Homebrew package, which is automatically updated on new release.
+Alternatively, rhysd/actionlint repository also provides its own Homebrew package, which is automatically updated on new release.
 If you prefer it, tap the repository before running `brew install`.
 
 ```sh
@@ -96,7 +96,7 @@ Note: The following targets are not tested since GitHub Actions doesn't support 
 - Windows i386, arm64
 - FreeBSD i386, x86_64
 
-<a name="download-script"></a>
+<a id="download-script"></a>
 ## Download script
 
 To install `actionlint` executable with one command, [the download script](../scripts/download-actionlint.bash) is available.

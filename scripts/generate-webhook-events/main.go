@@ -18,21 +18,40 @@ import (
 	"github.com/yuin/goldmark/text"
 )
 
+const theURL = "https://raw.githubusercontent.com/github/docs/main/content/actions/writing-workflows/choosing-when-your-workflow-runs/events-that-trigger-workflows.md"
+
 var dbg = log.New(io.Discard, "", log.LstdFlags)
 
-func getFirstLinkText(n ast.Node, src []byte) (string, bool) {
-	var link ast.Node
+// `Node.Text` method was deprecated. This is alternative to it.
+// https://github.com/yuin/goldmark/issues/471
+func textOf(n ast.Node, src []byte) string {
+	var b strings.Builder
+
 	ast.Walk(n, func(n ast.Node, entering bool) (ast.WalkStatus, error) {
 		if !entering {
-			return ast.WalkStop, nil
+			return ast.WalkContinue, nil
 		}
+		if t, ok := n.(*ast.Text); ok {
+			b.Write(t.Value(src))
+		}
+		return ast.WalkContinue, nil
+	})
 
-		if n.Kind() != ast.KindLink {
+	return b.String()
+}
+
+func getFirstLinkText(n ast.Node, src []byte) (string, bool) {
+	var link *ast.Link
+	ast.Walk(n, func(n ast.Node, entering bool) (ast.WalkStatus, error) {
+		if !entering {
 			return ast.WalkContinue, nil
 		}
 
-		link = n // Found
-		return ast.WalkStop, nil
+		if l, ok := n.(*ast.Link); ok {
+			link = l
+			return ast.WalkStop, nil
+		}
+		return ast.WalkContinue, nil
 	})
 
 	if link == nil {
@@ -41,12 +60,7 @@ func getFirstLinkText(n ast.Node, src []byte) (string, bool) {
 
 	// Note: All text pieces must be collected. For example the text "pull_request" is pieces of
 	// "pull_" and "request" since an underscore is delimiter of italic/bold text.
-	var b strings.Builder
-	for c := link.FirstChild(); c != nil; c = c.NextSibling() {
-		b.Write(c.Text(src))
-	}
-
-	return b.String(), true
+	return textOf(link, src), true
 }
 
 func collectCodeSpans(n ast.Node, src []byte) []string {
@@ -54,7 +68,7 @@ func collectCodeSpans(n ast.Node, src []byte) []string {
 	ast.Walk(n, func(n ast.Node, entering bool) (ast.WalkStatus, error) {
 		kind := n.Kind()
 		if entering && kind == ast.KindCodeSpan {
-			spans = append(spans, string(n.Text(src)))
+			spans = append(spans, textOf(n, src))
 		}
 		return ast.WalkContinue, nil
 	})
@@ -62,7 +76,7 @@ func collectCodeSpans(n ast.Node, src []byte) []string {
 }
 
 func getWebhookTypes(table ast.Node, src []byte) ([]string, bool, error) {
-	dbg.Printf("Table: %s", table.Text(src))
+	dbg.Println("Table:", textOf(table, src))
 
 	sawHeader := false
 	for c := table.FirstChild(); c != nil; c = c.NextSibling() {
@@ -72,7 +86,7 @@ func getWebhookTypes(table ast.Node, src []byte) ([]string, bool, error) {
 			sawHeader = true
 
 			cell := c.FirstChild()
-			if string(cell.Text(src)) != "Webhook event payload" {
+			if textOf(cell, src) != "Webhook event payload" {
 				dbg.Println("  Skip this table because it is not for Webhook event payload")
 				return nil, false, nil
 			}
@@ -93,7 +107,7 @@ func getWebhookTypes(table ast.Node, src []byte) ([]string, bool, error) {
 			cell := c.FirstChild()
 			name, ok := getFirstLinkText(cell, src)
 			if !ok {
-				return nil, false, fmt.Errorf("\"Webhook event payload\" table was found, but first cell did not contain hook name: %q", cell.Text(src))
+				return nil, false, fmt.Errorf("\"Webhook event payload\" table was found, but first cell did not contain hook name: %q", textOf(cell, src))
 			}
 
 			// Second cell
@@ -136,7 +150,7 @@ Toplevel:
 		k := n.Kind()
 		if !sawAbout {
 			// When '## About events that trigger workflows'
-			if h, ok := n.(*ast.Heading); ok && h.Level == 2 && string(h.Text(src)) == "About events that trigger workflows" {
+			if h, ok := n.(*ast.Heading); ok && h.Level == 2 && textOf(h, src) == "About events that trigger workflows" {
 				sawAbout = true
 				dbg.Println("Found \"About events that trigger workflows\" heading")
 			}
@@ -144,7 +158,7 @@ Toplevel:
 		}
 
 		if h, ok := n.(*ast.Heading); ok && h.Level == 2 {
-			currentHook = string(h.Text(src))
+			currentHook = textOf(h, src)
 			dbg.Printf("Found new hook %q\n", currentHook)
 			continue
 		}
@@ -273,5 +287,5 @@ func run(args []string, stdout, stderr, dbgout io.Writer, srcURL string) int {
 }
 
 func main() {
-	os.Exit(run(os.Args[1:], os.Stdout, os.Stderr, os.Stderr, "https://raw.githubusercontent.com/github/docs/main/content/actions/using-workflows/events-that-trigger-workflows.md"))
+	os.Exit(run(os.Args[1:], os.Stdout, os.Stderr, os.Stderr, theURL))
 }

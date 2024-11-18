@@ -152,8 +152,8 @@ func TestRuleWorkflowCallWriteEventNodeToMetadataCache(t *testing.T) {
 		},
 	}
 
-	if !cmp.Equal(want, m) {
-		t.Fatal(cmp.Diff(want, m))
+	if diff := cmp.Diff(want, m); diff != "" {
+		t.Fatal(diff)
 	}
 }
 

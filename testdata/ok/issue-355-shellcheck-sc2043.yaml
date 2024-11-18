@@ -1,0 +1,9 @@
+on: push
+jobs:
+  test:
+    runs-on: ubuntu-latest
+    steps:
+      - run: |
+          for x in ${{ github.run_number }}; do
+            echo "$x"
+          done

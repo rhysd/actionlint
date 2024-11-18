@@ -4,6 +4,11 @@ import (
 	"strings"
 )
 
+func isSafeFuncCall(call *FuncCallNode) bool {
+	c := strings.ToLower(call.Callee)
+	return c == "contains" || c == "startswith" || c == "endswith"
+}
+
 // UntrustedInputMap is a recursive map to match context object property dereferences.
 // Root of this map represents each context names and their ancestors represent recursive properties.
 type UntrustedInputMap struct {
@@ -148,17 +153,15 @@ type UntrustedInputChecker struct {
 	cur             []*UntrustedInputMap
 	start           ExprNode
 	errs            []*ExprError
+	safeCalls       int
 }
 
 // NewUntrustedInputChecker creates a new UntrustedInputChecker instance. The roots argument is a
 // search tree which defines untrusted input paths as trees.
 func NewUntrustedInputChecker(roots UntrustedInputSearchRoots) *UntrustedInputChecker {
 	return &UntrustedInputChecker{
-		roots:           roots,
-		filteringObject: false,
-		cur:             nil,
-		start:           nil,
-		errs:            []*ExprError{},
+		roots: roots,
+		errs:  []*ExprError{},
 	}
 }
 
@@ -292,8 +295,22 @@ func (u *UntrustedInputChecker) end() {
 	u.reset()
 }
 
+func (u *UntrustedInputChecker) OnVisitNodeEnter(n ExprNode) {
+	if f, ok := n.(*FuncCallNode); ok && isSafeFuncCall(f) {
+		u.safeCalls++
+	}
+}
+
 // OnVisitNodeLeave is a callback which should be called on visiting node after visiting its children.
 func (u *UntrustedInputChecker) OnVisitNodeLeave(n ExprNode) {
+	// Skip unsafe checks if we are inside of safe function call expression
+	if u.safeCalls > 0 {
+		if f, ok := n.(*FuncCallNode); ok && isSafeFuncCall(f) {
+			u.safeCalls--
+		}
+		return
+	}
+
 	switch n := n.(type) {
 	case *VariableNode:
 		u.end()
@@ -329,5 +346,6 @@ func (u *UntrustedInputChecker) Errs() []*ExprError {
 // Init initializes a state of checker.
 func (u *UntrustedInputChecker) Init() {
 	u.errs = u.errs[:0]
+	u.safeCalls = 0
 	u.reset()
 }

@@ -1,3 +1,5 @@
+version: 2
+
 release:
   draft: false
   prerelease: true
@@ -31,6 +33,10 @@ builds:
     goos: [freebsd]
     goarch: [386, amd64]
 
+checksum:
+  name_template: "actionlint_{{.Version}}_checksums.txt"
+  algorithm: sha256
+
 archives:
   - <<: &archives_defaults
       files:
@@ -51,7 +57,7 @@ brews:
     repository:
       owner: rhysd
       name: actionlint
-    folder: HomebrewFormula
+    directory: HomebrewFormula
     commit_author:
       name: 'github-actions[bot]'
       email: '41898282+github-actions[bot]@users.noreply.github.com'
@@ -65,4 +71,4 @@ brews:
       system "#{bin}/actionlint -version"
 
 changelog:
-  skip: true
+  disable: true

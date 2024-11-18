@@ -9,7 +9,7 @@ on:
   push:
 
 jobs:
-  ReuseableMatrixJobForDeployment:
+  ReusableMatrixJobForDeployment:
     strategy:
       matrix:
         target: [dev, stage, prod]

@@ -1,0 +1,16 @@
+on:
+  workflow_call:
+    inputs:
+      timeout:
+        type: boolean
+
+jobs:
+  test:
+    runs-on: ubuntu-latest
+    steps:
+      - run: echo 'called!'
+        # ERROR: Comparing string to object is always evaluated to false
+        if: ${{ github.event == 'workflow_call' }}
+      - run: echo 'timeout is too long'
+        # ERROR: Comparing boolean value with `>` doesn't make sense
+        if: ${{ inputs.timeout > 60 }}

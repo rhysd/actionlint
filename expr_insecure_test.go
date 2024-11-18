@@ -75,11 +75,16 @@ func testRunTrustedInputsCheckerForNode(t *testing.T, c *UntrustedInputChecker, 
 		t.Fatal(err)
 	}
 	VisitExprNode(n, func(n, p ExprNode, entering bool) {
-		if !entering {
+		if entering {
+			c.OnVisitNodeEnter(n)
+		} else {
 			c.OnVisitNodeLeave(n)
 		}
 	})
 	c.OnVisitEnd()
+	if c.safeCalls != 0 {
+		t.Fatalf("%q safe calls counter is not zero: %d", input, c.safeCalls)
+	}
 }
 
 func TestExprInsecureDetectUntrustedValue(t *testing.T) {
@@ -193,17 +198,36 @@ func TestExprInsecureDetectUntrustedValue(t *testing.T) {
 			},
 		},
 		testCase{
-			"contains(github.event.pages.*.page_name, github.event.issue.title)",
+			"format('{0} {1}', github.event.pages.*.page_name, github.event.issue.title)",
 			[]string{
 				"github.event.pages.*.page_name",
 				"github.event.issue.title",
 			},
 		},
 		testCase{
-			"contains(github.event.*.body, github.event.*.*)",
+			"format('{0} {1}', github.event.*.body, github.event.*.*)",
 			[]string{
 				"github.event.",
 				"github.event.",
+			},
+		},
+		testCase{
+			"contains(github.event.issue.body, 'foo') || github.event.issue.title",
+			[]string{
+				"github.event.issue.title",
+			},
+		},
+		testCase{
+			"github.event.issue.title && contains(github.event.issue.body, 'foo')",
+			[]string{
+				"github.event.issue.title",
+			},
+		},
+		testCase{
+			"format('{0}{1}{2}', github.event.issue.title, contains(github.event.issue.body, 'foo'), github.event.issue.title)",
+			[]string{
+				"github.event.issue.title",
+				"github.event.issue.title",
 			},
 		},
 	)
@@ -292,6 +316,7 @@ func TestExprInsecureNoUntrustedValue(t *testing.T) {
 		"matrix.github.event.issue.title",
 		"matrix.event.issue.title",
 		"github",
+		"github.event",
 		"github.event.issue",
 		"github.event.commits.foo.message",
 		"github.event.commits[0]",
@@ -310,6 +335,12 @@ func TestExprInsecureNoUntrustedValue(t *testing.T) {
 		"matrix.foo[github.event.pages].page_name",
 		"github.event.issue.body.foo.bar",
 		"github.event.issue.body[0]",
+		"contains(github.event.issue.body, github.event.issue.title)",
+		"startsWith(github.event.comment.body, 'LGTM')",
+		"endsWith(github.event.pull_request.title, github.event.issue.title)",
+		"contains(contains(github.event.issue.body, github.event.issue.title), github.event.issue.title)", // safe -> safe
+		"contains(fromJSON(github.event.issue.body), github.event.issue.title)",                           // safe -> unsafe
+		"fromJSON(contains(github.event.issue.body, github.event.issue.title))",                           // unsafe -> safe
 	}
 
 	for _, input := range inputs {
@@ -317,7 +348,7 @@ func TestExprInsecureNoUntrustedValue(t *testing.T) {
 			c := NewUntrustedInputChecker(BuiltinUntrustedInputs)
 			testRunTrustedInputsCheckerForNode(t, c, input)
 			if errs := c.Errs(); len(errs) > 0 {
-				t.Fatalf("%d error(s) occurred: %v", len(errs), errs)
+				t.Fatalf("%q caused %d error(s): %v", input, len(errs), errs)
 			}
 		})
 	}

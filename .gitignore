@@ -1,7 +1,8 @@
 /actionlint
 /actionlint.exe
 /.testtimestamp
-/.staticchecktimestamp
+/.linttimestamp
+/.bumptimestamp
 /env.sh
 /.github/actionlint.yaml
 /.github/actionlint.yml
@@ -12,5 +13,5 @@
 /man/actionlint.1.html
 /playground-dist
 /actionlint-workflow-ast
-# IntelliJ IDE Folder
-.idea/
+/.git-hooks/.timestamp
+/.idea

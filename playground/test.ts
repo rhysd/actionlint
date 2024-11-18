@@ -9,8 +9,8 @@ if (typeof globalThis.crypto === 'undefined') {
     globalThis.crypto = new Crypto();
 }
 
-// Inject global.Go
-require('./lib/js/wasm_exec.js');
+// Inject global.Go for testing `main.wasm`.
+require('./lib/js/wasm_exec.js'); // eslint-disable-line @typescript-eslint/no-require-imports
 
 class CheckResults {
     errors: ActionlintError[] | null = null;

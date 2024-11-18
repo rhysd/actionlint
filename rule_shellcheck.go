@@ -187,7 +187,9 @@ func (rule *RuleShellcheck) runShellcheck(src, shell string, pos *Pos) {
 	//           so this rule can cause false positives (#53).
 	// - SC2157: Argument to -z is always false due to literal strings. When the argument of -z is replaced from ${{ }},
 	//           this can happen. For example, `if [ -z ${{ env.FOO }} ]` -> `if [ -z ______________ ]` (#113).
-	args := []string{"--norc", "-f", "json", "-x", "--shell", sh, "-e", "SC1091,SC2194,SC2050,SC2154,SC2157", "-"}
+	// - SC2043: Loop can be detected as only running once when the target of iteration is a placeholder. (#355)
+	//           e.g. `for foo in ${{ inputs.foo }}; do`
+	args := []string{"--norc", "-f", "json", "-x", "--shell", sh, "-e", "SC1091,SC2194,SC2050,SC2154,SC2157,SC2043", "-"}
 	rule.Debug("%s: Running %s command with %s", pos, rule.cmd.exe, args)
 
 	// Use same options to run shell process described at document

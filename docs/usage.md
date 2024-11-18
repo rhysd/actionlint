@@ -42,7 +42,7 @@ processes.
 actionlint -shellcheck= -pyflakes=
 ```
 
-<a name="format"></a>
+<a id="format"></a>
 ### Format error messages
 
 `-format` option can flexibly format error messages with [Go template syntax][go-template].
@@ -176,7 +176,7 @@ line is 21, col is 20, message is "property \"platform\" is not defined in objec
 In `{{ }}` placeholder, input can be piped and action can be used to transform texts. In above example, the message is piped with
 `|` and transformed with `printf "%q"`.
 
-Note that special characters escaped with back slash like `\n` in the format string are automatically unespcaed.
+Note that special characters escaped with backslash like `\n` in the format string are automatically unescaped.
 
 ### Exit status
 
@@ -189,7 +189,7 @@ Note that special characters escaped with back slash like `\n` in the format str
 | `2`    | The command failed due to invalid command line option   |
 | `3`    | The command failed due to some fatal error              |
 
-<a name="on-github-actions"></a>
+<a id="on-github-actions"></a>
 ## Use actionlint on GitHub Actions
 
 Preparing `actionlint` executable with the download script is recommended. See [the instruction](install.md#download-script) for
@@ -207,7 +207,7 @@ jobs:
   actionlint:
     runs-on: ubuntu-latest
     steps:
-      - uses: actions/checkout@v3
+      - uses: actions/checkout@v4
       - name: Download actionlint
         id: get_actionlint
         run: bash <(curl https://raw.githubusercontent.com/rhysd/actionlint/main/scripts/download-actionlint.bash)
@@ -233,7 +233,7 @@ to the script for more usage details.
 If you want to enable [shellcheck integration](checks.md#check-shellcheck-integ), install `shellcheck` command. Note that
 shellcheck is [pre-installed on Ubuntu worker][preinstall-ubuntu].
 
-If you want to [annotate errors][ga-annotate-error] from actionlint on GitHub, consider to use
+If you want to [annotate errors][ga-annotate-error] from actionlint on GitHub, consider using
 [Problem Matchers](#problem-matchers).
 
 If you prefer Docker image to running a downloaded executable, using [actionlint Docker image](#docker) is another option.
@@ -246,7 +246,7 @@ jobs:
   actionlint:
     runs-on: ubuntu-latest
     steps:
-      - uses: actions/checkout@v3
+      - uses: actions/checkout@v4
       - name: Check workflow files
         uses: docker://rhysd/actionlint:latest
         with:
@@ -255,7 +255,7 @@ jobs:
 
 ## Online playground
 
-Thanks to WebAssembly, actionlint playground is available on your browser. It never sends any data to outside of your browser.
+Thanks to WebAssembly, actionlint playground is available on your browser. It never sends any data to outside your browser.
 
 https://rhysd.github.io/actionlint/
 
@@ -263,7 +263,7 @@ Paste your workflow content to the code editor at left pane. It automatically sh
 the workflow content in the code editor, the results will be updated on the fly. Clicking an error message in the results
 table moves a cursor to position of the error in the code editor.
 
-<a name="docker"></a>
+<a id="docker"></a>
 ## [Docker][docker] image
 
 [Official Docker image][docker-image] is available. The image contains `actionlint` executable and all dependencies (shellcheck
@@ -272,7 +272,7 @@ and pyflakes).
 Available tags are:
 
 - `actionlint:latest`: Latest stable version of actionlint. This image is recommended.
-- `actionlint:{version}`: Specific version of actionlint. (e.g. `actionlint:1.6.27`)
+- `actionlint:{version}`: Specific version of actionlint. (e.g. `actionlint:1.7.4`)
 
 Just run the image with `docker run`:
 
@@ -304,7 +304,7 @@ docker run --rm -v /path/to/workflows:/workflows rhysd/actionlint:latest -color 
 Go APIs are available. See [the Go API document](api.md) for more details.
 
 
-<a name="tools-integ"></a>
+<a id="tools-integ"></a>
 ## Tools integration
 
 ### GitHub Actions
@@ -336,13 +336,13 @@ jobs:
   actionlint:
     runs-on: ubuntu-latest
     steps:
-      - uses: actions/checkout@v3
+      - uses: actions/checkout@v4
       - uses: reviewdog/action-actionlint@v1
         with:
           color: true
 ```
 
-<a name="problem-matchers"></a>
+<a id="problem-matchers"></a>
 ### Problem Matchers
 
 [Problem Matchers][problem-matchers] is a feature to extract GitHub Actions annotations from terminal outputs of linters.
@@ -383,7 +383,7 @@ Add this to your `.pre-commit-config.yaml` in your repository:
 ---
 repos:
   - repo: https://github.com/rhysd/actionlint
-    rev: v1.6.27
+    rev: v1.7.4
     hooks:
       - id: actionlint
 ```
@@ -442,15 +442,15 @@ trunk check enable actionlint
 or if you'd like a specific version:
 
 ```bash
-trunk check enable actionlint@1.6.27
+trunk check enable actionlint@1.7.4
 ```
 
-or modify `.trunk/trunk.yaml` in your repo to contain:
+or modify `.trunk/trunk.yaml` in your repository to contain:
 
 ```yaml
 lint:
   enabled:
-    - actionlint@1.6.27
+    - actionlint@1.7.4
 ```
 
 Then just run:

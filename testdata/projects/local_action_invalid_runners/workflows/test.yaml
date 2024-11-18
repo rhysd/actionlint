@@ -9,5 +9,6 @@ jobs:
       - uses: ./missing_using
       - uses: ./unknown_runner
       - uses: ./invalid_node_version
+      - uses: ./node12
       # Check using same invalid action twice does not duplicate the errors
       - uses: ./old_node

@@ -94,31 +94,31 @@ func (inputs *ActionMetadataOutputs) UnmarshalYAML(n *yaml.Node) error {
 // https://docs.github.com/en/actions/creating-actions/metadata-syntax-for-github-actions#runs
 type ActionMetadataRuns struct {
 	// Using is `using` configuration of action.yaml. It defines what runner is used for the action.
-	Using string `yaml:"using"`
+	Using string `yaml:"using" json:"using"`
 	// Main is `main` configuration of action.yaml for JavaScript action.
-	Main string `yaml:"main"`
+	Main string `yaml:"main" json:"main"`
 	// Pre is `pre` configuration of action.yaml for JavaScript action.
-	Pre string `yaml:"pre"`
+	Pre string `yaml:"pre" json:"pre"`
 	// PreIf is `pre-if` configuration of action.yaml for JavaScript action.
-	PreIf string `yaml:"pre-if"`
+	PreIf string `yaml:"pre-if" json:"pre-if"`
 	// Post is `post` configuration of action.yaml for JavaScript action.
-	Post string `yaml:"post"`
+	Post string `yaml:"post" json:"post"`
 	// PostIf is `post-if` configuration of action.yaml for JavaScript action.
-	PostIf string `yaml:"post-if"`
+	PostIf string `yaml:"post-if" json:"post-if"`
 	// Steps is `steps` configuration of action.yaml for Composite action.
-	Steps []any `yaml:"steps"`
+	Steps []any `yaml:"steps" json:"steps"`
 	// Image is `image` of action.yaml for Docker action.
-	Image string `yaml:"image"`
+	Image string `yaml:"image" json:"image"`
 	// PreEntrypoint is `pre-entrypoint` of action.yaml for Docker action.
-	PreEntrypoint string `yaml:"pre-entrypoint"`
+	PreEntrypoint string `yaml:"pre-entrypoint" json:"pre-entrypoint"`
 	// Entrypoint is `entrypoint` of action.yaml for Docker action.
-	Entrypoint string `yaml:"entrypoint"`
+	Entrypoint string `yaml:"entrypoint" json:"entrypoint"`
 	// PostEntrypoint is `post-entrypoint` of action.yaml for Docker action.
-	PostEntrypoint string `yaml:"post-entrypoint"`
+	PostEntrypoint string `yaml:"post-entrypoint" json:"post-entrypoint"`
 	// Args is `args` of action.yaml for Docker action.
-	Args []any `yaml:"args"`
+	Args []any `yaml:"args" json:"args"`
 	// Env is `env` of action.yaml for Docker action.
-	Env map[string]any `yaml:"env"`
+	Env map[string]any `yaml:"env" json:"env"`
 }
 
 // ActionMetadataBranding is "branding" section of action.yaml.
@@ -149,7 +149,7 @@ type ActionMetadata struct {
 	// true, the outputs object accepts any properties along with strictly typed props.
 	SkipOutputs bool `yaml:"-" json:"skip_outputs"`
 	// Runs is "runs" field of action.yaml.
-	Runs ActionMetadataRuns `yaml:"runs" json:"-"`
+	Runs ActionMetadataRuns `yaml:"runs" json:"runs"`
 	// Branding is "branding" field of action.yaml.
 	Branding ActionMetadataBranding `yaml:"branding" json:"-"`
 }

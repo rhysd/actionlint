@@ -12,3 +12,5 @@ jobs:
       - uses: ./missing_files
       - uses: ./ok_dockerfile_subdir
       - uses: ./invalid_dockerfile
+      - uses: ./ok_docker_ghcr.io
+      - uses: ./ok_docker_docker.io

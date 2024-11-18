@@ -46,6 +46,9 @@ pre_commit_hook='./.pre-commit-hooks.yaml'
 usage_doc='./docs/usage.md'
 tag="v${version}"
 job_url='https://github.com/rhysd/actionlint/actions/workflows/release.yaml'
+playground_html='./playground/index.html'
+readme_doc='./README.md'
+man_ronn='./man/actionlint.1.ronn'
 
 echo "Bumping up version to ${version} (tag: ${tag})"
 
@@ -60,8 +63,16 @@ sed_ "\
     s/\`actionlint:[0-9]+\.[0-9]+\.[0-9]+\`/\`actionlint:${version}\`/g; \
     " "$usage_doc"
 
+echo "Updating $playground_html"
+sed_ "s/id=\"version\">v[0-9]+\.[0-9]+\.[0-9]+/id=\"version\">v${version}/" "$playground_html"
+
+for f in "$readme_doc" "$man_ronn" "$playground_html"; do
+    echo "Updating document links in $f"
+    sed_ "s/\/rhysd\/actionlint\/blob\/v[0-9]+\.[0-9]+\.[0-9]+\/docs\//\/rhysd\/actionlint\/blob\/v${version}\/docs\//g" "$f"
+done
+
 echo 'Creating a version bump commit and a version tag'
-git add "$pre_commit_hook" "$usage_doc"
+git add "$pre_commit_hook" "$usage_doc" "$playground_html" "$readme_doc" "$man_ronn"
 git commit -m "bump up version to ${tag}"
 git tag "$tag"
 
@@ -76,5 +87,8 @@ echo "Open release job page to check release progress ${job_url}"
 if [[ "$OSTYPE" == darwin* ]]; then
     open "$job_url"
 fi
+
+echo "Update version bump timestamp"
+touch .bumptimestamp
 
 echo 'Done.'

@@ -17,15 +17,34 @@ body {
 }
 
 main {
+  display: flex;
+  flex-direction: column;
+}
+
+#linter {
   width: 100%;
   display: flex;
   flex-direction: row;
 }
 
-@media (width <= 1200px) {
-  main {
-    flex-direction: column;
-  }
+#version {
+  margin-left: 1em;
+}
+
+#controls {
+  display: flex;
+  flex-wrap: wrap;
+  row-gap: 8px;
+  margin-top: 8px;
+}
+
+#url-input {
+  margin-bottom: 0;
+}
+
+#invalid-input {
+  display: none;
+  word-break: break-all;
 }
 
 .split-pane {
@@ -36,12 +55,6 @@ main {
   flex-direction: column;
 }
 
-@media (width <= 1200px) {
-  .split-pane {
-    width: 100%;
-  }
-}
-
 #error-msg,
 #success-msg {
   display: none;
@@ -49,7 +62,7 @@ main {
 
 .CodeMirror {
   height: auto;
-  border: solid 1px #555;
+  border: solid 1px #ccc;
   border-radius: 4px;
 }
 
@@ -58,8 +71,15 @@ main {
 }
 
 #lint-result {
-  border-radius: 4px;
+  --bulma-table-background-color: #efeff8;
+
+  border-radius: 8px;
   cursor: pointer;
+  margin-bottom: 0;
+}
+
+#res-icon {
+  margin-right: 0.3em;
 }
 
 .sticky {
@@ -69,4 +89,33 @@ main {
 
 footer {
   margin-top: 32px;
+}
+
+@media (width <= 1200px) {
+  #linter {
+    flex-direction: column;
+  }
+
+  .split-pane {
+    width: 100%;
+  }
+}
+
+@media (prefers-color-scheme: dark) {
+  :root {
+    color-scheme: dark;
+  }
+
+  .CodeMirror {
+    border: solid 1px #555;
+  }
+
+  #lint-result {
+    --bulma-table-background-color: #222;
+  }
+
+  /* Similar to `.has-text-link-light`, but use a light color only in dark mode */
+  .has-text-link-my-light {
+    --bulma-color-l: var(--bulma-link-light-l);
+  }
 }

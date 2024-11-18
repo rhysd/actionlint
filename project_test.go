@@ -99,19 +99,21 @@ func TestProjectsDoesNotFindProjectFromOutside(t *testing.T) {
 	}
 }
 
-func TestProjectsLoadingProjectConfig(t *testing.T) {
-	d := filepath.Join("testdata", "config", "projects", "ok")
-	testEnsureDotGitDir(d)
-	ps := NewProjects()
-	p, err := ps.At(d)
-	if err != nil {
-		t.Fatal(err)
-	}
-	if p == nil {
-		t.Fatal("project was not found at", d)
-	}
-	if c := p.Config(); c == nil {
-		t.Fatal("config was not found for directory", d)
+func TestProjectsLoadProjectConfig(t *testing.T) {
+	for _, n := range []string{"ok", "yml"} {
+		d := filepath.Join("testdata", "config", "projects", n)
+		testEnsureDotGitDir(d)
+		ps := NewProjects()
+		p, err := ps.At(d)
+		if err != nil {
+			t.Fatal(err)
+		}
+		if p == nil {
+			t.Fatal("project was not found at", d)
+		}
+		if c := p.Config(); c == nil {
+			t.Fatal("config was not found for directory", d)
+		}
 	}
 }
 

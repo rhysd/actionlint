@@ -139,32 +139,29 @@ func (rule *RulePyflakes) runPyflakes(src string, pos *Pos) {
 func (rule *RulePyflakes) parseNextError(stdout []byte, pos *Pos) ([]byte, error) {
 	b := stdout
 
-	// Eat "<stdin>:"
+	// Search the start of error message.
 	idx := bytes.Index(b, []byte("<stdin>:"))
 	if idx == -1 {
-		// Syntax errors from pyflake are consist of multiple lines. Skip parsing subsequent lines. (#411)
+		// Syntax errors from pyflake consist of multiple lines. Skip subsequent lines. (#411)
 		// ```
 		// <stdin>:1:7: unexpected EOF while parsing
 		// print(
 		//       ^
 		// ```
-		if idx := bytes.IndexByte(b, '\n'); idx >= 0 {
-			return b[idx+1:], nil
-		}
 		return nil, nil
 	}
 	b = b[idx+len("<stdin>:"):]
 
-	var msg []byte
-	if idx := bytes.Index(b, []byte("\r\n")); idx >= 0 {
-		msg = b[:idx]
-		b = b[idx+2:]
-	} else if idx := bytes.IndexByte(b, '\n'); idx >= 0 {
-		msg = b[:idx]
-		b = b[idx+1:]
-	} else {
+	idx = bytes.IndexByte(b, '\n')
+	if idx == -1 {
 		return nil, fmt.Errorf(`error message from pyflakes does not end with \n nor \r\n while checking script at %s. output: %q`, pos, stdout)
 	}
+
+	msg := b[:idx]
+	if i := len(msg) - 1; i >= 0 && msg[i] == '\r' {
+		msg = msg[:i]
+	}
+	b = b[idx+1:]
 
 	// This method needs to be thread-safe since concurrentProcess.run calls its callback in a different goroutine.
 	rule.mu.Lock()

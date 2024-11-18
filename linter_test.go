@@ -2,7 +2,9 @@ package actionlint
 
 import (
 	"bufio"
+	"bytes"
 	"encoding/json"
+	"errors"
 	"fmt"
 	"io"
 	"os"
@@ -16,6 +18,12 @@ import (
 	"github.com/google/go-cmp/cmp"
 	"golang.org/x/sys/execabs"
 )
+
+type testErrorReader struct{}
+
+func (r testErrorReader) Read(p []byte) (int, error) {
+	return 0, errors.New("dummy read error")
+}
 
 func TestLinterLintOK(t *testing.T) {
 	dir := filepath.Join("testdata", "ok")
@@ -62,6 +70,7 @@ func TestLinterLintOK(t *testing.T) {
 			config := Config{}
 			linter.defaultConfig = &config
 
+			t.Log("Linting workflow file", f)
 			errs, err := linter.LintFile(f, proj)
 			if err != nil {
 				t.Fatal(err)
@@ -96,6 +105,9 @@ func testFindAllWorkflowsInDir(subdir string) (string, []string, error) {
 }
 
 func checkErrors(t *testing.T, outfile string, errs []*Error) {
+	t.Helper()
+	t.Log("Checking errors with", outfile)
+
 	expected := []string{}
 	{
 		f, err := os.Open(outfile)
@@ -160,6 +172,7 @@ func TestLinterLintError(t *testing.T) {
 			base := strings.TrimSuffix(infile, filepath.Ext(infile))
 			testName := filepath.Base(base)
 			t.Run(subdir+"/"+testName, func(t *testing.T) {
+				t.Log("Linting workflow file", infile)
 				b, err := os.ReadFile(infile)
 				if err != nil {
 					panic(err)
@@ -309,6 +322,8 @@ func TestLinterLintProject(t *testing.T) {
 		name := info.Name()
 		t.Run("project/"+name, func(t *testing.T) {
 			repo := filepath.Join(root, name)
+			t.Log("Linting project at", repo)
+
 			opts := LinterOptions{
 				WorkingDir: repo,
 			}
@@ -388,8 +403,8 @@ func TestLinterFormatErrorMessageOK(t *testing.T) {
 				have = strings.ReplaceAll(have, escaped, slash)
 			}
 
-			if !cmp.Equal(want, have) {
-				t.Fatal(cmp.Diff(want, have))
+			if diff := cmp.Diff(want, have); diff != "" {
+				t.Fatal(diff)
 			}
 		})
 	}
@@ -432,7 +447,7 @@ func TestLinterFormatErrorMessageInSARIF(t *testing.T) {
 
 	var have interface{}
 	if err := json.Unmarshal([]byte(out), &have); err != nil {
-		t.Fatalf("Output is not JSON: %v: %q", err, out)
+		t.Fatalf("output is not JSON: %v: %q", err, out)
 	}
 
 	bytes, err = os.ReadFile(filepath.Join(dir, "test.sarif"))
@@ -444,8 +459,55 @@ func TestLinterFormatErrorMessageInSARIF(t *testing.T) {
 		panic(err)
 	}
 
-	if !cmp.Equal(want, have) {
-		t.Fatal(cmp.Diff(want, have))
+	if diff := cmp.Diff(want, have); diff != "" {
+		t.Fatal(diff)
+	}
+}
+
+func TestLinterLintStdinOK(t *testing.T) {
+	for _, f := range []string{"", "foo.yaml"} {
+		l, err := NewLinter(io.Discard, &LinterOptions{StdinFileName: f})
+		if err != nil {
+			t.Fatalf("creating Linter object with stdin file name %q caused error: %v", f, err)
+		}
+
+		in := []byte(`on: push
+jobs:
+  job:
+    runs-on: foo
+	steps:
+	  - run: echo`)
+		errs, err := l.LintStdin(bytes.NewReader(in))
+		if err != nil {
+			t.Fatalf("linting input with stdin file name %q caused error: %v", f, err)
+		}
+		if len(errs) != 1 {
+			t.Fatalf("unexpected number of errors with stdin file name %q: %v", f, errs)
+		}
+
+		want := f
+		if want == "" {
+			want = "<stdin>"
+		}
+		if errs[0].Filepath != want {
+			t.Fatalf("file path in the error with stdin file name %q should be %q but got %q", f, want, errs[0].Filepath)
+		}
+	}
+}
+
+func TestLinterLintStdinReadError(t *testing.T) {
+	l, err := NewLinter(io.Discard, &LinterOptions{})
+	if err != nil {
+		t.Fatal(err)
+	}
+	_, err = l.LintStdin(testErrorReader{})
+	if err == nil {
+		t.Fatal("error did not occur")
+	}
+	want := "could not read stdin: dummy read error"
+	have := err.Error()
+	if want != have {
+		t.Fatalf("wanted error message %q but have %q", want, have)
 	}
 }
 
@@ -576,6 +638,28 @@ func TestLinterRemoveRuleOnRulesCreatedHook(t *testing.T) {
 	}
 	if len(errs) != 0 {
 		t.Fatal("no error was expected because runner-label rule was removed but got:", errs)
+	}
+}
+
+func TestLinterGenerateDefaultConfigAlreadyExists(t *testing.T) {
+	l, err := NewLinter(io.Discard, &LinterOptions{})
+	if err != nil {
+		t.Fatal(err)
+	}
+
+	for _, n := range []string{"ok", "yml"} {
+		d := filepath.Join("testdata", "config", "projects", n)
+		testEnsureDotGitDir(d)
+
+		err := l.GenerateDefaultConfig(d)
+		if err == nil {
+			t.Fatal("error did not occur for project", d)
+		}
+		want := "config file already exists at"
+		msg := err.Error()
+		if !strings.Contains(msg, want) {
+			t.Fatalf("error message %q does not contain expected text %q", msg, want)
+		}
 	}
 }
 

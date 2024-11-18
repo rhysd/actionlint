@@ -1,4 +1,10 @@
 on:
+  merge_group:
+    types: opened
+    paths: /path/to/foo.txt
+    paths-ignore: /path/to/bar.txt
+    tags: v*.*.*
+    tags-ignore: deploy/*
   pull_request_review:
     types: submitted
     paths: /path/to/foo.txt

@@ -495,7 +495,7 @@ func TestExprSemanticsCheckOK(t *testing.T) {
 			expected: StringType{},
 		},
 		{
-			what:     "format() function arguments varlidation",
+			what:     "format() function arguments validation",
 			input:    "format('{0}{0}{0} {1}{2}{1} {1}{2}{1}{2} {0} {1}{1}{1} {2}{2}{2} {0}{0}{0}{0} {0}', 1, 'foo', true)",
 			expected: StringType{},
 		},
@@ -637,8 +637,8 @@ func TestExprSemanticsCheckOK(t *testing.T) {
 		},
 		{
 			what:         "non-special function",
-			input:        "fromJSON('{}')",
-			expected:     AnyType{},
+			input:        "contains('hello, world', 'o, w')",
+			expected:     BoolType{},
 			availSPFuncs: []string{"always"},
 		},
 		{
@@ -663,6 +663,80 @@ func TestExprSemanticsCheckOK(t *testing.T) {
 			input:      "vars.SOME_VARIABLE",
 			expected:   StringType{},
 			configVars: []string{"some_variable"},
+		},
+		{
+			what:     "narrow type of && operator by assumed value (#384)",
+			input:    "('foo' && 10) || 20",
+			expected: NumberType{},
+		},
+		{
+			what:     "narrow type of || operator by assumed value (#384)",
+			input:    "('foo' || 10) && 20",
+			expected: NumberType{},
+		},
+		{
+			what:     "narrow type of nested && operator",
+			input:    "((('foo' && true) || false) && 10) || 20",
+			expected: NumberType{},
+		},
+		{
+			what:     "narrow type of nested || operator",
+			input:    "((('foo' || true) && false) || 10) && 20",
+			expected: NumberType{},
+		},
+		{
+			what:     "don't narrow type on nested && operator",
+			input:    "('foo' && 10) && 20",
+			expected: StringType{},
+		},
+		{
+			what:     "don't narrow type on nested || operator",
+			input:    "('foo' || 10) || 20",
+			expected: StringType{},
+		},
+		{
+			what:     "narrowed || operator at LHS and && operator at RHS",
+			input:    "('foo' || 10) && (('foo' && 10) || 20)",
+			expected: NumberType{},
+		},
+		{
+			what:     "narrowed && operator at LHS and || operator at RHS",
+			input:    "('foo' && 10) || (('foo' || 10) && 20)",
+			expected: NumberType{},
+		},
+		{
+			what:     "not operator negates && operator type narrowing",
+			input:    "!('foo' && 10) && 20",
+			expected: NumberType{},
+		},
+		{
+			what:     "not operator negates || operator type narrowing",
+			input:    "!('foo' || 10) || 20",
+			expected: NumberType{},
+		},
+		{
+			what:     "double not operators does nothing on type narrowing",
+			input:    "!!('foo' || 10) && 20",
+			expected: NumberType{},
+		},
+		{
+			what:     "escaped braces in format string",
+			input:    "format('hello {{1}} {0}', 42)",
+			expected: StringType{},
+		},
+		{
+			what:     "format specifier is escaped",
+			input:    "format('hello {{{0}', 'world')", // First {{ is escaped. {0} is not escaped
+			expected: StringType{},
+		},
+		{
+			what:  "fromJSON with JSON constant value",
+			input: `fromJSON('{"foo":true,"bar":["foo", 12.3],"piyo":null}')`,
+			expected: NewStrictObjectType(map[string]ExprType{
+				"foo":  BoolType{},
+				"bar":  &ArrayType{Elem: StringType{}}, // Element type was merged
+				"piyo": NullType{},
+			}),
 		},
 	}
 
@@ -714,38 +788,10 @@ func TestExprSemanticsCheckOK(t *testing.T) {
 				t.Fatal("semantics check failed:", errs)
 			}
 
-			if !cmp.Equal(tc.expected, ty) {
-				t.Fatalf("wanted: %s\nbut got:%s\ndiff:\n%s", tc.expected.String(), ty.String(), cmp.Diff(tc.expected, ty))
+			if diff := cmp.Diff(tc.expected, ty); diff != "" {
+				t.Fatalf("wanted: %s\nbut got:%s\ndiff:\n%s", tc.expected.String(), ty.String(), diff)
 			}
 		})
-	}
-}
-
-func TestExprBuiltinFunctionSignatures(t *testing.T) {
-	for name, sigs := range BuiltinFuncSignatures {
-		if len(sigs) == 0 {
-			t.Errorf("overload candidates of %q should not be empty", name)
-		}
-		{
-			ok := true
-			for _, r := range name {
-				if !unicode.IsLower(r) {
-					ok = false
-					break
-				}
-			}
-			if !ok {
-				t.Errorf("name of function must be in lower case to check in case insensitive: %q", name)
-			}
-		}
-		for i, sig := range sigs {
-			if name != strings.ToLower(sig.Name) {
-				t.Errorf("name of %dth overload is different from its key: name=%q vs key=%q", i+1, sig.Name, name)
-			}
-			if sig.VariableLengthParams && len(sig.Params) == 0 {
-				t.Errorf("number of arguments of %dth overload of %q must not be empty because VariableLengthParams is set to true", i+1, name)
-			}
-		}
 	}
 }
 
@@ -990,6 +1036,27 @@ func TestExprSemanticsCheckError(t *testing.T) {
 			},
 		},
 		{
+			what:  "function name of format() call check is case insensitive",
+			input: "Format('{0}', 1, 2)",
+			expected: []string{
+				`format string "{0}" does not contain placeholder {1}`,
+			},
+		},
+		{
+			what:  "format specifier is escaped",
+			input: "format('hello {{0}}', 'world')",
+			expected: []string{
+				"does not contain placeholder {0}",
+			},
+		},
+		{
+			what:  "format specifier is still escaped",
+			input: "format('hello {{{{0}}', 'world')", // First {{ is escaped. {{0}} is still escaped
+			expected: []string{
+				"does not contain placeholder {0}",
+			},
+		},
+		{
 			what:  "undefined matrix value",
 			input: "matrix.bar",
 			expected: []string{
@@ -1197,6 +1264,13 @@ func TestExprSemanticsCheckError(t *testing.T) {
 				"must not start with the GITHUB_ prefix",
 			},
 		},
+		{
+			what:  "broken JSON value at fromJSON argument",
+			input: `fromJSON('{"foo": true')`,
+			expected: []string{
+				"broken JSON string is passed to fromJSON() at offset 12",
+			},
+		},
 	}
 
 	allSP := []string{}
@@ -1233,6 +1307,7 @@ func TestExprSemanticsCheckError(t *testing.T) {
 			} else {
 				c.SetSpecialFunctionAvailability(allSP)
 			}
+
 			_, errs := c.Check(e)
 			if len(errs) != len(tc.expected) {
 				t.Fatalf("semantics check should report %d errors but got %d errors: %v", len(tc.expected), len(errs), errs)
@@ -1247,6 +1322,242 @@ func TestExprSemanticsCheckError(t *testing.T) {
 				t.Fatalf("error %q did not match any expected error messages %#v", err.Error(), tc.expected)
 			}
 		})
+	}
+}
+
+func TestExprCompareOperandsCheck(t *testing.T) {
+	// Matrix of operator -> lhs type -> rhs type -> result
+	// Result `true` means the comparison is allowed. `false` means the comparison causes an error.
+	matrix := map[string]map[string]map[string]bool{
+		"==": {
+			"number": {
+				"any":    true,
+				"number": true,
+				"string": true,
+				"bool":   true,
+				"null":   true,
+				"object": false,
+				"array":  false,
+			},
+			"string": {
+				"any":    true,
+				"number": true,
+				"string": true,
+				"bool":   true,
+				"null":   true,
+				"object": false,
+				"array":  false,
+			},
+			"bool": {
+				"any":    true,
+				"number": true,
+				"string": true,
+				"bool":   true,
+				"null":   true,
+				"object": false,
+				"array":  false,
+			},
+			"null": {
+				"any":    true,
+				"number": true,
+				"string": true,
+				"bool":   true,
+				"null":   true,
+				"object": true,
+				"array":  true,
+			},
+			"object": {
+				"any":    true,
+				"number": false,
+				"string": false,
+				"bool":   false,
+				"null":   true,
+				"object": true,
+				"array":  false,
+			},
+			"array": {
+				"any":      true,
+				"number":   false,
+				"string":   false,
+				"bool":     false,
+				"null":     true,
+				"object":   false,
+				"array":    true,
+				"array_2d": false,
+			},
+			"array_2d": {
+				"any":      true,
+				"number":   false,
+				"string":   false,
+				"bool":     false,
+				"null":     true,
+				"object":   false,
+				"array":    false,
+				"array_2d": true,
+			},
+			"any": {
+				"any":    true,
+				"number": true,
+				"string": true,
+				"bool":   true,
+				"null":   true,
+				"object": true,
+				"array":  true,
+			},
+		},
+		"<": {
+			"number": {
+				"any":    true,
+				"number": true,
+				"string": true,
+				"bool":   false,
+				"null":   false,
+				"object": false,
+				"array":  false,
+			},
+			"string": {
+				"any":    true,
+				"number": true,
+				"string": true,
+				"bool":   false,
+				"null":   false,
+				"object": false,
+				"array":  false,
+			},
+			"bool": {
+				"any":    false,
+				"number": false,
+				"string": false,
+				"bool":   false,
+				"null":   false,
+				"object": false,
+				"array":  false,
+			},
+			"null": {
+				"any":    false,
+				"number": false,
+				"string": false,
+				"bool":   false,
+				"null":   false,
+				"object": false,
+				"array":  false,
+			},
+			"any": {
+				"any":    true,
+				"number": true,
+				"string": true,
+				"bool":   false,
+				"null":   false,
+				"object": false,
+				"array":  false,
+			},
+			"object": {
+				"any":    false,
+				"number": false,
+				"string": false,
+				"bool":   false,
+				"null":   false,
+				"object": false,
+				"array":  false,
+			},
+			"array": {
+				"any":      false,
+				"number":   false,
+				"string":   false,
+				"bool":     false,
+				"null":     false,
+				"object":   false,
+				"array":    false,
+				"array_2d": false,
+			},
+		},
+	}
+
+	for op, expr := range matrix {
+		for lhs, rest := range expr {
+			for rhs, ok := range rest {
+				input := lhs + " " + op + " " + rhs
+				t.Run(input, func(t *testing.T) {
+					p := NewExprParser()
+					e, err := p.Parse(NewExprLexer(input + "}}"))
+					if err != nil {
+						t.Fatal("Parse error:", input)
+					}
+
+					c := NewExprSemanticsChecker(false, nil)
+					c.vars = map[string]ExprType{
+						"number": NumberType{},
+						"string": StringType{},
+						"bool":   BoolType{},
+						"object": NewEmptyObjectType(),
+						"array":  &ArrayType{Elem: NumberType{}},
+						"array_2d": &ArrayType{
+							Elem: &ArrayType{Elem: NumberType{}},
+						},
+						"any": AnyType{},
+					}
+
+					ty, errs := c.Check(e)
+					if ok {
+						if len(errs) > 0 {
+							t.Fatal("semantics check failed:", errs)
+						}
+						if _, ok := ty.(BoolType); !ok {
+							t.Fatalf("wanted bool type but have %q", ty)
+						}
+					} else {
+						if len(errs) != 1 {
+							t.Fatal("more than one error occurred", errs)
+						}
+						msg := errs[0].Error()
+
+						toType := func(n string) string {
+							switch n {
+							case "array":
+								return "array<number>"
+							case "array_2d":
+								return "array<array<number>>"
+							default:
+								return n
+							}
+						}
+						want := fmt.Sprintf("%q value cannot be compared to %q value with %q operator", toType(lhs), toType(rhs), op)
+
+						if !strings.Contains(msg, want) {
+							t.Fatalf("error message %q doesn't contain expected message %q", msg, want)
+						}
+					}
+				})
+			}
+		}
+	}
+}
+
+func TestExprBuiltinFunctionSignatures(t *testing.T) {
+	for name, sigs := range BuiltinFuncSignatures {
+		if len(sigs) == 0 {
+			t.Errorf("overload candidates of %q should not be empty", name)
+		}
+		{
+			ok := true
+			for _, r := range name {
+				if !unicode.IsLower(r) {
+					ok = false
+					break
+				}
+			}
+			if !ok {
+				t.Errorf("name of function must be in lower case to check in case insensitive: %q", name)
+			}
+		}
+		for i, sig := range sigs {
+			if name != strings.ToLower(sig.Name) {
+				t.Errorf("name of %dth overload is different from its key: name=%q vs key=%q", i+1, sig.Name, name)
+			}
+			if sig.VariableLengthParams && len(sig.Params) == 0 {
+				t.Errorf("number of arguments of %dth overload of %q must not be empty because VariableLengthParams is set to true", i+1, name)
+			}
+		}
 	}
 }
 
@@ -1353,8 +1664,8 @@ func TestExprSemanticsCheckerUpdateInputsMultipleTimes(t *testing.T) {
 			c.UpdateInputs(tc.first)
 			c.UpdateDispatchInputs(tc.second)
 			have := c.vars["inputs"]
-			if !cmp.Equal(have, tc.want) {
-				t.Fatal("Merged `inputs` type is unexpected", have, "v.s.", tc.want)
+			if diff := cmp.Diff(have, tc.want); diff != "" {
+				t.Fatal(diff)
 			}
 		})
 	}
@@ -1389,3 +1700,95 @@ func TestBuiltinGlobalVariableTypesValidation(t *testing.T) {
 		testObjectPropertiesAreInLowerCase(t, ty)
 	}
 }
+
+func TestParseFormatSpecifiers(t *testing.T) {
+	tests := []struct {
+		what string
+		in   string
+		want []int // Specifiers in the `in` string
+	}{
+		{
+			what: "empty input",
+			in:   "",
+		},
+		{
+			what: "no specifier",
+			in:   "hello, world!",
+		},
+		{
+			what: "single specifier",
+			in:   "Hello{0}specifier",
+			want: []int{0},
+		},
+		{
+			what: "mutliple specifiers",
+			in:   "{0} {1}{2}x{3}}{4}!",
+			want: []int{0, 1, 2, 3, 4},
+		},
+		{
+			what: "many specifiers",
+			in:   "{0}{1}{2}{3}{4}{5}{6}{7}{8}{9}{10}!",
+			want: []int{0, 1, 2, 3, 4, 5, 6, 7, 8, 9, 10},
+		},
+		{
+			what: "unordered",
+			in:   "{2}foo{4} {0}{3}",
+			want: []int{2, 4, 0, 3},
+		},
+		{
+			what: "uncontiguous",
+			in:   "{0} {2}foo{5} {1}",
+			want: []int{0, 2, 5, 1},
+		},
+		{
+			what: "unclosed",
+			in:   "{12foo",
+		},
+		{
+			what: "not digit",
+			in:   "{hello}",
+		},
+		{
+			what: "space in digits",
+			in:   "{1 2}",
+		},
+		{
+			what: "empty",
+			in:   "{}",
+		},
+		{
+			what: "specifier inside specifier",
+			in:   "{1{0}2}",
+			want: []int{0},
+		},
+		{
+			what: "escaped",
+			in:   "{{hello{{0}{{{{1}world}}",
+		},
+		{
+			what: "after escaped",
+			in:   "{{{{{0}",
+			want: []int{0},
+		},
+		{
+			what: "kuma-",
+			in:   "{・{ᴥ}・}",
+		},
+	}
+
+	for _, tc := range tests {
+		t.Run(tc.what, func(t *testing.T) {
+			want := map[int]struct{}{}
+			for _, i := range tc.want {
+				want[i] = struct{}{}
+			}
+			have := parseFormatFuncSpecifiers(tc.in, len(tc.want))
+
+			if diff := cmp.Diff(want, have); diff != "" {
+				t.Fatal(diff)
+			}
+		})
+	}
+}
+
+// vim: nofoldenable

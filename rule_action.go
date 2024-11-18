@@ -284,6 +284,15 @@ var BrandingIcons = map[string]struct{}{
 	"zoom-out":           {},
 }
 
+// https://docs.github.com/en/actions/creating-actions/metadata-syntax-for-github-actions#runsimage
+func isImageOnDockerRegistry(image string) bool {
+	return strings.HasPrefix(image, "docker://") ||
+		strings.HasPrefix(image, "gcr.io/") ||
+		strings.HasPrefix(image, "pkg.dev/") ||
+		strings.HasPrefix(image, "ghcr.io/") ||
+		strings.HasPrefix(image, "docker.io/")
+}
+
 // RuleAction is a rule to check running action in steps of jobs.
 // https://docs.github.com/en/actions/learn-github-actions/workflow-syntax-for-github-actions#jobsjob_idstepsuses
 type RuleAction struct {
@@ -362,6 +371,10 @@ func (rule *RuleAction) checkRepoAction(spec string, exec *ExecAction) {
 
 	meta, ok := PopularActions[spec]
 	if !ok {
+		if _, ok := OutdatedPopularActionSpecs[spec]; ok {
+			rule.Errorf(exec.Uses.Pos, "the runner of %q action is too old to run on GitHub Actions. update the action's version to fix this issue", spec)
+			return
+		}
 		rule.Debug("This action is not found in popular actions data set: %s", spec)
 		return
 	}
@@ -419,7 +432,7 @@ func (rule *RuleAction) checkRunsFileExists(file, dir, prop, name string, pos *P
 func (rule *RuleAction) checkLocalDockerActionRuns(r *ActionMetadataRuns, dir, name string, pos *Pos) {
 	if r.Image == "" {
 		rule.missingRunsProp(pos, "image", "Docker", name, dir)
-	} else if !strings.HasPrefix(r.Image, "docker://") {
+	} else if !isImageOnDockerRegistry(r.Image) {
 		rule.checkRunsFileExists(r.Image, dir, "image", name, pos)
 		if filepath.Base(filepath.FromSlash(r.Image)) != "Dockerfile" {
 			rule.Errorf(pos, `the local file %q referenced from "image" key must be named "Dockerfile" in %q action. the action is defined at %q`, r.Image, name, dir)
@@ -469,10 +482,10 @@ func (rule *RuleAction) checkLocalActionRuns(meta *ActionMetadata, pos *Pos) {
 		rule.checkLocalDockerActionRuns(r, meta.Dir(), meta.Name, pos)
 	case "composite":
 		rule.checkLocalCompositeActionRuns(r, meta.Dir(), meta.Name, pos)
-	case "node16", "node20":
+	case "node20":
 		rule.checkLocalJavaScriptActionRuns(r, meta.Dir(), meta.Name, pos)
 	default:
-		rule.Errorf(pos, `invalid runner name %q at runs.using in %q action defined at %q. valid runners are "composite", "docker", "node16", and "node20". see https://docs.github.com/en/actions/creating-actions/metadata-syntax-for-github-actions#runs`, r.Using, meta.Name, meta.Dir())
+		rule.Errorf(pos, `invalid runner name %q at runs.using in %q action defined at %q. valid runners are "composite", "docker", and "node20". see https://docs.github.com/en/actions/creating-actions/metadata-syntax-for-github-actions#runs`, r.Using, meta.Name, meta.Dir())
 
 		// Probably invalid version of Node.js runner. Assume it is JavaScript action to find as many errors as possible
 		if strings.HasPrefix(r.Using, "node") {

@@ -488,8 +488,8 @@ func TestErrorPrintSerializedIntoJSON(t *testing.T) {
 	if err := json.Unmarshal(b.Bytes(), &decoded); err != nil {
 		t.Fatal(err)
 	}
-	if !cmp.Equal(testErrorTemplateFields, decoded) {
-		t.Fatal(cmp.Diff(testErrorTemplateFields, decoded))
+	if diff := cmp.Diff(testErrorTemplateFields, decoded); diff != "" {
+		t.Fatal(diff)
 	}
 }
 

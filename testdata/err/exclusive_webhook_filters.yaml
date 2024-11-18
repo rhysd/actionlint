@@ -1,4 +1,7 @@
 on:
+  merge_group:
+    branches-ignore: bar
+    branches: foo
   push:
     paths: path/to/foo
     paths-ignore: path/to/bar

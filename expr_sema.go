@@ -1,13 +1,11 @@
 package actionlint
 
 import (
+	"encoding/json"
 	"fmt"
-	"regexp"
 	"strconv"
 	"strings"
 )
-
-var reFormatPlaceholder = regexp.MustCompile(`{\d+}`)
 
 func ordinal(i int) string {
 	suffix := "th"
@@ -26,6 +24,32 @@ func ordinal(i int) string {
 		}
 	}
 	return fmt.Sprintf("%d%s", i, suffix)
+}
+
+// parseFormatFuncSpecifiers parses the format string passed to `format()` calls.
+// https://docs.github.com/en/actions/writing-workflows/choosing-what-your-workflow-does/evaluate-expressions-in-workflows-and-actions#format
+func parseFormatFuncSpecifiers(f string, n int) map[int]struct{} {
+	ret := make(map[int]struct{}, n)
+	start := -1
+	for i, r := range f {
+		if r == '{' {
+			if start == i {
+				start = -1 // When the '{' is escaped like '{{'
+			} else {
+				start = i + 1 // `+ 1` because `i` points char '{'
+			}
+		} else if start >= 0 {
+			if '0' <= r && r <= '9' {
+				continue
+			}
+			if r == '}' && start < i {
+				i, _ := strconv.Atoi(f[start:i])
+				ret[i] = struct{}{}
+			}
+			start = -1 // Done
+		}
+	}
+	return ret
 }
 
 // Functions
@@ -119,27 +143,12 @@ var BuiltinFuncSignatures = map[string][]*FuncSignature{
 				StringType{},
 			},
 		},
-		{
-			Name: "join",
-			Ret:  StringType{},
-			Params: []ExprType{
-				StringType{},
-				StringType{},
-			},
-		},
 		// When the second parameter is omitted, values are concatenated with ','.
 		{
 			Name: "join",
 			Ret:  StringType{},
 			Params: []ExprType{
 				&ArrayType{Elem: StringType{}},
-			},
-		},
-		{
-			Name: "join",
-			Ret:  StringType{},
-			Params: []ExprType{
-				StringType{},
 			},
 		},
 	},
@@ -256,12 +265,13 @@ var BuiltinGlobalVariableTypes = map[string]ExprType{
 	"steps": NewEmptyStrictObjectType(), // This value will be updated contextually
 	// https://docs.github.com/en/actions/learn-github-actions/contexts#runner-context
 	"runner": NewStrictObjectType(map[string]ExprType{
-		"name":       StringType{},
-		"os":         StringType{},
-		"arch":       StringType{},
-		"temp":       StringType{},
-		"tool_cache": StringType{},
-		"debug":      StringType{},
+		"name":        StringType{},
+		"os":          StringType{},
+		"arch":        StringType{},
+		"temp":        StringType{},
+		"tool_cache":  StringType{},
+		"debug":       StringType{},
+		"environment": StringType{}, // https://github.com/github/docs/issues/32443
 	}),
 	// https://docs.github.com/en/actions/learn-github-actions/contexts#secrets-context
 	"secrets": NewMapObjectType(StringType{}),
@@ -508,6 +518,12 @@ func (sema *ExprSemanticsChecker) checkSpecialFunctionAvailability(n *FuncCallNo
 		n.Callee,
 		quotes(allowed),
 	)
+}
+
+func (sema *ExprSemanticsChecker) visitUntrustedCheckerOnEnterNode(n ExprNode) {
+	if sema.untrusted != nil {
+		sema.untrusted.OnVisitNodeEnter(n)
+	}
 }
 
 func (sema *ExprSemanticsChecker) visitUntrustedCheckerOnLeaveNode(n ExprNode) {
@@ -779,28 +795,22 @@ func checkFuncSignature(n *FuncCallNode, sig *FuncSignature, args []ExprType) *E
 	return nil
 }
 
-func (sema *ExprSemanticsChecker) checkBuiltinFunctionCall(n *FuncCallNode, sig *FuncSignature) {
+func (sema *ExprSemanticsChecker) checkBuiltinFuncCall(n *FuncCallNode, sig *FuncSignature) ExprType {
 	sema.checkSpecialFunctionAvailability(n)
 
 	// Special checks for specific built-in functions
-	switch n.Callee {
+	switch strings.ToLower(n.Callee) {
 	case "format":
 		lit, ok := n.Args[0].(*StringNode)
 		if !ok {
-			return
+			return sig.Ret
 		}
 		l := len(n.Args) - 1 // -1 means removing first format string argument
 
-		// Find all placeholders in format string
-		holders := make(map[int]struct{}, l)
-		for _, m := range reFormatPlaceholder.FindAllString(lit.Value, -1) {
-			i, _ := strconv.Atoi(m[1 : len(m)-1])
-			holders[i] = struct{}{}
-		}
+		holders := parseFormatFuncSpecifiers(lit.Value, l)
 
 		for i := 0; i < l; i++ {
-			_, ok := holders[i]
-			if !ok {
+			if _, ok := holders[i]; !ok {
 				sema.errorf(n, "format string %q does not contain placeholder {%d}. remove argument which is unused in the format string", lit.Value, i)
 				continue
 			}
@@ -810,7 +820,22 @@ func (sema *ExprSemanticsChecker) checkBuiltinFunctionCall(n *FuncCallNode, sig 
 		for i := range holders {
 			sema.errorf(n, "format string %q contains placeholder {%d} but only %d arguments are given to format", lit.Value, i, l)
 		}
+	case "fromjson":
+		lit, ok := n.Args[0].(*StringNode)
+		if !ok {
+			return sig.Ret
+		}
+		var v any
+		err := json.Unmarshal([]byte(lit.Value), &v)
+		if err == nil {
+			return typeOfJSONValue(v)
+		}
+		if s, ok := err.(*json.SyntaxError); ok {
+			sema.errorf(lit, "broken JSON string is passed to fromJSON() at offset %d: %s", s.Offset, s)
+		}
 	}
+
+	return sig.Ret
 }
 
 func (sema *ExprSemanticsChecker) checkFuncCall(n *FuncCallNode) ExprType {
@@ -837,8 +862,7 @@ func (sema *ExprSemanticsChecker) checkFuncCall(n *FuncCallNode) ExprType {
 		err := checkFuncSignature(n, sig, tys)
 		if err == nil {
 			// When one of overload pass type check, overload was resolved correctly
-			sema.checkBuiltinFunctionCall(n, sig)
-			return sig.Ret
+			return sema.checkBuiltinFuncCall(n, sig)
 		}
 		errs = append(errs, err)
 	}
@@ -857,22 +881,121 @@ func (sema *ExprSemanticsChecker) checkNotOp(n *NotOpNode) ExprType {
 	return BoolType{}
 }
 
+func validateCompareOpOperands(op CompareOpNodeKind, l, r ExprType) bool {
+	// Comparison behavior: https://docs.github.com/en/actions/learn-github-actions/expressions#operators
+	switch op {
+	case CompareOpNodeKindEq, CompareOpNodeKindNotEq:
+		switch l := l.(type) {
+		case AnyType, NullType:
+			return true
+		case NumberType, BoolType, StringType:
+			switch r.(type) {
+			case *ObjectType, *ArrayType:
+				// These are coerced to NaN hence the comparison result is always false
+				return false
+			default:
+				return true
+			}
+		case *ObjectType:
+			switch r.(type) {
+			case *ObjectType, NullType, AnyType:
+				return true
+			default:
+				return false
+			}
+		case *ArrayType:
+			switch r := r.(type) {
+			case *ArrayType:
+				return validateCompareOpOperands(op, l.Elem, r.Elem)
+			case NullType, AnyType:
+				return true
+			default:
+				return false
+			}
+		default:
+			panic("unreachable")
+		}
+	case CompareOpNodeKindLess, CompareOpNodeKindLessEq, CompareOpNodeKindGreater, CompareOpNodeKindGreaterEq:
+		// null, bool, array, and object cannot be compared with these operators
+		switch l.(type) {
+		case AnyType, NumberType, StringType:
+			switch r.(type) {
+			case NullType, BoolType, *ObjectType, *ArrayType:
+				return false
+			default:
+				return true
+			}
+		case NullType, BoolType, *ObjectType, *ArrayType:
+			return false
+		default:
+			panic("unreachable")
+		}
+	default:
+		return true
+	}
+}
+
 func (sema *ExprSemanticsChecker) checkCompareOp(n *CompareOpNode) ExprType {
-	sema.check(n.Left)
-	sema.check(n.Right)
-	// Note: Comparing values is very loose. Any value can be compared with any value without an
-	// error.
-	// https://docs.github.com/en/actions/learn-github-actions/expressions#operators
+	l := sema.check(n.Left)
+	r := sema.check(n.Right)
+
+	if !validateCompareOpOperands(n.Kind, l, r) {
+		sema.errorf(n, "%q value cannot be compared to %q value with %q operator", l.String(), r.String(), n.Kind.String())
+	}
+
 	return BoolType{}
 }
 
+// checkWithNarrowing checks type of given expression with type narrowing. Type narrowing narrows
+// down the type of the expression by assuming its value. For example, `l && r` is typed as
+// `typeof(l) | typeof(r)` usually. However when the expression is assumed to be true, its type can
+// be narrowed down to `typeof(r)`.
+// This analysis is useful to make type checking more accurate. For example, `some_var && 60 || 20`
+// can be typed as `number` instead of `typeof(some_var) | number`. (#384)
+func (sema *ExprSemanticsChecker) checkWithNarrowing(n ExprNode, isTruthy bool) ExprType {
+	switch n := n.(type) {
+	case *LogicalOpNode:
+		switch n.Kind {
+		case LogicalOpNodeKindAnd:
+			// When `l && r` is true, narrow its type to `typeof(r)`
+			if isTruthy {
+				sema.check(n.Left)
+				return sema.check(n.Right)
+			}
+		case LogicalOpNodeKindOr:
+			// When `l || r` is false, narrow its type to `typeof(r)`
+			if !isTruthy {
+				sema.check(n.Left)
+				return sema.check(n.Right)
+			}
+		}
+		return sema.checkLogicalOp(n)
+	case *NotOpNode:
+		return sema.checkWithNarrowing(n.Operand, !isTruthy)
+	default:
+		return sema.check(n)
+	}
+}
+
 func (sema *ExprSemanticsChecker) checkLogicalOp(n *LogicalOpNode) ExprType {
-	lty := sema.check(n.Left)
-	rty := sema.check(n.Right)
-	return lty.Merge(rty)
+	switch n.Kind {
+	case LogicalOpNodeKindAnd:
+		// When `l` is false in `l && r`, its type is `typeof(l)`. Otherwise `typeof(r)`.
+		// Narrow the type of LHS expression by assuming its value is falsy.
+		return sema.checkWithNarrowing(n.Left, false).Merge(sema.check(n.Right))
+	case LogicalOpNodeKindOr:
+		// When `l` is true in `l || r`, its type is `typeof(l)`. Otherwise `typeof(r).
+		// Narrow the type of LHS expression by assuming its value is truthy.
+		return sema.checkWithNarrowing(n.Left, true).Merge(sema.check(n.Right))
+	default:
+		sema.check(n.Left)
+		sema.check(n.Right)
+		return AnyType{}
+	}
 }
 
 func (sema *ExprSemanticsChecker) check(expr ExprNode) ExprType {
+	sema.visitUntrustedCheckerOnEnterNode(expr)
 	defer sema.visitUntrustedCheckerOnLeaveNode(expr) // Call this method in bottom-up order
 
 	switch e := expr.(type) {
