@@ -307,6 +307,21 @@ Go APIs are available. See [the Go API document](api.md) for more details.
 <a id="tools-integ"></a>
 ## Tools integration
 
+### GitHub Actions
+
+[actionlint](..) is itself integrated with GitHub Actions. It can be run directly from a simple workflow file.
+
+```yaml
+name: actionlint
+on: push
+jobs:
+  actionlint:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v3
+      - uses: rhysd/actionlint@v1.x.y
+```
+
 ### reviewdog
 
 [reviewdog][] is an automated review tool for various code hosting services. It officially [supports actionlint][reviewdog-actionlint].
@@ -323,6 +338,8 @@ jobs:
     steps:
       - uses: actions/checkout@v4
       - uses: reviewdog/action-actionlint@v1
+        with:
+          color: true
 ```
 
 <a id="problem-matchers"></a>

@@ -122,7 +122,7 @@ func TestRulePyflakesParsePyflakesOutputOK(t *testing.T) {
 				"print(\n" +
 				"      ^\n",
 			want: []string{
-				":1:2: pyflakes reported issue in this script: 1:7: unexpected EOF while parsing [pyflakes]",
+				":1:2: pyflakes reported issue in this script: 1:7: undefined name 'foo' [pyflakes]",
 			},
 		},
 		{

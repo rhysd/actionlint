@@ -1,0 +1,29 @@
+---
+
+name: actionlint
+description: ":octocat: Static checker for GitHub Actions workflow files"
+
+#branding: # https://docs.github.com/en/actions/creating-actions/metadata-syntax-for-github-actions#branding
+#  icon: _
+#  color: _
+
+inputs:
+  color:
+    default: false
+    description: "Enable colorful output."
+
+runs:
+  using: composite
+  steps:
+    - name: "Report Invalid Color Input"
+      if: inputs.color != 'yes' && inputs.color != 'true' && inputs.color != 'no' && inputs.color != 'false'
+      shell: bash
+      run: echo ${{ format('::warning::Invalid boolean value for color "{0}"', inputs.color) }}
+
+    - name: "Download Action Lint"
+      shell: bash
+      run: ${{ github.action_path }}/scripts/download-actionlint.bash latest ${{ runner.temp }}
+
+    - name: "Run Action Lint"
+      shell: bash
+      run: ${{ runner.temp }}/actionlint ${{ (inputs.color == 'yes' || inputs.color == 'true') && '-color' || '' }}
