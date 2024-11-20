@@ -63,6 +63,28 @@ func TestProcessRunConcurrently(t *testing.T) {
 	}
 }
 
+func TestProcessRunWithArgs(t *testing.T) {
+	var done atomic.Bool
+	p := newConcurrentProcess(1)
+	echo := testSkipIfNoCommand(t, p, "echo hello")
+	echo.run(nil, "", func(b []byte, err error) error {
+		if err != nil {
+			t.Error(err)
+			return err
+		}
+		if string(b) != "hello\n" {
+			t.Errorf("unexpected output: %q", b)
+		}
+		done.Store(true)
+		return nil
+	})
+	p.wait()
+
+	if !done.Load() {
+		t.Error("callback did not run")
+	}
+}
+
 func TestProcessRunMultipleCommandsConcurrently(t *testing.T) {
 	p := newConcurrentProcess(3)
 
