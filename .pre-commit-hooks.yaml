@@ -7,7 +7,7 @@
   files: ^\.github/workflows/
   entry: actionlint
   minimum_pre_commit_version: 3.0.0
-  additional_dependencies: ["shellcheck"]
+  additional_dependencies: ["github.com/wasilibs/go-shellcheck/cmd/shellcheck@latest"]
 - id: actionlint-docker
   name: Lint GitHub Actions workflow files
   description: Runs actionlint Docker image to lint GitHub Actions workflow files
