@@ -165,6 +165,8 @@ paths:
     ignore: [vvv]
   .github/workflows/**/x.yaml:
     ignore: [www]
+  .github/workflows/**/*.{yml,yaml}:
+    ignore: [ttt]
 `
 
 	var cfg Config
@@ -197,6 +199,8 @@ paths:
 		{".github/workflows/a/b/x.yaml", "www", true},
 		{".github/workflows/a/b/c/x.yaml", "www", true},
 		{".github/workflows/a/b.yaml", "this is not ignored", false},
+		{".github/workflows/a.yml", "xxx", false},
+		{".github/workflows/a.yml", "ttt", true},
 	}
 
 	for _, tc := range tests {

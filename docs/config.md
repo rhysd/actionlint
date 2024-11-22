@@ -32,7 +32,7 @@ config-variables:
 paths:
   # Glob pattern relative to the repository root for matching files. The path separator is always '/'.
   # This example configures any YAML file under the '.github/workflows/' directory.
-  .github/workflows/**/*.yaml:
+  .github/workflows/**/*.{yml,yaml}:
     # List of regular expressions to filter errors by the error messages.
     ignore:
       # Ignore the specific error from shellcheck
