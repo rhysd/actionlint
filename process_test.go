@@ -7,6 +7,8 @@ import (
 	"sync/atomic" // Note: atomic.Bool was added at Go 1.19
 	"testing"
 	"time"
+
+	"golang.org/x/sys/execabs"
 )
 
 func testStartEchoCommand(t *testing.T, proc *concurrentProcess, done *atomic.Bool) {
@@ -64,9 +66,16 @@ func TestProcessRunConcurrently(t *testing.T) {
 }
 
 func TestProcessRunWithArgs(t *testing.T) {
+	if _, err := execabs.LookPath("echo"); err != nil {
+		t.Skipf("echo command is necessary to run this test: %s", err)
+	}
+
 	var done atomic.Bool
 	p := newConcurrentProcess(1)
-	echo := testSkipIfNoCommand(t, p, "echo hello")
+	echo, err := p.newCommandRunner("echo hello", false)
+	if err != nil {
+		t.Fatalf(`parsing "echo hello" failed: %v`, err)
+	}
 	echo.run(nil, "", func(b []byte, err error) error {
 		if err != nil {
 			t.Error(err)

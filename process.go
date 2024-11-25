@@ -132,9 +132,7 @@ func findExe(exe string) (string, []string, error) {
 	// See if the command string contains args. As it is best effort, we do not
 	// handle parse errors.
 	if exeArgs, _ := shellwords.Parse(exe); len(exeArgs) > 0 {
-		// We want to return the original error if this command isn't found so
-		// do not overwrite it.
-		if p, err2 := execabs.LookPath(exeArgs[0]); err2 == nil {
+		if p, err := execabs.LookPath(exeArgs[0]); err == nil {
 			return p, exeArgs[1:], nil
 		}
 	}
