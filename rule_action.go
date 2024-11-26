@@ -237,6 +237,7 @@ var BrandingIcons = map[string]struct{}{
 	"sun":                {},
 	"sunrise":            {},
 	"sunset":             {},
+	"table":              {},
 	"tablet":             {},
 	"tag":                {},
 	"target":             {},
