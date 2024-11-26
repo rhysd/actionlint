@@ -8,7 +8,7 @@ branding:
   # ERROR: Invalid icon name
   icon: dog
   # ERROR: Unsupported icon color
-  color: black
+  color: gray-white
 
 runs:
   # ERROR: Node.js runtime version is too old

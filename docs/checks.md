@@ -2830,7 +2830,7 @@ branding:
   # ERROR: Invalid icon name
   icon: dog
   # ERROR: Unsupported icon color
-  color: black
+  color: gray-white
 
 runs:
   # ERROR: Node.js runtime version is too old
@@ -2867,7 +2867,7 @@ test.yaml:8:15: incorrect icon name "dog" at branding.icon in metadata of "My ac
   |
 8 |       - uses: ./.github/actions/my-invalid-action
   |               ^~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
-test.yaml:8:15: incorrect color "black" at branding.icon in metadata of "My action" action at "/Users/rhysd/.go/src/github.com/rhysd/actionlint/.github/actions/my-invalid-action/action.yml". see the official document to know the exhaustive list of supported colors: https://docs.github.com/en/actions/creating-actions/metadata-syntax-for-github-actions#brandingcolor [action]
+test.yaml:8:15: incorrect color "gray-white" at branding.icon in metadata of "My action" action at "/Users/rhysd/.go/src/github.com/rhysd/actionlint/.github/actions/my-invalid-action/action.yml". see the official document to know the exhaustive list of supported colors: https://docs.github.com/en/actions/creating-actions/metadata-syntax-for-github-actions#brandingcolor [action]
   |
 8 |       - uses: ./.github/actions/my-invalid-action
   |               ^~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
