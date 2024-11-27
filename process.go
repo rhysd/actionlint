@@ -7,6 +7,7 @@ import (
 	"os/exec"
 	"sync"
 
+	"github.com/mattn/go-shellwords"
 	"golang.org/x/sync/errgroup"
 	"golang.org/x/sync/semaphore"
 	"golang.org/x/sys/execabs"
@@ -109,16 +110,34 @@ func (proc *concurrentProcess) wait() {
 // newCommandRunner creates new external command runner for given executable. The executable path
 // is resolved in this function.
 func (proc *concurrentProcess) newCommandRunner(exe string, combineOutput bool) (*externalCommand, error) {
-	p, err := execabs.LookPath(exe)
+	var args []string
+	p, args, err := findExe(exe)
 	if err != nil {
 		return nil, err
 	}
 	cmd := &externalCommand{
 		proc:          proc,
 		exe:           p,
+		args:          args,
 		combineOutput: combineOutput,
 	}
 	return cmd, nil
+}
+
+func findExe(exe string) (string, []string, error) {
+	p, err := execabs.LookPath(exe)
+	if err == nil {
+		return p, nil, nil
+	}
+	// See if the command string contains args. As it is best effort, we do not
+	// handle parse errors.
+	if exeArgs, _ := shellwords.Parse(exe); len(exeArgs) > 0 {
+		if p, err := execabs.LookPath(exeArgs[0]); err == nil {
+			return p, exeArgs[1:], nil
+		}
+	}
+
+	return "", nil, err
 }
 
 // externalCommand is struct to run specific command concurrently with concurrentProcess bounding
@@ -129,6 +148,7 @@ type externalCommand struct {
 	proc          *concurrentProcess
 	eg            errgroup.Group
 	exe           string
+	args          []string
 	combineOutput bool
 }
 
@@ -136,6 +156,12 @@ type externalCommand struct {
 // process runs. First argument is stdout and the second argument is an error while running the
 // process.
 func (cmd *externalCommand) run(args []string, stdin string, callback func([]byte, error) error) {
+	if len(cmd.args) > 0 {
+		var allArgs []string
+		allArgs = append(allArgs, cmd.args...)
+		allArgs = append(allArgs, args...)
+		args = allArgs
+	}
 	exec := &cmdExecution{cmd.exe, args, stdin, cmd.combineOutput}
 	cmd.proc.run(&cmd.eg, exec, callback)
 }
