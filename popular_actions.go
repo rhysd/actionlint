@@ -279,6 +279,20 @@ var PopularActions = map[string]*ActionMetadata{
 			"bundle-path": {"bundle-path"},
 		},
 	},
+	"actions/attest-build-provenance@v2": {
+		Name: "Attest Build Provenance",
+		Inputs: ActionMetadataInputs{
+			"github-token":     {"github-token", false},
+			"push-to-registry": {"push-to-registry", false},
+			"show-summary":     {"show-summary", false},
+			"subject-digest":   {"subject-digest", false},
+			"subject-name":     {"subject-name", false},
+			"subject-path":     {"subject-path", false},
+		},
+		Outputs: ActionMetadataOutputs{
+			"bundle-path": {"bundle-path"},
+		},
+	},
 	"actions/cache/restore@v4": {
 		Name: "Restore Cache",
 		Inputs: ActionMetadataInputs{
@@ -2138,6 +2152,7 @@ var PopularActions = map[string]*ActionMetadata{
 		Name: "actionlint with reviewdog",
 		Inputs: ActionMetadataInputs{
 			"actionlint_flags": {"actionlint_flags", false},
+			"fail_level":       {"fail_level", false},
 			"fail_on_error":    {"fail_on_error", false},
 			"filter_mode":      {"filter_mode", false},
 			"github_token":     {"github_token", false},
@@ -2151,6 +2166,7 @@ var PopularActions = map[string]*ActionMetadata{
 		Name: "Run eslint with reviewdog",
 		Inputs: ActionMetadataInputs{
 			"eslint_flags":    {"eslint_flags", false},
+			"fail_level":      {"fail_level", false},
 			"fail_on_error":   {"fail_on_error", false},
 			"filter_mode":     {"filter_mode", false},
 			"github_token":    {"github_token", false},
@@ -2180,6 +2196,7 @@ var PopularActions = map[string]*ActionMetadata{
 		Name: "Run golangci-lint with reviewdog",
 		Inputs: ActionMetadataInputs{
 			"cache":                 {"cache", false},
+			"fail_level":            {"fail_level", false},
 			"fail_on_error":         {"fail_on_error", false},
 			"filter_mode":           {"filter_mode", false},
 			"github_token":          {"github_token", false},
@@ -2199,6 +2216,7 @@ var PopularActions = map[string]*ActionMetadata{
 		Name: "Run hadolint with reviewdog",
 		Inputs: ActionMetadataInputs{
 			"exclude":         {"exclude", false},
+			"fail_level":      {"fail_level", false},
 			"fail_on_error":   {"fail_on_error", false},
 			"filter_mode":     {"filter_mode", false},
 			"github_token":    {"github_token", false},
@@ -2214,6 +2232,7 @@ var PopularActions = map[string]*ActionMetadata{
 		Name: "Run misspell with reviewdog",
 		Inputs: ActionMetadataInputs{
 			"exclude":       {"exclude", false},
+			"fail_level":    {"fail_level", false},
 			"fail_on_error": {"fail_on_error", false},
 			"filter_mode":   {"filter_mode", false},
 			"github_token":  {"github_token", false},
@@ -2246,6 +2265,7 @@ var PopularActions = map[string]*ActionMetadata{
 	"reviewdog/action-rubocop@v2": {
 		Name: "Run rubocop with reviewdog",
 		Inputs: ActionMetadataInputs{
+			"fail_level":         {"fail_level", false},
 			"fail_on_error":      {"fail_on_error", false},
 			"filter_mode":        {"filter_mode", false},
 			"github_token":       {"github_token", false},
@@ -2267,6 +2287,7 @@ var PopularActions = map[string]*ActionMetadata{
 		Inputs: ActionMetadataInputs{
 			"check_all_files_with_shebangs": {"check_all_files_with_shebangs", false},
 			"exclude":                       {"exclude", false},
+			"fail_level":                    {"fail_level", false},
 			"fail_on_error":                 {"fail_on_error", false},
 			"filter_mode":                   {"filter_mode", false},
 			"github_token":                  {"github_token", false},
@@ -2281,6 +2302,7 @@ var PopularActions = map[string]*ActionMetadata{
 	"reviewdog/action-tflint@v1": {
 		Name: "Run tflint with reviewdog",
 		Inputs: ActionMetadataInputs{
+			"fail_level":        {"fail_level", false},
 			"fail_on_error":     {"fail_on_error", false},
 			"filter_mode":       {"filter_mode", false},
 			"flags":             {"flags", false},
