@@ -471,8 +471,8 @@
     },
     {
         "slug": "actions/attest-build-provenance",
-        "tags": ["v1"],
-        "next": "v2"
+        "tags": ["v1", "v2"],
+        "next": "v3"
     },
     {
         "slug": "actions/add-to-project",
