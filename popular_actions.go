@@ -290,7 +290,9 @@ var PopularActions = map[string]*ActionMetadata{
 			"subject-path":     {"subject-path", false},
 		},
 		Outputs: ActionMetadataOutputs{
-			"bundle-path": {"bundle-path"},
+			"attestation-id":  {"attestation-id"},
+			"attestation-url": {"attestation-url"},
+			"bundle-path":     {"bundle-path"},
 		},
 	},
 	"actions/cache/restore@v4": {
