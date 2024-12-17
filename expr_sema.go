@@ -211,7 +211,7 @@ var BuiltinGlobalVariableTypes = map[string]ExprType{
 		"actor":                     StringType{},
 		"actor_id":                  StringType{},
 		"api_url":                   StringType{},
-		"artifact_cache_size_limit": StringType{}, // Note: Undocumented
+		"artifact_cache_size_limit": NumberType{}, // Note: Undocumented
 		"base_ref":                  StringType{},
 		"env":                       StringType{},
 		"event":                     NewEmptyObjectType(), // Note: Stricter type check for this payload would be possible
@@ -224,7 +224,7 @@ var BuiltinGlobalVariableTypes = map[string]ExprType{
 		"path":                      StringType{},
 		"ref":                       StringType{},
 		"ref_name":                  StringType{},
-		"ref_protected":             StringType{},
+		"ref_protected":             BoolType{},
 		"ref_type":                  StringType{},
 		"repository":                StringType{},
 		"repository_id":             StringType{},
