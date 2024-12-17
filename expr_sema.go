@@ -201,49 +201,52 @@ var BuiltinFuncSignatures = map[string][]*FuncSignature{
 // BuiltinGlobalVariableTypes defines types of all global variables. All context variables are
 // documented at https://docs.github.com/en/actions/learn-github-actions/contexts
 var BuiltinGlobalVariableTypes = map[string]ExprType{
-	// https://docs.github.com/en/actions/learn-github-actions/contexts#github-context
+	// https://docs.github.com/en/actions/writing-workflows/choosing-what-your-workflow-does/accessing-contextual-information-about-workflow-runs#github-context
 	"github": NewStrictObjectType(map[string]ExprType{
-		"action":                StringType{},
-		"action_path":           StringType{},
-		"action_ref":            StringType{},
-		"action_repository":     StringType{},
-		"action_status":         StringType{},
-		"actor":                 StringType{},
-		"actor_id":              StringType{},
-		"api_url":               StringType{},
-		"base_ref":              StringType{},
-		"env":                   StringType{},
-		"event":                 NewEmptyObjectType(), // Note: Stricter type check for this payload would be possible
-		"event_name":            StringType{},
-		"event_path":            StringType{},
-		"graphql_url":           StringType{},
-		"head_ref":              StringType{},
-		"job":                   StringType{},
-		"job_workflow_sha":      StringType{},
-		"ref":                   StringType{},
-		"ref_name":              StringType{},
-		"ref_protected":         StringType{},
-		"ref_type":              StringType{},
-		"path":                  StringType{},
-		"repository":            StringType{},
-		"repository_id":         StringType{},
-		"repository_owner":      StringType{},
-		"repository_owner_id":   StringType{},
-		"repositoryurl":         StringType{}, // repositoryUrl
-		"repository_visibility": StringType{}, // Note: Undocumented
-		"retention_days":        NumberType{},
-		"run_id":                StringType{},
-		"run_number":            StringType{},
-		"run_attempt":           StringType{},
-		"secret_source":         StringType{},
-		"server_url":            StringType{},
-		"sha":                   StringType{},
-		"token":                 StringType{},
-		"triggering_actor":      StringType{},
-		"workflow":              StringType{},
-		"workflow_ref":          StringType{},
-		"workflow_sha":          StringType{},
-		"workspace":             StringType{},
+		"action":                    StringType{},
+		"action_path":               StringType{}, // Note: Composite actions only
+		"action_ref":                StringType{},
+		"action_repository":         StringType{},
+		"action_status":             StringType{}, // Note: Composite actions only
+		"actor":                     StringType{},
+		"actor_id":                  StringType{},
+		"api_url":                   StringType{},
+		"artifact_cache_size_limit": StringType{}, // Note: Undocumented
+		"base_ref":                  StringType{},
+		"env":                       StringType{},
+		"event":                     NewEmptyObjectType(), // Note: Stricter type check for this payload would be possible
+		"event_name":                StringType{},
+		"event_path":                StringType{},
+		"graphql_url":               StringType{},
+		"head_ref":                  StringType{},
+		"job":                       StringType{},
+		"output":                    StringType{}, // Note: Undocumented
+		"path":                      StringType{},
+		"ref":                       StringType{},
+		"ref_name":                  StringType{},
+		"ref_protected":             StringType{},
+		"ref_type":                  StringType{},
+		"repository":                StringType{},
+		"repository_id":             StringType{},
+		"repository_owner":          StringType{},
+		"repository_owner_id":       StringType{},
+		"repository_visibility":     StringType{}, // Note: Undocumented
+		"repositoryurl":             StringType{}, // repositoryUrl
+		"retention_days":            NumberType{},
+		"run_attempt":               StringType{},
+		"run_id":                    StringType{},
+		"run_number":                StringType{},
+		"secret_source":             StringType{},
+		"server_url":                StringType{},
+		"sha":                       StringType{},
+		"state":                     StringType{}, // Note: Undocumented
+		"step_summary":              StringType{}, // Note: Undocumented
+		"token":                     StringType{},
+		"triggering_actor":          StringType{},
+		"workflow":                  StringType{},
+		"workflow_ref":              StringType{},
+		"workflow_sha":              StringType{},
+		"workspace":                 StringType{},
 	}),
 	// https://docs.github.com/en/actions/learn-github-actions/contexts#env-context
 	"env": NewMapObjectType(StringType{}), // env.<env_name>
