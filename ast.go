@@ -328,7 +328,7 @@ func (e *WorkflowCallEvent) EventName() string {
 }
 
 // PermissionScope is struct for respective permission scope like "issues", "checks", ...
-// https://docs.github.com/en/actions/security-guides/automatic-token-authentication#permissions-for-the-github_token
+// https://docs.github.com/en/actions/security-for-github-actions/security-guides/automatic-token-authentication#permissions-for-the-github_token
 type PermissionScope struct {
 	// Name is name of the scope.
 	Name *String
