@@ -721,8 +721,9 @@ var PopularActions = map[string]*ActionMetadata{
 			"retention-days":       {"retention-days", false},
 		},
 		Outputs: ActionMetadataOutputs{
-			"artifact-id":  {"artifact-id"},
-			"artifact-url": {"artifact-url"},
+			"artifact-digest": {"artifact-digest"},
+			"artifact-id":     {"artifact-id"},
+			"artifact-url":    {"artifact-url"},
 		},
 	},
 	"actions/upload-pages-artifact@v1": {
