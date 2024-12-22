@@ -26,7 +26,7 @@ jobs:
       - name: Update test data
         run: make ./scripts/generate-actionlint-matcher/test/* SKIP_GO_GENERATE=true
       - name: Test actionlint-matcher.json
-        run: node ./scripts/generate-actionlint-matcher/test.js
+        run: node ./scripts/generate-actionlint-matcher/test.mjs
       - name: Ensure .github/actionlint-matcher.json is up-to-date
         run: |
           make .github/actionlint-matcher.json

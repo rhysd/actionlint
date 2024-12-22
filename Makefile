@@ -58,8 +58,8 @@ man: man/actionlint.1
 bench:
 	go test -bench Lint -benchmem
 
-.github/actionlint-matcher.json: scripts/generate-actionlint-matcher/object.js
-	node ./scripts/generate-actionlint-matcher/main.js .github/actionlint-matcher.json
+.github/actionlint-matcher.json: scripts/generate-actionlint-matcher/object.mjs
+	node ./scripts/generate-actionlint-matcher/main.mjs .github/actionlint-matcher.json
 
 scripts/generate-actionlint-matcher/test/escape.txt: actionlint
 	./actionlint -color ./testdata/err/one_error.yaml > ./scripts/generate-actionlint-matcher/test/escape.txt || true

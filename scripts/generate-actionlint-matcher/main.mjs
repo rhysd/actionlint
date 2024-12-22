@@ -1,5 +1,5 @@
-const fs = require('fs').promises;
-const object = require('./object.js');
+import { promises as fs } from 'node:fs';
+import object from './object.mjs';
 
 async function main(args) {
     const json = JSON.stringify(object, null, 2);
