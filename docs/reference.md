@@ -1,17 +1,17 @@
 References
 ==========
 
-This document describes links to resources.
+This document describes links to resources related to actionlint and GitHub Actions.
 
 - Repository: https://github.com/rhysd/actionlint
 - Playground: https://rhysd.github.io/actionlint/
 - GitHub Actions official documentations
-  - Workflow syntax: https://docs.github.com/en/actions/learn-github-actions/workflow-syntax-for-github-actions
-  - Expression syntax: https://docs.github.com/en/actions/learn-github-actions/expressions
-  - Built-in functions: https://docs.github.com/en/actions/learn-github-actions/expressions#functions
-  - Webhook events: https://docs.github.com/en/actions/learn-github-actions/events-that-trigger-workflows#webhook-events
-  - Self-hosted runner: https://docs.github.com/en/actions/hosting-your-own-runners/about-self-hosted-runners
-  - Security: https://docs.github.com/en/actions/security-guides/security-hardening-for-github-actions
+  - Workflow syntax: https://docs.github.com/en/actions/writing-workflows/workflow-syntax-for-github-actions
+  - Expression syntax: https://docs.github.com/en/actions/writing-workflows/choosing-what-your-workflow-does/evaluate-expressions-in-workflows-and-actions
+  - Built-in functions: https://docs.github.com/en/actions/writing-workflows/choosing-what-your-workflow-does/evaluate-expressions-in-workflows-and-actions#functions
+  - Webhook events: https://docs.github.com/en/actions/writing-workflows/choosing-when-your-workflow-runs/events-that-trigger-workflows#webhook-events
+  - Self-hosted runner: https://docs.github.com/en/actions/hosting-your-own-runners/managing-self-hosted-runners/about-self-hosted-runners
+  - Security: https://docs.github.com/en/actions/security-for-github-actions/security-guides/security-hardening-for-github-actions
 - CRON syntax: https://pubs.opengroup.org/onlinepubs/9699919799/utilities/crontab.html#tag_20_25_07
 - shellcheck: https://github.com/koalaman/shellcheck
 - pyflakes: https://github.com/PyCQA/pyflakes
