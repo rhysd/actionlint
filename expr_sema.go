@@ -462,10 +462,6 @@ func (sema *ExprSemanticsChecker) SetContextAvailability(avail []string) {
 }
 
 func (sema *ExprSemanticsChecker) checkAvailableContext(n *VariableNode) {
-	if len(sema.availableContexts) == 0 {
-		return
-	}
-
 	ctx := strings.ToLower(n.Name)
 	for _, c := range sema.availableContexts {
 		if c == ctx {
@@ -473,16 +469,20 @@ func (sema *ExprSemanticsChecker) checkAvailableContext(n *VariableNode) {
 		}
 	}
 
-	s := "contexts are"
-	if len(sema.availableContexts) == 1 {
-		s = "context is"
+	var notes string
+	switch len(sema.availableContexts) {
+	case 0:
+		notes = "no context is available here"
+	case 1:
+		notes = "available context is " + quotes(sema.availableContexts)
+	default:
+		notes = "available contexts are " + quotes(sema.availableContexts)
 	}
 	sema.errorf(
 		n,
-		"context %q is not allowed here. available %s %s. see https://docs.github.com/en/actions/learn-github-actions/contexts#context-availability for more details",
+		"context %q is not allowed here. %s. see https://docs.github.com/en/actions/learn-github-actions/contexts#context-availability for more details",
 		n.Name,
-		s,
-		quotes(sema.availableContexts),
+		notes,
 	)
 }
 
