@@ -27,4 +27,4 @@ jobs:
     permissions: read-all
   call6:
     # Edge case. Give up checking format.
-    uses: ${{ runner.name }}
+    uses: ${{ 'oooops' }}

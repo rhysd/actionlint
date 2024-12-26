@@ -2,14 +2,14 @@ on: push
 
 defaults:
   run:
-    shell: ${{ env.SHELL }}
+    shell: ${{ 'sh {0}' }}
 
 jobs:
   test:
     runs-on: ubuntu-latest
     defaults:
       run:
-        shell: ${{ env.SHELL }}
+        shell: ${{ 'sh {0}' }}
     steps:
       - run: echo hi
-        shell: ${{ env.SHELL }}
+        shell: ${{ 'sh {0}' }}
