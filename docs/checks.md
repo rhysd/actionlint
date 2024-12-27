@@ -2642,6 +2642,12 @@ jobs:
     env:
       # ERROR: 'env' context is not available here
       NAME: ${{ env.NAME }}
+    services:
+      redis:
+        image: redis
+        env:
+          # ERROR: No context is allowed here
+          COMMIT_SHA: ${{ github.sha }}
     steps:
       - env:
           # OK: 'env' context is available here
@@ -2663,13 +2669,17 @@ test.yaml:18:17: context "env" is not allowed here. available contexts are "gith
    |
 18 |       NAME: ${{ env.NAME }}
    |                 ^~~~~~~~
-test.yaml:24:33: calling function "success" is not allowed here. "success" is only available in "jobs.<job_id>.if", "jobs.<job_id>.steps.if". see https://docs.github.com/en/actions/learn-github-actions/contexts#context-availability for more details [expression]
+test.yaml:24:27: context "github" is not allowed here. no context is available here. see https://docs.github.com/en/actions/learn-github-actions/contexts#context-availability for more details [expression]
    |
-24 |         run: echo 'Success? ${{ success() }}'
+24 |           COMMIT_SHA: ${{ github.sha }}
+   |                           ^~~~~~~~~~
+test.yaml:30:33: calling function "success" is not allowed here. "success" is only available in "jobs.<job_id>.if", "jobs.<job_id>.steps.if". see https://docs.github.com/en/actions/learn-github-actions/contexts#context-availability for more details [expression]
+   |
+30 |         run: echo 'Success? ${{ success() }}'
    |                                 ^~~~~~~~~
 ```
 
-[Playground](https://rhysd.github.io/actionlint/#eNp8jj1OwzAYhnef4h2QCkNyAC+IgREWTpCkXxtDa0ffT0tU+e7ITU2QkOrFev/sJ0WPyWR0juLJO+D95e3Vg8dZts59pl6KqSRabkCUO6X9vCjg2CmH76qAbWAaNPG8WkCDh8sF+6Cj9e058dfukM7I+V+FLUbiVuk41ZgtSlMorbeo1hy6AnONbsTlLNTlCYqntqi6F6VJaq35u7m/u/3tQcOYsPmwYSCR52tXFvH4hJw3v+2w82vyEwAA//9WsV7P)
+[Playground](https://rhysd.github.io/actionlint/#eNp0j8FOwzAMhu99Ch+QBof2AXJBE0KCQ+Ew7ihNvSawJpXtdFRT3x1lXdsJNF+i/7f953PwCrrINsvQ9yoDeNuWzwrIDlxn2VeoOJmCLOkFYCEt2AyTAmi1kPuZFUDtCI0EGlYLIIe70wkaJzZWxTHQ9/4QjjCO/0Yoeo9UCLbd3KboOU+UsYpeYn7QCebcuhCnmqhTBPq+SGreZ6TeGeR5krB2vMK5VjeoJncxr4JTPb2X5evH5+5lq64PYauXTwS7JTT/u38b7nKgAjQ2wGYXjUHmx/MsT+L+AcZxs/Lu1dr5DQAA//+iDXkG)
 
 Some contexts are only available in some places. For example, `env` context is not available at `jobs.<job_id>.env`, but it is
 available at `jobs.<job_id>.steps.env`.
@@ -2958,7 +2968,7 @@ Note that `steps` in Composite action's metadata is not checked at this point. I
 [reusable-workflow-outputs]: https://docs.github.com/en/actions/using-workflows/reusing-workflows#using-outputs-from-a-reusable-workflow
 [inherit-secrets-announce]: https://github.blog/changelog/2022-05-03-github-actions-simplify-using-secrets-with-reusable-workflows/
 [specific-paths-doc]: https://docs.github.com/en/actions/using-workflows/triggering-a-workflow#using-filters-to-target-specific-paths-for-pull-request-or-push-events
-[availability-doc]: https://docs.github.com/en/actions/learn-github-actions/contexts#context-availability
+[availability-doc]: https://docs.github.com/en/actions/writing-workflows/choosing-what-your-workflow-does/accessing-contextual-information-about-workflow-runs#context-availability
 [deprecate-set-output-save-state]: https://github.blog/changelog/2022-10-11-github-actions-deprecating-save-state-and-set-output-commands/
 [deprecate-set-env-add-path]: https://github.blog/changelog/2020-10-01-github-actions-deprecating-set-env-and-add-path-commands/
 [workflow-commands-doc]: https://docs.github.com/en/actions/using-workflows/workflow-commands-for-github-actions

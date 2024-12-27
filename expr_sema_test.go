@@ -754,6 +754,7 @@ func TestExprSemanticsCheckOK(t *testing.T) {
 			}
 
 			c := NewExprSemanticsChecker(false, nil)
+			c.SetContextAvailability([]string{"github", "job", "jobs", "matrix", "steps", "needs", "env", "inputs", "secrets", "vars", "runner"})
 			if tc.funcs != nil {
 				c.funcs = tc.funcs
 			}
@@ -1211,6 +1212,14 @@ func TestExprSemanticsCheckError(t *testing.T) {
 			availCtx: []string{"env", "matrix"},
 		},
 		{
+			what:  "no available context",
+			input: "github",
+			expected: []string{
+				"context \"github\" is not allowed here. no context is available",
+			},
+			availCtx: []string{},
+		},
+		{
 			what:  "no special function allowed",
 			input: "success()",
 			expected: []string{
@@ -1301,6 +1310,8 @@ func TestExprSemanticsCheckError(t *testing.T) {
 			}
 			if tc.availCtx != nil {
 				c.SetContextAvailability(tc.availCtx)
+			} else {
+				c.SetContextAvailability([]string{"github", "job", "jobs", "matrix", "steps", "needs", "env", "inputs", "secrets", "vars", "runner"})
 			}
 			if tc.availSP != nil {
 				c.SetSpecialFunctionAvailability(tc.availSP)
@@ -1496,6 +1507,16 @@ func TestExprCompareOperandsCheck(t *testing.T) {
 						},
 						"any": AnyType{},
 					}
+					c.SetContextAvailability([]string{
+						"any",
+						"number",
+						"string",
+						"bool",
+						"null",
+						"object",
+						"array",
+						"array_2d",
+					})
 
 					ty, errs := c.Check(e)
 					if ok {
