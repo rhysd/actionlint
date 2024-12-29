@@ -1,13 +1,13 @@
 # This error will be ignored by workflows/**/*.yaml config
 on: unknown
 
-# This erro will be reported
+# This error will be reported
 env:
   FOO: ${{ env.FOO }}
 
 jobs:
   test:
-    # This erro will be reported
+    # This error will be reported
     runs-on: unknown
     steps:
       - run: echo

@@ -7,7 +7,7 @@ env:
 
 jobs:
   test:
-    # This erro will be reported
+    # This error will be reported
     runs-on: unknown
     steps:
       - run: echo

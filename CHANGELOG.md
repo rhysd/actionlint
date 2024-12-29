@@ -796,7 +796,7 @@
 - Allow workflow calls are available in matrix jobs. See [the official announcement](https://github.blog/changelog/2022-08-22-github-actions-improvements-to-reusable-workflows-2/) for more details. ([#197](https://github.com/rhysd/actionlint/issues/197))
   ```yaml
   jobs:
-    ReuseableMatrixJobForDeployment:
+    ReusableMatrixJobForDeployment:
       strategy:
         matrix:
           target: [dev, stage, prod]
@@ -929,7 +929,7 @@
   ```
 - Fix usage of local actions (`uses: ./path/to/action`) was not checked when multiple workflow files were passed to `actionlint` command. ([#173](https://github.com/rhysd/actionlint/issues/173))
 - Allow `description:` is missing in `secrets:` of reusable workflow call definition since it is optional. ([#174](https://github.com/rhysd/actionlint/issues/174))
-- Fix type of propery of `github.event.inputs` is string unlike `inputs` context. See [the document](https://github.com/rhysd/actionlint/blob/main/docs/checks.md#workflow-dispatch-event-validation) for more details. ([#181](https://github.com/rhysd/actionlint/issues/181))
+- Fix type of property of `github.event.inputs` is string unlike `inputs` context. See [the document](https://github.com/rhysd/actionlint/blob/main/docs/checks.md#workflow-dispatch-event-validation) for more details. ([#181](https://github.com/rhysd/actionlint/issues/181))
   ```yaml
   on:
     workflow_dispatch:
