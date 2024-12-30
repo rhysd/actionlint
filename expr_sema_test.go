@@ -1742,7 +1742,7 @@ func TestParseFormatSpecifiers(t *testing.T) {
 			want: []int{0},
 		},
 		{
-			what: "mutliple specifiers",
+			what: "multiple specifiers",
 			in:   "{0} {1}{2}x{3}}{4}!",
 			want: []int{0, 1, 2, 3, 4},
 		},
