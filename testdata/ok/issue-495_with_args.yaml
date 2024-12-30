@@ -10,4 +10,5 @@ jobs:
     steps:
       - uses: docker://example.com:latest
         with:
+          entrypoint: "${{ inputs.test }}"
           args: --arg "${{ inputs.test }}"
