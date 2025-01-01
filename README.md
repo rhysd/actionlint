@@ -1,6 +1,6 @@
 actionlint
 ==========
-[![CI Badge][]][CI]
+[![CI Status][ci-badge]][ci]
 [![API Document][apidoc-badge]][apidoc]
 
 [actionlint][repo] is a static checker for GitHub Actions workflow files. [Try it online!][playground]
@@ -127,8 +127,8 @@ See the [contribution guide](./CONTRIBUTING.md) for more details.
 
 actionlint is distributed under [the MIT license](./LICENSE.txt).
 
-[CI Badge]: https://github.com/rhysd/actionlint/workflows/CI/badge.svg?branch=main&event=push
-[CI]: https://github.com/rhysd/actionlint/actions?query=workflow%3ACI+branch%3Amain
+[ci-badge]: https://github.com/rhysd/actionlint/actions/workflows/ci.yaml/badge.svg
+[ci]: https://github.com/rhysd/actionlint/actions/workflows/ci.yaml
 [apidoc-badge]: https://pkg.go.dev/badge/github.com/rhysd/actionlint.svg
 [apidoc]: https://pkg.go.dev/github.com/rhysd/actionlint
 [repo]: https://github.com/rhysd/actionlint
