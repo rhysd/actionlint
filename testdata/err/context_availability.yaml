@@ -111,13 +111,13 @@ jobs:
         image: ${{ env.IMAGE_NAME }}
         # jobs.<job_id>.services.<service_id>.credentials
         credentials:
-          # ERROR
+          # ERROR because runner is not available
           username: ${{ runner.name }}
           # OK
           password: ${{ env.MY_PASSWORD }}
         # jobs.<job_id>.services.<service_id>.env.<env_id>
         env:
-          # ERROR
+          # OK (#500)
           RUNNER: ${{ runner.name }}
     # jobs.<job_id>.strategy
     strategy:

@@ -1,0 +1,18 @@
+on: push
+
+defaults:
+  run:
+    # ERROR: No context is available here
+    shell: ${{ env.SHELL }}
+
+jobs:
+  test:
+    runs-on: ubuntu-latest
+    defaults:
+      run:
+        # OK: 'env' context is available here
+        shell: ${{ env.SHELL }}
+    steps:
+      - run: echo hello
+        # ERROR: No context is available here
+        shell: ${{ env.SHELL}}

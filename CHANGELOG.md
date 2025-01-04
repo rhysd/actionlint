@@ -2,22 +2,24 @@
 # [v1.7.5](https://github.com/rhysd/actionlint/releases/tag/v1.7.5) - 2024-12-28
 
 - Strictly check available contexts in `${{ }}` placeholders following the ['Context availability' table](https://docs.github.com/en/actions/writing-workflows/choosing-what-your-workflow-does/accessing-contextual-information-about-workflow-runs#context-availability) in the official document.
-  - For example, `jobs.<job>.env` allows `github` context but `jobs.<job>.services.<service>.env` doesn't allow any contexts. Now actionlint can catch the mistake.
+  - For example, `jobs.<job_id>.defaults.run.shell` allows `env` context but `shell` workflow keys in other places allow no context.
     ```yaml
+    defaults:
+      run:
+        # ERROR: No context is available here
+        shell: ${{ env.SHELL }}
+
     jobs:
       test:
         runs-on: ubuntu-latest
-        env:
-          # OK. `github` context is available here.
-          COMMIT_SHA: ${{ github.sha }}
-        services:
-          redis:
-            image: redis
-            env:
-              # ERROR: No context is available here.
-              COMMIT_SHA: ${{ github.sha }}
+        defaults:
+          run:
+            # OK: 'env' context is available here
+            shell: ${{ env.SHELL }}
         steps:
-          - ...
+          - run: echo hello
+            # ERROR: No context is available here
+            shell: ${{ env.SHELL}}
     ```
 - Check a string literal passed to `fromJSON()` call. This pattern is [popular](https://github.com/search?q=fromJSON%28%27+lang%3Ayaml&type=code) to create array or object constants because GitHub Actions does not provide the literal syntax for them. See the [document](https://github.com/rhysd/actionlint/blob/main/docs/checks.md#contexts-and-built-in-functions) for more details. ([#464](https://github.com/rhysd/actionlint/issues/464))
   ```yaml
@@ -796,7 +798,7 @@
 - Allow workflow calls are available in matrix jobs. See [the official announcement](https://github.blog/changelog/2022-08-22-github-actions-improvements-to-reusable-workflows-2/) for more details. ([#197](https://github.com/rhysd/actionlint/issues/197))
   ```yaml
   jobs:
-    ReusableMatrixJobForDeployment:
+    ReuseableMatrixJobForDeployment:
       strategy:
         matrix:
           target: [dev, stage, prod]
@@ -929,7 +931,7 @@
   ```
 - Fix usage of local actions (`uses: ./path/to/action`) was not checked when multiple workflow files were passed to `actionlint` command. ([#173](https://github.com/rhysd/actionlint/issues/173))
 - Allow `description:` is missing in `secrets:` of reusable workflow call definition since it is optional. ([#174](https://github.com/rhysd/actionlint/issues/174))
-- Fix type of property of `github.event.inputs` is string unlike `inputs` context. See [the document](https://github.com/rhysd/actionlint/blob/main/docs/checks.md#workflow-dispatch-event-validation) for more details. ([#181](https://github.com/rhysd/actionlint/issues/181))
+- Fix type of propery of `github.event.inputs` is string unlike `inputs` context. See [the document](https://github.com/rhysd/actionlint/blob/main/docs/checks.md#workflow-dispatch-event-validation) for more details. ([#181](https://github.com/rhysd/actionlint/issues/181))
   ```yaml
   on:
     workflow_dispatch:

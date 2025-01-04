@@ -485,7 +485,7 @@ func (rule *RuleExpression) checkContainer(c *Container, workflowKey, childWorkf
 		rule.checkString(c.Credentials.Username, k)
 		rule.checkString(c.Credentials.Password, k)
 	}
-	rule.checkEnv(c.Env, workflowKey+".env.<env_id>") // e.g. jobs.<job_id>.container.env.<env_id>
+	rule.checkEnv(c.Env, childWorkflowKey+".env.<env_id>") // e.g. jobs.<job_id>.container.env.<env_id>
 	rule.checkStrings(c.Ports, workflowKey)
 	rule.checkStrings(c.Volumes, workflowKey)
 	rule.checkString(c.Options, workflowKey)

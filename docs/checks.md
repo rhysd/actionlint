@@ -2626,8 +2626,10 @@ Example input:
 ```yaml
 on: push
 
-env:
-  NAME: rhysd
+defaults:
+  run:
+    # ERROR: No context is available here
+    shell: ${{ env.SHELL }}
 
 jobs:
   test:
@@ -2639,19 +2641,19 @@ jobs:
           # ERROR: 'runner' context is not available here
           - ${{ runner.temp }}
     runs-on: ubuntu-latest
+    defaults:
+      run:
+        # OK: 'env' context is available here
+        shell: ${{ env.SHELL }}
     env:
       # ERROR: 'env' context is not available here
-      NAME: ${{ env.NAME }}
-    services:
-      redis:
-        image: redis
-        env:
-          # ERROR: No context is allowed here
-          COMMIT_SHA: ${{ github.sha }}
+      FOO: ${{ env.BAR }}
     steps:
       - env:
           # OK: 'env' context is available here
-          NAME: ${{ env.NAME }}
+          FOO: ${{ env.BAR }}
+        # ERROR: No context is available here
+        shell: ${{ env.SHELL}}
         # ERROR: 'success()' function is not available here
         run: echo 'Success? ${{ success() }}'
         # OK: 'success()' function is available here
@@ -2661,25 +2663,29 @@ jobs:
 Output:
 
 ```
-test.yaml:14:17: context "runner" is not allowed here. available contexts are "github", "inputs", "needs", "vars". see https://docs.github.com/en/actions/learn-github-actions/contexts#context-availability for more details [expression]
+test.yaml:6:16: context "env" is not allowed here. no context is available here. see https://docs.github.com/en/actions/learn-github-actions/contexts#context-availability for more details [expression]
+  |
+6 |     shell: ${{ env.SHELL }}
+  |                ^~~~~~~~~
+test.yaml:16:17: context "runner" is not allowed here. available contexts are "github", "inputs", "needs", "vars". see https://docs.github.com/en/actions/learn-github-actions/contexts#context-availability for more details [expression]
    |
-14 |           - ${{ runner.temp }}
+16 |           - ${{ runner.temp }}
    |                 ^~~~~~~~~~~
-test.yaml:18:17: context "env" is not allowed here. available contexts are "github", "inputs", "matrix", "needs", "secrets", "strategy", "vars". see https://docs.github.com/en/actions/learn-github-actions/contexts#context-availability for more details [expression]
+test.yaml:24:16: context "env" is not allowed here. available contexts are "github", "inputs", "matrix", "needs", "secrets", "strategy", "vars". see https://docs.github.com/en/actions/learn-github-actions/contexts#context-availability for more details [expression]
    |
-18 |       NAME: ${{ env.NAME }}
-   |                 ^~~~~~~~
-test.yaml:24:27: context "github" is not allowed here. no context is available here. see https://docs.github.com/en/actions/learn-github-actions/contexts#context-availability for more details [expression]
+24 |       FOO: ${{ env.BAR }}
+   |                ^~~~~~~
+test.yaml:30:20: context "env" is not allowed here. no context is available here. see https://docs.github.com/en/actions/learn-github-actions/contexts#context-availability for more details [expression]
    |
-24 |           COMMIT_SHA: ${{ github.sha }}
-   |                           ^~~~~~~~~~
-test.yaml:30:33: calling function "success" is not allowed here. "success" is only available in "jobs.<job_id>.if", "jobs.<job_id>.steps.if". see https://docs.github.com/en/actions/learn-github-actions/contexts#context-availability for more details [expression]
+30 |         shell: ${{ env.SHELL}}
+   |                    ^~~~~~~~~~~
+test.yaml:32:33: calling function "success" is not allowed here. "success" is only available in "jobs.<job_id>.if", "jobs.<job_id>.steps.if". see https://docs.github.com/en/actions/learn-github-actions/contexts#context-availability for more details [expression]
    |
-30 |         run: echo 'Success? ${{ success() }}'
+32 |         run: echo 'Success? ${{ success() }}'
    |                                 ^~~~~~~~~
 ```
 
-[Playground](https://rhysd.github.io/actionlint/#eNp0j8FOwzAMhu99Ch+QBof2AXJBE0KCQ+Ew7ihNvSawJpXtdFRT3x1lXdsJNF+i/7f953PwCrrINsvQ9yoDeNuWzwrIDlxn2VeoOJmCLOkFYCEt2AyTAmi1kPuZFUDtCI0EGlYLIIe70wkaJzZWxTHQ9/4QjjCO/0Yoeo9UCLbd3KboOU+UsYpeYn7QCebcuhCnmqhTBPq+SGreZ6TeGeR5krB2vMK5VjeoJncxr4JTPb2X5evH5+5lq64PYauXTwS7JTT/u38b7nKgAjQ2wGYXjUHmx/MsT+L+AcZxs/Lu1dr5DQAA//+iDXkG)
+[Playground](https://rhysd.github.io/actionlint/#eNp8j81qwzAQhO96ijkU0h6cB/CltNDSQyDQPIHtrGO3imT2J2kIfvciJ45NIT2J0Xy7MxtDjs6kcW5LdWFeJXcAW0gPIA15n+PhfAaFw3Lz8bZaoe+d+4rlQCqJXlHlQml3uihgXyi3P6MCti1TpZFP0xeQDat3rTZWLo+Rv2sfjyngL8IWAvFSad+NNluQLPW30oJa5otUZrDmt1zRKfXeTcmjcBjB9/V6gl5fPkdElLrb4mw+8d/UveCZnUqCqiZisbGqIpHngZWLeHxC3y9udFvnk/MbAAD//3L9fcg=)
 
 Some contexts are only available in some places. For example, `env` context is not available at `jobs.<job_id>.env`, but it is
 available at `jobs.<job_id>.steps.env`.
