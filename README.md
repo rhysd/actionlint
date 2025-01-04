@@ -139,10 +139,10 @@ actionlint is distributed under [the MIT license](./LICENSE.txt).
 [filter-pattern-doc]: https://docs.github.com/en/actions/using-workflows/workflow-syntax-for-github-actions#filter-pattern-cheat-sheet
 [script-injection-doc]: https://docs.github.com/en/actions/learn-github-actions/security-hardening-for-github-actions#understanding-the-risk-of-script-injections
 [releases]: https://github.com/rhysd/actionlint/releases
-[checks]: https://github.com/rhysd/actionlint/blob/v1.7.5/docs/checks.md
-[install]: https://github.com/rhysd/actionlint/blob/v1.7.5/docs/install.md
-[usage]: https://github.com/rhysd/actionlint/blob/v1.7.5/docs/usage.md
-[config]: https://github.com/rhysd/actionlint/blob/v1.7.5/docs/config.md
-[api]: https://github.com/rhysd/actionlint/blob/v1.7.5/docs/api.md
-[refs]: https://github.com/rhysd/actionlint/blob/v1.7.5/docs/reference.md
+[checks]: https://github.com/rhysd/actionlint/blob/v1.7.6/docs/checks.md
+[install]: https://github.com/rhysd/actionlint/blob/v1.7.6/docs/install.md
+[usage]: https://github.com/rhysd/actionlint/blob/v1.7.6/docs/usage.md
+[config]: https://github.com/rhysd/actionlint/blob/v1.7.6/docs/config.md
+[api]: https://github.com/rhysd/actionlint/blob/v1.7.6/docs/api.md
+[refs]: https://github.com/rhysd/actionlint/blob/v1.7.6/docs/reference.md
 [issue-form]: https://github.com/rhysd/actionlint/issues/new
