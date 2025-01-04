@@ -1,3 +1,15 @@
+<a id="v1.7.6"></a>
+# [v1.7.6](https://github.com/rhysd/actionlint/releases/tag/v1.7.6) - 2025-01-04
+
+- Using contexts at specific workflow keys is incorrectly reported as not allowed. Affected workflow keys are as follows. ([#495](https://github.com/rhysd/actionlint/issues/495), [#497](https://github.com/rhysd/actionlint/issues/497), [#498](https://github.com/rhysd/actionlint/issues/498), [#500](https://github.com/rhysd/actionlint/issues/500))
+  - `jobs.<job_id>.steps.with.args`
+  - `jobs.<job_id>.steps.with.entrypoint`
+  - `jobs.<job_id>.services.<service_id>.env`
+- Update Go dependencies to the latest.
+
+[Changes][v1.7.6]
+
+
 <a id="v1.7.5"></a>
 # [v1.7.5](https://github.com/rhysd/actionlint/releases/tag/v1.7.5) - 2024-12-28
 
@@ -798,7 +810,7 @@
 - Allow workflow calls are available in matrix jobs. See [the official announcement](https://github.blog/changelog/2022-08-22-github-actions-improvements-to-reusable-workflows-2/) for more details. ([#197](https://github.com/rhysd/actionlint/issues/197))
   ```yaml
   jobs:
-    ReuseableMatrixJobForDeployment:
+    ReusableMatrixJobForDeployment:
       strategy:
         matrix:
           target: [dev, stage, prod]
@@ -931,7 +943,7 @@
   ```
 - Fix usage of local actions (`uses: ./path/to/action`) was not checked when multiple workflow files were passed to `actionlint` command. ([#173](https://github.com/rhysd/actionlint/issues/173))
 - Allow `description:` is missing in `secrets:` of reusable workflow call definition since it is optional. ([#174](https://github.com/rhysd/actionlint/issues/174))
-- Fix type of propery of `github.event.inputs` is string unlike `inputs` context. See [the document](https://github.com/rhysd/actionlint/blob/main/docs/checks.md#workflow-dispatch-event-validation) for more details. ([#181](https://github.com/rhysd/actionlint/issues/181))
+- Fix type of property of `github.event.inputs` is string unlike `inputs` context. See [the document](https://github.com/rhysd/actionlint/blob/main/docs/checks.md#workflow-dispatch-event-validation) for more details. ([#181](https://github.com/rhysd/actionlint/issues/181))
   ```yaml
   on:
     workflow_dispatch:
@@ -1840,6 +1852,7 @@ See documentation for more details:
 [Changes][v1.0.0]
 
 
+[v1.7.6]: https://github.com/rhysd/actionlint/compare/v1.7.5...v1.7.6
 [v1.7.5]: https://github.com/rhysd/actionlint/compare/v1.7.4...v1.7.5
 [v1.7.4]: https://github.com/rhysd/actionlint/compare/v1.7.3...v1.7.4
 [v1.7.3]: https://github.com/rhysd/actionlint/compare/v1.7.2...v1.7.3
