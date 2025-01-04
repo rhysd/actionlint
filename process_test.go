@@ -343,3 +343,33 @@ func TestProcessCommandExitStatusNonZero(t *testing.T) {
 		t.Fatalf("Unexpected error happened: %q", msg)
 	}
 }
+
+func TestProcessCommandlineParseError(t *testing.T) {
+	tests := []struct {
+		what string
+		cmd  string
+	}{
+		{
+			what: "broken command line",
+			cmd:  "'broken' 'arg",
+		},
+		{
+			what: "executable file not found",
+			cmd:  "this-command-does-not-exist",
+		},
+		{
+			what: "empty",
+			cmd:  "",
+		},
+	}
+
+	p := newConcurrentProcess(1)
+	for _, tc := range tests {
+		t.Run(tc.what, func(t *testing.T) {
+			_, err := p.newCommandRunner(tc.cmd, true)
+			if err == nil {
+				t.Fatalf("Command %q caused no error", tc)
+			}
+		})
+	}
+}

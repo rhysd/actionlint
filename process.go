@@ -111,7 +111,7 @@ func (proc *concurrentProcess) wait() {
 // is resolved in this function.
 func (proc *concurrentProcess) newCommandRunner(exe string, combineOutput bool) (*externalCommand, error) {
 	var args []string
-	p, args, err := findExe(exe)
+	p, args, err := resolveExternalCommand(exe)
 	if err != nil {
 		return nil, err
 	}
@@ -124,16 +124,16 @@ func (proc *concurrentProcess) newCommandRunner(exe string, combineOutput bool) 
 	return cmd, nil
 }
 
-func findExe(exe string) (string, []string, error) {
-	p, err := execabs.LookPath(exe)
+func resolveExternalCommand(exe string) (string, []string, error) {
+	c, err := execabs.LookPath(exe)
 	if err == nil {
-		return p, nil, nil
+		return c, nil, nil
 	}
-	// See if the command string contains args. As it is best effort, we do not
-	// handle parse errors.
-	if exeArgs, _ := shellwords.Parse(exe); len(exeArgs) > 0 {
-		if p, err := execabs.LookPath(exeArgs[0]); err == nil {
-			return p, exeArgs[1:], nil
+
+	// Try to parse the string as a command line instead of a single executable file path.
+	if a, err := shellwords.Parse(exe); err == nil && len(a) > 0 {
+		if c, err := execabs.LookPath(a[0]); err == nil {
+			return c, a[1:], nil
 		}
 	}
 
