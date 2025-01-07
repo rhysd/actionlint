@@ -34,7 +34,7 @@
     "@types/eslint-plugin-mocha": "^10.4.0",
     "@types/jsdom": "^21.1.7",
     "@types/mocha": "^10.0.10",
-    "@types/node": "^22.10.2",
+    "@types/node": "^22.10.5",
     "@types/pako": "^2.0.3",
     "eslint": "^9.17.0",
     "eslint-plugin-mocha": "^10.5.0",
@@ -45,6 +45,6 @@
     "stylelint": "^16.12.0",
     "stylelint-config-standard": "^36.0.1",
     "typescript": "^5.7.2",
-    "typescript-eslint": "^8.18.2"
+    "typescript-eslint": "^8.19.1"
   }
 }
