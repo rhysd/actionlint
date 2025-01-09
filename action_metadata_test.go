@@ -228,7 +228,7 @@ func TestLocalActionsParsingSkipped(t *testing.T) {
 		{
 			what: "not a local action",
 			proj: &Project{"", nil},
-			spec: "actions/checkout@v3",
+			spec: "actions/checkout@v4",
 		},
 		{
 			what: "action does not exist (#25, #40)",

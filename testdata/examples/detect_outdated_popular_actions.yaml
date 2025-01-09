@@ -4,5 +4,5 @@ jobs:
   test:
     runs-on: ubuntu-latest
     steps:
-      # ERROR: actions/checkout@v2 is using the outdated runner 'node12'
-      - uses: actions/checkout@v2
+      # ERROR: actions/checkout@v3 is using the outdated runner 'node16'
+      - uses: actions/checkout@v3

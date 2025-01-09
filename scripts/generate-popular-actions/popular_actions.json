@@ -22,8 +22,8 @@
     },
     {
         "slug": "JamesIves/github-pages-deploy-action",
-        "tags": ["releases/v3", "releases/v4"],
-        "next": "release/v5"
+        "tags": ["releases/v3", "v4"],
+        "next": "v5"
     },
     {
         "slug": "ReactiveCircus/android-emulator-runner",
@@ -66,6 +66,18 @@
         "next": "v5"
     },
     {
+        "slug": "actions/cache",
+        "path": "/save",
+        "tags": ["v4"],
+        "next": "v5"
+    },
+    {
+        "slug": "actions/cache",
+        "path": "/restore",
+        "tags": ["v4"],
+        "next": "v5"
+    },
+    {
         "slug": "actions/checkout",
         "tags": ["v1", "v2", "v3", "v4"],
         "next": "v5"
@@ -87,7 +99,7 @@
     },
     {
         "slug": "actions/download-artifact",
-        "tags": ["v1", "v2", "v3", "v4"],
+        "tags": ["v1", "v2", "v3", "v3-node20", "v4"],
         "next": "v5"
     },
     {
@@ -137,7 +149,7 @@
     },
     {
         "slug": "actions/upload-artifact",
-        "tags": ["v1", "v2", "v3", "v4"],
+        "tags": ["v1", "v2", "v3", "v3-node20", "v4"],
         "next": "v5"
     },
     {
@@ -172,18 +184,18 @@
     },
     {
         "slug": "codecov/codecov-action",
-        "tags": ["v1", "v2", "v3", "v4"],
-        "next": "v5"
-    },
-    {
-        "slug": "dawidd6/action-download-artifact",
-        "tags": ["v2", "v3", "v5"],
+        "tags": ["v1", "v2", "v3", "v4", "v5"],
         "next": "v6"
     },
     {
+        "slug": "dawidd6/action-download-artifact",
+        "tags": ["v2", "v3", "v5", "v6", "v7"],
+        "next": "v8"
+    },
+    {
         "slug": "dawidd6/action-send-mail",
-        "tags": ["v1", "v2", "v3"],
-        "next": "v4"
+        "tags": ["v1", "v2", "v3", "v4"],
+        "next": "v5"
     },
     {
         "slug": "dessant/lock-threads",
@@ -192,8 +204,8 @@
     },
     {
         "slug": "docker/build-push-action",
-        "tags": ["v1", "v2", "v3", "v4", "v5"],
-        "next": "v6"
+        "tags": ["v1", "v2", "v3", "v4", "v5", "v6"],
+        "next": "v7"
     },
     {
         "slug": "docker/login-action",
@@ -256,8 +268,8 @@
     },
     {
         "slug": "github/super-linter",
-        "tags": ["v3", "v4", "v5", "v6"],
-        "next": "v7"
+        "tags": ["v3", "v4", "v5", "v6", "v7"],
+        "next": "v8"
     },
     {
         "slug": "githubocto/flat",
@@ -317,8 +329,8 @@
     },
     {
         "slug": "mikepenz/release-changelog-builder-action",
-        "tags": ["v1", "v2", "v3", "v4"],
-        "next": "v5"
+        "tags": ["v1", "v2", "v3", "v4", "v5"],
+        "next": "v6"
     },
     {
         "slug": "msys2/setup-msys2",
@@ -348,8 +360,8 @@
     },
     {
         "slug": "peter-evans/create-pull-request",
-        "tags": ["v1", "v2", "v3", "v4", "v5", "v6"],
-        "next": "v7"
+        "tags": ["v1", "v2", "v3", "v4", "v5", "v6", "v7"],
+        "next": "v8"
     },
     {
         "slug": "preactjs/compressed-size-action",
@@ -358,8 +370,8 @@
     },
     {
         "slug": "pulumi/actions",
-        "tags": ["v1", "v2", "v3", "v4", "v5"],
-        "next": "v6"
+        "tags": ["v1", "v2", "v3", "v4", "v5", "v6"],
+        "next": "v7"
     },
     {
         "slug": "pypa/gh-action-pypi-publish",
@@ -444,8 +456,8 @@
     },
     {
         "slug": "treosh/lighthouse-ci-action",
-        "tags": ["v1", "v2", "v3", "v7", "v8", "v9", "v10", "v11"],
-        "next": "v12"
+        "tags": ["v1", "v2", "v3", "v7", "v8", "v9", "v10", "v11", "v12"],
+        "next": "v13"
     },
     {
         "slug": "wearerequired/lint-action",
@@ -459,8 +471,8 @@
     },
     {
         "slug": "actions/attest-build-provenance",
-        "tags": ["v1"],
-        "next": "v2"
+        "tags": ["v1", "v2"],
+        "next": "v3"
     },
     {
         "slug": "actions/add-to-project",

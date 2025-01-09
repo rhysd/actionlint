@@ -495,7 +495,7 @@ func TestExprSemanticsCheckOK(t *testing.T) {
 			expected: StringType{},
 		},
 		{
-			what:     "format() function arguments varlidation",
+			what:     "format() function arguments validation",
 			input:    "format('{0}{0}{0} {1}{2}{1} {1}{2}{1}{2} {0} {1}{1}{1} {2}{2}{2} {0}{0}{0}{0} {0}', 1, 'foo', true)",
 			expected: StringType{},
 		},
@@ -637,8 +637,8 @@ func TestExprSemanticsCheckOK(t *testing.T) {
 		},
 		{
 			what:         "non-special function",
-			input:        "fromJSON('{}')",
-			expected:     AnyType{},
+			input:        "contains('hello, world', 'o, w')",
+			expected:     BoolType{},
 			availSPFuncs: []string{"always"},
 		},
 		{
@@ -719,6 +719,25 @@ func TestExprSemanticsCheckOK(t *testing.T) {
 			input:    "!!('foo' || 10) && 20",
 			expected: NumberType{},
 		},
+		{
+			what:     "escaped braces in format string",
+			input:    "format('hello {{1}} {0}', 42)",
+			expected: StringType{},
+		},
+		{
+			what:     "format specifier is escaped",
+			input:    "format('hello {{{0}', 'world')", // First {{ is escaped. {0} is not escaped
+			expected: StringType{},
+		},
+		{
+			what:  "fromJSON with JSON constant value",
+			input: `fromJSON('{"foo":true,"bar":["foo", 12.3],"piyo":null}')`,
+			expected: NewStrictObjectType(map[string]ExprType{
+				"foo":  BoolType{},
+				"bar":  &ArrayType{Elem: StringType{}}, // Element type was merged
+				"piyo": NullType{},
+			}),
+		},
 	}
 
 	allSPFuncs := []string{}
@@ -735,6 +754,7 @@ func TestExprSemanticsCheckOK(t *testing.T) {
 			}
 
 			c := NewExprSemanticsChecker(false, nil)
+			c.SetContextAvailability([]string{"github", "job", "jobs", "matrix", "steps", "needs", "env", "inputs", "secrets", "vars", "runner"})
 			if tc.funcs != nil {
 				c.funcs = tc.funcs
 			}
@@ -769,8 +789,8 @@ func TestExprSemanticsCheckOK(t *testing.T) {
 				t.Fatal("semantics check failed:", errs)
 			}
 
-			if !cmp.Equal(tc.expected, ty) {
-				t.Fatalf("wanted: %s\nbut got:%s\ndiff:\n%s", tc.expected.String(), ty.String(), cmp.Diff(tc.expected, ty))
+			if diff := cmp.Diff(tc.expected, ty); diff != "" {
+				t.Fatalf("wanted: %s\nbut got:%s\ndiff:\n%s", tc.expected.String(), ty.String(), diff)
 			}
 		})
 	}
@@ -1017,6 +1037,27 @@ func TestExprSemanticsCheckError(t *testing.T) {
 			},
 		},
 		{
+			what:  "function name of format() call check is case insensitive",
+			input: "Format('{0}', 1, 2)",
+			expected: []string{
+				`format string "{0}" does not contain placeholder {1}`,
+			},
+		},
+		{
+			what:  "format specifier is escaped",
+			input: "format('hello {{0}}', 'world')",
+			expected: []string{
+				"does not contain placeholder {0}",
+			},
+		},
+		{
+			what:  "format specifier is still escaped",
+			input: "format('hello {{{{0}}', 'world')", // First {{ is escaped. {{0}} is still escaped
+			expected: []string{
+				"does not contain placeholder {0}",
+			},
+		},
+		{
 			what:  "undefined matrix value",
 			input: "matrix.bar",
 			expected: []string{
@@ -1171,6 +1212,14 @@ func TestExprSemanticsCheckError(t *testing.T) {
 			availCtx: []string{"env", "matrix"},
 		},
 		{
+			what:  "no available context",
+			input: "github",
+			expected: []string{
+				"context \"github\" is not allowed here. no context is available",
+			},
+			availCtx: []string{},
+		},
+		{
 			what:  "no special function allowed",
 			input: "success()",
 			expected: []string{
@@ -1224,6 +1273,13 @@ func TestExprSemanticsCheckError(t *testing.T) {
 				"must not start with the GITHUB_ prefix",
 			},
 		},
+		{
+			what:  "broken JSON value at fromJSON argument",
+			input: `fromJSON('{"foo": true')`,
+			expected: []string{
+				"broken JSON string is passed to fromJSON() at offset 12",
+			},
+		},
 	}
 
 	allSP := []string{}
@@ -1254,6 +1310,8 @@ func TestExprSemanticsCheckError(t *testing.T) {
 			}
 			if tc.availCtx != nil {
 				c.SetContextAvailability(tc.availCtx)
+			} else {
+				c.SetContextAvailability([]string{"github", "job", "jobs", "matrix", "steps", "needs", "env", "inputs", "secrets", "vars", "runner"})
 			}
 			if tc.availSP != nil {
 				c.SetSpecialFunctionAvailability(tc.availSP)
@@ -1449,6 +1507,16 @@ func TestExprCompareOperandsCheck(t *testing.T) {
 						},
 						"any": AnyType{},
 					}
+					c.SetContextAvailability([]string{
+						"any",
+						"number",
+						"string",
+						"bool",
+						"null",
+						"object",
+						"array",
+						"array_2d",
+					})
 
 					ty, errs := c.Check(e)
 					if ok {
@@ -1617,8 +1685,8 @@ func TestExprSemanticsCheckerUpdateInputsMultipleTimes(t *testing.T) {
 			c.UpdateInputs(tc.first)
 			c.UpdateDispatchInputs(tc.second)
 			have := c.vars["inputs"]
-			if !cmp.Equal(have, tc.want) {
-				t.Fatal("Merged `inputs` type is unexpected", have, "v.s.", tc.want)
+			if diff := cmp.Diff(have, tc.want); diff != "" {
+				t.Fatal(diff)
 			}
 		})
 	}
@@ -1653,3 +1721,95 @@ func TestBuiltinGlobalVariableTypesValidation(t *testing.T) {
 		testObjectPropertiesAreInLowerCase(t, ty)
 	}
 }
+
+func TestParseFormatSpecifiers(t *testing.T) {
+	tests := []struct {
+		what string
+		in   string
+		want []int // Specifiers in the `in` string
+	}{
+		{
+			what: "empty input",
+			in:   "",
+		},
+		{
+			what: "no specifier",
+			in:   "hello, world!",
+		},
+		{
+			what: "single specifier",
+			in:   "Hello{0}specifier",
+			want: []int{0},
+		},
+		{
+			what: "multiple specifiers",
+			in:   "{0} {1}{2}x{3}}{4}!",
+			want: []int{0, 1, 2, 3, 4},
+		},
+		{
+			what: "many specifiers",
+			in:   "{0}{1}{2}{3}{4}{5}{6}{7}{8}{9}{10}!",
+			want: []int{0, 1, 2, 3, 4, 5, 6, 7, 8, 9, 10},
+		},
+		{
+			what: "unordered",
+			in:   "{2}foo{4} {0}{3}",
+			want: []int{2, 4, 0, 3},
+		},
+		{
+			what: "uncontiguous",
+			in:   "{0} {2}foo{5} {1}",
+			want: []int{0, 2, 5, 1},
+		},
+		{
+			what: "unclosed",
+			in:   "{12foo",
+		},
+		{
+			what: "not digit",
+			in:   "{hello}",
+		},
+		{
+			what: "space in digits",
+			in:   "{1 2}",
+		},
+		{
+			what: "empty",
+			in:   "{}",
+		},
+		{
+			what: "specifier inside specifier",
+			in:   "{1{0}2}",
+			want: []int{0},
+		},
+		{
+			what: "escaped",
+			in:   "{{hello{{0}{{{{1}world}}",
+		},
+		{
+			what: "after escaped",
+			in:   "{{{{{0}",
+			want: []int{0},
+		},
+		{
+			what: "kuma-",
+			in:   "{・{ᴥ}・}",
+		},
+	}
+
+	for _, tc := range tests {
+		t.Run(tc.what, func(t *testing.T) {
+			want := map[int]struct{}{}
+			for _, i := range tc.want {
+				want[i] = struct{}{}
+			}
+			have := parseFormatFuncSpecifiers(tc.in, len(tc.want))
+
+			if diff := cmp.Diff(want, have); diff != "" {
+				t.Fatal(diff)
+			}
+		})
+	}
+}
+
+// vim: nofoldenable

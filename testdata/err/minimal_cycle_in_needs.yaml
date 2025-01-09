@@ -1,0 +1,13 @@
+on: push
+jobs:
+  # Minimal
+  from:
+    needs: [to]
+    runs-on: ubuntu-latest
+    steps:
+      - run: echo 'from'
+  to:
+    needs: [from]
+    runs-on: ubuntu-latest
+    steps:
+      - run: echo 'to'

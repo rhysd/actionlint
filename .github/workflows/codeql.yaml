@@ -1,4 +1,4 @@
-name: "CodeQL"
+name: CodeQL
 
 on:
   push:
@@ -10,39 +10,47 @@ on:
     - cron: '41 21 * * 5'
   workflow_dispatch:
 
-# This environment is necessary to avoid the following issue
-# https://github.com/github/codeql/issues/6321
-env:
-  CODEQL_EXTRACTOR_GO_BUILD_TRACING: 'on'
+permissions:
+  security-events: write
 
 jobs:
-  analyze:
-    name: Analyze
+  analyze-go:
+    name: Analyze Go
     runs-on: ubuntu-latest
-    permissions:
-      actions: read
-      contents: read
-      security-events: write
-    strategy:
-      fail-fast: false
-      matrix:
-        language: ['go', 'javascript']
     steps:
       - uses: actions/checkout@v4
+      - uses: actions/setup-go@v5
+        with:
+          go-version: '1.23'
       - uses: github/codeql-action/init@v3
         with:
           config-file: ./.github/codeql/codeql-config.yaml
-          languages: ${{ matrix.language }}
-      - uses: github/codeql-action/autobuild@v3
-        if: ${{ matrix.language != 'go' }}
-      - uses: actions/setup-go@v5
-        with:
-          go-version: '1.22'
-        if: ${{ matrix.language == 'go' }}
+          languages: go
       - name: Build Go sources
         run: |
           set -x
           go build -v ./cmd/actionlint
           GOOS=js GOARCH=wasm go build -v -o ./playground/main.wasm ./playground
-        if: ${{ matrix.language == 'go' }}
       - uses: github/codeql-action/analyze@v3
+        with:
+          category: "/language:go"
+  analyze-ts:
+    name: Analyze TypeScript
+    runs-on: ubuntu-latest
+    defaults:
+      run:
+        working-directory: ./playground
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: "lts/*"
+      - uses: github/codeql-action/init@v3
+        with:
+          config-file: ./.github/codeql/codeql-config.yaml
+          languages: javascript-typescript
+      - name: Build playground
+        run: make build
+      - uses: github/codeql-action/analyze@v3
+        with:
+          category: "/language:javascript-typescript"

@@ -1,0 +1,23 @@
+on: push
+jobs:
+  # Order of jobs is random
+  a:
+    needs: [b]
+    runs-on: ubuntu-latest
+    steps:
+      - run: echo 'a'
+  c:
+    needs: [d]
+    runs-on: ubuntu-latest
+    steps:
+      - run: echo 'd'
+  d:
+    needs: [a]
+    runs-on: ubuntu-latest
+    steps:
+      - run: echo 'a'
+  b:
+    needs: [c]
+    runs-on: ubuntu-latest
+    steps:
+      - run: echo 'b'

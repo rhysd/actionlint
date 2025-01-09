@@ -21,7 +21,7 @@ jobs:
       - uses: test/my-action@main
         env:
           OS: ${{ runner.os }}
-        id: foo-${{ runner.name }}
+          NAME: ${{ runner.name }}
   container-job:
     runs-on: ubuntu-latest
     container:

@@ -4,6 +4,11 @@ import (
 	"strings"
 )
 
+func isSafeFuncCall(call *FuncCallNode) bool {
+	c := strings.ToLower(call.Callee)
+	return c == "contains" || c == "startswith" || c == "endswith"
+}
+
 // UntrustedInputMap is a recursive map to match context object property dereferences.
 // Root of this map represents each context names and their ancestors represent recursive properties.
 type UntrustedInputMap struct {
@@ -76,7 +81,7 @@ func (ms UntrustedInputSearchRoots) AddRoot(m *UntrustedInputMap) {
 // BuiltinUntrustedInputs is list of untrusted inputs. These inputs are detected as untrusted in
 // `run:` scripts. See the URL for more details.
 // - https://securitylab.github.com/research/github-actions-untrusted-input/
-// - https://docs.github.com/en/actions/security-guides/security-hardening-for-github-actions
+// - https://docs.github.com/en/actions/security-for-github-actions/security-guides/security-hardening-for-github-actions
 // - https://github.com/github/codeql/blob/main/javascript/ql/src/experimental/Security/CWE-094/ExpressionInjection.ql
 var BuiltinUntrustedInputs = UntrustedInputSearchRoots{
 	"github": NewUntrustedInputMap("github",
@@ -148,17 +153,15 @@ type UntrustedInputChecker struct {
 	cur             []*UntrustedInputMap
 	start           ExprNode
 	errs            []*ExprError
+	safeCalls       int
 }
 
 // NewUntrustedInputChecker creates a new UntrustedInputChecker instance. The roots argument is a
 // search tree which defines untrusted input paths as trees.
 func NewUntrustedInputChecker(roots UntrustedInputSearchRoots) *UntrustedInputChecker {
 	return &UntrustedInputChecker{
-		roots:           roots,
-		filteringObject: false,
-		cur:             nil,
-		start:           nil,
-		errs:            []*ExprError{},
+		roots: roots,
+		errs:  []*ExprError{},
 	}
 }
 
@@ -274,7 +277,7 @@ func (u *UntrustedInputChecker) end() {
 	if len(inputs) == 1 {
 		err := errorfAtExpr(
 			u.start,
-			"%q is potentially untrusted. avoid using it directly in inline scripts. instead, pass it through an environment variable. see https://docs.github.com/en/actions/security-guides/security-hardening-for-github-actions for more details",
+			"%q is potentially untrusted. avoid using it directly in inline scripts. instead, pass it through an environment variable. see https://docs.github.com/en/actions/security-for-github-actions/security-guides/security-hardening-for-github-actions for more details",
 			inputs[0],
 		)
 		u.errs = append(u.errs, err)
@@ -283,7 +286,7 @@ func (u *UntrustedInputChecker) end() {
 		// filter syntax. Show all properties in error message.
 		err := errorfAtExpr(
 			u.start,
-			"object filter extracts potentially untrusted properties %s. avoid using the value directly in inline scripts. instead, pass the value through an environment variable. see https://docs.github.com/en/actions/security-guides/security-hardening-for-github-actions for more details",
+			"object filter extracts potentially untrusted properties %s. avoid using the value directly in inline scripts. instead, pass the value through an environment variable. see https://docs.github.com/en/actions/security-for-github-actions/security-guides/security-hardening-for-github-actions for more details",
 			sortedQuotes(inputs),
 		)
 		u.errs = append(u.errs, err)
@@ -292,8 +295,22 @@ func (u *UntrustedInputChecker) end() {
 	u.reset()
 }
 
+func (u *UntrustedInputChecker) OnVisitNodeEnter(n ExprNode) {
+	if f, ok := n.(*FuncCallNode); ok && isSafeFuncCall(f) {
+		u.safeCalls++
+	}
+}
+
 // OnVisitNodeLeave is a callback which should be called on visiting node after visiting its children.
 func (u *UntrustedInputChecker) OnVisitNodeLeave(n ExprNode) {
+	// Skip unsafe checks if we are inside of safe function call expression
+	if u.safeCalls > 0 {
+		if f, ok := n.(*FuncCallNode); ok && isSafeFuncCall(f) {
+			u.safeCalls--
+		}
+		return
+	}
+
 	switch n := n.(type) {
 	case *VariableNode:
 		u.end()
@@ -329,5 +346,6 @@ func (u *UntrustedInputChecker) Errs() []*ExprError {
 // Init initializes a state of checker.
 func (u *UntrustedInputChecker) Init() {
 	u.errs = u.errs[:0]
+	u.safeCalls = 0
 	u.reset()
 }

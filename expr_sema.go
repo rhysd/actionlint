@@ -1,13 +1,11 @@
 package actionlint
 
 import (
+	"encoding/json"
 	"fmt"
-	"regexp"
 	"strconv"
 	"strings"
 )
-
-var reFormatPlaceholder = regexp.MustCompile(`{\d+}`)
 
 func ordinal(i int) string {
 	suffix := "th"
@@ -26,6 +24,32 @@ func ordinal(i int) string {
 		}
 	}
 	return fmt.Sprintf("%d%s", i, suffix)
+}
+
+// parseFormatFuncSpecifiers parses the format string passed to `format()` calls.
+// https://docs.github.com/en/actions/writing-workflows/choosing-what-your-workflow-does/evaluate-expressions-in-workflows-and-actions#format
+func parseFormatFuncSpecifiers(f string, n int) map[int]struct{} {
+	ret := make(map[int]struct{}, n)
+	start := -1
+	for i, r := range f {
+		if r == '{' {
+			if start == i {
+				start = -1 // When the '{' is escaped like '{{'
+			} else {
+				start = i + 1 // `+ 1` because `i` points char '{'
+			}
+		} else if start >= 0 {
+			if '0' <= r && r <= '9' {
+				continue
+			}
+			if r == '}' && start < i {
+				i, _ := strconv.Atoi(f[start:i])
+				ret[i] = struct{}{}
+			}
+			start = -1 // Done
+		}
+	}
+	return ret
 }
 
 // Functions
@@ -119,27 +143,12 @@ var BuiltinFuncSignatures = map[string][]*FuncSignature{
 				StringType{},
 			},
 		},
-		{
-			Name: "join",
-			Ret:  StringType{},
-			Params: []ExprType{
-				StringType{},
-				StringType{},
-			},
-		},
 		// When the second parameter is omitted, values are concatenated with ','.
 		{
 			Name: "join",
 			Ret:  StringType{},
 			Params: []ExprType{
 				&ArrayType{Elem: StringType{}},
-			},
-		},
-		{
-			Name: "join",
-			Ret:  StringType{},
-			Params: []ExprType{
-				StringType{},
 			},
 		},
 	},
@@ -192,48 +201,52 @@ var BuiltinFuncSignatures = map[string][]*FuncSignature{
 // BuiltinGlobalVariableTypes defines types of all global variables. All context variables are
 // documented at https://docs.github.com/en/actions/learn-github-actions/contexts
 var BuiltinGlobalVariableTypes = map[string]ExprType{
-	// https://docs.github.com/en/actions/learn-github-actions/contexts#github-context
+	// https://docs.github.com/en/actions/writing-workflows/choosing-what-your-workflow-does/accessing-contextual-information-about-workflow-runs#github-context
 	"github": NewStrictObjectType(map[string]ExprType{
-		"action":              StringType{},
-		"action_path":         StringType{},
-		"action_ref":          StringType{},
-		"action_repository":   StringType{},
-		"action_status":       StringType{},
-		"actor":               StringType{},
-		"actor_id":            StringType{},
-		"api_url":             StringType{},
-		"base_ref":            StringType{},
-		"env":                 StringType{},
-		"event":               NewEmptyObjectType(), // Note: Stricter type check for this payload would be possible
-		"event_name":          StringType{},
-		"event_path":          StringType{},
-		"graphql_url":         StringType{},
-		"head_ref":            StringType{},
-		"job":                 StringType{},
-		"job_workflow_sha":    StringType{},
-		"ref":                 StringType{},
-		"ref_name":            StringType{},
-		"ref_protected":       StringType{},
-		"ref_type":            StringType{},
-		"path":                StringType{},
-		"repository":          StringType{},
-		"repository_id":       StringType{},
-		"repository_owner":    StringType{},
-		"repository_owner_id": StringType{},
-		"repositoryurl":       StringType{}, // repositoryUrl
-		"retention_days":      NumberType{},
-		"run_id":              StringType{},
-		"run_number":          StringType{},
-		"run_attempt":         StringType{},
-		"secret_source":       StringType{},
-		"server_url":          StringType{},
-		"sha":                 StringType{},
-		"token":               StringType{},
-		"triggering_actor":    StringType{},
-		"workflow":            StringType{},
-		"workflow_ref":        StringType{},
-		"workflow_sha":        StringType{},
-		"workspace":           StringType{},
+		"action":                    StringType{},
+		"action_path":               StringType{}, // Note: Composite actions only
+		"action_ref":                StringType{},
+		"action_repository":         StringType{},
+		"action_status":             StringType{}, // Note: Composite actions only
+		"actor":                     StringType{},
+		"actor_id":                  StringType{},
+		"api_url":                   StringType{},
+		"artifact_cache_size_limit": NumberType{}, // Note: Undocumented
+		"base_ref":                  StringType{},
+		"env":                       StringType{},
+		"event":                     NewEmptyObjectType(), // Note: Stricter type check for this payload would be possible
+		"event_name":                StringType{},
+		"event_path":                StringType{},
+		"graphql_url":               StringType{},
+		"head_ref":                  StringType{},
+		"job":                       StringType{},
+		"output":                    StringType{}, // Note: Undocumented
+		"path":                      StringType{},
+		"ref":                       StringType{},
+		"ref_name":                  StringType{},
+		"ref_protected":             BoolType{},
+		"ref_type":                  StringType{},
+		"repository":                StringType{},
+		"repository_id":             StringType{},
+		"repository_owner":          StringType{},
+		"repository_owner_id":       StringType{},
+		"repository_visibility":     StringType{}, // Note: Undocumented
+		"repositoryurl":             StringType{}, // repositoryUrl
+		"retention_days":            NumberType{},
+		"run_attempt":               StringType{},
+		"run_id":                    StringType{},
+		"run_number":                StringType{},
+		"secret_source":             StringType{},
+		"server_url":                StringType{},
+		"sha":                       StringType{},
+		"state":                     StringType{}, // Note: Undocumented
+		"step_summary":              StringType{}, // Note: Undocumented
+		"token":                     StringType{},
+		"triggering_actor":          StringType{},
+		"workflow":                  StringType{},
+		"workflow_ref":              StringType{},
+		"workflow_sha":              StringType{},
+		"workspace":                 StringType{},
 	}),
 	// https://docs.github.com/en/actions/learn-github-actions/contexts#env-context
 	"env": NewMapObjectType(StringType{}), // env.<env_name>
@@ -449,10 +462,6 @@ func (sema *ExprSemanticsChecker) SetContextAvailability(avail []string) {
 }
 
 func (sema *ExprSemanticsChecker) checkAvailableContext(n *VariableNode) {
-	if len(sema.availableContexts) == 0 {
-		return
-	}
-
 	ctx := strings.ToLower(n.Name)
 	for _, c := range sema.availableContexts {
 		if c == ctx {
@@ -460,16 +469,20 @@ func (sema *ExprSemanticsChecker) checkAvailableContext(n *VariableNode) {
 		}
 	}
 
-	s := "contexts are"
-	if len(sema.availableContexts) == 1 {
-		s = "context is"
+	var notes string
+	switch len(sema.availableContexts) {
+	case 0:
+		notes = "no context is available here"
+	case 1:
+		notes = "available context is " + quotes(sema.availableContexts)
+	default:
+		notes = "available contexts are " + quotes(sema.availableContexts)
 	}
 	sema.errorf(
 		n,
-		"context %q is not allowed here. available %s %s. see https://docs.github.com/en/actions/learn-github-actions/contexts#context-availability for more details",
+		"context %q is not allowed here. %s. see https://docs.github.com/en/actions/learn-github-actions/contexts#context-availability for more details",
 		n.Name,
-		s,
-		quotes(sema.availableContexts),
+		notes,
 	)
 }
 
@@ -509,6 +522,12 @@ func (sema *ExprSemanticsChecker) checkSpecialFunctionAvailability(n *FuncCallNo
 		n.Callee,
 		quotes(allowed),
 	)
+}
+
+func (sema *ExprSemanticsChecker) visitUntrustedCheckerOnEnterNode(n ExprNode) {
+	if sema.untrusted != nil {
+		sema.untrusted.OnVisitNodeEnter(n)
+	}
 }
 
 func (sema *ExprSemanticsChecker) visitUntrustedCheckerOnLeaveNode(n ExprNode) {
@@ -780,28 +799,22 @@ func checkFuncSignature(n *FuncCallNode, sig *FuncSignature, args []ExprType) *E
 	return nil
 }
 
-func (sema *ExprSemanticsChecker) checkBuiltinFunctionCall(n *FuncCallNode, sig *FuncSignature) {
+func (sema *ExprSemanticsChecker) checkBuiltinFuncCall(n *FuncCallNode, sig *FuncSignature) ExprType {
 	sema.checkSpecialFunctionAvailability(n)
 
 	// Special checks for specific built-in functions
-	switch n.Callee {
+	switch strings.ToLower(n.Callee) {
 	case "format":
 		lit, ok := n.Args[0].(*StringNode)
 		if !ok {
-			return
+			return sig.Ret
 		}
 		l := len(n.Args) - 1 // -1 means removing first format string argument
 
-		// Find all placeholders in format string
-		holders := make(map[int]struct{}, l)
-		for _, m := range reFormatPlaceholder.FindAllString(lit.Value, -1) {
-			i, _ := strconv.Atoi(m[1 : len(m)-1])
-			holders[i] = struct{}{}
-		}
+		holders := parseFormatFuncSpecifiers(lit.Value, l)
 
 		for i := 0; i < l; i++ {
-			_, ok := holders[i]
-			if !ok {
+			if _, ok := holders[i]; !ok {
 				sema.errorf(n, "format string %q does not contain placeholder {%d}. remove argument which is unused in the format string", lit.Value, i)
 				continue
 			}
@@ -811,7 +824,22 @@ func (sema *ExprSemanticsChecker) checkBuiltinFunctionCall(n *FuncCallNode, sig 
 		for i := range holders {
 			sema.errorf(n, "format string %q contains placeholder {%d} but only %d arguments are given to format", lit.Value, i, l)
 		}
+	case "fromjson":
+		lit, ok := n.Args[0].(*StringNode)
+		if !ok {
+			return sig.Ret
+		}
+		var v any
+		err := json.Unmarshal([]byte(lit.Value), &v)
+		if err == nil {
+			return typeOfJSONValue(v)
+		}
+		if s, ok := err.(*json.SyntaxError); ok {
+			sema.errorf(lit, "broken JSON string is passed to fromJSON() at offset %d: %s", s.Offset, s)
+		}
 	}
+
+	return sig.Ret
 }
 
 func (sema *ExprSemanticsChecker) checkFuncCall(n *FuncCallNode) ExprType {
@@ -838,8 +866,7 @@ func (sema *ExprSemanticsChecker) checkFuncCall(n *FuncCallNode) ExprType {
 		err := checkFuncSignature(n, sig, tys)
 		if err == nil {
 			// When one of overload pass type check, overload was resolved correctly
-			sema.checkBuiltinFunctionCall(n, sig)
-			return sig.Ret
+			return sema.checkBuiltinFuncCall(n, sig)
 		}
 		errs = append(errs, err)
 	}
@@ -972,6 +999,7 @@ func (sema *ExprSemanticsChecker) checkLogicalOp(n *LogicalOpNode) ExprType {
 }
 
 func (sema *ExprSemanticsChecker) check(expr ExprNode) ExprType {
+	sema.visitUntrustedCheckerOnEnterNode(expr)
 	defer sema.visitUntrustedCheckerOnLeaveNode(expr) // Call this method in bottom-up order
 
 	switch e := expr.(type) {

@@ -6,17 +6,17 @@ jobs:
     strategy:
       matrix:
         foo:
-          - ${{ fromJSON('...') }}
+          - ${{ fromJSON('{"bar":"x"}') }}
         exclude:
           - foo: bar
     steps:
-      - run: echo ${{ matrix.foo }}
+      - run: echo ${{ matrix.foo.bar }}
   nested-object-1:
     runs-on: ubuntu-latest
     strategy:
       matrix:
         foo:
-          - bar: ${{ fromJSON('...') }}
+          - bar: ${{ fromJSON('"x"') }}
         exclude:
           - foo:
               bar: ...
@@ -27,7 +27,7 @@ jobs:
     strategy:
       matrix:
         foo:
-          - ["${{ fromJSON('...') }}"]
+          - ["${{ fromJSON('\"x\"') }}"]
         exclude:
           - foo: ['...']
     steps:

@@ -6,6 +6,6 @@ jobs:
     strategy:
       matrix:
         test:
-          - ${{ fromJson('...') }}
+          - ${{ fromJson('{"foo":{"bar":"test"}}') }}
     steps:
       - run: echo ${{ matrix.test.foo.bar }}

@@ -1,6 +1,6 @@
 # run-name
 # ERROR at env
-run-name: ${{ github.actor}} ${{ env.GITHUB_ACTOR }}
+run-name: ${{ github.actor }} ${{ env.GITHUB_ACTOR }}
 
 # env
 env:
@@ -111,13 +111,13 @@ jobs:
         image: ${{ env.IMAGE_NAME }}
         # jobs.<job_id>.services.<service_id>.credentials
         credentials:
-          # ERROR
+          # ERROR because runner is not available
           username: ${{ runner.name }}
           # OK
           password: ${{ env.MY_PASSWORD }}
         # jobs.<job_id>.services.<service_id>.env.<env_id>
         env:
-          # OK
+          # OK (#500)
           RUNNER: ${{ runner.name }}
     # jobs.<job_id>.strategy
     strategy:
@@ -217,3 +217,5 @@ jobs:
     services: ${{ inputs.bool || env.FOO }}
     steps:
       - run: echo
+        # ERROR at env because `id` allow no context
+        id: ${{ inputs.foo }}

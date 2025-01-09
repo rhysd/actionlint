@@ -130,7 +130,7 @@ func (p *ExprParser) parseNestedExpr() ExprNode {
 	if p.peek().Kind == TokenKindRightParen {
 		p.next() // eat ')'
 	} else {
-		p.unexpected("closing ')' of nexted expression (...)", []TokenKind{TokenKindRightParen})
+		p.unexpected("closing ')' of nested expression (...)", []TokenKind{TokenKindRightParen})
 		return nil
 	}
 

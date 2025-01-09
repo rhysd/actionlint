@@ -102,7 +102,8 @@ type Linter struct {
 	oneline        bool
 	shellcheck     string
 	pyflakes       string
-	ignorePats     []*regexp.Regexp
+	ignorePats     IgnorePatterns
+	stdin          string
 	defaultConfig  *Config
 	errFmt         *ErrorFormatter
 	cwd            string
@@ -165,14 +166,19 @@ func NewLinter(out io.Writer, opts *LinterOptions) (*Linter, error) {
 		formatter = f
 	}
 
-	cwd := opts.WorkingDir
-	if cwd == "" {
-		if d, err := os.Getwd(); err == nil {
-			cwd = d
-		}
+	cwd := "."
+	if opts.WorkingDir != "" {
+		cwd = opts.WorkingDir
+	} else if d, err := os.Getwd(); err == nil {
+		cwd = d
 	}
 
-	return &Linter{
+	stdin := "<stdin>"
+	if opts.StdinFileName != "" {
+		stdin = opts.StdinFileName
+	}
+
+	l := &Linter{
 		NewProjects(),
 		out,
 		lout,
@@ -181,11 +187,15 @@ func NewLinter(out io.Writer, opts *LinterOptions) (*Linter, error) {
 		opts.Shellcheck,
 		opts.Pyflakes,
 		ignore,
+		stdin,
 		cfg,
 		formatter,
 		cwd,
 		opts.OnRulesCreated,
-	}, nil
+	}
+
+	l.debug("Create a Linter instance with option %#v", opts)
+	return l, nil
 }
 
 func (l *Linter) log(args ...interface{}) {
@@ -211,36 +221,50 @@ func (l *Linter) debugWriter() io.Writer {
 	return l.logOut
 }
 
-// GenerateDefaultConfig generates default config file at ".github/actionlint.yaml" in project
-// which the given directory path belongs to.
+// GenerateDefaultConfig generates default config file at ".github/actionlint.yaml" in the project
+// which the given directory path belongs to. When the directory path is empty, the current directory
+// will be used instead.
 func (l *Linter) GenerateDefaultConfig(dir string) error {
+	if dir == "" {
+		dir = l.cwd
+	}
+
 	l.log("Generating default actionlint.yaml in repository:", dir)
 
-	p, err := l.projects.At(dir)
+	proj, err := l.projects.At(dir)
 	if err != nil {
 		return err
 	}
-	if p == nil {
+	if proj == nil {
 		return errors.New("project is not found. check current project is initialized as Git repository and \".github/workflows\" directory exists")
 	}
 
-	path := filepath.Join(p.RootDir(), ".github", "actionlint.yaml")
-	if _, err := os.Stat(path); err == nil {
-		return fmt.Errorf("config file already exists at %q", path)
+	d := filepath.Join(proj.RootDir(), ".github")
+	for _, f := range []string{"actionlint.yaml", "actionlint.yml"} {
+		p := filepath.Join(d, f)
+		if _, err := os.Stat(p); err == nil {
+			return fmt.Errorf("config file already exists at %q", p)
+		}
 	}
 
-	if err := writeDefaultConfigFile(path); err != nil {
+	p := filepath.Join(d, "actionlint.yaml")
+	if err := writeDefaultConfigFile(p); err != nil {
 		return err
 	}
 
-	fmt.Fprintf(l.out, "Config file was generated at %q\n", path)
+	fmt.Fprintf(l.out, "Config file was generated at %q\n", p)
 	return nil
 }
 
-// LintRepository lints YAML workflow files and outputs the errors to given writer. It finds the nearest
-// `.github/workflows` directory based on `dir` and applies lint rules to all YAML workflow files
-// under the directory.
+// LintRepository lints YAML workflow files and outputs the errors to given writer. It finds the
+// nearest `.github/workflows` directory based on `dir` and applies lint rules to all YAML workflow
+// files under the directory. When the directory path is empty, the current working directory will
+// be used instead.
 func (l *Linter) LintRepository(dir string) ([]*Error, error) {
+	if dir == "" {
+		dir = l.cwd
+	}
+
 	l.log("Linting all workflow files in repository:", dir)
 
 	p, err := l.projects.At(dir)
@@ -443,9 +467,20 @@ func (l *Linter) LintFile(path string, project *Project) ([]*Error, error) {
 	return errs, err
 }
 
+// LintStdin lints the content read from STDIN. The stdin parameter is a reader to read from STDIN,
+// which is usually os.Stdin. The file name is determined by LinterOptions.StdinFileName. When the
+// option is empty, "<stdin>" is the default value.
+func (l *Linter) LintStdin(stdin io.Reader) ([]*Error, error) {
+	l.log("Reading the input from stdin")
+	b, err := io.ReadAll(stdin)
+	if err != nil {
+		return nil, fmt.Errorf("could not read stdin: %w", err)
+	}
+	return l.Lint(l.stdin, b, nil)
+}
+
 // Lint lints YAML workflow file content given as byte slice. The path parameter is used as file
-// path where the content came from. Setting "<stdin>" to path parameter indicates the output came
-// from STDIN.
+// path where the content came from.
 // When nil is passed to the project parameter, it tries to find the project from the path parameter.
 func (l *Linter) Lint(path string, content []byte, project *Project) ([]*Error, error) {
 	if project == nil && path != "<stdin>" {
@@ -576,7 +611,7 @@ func (l *Linter) check(
 		}
 
 		if err := v.Visit(w); err != nil {
-			l.debug("error occurred while visiting workflow syntax tree: %v", err)
+			l.debug("Error occurred while visiting workflow syntax tree: %v", err)
 			return nil, err
 		}
 
@@ -593,19 +628,7 @@ func (l *Linter) check(
 		}
 	}
 
-	if len(l.ignorePats) > 0 {
-		filtered := make([]*Error, 0, len(all))
-	Loop:
-		for _, err := range all {
-			for _, pat := range l.ignorePats {
-				if pat.MatchString(err.Message) {
-					continue Loop
-				}
-			}
-			filtered = append(filtered, err)
-		}
-		all = filtered
-	}
+	all = l.filterErrors(all, cfg.PathConfigs(path))
 
 	for _, err := range all {
 		err.Filepath = path // Populate filename in the error
@@ -619,6 +642,32 @@ func (l *Linter) check(
 	}
 
 	return all, nil
+}
+
+func (l *Linter) filterErrors(errs []*Error, cfgs []PathConfig) []*Error {
+	if len(l.ignorePats) == 0 && len(cfgs) == 0 {
+		return errs
+	}
+
+	filtered := make([]*Error, 0, len(errs))
+Loop:
+	for _, err := range errs {
+		if l.ignorePats.Match(err) {
+			l.debug("Error %q is ignored due to -ignore command line option", err.Message)
+			continue Loop
+		}
+		for _, c := range cfgs {
+			if c.Ignore.Match(err) {
+				l.debug("Error %q is ignored due to the \"ignore\" config in the config file", err.Message)
+				continue Loop
+			}
+		}
+		filtered = append(filtered, err)
+	}
+	if len(filtered) != len(errs) {
+		l.log("Filtered", len(errs)-len(filtered), "error(s) due to \"-ignore\" command line option and \"ignore\" configuration")
+	}
+	return filtered
 }
 
 func (l *Linter) printErrors(errs []*Error, src []byte) {

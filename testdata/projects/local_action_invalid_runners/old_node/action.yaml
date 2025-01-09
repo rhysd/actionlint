@@ -3,5 +3,5 @@ author: 'rhysd <https://rhysd.github.io>'
 description: 'Runner node version is too old'
 
 runs:
-  using: 'node14'
+  using: 'node16'
   main: 'index.js'

@@ -1,4 +1,4 @@
-/test\.yaml:3:34: context "env" is not allowed here\. .+ \[expression\]/
+/test\.yaml:3:35: context "env" is not allowed here\. .+ \[expression\]/
 /test\.yaml:10:12: context "env" is not allowed here\. .+ \[expression\]/
 /test\.yaml:15:32: context "env" is not allowed here\. .+ \[expression\]/
 /test\.yaml:25:22: context "env" is not allowed here\. .+ \[expression\]/
@@ -31,3 +31,4 @@
 /test\.yaml:208:19: context "runner" is not allowed here\. .+ \[expression\]/
 /test\.yaml:210:18: context "runner" is not allowed here\. .+ \[expression\]/
 /test\.yaml:217:34: context "env" is not allowed here\. .+ \[expression\]/
+/test\.yaml:221:17: context "inputs" is not allowed here\. no context is available here\. .+ \[expression\]/

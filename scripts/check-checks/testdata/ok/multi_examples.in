@@ -1,0 +1,66 @@
+<a id="hello"></a>
+## Hello
+
+Example input:
+
+```yaml
+on: push
+jobs:
+  test:
+    runs-on: ubuntu-latest
+    steps:
+      - run: echo ${{ unknown }}
+```
+
+Output:
+
+```
+This section will be generated
+```
+
+[Playground](URL_WILL_BE_GENERATED)
+
+This is the first example.
+
+Example input:
+
+```yaml
+on: push
+jobs:
+  test:
+    runs-on: ubuntu-latest
+    steps:
+      - run: echo ${{ unknown }}
+```
+
+Output:
+<!-- Skip update output -->
+
+```
+This section will not be generated
+```
+
+[Playground](URL_WILL_BE_GENERATED)
+
+This is the second example.
+
+Example input:
+
+```yaml
+on: push
+jobs:
+  test:
+    runs-on: ubuntu-latest
+    steps:
+      - run: echo ${{ unknown }}
+```
+
+Output:
+
+```
+This section will be generated
+```
+
+<!-- Skip playground link -->
+
+This is the third example.

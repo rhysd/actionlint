@@ -1,7 +1,7 @@
 actionlint
 ==========
-[![CI Badge][]][CI]
-[![API Document][api-badge]][apidoc]
+[![CI Status][ci-badge]][ci]
+[![API Document][apidoc-badge]][apidoc]
 
 [actionlint][repo] is a static checker for GitHub Actions workflow files. [Try it online!][playground]
 
@@ -17,7 +17,7 @@ Features:
 - **Other several useful checks**; [glob syntax][filter-pattern-doc] validation, dependencies check for `needs:`,
   runner label validation, cron syntax validation, ...
 
-See [the full list](docs/checks.md) of checks done by actionlint.
+See the [full list][checks] of checks done by actionlint.
 
 <img src="https://github.com/rhysd/ss/blob/master/actionlint/main.gif?raw=true" alt="actionlint reports 7 errors" width="806" height="492"/>
 
@@ -60,11 +60,11 @@ test.yaml:5:11: character '\' is invalid for branch and tag names. only special 
   |
 5 |       - 'v\d+'
   |           ^~~~
-test.yaml:10:28: label "linux-latest" is unknown. available labels are "windows-latest", "windows-2022", "windows-2019", "windows-2016", "ubuntu-latest", "ubuntu-22.04", "ubuntu-20.04", "ubuntu-18.04", "macos-latest", "macos-12", "macos-12.0", "macos-11", "macos-11.0", "macos-10.15", "self-hosted", "x64", "arm", "arm64", "linux", "macos", "windows". if it is a custom label for self-hosted runner, set list of labels in actionlint.yaml config file [runner-label]
+test.yaml:10:28: label "linux-latest" is unknown. available labels are "windows-latest", "windows-latest-8-cores", "windows-2025", "windows-2022", "windows-2019", "ubuntu-latest", "ubuntu-latest-4-cores", "ubuntu-latest-8-cores", "ubuntu-latest-16-cores", "ubuntu-24.04", "ubuntu-22.04", "ubuntu-20.04", "macos-latest", "macos-latest-xl", "macos-latest-xlarge", "macos-latest-large", "macos-15-xlarge", "macos-15-large", "macos-15", "macos-14-xl", "macos-14-xlarge", "macos-14-large", "macos-14", "macos-13-xl", "macos-13-xlarge", "macos-13-large", "macos-13", "self-hosted", "x64", "arm", "arm64", "linux", "macos", "windows". if it is a custom label for self-hosted runner, set list of labels in actionlint.yaml config file [runner-label]
    |
 10 |         os: [macos-latest, linux-latest]
    |                            ^~~~~~~~~~~~~
-test.yaml:13:41: "github.event.head_commit.message" is potentially untrusted. avoid using it directly in inline scripts. instead, pass it through an environment variable. see https://docs.github.com/en/actions/learn-github-actions/security-hardening-for-github-actions for more details [expression]
+test.yaml:13:41: "github.event.head_commit.message" is potentially untrusted. avoid using it directly in inline scripts. instead, pass it through an environment variable. see https://docs.github.com/en/actions/security-for-github-actions/security-guides/security-hardening-for-github-actions for more details [expression]
    |
 13 |       - run: echo "Checking commit '${{ github.event.head_commit.message }}'"
    |                                         ^~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
@@ -82,22 +82,10 @@ test.yaml:22:17: receiver of object dereference "permissions" must be type of ob
    |                 ^~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 ```
 
-## Why?
-
-- **Running a workflow is time consuming.** You need to push the changes and wait until the workflow runs on GitHub even if
-  it contains some trivial mistakes. [act][] is useful to debug the workflow locally. But it is not suitable for CI and still
-  time consuming when your workflow gets larger.
-- **Checks of workflow files by GitHub are very loose.** It reports no error even if unexpected keys are in mappings
-  (meant that some typos in keys). And also it reports no error when accessing to property which is actually not existing.
-  For example `matrix.foo` when no `foo` is defined in `matrix:` section, it is evaluated to `null` and causes no error.
-- **Some mistakes silently break a workflow.** Most common case I saw is specifying missing property to cache key. In the
-  case cache silently does not work properly but a workflow itself runs without error. So you might not notice the mistake
-  forever.
-
 ## Quick start
 
 Install `actionlint` command by downloading [the released binary][releases] or by Homebrew or by `go install`. See
-[the installation document](docs/install.md) for more details like how to manage the command with several package managers
+[the installation document][install] for more details like how to manage the command with several package managers
 or run via Docker container.
 
 ```sh
@@ -114,40 +102,47 @@ actionlint
 
 Another option to try actionlint is [the online playground][playground]. Your browser can run actionlint through WebAssembly.
 
-See [the usage document](docs/usage.md) for more details.
+See [the usage document][usage] for more details.
 
 ## Documents
 
-- [Checks](docs/checks.md): Full list of all checks done by actionlint with example inputs, outputs, and playground links.
-- [Installation](docs/install.md): Installation instructions. Prebuilt binaries, a Docker image, building from
-  source, a download script (for CI), supports by several package managers are available.
-- [Usage](docs/usage.md): How to use `actionlint` command locally or on GitHub Actions, the online playground, an official Docker
-  image, and integrations with reviewdog, Problem Matchers, super-linter, pre-commit, VS Code.
-- [Configuration](docs/config.md): How to configure actionlint behavior. Currently, the labels of self-hosted runners,
-  configuration variables, and optional security lints can be set.
-- [Go API](docs/api.md): How to use actionlint as Go library.
-- [References](docs/reference.md): Links to resources.
+- [Checks][checks]: Full list of all checks done by actionlint with example inputs, outputs, and playground links.
+- [Installation][install]: Installation instructions. Prebuilt binaries, a Docker image, building from source, a download script
+  (for CI), supports by several package managers are available.
+- [Usage][usage]: How to use `actionlint` command locally or on GitHub Actions, the online playground, an official Docker image,
+  and integrations with reviewdog, Problem Matchers, super-linter, pre-commit, VS Code.
+- [Configuration][config]: How to configure actionlint behavior. Currently, the labels of self-hosted runners, the configuration
+  variables, and ignore patterns of errors for each file paths can be set.
+- [Go API][api]: How to use actionlint as Go library.
+- [References][refs]: Links to resources.
 
 ## Bug reporting
 
 When you see some bugs or false positives, it is helpful to [file a new issue][issue-form] with a minimal example
 of input. Giving me some feedbacks like feature requests or ideas of additional checks is also welcome.
 
+See the [contribution guide](./CONTRIBUTING.md) for more details.
+
 ## License
 
 actionlint is distributed under [the MIT license](./LICENSE.txt).
 
-[CI Badge]: https://github.com/rhysd/actionlint/workflows/CI/badge.svg?branch=main&event=push
-[CI]: https://github.com/rhysd/actionlint/actions?query=workflow%3ACI+branch%3Amain
-[api-badge]: https://pkg.go.dev/badge/github.com/rhysd/actionlint.svg
+[ci-badge]: https://github.com/rhysd/actionlint/actions/workflows/ci.yaml/badge.svg
+[ci]: https://github.com/rhysd/actionlint/actions/workflows/ci.yaml
+[apidoc-badge]: https://pkg.go.dev/badge/github.com/rhysd/actionlint.svg
 [apidoc]: https://pkg.go.dev/github.com/rhysd/actionlint
 [repo]: https://github.com/rhysd/actionlint
 [playground]: https://rhysd.github.io/actionlint/
 [shellcheck]: https://github.com/koalaman/shellcheck
 [pyflakes]: https://github.com/PyCQA/pyflakes
-[act]: https://github.com/nektos/act
 [syntax-doc]: https://docs.github.com/en/actions/reference/workflow-syntax-for-github-actions
 [filter-pattern-doc]: https://docs.github.com/en/actions/using-workflows/workflow-syntax-for-github-actions#filter-pattern-cheat-sheet
 [script-injection-doc]: https://docs.github.com/en/actions/learn-github-actions/security-hardening-for-github-actions#understanding-the-risk-of-script-injections
-[issue-form]: https://github.com/rhysd/actionlint/issues/new
 [releases]: https://github.com/rhysd/actionlint/releases
+[checks]: https://github.com/rhysd/actionlint/blob/v1.7.6/docs/checks.md
+[install]: https://github.com/rhysd/actionlint/blob/v1.7.6/docs/install.md
+[usage]: https://github.com/rhysd/actionlint/blob/v1.7.6/docs/usage.md
+[config]: https://github.com/rhysd/actionlint/blob/v1.7.6/docs/config.md
+[api]: https://github.com/rhysd/actionlint/blob/v1.7.6/docs/api.md
+[refs]: https://github.com/rhysd/actionlint/blob/v1.7.6/docs/reference.md
+[issue-form]: https://github.com/rhysd/actionlint/issues/new

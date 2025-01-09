@@ -4,4 +4,4 @@ jobs:
   test:
     runs-on: ubuntu-latest
     steps:
-      - uses: echo ${{ runner.arch }}
+      - run: echo ${{ runner.arch }}

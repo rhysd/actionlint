@@ -1,0 +1,20 @@
+<a id="some-check"></a>
+## Some check
+
+Example input:
+
+```yaml
+on: push
+jobs:
+  error:
+    # This error message contains an abosolute file path
+    uses: ./.github/workflows/not-existing-workflow.yml
+```
+
+Output:
+
+```
+THIS BLOCK WILL BE GENERATED
+```
+
+[Playground](https://rhysd.github.io/actionlint/#HASH_PART_WILL_BE_GENERATED)

@@ -596,8 +596,8 @@ func TestParseExpressionSyntaxOK(t *testing.T) {
 				t.Fatal("Parse error:", err)
 			}
 
-			if !cmp.Equal(tc.expected, n, opts...) {
-				t.Fatalf("wanted:\n%#v\n\nbut got:\n%#v\n\ndiff:\n%s\n", tc.expected, n, cmp.Diff(tc.expected, n, opts...))
+			if diff := cmp.Diff(tc.expected, n, opts...); diff != "" {
+				t.Fatalf("wanted:\n%#v\n\nbut got:\n%#v\n\ndiff:\n%s\n", tc.expected, n, diff)
 			}
 		})
 	}

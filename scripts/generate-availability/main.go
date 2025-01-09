@@ -21,8 +21,25 @@ import (
 	"github.com/yuin/goldmark/text"
 )
 
+const theURL = "https://raw.githubusercontent.com/github/docs/main/content/actions/writing-workflows/choosing-what-your-workflow-does/accessing-contextual-information-about-workflow-runs.md"
+
 var dbg = log.New(io.Discard, "", log.LstdFlags)
 var reReplaceholder = regexp.MustCompile("{%[^%]+%}")
+
+// `Node.Text` method was deprecated. This is alternative to it.
+// https://github.com/yuin/goldmark/issues/471
+func textOf(n ast.Node, src []byte) string {
+	var b strings.Builder
+	ast.Walk(n, func(n ast.Node, entering bool) (ast.WalkStatus, error) {
+		if entering {
+			if t, ok := n.(*ast.Text); ok {
+				b.Write(t.Value(src))
+			}
+		}
+		return ast.WalkContinue, nil
+	})
+	return b.String()
+}
 
 type switchCase struct {
 	ctx  []string
@@ -60,7 +77,7 @@ func parseContextAvailabilityTable(src []byte) (*extast.Table, bool) {
 	n := root.FirstChild()
 
 	for ; n != nil; n = n.NextSibling() {
-		if h, ok := n.(*ast.Heading); ok && h.Level == 3 && bytes.Equal(h.Text(src), []byte("Context availability")) {
+		if h, ok := n.(*ast.Heading); ok && h.Level == 3 && textOf(h, src) == "Context availability" {
 			n = n.NextSibling()
 			break
 		}
@@ -82,7 +99,7 @@ func cells(n *extast.TableRow, src []byte) []string {
 	t := []string{}
 	for c := n.FirstChild(); c != nil; c = c.NextSibling() {
 		if tc, ok := c.(*extast.TableCell); ok {
-			t = append(t, string(tc.Text(src)))
+			t = append(t, textOf(tc, src))
 		}
 	}
 	return t
@@ -160,7 +177,7 @@ func WorkflowKeyAvailability(key string) ([]string, []string) {
 
 		key := cs[0]
 		if key == "" {
-			dbg.Printf("Skip %q due to empty key\n", r.Text(src))
+			dbg.Printf("Skip %q due to empty key\n", textOf(r, src))
 			continue
 		}
 		ctx := split(cs[1])
@@ -284,5 +301,5 @@ func run(args []string, stdout, stderr, dbgout io.Writer, srcURL string) int {
 }
 
 func main() {
-	os.Exit(run(os.Args[1:], os.Stdout, os.Stderr, os.Stderr, "https://raw.githubusercontent.com/github/docs/main/content/actions/learn-github-actions/contexts.md"))
+	os.Exit(run(os.Args[1:], os.Stdout, os.Stderr, os.Stderr, theURL))
 }
