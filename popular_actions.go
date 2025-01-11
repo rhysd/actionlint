@@ -1331,8 +1331,9 @@ var PopularActions = map[string]*ActionMetadata{
 	"docker/setup-qemu-action@v3": {
 		Name: "Docker Setup QEMU",
 		Inputs: ActionMetadataInputs{
-			"image":     {"image", false},
-			"platforms": {"platforms", false},
+			"cache-image": {"cache-image", false},
+			"image":       {"image", false},
+			"platforms":   {"platforms", false},
 		},
 		Outputs: ActionMetadataOutputs{
 			"platforms": {"platforms"},
@@ -2398,6 +2399,7 @@ var PopularActions = map[string]*ActionMetadata{
 			"make_latest":              {"make_latest", false},
 			"name":                     {"name", false},
 			"prerelease":               {"prerelease", false},
+			"preserve_order":           {"preserve_order", false},
 			"repository":               {"repository", false},
 			"tag_name":                 {"tag_name", false},
 			"target_commitish":         {"target_commitish", false},
