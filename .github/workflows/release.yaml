@@ -19,7 +19,7 @@ jobs:
       - run: ronn ./man/actionlint.1.ronn
       - uses: actions/setup-go@v5
         with:
-          go-version: '1.23'
+          go-version-file: go.mod
       - uses: goreleaser/goreleaser-action@v6
         with:
           version: '~> v2'

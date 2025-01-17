@@ -1,6 +1,6 @@
 module github.com/rhysd/actionlint
 
-go 1.18
+go 1.23.5
 
 require (
 	github.com/bmatcuk/doublestar/v4 v4.7.1
