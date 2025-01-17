@@ -18,11 +18,11 @@ jobs:
     name: Analyze Go
     runs-on: ubuntu-latest
     steps:
-      - uses: actions/checkout@v4
-      - uses: actions/setup-go@v5
+      - uses: actions/checkout@11bd71901bbe5b1630ceea73d27597364c9af683 # v4
+      - uses: actions/setup-go@3041bf56c941b39c61721a86cd11f3bb1338122a # v5
         with:
           go-version: '1.23'
-      - uses: github/codeql-action/init@v3
+      - uses: github/codeql-action/init@b6a472f63d85b9c78a3ac5e89422239fc15e9b3c # v3
         with:
           config-file: ./.github/codeql/codeql-config.yaml
           languages: go
@@ -31,7 +31,7 @@ jobs:
           set -x
           go build -v ./cmd/actionlint
           GOOS=js GOARCH=wasm go build -v -o ./playground/main.wasm ./playground
-      - uses: github/codeql-action/analyze@v3
+      - uses: github/codeql-action/analyze@b6a472f63d85b9c78a3ac5e89422239fc15e9b3c # v3
         with:
           category: "/language:go"
   analyze-ts:
@@ -41,16 +41,16 @@ jobs:
       run:
         working-directory: ./playground
     steps:
-      - uses: actions/checkout@v4
-      - uses: actions/setup-node@v4
+      - uses: actions/checkout@11bd71901bbe5b1630ceea73d27597364c9af683 # v4
+      - uses: actions/setup-node@39370e3970a6d050c480ffad4ff0ed4d3fdee5af # v4
         with:
           node-version: "lts/*"
-      - uses: github/codeql-action/init@v3
+      - uses: github/codeql-action/init@b6a472f63d85b9c78a3ac5e89422239fc15e9b3c # v3
         with:
           config-file: ./.github/codeql/codeql-config.yaml
           languages: javascript-typescript
       - name: Build playground
         run: make build
-      - uses: github/codeql-action/analyze@v3
+      - uses: github/codeql-action/analyze@b6a472f63d85b9c78a3ac5e89422239fc15e9b3c # v3
         with:
           category: "/language:javascript-typescript"
