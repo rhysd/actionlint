@@ -1,3 +1,16 @@
+<a id="v1.7.7"></a>
+# [v1.7.7](https://github.com/rhysd/actionlint/releases/tag/v1.7.7) - 2025-01-19
+
+- Support runner labels for [Linux arm64 hosted runners](https://github.blog/changelog/2025-01-16-linux-arm64-hosted-runners-now-available-for-free-in-public-repositories-public-preview/). ([#503](https://github.com/rhysd/actionlint/issues/503), [#504](https://github.com/rhysd/actionlint/issues/504), thanks [@martincostello](https://github.com/martincostello))
+  - `ubuntu-24.04-arm`
+  - `ubuntu-22.04-arm`
+- Update Go dependencies to the latest.
+- Update the popular actions data set to the latest.
+- Add Linux arm64 job to the CI workflow. Now actionlint is tested on the platform. ([#507](https://github.com/rhysd/actionlint/issues/507), thanks [@cclauss](https://github.com/cclauss))
+
+[Changes][v1.7.7]
+
+
 <a id="v1.7.6"></a>
 # [v1.7.6](https://github.com/rhysd/actionlint/releases/tag/v1.7.6) - 2025-01-04
 
@@ -1852,6 +1865,7 @@ See documentation for more details:
 [Changes][v1.0.0]
 
 
+[v1.7.7]: https://github.com/rhysd/actionlint/compare/v1.7.6...v1.7.7
 [v1.7.6]: https://github.com/rhysd/actionlint/compare/v1.7.5...v1.7.6
 [v1.7.5]: https://github.com/rhysd/actionlint/compare/v1.7.4...v1.7.5
 [v1.7.4]: https://github.com/rhysd/actionlint/compare/v1.7.3...v1.7.4
