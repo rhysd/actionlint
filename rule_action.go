@@ -288,7 +288,7 @@ var BrandingIcons = map[string]struct{}{
 
 // These actions are still supported in GitHub Enterprise Server as the v4 back-end infrastructure
 // that the *-artifact actions use is not available, or they depend on those v4 actions.
-var OutdatedPopularActionSpecsStillSupportedByGitHubEnterpriseServer = map[string]struct{}{
+var outdatedPopularActionSpecsStillSupportedByGitHubEnterpriseServer = map[string]struct{}{
 	"actions/deploy-pages@v2":          {},
 	"actions/download-artifact@v3":     {},
 	"actions/upload-artifact@v3":       {},
@@ -385,7 +385,7 @@ func (rule *RuleAction) checkRepoAction(spec string, exec *ExecAction) {
 		if _, ok := OutdatedPopularActionSpecs[spec]; ok {
 			serverURL := os.Getenv("GITHUB_SERVER_URL")
 			isGHES := serverURL != "https://github.com" && !strings.HasSuffix(serverURL, ".ghe.com")
-			_, stillSupported := OutdatedPopularActionSpecsStillSupportedByGitHubEnterpriseServer[spec]
+			_, stillSupported := outdatedPopularActionSpecsStillSupportedByGitHubEnterpriseServer[spec]
 			if !isGHES || !stillSupported {
 				rule.Errorf(exec.Uses.Pos, "the runner of %q action is too old to run on GitHub Actions. update the action's version to fix this issue", spec)
 			}
