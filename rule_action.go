@@ -451,7 +451,7 @@ func (rule *RuleAction) checkLocalCompositeActionRuns(r *ActionMetadataRuns, dir
 	if r.Steps == nil {
 		rule.missingRunsProp(pos, "steps", "Composite", name, dir)
 	}
-	rule.checkInvalidRunsProps(pos, r, "Composite", name, dir, []string{"main", "pre", "pre-if", "post", "post-if", "image", "pre-entrypoint", "entrypoint", "post-entrypoint", "args", "env"})
+	rule.checkInvalidRunsProps(pos, r, "Composite", name, dir, []string{"main", "pre", "pre-if", "post", "post-if", "image", "pre-entrypoint", "entrypoint", "post-entrypoint", "args"})
 }
 
 // https://docs.github.com/en/actions/creating-actions/metadata-syntax-for-github-actions#runs-for-javascript-actions
