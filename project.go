@@ -28,6 +28,10 @@ func findProject(path string) (*Project, error) {
 			if _, err := os.Stat(filepath.Join(d, ".git")); err == nil { // Note: .git may be a file
 				return NewProject(d)
 			}
+			// check for .hg
+			if _, err := os.Stat(filepath.Join(d, ".hg")); err == nil {
+				return NewProject(d)
+			}
 		}
 
 		p := filepath.Dir(d)
