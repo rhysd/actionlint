@@ -16,7 +16,7 @@ func TestRuleRunnerLabelCheckLabels(t *testing.T) {
 		// Normal cases
 		{
 			what:   "simple GH-hosted Linux runner label",
-			labels: []string{"ubuntu-20.04"},
+			labels: []string{"ubuntu-24.04"},
 		},
 		{
 			what:   "simple GH-hosted Windows runner label",
@@ -52,7 +52,7 @@ func TestRuleRunnerLabelCheckLabels(t *testing.T) {
 		},
 		{
 			what:   "self-hosted runner with GH-hosted runner label",
-			labels: []string{"self-hosted", "ubuntu-20.04"},
+			labels: []string{"self-hosted", "ubuntu-24.04"},
 		},
 		{
 			what:   "larger Ubuntu runner",
@@ -223,8 +223,8 @@ func TestRuleRunnerLabelCheckLabels(t *testing.T) {
 		},
 		{
 			what:   "Linux labels conflict",
-			labels: []string{"ubuntu-latest", "ubuntu-20.04"},
-			errs:   []string{`label "ubuntu-20.04" conflicts with label "ubuntu-latest"`},
+			labels: []string{"ubuntu-latest", "ubuntu-24.04"},
+			errs:   []string{`label "ubuntu-24.04" conflicts with label "ubuntu-latest"`},
 		},
 		{
 			what:   "macOS labels conflict",
