@@ -284,12 +284,13 @@ var PopularActions = map[string]*ActionMetadata{
 	"actions/attest-build-provenance@v2": {
 		Name: "Attest Build Provenance",
 		Inputs: ActionMetadataInputs{
-			"github-token":     {"github-token", false},
-			"push-to-registry": {"push-to-registry", false},
-			"show-summary":     {"show-summary", false},
-			"subject-digest":   {"subject-digest", false},
-			"subject-name":     {"subject-name", false},
-			"subject-path":     {"subject-path", false},
+			"github-token":      {"github-token", false},
+			"push-to-registry":  {"push-to-registry", false},
+			"show-summary":      {"show-summary", false},
+			"subject-checksums": {"subject-checksums", false},
+			"subject-digest":    {"subject-digest", false},
+			"subject-name":      {"subject-name", false},
+			"subject-path":      {"subject-path", false},
 		},
 		Outputs: ActionMetadataOutputs{
 			"attestation-id":  {"attestation-id"},
