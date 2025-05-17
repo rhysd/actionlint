@@ -556,7 +556,7 @@ func (sema *ExprSemanticsChecker) checkObjectDeref(n *ObjectDerefNode) ExprType 
 	case AnyType:
 		return AnyType{}
 	case *ObjectType:
-		if t, ok := ty.Props[n.Property]; ok {
+		if t, ok := ty.Props[strings.ToLower(n.Property)]; ok {
 			return t
 		}
 		if ty.Mapped != nil {
@@ -581,7 +581,7 @@ func (sema *ExprSemanticsChecker) checkObjectDeref(n *ObjectDerefNode) ExprType 
 		case *ObjectType:
 			// Map element type of delererenced array
 			var elem ExprType = AnyType{}
-			if t, ok := et.Props[n.Property]; ok {
+			if t, ok := et.Props[strings.ToLower(n.Property)]; ok {
 				elem = t
 			} else if et.Mapped != nil {
 				elem = et.Mapped
@@ -606,7 +606,7 @@ func (sema *ExprSemanticsChecker) checkObjectDeref(n *ObjectDerefNode) ExprType 
 
 func (sema *ExprSemanticsChecker) checkConfigVariables(n *ObjectDerefNode) {
 	// https://docs.github.com/en/actions/learn-github-actions/variables#naming-conventions-for-configuration-variables
-	if strings.HasPrefix(n.Property, "github_") {
+	if strings.HasPrefix(strings.ToLower(n.Property), "github_") {
 		sema.errorf(
 			n,
 			"configuration variable name %q must not start with the GITHUB_ prefix (case insensitive). note: see the convention at https://docs.github.com/en/actions/learn-github-actions/variables#naming-conventions-for-configuration-variables",
@@ -614,7 +614,7 @@ func (sema *ExprSemanticsChecker) checkConfigVariables(n *ObjectDerefNode) {
 		)
 		return
 	}
-	for _, r := range n.Property {
+	for _, r := range strings.ToLower(n.Property) {
 		// Note: `n.Property` was already converted to lower case by parser
 		// Note: First character cannot be number, but it was already checked by parser
 		if '0' <= r && r <= '9' || 'a' <= r && r <= 'z' || r == '_' {
@@ -722,7 +722,7 @@ func (sema *ExprSemanticsChecker) checkIndexAccess(n *IndexAccessNode) ExprType 
 		case StringType:
 			// Index access with string literal like foo['bar']
 			if lit, ok := n.Index.(*StringNode); ok {
-				if prop, ok := ty.Props[lit.Value]; ok {
+				if prop, ok := ty.Props[strings.ToLower(lit.Value)]; ok {
 					return prop
 				}
 				if ty.Mapped != nil {

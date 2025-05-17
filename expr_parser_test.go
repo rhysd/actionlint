@@ -295,7 +295,7 @@ func TestParseExpressionSyntaxOK(t *testing.T) {
 			input: "github.EVENT",
 			expected: &ObjectDerefNode{
 				Receiver: &VariableNode{Name: "github"},
-				Property: "event",
+				Property: "EVENT",
 			},
 		},
 		{
@@ -317,7 +317,7 @@ func TestParseExpressionSyntaxOK(t *testing.T) {
 			input: "a.doSomething",
 			expected: &ObjectDerefNode{
 				Receiver: &VariableNode{Name: "a"},
-				Property: "dosomething",
+				Property: "doSomething",
 			},
 		},
 		{

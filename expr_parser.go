@@ -214,8 +214,7 @@ func (p *ExprParser) parsePostfixOp() ExprNode {
 				ret = &ArrayDerefNode{ret}
 			case TokenKindIdent:
 				t := p.next() // eat 'b' of 'a.b'
-				// Property name is case insensitive. github.event and github.EVENT are the same
-				ret = &ObjectDerefNode{ret, strings.ToLower(t.Value)}
+				ret = &ObjectDerefNode{ret, t.Value}
 			default:
 				p.unexpected(
 					"object property dereference like 'a.b' or array element dereference like 'a.*'",

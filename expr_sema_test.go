@@ -495,6 +495,11 @@ func TestExprSemanticsCheckOK(t *testing.T) {
 			expected: StringType{},
 		},
 		{
+			what:     "case insensitive comparison for context name in index",
+			input:    "JOB['CONTAINER']['NETWORK']",
+			expected: StringType{},
+		},
+		{
 			what:     "format() function arguments validation",
 			input:    "format('{0}{0}{0} {1}{2}{1} {1}{2}{1}{2} {0} {1}{1}{1} {2}{2}{2} {0}{0}{0}{0} {0}', 1, 'foo', true)",
 			expected: StringType{},
@@ -1255,7 +1260,7 @@ func TestExprSemanticsCheckError(t *testing.T) {
 			what:  "unknown configuration variable",
 			input: "vars.UNKNOWN_VARIABLE",
 			expected: []string{
-				"undefined configuration variable \"unknown_variable\".",
+				"undefined configuration variable \"UNKNOWN_VARIABLE\".",
 			},
 			configVars: []string{"FOO_BAR"},
 		},
@@ -1263,7 +1268,7 @@ func TestExprSemanticsCheckError(t *testing.T) {
 			what:  "config variable naming convention",
 			input: "vars.FOO-BAR",
 			expected: []string{
-				"configuration variable name \"foo-bar\" can only contain alphabets, decimal numbers, and '_'.",
+				"configuration variable name \"FOO-BAR\" can only contain alphabets, decimal numbers, and '_'.",
 			},
 		},
 		{
