@@ -160,6 +160,14 @@ go install github.com/rhysd/actionlint/cmd/actionlint@latest
 go install github.com/rhysd/actionlint/cmd/actionlint
 ```
 
+If `GOPATH` is not on your shell `PATH` variable yet, you might want to add the value from `go env | grep GOPATH`.
+
+Example `~/.bashrc`
+
+```sh
+export PATH=$HOME/go/bin:...
+```
+
 ---
 
 [Checks](checks.md) | [Usage](usage.md) | [Configuration](config.md) | [Go API](api.md) | [References](reference.md)
