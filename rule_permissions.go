@@ -9,6 +9,7 @@ var allPermissionScopes = map[string]struct{}{
 	"id-token":            {},
 	"issues":              {},
 	"discussions":         {},
+	"models":              {},
 	"packages":            {},
 	"pages":               {},
 	"pull-requests":       {},
