@@ -1,0 +1,56 @@
+name: Test YAML Anchors
+
+on: push
+
+env: &default_env
+  NODE_VERSION: "18"
+  PYTHON_VERSION: "3.9"
+
+jobs:
+  test_basic_anchor:
+    runs-on: ubuntu-latest
+    env: *default_env
+    steps:
+      - uses: actions/checkout@v4
+      - name: Test step
+        run: echo "Testing with Node ${{ env.NODE_VERSION }}"
+
+  test_steps_with_anchors:
+    runs-on: ubuntu-latest
+    env: *default_env
+    steps: &common_steps
+      - uses: actions/checkout@v4
+      - name: Setup Node
+        uses: actions/setup-node@v4
+        with:
+          node-version: ${{ env.NODE_VERSION }}
+      - run: npm install
+
+  build: &build_job
+    runs-on: ubuntu-latest
+    env: *default_env
+    steps:
+      - uses: actions/checkout@v4
+      - name: Build step
+        run: echo "Building with Node ${{ env.NODE_VERSION }}"
+
+  test_inherited_job: *build_job
+
+  test_common_steps:
+    runs-on: ubuntu-latest
+    env: *default_env
+    steps: *common_steps
+
+  test_step_anchor:
+    runs-on: ubuntu-latest
+    env: *default_env
+    steps:
+      - uses: actions/checkout@v4
+      - &common_step
+        name: "Common step"
+        run: |
+          echo "Running common step"
+          echo "Node version: ${{ env.NODE_VERSION }}"
+      - *common_step
+      - name: "Different step"
+        run: echo "This is a different step"

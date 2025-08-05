@@ -1,0 +1,49 @@
+name: Test Malformed YAML Anchors
+
+on: push
+
+env: &default_env
+  NODE_VERSION: "18"
+  PYTHON_VERSION: "3.9"
+
+jobs:
+  test_basic_anchor:
+    runs-on: ubuntu-latest
+    env: *default_env
+    steps:
+      - uses: actions/checkout@v4
+      - name: Test step
+        run: echo "Testing with Node ${{ env.NODE_VERSION }}"
+
+  test_undefined_alias:
+    runs-on: ubuntu-latest
+    # ERROR: This alias references a non-existent anchor
+    env: *undefined_anchor
+    steps:
+      - uses: actions/checkout@v4
+      - run: echo "This should fail"
+
+  test_circular_reference: &circular1
+    runs-on: ubuntu-latest
+    # ERROR: Circular reference (if this were supported)
+    env: *circular2
+    steps:
+      - uses: actions/checkout@v4
+
+  test_circular_reference2: &circular2
+    runs-on: ubuntu-latest
+    env: *circular1
+    steps:
+      - uses: actions/checkout@v4
+
+  test_duplicate_anchor: &duplicate_anchor
+    runs-on: ubuntu-latest
+    env: *default_env
+    steps:
+      - uses: actions/checkout@v4
+
+  test_duplicate_anchor2: &duplicate_anchor
+    runs-on: ubuntu-latest
+    env: *default_env
+    steps:
+      - uses: actions/checkout@v4

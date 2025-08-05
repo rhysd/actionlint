@@ -1390,6 +1390,33 @@ func (p *parser) parse(n *yaml.Node) *Workflow {
 // 	}
 // }
 
+// containsAnchorsOrAliases recursively checks if a YAML node tree contains any anchors or aliases
+func containsAnchorsOrAliases(node *yaml.Node) bool {
+	if node.Anchor != "" || node.Alias != nil {
+		return true
+	}
+
+	for _, child := range node.Content {
+		if containsAnchorsOrAliases(child) {
+			return true
+		}
+	}
+
+	return false
+}
+
+// resolveYAMLAnchors resolves YAML anchors by using the two-pass strategy:
+// 1. Parse into interface{} to let yaml.v3 resolve anchors automatically
+// 2. Marshal back to YAML to get the resolved structure
+func resolveYAMLAnchors(b []byte) ([]byte, error) {
+	var data interface{}
+	if err := yaml.Unmarshal(b, &data); err != nil {
+		return nil, err
+	}
+
+	return yaml.Marshal(data)
+}
+
 func handleYAMLError(err error) []*Error {
 	re := regexp.MustCompile(`\bline (\d+):`)
 
@@ -1417,10 +1444,30 @@ func handleYAMLError(err error) []*Error {
 // detected while parsing the input. It means that detecting one error does not stop parsing. Even
 // if one or more errors are detected, parser will try to continue parsing and finding more errors.
 func Parse(b []byte) (*Workflow, []*Error) {
+	// First, check if the YAML contains anchors/aliases
 	var n yaml.Node
-
 	if err := yaml.Unmarshal(b, &n); err != nil {
 		return nil, handleYAMLError(err)
+	}
+
+	// If the YAML contains anchors or aliases, resolve them
+	if containsAnchorsOrAliases(&n) {
+		resolvedBytes, err := resolveYAMLAnchors(b)
+		if err != nil {
+			return nil, []*Error{{
+				Message:  fmt.Sprintf("could not resolve YAML anchors: %s", err.Error()),
+				Filepath: "",
+				Line:     1,
+				Column:   1,
+				Kind:     "syntax-check",
+			}}
+		}
+		b = resolvedBytes
+
+		// Re-parse the resolved YAML
+		if err := yaml.Unmarshal(b, &n); err != nil {
+			return nil, handleYAMLError(err)
+		}
 	}
 
 	// Uncomment for checking YAML tree
