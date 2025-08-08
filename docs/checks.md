@@ -2887,7 +2887,7 @@ test.yaml:8:15: incorrect color "gray-white" at branding.icon in metadata of "My
   |
 8 |       - uses: ./.github/actions/my-invalid-action
   |               ^~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
-test.yaml:8:15: invalid runner name "node16" at runs.using in "My action" action defined at "/Users/rhysd/.go/src/github.com/rhysd/actionlint/.github/actions/my-invalid-action". valid runners are "composite", "docker", and "node20". see https://docs.github.com/en/actions/creating-actions/metadata-syntax-for-github-actions#runs [action]
+test.yaml:8:15: invalid runner name "node16" at runs.using in "My action" action defined at "/Users/rhysd/.go/src/github.com/rhysd/actionlint/.github/actions/my-invalid-action". valid runners are "composite", "docker", "node20", and "node24". see https://docs.github.com/en/actions/creating-actions/metadata-syntax-for-github-actions#runs [action]
   |
 8 |       - uses: ./.github/actions/my-invalid-action
   |               ^~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
