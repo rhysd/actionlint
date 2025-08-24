@@ -1316,7 +1316,7 @@ test.yaml:13:5: "tags" filter is not available for release event. it is only for
    |
 13 |     tags: v*.*.*
    |     ^~~~~
-test.yaml:15:3: unknown Webhook event "pullreq". see https://docs.github.com/en/actions/learn-github-actions/events-that-trigger-workflows#webhook-events for list of all Webhook event names [events]
+test.yaml:15:3: unknown Webhook event "pullreq". see https://docs.github.com/en/actions/reference/workflows-and-actions/events-that-trigger-workflows#webhook-events for list of all Webhook event names [events]
    |
 15 |   pullreq:
    |   ^~~~~~~~
@@ -2948,8 +2948,8 @@ Note that `steps` in Composite action's metadata is not checked at this point. I
 [needs-context-doc]: https://docs.github.com/en/actions/learn-github-actions/contexts#needs-context
 [shell-doc]: https://docs.github.com/en/actions/learn-github-actions/workflow-syntax-for-github-actions#using-a-specific-shell
 [matrix-doc]: https://docs.github.com/en/actions/learn-github-actions/workflow-syntax-for-github-actions#jobsjob_idstrategymatrix
-[webhook-doc]: https://docs.github.com/en/actions/learn-github-actions/events-that-trigger-workflows#webhook-events
-[schedule-event-doc]: https://docs.github.com/en/actions/learn-github-actions/events-that-trigger-workflows#scheduled-events
+[webhook-doc]: https://docs.github.com/en/actions/reference/workflows-and-actions/events-that-trigger-workflows#webhook-events
+[schedule-event-doc]: https://docs.github.com/en/actions/reference/workflows-and-actions/events-that-trigger-workflows#scheduled-events
 [cron-syntax]: https://pubs.opengroup.org/onlinepubs/9699919799/utilities/crontab.html#tag_20_25_07
 [gh-hosted-runner]: https://docs.github.com/en/actions/using-github-hosted-runners/about-github-hosted-runners
 [self-hosted-runner]: https://docs.github.com/en/actions/hosting-your-own-runners/about-self-hosted-runners
@@ -2969,7 +2969,7 @@ Note that `steps` in Composite action's metadata is not checked at this point. I
 [reusable-workflow-call-keys]: https://docs.github.com/en/actions/learn-github-actions/reusing-workflows#supported-keywords-for-jobs-that-call-a-reusable-workflow
 [object-filter-syntax]: https://docs.github.com/en/actions/learn-github-actions/expressions#object-filters
 [github-script]: https://github.com/actions/github-script
-[workflow-dispatch-event]: https://docs.github.com/en/actions/learn-github-actions/events-that-trigger-workflows#workflow_dispatch
+[workflow-dispatch-event]: https://docs.github.com/en/actions/reference/workflows-and-actions/events-that-trigger-workflows#workflow_dispatch
 [workflow-dispatch-input-type-announce]: https://github.blog/changelog/2021-11-10-github-actions-input-types-for-manual-workflows/
 [reusable-workflow-outputs]: https://docs.github.com/en/actions/using-workflows/reusing-workflows#using-outputs-from-a-reusable-workflow
 [inherit-secrets-announce]: https://github.blog/changelog/2022-05-03-github-actions-simplify-using-secrets-with-reusable-workflows/
