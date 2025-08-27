@@ -65,6 +65,13 @@ func (p *parser) errorfAt(pos *Pos, format string, args ...interface{}) {
 	p.errorAt(pos, m)
 }
 
+func (p *parser) resolveAlias(n *yaml.Node) *yaml.Node {
+	for n.Kind == yaml.AliasNode {
+		n = n.Alias
+	}
+	return n
+}
+
 func (p *parser) errorf(n *yaml.Node, format string, args ...interface{}) {
 	m := fmt.Sprintf(format, args...)
 	p.error(n, m)
@@ -84,6 +91,7 @@ func (p *parser) unexpectedKey(s *String, sec string, expected []string) {
 }
 
 func (p *parser) checkNotEmpty(sec string, len int, n *yaml.Node) bool {
+	n = p.resolveAlias(n)
 	if len == 0 {
 		p.errorf(n, "%q section should not be empty", sec)
 		return false
@@ -92,6 +100,7 @@ func (p *parser) checkNotEmpty(sec string, len int, n *yaml.Node) bool {
 }
 
 func (p *parser) checkSequence(sec string, n *yaml.Node, allowEmpty bool) bool {
+	n = p.resolveAlias(n)
 	if n.Kind != yaml.SequenceNode {
 		p.errorf(n, "%q section must be sequence node but got %s node with %q tag", sec, nodeKindName(n.Kind), n.Tag)
 		return false
@@ -100,6 +109,7 @@ func (p *parser) checkSequence(sec string, n *yaml.Node, allowEmpty bool) bool {
 }
 
 func (p *parser) checkString(n *yaml.Node, allowEmpty bool) bool {
+	n = p.resolveAlias(n)
 	// Do not check n.Tag is !!str because we don't need to check the node is string strictly.
 	// In almost all cases, other nodes (like 42) are handled as string with its string representation.
 	if n.Kind != yaml.ScalarNode {
@@ -114,10 +124,12 @@ func (p *parser) checkString(n *yaml.Node, allowEmpty bool) bool {
 }
 
 func (p *parser) missingExpression(n *yaml.Node, expecting string) {
+	n = p.resolveAlias(n)
 	p.errorf(n, "expecting a single ${{...}} expression or %s, but found plain text node", expecting)
 }
 
 func (p *parser) parseExpression(n *yaml.Node, expecting string) *String {
+	n = p.resolveAlias(n)
 	if !isExprAssigned(n.Value) {
 		p.missingExpression(n, expecting)
 		return nil
@@ -126,6 +138,7 @@ func (p *parser) parseExpression(n *yaml.Node, expecting string) *String {
 }
 
 func (p *parser) mayParseExpression(n *yaml.Node) *String {
+	n = p.resolveAlias(n)
 	if n.Tag != "!!str" {
 		return nil
 	}
@@ -136,6 +149,7 @@ func (p *parser) mayParseExpression(n *yaml.Node) *String {
 }
 
 func (p *parser) parseString(n *yaml.Node, allowEmpty bool) *String {
+	n = p.resolveAlias(n)
 	if !p.checkString(n, allowEmpty) {
 		return &String{"", false, posAt(n)}
 	}
@@ -143,6 +157,7 @@ func (p *parser) parseString(n *yaml.Node, allowEmpty bool) *String {
 }
 
 func (p *parser) parseStringSequence(sec string, n *yaml.Node, allowEmpty bool, allowElemEmpty bool) []*String {
+	n = p.resolveAlias(n)
 	if ok := p.checkSequence(sec, n, allowEmpty); !ok {
 		return nil
 	}
@@ -158,6 +173,7 @@ func (p *parser) parseStringSequence(sec string, n *yaml.Node, allowEmpty bool, 
 }
 
 func (p *parser) parseStringOrStringSequence(sec string, n *yaml.Node, allowEmpty bool, allowElemEmpty bool) []*String {
+	n = p.resolveAlias(n)
 	switch n.Kind {
 	case yaml.ScalarNode:
 		if allowEmpty && n.Tag == "!!null" {
@@ -170,6 +186,7 @@ func (p *parser) parseStringOrStringSequence(sec string, n *yaml.Node, allowEmpt
 }
 
 func (p *parser) parseBool(n *yaml.Node) *Bool {
+	n = p.resolveAlias(n)
 	if n.Kind != yaml.ScalarNode || (n.Tag != "!!bool" && n.Tag != "!!str") {
 		p.errorf(n, "expected bool value but found %s node with %q tag", nodeKindName(n.Kind), n.Tag)
 		return nil
@@ -190,6 +207,7 @@ func (p *parser) parseBool(n *yaml.Node) *Bool {
 }
 
 func (p *parser) parseInt(n *yaml.Node) *Int {
+	n = p.resolveAlias(n)
 	if n.Kind != yaml.ScalarNode || (n.Tag != "!!int" && n.Tag != "!!str") {
 		p.errorf(n, "expected scalar node for integer value but found %s node with %q tag", nodeKindName(n.Kind), n.Tag)
 		return nil
@@ -219,6 +237,7 @@ func (p *parser) parseInt(n *yaml.Node) *Int {
 }
 
 func (p *parser) parseFloat(n *yaml.Node) *Float {
+	n = p.resolveAlias(n)
 	if n.Kind != yaml.ScalarNode || (n.Tag != "!!float" && n.Tag != "!!int" && n.Tag != "!!str") {
 		p.errorf(n, "expected scalar node for float value but found %s node with %q tag", nodeKindName(n.Kind), n.Tag)
 		return nil
@@ -248,6 +267,7 @@ func (p *parser) parseFloat(n *yaml.Node) *Float {
 }
 
 func (p *parser) parseMapping(what string, n *yaml.Node, allowEmpty, caseSensitive bool) []workflowKeyVal {
+	n = p.resolveAlias(n)
 	isNull := isNull(n)
 
 	if !isNull && n.Kind != yaml.MappingNode {
@@ -299,10 +319,12 @@ func (p *parser) parseMapping(what string, n *yaml.Node, allowEmpty, caseSensiti
 }
 
 func (p *parser) parseSectionMapping(sec string, n *yaml.Node, allowEmpty, caseSensitive bool) []workflowKeyVal {
+	n = p.resolveAlias(n)
 	return p.parseMapping(fmt.Sprintf("%q section", sec), n, allowEmpty, caseSensitive)
 }
 
 func (p *parser) parseScheduleEvent(pos *Pos, n *yaml.Node) *ScheduledEvent {
+	n = p.resolveAlias(n)
 	if ok := p.checkSequence("schedule", n, false); !ok {
 		return nil
 	}
@@ -325,6 +347,7 @@ func (p *parser) parseScheduleEvent(pos *Pos, n *yaml.Node) *ScheduledEvent {
 
 // https://docs.github.com/en/actions/learn-github-actions/events-that-trigger-workflows#workflow_dispatch
 func (p *parser) parseWorkflowDispatchEvent(pos *Pos, n *yaml.Node) *WorkflowDispatchEvent {
+	n = p.resolveAlias(n)
 	ret := &WorkflowDispatchEvent{Pos: pos}
 
 	for _, kv := range p.parseSectionMapping("workflow_dispatch", n, true, true) {
@@ -393,6 +416,7 @@ func (p *parser) parseWorkflowDispatchEvent(pos *Pos, n *yaml.Node) *WorkflowDis
 
 // https://docs.github.com/en/actions/learn-github-actions/events-that-trigger-workflows#repository_dispatch
 func (p *parser) parseRepositoryDispatchEvent(pos *Pos, n *yaml.Node) *RepositoryDispatchEvent {
+	n = p.resolveAlias(n)
 	ret := &RepositoryDispatchEvent{Pos: pos}
 
 	// Note: Omitting 'types' is ok. In the case, all types trigger the workflow
@@ -409,11 +433,13 @@ func (p *parser) parseRepositoryDispatchEvent(pos *Pos, n *yaml.Node) *Repositor
 
 // https://docs.github.com/en/actions/using-workflows/workflow-syntax-for-github-actions#using-filters
 func (p *parser) parseWebhookEventFilter(name *String, n *yaml.Node) *WebhookEventFilter {
+	n = p.resolveAlias(n)
 	v := p.parseStringOrStringSequence(name.Value, n, false, false)
 	return &WebhookEventFilter{name, v}
 }
 
 func (p *parser) parseWebhookEvent(name *String, n *yaml.Node) *WebhookEvent {
+	n = p.resolveAlias(n)
 	ret := &WebhookEvent{Hook: name, Pos: name.Pos}
 
 	// Note: 'tags', 'tags-ignore', 'branches', 'branches-ignore' can be empty. Since there are
@@ -465,6 +491,7 @@ func (p *parser) parseWebhookEvent(name *String, n *yaml.Node) *WebhookEvent {
 // - https://docs.github.com/en/actions/learn-github-actions/workflow-syntax-for-github-actions#onworkflow_callinputs
 // - https://docs.github.com/en/actions/learn-github-actions/reusing-workflows
 func (p *parser) parseWorkflowCallEvent(pos *Pos, n *yaml.Node) *WorkflowCallEvent {
+	n = p.resolveAlias(n)
 	ret := &WorkflowCallEvent{Pos: pos}
 
 	for _, kv := range p.parseSectionMapping("workflow_call", n, true, true) {
@@ -561,6 +588,7 @@ func (p *parser) parseWorkflowCallEvent(pos *Pos, n *yaml.Node) *WorkflowCallEve
 }
 
 func (p *parser) parseEvents(pos *Pos, n *yaml.Node) []Event {
+	n = p.resolveAlias(n)
 	switch n.Kind {
 	case yaml.ScalarNode:
 		switch n.Value {
@@ -643,6 +671,7 @@ func (p *parser) parseEvents(pos *Pos, n *yaml.Node) []Event {
 
 // https://docs.github.com/en/actions/learn-github-actions/workflow-syntax-for-github-actions#permissions
 func (p *parser) parsePermissions(pos *Pos, n *yaml.Node) *Permissions {
+	n = p.resolveAlias(n)
 	ret := &Permissions{Pos: pos}
 
 	if n.Kind == yaml.ScalarNode {
@@ -664,6 +693,7 @@ func (p *parser) parsePermissions(pos *Pos, n *yaml.Node) *Permissions {
 
 // https://docs.github.com/en/actions/learn-github-actions/workflow-syntax-for-github-actions#env
 func (p *parser) parseEnv(n *yaml.Node) *Env {
+	n = p.resolveAlias(n)
 	if n.Kind == yaml.ScalarNode {
 		return &Env{
 			Expression: p.parseExpression(n, "mapping value for \"env\" section"),
@@ -685,6 +715,7 @@ func (p *parser) parseEnv(n *yaml.Node) *Env {
 
 // https://docs.github.com/en/actions/learn-github-actions/workflow-syntax-for-github-actions#defaults
 func (p *parser) parseDefaults(pos *Pos, n *yaml.Node) *Defaults {
+	n = p.resolveAlias(n)
 	ret := &Defaults{Pos: pos}
 
 	for _, kv := range p.parseSectionMapping("defaults", n, false, true) {
@@ -715,6 +746,7 @@ func (p *parser) parseDefaults(pos *Pos, n *yaml.Node) *Defaults {
 
 // https://docs.github.com/en/actions/learn-github-actions/workflow-syntax-for-github-actions#jobsjob_idconcurrency
 func (p *parser) parseConcurrency(pos *Pos, n *yaml.Node) *Concurrency {
+	n = p.resolveAlias(n)
 	ret := &Concurrency{Pos: pos}
 
 	if n.Kind == yaml.ScalarNode {
@@ -742,6 +774,7 @@ func (p *parser) parseConcurrency(pos *Pos, n *yaml.Node) *Concurrency {
 
 // https://docs.github.com/en/actions/learn-github-actions/workflow-syntax-for-github-actions#jobsjob_idenvironment
 func (p *parser) parseEnvironment(pos *Pos, n *yaml.Node) *Environment {
+	n = p.resolveAlias(n)
 	ret := &Environment{Pos: pos}
 
 	if n.Kind == yaml.ScalarNode {
@@ -769,6 +802,7 @@ func (p *parser) parseEnvironment(pos *Pos, n *yaml.Node) *Environment {
 
 // https://docs.github.com/en/actions/learn-github-actions/workflow-syntax-for-github-actions#jobsjob_idoutputs
 func (p *parser) parseOutputs(n *yaml.Node) map[string]*Output {
+	n = p.resolveAlias(n)
 	outputs := p.parseSectionMapping("outputs", n, false, false)
 	ret := make(map[string]*Output, len(outputs))
 	for _, output := range outputs {
@@ -782,6 +816,7 @@ func (p *parser) parseOutputs(n *yaml.Node) map[string]*Output {
 }
 
 func (p *parser) parseRawYAMLValue(n *yaml.Node) RawYAMLValue {
+	n = p.resolveAlias(n)
 	switch n.Kind {
 	case yaml.ScalarNode:
 		return &RawYAMLString{n.Value, posAt(n)}
@@ -811,6 +846,7 @@ func (p *parser) parseRawYAMLValue(n *yaml.Node) RawYAMLValue {
 // https://docs.github.com/en/actions/learn-github-actions/workflow-syntax-for-github-actions#example-including-additional-values-into-combinations
 // https://docs.github.com/en/actions/learn-github-actions/workflow-syntax-for-github-actions#example-excluding-configurations-from-a-matrix
 func (p *parser) parseMatrixCombinations(sec string, n *yaml.Node) *MatrixCombinations {
+	n = p.resolveAlias(n)
 	if n.Kind == yaml.ScalarNode {
 		return &MatrixCombinations{
 			Expression: p.parseExpression(n, "array of matrix combination"),
@@ -844,6 +880,7 @@ func (p *parser) parseMatrixCombinations(sec string, n *yaml.Node) *MatrixCombin
 
 // https://docs.github.com/en/actions/learn-github-actions/workflow-syntax-for-github-actions#jobsjob_idstrategymatrix
 func (p *parser) parseMatrix(pos *Pos, n *yaml.Node) *Matrix {
+	n = p.resolveAlias(n)
 	if n.Kind == yaml.ScalarNode {
 		return &Matrix{
 			Expression: p.parseExpression(n, "matrix"),
@@ -890,6 +927,7 @@ func (p *parser) parseMatrix(pos *Pos, n *yaml.Node) *Matrix {
 
 // https://docs.github.com/en/actions/using-workflows/workflow-syntax-for-github-actions#jobsjob_idstrategymax-parallel
 func (p *parser) parseMaxParallel(n *yaml.Node) *Int {
+	n = p.resolveAlias(n)
 	i := p.parseInt(n)
 	if i != nil && i.Expression == nil && i.Value <= 0 {
 		p.errorf(n, "value at \"max-parallel\" must be greater than zero: %v", i.Value)
@@ -899,6 +937,7 @@ func (p *parser) parseMaxParallel(n *yaml.Node) *Int {
 
 // https://docs.github.com/en/actions/learn-github-actions/workflow-syntax-for-github-actions#jobsjob_idstrategy
 func (p *parser) parseStrategy(pos *Pos, n *yaml.Node) *Strategy {
+	n = p.resolveAlias(n)
 	ret := &Strategy{Pos: pos}
 
 	for _, kv := range p.parseSectionMapping("strategy", n, false, true) {
@@ -919,6 +958,7 @@ func (p *parser) parseStrategy(pos *Pos, n *yaml.Node) *Strategy {
 
 // https://docs.github.com/en/actions/learn-github-actions/workflow-syntax-for-github-actions#jobsjob_idcontainer
 func (p *parser) parseContainer(sec string, pos *Pos, n *yaml.Node) *Container {
+	n = p.resolveAlias(n)
 	ret := &Container{Pos: pos}
 
 	if n.Kind == yaml.ScalarNode {
@@ -971,6 +1011,7 @@ func (p *parser) parseContainer(sec string, pos *Pos, n *yaml.Node) *Container {
 }
 
 func (p *parser) parseServices(n *yaml.Node) *Services {
+	n = p.resolveAlias(n)
 	ret := &Services{Pos: posAt(n)}
 	if e := p.mayParseExpression(n); e != nil {
 		ret.Expression = e
@@ -990,6 +1031,7 @@ func (p *parser) parseServices(n *yaml.Node) *Services {
 
 // https://docs.github.com/en/actions/using-workflows/workflow-syntax-for-github-actions#jobsjob_idtimeout-minutes
 func (p *parser) parseTimeoutMinutes(n *yaml.Node) *Float {
+	n = p.resolveAlias(n)
 	f := p.parseFloat(n)
 	if f != nil && f.Expression == nil && f.Value <= 0.0 {
 		p.errorf(n, "value at \"timeout-minutes\" must be greater than zero: %v", f.Value)
@@ -999,6 +1041,7 @@ func (p *parser) parseTimeoutMinutes(n *yaml.Node) *Float {
 
 // https://docs.github.com/en/actions/learn-github-actions/workflow-syntax-for-github-actions#jobsjob_idsteps
 func (p *parser) parseStep(n *yaml.Node) *Step {
+	n = p.resolveAlias(n)
 	ret := &Step{Pos: posAt(n)}
 	var workDir *String
 
@@ -1108,6 +1151,7 @@ func (p *parser) parseStep(n *yaml.Node) *Step {
 
 // https://docs.github.com/en/actions/learn-github-actions/workflow-syntax-for-github-actions#jobsjob_idsteps
 func (p *parser) parseSteps(n *yaml.Node) []*Step {
+	n = p.resolveAlias(n)
 	if ok := p.checkSequence("steps", n, false); !ok {
 		return nil
 	}
@@ -1125,6 +1169,7 @@ func (p *parser) parseSteps(n *yaml.Node) []*Step {
 
 // https://docs.github.com/en/actions/using-workflows/workflow-syntax-for-github-actions#jobsjob_idruns-on
 func (p *parser) parseRunsOn(n *yaml.Node) *Runner {
+	n = p.resolveAlias(n)
 	if expr := p.mayParseExpression(n); expr != nil {
 		return &Runner{nil, expr, nil}
 	}
@@ -1155,6 +1200,7 @@ func (p *parser) parseRunsOn(n *yaml.Node) *Runner {
 
 // https://docs.github.com/en/actions/learn-github-actions/workflow-syntax-for-github-actions#jobsjob_id
 func (p *parser) parseJob(id *String, n *yaml.Node) *Job {
+	n = p.resolveAlias(n)
 	ret := &Job{ID: id, Pos: id.Pos}
 	call := &WorkflowCall{}
 
@@ -1180,6 +1226,7 @@ func (p *parser) parseJob(id *String, n *yaml.Node) *Job {
 		case "name":
 			ret.Name = p.parseString(v, true)
 		case "needs":
+			v = p.resolveAlias(v)
 			if v.Kind == yaml.ScalarNode {
 				// needs: job1
 				ret.Needs = []*String{p.parseString(v, false)}
@@ -1238,13 +1285,14 @@ func (p *parser) parseJob(id *String, n *yaml.Node) *Job {
 			}
 			callOnlyKey = k
 		case "secrets":
-			if kv.val.Kind == yaml.ScalarNode {
+			v = p.resolveAlias(v)
+			if v.Kind == yaml.ScalarNode {
 				// `secrets: inherit` special case
 				// https://docs.github.com/en/actions/using-workflows/workflow-syntax-for-github-actions#onworkflow_callsecretsinherit
-				if kv.val.Value == "inherit" {
+				if v.Value == "inherit" {
 					call.InheritSecrets = true
 				} else {
-					p.errorf(kv.val, "expected mapping node for secrets or \"inherit\" string node but found %q node", kv.val.Value)
+					p.errorf(v, "expected mapping node for secrets or \"inherit\" string node but found %q node", v.Value)
 				}
 			} else {
 				secrets := p.parseSectionMapping("secrets", v, false, false)
@@ -1316,6 +1364,7 @@ func (p *parser) parseJob(id *String, n *yaml.Node) *Job {
 
 // https://docs.github.com/en/actions/learn-github-actions/workflow-syntax-for-github-actions#jobs
 func (p *parser) parseJobs(n *yaml.Node) map[string]*Job {
+	n = p.resolveAlias(n)
 	jobs := p.parseSectionMapping("jobs", n, false, false)
 	ret := make(map[string]*Job, len(jobs))
 	for _, kv := range jobs {
