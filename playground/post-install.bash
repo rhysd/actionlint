@@ -19,4 +19,4 @@ cp node_modules/codemirror/mode/yaml/yaml.js ./lib/js/
 cp node_modules/ismobilejs/dist/isMobile.min.js ./lib/js/
 cp node_modules/pako/dist/pako.min.js ./lib/js/
 
-cat "$(go env GOROOT)/misc/wasm/wasm_exec.js" >> ./lib/js/wasm_exec.js
+cat "$(go env GOROOT)/lib/wasm/wasm_exec.js" >> ./lib/js/wasm_exec.js
