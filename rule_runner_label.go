@@ -9,8 +9,7 @@ type runnerOSCompat uint
 
 const (
 	compatInvalid                   = 0
-	compatUbuntu2004 runnerOSCompat = 1 << iota
-	compatUbuntu2204
+	compatUbuntu2204 runnerOSCompat = 1 << iota
 	compatUbuntu2404
 	compatMacOS130
 	compatMacOS130L
@@ -24,6 +23,7 @@ const (
 	compatWindows2019
 	compatWindows2022
 	compatWindows2025
+	compatWindows11Arm
 )
 
 // https://docs.github.com/en/actions/using-github-hosted-runners/about-github-hosted-runners
@@ -33,6 +33,7 @@ var allGitHubHostedRunnerLabels = []string{
 	"windows-2025",
 	"windows-2022",
 	"windows-2019",
+	"windows-11-arm",
 	"ubuntu-latest",
 	"ubuntu-latest-4-cores",
 	"ubuntu-latest-8-cores",
@@ -41,7 +42,6 @@ var allGitHubHostedRunnerLabels = []string{
 	"ubuntu-24.04-arm",
 	"ubuntu-22.04",
 	"ubuntu-22.04-arm",
-	"ubuntu-20.04",
 	"macos-latest",
 	"macos-latest-xl",
 	"macos-latest-xlarge",
@@ -83,7 +83,6 @@ var defaultRunnerOSCompats = map[string]runnerOSCompat{
 	"ubuntu-24.04-arm":       compatUbuntu2404,
 	"ubuntu-22.04":           compatUbuntu2204,
 	"ubuntu-22.04-arm":       compatUbuntu2204,
-	"ubuntu-20.04":           compatUbuntu2004,
 	"macos-latest-xl":        compatMacOS140XL,
 	"macos-latest-xlarge":    compatMacOS140XL,
 	"macos-latest-large":     compatMacOS140L,
@@ -104,9 +103,10 @@ var defaultRunnerOSCompats = map[string]runnerOSCompat{
 	"windows-2025":           compatWindows2025,
 	"windows-2022":           compatWindows2022,
 	"windows-2019":           compatWindows2019,
-	"linux":                  compatUbuntu2404 | compatUbuntu2204 | compatUbuntu2004, // Note: "linux" does not always indicate Ubuntu. It might be Fedora or Arch or ...
+	"windows-11-arm":         compatWindows11Arm,
+	"linux":                  compatUbuntu2404 | compatUbuntu2204, // Note: "linux" does not always indicate Ubuntu. It might be Fedora or Arch or ...
 	"macos":                  compatMacOS150 | compatMacOS150L | compatMacOS150XL | compatMacOS140 | compatMacOS140L | compatMacOS140XL | compatMacOS130 | compatMacOS130L | compatMacOS130XL,
-	"windows":                compatWindows2022 | compatWindows2019,
+	"windows":                compatWindows2025 | compatWindows2022 | compatWindows2019 | compatWindows11Arm,
 }
 
 // RuleRunnerLabel is a rule to check runner label like "ubuntu-latest". There are two types of
