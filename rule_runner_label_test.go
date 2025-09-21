@@ -67,6 +67,10 @@ func TestRuleRunnerLabelCheckLabels(t *testing.T) {
 			labels: []string{"windows-latest-8-cores"},
 		},
 		{
+			what:   "larger Windows runner with other labels",
+			labels: []string{"windows-latest", "windows-2022"},
+		},
+		{
 			what:   "multiple labels for GH-hosted runner",
 			labels: []string{"ubuntu-latest", "ubuntu-22.04"},
 		},

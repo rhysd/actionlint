@@ -23,6 +23,7 @@ const (
 	compatWindows2019
 	compatWindows2022
 	compatWindows2025
+	compatWindows11Arm
 )
 
 // https://docs.github.com/en/actions/using-github-hosted-runners/about-github-hosted-runners
@@ -102,9 +103,10 @@ var defaultRunnerOSCompats = map[string]runnerOSCompat{
 	"windows-2025":           compatWindows2025,
 	"windows-2022":           compatWindows2022,
 	"windows-2019":           compatWindows2019,
+	"windows-11-arm":         compatWindows11Arm,
 	"linux":                  compatUbuntu2404 | compatUbuntu2204, // Note: "linux" does not always indicate Ubuntu. It might be Fedora or Arch or ...
 	"macos":                  compatMacOS150 | compatMacOS150L | compatMacOS150XL | compatMacOS140 | compatMacOS140L | compatMacOS140XL | compatMacOS130 | compatMacOS130L | compatMacOS130XL,
-	"windows":                compatWindows2022 | compatWindows2019,
+	"windows":                compatWindows2022 | compatWindows2019 | compatWindows11Arm,
 }
 
 // RuleRunnerLabel is a rule to check runner label like "ubuntu-latest". There are two types of
