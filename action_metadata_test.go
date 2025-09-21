@@ -102,6 +102,9 @@ func TestLocalActionsFindMetadataOK(t *testing.T) {
 	wantBranding.Branding.Icon = "edit"
 	wantBranding.Branding.Color = "white"
 
+	wantNode24 := testGetWantedActionMetadata()
+	wantNode24.Runs.Using = "node24"
+
 	tests := []struct {
 		spec string
 		want *ActionMetadata
@@ -150,6 +153,10 @@ func TestLocalActionsFindMetadataOK(t *testing.T) {
 		{
 			spec: "./branding",
 			want: wantBranding,
+		},
+		{
+			spec: "./node24",
+			want: wantNode24,
 		},
 	}
 
