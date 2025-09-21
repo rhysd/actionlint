@@ -11,7 +11,7 @@ node_modules:
 index.js test.js: index.ts test.ts lib.d.ts tsconfig.json
 	npm run build
 
-lib: node_modules index.js
+lib: node_modules
 	bash ./post-install.bash
 
 install: node_modules lib
