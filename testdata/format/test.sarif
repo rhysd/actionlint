@@ -6,7 +6,7 @@
       "tool": {
         "driver": {
           "name": "GitHub Actions lint",
-          "version": "",
+          "version": "(devel)",
           "informationUri": "https://github.com/rhysd/actionlint",
           "rules": [
             {
