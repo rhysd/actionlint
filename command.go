@@ -72,7 +72,7 @@ func getCommandVersion() string {
 	}
 
 	info, ok := debug.ReadBuildInfo()
-	if !ok {
+	if !ok || info.Main.Version == "" {
 		return "unknown" // Reaches only when actionlint package is built outside module
 	}
 
