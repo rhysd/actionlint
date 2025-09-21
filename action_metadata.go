@@ -34,8 +34,8 @@ func (inputs *ActionMetadataInputs) UnmarshalYAML(n *yaml.Node) error {
 	}
 
 	type actionInputMetadata struct {
-		Required bool    `yaml:"required"`
-		Default  *string `yaml:"default"`
+		Required           bool    `yaml:"required"`
+		Default            *string `yaml:"default"`
 		DeprecationMessage *string `yaml:"deprecationMessage"`
 	}
 
