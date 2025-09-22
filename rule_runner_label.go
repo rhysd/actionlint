@@ -18,6 +18,7 @@ const (
 	compatMacOS140L
 	compatMacOS140XL
 	compatMacOS150
+	compatMacOS150Intel
 	compatMacOS150L
 	compatMacOS150XL
 	compatMacOS260
@@ -92,7 +93,7 @@ var defaultRunnerOSCompats = map[string]runnerOSCompat{
 	"macos-latest":           compatMacOS150,
 	"macos-26-xlarge":        compatMacOS260XL,
 	"macos-26":               compatMacOS260,
-	"macos-15-intel":         compatMacOS150,
+	"macos-15-intel":         compatMacOS150Intel,
 	"macos-15-xlarge":        compatMacOS150XL,
 	"macos-15-large":         compatMacOS150L,
 	"macos-15":               compatMacOS150,
@@ -110,7 +111,7 @@ var defaultRunnerOSCompats = map[string]runnerOSCompat{
 	"windows-2022":           compatWindows2022,
 	"windows-11-arm":         compatWindows11Arm,
 	"linux":                  compatUbuntu2404 | compatUbuntu2204, // Note: "linux" does not always indicate Ubuntu. It might be Fedora or Arch or ...
-	"macos":                  compatMacOS260 | compatMacOS260XL | compatMacOS150 | compatMacOS150L | compatMacOS150XL | compatMacOS140 | compatMacOS140L | compatMacOS140XL | compatMacOS130 | compatMacOS130L | compatMacOS130XL,
+	"macos":                  compatMacOS260 | compatMacOS260XL | compatMacOS150 | compatMacOS150Intel | compatMacOS150L | compatMacOS150XL | compatMacOS140 | compatMacOS140L | compatMacOS140XL | compatMacOS130 | compatMacOS130L | compatMacOS130XL,
 	"windows":                compatWindows2025 | compatWindows2022 | compatWindows11Arm,
 }
 
