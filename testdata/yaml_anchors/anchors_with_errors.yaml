@@ -1,0 +1,59 @@
+name: Test YAML Anchors with Errors
+
+on: push
+
+env: &default_env
+  NODE_VERSION: "18"
+  PYTHON_VERSION: "3.9"
+
+jobs:
+  test_basic_anchor:
+    runs-on: ubuntu-latest
+    env: *default_env
+    steps:
+      - uses: actions/checkout@v4
+      - name: Test step with error
+        run: echo "Testing with Node ${{ env.NODE_VERSION }}"
+        # ERROR: Wrong input name
+      - uses: actions/setup-node@v4
+        with:
+          node_version: ${{ env.NODE_VERSION }}
+
+  build: &build_job
+    runs-on: ubuntu-latest
+    env: *default_env
+    steps:
+      - uses: actions/checkout@v4
+      - name: Build with untrusted input
+        # ERROR: Script injection vulnerability
+        run: echo "Building commit ${{ github.event.head_commit.message }}"
+      # ERROR: Unknown runner label
+      - name: Test on unknown runner
+        runs-on: windows-unknown
+        run: echo "test"
+
+  test_inherited_job: *build_job
+
+  test_matrix_error:
+    runs-on: ubuntu-latest
+    env: *default_env
+    strategy:
+      matrix:
+        os: [ubuntu-latest, windows-latest]
+        # ERROR: Referencing wrong matrix property
+        node: [14, 16, 18]
+    steps:
+      - uses: actions/checkout@v4
+      - name: Setup Node
+        uses: actions/setup-node@v4
+        with:
+          node-version: ${{ matrix.nodejs }}
+
+  test_needs_error:
+    # ERROR: Invalid job dependency
+    needs: [non_existent_job]
+    runs-on: ubuntu-latest
+    env: *default_env
+    steps:
+      - uses: actions/checkout@v4
+      - run: echo "This job has dependency error"
