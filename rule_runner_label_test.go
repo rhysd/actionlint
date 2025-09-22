@@ -43,6 +43,10 @@ func TestRuleRunnerLabelCheckLabels(t *testing.T) {
 			labels: []string{"self-hosted", "macOS", "macOS-latest", "macOS-14"},
 		},
 		{
+			what:   "self-hosted all Windows runner labels",
+			labels: []string{"self-hosted", "windows", "windows-latest", "windows-2022"},
+		},
+		{
 			what:   "self-hosted Linux runner in upper case",
 			labels: []string{"SELF-HOSTED", "LINUX"},
 		},
@@ -67,12 +71,12 @@ func TestRuleRunnerLabelCheckLabels(t *testing.T) {
 			labels: []string{"windows-latest-8-cores"},
 		},
 		{
-			what:   "larger Windows runner with other labels",
-			labels: []string{"windows-latest", "windows-2022"},
-		},
-		{
 			what:   "multiple labels for GH-hosted runner",
 			labels: []string{"ubuntu-latest", "ubuntu-22.04"},
+		},
+		{
+			what:   "multiple labels for GH-hosted windows runner",
+			labels: []string{"windows-latest", "windows-2022"},
 		},
 		{
 			what:   "user-defined labels",
@@ -234,6 +238,11 @@ func TestRuleRunnerLabelCheckLabels(t *testing.T) {
 			what:   "macOS labels conflict",
 			labels: []string{"macos-13", "macos-14"},
 			errs:   []string{`label "macos-14" conflicts with label "macos-13"`},
+		},
+		{
+			what:   "windows labels conflict",
+			labels: []string{"windows-2025", "windows-11-arm"},
+			errs:   []string{`label "windows-11-arm" conflicts with label "windows-2025"`},
 		},
 		{
 			what:   "macOS XL and normal labels conflict",
