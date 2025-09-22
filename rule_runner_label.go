@@ -78,10 +78,10 @@ var selfHostedRunnerPresetOtherLabels = []string{
 }
 
 var defaultRunnerOSCompats = map[string]runnerOSCompat{
-	"ubuntu-latest":          compatUbuntu2204,
-	"ubuntu-latest-4-cores":  compatUbuntu2204,
-	"ubuntu-latest-8-cores":  compatUbuntu2204,
-	"ubuntu-latest-16-cores": compatUbuntu2204,
+	"ubuntu-latest":          compatUbuntu2404,
+	"ubuntu-latest-4-cores":  compatUbuntu2404,
+	"ubuntu-latest-8-cores":  compatUbuntu2404,
+	"ubuntu-latest-16-cores": compatUbuntu2404,
 	"ubuntu-24.04":           compatUbuntu2404,
 	"ubuntu-24.04-arm":       compatUbuntu2404,
 	"ubuntu-22.04":           compatUbuntu2204,

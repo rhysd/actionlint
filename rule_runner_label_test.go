@@ -36,7 +36,7 @@ func TestRuleRunnerLabelCheckLabels(t *testing.T) {
 		},
 		{
 			what:   "self-hosted all Linux runner labels",
-			labels: []string{"self-hosted", "linux", "ubuntu-22.04", "ubuntu-latest"},
+			labels: []string{"self-hosted", "linux", "ubuntu-24.04", "ubuntu-latest"},
 		},
 		{
 			what:   "self-hosted all macOS runner labels",
@@ -71,11 +71,11 @@ func TestRuleRunnerLabelCheckLabels(t *testing.T) {
 			labels: []string{"windows-latest-8-cores"},
 		},
 		{
-			what:   "multiple labels for GH-hosted runner",
-			labels: []string{"ubuntu-latest", "ubuntu-22.04"},
+			what:   "multiple labels for GH-hosted Linux runner",
+			labels: []string{"ubuntu-latest", "ubuntu-24.04"},
 		},
 		{
-			what:   "multiple labels for GH-hosted windows runner",
+			what:   "multiple labels for GH-hosted Windows runner",
 			labels: []string{"windows-latest", "windows-2022"},
 		},
 		{
@@ -105,7 +105,7 @@ func TestRuleRunnerLabelCheckLabels(t *testing.T) {
 		},
 		{
 			what:   "matrix at first label",
-			labels: []string{"${{matrix.os}}", "ubuntu-22.04"},
+			labels: []string{"${{matrix.os}}", "ubuntu-24.04"},
 			matrix: []string{"ubuntu-latest"},
 		},
 		{
@@ -231,8 +231,8 @@ func TestRuleRunnerLabelCheckLabels(t *testing.T) {
 		},
 		{
 			what:   "Linux labels conflict",
-			labels: []string{"ubuntu-latest", "ubuntu-24.04"},
-			errs:   []string{`label "ubuntu-24.04" conflicts with label "ubuntu-latest"`},
+			labels: []string{"ubuntu-latest", "ubuntu-22.04"},
+			errs:   []string{`label "ubuntu-22.04" conflicts with label "ubuntu-latest"`},
 		},
 		{
 			what:   "macOS labels conflict",
