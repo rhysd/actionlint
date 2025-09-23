@@ -1,5 +1,5 @@
 test.yaml:2:1: unexpected key "NAME" for "workflow" section. expected one of "concurrency", "defaults", "env", "jobs", "name", "on", "permissions", "run-name" [syntax-check]
-test.yaml:5:3: unknown Webhook event "SCHEDULE". see https://docs.github.com/en/actions/learn-github-actions/events-that-trigger-workflows#webhook-events for list of all Webhook event names [events]
+test.yaml:5:3: unknown Webhook event "SCHEDULE". see https://docs.github.com/en/actions/reference/workflows-and-actions/events-that-trigger-workflows#webhook-events for list of all Webhook event names [events]
 test.yaml:9:9: unexpected key "DESCRIPTION" for "inputs" section. expected one of "default", "description", "required" [syntax-check]
 test.yaml:11:5: expected "types" key for "repository_dispatch" section but got "TYPES" [syntax-check]
 test.yaml:15:9: unexpected key "DESCRIPTION" for "inputs at workflow_call event" section. expected one of "default", "description", "required", "type" [syntax-check]
