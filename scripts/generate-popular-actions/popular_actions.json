@@ -61,6 +61,26 @@
         "tags": ["stable", "beta", "nightly"]
     },
     {
+        "slug": "actions/add-to-project",
+        "tags": ["v1.0.1", "v1.0.2"],
+        "next": "v2.0.0"
+    },
+    {
+        "slug": "actions/ai-inference",
+        "tags": ["v1", "v2"],
+        "next": "v3"
+    },
+    {
+        "slug": "actions/attest-build-provenance",
+        "tags": ["v1", "v2", "v3"],
+        "next": "v4"
+    },
+    {
+        "slug": "actions/attest-sbom",
+        "tags": ["v1", "v2", "v3"],
+        "next": "v4"
+    },
+    {
         "slug": "actions/cache",
         "tags": ["v1", "v2", "v3", "v4"],
         "next": "v5"
@@ -81,6 +101,11 @@
         "slug": "actions/checkout",
         "tags": ["v1", "v2", "v3", "v4", "v5"],
         "next": "v6"
+    },
+    {
+        "slug": "actions/create-github-app-token",
+        "tags": ["v1", "v2"],
+        "next": "v3"
     },
     {
         "slug": "actions/configure-pages",
@@ -348,6 +373,11 @@
         "next": "v4"
     },
     {
+        "slug": "octokit/graphql-action",
+        "tags": ["v2.x"],
+        "next": "v3.x"
+    },
+    {
         "slug": "octokit/request-action",
         "tags": ["v1.x", "v2.x"],
         "next": "v3.x",
@@ -357,6 +387,11 @@
         "slug": "peaceiris/actions-gh-pages",
         "tags": ["v2", "v3", "v4"],
         "next": "v5"
+    },
+    {
+        "slug": "peaceiris/actions-hugo",
+        "tags": ["v3"],
+        "next": "v4"
     },
     {
         "slug": "peter-evans/create-pull-request",
@@ -463,25 +498,5 @@
         "slug": "wearerequired/lint-action",
         "tags": ["v1", "v2"],
         "next": "v3"
-    },
-    {
-        "slug": "peaceiris/actions-hugo",
-        "tags": ["v3"],
-        "next": "v4"
-    },
-    {
-        "slug": "actions/attest-build-provenance",
-        "tags": ["v1", "v2", "v3"],
-        "next": "v4"
-    },
-    {
-        "slug": "actions/add-to-project",
-        "tags": ["v1.0.1"],
-        "next": "v2.0.0"
-    },
-    {
-        "slug": "octokit/graphql-action",
-        "tags": ["v2.x"],
-        "next": "v3.x"
     }
 ]
