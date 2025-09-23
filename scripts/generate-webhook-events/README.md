@@ -5,7 +5,7 @@ This is a script for generating [`all_webhooks.go`](../../all_webhooks.go).
 
 It does:
 
-1. Fetch [the official markdown document](https://raw.githubusercontent.com/github/docs/main/content/actions/writing-workflows/choosing-when-your-workflow-runs/events-that-trigger-workflows.md)
+1. Fetch [the official markdown document](https://raw.githubusercontent.com/github/docs/refs/heads/main/content/actions/reference/workflows-and-actions/events-that-trigger-workflows.md)
 2. Parse the markdown file and find Webhook names and their types from tables
 3. Generate mappings from Webhook names to their types as Go map variable
 

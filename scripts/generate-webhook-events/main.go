@@ -18,7 +18,7 @@ import (
 	"github.com/yuin/goldmark/text"
 )
 
-const theURL = "https://raw.githubusercontent.com/github/docs/main/content/actions/writing-workflows/choosing-when-your-workflow-runs/events-that-trigger-workflows.md"
+const theURL = "https://raw.githubusercontent.com/github/docs/refs/heads/main/content/actions/reference/workflows-and-actions/events-that-trigger-workflows.md"
 
 var dbg = log.New(io.Discard, "", log.LstdFlags)
 
