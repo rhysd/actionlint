@@ -11,7 +11,7 @@ import (
 //go:generate go run ./scripts/generate-webhook-events ./all_webhooks.go
 
 // RuleEvents is a rule to check 'on' field in workflow.
-// https://docs.github.com/en/actions/learn-github-actions/events-that-trigger-workflows
+// https://docs.github.com/en/actions/reference/workflows-and-actions/events-that-trigger-workflows
 type RuleEvents struct {
 	RuleBase
 }
@@ -66,7 +66,7 @@ func (rule *RuleEvents) checkCron(spec *String) {
 	next := sched.Next(start)
 	diff := next.Sub(start).Seconds()
 
-	// (#14) https://docs.github.com/en/actions/learn-github-actions/events-that-trigger-workflows#scheduled-events
+	// (#14) https://docs.github.com/en/actions/reference/workflows-and-actions/events-that-trigger-workflows#scheduled-events
 	//
 	// > The shortest interval you can run scheduled workflows is once every 5 minutes.
 	if diff < 60.0*5 {
@@ -109,13 +109,13 @@ func (rule *RuleEvents) checkExclusiveFilters(filter, ignore *WebhookEventFilter
 	}
 }
 
-// https://docs.github.com/en/actions/learn-github-actions/events-that-trigger-workflows#webhook-events
+// https://docs.github.com/en/actions/reference/workflows-and-actions/events-that-trigger-workflows#webhook-events
 func (rule *RuleEvents) checkWebhookEvent(event *WebhookEvent) {
 	hook := event.Hook.Value
 
 	types, ok := AllWebhookTypes[hook]
 	if !ok {
-		rule.Errorf(event.Pos, "unknown Webhook event %q. see https://docs.github.com/en/actions/learn-github-actions/events-that-trigger-workflows#webhook-events for list of all Webhook event names", hook)
+		rule.Errorf(event.Pos, "unknown Webhook event %q. see https://docs.github.com/en/actions/reference/workflows-and-actions/events-that-trigger-workflows#webhook-events for list of all Webhook event names", hook)
 		return
 	}
 

@@ -32,4 +32,3 @@ For debugging, specifying `-` to `dstfile` outputs the generated source to stdou
 ```sh
 go run ./scripts/generate-webhook-events -
 ```
-
