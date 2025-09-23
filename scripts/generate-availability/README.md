@@ -5,7 +5,7 @@ This is a script for generating [`availability.go`](../../availability.go).
 
 It does:
 
-1. Fetch [the official contexts document](https://raw.githubusercontent.com/github/docs/main/content/actions/writing-workflows/choosing-what-your-workflow-does/accessing-contextual-information-about-workflow-runs.md)
+1. Fetch [the official contexts document](https://raw.githubusercontent.com/github/docs/refs/heads/main/content/actions/reference/workflows-and-actions/contexts.md)
 2. Parse the markdown file and find "Context availability" table
 3. Extract contexts and special functions from the table
 4. Generate Go function and variable to map from workflow keys to available contexts and special functions
