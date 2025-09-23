@@ -79,8 +79,8 @@
     },
     {
         "slug": "actions/checkout",
-        "tags": ["v1", "v2", "v3", "v4"],
-        "next": "v5"
+        "tags": ["v1", "v2", "v3", "v4", "v5"],
+        "next": "v6"
     },
     {
         "slug": "actions/configure-pages",
@@ -99,53 +99,53 @@
     },
     {
         "slug": "actions/download-artifact",
-        "tags": ["v1", "v2", "v3", "v3-node20", "v4"],
-        "next": "v5"
+        "tags": ["v1", "v2", "v3", "v3-node20", "v4", "v5"],
+        "next": "v6"
     },
     {
         "slug": "actions/first-interaction",
-        "tags": ["v1"],
-        "next": "v2"
+        "tags": ["v1", "v2", "v3"],
+        "next": "v4"
     },
     {
         "slug": "actions/github-script",
-        "tags": ["v1", "v2", "v3", "v4", "v5", "v6", "v7"],
-        "next": "v8"
+        "tags": ["v1", "v2", "v3", "v4", "v5", "v6", "v7", "v8"],
+        "next": "v9"
     },
     {
         "slug": "actions/labeler",
-        "tags": ["v2", "v3", "v4", "v5"],
-        "next": "v6"
+        "tags": ["v2", "v3", "v4", "v5", "v6"],
+        "next": "v7"
     },
     {
         "slug": "actions/setup-dotnet",
-        "tags": ["v1", "v2", "v3", "v4"],
-        "next": "v5"
+        "tags": ["v1", "v2", "v3", "v4", "v5"],
+        "next": "v6"
     },
     {
         "slug": "actions/setup-go",
-        "tags": ["v1", "v2", "v3", "v4", "v5"],
-        "next": "v6"
+        "tags": ["v1", "v2", "v3", "v4", "v5", "v6"],
+        "next": "v7"
     },
     {
         "slug": "actions/setup-java",
-        "tags": ["v1", "v2", "v3", "v4"],
-        "next": "v5"
-    },
-    {
-        "slug": "actions/setup-node",
-        "tags": ["v1", "v2", "v3", "v4"],
-        "next": "v5"
-    },
-    {
-        "slug": "actions/setup-python",
         "tags": ["v1", "v2", "v3", "v4", "v5"],
         "next": "v6"
     },
     {
+        "slug": "actions/setup-node",
+        "tags": ["v1", "v2", "v3", "v4", "v5"],
+        "next": "v6"
+    },
+    {
+        "slug": "actions/setup-python",
+        "tags": ["v1", "v2", "v3", "v4", "v5", "v6"],
+        "next": "v7"
+    },
+    {
         "slug": "actions/stale",
-        "tags": ["v1", "v2", "v3", "v4", "v5", "v6", "v7", "v8", "v9"],
-        "next": "v10"
+        "tags": ["v1", "v2", "v3", "v4", "v5", "v6", "v7", "v8", "v9", "v10"],
+        "next": "v11"
     },
     {
         "slug": "actions/upload-artifact",
@@ -154,8 +154,8 @@
     },
     {
         "slug": "actions/upload-pages-artifact",
-        "tags": ["v1", "v2", "v3"],
-        "next": "v4"
+        "tags": ["v1", "v2", "v3", "v4"],
+        "next": "v5"
     },
     {
         "slug": "actions/dependency-review-action",
@@ -164,8 +164,8 @@
     },
     {
         "slug": "aws-actions/configure-aws-credentials",
-        "tags": ["v1", "v2", "v3", "v4"],
-        "next": "v5"
+        "tags": ["v1", "v2", "v3", "v4", "v5"],
+        "next": "v6"
     },
     {
         "slug": "azure/aks-set-context",
@@ -189,13 +189,13 @@
     },
     {
         "slug": "dawidd6/action-download-artifact",
-        "tags": ["v2", "v3", "v5", "v6", "v7"],
-        "next": "v8"
+        "tags": ["v2", "v3", "v5", "v6", "v7", "v8", "v9", "v10", "v11"],
+        "next": "v12"
     },
     {
         "slug": "dawidd6/action-send-mail",
-        "tags": ["v1", "v2", "v3", "v4"],
-        "next": "v5"
+        "tags": ["v1", "v2", "v3", "v4", "v5", "v6"],
+        "next": "v7"
     },
     {
         "slug": "dessant/lock-threads",
@@ -278,29 +278,29 @@
     },
     {
         "slug": "golangci/golangci-lint-action",
-        "tags": ["v1", "v2", "v3", "v4", "v5", "v6"],
-        "next": "v7"
+        "tags": ["v1", "v2", "v3", "v4", "v5", "v6", "v7", "v8"],
+        "next": "v9"
     },
     {
         "slug": "google-github-actions/auth",
-        "tags": ["v1", "v2"],
-        "next": "v3"
+        "tags": ["v1", "v2", "v3"],
+        "next": "v4"
     },
     {
         "slug": "google-github-actions/get-secretmanager-secrets",
-        "tags": ["v1", "v2"],
-        "next": "v3",
+        "tags": ["v1", "v2", "v3"],
+        "next": "v4",
         "skip_outputs": true
     },
     {
         "slug": "google-github-actions/setup-gcloud",
-        "tags": ["v1", "v2"],
-        "next": "v3"
+        "tags": ["v1", "v2", "v3"],
+        "next": "v4"
     },
     {
         "slug": "google-github-actions/upload-cloud-storage",
-        "tags": ["v1", "v2"],
-        "next": "v3"
+        "tags": ["v1", "v2", "v3"],
+        "next": "v4"
     },
     {
         "slug": "goreleaser/goreleaser-action",
@@ -471,8 +471,8 @@
     },
     {
         "slug": "actions/attest-build-provenance",
-        "tags": ["v1", "v2"],
-        "next": "v3"
+        "tags": ["v1", "v2", "v3"],
+        "next": "v4"
     },
     {
         "slug": "actions/add-to-project",
