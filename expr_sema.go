@@ -424,7 +424,7 @@ func (sema *ExprSemanticsChecker) UpdateInputs(ty *ObjectType) {
 }
 
 // UpdateDispatchInputs updates 'github.event.inputs' and 'inputs' objects to given object type.
-// https://docs.github.com/en/actions/using-workflows/events-that-trigger-workflows#workflow_dispatch
+// https://docs.github.com/en/actions/reference/workflows-and-actions/events-that-trigger-workflows
 func (sema *ExprSemanticsChecker) UpdateDispatchInputs(ty *ObjectType) {
 	sema.UpdateInputs(ty)
 

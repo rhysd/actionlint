@@ -21,7 +21,7 @@ import (
 	"github.com/yuin/goldmark/text"
 )
 
-const theURL = "https://raw.githubusercontent.com/github/docs/main/content/actions/writing-workflows/choosing-what-your-workflow-does/accessing-contextual-information-about-workflow-runs.md"
+const theURL = "https://raw.githubusercontent.com/github/docs/refs/heads/main/content/actions/reference/workflows-and-actions/contexts.md"
 
 var dbg = log.New(io.Discard, "", log.LstdFlags)
 var reReplaceholder = regexp.MustCompile("{%[^%]+%}")
