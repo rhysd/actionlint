@@ -78,7 +78,13 @@ make test
 staticcheck ./...
 ```
 
-or
+[govulncheck](https://go.dev/doc/security/vuln/) is used for security checks.
+
+```sh
+govulncheck ./...
+```
+
+These lints can be run with other checks by the following command.
 
 ```sh
 make lint
