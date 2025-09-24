@@ -150,7 +150,7 @@ asdf global actionlint latest
 
 ## Build from source
 
-Recent [Go][] toolchain is necessary to build actionlint from source. Use Go 1.16 or later.
+Recent [Go][] toolchain is necessary to build actionlint from source. Last two major versions of Go are supported.
 
 ```sh
 # Install the latest stable version

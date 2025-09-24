@@ -53,9 +53,9 @@ It means that the library does not follow semantic versioning and any patch vers
 
 ## Go version compatibility
 
-Minimum supported Go version is written in [`go.mod`](../go.mod) file in this repository. That said, older Go versions are
-actually not tested on CI. Last two major Go versions are recommended because they're tested on CI. For example, when the latest
-Go version is v1.22, v1.21 and v1.22 are nice to use.
+Following the Go's official policy, last two major Go versions are supported. For example, when the latest Go version is
+v1.22, v1.21 and v1.22 are supported. Minimum supported Go version is written in the [`go.mod`](../go.mod) file in this
+repository.
 
 ---
 
