@@ -1,7 +1,6 @@
 /lib
 /main.wasm
 /node_modules
-/package-lock.json
 /image
 /*.js
 /*.js.map

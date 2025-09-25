@@ -72,11 +72,8 @@ jobs:
       - uses: actions/setup-node@v5
         with:
           node-version: "lts/*"
-      - name: Cache node_modules
-        uses: actions/cache@v4
-        with:
-          path: ./playground/node_modules
-          key: ${{ hashFiles('./playground/package.json') }}
+          cache: npm
+          cache-dependency-path: ./playground/package-lock.json
       - name: Build playground
         run: make build
       - name: Lint playground

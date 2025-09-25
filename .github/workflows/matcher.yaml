@@ -23,6 +23,8 @@ jobs:
       - uses: actions/setup-node@v5
         with:
           node-version: "lts/*"
+          cache: npm
+          cache-dependency-path: ./playground/package-lock.json
       - name: Update test data
         run: make ./scripts/generate-actionlint-matcher/test/* SKIP_GO_GENERATE=true
       - name: Test actionlint-matcher.json
