@@ -49,6 +49,7 @@ jobs:
         with:
           config-file: ./.github/codeql/codeql-config.yaml
           languages: javascript-typescript
+          source-root: ./playground
       - name: Build playground
         run: make build
       - uses: github/codeql-action/analyze@v3
