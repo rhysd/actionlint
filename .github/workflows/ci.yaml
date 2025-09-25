@@ -35,8 +35,8 @@ jobs:
           pip install pyflakes
           pyflakes --version
         if: ${{ runner.os == 'Windows' }}
-      - uses: actions/checkout@v4
-      - uses: actions/setup-go@v5
+      - uses: actions/checkout@v5
+      - uses: actions/setup-go@v6
         with:
           go-version: ${{ matrix.go }}
       - run: go test -v -race -coverprofile coverage.txt -covermode=atomic ./...
@@ -52,7 +52,7 @@ jobs:
         run: |
           echo "::add-matcher::.github/actionlint-matcher.json"
           ./actionlint -color
-      - uses: codecov/codecov-action@v4
+      - uses: codecov/codecov-action@v5
         with:
           env_vars: OS
           token: ${{ secrets.CODECOV_TOKEN }}
@@ -65,11 +65,11 @@ jobs:
       run:
         working-directory: ./playground
     steps:
-      - uses: actions/checkout@v4
-      - uses: actions/setup-go@v5
+      - uses: actions/checkout@v5
+      - uses: actions/setup-go@v6
         with:
           go-version: '1.25'
-      - uses: actions/setup-node@v4
+      - uses: actions/setup-node@v5
         with:
           node-version: "lts/*"
       - name: Cache node_modules
@@ -87,8 +87,8 @@ jobs:
     name: Lint
     runs-on: ubuntu-latest
     steps:
-      - uses: actions/checkout@v4
-      - uses: actions/setup-go@v5
+      - uses: actions/checkout@v5
+      - uses: actions/setup-go@v6
         with:
           go-version: '1.25'
       - name: Install dependencies
@@ -116,10 +116,10 @@ jobs:
     name: Dockerfile
     runs-on: ubuntu-latest
     steps:
-      - uses: actions/checkout@v4
+      - uses: actions/checkout@v5
       - name: Build image
         id: image
-        uses: docker/build-push-action@v5
+        uses: docker/build-push-action@v6
         with:
           build-args: |
             GOLANG_VER=1.25

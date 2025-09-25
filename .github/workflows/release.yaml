@@ -11,13 +11,13 @@ jobs:
   release:
     runs-on: ubuntu-latest
     steps:
-      - uses: actions/checkout@v4
+      - uses: actions/checkout@v5
       - uses: ruby/setup-ruby@v1
         with:
           ruby-version: '3.3'
       - run: gem install ronn
       - run: ronn ./man/actionlint.1.ronn
-      - uses: actions/setup-go@v5
+      - uses: actions/setup-go@v6
         with:
           go-version: '1.25'
       - uses: goreleaser/goreleaser-action@v6
@@ -29,7 +29,7 @@ jobs:
       - name: Post-release download check
         run: bash ./scripts/download-actionlint.bash "${GITHUB_REF#refs/tags/v}"
       - name: Clone nested repository to make version bump commit
-        uses: actions/checkout@v4
+        uses: actions/checkout@v5
         with:
           path: ./tmp-actionlint-for-update-ver
           ref: main
@@ -57,7 +57,7 @@ jobs:
   docker:
     runs-on: ubuntu-latest
     steps:
-      - uses: actions/checkout@v4
+      - uses: actions/checkout@v5
       - name: Get tag name
         id: tag
         run: |
@@ -73,7 +73,7 @@ jobs:
           username: rhysd
           password: ${{ secrets.DOCKERHUB_TOKEN }}
       - name: Build and push
-        uses: docker/build-push-action@v5
+        uses: docker/build-push-action@v6
         with:
           platforms: linux/amd64,linux/arm64
           build-args: |
