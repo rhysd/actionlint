@@ -7,10 +7,10 @@ import (
 	"strconv"
 	"strings"
 
-	"gopkg.in/yaml.v3"
+	"go.yaml.in/yaml/v3"
 )
 
-// https://pkg.go.dev/gopkg.in/yaml.v3#Kind
+// https://pkg.go.dev/go.yaml.in/yaml/v3#Kind
 func nodeKindName(k yaml.Kind) string {
 	switch k {
 	case yaml.DocumentNode:

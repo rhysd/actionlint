@@ -5,7 +5,7 @@ Actions workflow files.
 https://github.com/rhysd/actionlint
 
 actionlint is a command line tool but it also provides Go API for Go programs. It includes a
-workflow file parser built on top of go-yaml/yaml, lexer/parser/checker for expressions embedded by
+workflow file parser built on top of yaml/go-yaml, lexer/parser/checker for expressions embedded by
 ${{ }} placeholder, popular actions data, available contexts information, etc.
 
 To run the linter, Linter is the struct which manages the entire linter lifecycle. Please see the

@@ -17,7 +17,7 @@ import (
 	"strings"
 
 	"github.com/rhysd/actionlint"
-	"gopkg.in/yaml.v3"
+	"go.yaml.in/yaml/v3"
 )
 
 // List of known outdated actions which cannot be detected from 'runs' in action.yml

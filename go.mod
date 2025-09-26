@@ -11,9 +11,9 @@ require (
 	github.com/mattn/go-shellwords v1.0.12
 	github.com/robfig/cron/v3 v3.0.1
 	github.com/yuin/goldmark v1.7.13
+	go.yaml.in/yaml/v3 v3.0.4
 	golang.org/x/sync v0.17.0
 	golang.org/x/sys v0.36.0
-	gopkg.in/yaml.v3 v3.0.1
 )
 
 require (

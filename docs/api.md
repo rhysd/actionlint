@@ -11,7 +11,7 @@ import "github.com/rhysd/actionlint"
 ```
 
 See [the documentation][apidoc] to know the list of all APIs. It contains
-a workflow file parser built on top of `go-yaml/yaml`, expression `${{ }}` lexer/parser/checker, etc.
+a workflow file parser built on top of `yaml/go-yaml` library, expression `${{ }}` lexer/parser/checker, etc.
 
 Followings are unexhaustive list of interesting APIs.
 
@@ -20,7 +20,7 @@ Followings are unexhaustive list of interesting APIs.
 - `Linter` manages linter lifecycle and applies checks to given files. If you want to run actionlint checks in your
   program, please use this struct.
 - `Project` and `Projects` detect a project (Git repository) in a given directory path and find configuration in it.
-- `Config` represents structure of `actionlint.yaml` config file. It can be decoded by [go-yaml/yaml][go-yaml] library.
+- `Config` represents structure of `actionlint.yaml` config file. It can be decoded by [yaml/go-yaml][go-yaml] library.
 - `Workflow`, `Job`, `Step`, ... are nodes of workflow syntax tree. `Workflow` is a root node.
 - `Parse()` parses given contents into a workflow syntax tree. It tries to find syntax errors as much as possible and
   returns found errors as slice.
@@ -63,5 +63,5 @@ repository.
 
 [api-badge]: https://pkg.go.dev/badge/github.com/rhysd/actionlint.svg
 [apidoc]: https://pkg.go.dev/github.com/rhysd/actionlint
-[go-yaml]: https://github.com/go-yaml/yaml
+[go-yaml]: https://github.com/yaml/go-yaml
 [filter-pattern-doc]: https://docs.github.com/en/actions/using-workflows/workflow-syntax-for-github-actions#filter-pattern-cheat-sheet
