@@ -28,7 +28,7 @@ https://github.com/rhysd/actionlint/pulls
 
 Before submitting your PR, please ensure the following points:
 
-- Confirm build/tests/lints passed. How to run them is described in the following sections.
+- Confirm build/tests/lints passed on your branch. How to run them is described in the following sections.
 - If you added a new feature, consider to add tests and explain it in [the usage document](docs/usage.md).
 - If you added a new public API, consider to add tests and a doc comment for the API.
 - If you updated [the checks document](docs/checks.md), ensure to run [the maintenance script](#about-checks-doc).
@@ -60,8 +60,10 @@ around linking libc. `make build` does this by default.
 
 ## How to run tests
 
+Run the following command at the root of this repository.
+
 ```sh
-go test
+go test ./...
 ```
 
 or
@@ -70,7 +72,7 @@ or
 make test
 ```
 
-## How to run lint
+## How to run lints
 
 [staticcheck](https://staticcheck.io/) is used to lint Go sources.
 
