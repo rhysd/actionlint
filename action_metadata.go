@@ -8,7 +8,7 @@ import (
 	"strings"
 	"sync"
 
-	"go.yaml.in/yaml/v3"
+	"go.yaml.in/yaml/v4"
 )
 
 //go:generate go run ./scripts/generate-popular-actions ./popular_actions.go

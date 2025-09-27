@@ -8,7 +8,7 @@ import (
 	"strings"
 	"sync"
 
-	"go.yaml.in/yaml/v3"
+	"go.yaml.in/yaml/v4"
 )
 
 func expectedMapping(where string, n *yaml.Node) error {

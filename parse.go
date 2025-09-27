@@ -3,14 +3,13 @@ package actionlint
 import (
 	"fmt"
 	"math"
-	"regexp"
 	"strconv"
 	"strings"
 
-	"go.yaml.in/yaml/v3"
+	"go.yaml.in/yaml/v4"
 )
 
-// https://pkg.go.dev/go.yaml.in/yaml/v3#Kind
+// https://pkg.go.dev/go.yaml.in/yaml/v4#Kind
 func nodeKindName(k yaml.Kind) string {
 	switch k {
 	case yaml.DocumentNode:
@@ -1391,26 +1390,27 @@ func (p *parser) parse(n *yaml.Node) *Workflow {
 // }
 
 func handleYAMLError(err error) []*Error {
-	re := regexp.MustCompile(`\bline (\d+):`)
-
-	yamlErr := func(msg string) *Error {
-		l := 0
-		if ss := re.FindStringSubmatch(msg); len(ss) > 1 {
-			l, _ = strconv.Atoi(ss[1])
-		}
-		msg = fmt.Sprintf("could not parse as YAML: %s", msg)
-		return &Error{msg, "", l, 0, "syntax-check"}
-	}
-
 	if te, ok := err.(*yaml.TypeError); ok {
 		errs := make([]*Error, 0, len(te.Errors))
-		for _, msg := range te.Errors {
-			errs = append(errs, yamlErr(msg))
+		for _, e := range te.Errors {
+			errs = append(errs, &Error{
+				Message: fmt.Sprintf("could not parse as YAML: %s", e.Err.Error()),
+				Line:    e.Line,
+				Column:  e.Column,
+				Kind:    "syntax-check",
+			})
 		}
 		return errs
 	}
 
-	return []*Error{yamlErr(err.Error())}
+	e := &Error{
+		Message: fmt.Sprintf("could not parse as YAML: %s", err.Error()),
+		Kind:    "syntax-check",
+	}
+	if pe, ok := err.(*yaml.ParserError); ok {
+		e.Line = pe.Line
+	}
+	return []*Error{e}
 }
 
 // Parse parses given source as byte sequence into workflow syntax tree. It returns all errors

@@ -9,7 +9,7 @@ import (
 	"strings"
 
 	"github.com/bmatcuk/doublestar/v4"
-	"go.yaml.in/yaml/v3"
+	"go.yaml.in/yaml/v4"
 )
 
 // IgnorePatterns is a list of regular expressions. These patterns are used for filtering errors by

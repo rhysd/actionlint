@@ -4,7 +4,7 @@ package actionlint_fuzz
 
 import (
 	"github.com/rhysd/actionlint"
-	"go.yaml.in/yaml/v3"
+	"go.yaml.in/yaml/v4"
 )
 
 func canParseByGoYAML(data []byte) (ret bool) {
