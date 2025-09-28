@@ -242,8 +242,20 @@ func (c *LocalActionsCache) FindMetadata(spec string) (*ActionMetadata, bool, er
 	var meta ActionMetadata
 	if err := yaml.Unmarshal(b, &meta); err != nil {
 		c.writeCache(spec, nil) // Remember action was invalid
-		msg := strings.ReplaceAll(err.Error(), "\n", " ")
-		return nil, false, fmt.Errorf("could not parse action metadata in %q: %s", dir, msg)
+
+		// Unwrap type error when a single type error occurs to simplify the error message
+		var m string
+		if te, ok := err.(*yaml.TypeError); ok {
+			if len(te.Errors) == 1 {
+				m = te.Errors[0].Error()
+			} else {
+				m = strings.ReplaceAll(te.Error(), "\n", "")
+			}
+		} else {
+			m = err.Error()
+		}
+
+		return nil, false, fmt.Errorf("could not parse action metadata in %q: %s", dir, m)
 	}
 	meta.file = f
 	meta.dir = dir
