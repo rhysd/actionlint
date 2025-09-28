@@ -1403,14 +1403,19 @@ func handleYAMLError(err error) []*Error {
 		return errs
 	}
 
-	e := &Error{
-		Message: fmt.Sprintf("could not parse as YAML: %s", err.Error()),
-		Kind:    "syntax-check",
-	}
+	var m string
+	var l int
 	if pe, ok := err.(*yaml.ParserError); ok {
-		e.Line = pe.Line
+		l = pe.Line
+		m = pe.Message
+	} else {
+		m = err.Error()
 	}
-	return []*Error{e}
+	return []*Error{&Error{
+		Message: fmt.Sprintf("could not parse as YAML: %s", m),
+		Kind:    "syntax-check",
+		Line:    l,
+	}}
 }
 
 // Parse parses given source as byte sequence into workflow syntax tree. It returns all errors
