@@ -1389,7 +1389,7 @@ func (p *parser) parse(n *yaml.Node) *Workflow {
 // 	}
 // }
 
-func handleYAMLError(err error) []*Error {
+func handleYAMLUnmarshalError(err error) []*Error {
 	if te, ok := err.(*yaml.TypeError); ok {
 		errs := make([]*Error, 0, len(te.Errors))
 		for _, e := range te.Errors {
@@ -1409,7 +1409,7 @@ func handleYAMLError(err error) []*Error {
 		l = pe.Line
 		m = pe.Message
 	} else {
-		m = err.Error()
+		m = err.Error() // Fallback. I believe this line should be unreachable
 	}
 	return []*Error{&Error{
 		Message: fmt.Sprintf("could not parse as YAML: %s", m),
@@ -1425,7 +1425,7 @@ func Parse(b []byte) (*Workflow, []*Error) {
 	var n yaml.Node
 
 	if err := yaml.Unmarshal(b, &n); err != nil {
-		return nil, handleYAMLError(err)
+		return nil, handleYAMLUnmarshalError(err)
 	}
 
 	// Uncomment for checking YAML tree

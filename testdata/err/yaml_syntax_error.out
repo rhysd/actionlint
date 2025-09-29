@@ -1,0 +1,1 @@
+test.yaml:2:0: could not parse as YAML: block sequence entries are not allowed in this context [syntax-check]
