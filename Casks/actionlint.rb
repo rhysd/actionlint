@@ -37,9 +37,5 @@ cask "actionlint" do
     end
   end
 
-  postflight do
-    system "#{bin}/actionlint -version"
-  end
-
   # No zap stanza required
 end

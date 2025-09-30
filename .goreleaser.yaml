@@ -68,11 +68,6 @@ homebrew_casks:
       name: 'github-actions[bot]'
       email: '41898282+github-actions[bot]@users.noreply.github.com'
     license: MIT
-    hooks:
-      post:
-        install: |
-          system "#{bin}/actionlint -version"
-    skip_upload: true
 
 changelog:
   disable: true
