@@ -70,13 +70,17 @@ nix-env -iA nixpkgs.actionlint
 brew install actionlint
 ```
 
-Alternatively, rhysd/actionlint repository also provides its own Homebrew package, which is automatically updated on new release.
-If you prefer it, tap the repository before running `brew install`.
+Alternatively, rhysd/actionlint repository also provides its own Homebrew cask, which is automatically updated on new releases.
+If you prefer it, tap the repository and install `actionlint` package with `--cask` option.
 
 ```sh
 brew tap "rhysd/actionlint" "https://github.com/rhysd/actionlint"
-brew install actionlint
+brew install --cask actionlint
 ```
+
+> [!WARNING]
+> Since the `actionlint` executable is unsigned, macOS displays a warning and tries to move it to the Trash. To allow it to run,
+> go to 'Settings -> Privacy & Security' and grant the permission.
 
 ## Prebuilt binaries
 

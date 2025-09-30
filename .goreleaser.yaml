@@ -45,30 +45,29 @@ archives:
         - docs
         - man/actionlint.1
     id: nix
-    builds: [macos, linux, freebsd]
-    format: tar.gz
+    ids: [macos, linux, freebsd]
+    formats: [tar.gz]
   - <<: *archives_defaults
     id: windows
-    builds: [windows]
-    format: zip
+    ids: [windows]
+    formats: [zip]
 
-brews:
+homebrew_casks:
   - name: actionlint
+    directory: Casks
+    binary: actionlint
+    manpages: [man/actionlint.1]
+    homepage: https://github.com/rhysd/actionlint#readme
+    description: Static checker for GitHub Actions workflow files
+    dependencies:
+      - formula: shellcheck
     repository:
       owner: rhysd
       name: actionlint
-    directory: HomebrewFormula
     commit_author:
       name: 'github-actions[bot]'
       email: '41898282+github-actions[bot]@users.noreply.github.com'
-    homepage: https://github.com/rhysd/actionlint#readme
-    description: Static checker for GitHub Actions workflow files
     license: MIT
-    install: |
-      bin.install "actionlint"
-      man1.install "man/actionlint.1"
-    test: |
-      system "#{bin}/actionlint -version"
 
 changelog:
   disable: true
