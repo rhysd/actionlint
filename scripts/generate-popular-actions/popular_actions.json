@@ -498,5 +498,20 @@
         "slug": "wearerequired/lint-action",
         "tags": ["v1", "v2"],
         "next": "v3"
+    },
+    {
+        "slug": "peter-evans/create-or-update-comment",
+        "tags": ["v3", "v4"],
+        "next": "v5"
+    },
+    {
+        "slug": "SamKirkland/FTP-Deploy-Action",
+        "tags": ["v4.3.6"],
+        "next": "v4.3.7"
+    },
+    {
+        "slug": "release-drafter/release-drafter",
+        "tags": ["v5", "v6"],
+        "next": "v7"
     }
 ]
