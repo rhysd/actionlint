@@ -65,6 +65,17 @@ class Actionlint < Formula
     end
   end
 
+  deprecate! date: "2025-10-01", because: "migrated to cask. see caveats"
+
+  def caveats
+    <<~EOS
+      This formula is no longer maintained after v1.7.7 in favor of `actionlint` cask package.
+      This formula will be removed at v1.7.9 release. Please migrate to the cask:
+        brew uninstall actionlint
+        brew install --cask actionlint
+    EOS
+  end
+
   test do
     system "#{bin}/actionlint -version"
   end
