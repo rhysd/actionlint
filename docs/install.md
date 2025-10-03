@@ -160,8 +160,8 @@ Recent [Go][] toolchain is necessary to build actionlint from source. Last two m
 # Install the latest stable version
 go install github.com/rhysd/actionlint/cmd/actionlint@latest
 
-# Install the head of main branch
-go install github.com/rhysd/actionlint/cmd/actionlint
+# Install the head of the main branch
+go install github.com/rhysd/actionlint/cmd/actionlint@main
 ```
 
 ---
