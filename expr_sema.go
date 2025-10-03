@@ -252,6 +252,7 @@ var BuiltinGlobalVariableTypes = map[string]ExprType{
 	"env": NewMapObjectType(StringType{}), // env.<env_name>
 	// https://docs.github.com/en/actions/learn-github-actions/contexts#job-context
 	"job": NewStrictObjectType(map[string]ExprType{
+		"check_run_id": StringType{},
 		"container": NewStrictObjectType(map[string]ExprType{
 			"id":      StringType{},
 			"network": StringType{},
