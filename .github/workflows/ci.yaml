@@ -6,7 +6,7 @@ jobs:
     name: Unit tests
     strategy:
       matrix:
-        os: [ubuntu-latest, ubuntu-24.04-arm, macos-latest, windows-latest, macos-13]
+        os: [ubuntu-latest, ubuntu-24.04-arm, macos-latest, windows-latest, macos-15-intel]
         go: ['1.24', '1.25']
     runs-on: ${{ matrix.os }}
     steps:
