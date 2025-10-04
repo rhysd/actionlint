@@ -501,8 +501,8 @@
     },
     {
         "slug": "peter-evans/create-or-update-comment",
-        "tags": ["v3", "v4"],
-        "next": "v5"
+        "tags": ["v3", "v4", "v5"],
+        "next": "v6"
     },
     {
         "slug": "SamKirkland/FTP-Deploy-Action",

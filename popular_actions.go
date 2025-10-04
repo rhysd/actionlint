@@ -1168,6 +1168,7 @@ var PopularActions = map[string]*ActionMetadata{
 			"labels-to-remove-when-stale":     {"labels-to-remove-when-stale", false},
 			"labels-to-remove-when-unstale":   {"labels-to-remove-when-unstale", false},
 			"only-issue-labels":               {"only-issue-labels", false},
+			"only-issue-types":                {"only-issue-types", false},
 			"only-labels":                     {"only-labels", false},
 			"only-pr-labels":                  {"only-pr-labels", false},
 			"operations-per-run":              {"operations-per-run", false},
@@ -2878,6 +2879,25 @@ var PopularActions = map[string]*ActionMetadata{
 		},
 	},
 	"peter-evans/create-or-update-comment@v4": {
+		Name: "Create or Update Comment",
+		Inputs: ActionMetadataInputs{
+			"append-separator":    {"append-separator", false},
+			"body":                {"body", false},
+			"body-file":           {"body-file", false},
+			"body-path":           {"body-path", false},
+			"comment-id":          {"comment-id", false},
+			"edit-mode":           {"edit-mode", false},
+			"issue-number":        {"issue-number", false},
+			"reactions":           {"reactions", false},
+			"reactions-edit-mode": {"reactions-edit-mode", false},
+			"repository":          {"repository", false},
+			"token":               {"token", false},
+		},
+		Outputs: ActionMetadataOutputs{
+			"comment-id": {"comment-id"},
+		},
+	},
+	"peter-evans/create-or-update-comment@v5": {
 		Name: "Create or Update Comment",
 		Inputs: ActionMetadataInputs{
 			"append-separator":    {"append-separator", false},
