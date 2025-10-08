@@ -340,9 +340,8 @@ func (p *parser) parseWorkflowDispatchEvent(pos *Pos, n *yaml.Node) *WorkflowDis
 			var desc *String
 			var req *Bool
 			var def *String
-			var ty WorkflowDispatchEventInputType = WorkflowDispatchEventInputTypeNone
 			var opts []*String
-
+			ty := WorkflowDispatchEventInputTypeNone
 			for _, attr := range p.parseMapping("input settings of workflow_dispatch event", spec, true, true) {
 				switch attr.id {
 				case "description":

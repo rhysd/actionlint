@@ -134,7 +134,7 @@ func NewLinter(out io.Writer, opts *LinterOptions) (*Linter, error) {
 		}
 	}
 
-	var lout io.Writer = io.Discard
+	lout := io.Discard
 	if opts.LogWriter != nil {
 		lout = opts.LogWriter
 	}
