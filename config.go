@@ -67,6 +67,11 @@ type Config struct {
 	// Paths is a "paths" mapping in the configuration file. The keys are glob patterns to match file paths.
 	// And the values are corresponding configurations applied to the file paths.
 	Paths map[string]PathConfig `yaml:"paths"`
+    
+	// RequiredActions specifies which actions must be present in workflows
+	RequiredActions []RequiredActionRule `yaml:"required-actions"`
+
+
 }
 
 // PathConfigs returns a list of all PathConfig values matching to the given file path. The path must
