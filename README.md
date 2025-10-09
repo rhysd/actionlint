@@ -64,7 +64,7 @@ test.yaml:10:28: label "linux-latest" is unknown. available labels are "windows-
    |
 10 |         os: [macos-latest, linux-latest]
    |                            ^~~~~~~~~~~~~
-test.yaml:13:41: "github.event.head_commit.message" is potentially untrusted. avoid using it directly in inline scripts. instead, pass it through an environment variable. see https://docs.github.com/en/actions/security-for-github-actions/security-guides/security-hardening-for-github-actions for more details [expression]
+test.yaml:13:41: "github.event.head_commit.message" is potentially untrusted. avoid using it directly in inline scripts. instead, pass it through an environment variable. see https://docs.github.com/en/actions/reference/security/secure-use#good-practices-for-mitigating-script-injection-attacks for more details [expression]
    |
 13 |       - run: echo "Checking commit '${{ github.event.head_commit.message }}'"
    |                                         ^~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
@@ -137,7 +137,7 @@ actionlint is distributed under [the MIT license](./LICENSE.txt).
 [pyflakes]: https://github.com/PyCQA/pyflakes
 [syntax-doc]: https://docs.github.com/en/actions/reference/workflow-syntax-for-github-actions
 [filter-pattern-doc]: https://docs.github.com/en/actions/using-workflows/workflow-syntax-for-github-actions#filter-pattern-cheat-sheet
-[script-injection-doc]: https://docs.github.com/en/actions/learn-github-actions/security-hardening-for-github-actions#understanding-the-risk-of-script-injections
+[script-injection-doc]: https://docs.github.com/en/actions/reference/security/secure-use#good-practices-for-mitigating-script-injection-attacks
 [releases]: https://github.com/rhysd/actionlint/releases
 [checks]: https://github.com/rhysd/actionlint/blob/v1.7.7/docs/checks.md
 [install]: https://github.com/rhysd/actionlint/blob/v1.7.7/docs/install.md

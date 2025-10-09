@@ -11,7 +11,7 @@ This document describes links to resources related to actionlint and GitHub Acti
   - Built-in functions: https://docs.github.com/en/actions/writing-workflows/choosing-what-your-workflow-does/evaluate-expressions-in-workflows-and-actions#functions
   - Webhook events: https://docs.github.com/en/actions/reference/workflows-and-actions/events-that-trigger-workflows#webhook-events
   - Self-hosted runner: https://docs.github.com/en/actions/hosting-your-own-runners/managing-self-hosted-runners/about-self-hosted-runners
-  - Security: https://docs.github.com/en/actions/security-for-github-actions/security-guides/security-hardening-for-github-actions
+  - Security: https://docs.github.com/en/actions/reference/security/secure-use
 - CRON syntax: https://pubs.opengroup.org/onlinepubs/9699919799/utilities/crontab.html#tag_20_25_07
 - shellcheck: https://github.com/koalaman/shellcheck
 - pyflakes: https://github.com/PyCQA/pyflakes

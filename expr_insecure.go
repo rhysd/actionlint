@@ -81,7 +81,7 @@ func (ms UntrustedInputSearchRoots) AddRoot(m *UntrustedInputMap) {
 // BuiltinUntrustedInputs is list of untrusted inputs. These inputs are detected as untrusted in
 // `run:` scripts. See the URL for more details.
 // - https://securitylab.github.com/research/github-actions-untrusted-input/
-// - https://docs.github.com/en/actions/security-for-github-actions/security-guides/security-hardening-for-github-actions
+// - https://docs.github.com/en/actions/reference/security/secure-use#good-practices-for-mitigating-script-injection-attacks
 // - https://github.com/github/codeql/blob/main/javascript/ql/src/experimental/Security/CWE-094/ExpressionInjection.ql
 var BuiltinUntrustedInputs = UntrustedInputSearchRoots{
 	"github": NewUntrustedInputMap("github",
@@ -277,7 +277,7 @@ func (u *UntrustedInputChecker) end() {
 	if len(inputs) == 1 {
 		err := errorfAtExpr(
 			u.start,
-			"%q is potentially untrusted. avoid using it directly in inline scripts. instead, pass it through an environment variable. see https://docs.github.com/en/actions/security-for-github-actions/security-guides/security-hardening-for-github-actions for more details",
+			"%q is potentially untrusted. avoid using it directly in inline scripts. instead, pass it through an environment variable. see https://docs.github.com/en/actions/reference/security/secure-use#good-practices-for-mitigating-script-injection-attacks for more details",
 			inputs[0],
 		)
 		u.errs = append(u.errs, err)
@@ -286,7 +286,7 @@ func (u *UntrustedInputChecker) end() {
 		// filter syntax. Show all properties in error message.
 		err := errorfAtExpr(
 			u.start,
-			"object filter extracts potentially untrusted properties %s. avoid using the value directly in inline scripts. instead, pass the value through an environment variable. see https://docs.github.com/en/actions/security-for-github-actions/security-guides/security-hardening-for-github-actions for more details",
+			"object filter extracts potentially untrusted properties %s. avoid using the value directly in inline scripts. instead, pass the value through an environment variable. see https://docs.github.com/en/actions/reference/security/secure-use#good-practices-for-mitigating-script-injection-attacks for more details",
 			sortedQuotes(inputs),
 		)
 		u.errs = append(u.errs, err)
