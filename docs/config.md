@@ -42,6 +42,13 @@ paths:
     ignore:
       # Ignore errors from the old runner check. This may be useful for (outdated) self-hosted runner environment.
       - 'the runner of ".+" action is too old to run on GitHub Actions'
+
+# TimeoutMinutes is an object where Required set true requires a timeout-minutes value to be present.
+# Optionally, the MaxMinutes field can be set to enforce an upper limit on the timeout-minutes value.
+# This is used in timeout-check rule. 
+timeout-minutes:
+  required: true
+  max: 60
 ```
 
 - `self-hosted-runner`: Configuration for your self-hosted runner environment.
@@ -57,6 +64,10 @@ paths:
     - `ignore`: The configuration to ignore (filter) the errors by the error messages. This is an array of regular
       expressions. When one of the patterns matches the error message, the error will be ignored. It's similar to the
       `-ignore` command line option.
+- `timeout-minutes`: Configures enforcement for ensuring the timeout-minutes field is set at Job level
+  - `required`: true or false
+  - `max`: Maximum minutes that is acceptable for the value 
+
 
 ## Generate the initial configuration
 
