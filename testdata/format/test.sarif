@@ -235,6 +235,21 @@
               "helpUri": "https://github.com/rhysd/actionlint/blob/main/docs/checks.md"
             },
             {
+              "id": "timeout-check",
+              "name": "TimeoutCheck",
+              "defaultConfiguration": {
+                "level": "error"
+              },
+              "properties": {
+                "description": "Checks that timeout-minutes is set per job, with optional max limit",
+                "queryURI": "https://github.com/rhysd/actionlint/blob/main/docs/checks.md"
+              },
+              "fullDescription": {
+                "text": "Checks that timeout-minutes is set per job, with optional max limit"
+              },
+              "helpUri": "https://github.com/rhysd/actionlint/blob/main/docs/checks.md"
+            },
+            {
               "id": "workflow-call",
               "name": "WorkflowCall",
               "defaultConfiguration": {

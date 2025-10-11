@@ -2923,6 +2923,41 @@ directly via command line arguments.
 
 Note that `steps` in Composite action's metadata is not checked at this point. It will be supported in the future.
 
+
+<a id="timeout-check"></a>
+## Timeout Check
+
+Example input:
+
+```yaml
+# This section is referred to generate the output and the playground link
+on: push
+jobs:
+  timeout-minutes: 120
+  test:
+    runs-on: ubuntu
+    steps:
+      - run: echo hello
+```
+
+Output:
+
+```
+test.yaml:4:3: "steps" section is missing in job "timeout-minutes" [syntax-check]
+  |
+4 |   timeout-minutes: 120
+  |   ^~~~~~~~~~~~~~~~
+```
+
+[Playground](https://rhysd.github.io/actionlint/#eNoky0EKhTAMhOF9TzEXKLznMsdRAq20STEJeHyJbv9vRoWwwlo5dTcqgPfJGl5nl3A2wn/7ZWbzZOAKsZq30SXuN5nzsk+BmgsCH03ReAx9AgAA//8FUR4Q)
+
+
+This check is only run when set in the configuration file. You may as below, with the max minutes being optional.
+```
+timeout-minutes:
+  required: true
+  max: 60
+```
 ---
 
 [Installation](install.md) | [Usage](usage.md) | [Configuration](config.md) | [Go API](api.md) | [References](reference.md)

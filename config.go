@@ -51,6 +51,11 @@ type PathConfig struct {
 	Ignore IgnorePatterns `yaml:"ignore"`
 }
 
+type TimeoutMinutesConfig struct {
+	Required   bool    `yaml:"required"`
+	MaxMinutes float64 `yaml:"max"`
+}
+
 // Config is configuration of actionlint. This struct instance is parsed from "actionlint.yaml"
 // file usually put in ".github" directory.
 type Config struct {
@@ -67,6 +72,10 @@ type Config struct {
 	// Paths is a "paths" mapping in the configuration file. The keys are glob patterns to match file paths.
 	// And the values are corresponding configurations applied to the file paths.
 	Paths map[string]PathConfig `yaml:"paths"`
+	// TimeoutMinutes is an object where Required set true requires a timeout-minutes value to be present.
+	// Optionally, the MaxMinutes field can be set to enforce an upper limit on the timeout-minutes value.
+	// This is used in timeout-check rule.
+	TimeoutMinutes TimeoutMinutesConfig `yaml:"timeout-minutes"`
 }
 
 // PathConfigs returns a list of all PathConfig values matching to the given file path. The path must
@@ -153,6 +162,13 @@ config-variables: null
 paths:
 #  .github/workflows/**/*.yml:
 #    ignore: []
+
+# TimeoutMinutes is an object where Required set true requires a timeout-minutes value to be present.
+# Optionally, the MaxMinutes field can be set to enforce an upper limit on the timeout-minutes value.
+# This is used in timeout-check rule. 
+timeout-minutes:
+  required: false
+  max: 60
 `)
 	if err := os.WriteFile(path, b, 0644); err != nil {
 		return fmt.Errorf("could not write default configuration file at %q: %w", path, err)
