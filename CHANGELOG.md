@@ -1,3 +1,37 @@
+<a id="v1.7.8"></a>
+# [v1.7.8](https://github.com/rhysd/actionlint/releases/tag/v1.7.8) - 2025-10-11
+
+- Support `models` permission in `permissions` section. ([#531](https://github.com/rhysd/actionlint/issues/531), thanks [@muzimuzhi](https://github.com/muzimuzhi))
+- Support `job.check_run_id` property. ([#576](https://github.com/rhysd/actionlint/issues/576), thanks [@muzimuzhi](https://github.com/muzimuzhi) for fixing the type at [#577](https://github.com/rhysd/actionlint/issues/577))
+- Support `node24` runtime at `using` section in action metadata. ([#561](https://github.com/rhysd/actionlint/issues/561), thanks [@salmanmkc](https://github.com/salmanmkc))
+- Add support for the following runner labels
+  - [`macos-26` and `macos-26-large`](https://github.blog/changelog/2025-09-11-actions-macos-26-image-now-in-public-preview/) ([#572](https://github.com/rhysd/actionlint/issues/572), thanks [@muzimuzhi](https://github.com/muzimuzhi))
+  - [`macos-15`](https://github.blog/changelog/2025-09-19-github-actions-macos-13-runner-image-is-closing-down/#what-you-need-to-do) ([#572](https://github.com/rhysd/actionlint/issues/572), thanks [@muzimuzhi](https://github.com/muzimuzhi))
+- Drop support for the following runner labels.
+  - [`ubuntu-20.04`](https://github.com/actions/runner-images/issues/11101) ([#534](https://github.com/rhysd/actionlint/issues/534), thanks [@shogo82148](https://github.com/shogo82148))
+  - [`windows-2019`](https://github.blog/changelog/2025-04-15-upcoming-breaking-changes-and-releases-for-github-actions/#windows-server-2019-is-closing-down) ([#572](https://github.com/rhysd/actionlint/issues/572), thanks [@muzimuzhi](https://github.com/muzimuzhi))
+- Support [`deprecationMessage`](https://docs.github.com/en/actions/reference/workflows-and-actions/metadata-syntax#inputsinput_iddeprecationmessage) in action inputs. ([#540](https://github.com/rhysd/actionlint/issues/540), thanks [@saansh45](https://github.com/saansh45))
+- Support [`windows-11-arm` runner](https://github.blog/changelog/2025-04-14-windows-arm64-hosted-runners-now-available-in-public-preview/). ([#542](https://github.com/rhysd/actionlint/issues/542), thanks [@trim21](https://github.com/trim21))
+- Handle `ubuntu-latest` runner label as `ubuntu-24.04` and `macos-latest` runner label as `macos-15`.
+- Report mixing Intel Mac labels and Arm Mac labels as error.
+- Add new types to `issues` and `pull_request_target` webhooks.
+- Update the popular actions data set to the latest and add more actions to it (thanks [@sethvargo](https://github.com/sethvargo) for fixing the `go generate` scripts)
+  - `actions/create-github-app-token`
+  - `actions/attest-sbom`
+  - `actions/ai-inference`
+  - `peter-evans/create-or-update-comment`
+  - `release-drafter/release-drafter`
+  - `SamKirkland/FTP-Deploy-Action`
+- Fix the version value in `actionlint -version` can be empty.
+- Fix outdated URL links in some error messages and documents.
+- [Homebrew formula in this repository](https://github.com/rhysd/actionlint/blob/main/HomebrewFormula/actionlint.rb) is deprecated and [Homebrew cask](https://github.com/rhysd/actionlint/blob/main/Casks/actionlint.rb) is newly added instead because [GoReleaser no longer supports Homebrew formula update](https://goreleaser.com/deprecations/#brews). Note that Homebrew's official `actionlint` formula is still maintained. Please read the [documentation](https://github.com/rhysd/actionlint/blob/main/docs/install.md#homebrew) for more details.
+- Drop support for Go 1.23 and earlier because they are no longer maintained officially. Go 1.24 and later are supported to build actionlint.
+- Replace [`go-yaml/yaml@v3`](https://github.com/go-yaml/yaml) package with [`yaml/go-yaml@v4`](https://github.com/yaml/go-yaml) package. `go-yaml/yaml` was used for parsing workflow files however it was unmaintained. `yaml/go-yaml` is a successor of the library officially maintained by YAML organization. ([#575](https://github.com/rhysd/actionlint/issues/575))
+- Improve error messages on parsing workflow and action metadata files.
+
+[Changes][v1.7.8]
+
+
 <a id="v1.7.7"></a>
 # [v1.7.7](https://github.com/rhysd/actionlint/releases/tag/v1.7.7) - 2025-01-19
 
@@ -6,7 +40,7 @@
   - `ubuntu-22.04-arm`
 - Update Go dependencies to the latest.
 - Update the popular actions data set to the latest.
-- Add Linux arm64 job to the CI workflow. Now actionlint is tested on the platform. ([#507](https://github.com/rhysd/actionlint/issues/507), thanks [@cclauss](https://github.com/cclauss))
+- Add Linux arm64 job to our CI workflow. Now actionlint is tested on the platform. ([#507](https://github.com/rhysd/actionlint/issues/507), thanks [@cclauss](https://github.com/cclauss))
 
 [Changes][v1.7.7]
 
@@ -14,7 +48,7 @@
 <a id="v1.7.6"></a>
 # [v1.7.6](https://github.com/rhysd/actionlint/releases/tag/v1.7.6) - 2025-01-04
 
-- Using contexts at specific workflow keys is incorrectly reported as not allowed. Affected workflow keys are as follows. ([#495](https://github.com/rhysd/actionlint/issues/495), [#497](https://github.com/rhysd/actionlint/issues/497), [#498](https://github.com/rhysd/actionlint/issues/498), [#500](https://github.com/rhysd/actionlint/issues/500))
+- Fix using contexts at specific workflow keys is incorrectly reported as not allowed. Affected workflow keys are as follows. ([#495](https://github.com/rhysd/actionlint/issues/495), [#497](https://github.com/rhysd/actionlint/issues/497), [#498](https://github.com/rhysd/actionlint/issues/498), [#500](https://github.com/rhysd/actionlint/issues/500))
   - `jobs.<job_id>.steps.with.args`
   - `jobs.<job_id>.steps.with.entrypoint`
   - `jobs.<job_id>.services.<service_id>.env`
@@ -1865,6 +1899,7 @@ See documentation for more details:
 [Changes][v1.0.0]
 
 
+[v1.7.8]: https://github.com/rhysd/actionlint/compare/v1.7.7...v1.7.8
 [v1.7.7]: https://github.com/rhysd/actionlint/compare/v1.7.6...v1.7.7
 [v1.7.6]: https://github.com/rhysd/actionlint/compare/v1.7.5...v1.7.6
 [v1.7.5]: https://github.com/rhysd/actionlint/compare/v1.7.4...v1.7.5
@@ -1918,4 +1953,4 @@ See documentation for more details:
 [v1.1.0]: https://github.com/rhysd/actionlint/compare/v1.0.0...v1.1.0
 [v1.0.0]: https://github.com/rhysd/actionlint/tree/v1.0.0
 
-<!-- Generated by https://github.com/rhysd/changelog-from-release v3.8.1 -->
+<!-- Generated by https://github.com/rhysd/changelog-from-release v3.9.0 -->
