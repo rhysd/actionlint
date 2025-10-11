@@ -2933,26 +2933,25 @@ Example input:
 # This section is referred to generate the output and the playground link
 on: push
 jobs:
-  timeout-minutes: 120
   test:
-    runs-on: ubuntu
+    runs-on: ubuntu-latest
     steps:
       - run: echo hello
 ```
 
 Output:
-
+<!-- Skip update output -->
 ```
-test.yaml:4:3: "steps" section is missing in job "timeout-minutes" [syntax-check]
+test.yaml:4:3: You must have a timeout-minutes set to avoid overspend. [timeout-check]
   |
-4 |   timeout-minutes: 120
-  |   ^~~~~~~~~~~~~~~~
+4 |   test:
+  |   ^~~~~
 ```
 
-[Playground](https://rhysd.github.io/actionlint/#eNoky0EKhTAMhOF9TzEXKLznMsdRAq20STEJeHyJbv9vRoWwwlo5dTcqgPfJGl5nl3A2wn/7ZWbzZOAKsZq30SXuN5nzsk+BmgsCH03ReAx9AgAA//8FUR4Q)
+<!-- Skip playground link -->
 
 
-This check is only run when set in the configuration file. You may as below, with the max minutes being optional.
+This check is only run when set in the configuration file. As below, you can set required to true to enforce a value. If you wish to be prescriptive about the maximum value allowed, you may set the `max` to an appropriate number of minutes, else you can leave `max` unset.
 ```
 timeout-minutes:
   required: true
