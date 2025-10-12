@@ -78,8 +78,6 @@ func (rule *RulePermissions) checkPermissions(p *Permissions) {
 
 		if !slices.Contains(scopeValues, p.Value.Value) {
 			switch len(scopeValues) {
-			case 1:
-				rule.Errorf(p.Value.Pos, "%q is invalid for permission of scope %q. available values are %q", p.Value.Value, n, scopeValues[0])
 			case 2:
 				rule.Errorf(p.Value.Pos, "%q is invalid for permission of scope %q. available values are %q or %q", p.Value.Value, n, scopeValues[0], scopeValues[1])
 			case 3:
