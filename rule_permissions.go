@@ -1,21 +1,25 @@
 package actionlint
 
-var allPermissionScopes = map[string]struct{}{
-	"actions":             {},
-	"attestations":        {},
-	"checks":              {},
-	"contents":            {},
-	"deployments":         {},
-	"discussions":         {},
-	"id-token":            {},
-	"issues":              {},
-	"models":              {},
-	"packages":            {},
-	"pages":               {},
-	"pull-requests":       {},
-	"repository-projects": {},
-	"security-events":     {},
-	"statuses":            {},
+import (
+	"slices"
+)
+
+var allPermissionScopes = map[string][]string{
+	"actions":             []string{"read", "write", "none"},
+	"attestations":        []string{"read", "write", "none"},
+	"checks":              []string{"read", "write", "none"},
+	"contents":            []string{"read", "write", "none"},
+	"deployments":         []string{"read", "write", "none"},
+	"discussions":         []string{"read", "write", "none"},
+	"id-token":            []string{"write", "none"},
+	"issues":              []string{"read", "write", "none"},
+	"models":              []string{"read", "none"},
+	"packages":            []string{"read", "write", "none"},
+	"pages":               []string{"read", "write", "none"},
+	"pull-requests":       []string{"read", "write", "none"},
+	"repository-projects": []string{"read", "write", "none"},
+	"security-events":     []string{"read", "write", "none"},
+	"statuses":            []string{"read", "write", "none"},
 }
 
 // RulePermissions is a rule checker to check permission configurations in a workflow.
@@ -63,18 +67,24 @@ func (rule *RulePermissions) checkPermissions(p *Permissions) {
 
 	for _, p := range p.Scopes {
 		n := p.Name.Value // Permission names are case-sensitive
-		if _, ok := allPermissionScopes[n]; !ok {
+		scopeValues, ok := allPermissionScopes[n]
+		if !ok {
 			ss := make([]string, 0, len(allPermissionScopes))
 			for s := range allPermissionScopes {
 				ss = append(ss, s)
 			}
 			rule.Errorf(p.Name.Pos, "unknown permission scope %q. all available permission scopes are %s", n, sortedQuotes(ss))
 		}
-		switch p.Value.Value {
-		case "read", "write", "none":
-			// OK
-		default:
-			rule.Errorf(p.Value.Pos, "%q is invalid for permission of scope %q. available values are \"read\", \"write\" or \"none\"", p.Value.Value, n)
+
+		if !slices.Contains(scopeValues, p.Value.Value) {
+			switch len(scopeValues) {
+			case 1:
+				rule.Errorf(p.Value.Pos, "%q is invalid for permission of scope %q. available values are %q", p.Value.Value, n, scopeValues[0])
+			case 2:
+				rule.Errorf(p.Value.Pos, "%q is invalid for permission of scope %q. available values are %q or %q", p.Value.Value, n, scopeValues[0], scopeValues[1])
+			case 3:
+				rule.Errorf(p.Value.Pos, "%q is invalid for permission of scope %q. available values are %q, %q or %q", p.Value.Value, n, scopeValues[0], scopeValues[1], scopeValues[2])
+			}
 		}
 	}
 }
