@@ -163,8 +163,8 @@ paths:
 #  .github/workflows/**/*.yml:
 #    ignore: []
 
-# TimeoutMinutes is an object where Required set true requires a timeout-minutes value to be present.
-# Optionally, the MaxMinutes field can be set to enforce an upper limit on the timeout-minutes value.
+# timeout-minutes is an object where 'required' set true requires a timeout-minutes value to be present.
+# Optionally, the 'max' field can be set to enforce an upper limit on the timeout-minutes value.
 # This is used in timeout-check rule. 
 timeout-minutes:
   required: false

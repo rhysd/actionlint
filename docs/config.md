@@ -43,8 +43,8 @@ paths:
       # Ignore errors from the old runner check. This may be useful for (outdated) self-hosted runner environment.
       - 'the runner of ".+" action is too old to run on GitHub Actions'
 
-# TimeoutMinutes is an object where Required set true requires a timeout-minutes value to be present.
-# Optionally, the MaxMinutes field can be set to enforce an upper limit on the timeout-minutes value.
+# timeout-minutes is an object where 'required' set true requires a timeout-minutes value to be present.
+# Optionally, the 'max' field can be set to enforce an upper limit on the timeout-minutes value.
 # This is used in timeout-check rule. 
 timeout-minutes:
   required: true
