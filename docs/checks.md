@@ -2112,7 +2112,7 @@ jobs:
 Output:
 
 ```
-test.yaml:4:14: "write" is invalid for permission for all the scopes. available values are "read-all" and "write-all" [permissions]
+test.yaml:4:14: "write" is invalid for permission for all the scopes. available values are "read-all", "write-all" or {} [permissions]
   |
 4 | permissions: write
   |              ^~~~~

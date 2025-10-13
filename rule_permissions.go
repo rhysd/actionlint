@@ -60,7 +60,7 @@ func (rule *RulePermissions) checkPermissions(p *Permissions) {
 		case "write-all", "read-all":
 			// OK
 		default:
-			rule.Errorf(p.All.Pos, "%q is invalid for permission for all the scopes. available values are \"read-all\" and \"write-all\"", p.All.Value)
+			rule.Errorf(p.All.Pos, "%q is invalid for permission for all the scopes. available values are \"read-all\", \"write-all\" or {}", p.All.Value)
 		}
 		return
 	}

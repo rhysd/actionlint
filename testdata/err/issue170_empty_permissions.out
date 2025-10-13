@@ -1,2 +1,2 @@
 test.yaml:12:17: string should not be empty [syntax-check]
-test.yaml:12:17: "" is invalid for permission for all the scopes. available values are "read-all" and "write-all" [permissions]
+test.yaml:12:17: "" is invalid for permission for all the scopes. available values are "read-all", "write-all" or {} [permissions]
