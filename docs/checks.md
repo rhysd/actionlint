@@ -2120,11 +2120,11 @@ test.yaml:11:7: unknown permission scope "check". all available permission scope
    |
 11 |       check: write
    |       ^~~~~~
-test.yaml:13:15: "readable" is invalid as scope of permission "issues". available values are "read", "write", "none" [permissions]
+test.yaml:13:15: "readable" is invalid as permission of scope "issues". available values are "read", "write", "none" [permissions]
    |
 13 |       issues: readable
    |               ^~~~~~~~
-test.yaml:15:15: "write" is invalid as scope of permission "models". available values are "read", "none" [permissions]
+test.yaml:15:15: "write" is invalid as permission of scope "models". available values are "read", "none" [permissions]
    |
 15 |       models: write
    |               ^~~~~

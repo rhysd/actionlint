@@ -78,7 +78,7 @@ func (rule *RulePermissions) checkPermissions(p *Permissions) {
 		}
 
 		if !slices.Contains(s, p.Value.Value) {
-			rule.Errorf(p.Value.Pos, "%q is invalid as scope of permission %q. available values are %s", p.Value.Value, n, quotes(s))
+			rule.Errorf(p.Value.Pos, "%q is invalid as permission of scope %q. available values are %s", p.Value.Value, n, quotes(s))
 		}
 	}
 }
