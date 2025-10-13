@@ -2103,6 +2103,8 @@ jobs:
       check: write
       # ERROR: Available values are "read", "write" or "none"
       issues: readable
+      # ERROR: "models" doesn't have "write" scope
+      models: write
     steps:
       - run: echo hello
 ```
@@ -2118,13 +2120,17 @@ test.yaml:11:7: unknown permission scope "check". all available permission scope
    |
 11 |       check: write
    |       ^~~~~~
-test.yaml:13:15: "readable" is invalid for permission of scope "issues". available values are "read", "write" or "none" [permissions]
+test.yaml:13:15: "readable" is invalid as scope of permission "issues". available values are "read", "write", "none" [permissions]
    |
 13 |       issues: readable
    |               ^~~~~~~~
+test.yaml:15:15: "write" is invalid as scope of permission "models". available values are "read", "none" [permissions]
+   |
+15 |       models: write
+   |               ^~~~~
 ```
 
-[Playground](https://rhysd.github.io/actionlint/#eNpMjVGqQyEMRP9dxWzADbgb9QX01RpxErr94r209CtwhnOiM2E5WwhL9rOTXScTXrubhPCvhSkAJrRzge2T8UhefJrHkc92Tb+BCwC1SX18ajfqpAsTtuS/XMaNabK+UjxPEqQ2RZMx9B0AAP//57Yy6Q==)
+[Playground](https://rhysd.github.io/actionlint/#eNpMjdENwyAMBf+Z4i3AAmwDxBK0BCMeVtevSJUqX5bu7LP2gGEszg2ZZyWrdgZ8Zl3i3EsTgwOWcO0JTOv0+8iS9WW+xe0u9QxcAMhF8vuu/VAlTRgwJR4xtRufekjjc5VLxj/k9+MAyUVRpDX9BgAA//8fnji8)
 
 Permissions of `GITHUB_TOKEN` token can be configured at workflow-level or job-level by [`permissions:` section][perm-config-doc].
 Each permission scopes have its access levels. The default levels are described in [the document][permissions-doc].
