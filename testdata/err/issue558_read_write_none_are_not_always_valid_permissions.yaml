@@ -1,0 +1,12 @@
+on: push
+
+jobs:
+  test_job:
+    runs-on: ubuntu-latest
+    permissions:
+      contents: read
+      id-token: read
+      models: write
+    steps:
+      - uses: actions/checkout@v4
+
