@@ -74,6 +74,7 @@ func (rule *RulePermissions) checkPermissions(p *Permissions) {
 				ss = append(ss, s)
 			}
 			rule.Errorf(p.Name.Pos, "unknown permission scope %q. all available permission scopes are %s", n, sortedQuotes(ss))
+			continue
 		}
 
 		if !slices.Contains(scopeValues, p.Value.Value) {
