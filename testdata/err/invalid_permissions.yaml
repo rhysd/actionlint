@@ -5,6 +5,8 @@ permissions:
   unknown: bar
   id-token: read
   models: write
+  pages: READ
+  CHECKS: none
 
 jobs:
   test_job:
@@ -14,5 +16,7 @@ jobs:
       unknown: bar
       id-token: read
       models: write
+      pages: READ
+      CHECKS: none
     steps:
       - run: echo hello
