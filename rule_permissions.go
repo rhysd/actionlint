@@ -67,7 +67,7 @@ func (rule *RulePermissions) checkPermissions(p *Permissions) {
 
 	for _, p := range p.Scopes {
 		n := p.Name.Value // Permission names are case-sensitive
-		scopeValues, ok := allPermissionScopes[n]
+		s, ok := allPermissionScopes[n]
 		if !ok {
 			ss := make([]string, 0, len(allPermissionScopes))
 			for s := range allPermissionScopes {
@@ -77,13 +77,8 @@ func (rule *RulePermissions) checkPermissions(p *Permissions) {
 			continue
 		}
 
-		if !slices.Contains(scopeValues, p.Value.Value) {
-			switch len(scopeValues) {
-			case 2:
-				rule.Errorf(p.Value.Pos, "%q is invalid for permission of scope %q. available values are %q or %q", p.Value.Value, n, scopeValues[0], scopeValues[1])
-			case 3:
-				rule.Errorf(p.Value.Pos, "%q is invalid for permission of scope %q. available values are %q, %q or %q", p.Value.Value, n, scopeValues[0], scopeValues[1], scopeValues[2])
-			}
+		if !slices.Contains(s, p.Value.Value) {
+			rule.Errorf(p.Value.Pos, "%q is invalid as scope of permission %q. available values are %s", p.Value.Value, n, quotes(s))
 		}
 	}
 }

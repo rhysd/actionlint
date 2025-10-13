@@ -11,5 +11,7 @@ jobs:
       check: write
       # ERROR: Available values are "read", "write" or "none"
       issues: readable
+      # ERROR: "models" doesn't have "write" scope
+      models: write
     steps:
       - run: echo hello

@@ -1,2 +1,2 @@
-test.yaml:8:17: "read" is invalid for permission of scope "id-token". available values are "write" or "none" [permissions]
-test.yaml:9:15: "write" is invalid for permission of scope "models". available values are "read" or "none" [permissions]
+test.yaml:8:17: "read" is invalid as scope of permission "id-token". available values are "write", "none" [permissions]
+test.yaml:9:15: "write" is invalid as scope of permission "models". available values are "read", "none" [permissions]
