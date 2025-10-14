@@ -51,7 +51,7 @@ jobs:
       - run: ./actionlint
       - run: ./actionlint
       - run: ./actionlint
-      - uses: codecov/codecov-action@v1
+      - uses: codecov/codecov-action@v5
   lint:
     name: Lint
     runs-on: ubuntu-latest
