@@ -1,8 +1,6 @@
 package actionlint
 
-import (
-	"slices"
-)
+import "slices"
 
 var allPermissionScopes = map[string][]string{
 	"actions":             {"read", "write", "none"},
@@ -23,7 +21,7 @@ var allPermissionScopes = map[string][]string{
 }
 
 // RulePermissions is a rule checker to check permission configurations in a workflow.
-// https://docs.github.com/en/actions/security-for-github-actions/security-guides/automatic-token-authentication#permissions-for-the-github_token
+// https://docs.github.com/en/actions/reference/workflows-and-actions/workflow-syntax#defining-access-for-the-github_token-scopes
 type RulePermissions struct {
 	RuleBase
 }
