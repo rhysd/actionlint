@@ -159,8 +159,8 @@
     },
     {
         "slug": "actions/setup-node",
-        "tags": ["v1", "v2", "v3", "v4", "v5"],
-        "next": "v6"
+        "tags": ["v1", "v2", "v3", "v4", "v5", "v6"],
+        "next": "v7"
     },
     {
         "slug": "actions/setup-python",
@@ -189,8 +189,8 @@
     },
     {
         "slug": "aws-actions/configure-aws-credentials",
-        "tags": ["v1", "v2", "v3", "v4", "v5"],
-        "next": "v6"
+        "tags": ["v1", "v2", "v3", "v4", "v5", "v6"],
+        "next": "v7"
     },
     {
         "slug": "azure/aks-set-context",
@@ -276,20 +276,20 @@
     {
         "slug": "github/codeql-action",
         "path": "/analyze",
-        "tags": ["v1", "v2", "v3"],
-        "next": "v4"
+        "tags": ["v1", "v2", "v3", "v4"],
+        "next": "v5"
     },
     {
         "slug": "github/codeql-action",
         "path": "/autobuild",
-        "tags": ["v1", "v2", "v3"],
-        "next": "v4"
+        "tags": ["v1", "v2", "v3", "v4"],
+        "next": "v5"
     },
     {
         "slug": "github/codeql-action",
         "path": "/init",
-        "tags": ["v1", "v2", "v3"],
-        "next": "v4"
+        "tags": ["v1", "v2", "v3", "v4"],
+        "next": "v5"
     },
     {
         "slug": "github/super-linter",
