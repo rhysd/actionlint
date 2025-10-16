@@ -8,10 +8,10 @@ var PopularActions = map[string]*ActionMetadata{
 	"rhysd/action-setup-vim@v1.3.2": {
 		Name: "Setup Vim",
 		Inputs: ActionMetadataInputs{
-			"configure-args": {"configure-args", false},
-			"neovim":         {"neovim", false},
-			"token":          {"token", false},
-			"version":        {"version", false},
+			"configure-args": {"configure-args", false, false},
+			"neovim":         {"neovim", false, false},
+			"token":          {"token", false, false},
+			"version":        {"version", false, false},
 		},
 		Outputs: ActionMetadataOutputs{
 			"executable": {"executable"},
@@ -20,11 +20,11 @@ var PopularActions = map[string]*ActionMetadata{
 	"rhysd/changelog-from-release/action@v2.2.2": {
 		Name: "Run changelog-from-release",
 		Inputs: ActionMetadataInputs{
-			"commit":       {"commit", false},
-			"file":         {"file", true},
-			"github_token": {"github_token", true},
-			"push":         {"push", false},
-			"version":      {"version", false},
+			"commit":       {"commit", false, false},
+			"file":         {"file", true, false},
+			"github_token": {"github_token", true, false},
+			"push":         {"push", false, false},
+			"version":      {"version", false, false},
 		},
 	},
 }

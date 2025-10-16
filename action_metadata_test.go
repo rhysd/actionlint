@@ -18,9 +18,9 @@ func testGetWantedActionMetadata() *ActionMetadata {
 		Name:        "My action",
 		Description: "my action",
 		Inputs: ActionMetadataInputs{
-			"name":     {"name", false},
-			"message":  {"message", true},
-			"addition": {"addition", false},
+			"name":     {"name", false, false},
+			"message":  {"message", true, false},
+			"addition": {"addition", false, false},
 		},
 		Outputs: ActionMetadataOutputs{
 			"user_id": {"user_id"},
@@ -50,6 +50,7 @@ func testCheckActionMetadataPath(t *testing.T, dir string, m *ActionMetadata) {
 		p := filepath.Join(d, f)
 		if _, err := os.Stat(p); err == nil {
 			want = p
+			break
 		}
 	}
 	if want == "" {
@@ -551,15 +552,25 @@ inputs:
     default: 'default'
   input5:
     description: test
-    required: true`,
+    required: true
+  input6:
+    description: test
+    deprecationMessage: foo
+  input7:
+    description: test
+    deprecationMessage: foo
+    required: true
+`,
 			want: ActionMetadata{
 				Name: "Test",
 				Inputs: ActionMetadataInputs{
-					"input1": {"input1", false},
-					"input2": {"input2", false},
-					"input3": {"input3", false},
-					"input4": {"input4", false},
-					"input5": {"input5", true},
+					"input1": {"input1", false, false},
+					"input2": {"input2", false, false},
+					"input3": {"input3", false, false},
+					"input4": {"input4", false, false},
+					"input5": {"input5", true, false},
+					"input6": {"input6", false, true},
+					"input7": {"input7", true, true},
 				},
 			},
 		},
