@@ -2133,7 +2133,8 @@ test.yaml:15:15: "write" is invalid as permission of scope "models". available v
 [Playground](https://rhysd.github.io/actionlint/#eNpMjdENwyAMBf+Z4i3AAmwDxBK0BCMeVtevSJUqX5bu7LP2gGEszg2ZZyWrdgZ8Zl3i3EsTgwOWcO0JTOv0+8iS9WW+xe0u9QxcAMhF8vuu/VAlTRgwJR4xtRufekjjc5VLxj/k9+MAyUVRpDX9BgAA//8fnji8)
 
 Permissions of `GITHUB_TOKEN` token can be configured at workflow-level or job-level by [`permissions:` section][perm-config-doc].
-Each permission scopes have its access levels. The default levels are described in [the document][permissions-doc].
+Each permission scopes have their access levels. The default levels and available levels are described in
+[the document][permissions-doc].
 
 actionlint checks permission scopes and access levels in a workflow are correct.
 
@@ -2963,7 +2964,7 @@ Note that `steps` in Composite action's metadata is not checked at this point. I
 [dependabot-doc]: https://docs.github.com/en/code-security/dependabot/working-with-dependabot/keeping-your-actions-up-to-date-with-dependabot
 [credentials-doc]: https://docs.github.com/en/actions/learn-github-actions/workflow-syntax-for-github-actions#jobsjob_idcontainercredentials
 [actions-cache]: https://github.com/actions/cache
-[permissions-doc]: https://docs.github.com/en/actions/security-for-github-actions/security-guides/automatic-token-authentication#permissions-for-the-github_token
+[permissions-doc]: https://docs.github.com/en/actions/reference/workflows-and-actions/workflow-syntax#permissions
 [perm-config-doc]: https://docs.github.com/en/actions/learn-github-actions/workflow-syntax-for-github-actions#permissions
 [generate-webhook-events]: https://github.com/rhysd/actionlint/tree/main/scripts/generate-webhook-events
 [generate-popular-actions]: https://github.com/rhysd/actionlint/tree/main/scripts/generate-popular-actions
