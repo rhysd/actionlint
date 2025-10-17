@@ -69,6 +69,7 @@ func TestReadWriteJSONL(t *testing.T) {
 		"skip_both.jsonl",
 		"outdated.jsonl",
 		"known_outdated.jsonl",
+		"deprecated.jsonl",
 	}
 
 	for _, file := range files {
@@ -77,7 +78,7 @@ func TestReadWriteJSONL(t *testing.T) {
 			stdout := &bytes.Buffer{}
 			stderr := &bytes.Buffer{}
 
-			status := newGen(stdout, stderr, io.Discard).run([]string{"test", "-s", f, "-f", "jsonl"})
+			status := newGen(stdout, stderr, io.Discard).run([]string{"", "-s", f, "-f", "jsonl"})
 			if status != 0 {
 				t.Fatalf("exit status is non-zero: %d: %s", status, stderr.Bytes())
 			}
@@ -120,6 +121,10 @@ func TestWriteGoToStdout(t *testing.T) {
 		{
 			in:   "outdated.jsonl",
 			want: "outdated.go",
+		},
+		{
+			in:   "deprecated.jsonl",
+			want: "deprecated.go",
 		},
 	}
 

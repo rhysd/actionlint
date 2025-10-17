@@ -106,6 +106,11 @@ func TestLocalActionsFindMetadataOK(t *testing.T) {
 	wantNode24 := testGetWantedActionMetadata()
 	wantNode24.Runs.Using = "node24"
 
+	wantDeprecated := testGetWantedActionMetadata()
+	for _, i := range wantDeprecated.Inputs {
+		i.Deprecated = true
+	}
+
 	tests := []struct {
 		spec string
 		want *ActionMetadata
@@ -158,6 +163,10 @@ func TestLocalActionsFindMetadataOK(t *testing.T) {
 		{
 			spec: "./node24",
 			want: wantNode24,
+		},
+		{
+			spec: "./deprecated",
+			want: wantDeprecated,
 		},
 	}
 

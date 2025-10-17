@@ -1,0 +1,25 @@
+name: 'My action'
+author: 'rhysd <https://rhysd.github.io>'
+description: 'my action'
+
+inputs:
+  name:
+    description: your name
+    default: anonymous
+    deprecationMessage: This is deprecated
+  message:
+    description: message to this action
+    required: true
+    deprecationMessage: This is deprecated
+  addition:
+    description: additional information
+    required: false
+    deprecationMessage: This is deprecated
+
+outputs:
+  user_id:
+    description: user ID
+
+runs:
+  using: 'node20'
+  main: 'index.js'
