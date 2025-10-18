@@ -40,6 +40,8 @@ type String struct {
 	Quoted bool
 	// Pos is a position of the string in source.
 	Pos *Pos
+	// If string is a literal block which preserves newlines and indentation. Helpful for error messages
+	Literal bool
 }
 
 // ContainsExpression checks if the given string contains a ${{ }} placeholder or not. This function
