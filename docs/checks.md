@@ -2930,6 +2930,40 @@ directly via command line arguments.
 
 Note that `steps` in Composite action's metadata is not checked at this point. It will be supported in the future.
 
+
+<a id="timeout-check"></a>
+## Timeout Check
+
+Example input:
+
+```yaml
+# This section is referred to generate the output and the playground link
+on: push
+jobs:
+  test:
+    runs-on: ubuntu-latest
+    steps:
+      - run: echo hello
+```
+
+Output:
+<!-- Skip update output -->
+```
+test.yaml:4:3: You must have a timeout-minutes set to avoid overspend. [timeout-check]
+  |
+4 |   test:
+  |   ^~~~~
+```
+
+<!-- Skip playground link -->
+
+
+This check is only run when set in the configuration file. As below, you can set required to true to enforce a value. If you wish to be prescriptive about the maximum value allowed, you may set the `max` to an appropriate number of minutes, else you can leave `max` unset.
+```
+timeout-minutes:
+  required: true
+  max: 60
+```
 ---
 
 [Installation](install.md) | [Usage](usage.md) | [Configuration](config.md) | [Go API](api.md) | [References](reference.md)
