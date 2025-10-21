@@ -581,7 +581,8 @@ func (rule *RuleAction) checkLocalAction(spec string, action *ExecAction) {
 func (rule *RuleAction) checkAction(meta *ActionMetadata, exec *ExecAction, describe func(*ActionMetadata) string) {
 	// Check specified inputs are defined in action's inputs spec
 	for id, i := range exec.Inputs {
-		if _, ok := meta.Inputs[id]; !ok {
+		m, ok := meta.Inputs[id]
+		if !ok {
 			ns := make([]string, 0, len(meta.Inputs))
 			for _, i := range meta.Inputs {
 				ns = append(ns, i.Name)
@@ -592,6 +593,10 @@ func (rule *RuleAction) checkAction(meta *ActionMetadata, exec *ExecAction, desc
 				i.Name.Value,
 				describe(meta),
 				sortedQuotes(ns),
+			)
+		} else if m.Deprecated {
+			rule.Errorf(
+				i.Name.Pos, "input %q is deprecated. please check the deprecation message in action %s and avoid using it", i.Name.Value, describe(meta),
 			)
 		}
 	}
