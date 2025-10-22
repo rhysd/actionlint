@@ -6,6 +6,7 @@ import (
 	"net/url"
 	"os"
 	"path/filepath"
+	"regexp"
 	"strconv"
 	"strings"
 )
@@ -578,6 +579,8 @@ func (rule *RuleAction) checkLocalAction(spec string, action *ExecAction) {
 	})
 }
 
+var reNewlineWithIndent = regexp.MustCompile(`\r?\n\s*`)
+
 func (rule *RuleAction) checkAction(meta *ActionMetadata, exec *ExecAction, describe func(*ActionMetadata) string) {
 	// Check specified inputs are defined in action's inputs spec
 	for id, i := range exec.Inputs {
@@ -596,7 +599,11 @@ func (rule *RuleAction) checkAction(meta *ActionMetadata, exec *ExecAction, desc
 			)
 		} else if m.Deprecated {
 			rule.Errorf(
-				i.Name.Pos, "input %q is deprecated. please check the deprecation message in action %s and avoid using it", i.Name.Value, describe(meta),
+				i.Name.Pos,
+				"avoid using deprecated input %q in action %s: %s",
+				i.Name.Value,
+				describe(meta),
+				reNewlineWithIndent.ReplaceAllString(strings.TrimRight(m.DeprecationMessage, ". "), " "),
 			)
 		}
 	}

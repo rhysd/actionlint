@@ -22,6 +22,8 @@ type ActionMetadataInput struct {
 	Required bool `json:"required"`
 	// Deprecated is true when this input is marked as deprecated.
 	Deprecated bool `json:"deprecated"`
+	// DeprecationMessage is a deprecation message for the deprecated input.
+	DeprecationMessage string `json:"deprecation-message"`
 }
 
 // ActionMetadataInputs is a map from input ID to its metadata. Keys are in lower case since input
@@ -55,7 +57,11 @@ func (inputs *ActionMetadataInputs) UnmarshalYAML(n *yaml.Node) error {
 			return fmt.Errorf("input %q is duplicated", k)
 		}
 
-		md[id] = &ActionMetadataInput{k, m.Required && m.Default == nil, m.DeprecationMessage != nil}
+		var d string
+		if m.DeprecationMessage != nil {
+			d = strings.TrimSpace(*m.DeprecationMessage)
+		}
+		md[id] = &ActionMetadataInput{k, m.Required && m.Default == nil, m.DeprecationMessage != nil, d}
 	}
 
 	*inputs = md

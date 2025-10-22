@@ -18,9 +18,9 @@ func testGetWantedActionMetadata() *ActionMetadata {
 		Name:        "My action",
 		Description: "my action",
 		Inputs: ActionMetadataInputs{
-			"name":     {"name", false, false},
-			"message":  {"message", true, false},
-			"addition": {"addition", false, false},
+			"name":     {"name", false, false, ""},
+			"message":  {"message", true, false, ""},
+			"addition": {"addition", false, false, ""},
 		},
 		Outputs: ActionMetadataOutputs{
 			"user_id": {"user_id"},
@@ -109,6 +109,7 @@ func TestLocalActionsFindMetadataOK(t *testing.T) {
 	wantDeprecated := testGetWantedActionMetadata()
 	for _, i := range wantDeprecated.Inputs {
 		i.Deprecated = true
+		i.DeprecationMessage = "This is deprecated"
 	}
 
 	tests := []struct {
@@ -567,19 +568,19 @@ inputs:
     deprecationMessage: foo
   input7:
     description: test
-    deprecationMessage: foo
+    deprecationMessage: ' foo '
     required: true
 `,
 			want: ActionMetadata{
 				Name: "Test",
 				Inputs: ActionMetadataInputs{
-					"input1": {"input1", false, false},
-					"input2": {"input2", false, false},
-					"input3": {"input3", false, false},
-					"input4": {"input4", false, false},
-					"input5": {"input5", true, false},
-					"input6": {"input6", false, true},
-					"input7": {"input7", true, true},
+					"input1": {"input1", false, false, ""},
+					"input2": {"input2", false, false, ""},
+					"input3": {"input3", false, false, ""},
+					"input4": {"input4", false, false, ""},
+					"input5": {"input5", true, false, ""},
+					"input6": {"input6", false, true, "foo"},
+					"input7": {"input7", true, true, "foo"},
 				},
 			},
 		},

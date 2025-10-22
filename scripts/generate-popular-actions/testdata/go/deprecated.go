@@ -8,10 +8,10 @@ var PopularActions = map[string]*ActionMetadata{
 	"rhysd/action-setup-vim@v1": {
 		Name: "Setup Vim",
 		Inputs: ActionMetadataInputs{
-			"configure-args": {"configure-args", false, true},
-			"neovim":         {"neovim", false, true},
-			"token":          {"token", false, true},
-			"version":        {"version", false, true},
+			"configure-args": {"configure-args", false, true, "test"},
+			"neovim":         {"neovim", false, true, "test"},
+			"token":          {"token", false, true, "test"},
+			"version":        {"version", false, true, "test"},
 		},
 		Outputs: ActionMetadataOutputs{
 			"executable": {"executable"},

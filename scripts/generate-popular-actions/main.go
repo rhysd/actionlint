@@ -277,7 +277,7 @@ var PopularActions = map[string]*ActionMetadata{
 			fmt.Fprintf(b, "Inputs: ActionMetadataInputs{\n")
 			for _, id := range ids {
 				i := meta.Inputs[id]
-				fmt.Fprintf(b, "%q: {%q, %v, %v},\n", id, i.Name, i.Required, i.Deprecated)
+				fmt.Fprintf(b, "%q: {%q, %v, %v, %q},\n", id, i.Name, i.Required, i.Deprecated, i.DeprecationMessage)
 			}
 			fmt.Fprintf(b, "},\n")
 		}
