@@ -42,6 +42,8 @@ paths:
     ignore:
       # Ignore errors from the old runner check. This may be useful for (outdated) self-hosted runner environment.
       - 'the runner of ".+" action is too old to run on GitHub Actions'
+# Require actions to be pinned to commit hashes instead of tags/branches
+require-commit-hash: true
 ```
 
 - `self-hosted-runner`: Configuration for your self-hosted runner environment.
@@ -57,6 +59,7 @@ paths:
     - `ignore`: The configuration to ignore (filter) the errors by the error messages. This is an array of regular
       expressions. When one of the patterns matches the error message, the error will be ignored. It's similar to the
       `-ignore` command line option.
+- `require-commit-hash`: Optional lint to require actions to be pinned to commit hashes instead of tags/branches. Defaults to `false`.
 
 ## Generate the initial configuration
 
