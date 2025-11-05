@@ -80,6 +80,7 @@ var selfHostedRunnerPresetOtherLabels = []string{
 }
 
 var defaultRunnerOSCompats = map[string]runnerOSCompat{
+	"ubuntu-slim":            compatUbuntu2404,
 	"ubuntu-latest":          compatUbuntu2404,
 	"ubuntu-latest-4-cores":  compatUbuntu2404,
 	"ubuntu-latest-8-cores":  compatUbuntu2404,
