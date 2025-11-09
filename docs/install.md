@@ -152,6 +152,26 @@ asdf install actionlint latest
 asdf global actionlint latest
 ```
 
+### mise
+
+You can install actionlint with the [mise-en-place](https://github.com/jdx/mise) using one those plugins:
+  "aqua:rhysd/actionlint",
+  "ubi:rhysd/actionlint",
+  "asdf:crazy-matt/asdf-actionlint",
+  "go:github.com/rhysd/actionlint/cmd/actionlint"
+which automates the process of installing (and switching between) various versions of GitHub release binaries. With mise already installed, run these commands to install actionlint:
+
+```bash
+# Show all installable versions
+mise ls-remote actionlint
+
+# Install specific version
+mise install actionlint@latest
+
+# Set a version globally (on your ~/config/mise/config.toml file)
+mise use -g actionlint@latest
+```
+
 ## Build from source
 
 Recent [Go][] toolchain is necessary to build actionlint from source. Last two major versions of Go are supported.
