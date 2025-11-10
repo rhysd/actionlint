@@ -35,6 +35,7 @@ var allGitHubHostedRunnerLabels = []string{
 	"windows-2025",
 	"windows-2022",
 	"windows-11-arm",
+	"ubuntu-slim",
 	"ubuntu-latest",
 	"ubuntu-latest-4-cores",
 	"ubuntu-latest-8-cores",
@@ -79,6 +80,7 @@ var selfHostedRunnerPresetOtherLabels = []string{
 }
 
 var defaultRunnerOSCompats = map[string]runnerOSCompat{
+	"ubuntu-slim":            compatUbuntu2404,
 	"ubuntu-latest":          compatUbuntu2404,
 	"ubuntu-latest-4-cores":  compatUbuntu2404,
 	"ubuntu-latest-8-cores":  compatUbuntu2404,
