@@ -1404,8 +1404,10 @@ func handleYAMLUnmarshalError(err error) []*Error {
 
 	var m string
 	var l int
+	var c int
 	if pe, ok := err.(*yaml.ParserError); ok {
 		l = pe.Line
+		c = pe.Column
 		m = pe.Message
 	} else {
 		m = err.Error() // Fallback. I believe this line should be unreachable
@@ -1414,6 +1416,7 @@ func handleYAMLUnmarshalError(err error) []*Error {
 		Message: fmt.Sprintf("could not parse as YAML: %s", m),
 		Kind:    "syntax-check",
 		Line:    l,
+		Column:  c,
 	}}
 }
 
