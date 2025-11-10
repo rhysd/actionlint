@@ -154,12 +154,7 @@ asdf global actionlint latest
 
 ### mise
 
-You can install actionlint with the [mise-en-place](https://github.com/jdx/mise) using one those plugins:
-  "aqua:rhysd/actionlint",
-  "ubi:rhysd/actionlint",
-  "asdf:crazy-matt/asdf-actionlint",
-  "go:github.com/rhysd/actionlint/cmd/actionlint"
-which automates the process of installing (and switching between) various versions of GitHub release binaries. With mise already installed, run these commands to install actionlint:
+You can install actionlint with the [mise-en-place](https://github.com/jdx/mise) which automates the process of installing (and switching between) various versions of GitHub release binaries. With mise already installed, run these commands to install actionlint:
 
 ```bash
 # Show all installable versions
