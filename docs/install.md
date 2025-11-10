@@ -132,7 +132,9 @@ For the usage of actionlint on GitHub Actions, see [the usage document](usage.md
 
 See [the usage document](./usage.md#docker) to know how to install and use an official actionlint Docker image.
 
-## asdf
+## Cross-platform version managers
+
+### asdf
 
 You can install actionlint with the [asdf version manager][asdf] using the [asdf-actionlint][asdf-plugin] plugin, which
 automates the process of installing (and switching between) various versions of GitHub release binaries. With asdf already
@@ -154,7 +156,9 @@ asdf global actionlint latest
 
 ### mise
 
-You can install actionlint with the [mise-en-place](https://github.com/jdx/mise) which automates the process of installing (and switching between) various versions of GitHub release binaries. With mise already installed, run these commands to install actionlint:
+You can install actionlint with the [mise-en-place][mise] which automates the process of installing (and switching
+between) various versions of GitHub release binaries. With mise already installed, run these commands to install
+actionlint:
 
 ```bash
 # Show all installable versions
@@ -196,3 +200,4 @@ go install github.com/rhysd/actionlint/cmd/actionlint@main
 [aur]: https://aur.archlinux.org/
 [paru]: https://github.com/Morganamilo/paru
 [nixpkgs]: https://github.com/NixOS/nixpkgs/blob/master/pkgs/development/tools/analysis/actionlint/default.nix
+[mise]: https://github.com/jdx/mise
