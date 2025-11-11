@@ -598,13 +598,12 @@ func (rule *RuleAction) checkAction(meta *ActionMetadata, exec *ExecAction, desc
 				sortedQuotes(ns),
 			)
 		} else if m.Deprecated {
-			rule.Errorf(
-				i.Name.Pos,
-				"avoid using deprecated input %q in action %s: %s",
-				i.Name.Value,
-				describe(meta),
-				reNewlineWithIndent.ReplaceAllString(strings.TrimRight(m.DeprecationMessage, ". "), " "),
-			)
+			msg := fmt.Sprintf("avoid using deprecated input %q in action %s", i.Name.Value, describe(meta))
+			d := reNewlineWithIndent.ReplaceAllString(strings.TrimRight(m.DeprecationMessage, ". "), " ")
+			if d != "" {
+				msg += ": " + d
+			}
+			rule.Error(i.Name.Pos, msg)
 		}
 	}
 

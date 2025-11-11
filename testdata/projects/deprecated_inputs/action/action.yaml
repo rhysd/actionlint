@@ -14,6 +14,8 @@ inputs:
       this is first line.
       this is second line.
       this is third line.
+  input5:
+    deprecationMessage:
 
 runs:
   using: 'node20'
