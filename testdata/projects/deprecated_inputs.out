@@ -1,0 +1,4 @@
+workflows/test.yaml:9:11: avoid using deprecated input "input1" in action "My action" defined at "./action": minimal message [action]
+workflows/test.yaml:10:11: avoid using deprecated input "input2" in action "My action" defined at "./action": message ending with period [action]
+workflows/test.yaml:11:11: avoid using deprecated input "input3" in action "My action" defined at "./action": message with spaces [action]
+workflows/test.yaml:12:11: avoid using deprecated input "input4" in action "My action" defined at "./action": this is first line. this is second line. this is third line [action]

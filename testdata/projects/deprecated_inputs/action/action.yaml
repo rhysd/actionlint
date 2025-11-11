@@ -1,0 +1,20 @@
+name: 'My action'
+author: 'rhysd <https://rhysd.github.io>'
+description: 'my action'
+
+inputs:
+  input1:
+    deprecationMessage: minimal message
+  input2:
+    deprecationMessage: message ending with period.
+  input3:
+    deprecationMessage: '  message with spaces  '
+  input4:
+    deprecationMessage: |
+      this is first line.
+      this is second line.
+      this is third line.
+
+runs:
+  using: 'node20'
+  main: 'index.js'
