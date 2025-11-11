@@ -631,7 +631,7 @@ inputs: "foo"`,
 			input: `name: Test
 inputs:
   input1: "foo"`,
-			want: "definition of input \"input1\" must be mapping node but found scalar node",
+			want: "into actionlint.actionInputMetadata",
 		},
 		{
 			what: "invalid outputs",

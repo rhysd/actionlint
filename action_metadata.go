@@ -26,39 +26,6 @@ type ActionMetadataInput struct {
 	DeprecationMessage string `json:"deprecation-message"`
 }
 
-// https://docs.github.com/en/actions/reference/workflows-and-actions/metadata-syntax#inputs
-func parseActionMetadataInput(name string, n *yaml.Node) (*ActionMetadataInput, error) {
-	if n.Kind != yaml.MappingNode {
-		return nil, fmt.Errorf("definition of input %q must be mapping node but found %s node", name, nodeKindName(n.Kind))
-	}
-
-	var req bool
-	var def bool
-	var dep bool
-	var msg string
-	for i := 0; i < len(n.Content); i += 2 {
-		k, v := n.Content[i].Value, n.Content[i+1].Value
-		switch n.Content[i].Value {
-		case "required":
-			v = strings.TrimSpace(strings.ToLower(v))
-			if v != "true" && v != "false" {
-				return nil, fmt.Errorf("type of \"required\" is bool but got %q", v)
-			}
-			req = v == "true"
-		case "default":
-			def = true
-		case "deprecationMessage":
-			msg = strings.TrimSpace(v) // Consider the message can be empty
-			dep = true
-		case "description":
-		default:
-			return nil, fmt.Errorf("unexpected key %q in definition of input %q. \"default\", \"deprecationMessage\", \"required\"", k, name)
-		}
-	}
-
-	return &ActionMetadataInput{name, req && !def, dep, msg}, nil
-}
-
 // ActionMetadataInputs is a map from input ID to its metadata. Keys are in lower case since input
 // names are case-insensitive.
 // https://docs.github.com/en/actions/creating-actions/metadata-syntax-for-github-actions#inputs
@@ -70,12 +37,18 @@ func (inputs *ActionMetadataInputs) UnmarshalYAML(n *yaml.Node) error {
 		return expectedMapping("inputs", n)
 	}
 
+	type actionInputMetadata struct {
+		Required           bool    `yaml:"required"`
+		Default            *string `yaml:"default"`
+		DeprecationMessage string  `yaml:"deprecationMessage"`
+	}
+
 	md := make(ActionMetadataInputs, len(n.Content)/2)
 	for i := 0; i < len(n.Content); i += 2 {
 		k, v := n.Content[i].Value, n.Content[i+1]
 
-		m, err := parseActionMetadataInput(k, v)
-		if err != nil {
+		var m actionInputMetadata
+		if err := v.Decode(&m); err != nil {
 			return err
 		}
 
@@ -84,7 +57,16 @@ func (inputs *ActionMetadataInputs) UnmarshalYAML(n *yaml.Node) error {
 			return fmt.Errorf("input %q is duplicated", k)
 		}
 
-		md[id] = m
+		d := false
+		for i := 0; i < len(v.Content); i += 2 {
+			// `deprecationMessage: ` is parsed as `nil` value. So we cannot determine the key exists or not by `v.Decode()`.
+			if v.Content[i].Value == "deprecationMessage" {
+				d = true
+				break
+			}
+		}
+
+		md[id] = &ActionMetadataInput{k, m.Required && m.Default == nil, d, strings.TrimSpace(m.DeprecationMessage)}
 	}
 
 	*inputs = md
