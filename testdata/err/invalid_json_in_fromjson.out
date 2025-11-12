@@ -5,5 +5,5 @@ test.yaml:24:19: object, array, and null values should not be evaluated in templ
 test.yaml:25:19: object, array, and null values should not be evaluated in template with ${{ }} but evaluating the value of type array<string> [expression]
 test.yaml:26:19: object, array, and null values should not be evaluated in template with ${{ }} but evaluating the value of type {array: array<bool>; bool: bool} [expression]
 test.yaml:27:19: object, array, and null values should not be evaluated in template with ${{ }} but evaluating the value of type array<bool> [expression]
-test.yaml:28:32: 1st argument of function call is not assignable. "{array: array<bool>; bool: bool}" cannot be assigned to "string". called function type is "contains(string, string) -> bool" [expression]
 test.yaml:28:32: 1st argument of function call is not assignable. "{array: array<bool>; bool: bool}" cannot be assigned to "array<any>". called function type is "contains(array<any>, any) -> bool" [expression]
+test.yaml:28:32: 1st argument of function call is not assignable. "{array: array<bool>; bool: bool}" cannot be assigned to "string". called function type is "contains(string, string) -> bool" [expression]

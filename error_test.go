@@ -303,6 +303,37 @@ func TestErrorSortErrorsByFile(t *testing.T) {
 	}
 }
 
+func TestErrorSortErrorsByMessage(t *testing.T) {
+	msgs := []string{}
+	for c := 'z'; c >= 'a'; c-- {
+		msgs = append(msgs, fmt.Sprintf("Message %c", c))
+	}
+	for c := 'Z'; c >= 'A'; c-- {
+		msgs = append(msgs, fmt.Sprintf("Message %c", c))
+	}
+
+	errs := []*Error{}
+	for _, m := range msgs {
+		errs = append(errs, &Error{
+			Filepath: "path/to/file.yaml",
+			Line:     1,
+			Column:   1,
+			Message:  m,
+		})
+	}
+
+	sort.Stable(ByErrorPosition(errs))
+	have := []string{}
+	for _, e := range errs {
+		have = append(have, e.Message)
+	}
+
+	sort.Strings(msgs)
+	if diff := cmp.Diff(have, msgs); diff != "" {
+		t.Fatal(diff)
+	}
+}
+
 func TestErrorGetTemplateFieldsOK(t *testing.T) {
 	testCases := []struct {
 		message string

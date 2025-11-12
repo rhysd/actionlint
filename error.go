@@ -170,10 +170,13 @@ func (by ByErrorPosition) Less(i, j int) bool {
 	if c := strings.Compare(by[i].Filepath, by[j].Filepath); c != 0 {
 		return c < 0
 	}
-	if by[i].Line == by[j].Line {
+	if by[i].Line != by[j].Line {
+		return by[i].Line < by[j].Line
+	}
+	if by[i].Column != by[j].Column {
 		return by[i].Column < by[j].Column
 	}
-	return by[i].Line < by[j].Line
+	return strings.Compare(by[i].Message, by[j].Message) < 0
 }
 
 func (by ByErrorPosition) Swap(i, j int) {
