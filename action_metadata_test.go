@@ -563,24 +563,21 @@ inputs:
   input5:
     description: test
     required: true
-  input6:
+  input_snake-case:
     description: test
-    deprecationMessage: foo
-  input7:
+  camelCaseInput:
     description: test
-    deprecationMessage: ' foo '
-    required: true
 `,
 			want: ActionMetadata{
 				Name: "Test",
 				Inputs: ActionMetadataInputs{
-					"input1": {"input1", false, false, ""},
-					"input2": {"input2", false, false, ""},
-					"input3": {"input3", false, false, ""},
-					"input4": {"input4", false, false, ""},
-					"input5": {"input5", true, false, ""},
-					"input6": {"input6", false, true, "foo"},
-					"input7": {"input7", true, true, "foo"},
+					"input1":           {"input1", false, false, ""},
+					"input2":           {"input2", false, false, ""},
+					"input3":           {"input3", false, false, ""},
+					"input4":           {"input4", false, false, ""},
+					"input5":           {"input5", true, false, ""},
+					"input_snake-case": {"input_snake-case", false, false, ""},
+					"camelcaseinput":   {"camelCaseInput", false, false, ""},
 				},
 			},
 		},
@@ -598,6 +595,34 @@ outputs:
 				Outputs: ActionMetadataOutputs{
 					"output1": {"output1"},
 					"output2": {"output2"},
+				},
+			},
+		},
+		{
+			what: "deprecated inputs",
+			input: `name: Test
+inputs:
+  input1:
+    description: test
+    deprecationMessage: foo
+  input2:
+    description: test
+    deprecationMessage: ' foo bar '
+    required: true
+  input3:
+    description: test
+    deprecationMessage:
+  input4:
+    description: test
+    deprecationMessage: ''
+`,
+			want: ActionMetadata{
+				Name: "Test",
+				Inputs: ActionMetadataInputs{
+					"input1": {"input1", false, true, "foo"},
+					"input2": {"input2", true, true, "foo bar"},
+					"input3": {"input3", false, true, ""},
+					"input4": {"input4", false, true, ""},
 				},
 			},
 		},
@@ -638,6 +663,14 @@ inputs:
 			input: `name: Test
 outputs: "foo"`,
 			want: "outputs must be mapping node",
+		},
+		{
+			what: "unknown input metadata",
+			input: `name: Test
+inputs:
+  input1:
+    foo: bar`,
+			want: "unexpected key \"foo\" for definition of input \"input1\"",
 		},
 	}
 

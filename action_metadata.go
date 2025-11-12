@@ -57,16 +57,21 @@ func (inputs *ActionMetadataInputs) UnmarshalYAML(n *yaml.Node) error {
 			return fmt.Errorf("input %q is duplicated", k)
 		}
 
-		d := false
+		// Value of `deprecationMessage: ` is `nil`. So we cannot determine the key exists or not by `v.Decode()` even
+		// if we change the type of `DeprecationMessage` to `*string`.
+		dep := false
 		for i := 0; i < len(v.Content); i += 2 {
-			// `deprecationMessage: ` is parsed as `nil` value. So we cannot determine the key exists or not by `v.Decode()`.
-			if v.Content[i].Value == "deprecationMessage" {
-				d = true
-				break
+			switch v.Content[i].Value {
+			case "deprecationMessage":
+				dep = true
+			case "description", "required", "default":
+				// OK
+			default:
+				return fmt.Errorf("unexpected key %q for definition of input %q", v.Content[i].Value, k)
 			}
 		}
 
-		md[id] = &ActionMetadataInput{k, m.Required && m.Default == nil, d, strings.TrimSpace(m.DeprecationMessage)}
+		md[id] = &ActionMetadataInput{k, m.Required && m.Default == nil, dep, strings.TrimSpace(m.DeprecationMessage)}
 	}
 
 	*inputs = md

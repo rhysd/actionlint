@@ -7,3 +7,4 @@ jobs:
       - uses: ./no_name
       - uses: ./no_desc
       - uses: ./branding
+      - uses: ./unknown_key
