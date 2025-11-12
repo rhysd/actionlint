@@ -476,6 +476,20 @@ func (rule *RuleAction) checkLocalJavaScriptActionRuns(r *ActionMetadataRuns, di
 	rule.checkInvalidRunsProps(pos, r, "JavaScript", name, dir, []string{"steps", "image", "pre-entrypoint", "entrypoint", "post-entrypoint", "args", "env"})
 }
 
+func (rule *RuleAction) checkLocalActionInputs(meta *ActionMetadata, pos *Pos) {
+	for _, i := range meta.Inputs {
+		if i.Deprecated && i.DeprecationMessage == "" {
+			rule.Errorf(
+				pos,
+				"input %q is deprecated but \"deprecationMessage\" is empty in metadata of %q action at %q",
+				i.Name,
+				meta.Name,
+				meta.Path(),
+			)
+		}
+	}
+}
+
 // https://docs.github.com/en/actions/creating-actions/metadata-syntax-for-github-actions#runs
 func (rule *RuleAction) checkLocalActionRuns(meta *ActionMetadata, pos *Pos) {
 	switch r := &meta.Runs; r.Using {
@@ -555,6 +569,7 @@ func (rule *RuleAction) checkLocalActionMetadata(meta *ActionMetadata, action *E
 			)
 		}
 	}
+	rule.checkLocalActionInputs(meta, action.Uses.Pos)
 	rule.checkLocalActionRuns(meta, action.Uses.Pos)
 }
 

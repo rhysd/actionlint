@@ -8,3 +8,4 @@ jobs:
       - uses: ./no_desc
       - uses: ./branding
       - uses: ./unknown_key
+      - uses: ./empty_deprecation_message
