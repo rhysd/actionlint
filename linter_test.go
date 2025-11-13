@@ -11,7 +11,7 @@ import (
 	"path/filepath"
 	"regexp"
 	"runtime"
-	"sort"
+	"slices"
 	"strings"
 	"testing"
 
@@ -123,7 +123,7 @@ func checkErrors(t *testing.T, outfile string, errs []*Error) {
 		}
 	}
 
-	sort.Stable(ByErrorPosition(errs))
+	slices.SortFunc(errs, compareErrors)
 
 	if len(errs) != len(expected) {
 		ms := make([]string, 0, len(errs))

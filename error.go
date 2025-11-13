@@ -6,7 +6,7 @@ import (
 	"encoding/json"
 	"fmt"
 	"io"
-	"sort"
+	"slices"
 	"strings"
 	"sync"
 	"text/template"
@@ -158,29 +158,17 @@ func (e *Error) getIndicator(line string) string {
 	return fmt.Sprintf("%s^%s", strings.Repeat(" ", sw), strings.Repeat("~", uw))
 }
 
-// ByErrorPosition is predicate for sort.Interface. It sorts errors slice by file path, line, and
-// column.
-type ByErrorPosition []*Error
-
-func (by ByErrorPosition) Len() int {
-	return len(by)
-}
-
-func (by ByErrorPosition) Less(i, j int) bool {
-	if c := strings.Compare(by[i].Filepath, by[j].Filepath); c != 0 {
-		return c < 0
+func compareErrors(lhs, rhs *Error) int {
+	if c := strings.Compare(lhs.Filepath, rhs.Filepath); c != 0 {
+		return c
 	}
-	if by[i].Line != by[j].Line {
-		return by[i].Line < by[j].Line
+	if lhs.Line != rhs.Line {
+		return lhs.Line - rhs.Line
 	}
-	if by[i].Column != by[j].Column {
-		return by[i].Column < by[j].Column
+	if lhs.Column != rhs.Column {
+		return lhs.Column - rhs.Column
 	}
-	return strings.Compare(by[i].Message, by[j].Message) < 0
-}
-
-func (by ByErrorPosition) Swap(i, j int) {
-	by[i], by[j] = by[j], by[i]
+	return strings.Compare(lhs.Message, rhs.Message)
 }
 
 // ErrorTemplateFields holds all fields to format one error message.
@@ -240,16 +228,8 @@ type ruleTemplateFields struct {
 	Description string
 }
 
-type byRuleNameField []*ruleTemplateFields
-
-func (by byRuleNameField) Len() int {
-	return len(by)
-}
-func (by byRuleNameField) Less(i, j int) bool {
-	return strings.Compare(by[i].Name, by[j].Name) < 0
-}
-func (by byRuleNameField) Swap(i, j int) {
-	by[i], by[j] = by[j], by[i]
+func compareRuleTemplateByName(lhs, rhs *ruleTemplateFields) int {
+	return strings.Compare(lhs.Name, rhs.Name)
 }
 
 // ErrorFormatter is a formatter to format a slice of ErrorTemplateFields. It is used for
@@ -290,7 +270,7 @@ func NewErrorFormatter(format string) (*ErrorFormatter, error) {
 			for _, e := range r {
 				ret = append(ret, e)
 			}
-			sort.Sort(byRuleNameField(ret))
+			slices.SortFunc(ret, compareRuleTemplateByName)
 			return ret
 		},
 	})

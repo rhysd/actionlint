@@ -10,6 +10,7 @@ import (
 	"path/filepath"
 	"regexp"
 	"runtime"
+	"slices"
 	"sort"
 	"strings"
 	"time"
@@ -634,7 +635,7 @@ func (l *Linter) check(
 		err.Filepath = path // Populate filename in the error
 	}
 
-	sort.Stable(ByErrorPosition(all))
+	slices.SortFunc(all, compareErrors)
 
 	if l.logLevel >= LogLevelVerbose {
 		elapsed := time.Since(start)

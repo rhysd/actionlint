@@ -7,6 +7,7 @@ import (
 	"fmt"
 	"io"
 	"math"
+	"slices"
 	"sort"
 	"strconv"
 	"strings"
@@ -255,7 +256,7 @@ func TestErrorSortErrorsByPosition(t *testing.T) {
 				errs = append(errs, &Error{Line: p.line, Column: p.col})
 			}
 
-			sort.Stable(ByErrorPosition(errs))
+			slices.SortFunc(errs, compareErrors)
 
 			for i := 0; i < len(errs)-1; i++ {
 				l, r := errs[i], errs[i+1]
@@ -290,7 +291,7 @@ func TestErrorSortErrorsByFile(t *testing.T) {
 		},
 	}
 
-	sort.Stable(ByErrorPosition(errs))
+	slices.SortFunc(errs, compareErrors)
 
 	for i, want := range []string{
 		"path/to/A.txt",
@@ -322,7 +323,7 @@ func TestErrorSortErrorsByMessage(t *testing.T) {
 		})
 	}
 
-	sort.Stable(ByErrorPosition(errs))
+	slices.SortFunc(errs, compareErrors)
 	have := []string{}
 	for _, e := range errs {
 		have = append(have, e.Message)
