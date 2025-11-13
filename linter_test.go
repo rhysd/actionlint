@@ -16,6 +16,7 @@ import (
 	"testing"
 
 	"github.com/google/go-cmp/cmp"
+	"github.com/google/go-cmp/cmp/cmpopts"
 	"golang.org/x/sys/execabs"
 )
 
@@ -459,7 +460,15 @@ func TestLinterFormatErrorMessageInSARIF(t *testing.T) {
 		panic(err)
 	}
 
-	if diff := cmp.Diff(want, have); diff != "" {
+	if diff := cmp.Diff(
+		want,
+		have,
+		cmpopts.IgnoreMapEntries(func(k string, v interface{}) bool {
+			// Built version is not stable across Go versions and environments.
+			// To avoid this instability, ignore "version" field in SARIF.
+			return k == "version"
+		}),
+	); diff != "" {
 		t.Fatal(diff)
 	}
 }
