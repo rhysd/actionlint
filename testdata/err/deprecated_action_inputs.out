@@ -1,0 +1,2 @@
+test.yaml:9:11: avoid using deprecated input "packages_dir" in action "pypa/gh-action-pypi-publish@release/v1": The inputs have been normalized to use kebab-case. Use `packages-dir` instead [action]
+test.yaml:10:11: avoid using deprecated input "repository_url" in action "pypa/gh-action-pypi-publish@release/v1": The inputs have been normalized to use kebab-case. Use `repository-url` instead [action]

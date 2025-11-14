@@ -20,6 +20,10 @@ type ActionMetadataInput struct {
 	Name string `json:"name"`
 	// Required is true when this input is mandatory to run the action.
 	Required bool `json:"required"`
+	// Deprecated is true when this input is marked as deprecated.
+	Deprecated bool `json:"deprecated"`
+	// DeprecationMessage is a deprecation message for the deprecated input.
+	DeprecationMessage string `json:"deprecation-message"`
 }
 
 // ActionMetadataInputs is a map from input ID to its metadata. Keys are in lower case since input
@@ -36,7 +40,7 @@ func (inputs *ActionMetadataInputs) UnmarshalYAML(n *yaml.Node) error {
 	type actionInputMetadata struct {
 		Required           bool    `yaml:"required"`
 		Default            *string `yaml:"default"`
-		DeprecationMessage *string `yaml:"deprecationMessage"`
+		DeprecationMessage string  `yaml:"deprecationMessage"`
 	}
 
 	md := make(ActionMetadataInputs, len(n.Content)/2)
@@ -53,7 +57,21 @@ func (inputs *ActionMetadataInputs) UnmarshalYAML(n *yaml.Node) error {
 			return fmt.Errorf("input %q is duplicated", k)
 		}
 
-		md[id] = &ActionMetadataInput{k, m.Required && m.Default == nil}
+		// Value of `deprecationMessage: ` is `nil`. So we cannot determine the key exists or not by `v.Decode()` even
+		// if we change the type of `DeprecationMessage` to `*string`.
+		dep := false
+		for i := 0; i < len(v.Content); i += 2 {
+			switch v.Content[i].Value {
+			case "deprecationMessage":
+				dep = true
+			case "description", "required", "default":
+				// OK
+			default:
+				return fmt.Errorf("unexpected key %q for definition of input %q", v.Content[i].Value, k)
+			}
+		}
+
+		md[id] = &ActionMetadataInput{k, m.Required && m.Default == nil, dep, strings.TrimSpace(m.DeprecationMessage)}
 	}
 
 	*inputs = md

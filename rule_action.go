@@ -6,6 +6,7 @@ import (
 	"net/url"
 	"os"
 	"path/filepath"
+	"regexp"
 	"strconv"
 	"strings"
 )
@@ -475,6 +476,20 @@ func (rule *RuleAction) checkLocalJavaScriptActionRuns(r *ActionMetadataRuns, di
 	rule.checkInvalidRunsProps(pos, r, "JavaScript", name, dir, []string{"steps", "image", "pre-entrypoint", "entrypoint", "post-entrypoint", "args", "env"})
 }
 
+func (rule *RuleAction) checkLocalActionInputs(meta *ActionMetadata, pos *Pos) {
+	for _, i := range meta.Inputs {
+		if i.Deprecated && i.DeprecationMessage == "" {
+			rule.Errorf(
+				pos,
+				"input %q is deprecated but \"deprecationMessage\" is empty in metadata of %q action at %q",
+				i.Name,
+				meta.Name,
+				meta.Path(),
+			)
+		}
+	}
+}
+
 // https://docs.github.com/en/actions/creating-actions/metadata-syntax-for-github-actions#runs
 func (rule *RuleAction) checkLocalActionRuns(meta *ActionMetadata, pos *Pos) {
 	switch r := &meta.Runs; r.Using {
@@ -554,6 +569,7 @@ func (rule *RuleAction) checkLocalActionMetadata(meta *ActionMetadata, action *E
 			)
 		}
 	}
+	rule.checkLocalActionInputs(meta, action.Uses.Pos)
 	rule.checkLocalActionRuns(meta, action.Uses.Pos)
 }
 
@@ -578,10 +594,13 @@ func (rule *RuleAction) checkLocalAction(spec string, action *ExecAction) {
 	})
 }
 
+var reNewlineWithIndent = regexp.MustCompile(`\r?\n\s*`)
+
 func (rule *RuleAction) checkAction(meta *ActionMetadata, exec *ExecAction, describe func(*ActionMetadata) string) {
 	// Check specified inputs are defined in action's inputs spec
 	for id, i := range exec.Inputs {
-		if _, ok := meta.Inputs[id]; !ok {
+		m, ok := meta.Inputs[id]
+		if !ok {
 			ns := make([]string, 0, len(meta.Inputs))
 			for _, i := range meta.Inputs {
 				ns = append(ns, i.Name)
@@ -593,6 +612,19 @@ func (rule *RuleAction) checkAction(meta *ActionMetadata, exec *ExecAction, desc
 				describe(meta),
 				sortedQuotes(ns),
 			)
+		} else if m.Deprecated && !m.Required {
+			// Note: Using required inputs cannot be avoided. So we don't report it as error (though this should not
+			// happen normally).
+			msg := fmt.Sprintf(
+				"avoid using deprecated input %q in action %s",
+				i.Name.Value,
+				describe(meta),
+			)
+			d := reNewlineWithIndent.ReplaceAllString(strings.TrimRight(m.DeprecationMessage, ". "), " ")
+			if d != "" {
+				msg += ": " + d
+			}
+			rule.Error(i.Name.Pos, msg)
 		}
 	}
 

@@ -18,9 +18,9 @@ func testGetWantedActionMetadata() *ActionMetadata {
 		Name:        "My action",
 		Description: "my action",
 		Inputs: ActionMetadataInputs{
-			"name":     {"name", false},
-			"message":  {"message", true},
-			"addition": {"addition", false},
+			"name":     {"name", false, false, ""},
+			"message":  {"message", true, false, ""},
+			"addition": {"addition", false, false, ""},
 		},
 		Outputs: ActionMetadataOutputs{
 			"user_id": {"user_id"},
@@ -50,6 +50,7 @@ func testCheckActionMetadataPath(t *testing.T, dir string, m *ActionMetadata) {
 		p := filepath.Join(d, f)
 		if _, err := os.Stat(p); err == nil {
 			want = p
+			break
 		}
 	}
 	if want == "" {
@@ -105,6 +106,12 @@ func TestLocalActionsFindMetadataOK(t *testing.T) {
 	wantNode24 := testGetWantedActionMetadata()
 	wantNode24.Runs.Using = "node24"
 
+	wantDeprecated := testGetWantedActionMetadata()
+	for _, i := range wantDeprecated.Inputs {
+		i.Deprecated = true
+		i.DeprecationMessage = "This is deprecated"
+	}
+
 	tests := []struct {
 		spec string
 		want *ActionMetadata
@@ -157,6 +164,10 @@ func TestLocalActionsFindMetadataOK(t *testing.T) {
 		{
 			spec: "./node24",
 			want: wantNode24,
+		},
+		{
+			spec: "./deprecated",
+			want: wantDeprecated,
 		},
 	}
 
@@ -551,15 +562,22 @@ inputs:
     default: 'default'
   input5:
     description: test
-    required: true`,
+    required: true
+  input_snake-case:
+    description: test
+  camelCaseInput:
+    description: test
+`,
 			want: ActionMetadata{
 				Name: "Test",
 				Inputs: ActionMetadataInputs{
-					"input1": {"input1", false},
-					"input2": {"input2", false},
-					"input3": {"input3", false},
-					"input4": {"input4", false},
-					"input5": {"input5", true},
+					"input1":           {"input1", false, false, ""},
+					"input2":           {"input2", false, false, ""},
+					"input3":           {"input3", false, false, ""},
+					"input4":           {"input4", false, false, ""},
+					"input5":           {"input5", true, false, ""},
+					"input_snake-case": {"input_snake-case", false, false, ""},
+					"camelcaseinput":   {"camelCaseInput", false, false, ""},
 				},
 			},
 		},
@@ -577,6 +595,34 @@ outputs:
 				Outputs: ActionMetadataOutputs{
 					"output1": {"output1"},
 					"output2": {"output2"},
+				},
+			},
+		},
+		{
+			what: "deprecated inputs",
+			input: `name: Test
+inputs:
+  input1:
+    description: test
+    deprecationMessage: foo
+  input2:
+    description: test
+    deprecationMessage: ' foo bar '
+    required: true
+  input3:
+    description: test
+    deprecationMessage:
+  input4:
+    description: test
+    deprecationMessage: ''
+`,
+			want: ActionMetadata{
+				Name: "Test",
+				Inputs: ActionMetadataInputs{
+					"input1": {"input1", false, true, "foo"},
+					"input2": {"input2", true, true, "foo bar"},
+					"input3": {"input3", false, true, ""},
+					"input4": {"input4", false, true, ""},
 				},
 			},
 		},
@@ -617,6 +663,14 @@ inputs:
 			input: `name: Test
 outputs: "foo"`,
 			want: "outputs must be mapping node",
+		},
+		{
+			what: "unknown input metadata",
+			input: `name: Test
+inputs:
+  input1:
+    foo: bar`,
+			want: "unexpected key \"foo\" for definition of input \"input1\"",
 		},
 	}
 
