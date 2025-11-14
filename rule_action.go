@@ -594,7 +594,7 @@ func (rule *RuleAction) checkLocalAction(spec string, action *ExecAction) {
 	})
 }
 
-var reNewlineWithIndent = regexp.MustCompile(`\r?\n\s*`)
+var reNewlineWithIndent = regexp.MustCompile(`\s*\r?\n\s*`)
 
 func (rule *RuleAction) checkAction(meta *ActionMetadata, exec *ExecAction, describe func(*ActionMetadata) string) {
 	// Check specified inputs are defined in action's inputs spec
