@@ -1,0 +1,9 @@
+on: push
+jobs:
+  test:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: reviewdog/action-actionlint@v1
+        with:
+          # ERROR: Using a deprecated input
+          fail_on_error: true

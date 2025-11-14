@@ -41,6 +41,7 @@ List of checks:
 - [Deprecated workflow commands](#check-deprecated-workflow-commands)
 - [Conditions always evaluated to true at `if:`](#if-cond-always-true)
 - [Action metadata syntax validation](#action-metadata-syntax)
+- [Deprecated inputs usage](#deprecated-inputs-usage)
 
 Note that actionlint focuses on catching mistakes in workflow files. If you want some general code style checks, please consider
 using a general YAML checker like [yamllint][].
@@ -2929,6 +2930,92 @@ directly via command line arguments.
 
 Note that `steps` in Composite action's metadata is not checked at this point. It will be supported in the future.
 
+<a id="deprecated-inputs-usage"></a>
+## Deprecated inputs usage
+
+Example input:
+
+```yaml
+on: push
+jobs:
+  test:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: reviewdog/action-actionlint@v1
+        with:
+          # ERROR: Using a deprecated input
+          fail_on_error: true
+```
+
+Output:
+
+```
+test.yaml:9:11: avoid using deprecated input "fail_on_error" in action "reviewdog/action-actionlint@v1": Deprecated, use `fail_level` instead [action]
+  |
+9 |           fail_on_error: true
+  |           ^~~~~~~~~~~~~~
+```
+
+[Playground](https://rhysd.github.io/actionlint/#eNo8yksKwkAQhOF9TlEXGMTtrLxJmGhrWobu0I/k+jJGXBXF96tUbOnr9NbF6wQEeYwFLMXL8FxSIktvw77kQZufFVCQTl5htDMdD31d2j1YpZzTWeK2X38xcHCs9f+AZ+M+q8xkplYRlvQJAAD//4fnLew=)
+
+Action inputs can be deprecated by setting [`deprecationMessage`][dep-msg]. When deprecated inputs are used in a
+workflow, actionlint reports the usage as error.
+
+actionlint also checks local actions. In addition to the usage of deprecated inputs, it checks the input definitions in
+the action metadata `action.yml` or `action.yaml`.
+
+Example action metadata:
+
+```yaml
+# .github/actions/my-action/action.yml
+
+name: 'My action'
+author: '...'
+description: '...'
+
+inputs:
+  new-input:
+  # This input is deprecated.
+  old-input:
+    deprecationMessage: This input is deprecated. Use new-input instead.
+  # ERROR: Empty deprecation message is not allowed
+  empty-message:
+    deprecationMessage:
+
+runs:
+  ...
+```
+
+Example input:
+
+```yaml
+on: push
+jobs:
+  test:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: ./.github/actions/my-action
+        with:
+          # ERROR: Using a deprecated input
+          old-input: some value
+```
+
+Output:
+<!-- Skip update output -->
+
+```
+test.yaml:6:15: input "empty-message" is deprecated but "deprecationMessage" is empty in metadata of "My action" action at "/path/to/.github/actions/my-action/action.yaml" [action]
+  |
+6 |       - uses: ./.github/actions/my-action
+  |               ^~~~~~~~~~~~~~~~~~~~~~~~~~~
+test.yaml:9:11: avoid using deprecated input "old-input" in action "My action" defined at "./.github/actions/my-action": This input is deprecated. Use new-input instead [action]
+  |
+9 |           old-input: some value
+  |           ^~~~~~~~~~
+```
+
+<!-- Skip playground link -->
+
 ---
 
 [Installation](install.md) | [Usage](usage.md) | [Configuration](config.md) | [Go API](api.md) | [References](reference.md)
@@ -2987,3 +3074,4 @@ Note that `steps` in Composite action's metadata is not checked at this point. I
 [action-metadata-doc]: https://docs.github.com/en/actions/creating-actions/metadata-syntax-for-github-actions
 [branding-icons-doc]: https://github.com/github/docs/blob/main/content/actions/creating-actions/metadata-syntax-for-github-actions.md#exhaustive-list-of-all-currently-supported-icons
 [operators-doc]: https://docs.github.com/en/actions/learn-github-actions/expressions#operators
+[dep-msg]: https://docs.github.com/en/actions/reference/workflows-and-actions/metadata-syntax#inputsinput_iddeprecationmessage
