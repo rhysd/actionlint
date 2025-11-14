@@ -228,6 +228,8 @@ Update for `availability.go` is run weekly on CI by [`generate`](.github/workflo
 
 ## Testing
 
+[![code coverage](https://codecov.io/gh/rhysd/actionlint/graph/badge.svg?token=CgcOo0m9oW)](https://codecov.io/gh/rhysd/actionlint)
+
 All tests are automated.
 
 - Unit tests are implemented in `*_test.go` files for testing the corresponding APIs. Test data for unit tests are put in
@@ -242,6 +244,15 @@ All tests are automated.
   - `testdata/projects/` contains 'Project' tests. Each directories represent a single project (meaning a repository on GitHub).
     Corresponding `*.out` files are expected error messages. Empty `*.out` file means the test case should cause no errors.
     'Project' test is used for use cases where multiple files are related (reusable workflows, local actions, config files, ...).
+
+To measure the code coverage:
+
+```sh
+# Collect the code coverage information into coverage.out running `go test`
+go test -race -coverprofile coverage.out -covermode=atomic ./...
+# Print the code coverage per function
+go tool cover -func ./coverage.out
+```
 
 <a id="about-checks-doc"></a>
 ## How to write checks document
