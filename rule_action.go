@@ -612,7 +612,9 @@ func (rule *RuleAction) checkAction(meta *ActionMetadata, exec *ExecAction, desc
 				describe(meta),
 				sortedQuotes(ns),
 			)
-		} else if m.Deprecated {
+		} else if m.Deprecated && !m.Required {
+			// Note: Using required inputs cannot be avoided. So we don't report it as error (though this should not
+			// happen normally).
 			msg := fmt.Sprintf(
 				"avoid using deprecated input %q in action %s",
 				i.Name.Value,

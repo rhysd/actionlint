@@ -3016,6 +3016,9 @@ test.yaml:9:11: avoid using deprecated input "old-input" in action "My action" d
 
 <!-- Skip playground link -->
 
+Note that the usage of depreated inputs marked as 'required' are not reported as error because it is not possible to avoid using
+them.
+
 ---
 
 [Installation](install.md) | [Usage](usage.md) | [Configuration](config.md) | [Go API](api.md) | [References](reference.md)

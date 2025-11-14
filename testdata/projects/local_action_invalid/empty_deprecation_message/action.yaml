@@ -7,6 +7,11 @@ inputs:
     deprecationMessage:
   empty2:
     deprecationMessage: ''
+  empty3:
+    deprecationMessage: '   '
+  empty4:
+    deprecationMessage: |
+
 
 runs:
   using: 'node20'

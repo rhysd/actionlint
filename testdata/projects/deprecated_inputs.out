@@ -4,3 +4,4 @@ workflows/test.yaml:10:11: avoid using deprecated input "input2" in action "My a
 workflows/test.yaml:11:11: avoid using deprecated input "input3" in action "My action" defined at "./action": message with spaces [action]
 workflows/test.yaml:12:11: avoid using deprecated input "input4" in action "My action" defined at "./action": this is first line. this is second line. this is third line [action]
 workflows/test.yaml:13:11: avoid using deprecated input "input5" in action "My action" defined at "./action" [action]
+workflows/test.yaml:15:11: avoid using deprecated input "input7" in action "My action" defined at "./action": some message [action]
