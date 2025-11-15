@@ -48,6 +48,8 @@ func (rule *RuleEvents) checkEvent(event Event) {
 		rule.checkWorkflowCallEvent(e)
 	case *WebhookEvent:
 		rule.checkWebhookEvent(e)
+	case *ImageVersionEvent:
+		rule.checkImageVersionEvent(e)
 	default:
 		panic("unreachable")
 	}
@@ -285,4 +287,9 @@ func (rule *RuleEvents) checkWorkflowDispatchEvent(event *WorkflowDispatchEvent)
 			len(event.Inputs),
 		)
 	}
+}
+
+// https://docs.github.com/en/actions/reference/workflows-and-actions/events-that-trigger-workflows#image_version_ready
+func (rule *RuleEvents) checkImageVersionEvent(event *ImageVersionEvent) {
+	// Do nothing
 }

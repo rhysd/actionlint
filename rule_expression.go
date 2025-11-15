@@ -159,6 +159,9 @@ func (rule *RuleExpression) VisitWorkflowPre(n *Workflow) error {
 				rule.checkString(o.Description, "")
 				// o.Value will be checked in VisitWorkflowPost
 			}
+		case *ImageVersionEvent:
+			rule.checkStrings(e.Names, "")
+			rule.checkStrings(e.Versions, "")
 		}
 	}
 

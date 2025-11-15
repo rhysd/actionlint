@@ -327,6 +327,22 @@ func (e *WorkflowCallEvent) EventName() string {
 	return "workflow_call"
 }
 
+// ImageVersionEvent is image_version event configuration.
+// https://docs.github.com/en/actions/reference/workflows-and-actions/events-that-trigger-workflows#image_version_ready
+type ImageVersionEvent struct {
+	// Names is a list of names which match to the created image names.
+	Names []*String
+	// Versions is a list of names which match to the created image versions. Glob patterns are available.
+	Versions []*String
+	// Pos is a position in source.
+	Pos *Pos
+}
+
+// EventName returns name of the event to trigger this workflow.
+func (e *ImageVersionEvent) EventName() string {
+	return "image_version"
+}
+
 // PermissionScope is struct for respective permission scope like "issues", "checks", ...
 // https://docs.github.com/en/actions/security-for-github-actions/security-guides/automatic-token-authentication#permissions-for-the-github_token
 type PermissionScope struct {

@@ -1,0 +1,14 @@
+on:
+  image_version:
+    # It must be array of string
+    names: MyImage
+    # Empty string is not allowed
+    versions: ['']
+    # Unknown key
+    entrypoint: run.sh
+
+jobs:
+  test:
+    runs-on: ubuntu-latest
+    steps:
+      - run: echo hello

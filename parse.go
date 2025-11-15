@@ -558,6 +558,23 @@ func (p *parser) parseWorkflowCallEvent(pos *Pos, n *yaml.Node) *WorkflowCallEve
 	return ret
 }
 
+func (p *parser) parseImageVersionEvent(pos *Pos, n *yaml.Node) *ImageVersionEvent {
+	ret := &ImageVersionEvent{Pos: pos}
+
+	for _, kv := range p.parseSectionMapping("image_version", n, true, true) {
+		switch kv.id {
+		case "names":
+			ret.Names = p.parseStringSequence("names", kv.val, false, false)
+		case "versions":
+			ret.Versions = p.parseStringSequence("versions", kv.val, false, false)
+		default:
+			p.unexpectedKey(kv.key, "image_version", []string{"names", "versions"})
+		}
+	}
+
+	return ret
+}
+
 func (p *parser) parseEvents(pos *Pos, n *yaml.Node) []Event {
 	switch n.Kind {
 	case yaml.ScalarNode:
@@ -576,6 +593,10 @@ func (p *parser) parseEvents(pos *Pos, n *yaml.Node) []Event {
 		case "workflow_call":
 			return []Event{
 				&WorkflowCallEvent{Pos: posAt(n)},
+			}
+		case "image_version":
+			return []Event{
+				&ImageVersionEvent{Pos: posAt(n)},
 			}
 		default:
 			h := p.parseString(n, false)
@@ -606,6 +627,8 @@ func (p *parser) parseEvents(pos *Pos, n *yaml.Node) []Event {
 				ret = append(ret, p.parseRepositoryDispatchEvent(pos, kv.val))
 			case "workflow_call":
 				ret = append(ret, p.parseWorkflowCallEvent(pos, kv.val))
+			case "image_version":
+				ret = append(ret, p.parseImageVersionEvent(pos, kv.val))
 			default:
 				ret = append(ret, p.parseWebhookEvent(kv.key, kv.val))
 			}
@@ -626,6 +649,8 @@ func (p *parser) parseEvents(pos *Pos, n *yaml.Node) []Event {
 					ret = append(ret, &WorkflowDispatchEvent{Pos: posAt(c)})
 				case "workflow_call":
 					ret = append(ret, &WorkflowCallEvent{Pos: posAt(c)})
+				case "image_version":
+					ret = append(ret, &ImageVersionEvent{Pos: posAt(c)})
 				default:
 					ret = append(ret, &WebhookEvent{Hook: s, Pos: posAt(c)})
 				}

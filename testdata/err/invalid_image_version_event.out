@@ -1,0 +1,3 @@
+test.yaml:4:12: "names" section must be sequence node but got scalar node with "!!str" tag [syntax-check]
+test.yaml:6:16: string should not be empty [syntax-check]
+test.yaml:8:5: unexpected key "entrypoint" for "image_version" section. expected one of "names", "versions" [syntax-check]
