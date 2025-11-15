@@ -575,41 +575,34 @@ func (p *parser) parseImageVersionEvent(pos *Pos, n *yaml.Node) *ImageVersionEve
 	return ret
 }
 
-func (p *parser) parseEvents(pos *Pos, n *yaml.Node) []Event {
+func (p *parser) parseEventWithNoConfig(n *yaml.Node) Event {
+	s := p.parseString(n, false)
+	switch s.Value {
+	case "":
+		return nil
+	case "schedule":
+		p.error(n, "schedule event must be configured with mapping")
+		return nil
+	case "repository_dispatch":
+		return &RepositoryDispatchEvent{Pos: posAt(n)}
+	case "workflow_dispatch":
+		return &WorkflowDispatchEvent{Pos: posAt(n)}
+	case "workflow_call":
+		return &WorkflowCallEvent{Pos: posAt(n)}
+	case "image_version":
+		return &ImageVersionEvent{Pos: posAt(n)}
+	default:
+		return &WebhookEvent{Hook: s, Pos: posAt(n)}
+	}
+}
+
+func (p *parser) parseEvents(n *yaml.Node) []Event {
 	switch n.Kind {
 	case yaml.ScalarNode:
-		switch n.Value {
-		case "workflow_dispatch":
-			return []Event{
-				&WorkflowDispatchEvent{Pos: posAt(n)},
-			}
-		case "repository_dispatch":
-			return []Event{
-				&RepositoryDispatchEvent{Pos: posAt(n)},
-			}
-		case "schedule":
-			p.errorAt(pos, "schedule event must be configured with mapping")
-			return []Event{}
-		case "workflow_call":
-			return []Event{
-				&WorkflowCallEvent{Pos: posAt(n)},
-			}
-		case "image_version":
-			return []Event{
-				&ImageVersionEvent{Pos: posAt(n)},
-			}
-		default:
-			h := p.parseString(n, false)
-			if h.Value == "" {
-				return []Event{}
-			}
-			return []Event{
-				&WebhookEvent{
-					Hook: h,
-					Pos:  posAt(n),
-				},
-			}
+		if e := p.parseEventWithNoConfig(n); e != nil {
+			return []Event{e}
 		}
+		return []Event{}
 	case yaml.MappingNode:
 		kvs := p.parseSectionMapping("on", n, false, true)
 		ret := make([]Event, 0, len(kvs))
@@ -641,19 +634,8 @@ func (p *parser) parseEvents(pos *Pos, n *yaml.Node) []Event {
 		ret := make([]Event, 0, l)
 
 		for _, c := range n.Content {
-			if s := p.parseString(c, false); s != nil {
-				switch s.Value {
-				case "schedule", "repository_dispatch":
-					p.errorf(c, "%q event should not be listed in sequence. Use mapping for \"on\" section and configure the event as values of the mapping", s.Value)
-				case "workflow_dispatch":
-					ret = append(ret, &WorkflowDispatchEvent{Pos: posAt(c)})
-				case "workflow_call":
-					ret = append(ret, &WorkflowCallEvent{Pos: posAt(c)})
-				case "image_version":
-					ret = append(ret, &ImageVersionEvent{Pos: posAt(c)})
-				default:
-					ret = append(ret, &WebhookEvent{Hook: s, Pos: posAt(c)})
-				}
+			if e := p.parseEventWithNoConfig(c); e != nil {
+				ret = append(ret, e)
 			}
 		}
 
@@ -1369,7 +1351,7 @@ func (p *parser) parse(n *yaml.Node) *Workflow {
 		case "name":
 			w.Name = p.parseString(v, true)
 		case "on":
-			w.On = p.parseEvents(k.Pos, v)
+			w.On = p.parseEvents(v)
 		case "permissions":
 			w.Permissions = p.parsePermissions(k.Pos, v)
 		case "env":
