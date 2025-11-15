@@ -43,6 +43,8 @@ func (inputs *ActionMetadataInputs) UnmarshalYAML(n *yaml.Node) error {
 		DeprecationMessage string  `yaml:"deprecationMessage"`
 	}
 
+	var err error
+
 	md := make(ActionMetadataInputs, len(n.Content)/2)
 	for i := 0; i < len(n.Content); i += 2 {
 		k, v := n.Content[i].Value, n.Content[i+1]
@@ -67,7 +69,10 @@ func (inputs *ActionMetadataInputs) UnmarshalYAML(n *yaml.Node) error {
 			case "description", "required", "default":
 				// OK
 			default:
-				return fmt.Errorf("unexpected key %q for definition of input %q", v.Content[i].Value, k)
+				// Do not return this non-fatal error immediately so that this method still can return a parsed metadata
+				// even if the error occurs. This is useful for parsing somewhat broken metadata by generate-popular-actions
+				// script.
+				err = fmt.Errorf("unexpected key %q for definition of input %q", v.Content[i].Value, k)
 			}
 		}
 
@@ -75,7 +80,7 @@ func (inputs *ActionMetadataInputs) UnmarshalYAML(n *yaml.Node) error {
 	}
 
 	*inputs = md
-	return nil
+	return err
 }
 
 // ActionMetadataOutput is output metadata in "outputs" section in action.yml metadata file.

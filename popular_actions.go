@@ -3677,6 +3677,20 @@ var PopularActions = map[string]*ActionMetadata{
 	},
 	"treosh/lighthouse-ci-action@v11": {
 		Name: "Lighthouse CI Action",
+		Inputs: ActionMetadataInputs{
+			"artifactname":           {"artifactName", false, false, ""},
+			"basicauthpassword":      {"basicAuthPassword", false, false, ""},
+			"basicauthusername":      {"basicAuthUsername", false, false, ""},
+			"budgetpath":             {"budgetPath", false, false, ""},
+			"configpath":             {"configPath", false, false, ""},
+			"runs":                   {"runs", false, false, ""},
+			"serverbaseurl":          {"serverBaseUrl", false, false, ""},
+			"servertoken":            {"serverToken", false, false, ""},
+			"temporarypublicstorage": {"temporaryPublicStorage", false, false, ""},
+			"uploadartifacts":        {"uploadArtifacts", false, false, ""},
+			"uploadextraargs":        {"uploadExtraArgs", false, false, ""},
+			"urls":                   {"urls", false, false, ""},
+		},
 		Outputs: ActionMetadataOutputs{
 			"assertionresults": {"assertionResults"},
 			"links":            {"links"},
@@ -3685,6 +3699,20 @@ var PopularActions = map[string]*ActionMetadata{
 	},
 	"treosh/lighthouse-ci-action@v12": {
 		Name: "Lighthouse CI Action",
+		Inputs: ActionMetadataInputs{
+			"artifactname":           {"artifactName", false, false, ""},
+			"basicauthpassword":      {"basicAuthPassword", false, false, ""},
+			"basicauthusername":      {"basicAuthUsername", false, false, ""},
+			"budgetpath":             {"budgetPath", false, false, ""},
+			"configpath":             {"configPath", false, false, ""},
+			"runs":                   {"runs", false, false, ""},
+			"serverbaseurl":          {"serverBaseUrl", false, false, ""},
+			"servertoken":            {"serverToken", false, false, ""},
+			"temporarypublicstorage": {"temporaryPublicStorage", false, false, ""},
+			"uploadartifacts":        {"uploadArtifacts", false, false, ""},
+			"uploadextraargs":        {"uploadExtraArgs", false, false, ""},
+			"urls":                   {"urls", false, false, ""},
+		},
 		Outputs: ActionMetadataOutputs{
 			"assertionresults": {"assertionResults"},
 			"links":            {"links"},
