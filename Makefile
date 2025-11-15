@@ -18,10 +18,20 @@ GO_GEN_SRCS := scripts/generate-popular-actions/main.go \
 all: build test lint
 
 .testtimestamp: $(TESTS) $(SRCS) $(TESTDATA) $(TOOL)
-	go test ./...
+	go test -race ./...
 	touch .testtimestamp
 
 t test: .testtimestamp
+
+coverage.out:
+	go test -race -coverprofile coverage.out -covermode=atomic ./...
+	touch .testtimestamp
+
+coverage.html: coverage.out
+	go tool cover -html=coverage.out -o coverage.html
+
+cov: coverage.out coverage.html
+	go tool cover -func=coverage.out
 
 .linttimestamp: $(TESTS) $(SRCS) $(TOOL) docs/checks.md
 	go vet ./...
@@ -80,4 +90,4 @@ c clean:
 	[ -z "${CI}" ] && git config core.hooksPath .git-hooks || true
 	touch .git-hooks/.timestamp
 
-.PHONY: all test clean build lint fuzz man bench b t c l
+.PHONY: all test clean build lint fuzz man bench cov b t c l

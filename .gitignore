@@ -15,3 +15,5 @@
 /actionlint-workflow-ast
 /.git-hooks/.timestamp
 /.idea
+/coverage.out
+/coverage.html

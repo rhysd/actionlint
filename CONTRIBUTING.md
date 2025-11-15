@@ -72,6 +72,15 @@ or
 make test
 ```
 
+To measure the code coverage
+
+```sh
+# Generate coverage.html and print the code coverage per functions
+make cov
+# See the coverage report in a browser (on macOS)
+open coverage.html
+```
+
 ## How to run lints
 
 [staticcheck](https://staticcheck.io/) is used to lint Go sources.
@@ -228,7 +237,12 @@ Update for `availability.go` is run weekly on CI by [`generate`](.github/workflo
 
 ## Testing
 
-[![code coverage](https://codecov.io/gh/rhysd/actionlint/graph/badge.svg?token=CgcOo0m9oW)](https://codecov.io/gh/rhysd/actionlint)
+[![CI](https://github.com/rhysd/actionlint/actions/workflows/ci.yaml/badge.svg)](https://github.com/rhysd/actionlint/actions/workflows/ci.yaml)
+[![Generate](https://github.com/rhysd/actionlint/actions/workflows/generate.yaml/badge.svg)](https://github.com/rhysd/actionlint/actions/workflows/generate.yaml)
+[![Problem Matchers](https://github.com/rhysd/actionlint/actions/workflows/matcher.yaml/badge.svg)](https://github.com/rhysd/actionlint/actions/workflows/matcher.yaml)
+[![Download script](https://github.com/rhysd/actionlint/actions/workflows/download.yaml/badge.svg)](https://github.com/rhysd/actionlint/actions/workflows/download.yaml)
+[![Release](https://github.com/rhysd/actionlint/actions/workflows/release.yaml/badge.svg)](https://github.com/rhysd/actionlint/actions/workflows/release.yaml)
+[![Codecov](https://codecov.io/gh/rhysd/actionlint/graph/badge.svg?token=CgcOo0m9oW)](https://codecov.io/gh/rhysd/actionlint)
 
 All tests are automated.
 
@@ -244,15 +258,6 @@ All tests are automated.
   - `testdata/projects/` contains 'Project' tests. Each directories represent a single project (meaning a repository on GitHub).
     Corresponding `*.out` files are expected error messages. Empty `*.out` file means the test case should cause no errors.
     'Project' test is used for use cases where multiple files are related (reusable workflows, local actions, config files, ...).
-
-To measure the code coverage:
-
-```sh
-# Collect the code coverage information into coverage.out running `go test`
-go test -race -coverprofile coverage.out -covermode=atomic ./...
-# Print the code coverage per function
-go tool cover -func ./coverage.out
-```
 
 <a id="about-checks-doc"></a>
 ## How to write checks document
