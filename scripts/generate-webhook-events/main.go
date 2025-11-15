@@ -140,6 +140,7 @@ var AllWebhookTypes = map[string][]string {`)
 	skipped := []string{
 		"schedule",
 		"workflow_call",
+		"image_version_ready", // https://github.com/github/docs/pull/41267
 	}
 
 	numHooks := 0
@@ -240,7 +241,7 @@ func run(args []string, stdout, stderr, dbgout io.Writer, srcURL string) int {
 	dbg.SetOutput(dbgout)
 
 	if len(args) > 2 {
-		fmt.Fprintln(stderr, "usage: generate-webhook-events events-that-trigger-workflows.md [[srcfile] dstfile]")
+		fmt.Fprintln(stderr, "usage: generate-webhook-events [[srcfile] dstfile]")
 		return 1
 	}
 

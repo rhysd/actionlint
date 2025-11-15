@@ -50,3 +50,14 @@ Table without row:
 
 | Webhook event payload | Activity types | `GITHUB_SHA` | `GITHUB_REF` |
 | --------------------- | -------------- | ------------ | -------------|
+
+## image_version_ready
+
+| Webhook event payload | Activity types | `GITHUB_SHA` | `GITHUB_REF` |
+|----------------------| -------------- | ------------ | -------------|
+| Not applicable       | Not applicable | Last commit on default branch |  Default branch |
+
+This is special case:
+
+- No link is present at the first cell of the table
+- Hook name is not correct: https://github.com/github/docs/pull/41267
