@@ -124,8 +124,8 @@
     },
     {
         "slug": "actions/download-artifact",
-        "tags": ["v1", "v2", "v3", "v3-node20", "v4", "v5"],
-        "next": "v6"
+        "tags": ["v1", "v2", "v3", "v3-node20", "v4", "v5", "v6"],
+        "next": "v7"
     },
     {
         "slug": "actions/first-interaction",
@@ -174,8 +174,8 @@
     },
     {
         "slug": "actions/upload-artifact",
-        "tags": ["v1", "v2", "v3", "v3-node20", "v4"],
-        "next": "v5"
+        "tags": ["v1", "v2", "v3", "v3-node20", "v4", "v5"],
+        "next": "v6"
     },
     {
         "slug": "actions/upload-pages-artifact",
@@ -303,8 +303,8 @@
     },
     {
         "slug": "golangci/golangci-lint-action",
-        "tags": ["v1", "v2", "v3", "v4", "v5", "v6", "v7", "v8"],
-        "next": "v9"
+        "tags": ["v1", "v2", "v3", "v4", "v5", "v6", "v7", "v8", "v9"],
+        "next": "v10"
     },
     {
         "slug": "google-github-actions/auth",
@@ -354,8 +354,8 @@
     },
     {
         "slug": "mikepenz/release-changelog-builder-action",
-        "tags": ["v1", "v2", "v3", "v4", "v5"],
-        "next": "v6"
+        "tags": ["v1", "v2", "v3", "v4", "v5", "v6"],
+        "next": "v7"
     },
     {
         "slug": "msys2/setup-msys2",
@@ -374,8 +374,8 @@
     },
     {
         "slug": "octokit/graphql-action",
-        "tags": ["v2.x"],
-        "next": "v3.x"
+        "tags": ["v2.x", "v3.x"],
+        "next": "v4.x"
     },
     {
         "slug": "octokit/request-action",
