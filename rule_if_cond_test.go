@@ -11,8 +11,10 @@ func TestRuleIfCond(t *testing.T) {
 		valid bool
 	}{
 		{"", true},
-		{"true", true},
+		{"true", false},
+		{"false", false},
 		{"true || false", true},
+		{"github.ref_name == 'foo'", true},
 		{"${{ false }}", true},
 		{"${{ false }}\n", false},
 		{"${{ false }} ", false},

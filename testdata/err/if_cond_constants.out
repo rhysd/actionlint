@@ -1,0 +1,7 @@
+test.yaml:8:13: condition "true" is always evaluated to true. remove the if: section [if-cond]
+test.yaml:14:13: condition "false" is always evaluated to false. remove the if: section [if-cond]
+test.yaml:16:13: condition "true " is always evaluated to true. remove the if: section [if-cond]
+test.yaml:18:13: condition "true\n" is always evaluated to true. remove the if: section [if-cond]
+test.yaml:21:13: condition " true" is always evaluated to true. remove the if: section [if-cond]
+test.yaml:23:9: condition "false" is always evaluated to false. remove the if: section [if-cond]
+test.yaml:31:11: condition "true" is always evaluated to true. remove the if: section [if-cond]

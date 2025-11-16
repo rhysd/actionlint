@@ -1,0 +1,19 @@
+on: push
+
+jobs:
+  edge-cases:
+    runs-on: ubuntu-latest
+    steps:
+      - run: echo This is true
+        if: |
+          ${{ false }}
+      - run: echo This is true
+        if: '${{ false }} '
+      - run: echo This is true
+        if: ' ${{ false }}'
+      - run: echo This is true
+        if: ${{ false }} && ${{ false }}
+      - run: echo This is true
+        if: ${{ 'false' }} && ${{ 'false' }}
+      - run: echo This is true
+        if: '!${{ true }}'

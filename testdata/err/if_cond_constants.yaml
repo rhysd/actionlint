@@ -1,0 +1,33 @@
+on: push
+
+jobs:
+  test-steps:
+    runs-on: ubuntu-latest
+    steps:
+      - run: echo Constant `true`
+        if: true
+      - run: echo Constant in expression (not error for now)
+        if: ${{ false }}
+      - run: echo Constant in quoted expression (not error for now)
+        if: '${{ true }}'
+      - run: echo Quoted constant
+        if: 'false'
+      - run: echo Trailing space
+        if: 'true '
+      - run: echo Newline
+        if: |
+          true
+      - run: echo Space before constant
+        if: ' true'
+  test-job:
+    if: false
+    runs-on: ubuntu-latest
+    steps:
+      - run: echo 1
+  test-snapshot:
+    runs-on: ubuntu-latest
+    snapshot:
+      image-name: test
+      if: true
+    steps:
+      - run: echo 1

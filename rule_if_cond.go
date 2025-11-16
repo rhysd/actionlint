@@ -38,9 +38,14 @@ func (rule *RuleIfCond) checkIfCond(n *String) {
 	if n == nil {
 		return
 	}
-	if !n.ContainsExpression() {
-		return
+	if n.ContainsExpression() {
+		rule.checkIfCondExpression(n)
+	} else {
+		rule.checkTrueFalseConstants(n)
 	}
+}
+
+func (rule *RuleIfCond) checkIfCondExpression(n *String) {
 	// Check number of ${{ }} for conditions like `${{ false }} || ${{ true }}` which are always evaluated to true
 	if strings.HasPrefix(n.Value, "${{") && strings.HasSuffix(n.Value, "}}") && strings.Count(n.Value, "${{") == 1 {
 		return
@@ -50,4 +55,16 @@ func (rule *RuleIfCond) checkIfCond(n *String) {
 		"if: condition %q is always evaluated to true because extra characters are around ${{ }}",
 		n.Value,
 	)
+}
+
+func (rule *RuleIfCond) checkTrueFalseConstants(n *String) {
+	v := strings.TrimSpace(n.Value)
+	if v == "true" || v == "false" {
+		rule.Errorf(
+			n.Pos,
+			"condition %q is always evaluated to %s. remove the if: section",
+			n.Value,
+			v,
+		)
+	}
 }
