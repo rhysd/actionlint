@@ -1,0 +1,10 @@
+on:
+  image_version:
+    names: []
+    versions: []
+
+jobs:
+  test:
+    runs-on: ubuntu-latest
+    steps:
+      - run: echo hello

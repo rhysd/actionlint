@@ -9,7 +9,7 @@ test.yaml:25:5: unexpected key "BRANCHES" for "push" section. expected one of "b
 test.yaml:28:3: expected "run" key for "defaults" section but got "RUN" [syntax-check]
 test.yaml:30:5: unexpected key "SHELL" for "run" section. expected one of "shell", "working-directory" [syntax-check]
 test.yaml:33:3: unexpected key "GROUP" for "concurrency" section. expected one of "cancel-in-progress", "group" [syntax-check]
-test.yaml:39:5: unexpected key "NAME" for "job" section. expected one of "concurrency", "container", "continue-on-error", "defaults", "env", "environment", "if", "name", "needs", "outputs", "permissions", "runs-on", "secrets", "services", "steps", "strategy", "timeout-minutes", "uses", "with" [syntax-check]
+test.yaml:39:5: unexpected key "NAME" for "job" section. expected one of "concurrency", "container", "continue-on-error", "defaults", "env", "environment", "if", "name", "needs", "outputs", "permissions", "runs-on", "secrets", "services", "snapshot", "steps", "strategy", "timeout-minutes", "uses", "with" [syntax-check]
 test.yaml:41:7: unexpected key "GROUP" for "concurrency" section. expected one of "cancel-in-progress", "group" [syntax-check]
 test.yaml:44:7: unexpected key "NAME" for "environment" section. expected one of "name", "url" [syntax-check]
 test.yaml:47:7: expected "run" key for "defaults" section but got "RUN" [syntax-check]

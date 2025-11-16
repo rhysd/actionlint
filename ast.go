@@ -854,6 +854,18 @@ type WorkflowCall struct {
 	InheritSecrets bool
 }
 
+// Snapshot is a struct to represent image snapshot at jobs.<job_id>.snapshot.
+// https://docs.github.com/en/actions/reference/workflows-and-actions/workflow-syntax#jobsjob_idsnapshot
+// https://docs.github.com/en/actions/how-tos/manage-runners/larger-runners/use-custom-images
+type Snapshot struct {
+	// ImageName is a name of the custom image.
+	ImageName *String
+	// Version is a version of the custom image.
+	Version *String
+	// If is a condition whether the custom image is used.
+	If *String
+}
+
 // Job is configuration of how to run a job.
 // https://docs.github.com/en/actions/learn-github-actions/workflow-syntax-for-github-actions#jobs
 type Job struct {
@@ -906,6 +918,9 @@ type Job struct {
 	// WorkflowCall is a workflow call by 'uses:'.
 	// https://docs.github.com/en/actions/learn-github-actions/workflow-syntax-for-github-actions#jobsjob_iduses
 	WorkflowCall *WorkflowCall
+	// Snapshot is a custom image snapshot.
+	// https://docs.github.com/en/actions/reference/workflows-and-actions/workflow-syntax#jobsjob_idsnapshot
+	Snapshot *Snapshot
 	// Pos is a position in source.
 	Pos *Pos
 }

@@ -1,0 +1,2 @@
+test.yaml:3:12: "names" section should not be empty [syntax-check]
+test.yaml:4:15: "versions" section should not be empty [syntax-check]

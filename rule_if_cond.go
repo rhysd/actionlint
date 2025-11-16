@@ -28,6 +28,9 @@ func (rule *RuleIfCond) VisitStep(n *Step) error {
 // VisitJobPre is callback when visiting Job node before visiting its children.
 func (rule *RuleIfCond) VisitJobPre(n *Job) error {
 	rule.checkIfCond(n.If)
+	if n.Snapshot != nil {
+		rule.checkIfCond(n.Snapshot.If)
+	}
 	return nil
 }
 

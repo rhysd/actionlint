@@ -249,6 +249,7 @@ func (rule *RuleExpression) VisitJobPre(n *Job) error {
 	}
 
 	rule.checkWorkflowCall(n.WorkflowCall)
+	rule.checkSnapshot(n.Snapshot)
 
 	rule.stepsTy = NewEmptyStrictObjectType()
 
@@ -573,6 +574,15 @@ func (rule *RuleExpression) checkWorkflowCall(c *WorkflowCall) {
 	for _, s := range c.Secrets {
 		rule.checkString(s.Value, "jobs.<job_id>.secrets.<secrets_id>")
 	}
+}
+
+func (rule *RuleExpression) checkSnapshot(s *Snapshot) {
+	if s == nil {
+		return
+	}
+	// Available contexts in `jobs.<job_name>.snapshot` is not defined in the document.
+	// https://github.com/github/docs/issues/41255
+	rule.checkIfCondition(s.If, "")
 }
 
 func (rule *RuleExpression) checkWebhookEventFilter(f *WebhookEventFilter) {

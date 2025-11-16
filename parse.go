@@ -1158,6 +1158,35 @@ func (p *parser) parseRunsOn(n *yaml.Node) *Runner {
 	return r
 }
 
+func (p *parser) parseSnapshot(pos *Pos, n *yaml.Node) *Snapshot {
+	switch n.Kind {
+	case yaml.ScalarNode:
+		return &Snapshot{ImageName: p.parseString(n, false)}
+	case yaml.MappingNode:
+		ret := &Snapshot{}
+		for _, kv := range p.parseSectionMapping("on", n, false, true) {
+			switch kv.id {
+			case "image-name":
+				ret.ImageName = p.parseString(kv.val, false)
+			case "version":
+				ret.Version = p.parseString(kv.val, false)
+			case "if":
+				ret.If = p.parseString(kv.val, false)
+			default:
+				p.unexpectedKey(kv.key, "snapshot", []string{"image-name", "version", "if"})
+			}
+		}
+		if ret.ImageName == nil {
+			p.errorAt(pos, "\"snapshot\" section must have \"image-name\" configuration")
+			return nil
+		}
+		return ret
+	default:
+		p.errorf(n, "\"snapshot\" section value must be string or sequence but found %s node", nodeKindName(n.Kind))
+		return nil
+	}
+}
+
 // https://docs.github.com/en/actions/learn-github-actions/workflow-syntax-for-github-actions#jobsjob_id
 func (p *parser) parseJob(id *String, n *yaml.Node) *Job {
 	ret := &Job{ID: id, Pos: id.Pos}
@@ -1262,6 +1291,8 @@ func (p *parser) parseJob(id *String, n *yaml.Node) *Job {
 				}
 			}
 			callOnlyKey = k
+		case "snapshot":
+			ret.Snapshot = p.parseSnapshot(k.Pos, v)
 		default:
 			p.unexpectedKey(kv.key, "job", []string{
 				"name",
@@ -1283,6 +1314,7 @@ func (p *parser) parseJob(id *String, n *yaml.Node) *Job {
 				"uses",
 				"with",
 				"secrets",
+				"snapshot",
 			})
 		}
 	}

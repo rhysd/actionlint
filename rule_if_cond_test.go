@@ -47,6 +47,10 @@ func TestRuleIfCond(t *testing.T) {
 			var j Job
 			if len(tc.cond) > 0 {
 				j.If = &String{Value: tc.cond, Pos: &Pos{}}
+				j.Snapshot = &Snapshot{
+					ImageName: &String{Value: "test", Pos: &Pos{}},
+					If:        &String{Value: tc.cond, Pos: &Pos{}},
+				}
 			}
 
 			r := NewRuleIfCond()
@@ -58,7 +62,7 @@ func TestRuleIfCond(t *testing.T) {
 			if tc.valid && len(errs) > 0 {
 				t.Fatalf("wanted no error but have %q for condition %q", errs, tc.cond)
 			}
-			if !tc.valid && len(errs) != 1 {
+			if !tc.valid && len(errs) != 2 {
 				t.Fatalf("wanted one error but have %q for condition %q", errs, tc.cond)
 			}
 		})
