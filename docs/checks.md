@@ -69,7 +69,7 @@ jobs:
 Output:
 
 ```
-test.yaml:6:5: unexpected key "default" for "job" section. expected one of "concurrency", "container", "continue-on-error", "defaults", "env", "environment", "if", "name", "needs", "outputs", "permissions", "runs-on", "secrets", "services", "steps", "strategy", "timeout-minutes", "uses", "with" [syntax-check]
+test.yaml:6:5: unexpected key "default" for "job" section. expected one of "concurrency", "container", "continue-on-error", "defaults", "env", "environment", "if", "name", "needs", "outputs", "permissions", "runs-on", "secrets", "services", "snapshot", "steps", "strategy", "timeout-minutes", "uses", "with" [syntax-check]
   |
 6 |     default:
   |     ^~~~~~~~
@@ -3017,7 +3017,7 @@ test.yaml:9:11: avoid using deprecated input "old-input" in action "My action" d
 
 <!-- Skip playground link -->
 
-Note that the usage of depreated inputs marked as 'required' are not reported as error because it is not possible to avoid using
+Note that the usage of deprecated inputs marked as 'required' are not reported as error because it is not possible to avoid using
 them.
 
 ---

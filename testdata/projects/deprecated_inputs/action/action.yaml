@@ -21,11 +21,11 @@ inputs:
           this is third line.
   input6:
     deprecationMessage:
-  # Usage of this input is not reporeted as error because it is marked as 'required'
+  # Usage of this input is not reported as error because it is marked as 'required'
   input7:
     required: true
     deprecationMessage: some message
-  # Usage of this input is reporeted as error because it is actually not required due to the default value
+  # Usage of this input is reported as error because it is actually not required due to the default value
   input8:
     required: true
     default: some value
