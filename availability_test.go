@@ -2,10 +2,12 @@ package actionlint
 
 import (
 	"regexp"
+	"slices"
 	"testing"
 )
 
 func TestWorkflowKeyAvailability(t *testing.T) {
+	seenCtx := map[string]struct{}{}
 	for _, key := range allWorkflowKeys {
 		t.Run(key, func(t *testing.T) {
 			ctx, sp := WorkflowKeyAvailability(key)
@@ -14,6 +16,15 @@ func TestWorkflowKeyAvailability(t *testing.T) {
 			}
 			if len(ctx) == 0 {
 				t.Error("no context is available for key", key)
+			}
+			for _, c := range ctx {
+				ks, ok := AllContexts[c]
+				if !ok {
+					t.Errorf("Context %q is not included in AllContexts %v", c, AllContexts)
+				} else if !slices.Contains(ks, key) {
+					t.Errorf("Workflow key %q is not included in workflow keys of AllContexts %v", key, ks)
+				}
+				seenCtx[c] = struct{}{}
 			}
 
 			r := regexp.MustCompile(`^[a-z][a-z0-9_]*$`)
@@ -42,6 +53,15 @@ func TestWorkflowKeyAvailability(t *testing.T) {
 				}
 			}
 		})
+	}
+	if len(AllContexts) != len(seenCtx) {
+		t.Errorf(
+			"AllContexts has %d elems but %d contexts were found. Found contexts are %v and AllContexts is %v",
+			len(AllContexts),
+			len(seenCtx),
+			seenCtx,
+			AllContexts,
+		)
 	}
 
 	ctx, sp := WorkflowKeyAvailability("unknown.workflow.key")

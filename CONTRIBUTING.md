@@ -55,6 +55,10 @@ make build
 
 `make build` generates some sources with `go generate`. When you want to avoid it, add `SKIP_GO_GENERATE=1` to `make` arguments.
 
+```sh
+make build SKIP_GO_GENERATE=1
+```
+
 Since actionlint doesn't use any cgo features, setting `CGO_ENABLED=0` environment variable is recommended to avoid troubles
 around linking libc. `make build` does this by default.
 
