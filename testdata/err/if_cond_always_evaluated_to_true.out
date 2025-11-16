@@ -5,3 +5,4 @@ test.yaml:47:13: if: condition "${{ false }} && ${{ false }}" is always evaluate
 test.yaml:49:9: if: condition "# ERROR: True\n${{ false }}\n" is always evaluated to true because extra characters are around ${{ }} [if-cond]
 test.yaml:57:9: if: condition " ${{ false }}" is always evaluated to true because extra characters are around ${{ }} [if-cond]
 test.yaml:63:9: if: condition "${{ false }} && ${{ false }}" is always evaluated to true because extra characters are around ${{ }} [if-cond]
+test.yaml:72:11: if: condition "${{ false }}\n" is always evaluated to true because extra characters are around ${{ }} [if-cond]

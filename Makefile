@@ -23,7 +23,7 @@ all: build test lint
 
 t test: .testtimestamp
 
-coverage.out:
+coverage.out: $(TESTS) $(SRCS) $(TESTDATA) $(TOOL)
 	go test -race -coverprofile coverage.out -covermode=atomic ./...
 	touch .testtimestamp
 

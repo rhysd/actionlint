@@ -1178,11 +1178,10 @@ func (p *parser) parseSnapshot(pos *Pos, n *yaml.Node) *Snapshot {
 		}
 		if ret.ImageName == nil {
 			p.errorAt(pos, "\"snapshot\" section must have \"image-name\" configuration")
-			return nil
 		}
 		return ret
 	default:
-		p.errorf(n, "\"snapshot\" section value must be string or sequence but found %s node", nodeKindName(n.Kind))
+		p.errorf(n, "\"snapshot\" section value must be string or mapping but found %s node", nodeKindName(n.Kind))
 		return nil
 	}
 }

@@ -1,0 +1,5 @@
+test.yaml:6:5: "snapshot" section must have "image-name" configuration [syntax-check]
+test.yaml:8:15: undefined variable "foo". available variables are "env", "github", "inputs", "job", "matrix", "needs", "runner", "secrets", "steps", "strategy", "vars" [expression]
+test.yaml:10:16: string should not be empty [syntax-check]
+test.yaml:12:7: unexpected key "image-id" for "snapshot" section. expected one of "if", "image-name", "version" [syntax-check]
+test.yaml:20:7: "snapshot" section value must be string or mapping but found sequence node [syntax-check]
