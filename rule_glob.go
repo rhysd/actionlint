@@ -19,16 +19,36 @@ func NewRuleGlob() *RuleGlob {
 // VisitWorkflowPre is callback when visiting Workflow node before visiting its children.
 func (rule *RuleGlob) VisitWorkflowPre(n *Workflow) error {
 	for _, e := range n.On {
-		if w, ok := e.(*WebhookEvent); ok {
-			rule.checkGitRefGlobs(w.Branches)
-			rule.checkGitRefGlobs(w.BranchesIgnore)
-			rule.checkGitRefGlobs(w.Tags)
-			rule.checkGitRefGlobs(w.TagsIgnore)
-			rule.checkFilePathGlobs(w.Paths)
-			rule.checkFilePathGlobs(w.PathsIgnore)
+		switch e := e.(type) {
+		case *WebhookEvent:
+			rule.checkGitRefGlobs(e.Branches)
+			rule.checkGitRefGlobs(e.BranchesIgnore)
+			rule.checkGitRefGlobs(e.Tags)
+			rule.checkGitRefGlobs(e.TagsIgnore)
+			rule.checkFilePathGlobs(e.Paths)
+			rule.checkFilePathGlobs(e.PathsIgnore)
+		case *ImageVersionEvent:
+			for _, v := range e.Versions {
+				rule.checkRefGlob(v)
+			}
 		}
 	}
 	return nil
+}
+
+func (rule *RuleGlob) VisitJobPre(n *Job) error {
+	if n.Snapshot != nil && n.Snapshot.Version != nil {
+		rule.checkRefGlob(n.Snapshot.Version)
+	}
+	return nil
+}
+
+func (rule *RuleGlob) checkRefGlob(s *String) {
+	// Empty value is already checked by parser. Avoid duplicate errors
+	if s == nil || s.Value == "" {
+		return
+	}
+	rule.globErrors(ValidateRefGlob(s.Value), s.Pos, s.Quoted)
 }
 
 func (rule *RuleGlob) checkGitRefGlobs(filter *WebhookEventFilter) {
@@ -36,10 +56,7 @@ func (rule *RuleGlob) checkGitRefGlobs(filter *WebhookEventFilter) {
 		return
 	}
 	for _, v := range filter.Values {
-		// Empty value is already checked by parser. Avoid duplicate errors
-		if v.Value != "" {
-			rule.globErrors(ValidateRefGlob(v.Value), v.Pos, v.Quoted)
-		}
+		rule.checkRefGlob(v)
 	}
 }
 

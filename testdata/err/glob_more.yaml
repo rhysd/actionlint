@@ -17,9 +17,16 @@ on:
       - '  foo'
       - 'foo  '
       -
+  image_version:
+    versions:
+      - '!'
+      - 'v[0-'
 
 jobs:
   test:
     runs-on: ubuntu-latest
+    snapshot:
+      image-name: test
+      version: 'v[0-'
     steps:
       - run: echo hi
