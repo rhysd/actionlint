@@ -63,10 +63,7 @@ jobs:
 
         const go = new Go();
         const bin = await fs.readFile('./main.wasm');
-        // `buffer` property is documented as `ArrayBuffer` but it is typed as `ArrayBufferLike`
-        // which is weaker than documented type. It confuses `WebAssembly.instantiate` call's result
-        // type and causes a type error.
-        const buf = bin.buffer as ArrayBuffer;
+        const buf = bin.buffer;
         const result = await WebAssembly.instantiate(buf, go.importObject);
 
         // Do not `await` this method call since it will never be settled
