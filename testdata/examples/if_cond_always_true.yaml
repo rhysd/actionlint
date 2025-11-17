@@ -4,6 +4,9 @@ jobs:
   test:
     runs-on: ubuntu-latest
     steps:
+      - run: echo "DEBUG! ${{ github.event_name }}"
+        # ERROR: It is always evaluated to false
+        if: false
       - run: echo 'Commit is pushed'
         # OK
         if: ${{ github.event_name == 'push' }}

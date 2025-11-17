@@ -39,7 +39,7 @@ List of checks:
 - [ID naming convention](#id-naming-convention)
 - [Availability of contexts and special functions](#ctx-spfunc-availability)
 - [Deprecated workflow commands](#check-deprecated-workflow-commands)
-- [Conditions always evaluated to true at `if:`](#if-cond-always-true)
+- [Constant conditions at `if:`](#if-cond-constant)
 - [Action metadata syntax validation](#action-metadata-syntax)
 - [Deprecated inputs usage](#deprecated-inputs-usage)
 
@@ -2755,8 +2755,8 @@ GitHub deprecated the following workflow commands.
 actionlint detects these commands are used in `run:` and reports them as errors suggesting alternatives. See
 [the official document][workflow-commands-doc] for the comprehensive list of workflow commands to know the usage.
 
-<a id="if-cond-always-true"></a>
-## Conditions always evaluated to true at `if:`
+<a id="if-cond-constant"></a>
+## Constant conditions at `if:`
 
 Example input:
 
@@ -2767,6 +2767,9 @@ jobs:
   test:
     runs-on: ubuntu-latest
     steps:
+      - run: echo "DEBUG! ${{ github.event_name }}"
+        # ERROR: It is always evaluated to false
+        if: false
       - run: echo 'Commit is pushed'
         # OK
         if: ${{ github.event_name == 'push' }}
@@ -2792,25 +2795,33 @@ jobs:
 Output:
 
 ```
-test.yaml:16:13: if: condition "${{ github.event_name == 'push' }}\n" is always evaluated to true because extra characters are around ${{ }} [if-cond]
+test.yaml:9:13: condition "false" is always evaluated to false. remove the if: section [if-cond]
+  |
+9 |         if: false
+  |             ^~~~~
+test.yaml:19:13: if: condition "${{ github.event_name == 'push' }}\n" is always evaluated to true because extra characters are around ${{ }} [if-cond]
    |
-16 |         if: |
+19 |         if: |
    |             ^
-test.yaml:20:13: if: condition "${{ github.event_name == 'push' }} " is always evaluated to true because extra characters are around ${{ }} [if-cond]
+test.yaml:23:13: if: condition "${{ github.event_name == 'push' }} " is always evaluated to true because extra characters are around ${{ }} [if-cond]
    |
-20 |         if: "${{ github.event_name == 'push' }} "
+23 |         if: "${{ github.event_name == 'push' }} "
    |             ^~~~
-test.yaml:26:13: if: condition "${{ github.event_name == 'push' }} && ${{ github.ref_name == 'main' }}" is always evaluated to true because extra characters are around ${{ }} [if-cond]
+test.yaml:29:13: if: condition "${{ github.event_name == 'push' }} && ${{ github.ref_name == 'main' }}" is always evaluated to true because extra characters are around ${{ }} [if-cond]
    |
-26 |         if: ${{ github.event_name == 'push' }} && ${{ github.ref_name == 'main' }}
+29 |         if: ${{ github.event_name == 'push' }} && ${{ github.ref_name == 'main' }}
    |             ^~~
 ```
 
-[Playground](https://rhysd.github.io/actionlint/#eNq0j02qwjAURuddxUd5JKO+BQQ6egt5tHprIyYpzY2Tmr1L6l9FqFVxFMI5nC9xVqELvs2yrau9ygAmz+kE+mB9kYRQB8uh2FWJjcgzdf5kAUUyFWjVOsg/Z4xmaD9maS3PEqAbhZ9hwEZzG+pf2pPlf1sZQllCJlsixtebh+sNc+3Pwt94eP48inxJFuxgKm3v83NlIS64p+YGp5E3Fhf8R4ip9TiOGI8BAAD//6IAwso=)
+[Playground](https://rhysd.github.io/actionlint/#eNq0zz1OxDAQBeA+p3hYyK7CASxtw484ATVyYEKM1vZqZ0yz+O7Iy18iohBAVFH03nwzTtFil3lomsfUsW0AIZb6BfY5clsLuctRcrt1NTtGLLTj1xbQ1qYF3Q0J6vLq/Ob6BKeHAx68DLk7oyeKchtdIJSi3mYA31v0bss0o5iLFIIXeD4eR/dmMjaPbzYwtW1Qys/N548/LNl/g//jcPU9CrWGhSQE5+OUX5K1fo/31H+GY+QXG1e8R+tx6+tylPISAAD//9rl1qA=)
 
-Evaluation of `${{ }}` at `if:` condition is tricky. When the expression in `${{ }}` is evaluated to boolean value and there is
-no extra characters around the `${{ }}`, the condition is evaluated to the boolean value. Otherwise, the condition is treated as
-string hence it is **always** evaluated to `true`.
+actionlint reports constant conditions at `if:` like `if: true` as error because they are usually leftover debug code like
+`#if 0` in C. `if: true` should be removed because it doesn't affect the workflow behavior. `if: false` should be replaced with
+commenting out because it is more obvious (or simply remove the step or job if not needed).
+
+In addition, evaluation of `${{ }}` at `if:` condition is tricky. When the expression in `${{ }}` is evaluated to boolean value
+and there is no extra characters around the `${{ }}`, the condition is evaluated to the boolean value. Otherwise the condition is
+treated as string hence it is **always** evaluated to `true`.
 
 It means that multi-line string must not be used at `if:` condition (`if: |`) because the condition is always evaluated to true.
 Multi-line string inserts newline character at end of each line.
@@ -2826,17 +2837,15 @@ is equivalent to
 if: "${{ false }}\n"
 ```
 
-Unlike using `${{ }}`, putting an expression directly ignores white spaces around it. It's the reason why
+Unlike using `${{ }}`, putting an expression directly ignores white spaces around it. It's the reason why the following `if:`
+condition works as intended.
 
 ```yaml
 if: |
   false
 ```
 
-works as intended.
-
-actionlint checks all `if:` conditions in workflow and reports error when some condition is always evaluated to true due to extra
-characters around `${{ }}`.
+actionlint also checks extra characters around `${{ }}` in `if:` which unexpectedly make the conditions true.
 
 <a id="action-metadata-syntax"></a>
 ## Action metadata syntax validation
