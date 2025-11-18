@@ -70,14 +70,17 @@ func (p *parser) errorf(n *yaml.Node, format string, args ...interface{}) {
 }
 
 func (p *parser) unexpectedKey(s *String, sec string, expected []string) {
+	if !strings.ContainsRune(sec, ' ') {
+		sec = fmt.Sprintf("%q section", sec)
+	}
 	l := len(expected)
 	var m string
 	if l == 1 {
-		m = fmt.Sprintf("expected %q key for %q section but got %q", expected[0], sec, s.Value)
+		m = fmt.Sprintf("expected %q key for %s but got %q", expected[0], sec, s.Value)
 	} else if l > 1 {
-		m = fmt.Sprintf("unexpected key %q for %q section. expected one of %v", s.Value, sec, sortedQuotes(expected))
+		m = fmt.Sprintf("unexpected key %q for %s. expected one of %v", s.Value, sec, sortedQuotes(expected))
 	} else {
-		m = fmt.Sprintf("unexpected key %q for %q section", s.Value, sec)
+		m = fmt.Sprintf("unexpected key %q for %s", s.Value, sec)
 	}
 	p.errorAt(s.Pos, m)
 }
@@ -1002,12 +1005,107 @@ func (p *parser) parseTimeoutMinutes(n *yaml.Node) *Float {
 	return f
 }
 
+func (p *parser) parseStepExecAction(keyvals []workflowKeyVal, isDocker bool, pos *Pos) *ExecAction {
+	ret := &ExecAction{}
+
+	for _, kv := range keyvals {
+		switch kv.id {
+		case "uses":
+			ret.Uses = p.parseString(kv.val, false)
+		case "with":
+			with := p.parseSectionMapping("with", kv.val, false, false)
+			ret.Inputs = make(map[string]*Input, len(with))
+			if isDocker {
+				for _, input := range with {
+					switch input.id {
+					case "entrypoint":
+						// https://docs.github.com/en/actions/learn-github-actions/workflow-syntax-for-github-actions#jobsjob_idstepswithentrypoint
+						ret.Entrypoint = p.parseString(input.val, false)
+					case "args":
+						// https://docs.github.com/en/actions/learn-github-actions/workflow-syntax-for-github-actions#jobsjob_idstepswithargs
+						ret.Args = p.parseString(input.val, true)
+					default:
+						ret.Inputs[input.id] = &Input{input.key, p.parseString(input.val, true)}
+					}
+				}
+			} else {
+				for _, input := range with {
+					ret.Inputs[input.id] = &Input{input.key, p.parseString(input.val, true)}
+				}
+			}
+		case "id", "if", "name", "env", "continue-on-error", "timeout-minutes":
+			// do nothing
+		default:
+			p.unexpectedKey(kv.key, "step to execute action", []string{
+				"id",
+				"if",
+				"name",
+				"env",
+				"continue-on-error",
+				"timeout-minutes",
+				"uses",
+				"with",
+			})
+		}
+	}
+
+	if ret.Uses == nil {
+		p.errorAt(pos, "\"uses\" is required to execute action in step")
+	}
+
+	return ret
+}
+
+func (p *parser) parseStepExecRun(keyvals []workflowKeyVal, pos *Pos) *ExecRun {
+	ret := &ExecRun{}
+
+	for _, kv := range keyvals {
+		switch kv.id {
+		case "run":
+			ret.Run = p.parseString(kv.val, false)
+			ret.RunPos = kv.key.Pos
+		case "shell":
+			ret.Shell = p.parseString(kv.val, false)
+		case "working-directory":
+			ret.WorkingDirectory = p.parseString(kv.val, false)
+		case "id", "if", "name", "env", "continue-on-error", "timeout-minutes":
+			// do nothing
+		default:
+			p.unexpectedKey(kv.key, "step to run shell command", []string{
+				"id",
+				"if",
+				"name",
+				"env",
+				"continue-on-error",
+				"timeout-minutes",
+				"run",
+				"shell",
+				"working-directory",
+			})
+		}
+	}
+
+	if ret.Run == nil {
+		p.errorAt(pos, "\"run\" is required to run script in step")
+	}
+
+	return ret
+}
+
 // https://docs.github.com/en/actions/learn-github-actions/workflow-syntax-for-github-actions#jobsjob_idsteps
 func (p *parser) parseStep(n *yaml.Node) *Step {
 	ret := &Step{Pos: posAt(n)}
-	var workDir *String
 
-	for _, kv := range p.parseMapping("element of \"steps\" section", n, false, true) {
+	const (
+		isUnknown = iota
+		isAction
+		isDocker
+		isRun
+	)
+
+	kind := isUnknown
+	kvs := p.parseMapping("element of \"steps\" section", n, false, true)
+	for _, kv := range kvs {
 		switch kv.id {
 		case "id":
 			ret.ID = p.parseString(kv.val, false)
@@ -1021,89 +1119,23 @@ func (p *parser) parseStep(n *yaml.Node) *Step {
 			ret.ContinueOnError = p.parseBool(kv.val)
 		case "timeout-minutes":
 			ret.TimeoutMinutes = p.parseTimeoutMinutes(kv.val)
-		case "uses", "with":
-			var exec *ExecAction
-			if ret.Exec == nil {
-				exec = &ExecAction{}
-			} else if e, ok := ret.Exec.(*ExecAction); ok {
-				exec = e
+		case "uses":
+			if strings.HasPrefix(kv.val.Value, "docker://") {
+				kind = isDocker
 			} else {
-				p.errorfAt(kv.key.Pos, "this step is for running shell command since it contains at least one of \"run\", \"shell\" keys, but also contains %q key which is used for running action", kv.key.Value)
-				continue
+				kind = isAction
 			}
-			if kv.id == "uses" {
-				exec.Uses = p.parseString(kv.val, false)
-			} else {
-				// kv.key == "with"
-				with := p.parseSectionMapping("with", kv.val, false, false)
-				exec.Inputs = make(map[string]*Input, len(with))
-				for _, input := range with {
-					switch input.id {
-					case "entrypoint":
-						// https://docs.github.com/en/actions/learn-github-actions/workflow-syntax-for-github-actions#jobsjob_idstepswithentrypoint
-						exec.Entrypoint = p.parseString(input.val, false)
-					case "args":
-						// https://docs.github.com/en/actions/learn-github-actions/workflow-syntax-for-github-actions#jobsjob_idstepswithargs
-						exec.Args = p.parseString(input.val, true)
-					default:
-						exec.Inputs[input.id] = &Input{input.key, p.parseString(input.val, true)}
-					}
-				}
-			}
-			ret.Exec = exec
-		case "run", "shell":
-			var exec *ExecRun
-			if ret.Exec == nil {
-				exec = &ExecRun{}
-			} else if e, ok := ret.Exec.(*ExecRun); ok {
-				exec = e
-			} else {
-				p.errorfAt(kv.key.Pos, "this step is for running action since it contains at least one of \"uses\", \"with\" keys, but also contains %q key which is used for running shell command", kv.key.Value)
-				continue
-			}
-			switch kv.id {
-			case "run":
-				exec.Run = p.parseString(kv.val, false)
-				exec.RunPos = kv.key.Pos
-			case "shell":
-				exec.Shell = p.parseString(kv.val, false)
-			}
-			exec.WorkingDirectory = workDir
-			ret.Exec = exec
-		case "working-directory":
-			workDir = p.parseString(kv.val, false)
-			if e, ok := ret.Exec.(*ExecRun); ok {
-				e.WorkingDirectory = workDir
-			}
-		default:
-			p.unexpectedKey(kv.key, "step", []string{
-				"id",
-				"if",
-				"name",
-				"env",
-				"continue-on-error",
-				"timeout-minutes",
-				"uses",
-				"with",
-				"run",
-				"working-directory",
-				"shell",
-			})
+		case "run":
+			kind = isRun
+			// Unexpected keys are checked in parseStepExecAction or parseStepExecRun later
 		}
 	}
 
-	switch e := ret.Exec.(type) {
-	case *ExecAction:
-		if e.Uses == nil {
-			p.error(n, "\"uses\" is required to run action in step")
-		}
-		if workDir != nil {
-			p.errorAt(workDir.Pos, "\"working-directory\" is not available with \"uses\". it is only available with \"run\"")
-		}
-	case *ExecRun:
-		if e.Run == nil {
-			p.error(n, "\"run\" is required to run script in step")
-		}
+	switch kind {
+	case isAction, isDocker:
+		ret.Exec = p.parseStepExecAction(kvs, kind == isDocker, posAt(n))
+	case isRun:
+		ret.Exec = p.parseStepExecRun(kvs, posAt(n))
 	default:
 		p.error(n, "step must run script with \"run\" section or run action with \"uses\" section")
 	}

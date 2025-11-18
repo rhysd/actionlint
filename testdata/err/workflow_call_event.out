@@ -3,7 +3,7 @@ test.yaml:7:7: "type" is missing at "input1" input of workflow_call event [synta
 test.yaml:15:15: invalid value "unknown" for input type of workflow_call event. it must be one of "boolean", "number", or "string" [syntax-check]
 test.yaml:17:7: "type" is missing at "input4" input of workflow_call event [syntax-check]
 test.yaml:19:19: expecting a single ${{...}} expression or boolean literal "true" or "false", but found plain text node [syntax-check]
-test.yaml:24:9: unexpected key "unknown" for "inputs at workflow_call event" section. expected one of "default", "description", "required", "type" [syntax-check]
+test.yaml:24:9: unexpected key "unknown" for inputs at workflow_call event. expected one of "default", "description", "required", "type" [syntax-check]
 test.yaml:26:7: key "input0" is duplicated in "inputs" section. previously defined at line:5,col:7. note that this key is case insensitive [syntax-check]
 test.yaml:32:18: input of workflow_call event "input6" is typed as number but its default value "foooo" cannot be parsed as a float number: strconv.ParseFloat: parsing "foooo": invalid syntax [events]
 test.yaml:37:18: input of workflow_call event "input7" is typed as boolean. its default value must be true or false but got "123" [events]

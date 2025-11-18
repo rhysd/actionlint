@@ -404,6 +404,7 @@ func TestLinterFormatErrorMessageOK(t *testing.T) {
 			}
 
 			if diff := cmp.Diff(want, have); diff != "" {
+				t.Logf("have: %s", have)
 				t.Fatal(diff)
 			}
 		})
@@ -460,6 +461,7 @@ func TestLinterFormatErrorMessageInSARIF(t *testing.T) {
 	}
 
 	if diff := cmp.Diff(want, have); diff != "" {
+		t.Logf("have: %s", have)
 		t.Fatal(diff)
 	}
 }
