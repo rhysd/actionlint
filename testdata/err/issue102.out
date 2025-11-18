@@ -1,2 +1,1 @@
-test.yaml:4:3: "runs-on" section is missing in job "actionlint" [syntax-check]
-test.yaml:7:9: "uses" is required to run action in step [syntax-check]
+test.yaml:8:9: step must run script with "run" section or run action with "uses" section [syntax-check]

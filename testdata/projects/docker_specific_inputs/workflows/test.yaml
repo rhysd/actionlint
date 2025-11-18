@@ -1,0 +1,34 @@
+on: push
+
+jobs:
+  test:
+    runs-on: ubuntu-latest
+    steps:
+      # OK
+      - uses: ./action_all
+        with:
+          entrypoint: foo
+          args: foo
+      # Unknown input 'entrypoint'
+      - uses: ./action_args
+        with:
+          entrypoint: foo
+          args: foo
+      # Unknown input 'args'
+      - uses: ./action_entrypoint
+        with:
+          entrypoint: foo
+          args: foo
+      # Unknown inputs 'entrypoint' and 'args'
+      - uses: ./action_none
+        with:
+          entrypoint: foo
+          args: foo
+      # Missing inputs 'entrypoint' and 'args'
+      - uses: ./action_all
+      # Missing input 'args'
+      - uses: ./action_args
+      # Missing input 'entrypoint'
+      - uses: ./action_entrypoint
+      # OK
+      - uses: ./action_none

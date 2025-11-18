@@ -1,0 +1,13 @@
+name: 'My action'
+author: 'rhysd <https://rhysd.github.io>'
+description: 'my action'
+
+inputs:
+  args:
+    required: true
+  entrypoint:
+    required: true
+
+runs:
+  using: 'node20'
+  main: 'index.js'
