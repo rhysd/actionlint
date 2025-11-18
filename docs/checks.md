@@ -73,7 +73,7 @@ test.yaml:6:5: unexpected key "default" for "job" section. expected one of "conc
   |
 6 |     default:
   |     ^~~~~~~~
-test.yaml:12:9: unexpected key "Shell" for "step" section. expected one of "continue-on-error", "env", "id", "if", "name", "run", "shell", "timeout-minutes", "uses", "with", "working-directory" [syntax-check]
+test.yaml:12:9: unexpected key "Shell" for step to run shell command. expected one of "continue-on-error", "env", "id", "if", "name", "run", "shell", "timeout-minutes", "working-directory" [syntax-check]
    |
 12 |         Shell: bash
    |         ^~~~~~
