@@ -1,0 +1,2 @@
+test.yaml:9:11: input "entrypoint" is not defined in action "rhysd/action-setup-vim@v1". available inputs are "configure-args", "neovim", "token", "version" [action]
+test.yaml:10:11: input "args" is not defined in action "rhysd/action-setup-vim@v1". available inputs are "configure-args", "neovim", "token", "version" [action]

@@ -1049,10 +1049,7 @@ func (p *parser) parseStepExecAction(keyvals []workflowKeyVal, isDocker bool, po
 		}
 	}
 
-	if ret.Uses == nil {
-		p.errorAt(pos, "\"uses\" is required to execute action in step")
-	}
-
+	// Note: `ret.Uses` is never `nil` because `parseStep` checks `uses` key in advance
 	return ret
 }
 
@@ -1085,10 +1082,7 @@ func (p *parser) parseStepExecRun(keyvals []workflowKeyVal, pos *Pos) *ExecRun {
 		}
 	}
 
-	if ret.Run == nil {
-		p.errorAt(pos, "\"run\" is required to run script in step")
-	}
-
+	// Note: `ret.Run` is never `nil` because `parseStep` checks `run` key in advance
 	return ret
 }
 
@@ -1127,7 +1121,7 @@ func (p *parser) parseStep(n *yaml.Node) *Step {
 			}
 		case "run":
 			kind = isRun
-			// Unexpected keys are checked in parseStepExecAction or parseStepExecRun later
+			// Note: Unexpected keys are checked in parseStepExecAction or parseStepExecRun later
 		}
 	}
 

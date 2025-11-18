@@ -13,11 +13,35 @@ jobs:
       # 'shell' is specified so it must be 'run'
       - shell: bash
         uses: actions/checkout@v4
-      # Neither 'run' nor 'uses' is used
+      # Empty
       - null
   test2:
     runs-on: ubuntu-latest
     # Empty steps
     steps:
-
-# TODO: Add more tests
+  test3:
+    runs-on: ubuntu-latest
+    steps:
+      - foo: aaa
+        bar: bbb
+      -
+      - { }
+      - shell: bash
+        working-directory: /foo/bar
+        with:
+          foo: aaa
+          bar: bbb
+      - uses: actions/checkout@v5
+        with: foo
+      - uses: actions/checkout@v5
+        shell: bash
+      - uses: actions/checkout@v5
+        working-directory: bash
+      - run: echo hello
+        with:
+          foo: foo
+          bar: bar
+      - uses: actions/checkout@v5
+        foooo: unknown key
+      - run: echo hello
+        foooo: unknown key
