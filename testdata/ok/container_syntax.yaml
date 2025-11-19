@@ -1,0 +1,46 @@
+on: push
+
+jobs:
+  test1:
+    runs-on: ubuntu-latest
+    container: 'ubuntu:latest'
+    steps:
+      - run: echo hello
+  test2:
+    runs-on: ubuntu-latest
+    container: null
+    steps:
+      - run: echo hello
+  test3:
+    runs-on: ubuntu-latest
+    container:
+      image: 'ghcr.io/rhysd/test'
+      env:
+        FOO: foo
+      ports:
+        - 8080
+        - 8081
+      volumes:
+        - '/foo:/bar'
+      credentials:
+        username: rhysd
+        password: '${{ secrets.PASS }}'
+    steps:
+      - run: echo hello
+  test4:
+    runs-on: ubuntu-latest
+    services:
+      redis:
+        image: 'ghcr.io/rhysd/my-redis'
+        env:
+          FOO: foo
+        ports:
+          - 8080
+          - 8081
+        volumes:
+          - '/foo:/bar'
+        credentials:
+          username: rhysd
+          password: '${{ secrets.PASS }}'
+    steps:
+      - run: echo hello

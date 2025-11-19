@@ -1,0 +1,112 @@
+on: push
+
+jobs:
+  case1:
+    runs-on: ubuntu-latest
+    container: fooo
+    steps:
+      - run: echo container must be mapping
+  case2:
+    runs-on: ubuntu-latest
+    container: {}
+    steps:
+      - run: echo container must not be empty object
+  case3:
+    runs-on: ubuntu-latest
+    container:
+    steps:
+      - run: echo container must not be empty
+  case4:
+    runs-on: ubuntu-latest
+    container:
+      env:
+        Foo: bar
+    steps:
+      - run: echo image is missing
+  case5:
+    runs-on: ubuntu-latest
+    container:
+      image: ''
+      credentials:
+    steps:
+      - run: echo credentials and image must not be empty
+  case6:
+    runs-on: ubuntu-latest
+    container:
+      image: ubuntu:latest
+      credentials:
+        username: fooo
+    steps:
+      - run: echo password is missing
+  case7:
+    runs-on: ubuntu-latest
+    container:
+      image: ubuntu:latest
+      credentials:
+        password: ${{ '...' }}
+    steps:
+      - run: echo username is missing
+  case8:
+    runs-on: ubuntu-latest
+    container:
+      image: ubuntu:latest
+      ports: 8080
+      volumes: '/foo:/bar'
+      credentials: 'user:pass'
+      env: 'FOO=BAR'
+    steps:
+      - run: echo non-string values
+  case9:
+    runs-on: ubuntu-latest
+    container:
+      image: ubuntu:latest
+      credentials:
+        username: foo
+        password: ${{ '...' }}
+        foo1: bar
+      foo2: bar
+    steps:
+      - run: echo unknown keys
+  case10:
+    runs-on: ubuntu-latest
+    container: ''
+    steps:
+      - run: echo image must not be empty string
+  case11:
+    runs-on: ubuntu-latest
+    container:
+      image: ubuntu:latest
+      credentials:
+        username: fooo
+        password: p@ssw0rd1234
+    steps:
+      - run: echo password must not be put directly
+  case12:
+    runs-on: ubuntu-latest
+    services:
+      redis:
+        env:
+          CONFIG: foo
+    steps:
+      - run: echo image is missing in services
+  case13:
+    runs-on: ubuntu-latest
+    services:
+      redis:
+        image: 'ghcr.io/rhysd/my-redis'
+        credentials:
+          username: foo
+        env:
+          CONFIG: foo
+    steps:
+      - run: echo password is missing in services
+  case14:
+    runs-on: ubuntu-latest
+    services:
+      redis:
+        image: 'ghcr.io/rhysd/my-redis'
+        credentials:
+          username: foo
+          password: p@ssw0rd1234
+    steps:
+      - run: echo password should not be put in workflow
