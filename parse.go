@@ -987,6 +987,10 @@ func (p *parser) parseContainer(sec string, pos *Pos, n *yaml.Node) *Container {
 		}
 	}
 
+	if ret.Image == nil {
+		p.errorfAt(pos, "\"image\" is missing in %q section", sec)
+	}
+
 	return ret
 }
 
