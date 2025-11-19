@@ -749,6 +749,8 @@ type Credentials struct {
 	Username *String
 	// Password is password for authentication.
 	Password *String
+	// Expression is a string when expression syntax ${{ }} is used for this section.
+	Expression *String
 	// Pos is a position in source.
 	Pos *Pos
 }

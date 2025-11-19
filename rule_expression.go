@@ -488,8 +488,12 @@ func (rule *RuleExpression) checkContainer(c *Container, workflowKey, childWorkf
 	rule.checkString(c.Image, workflowKey)
 	if c.Credentials != nil {
 		k := childWorkflowKey + ".credentials" // e.g. jobs.<job_id>.container.credentials
-		rule.checkString(c.Credentials.Username, k)
-		rule.checkString(c.Credentials.Password, k)
+		if c.Credentials.Expression != nil {
+			rule.checkObjectExpression(c.Credentials.Expression, "credentials", k)
+		} else {
+			rule.checkString(c.Credentials.Username, k)
+			rule.checkString(c.Credentials.Password, k)
+		}
 	}
 	rule.checkEnv(c.Env, childWorkflowKey+".env.<env_id>") // e.g. jobs.<job_id>.container.env.<env_id>
 	rule.checkStrings(c.Ports, workflowKey)

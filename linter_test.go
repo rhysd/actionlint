@@ -106,7 +106,10 @@ func testFindAllWorkflowsInDir(subdir string) (string, []string, error) {
 
 func checkErrors(t *testing.T, outfile string, errs []*Error) {
 	t.Helper()
-	t.Log("Checking errors with", outfile)
+	t.Logf("Checking %d errors with %q", len(errs), outfile)
+	for i, err := range errs {
+		t.Logf("  Error[%d]: %s", i, err.Error())
+	}
 
 	expected := []string{}
 	{

@@ -925,6 +925,33 @@ func (p *parser) parseStrategy(pos *Pos, n *yaml.Node) *Strategy {
 	return ret
 }
 
+func (p *parser) parseCredentials(pos *Pos, n *yaml.Node) *Credentials {
+	ret := &Credentials{Pos: pos}
+
+	if e := p.mayParseExpression(n); e != nil {
+		ret.Expression = e
+		return ret
+	}
+
+	for _, kv := range p.parseSectionMapping("credentials", n, false, true) {
+		switch kv.id {
+		case "username":
+			ret.Username = p.parseString(kv.val, false)
+		case "password":
+			ret.Password = p.parseString(kv.val, false)
+		default:
+			p.unexpectedKey(kv.key, "credentials", []string{"username", "password"})
+		}
+	}
+
+	if ret.Username == nil || ret.Password == nil {
+		p.errorAt(pos, "both \"username\" and \"password\" must be specified in \"credentials\" section")
+		return nil
+	}
+
+	return ret
+}
+
 // https://docs.github.com/en/actions/learn-github-actions/workflow-syntax-for-github-actions#jobsjob_idcontainer
 func (p *parser) parseContainer(sec string, pos *Pos, n *yaml.Node) *Container {
 	ret := &Container{Pos: pos}
@@ -938,22 +965,7 @@ func (p *parser) parseContainer(sec string, pos *Pos, n *yaml.Node) *Container {
 			case "image":
 				ret.Image = p.parseString(kv.val, false)
 			case "credentials":
-				cred := &Credentials{Pos: kv.key.Pos}
-				for _, c := range p.parseSectionMapping("credentials", kv.val, false, true) {
-					switch c.id {
-					case "username":
-						cred.Username = p.parseString(c.val, false)
-					case "password":
-						cred.Password = p.parseString(c.val, false)
-					default:
-						p.unexpectedKey(c.key, "credentials", []string{"username", "password"})
-					}
-				}
-				if cred.Username == nil || cred.Password == nil {
-					p.errorAt(kv.key.Pos, "both \"username\" and \"password\" must be specified in \"credentials\" section")
-					continue
-				}
-				ret.Credentials = cred
+				ret.Credentials = p.parseCredentials(kv.key.Pos, kv.val)
 			case "env":
 				ret.Env = p.parseEnv(kv.val)
 			case "ports":
