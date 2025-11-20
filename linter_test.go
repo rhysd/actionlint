@@ -204,6 +204,10 @@ func TestLinterLintError(t *testing.T) {
 
 				l.defaultConfig = &Config{}
 
+				if strings.Contains(testName, "security") {
+					l.defaultConfig.RequireCommitHash = true
+				}
+
 				errs, err := l.Lint("test.yaml", b, proj)
 				if err != nil {
 					t.Fatal(err)
