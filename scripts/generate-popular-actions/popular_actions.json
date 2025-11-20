@@ -513,5 +513,20 @@
         "slug": "release-drafter/release-drafter",
         "tags": ["v5", "v6"],
         "next": "v7"
+    },
+    {
+      "slug": "anthropics/claude-code-action",
+      "tags": ["v1"],
+      "next": "v2"
+    },
+    {
+      "slug": "openai/codex-action",
+      "tags": ["v1"],
+      "next": "v2"
+    },
+    {
+      "slug": "google-github-actions/run-gemini-cli",
+      "tags": ["v0"],
+      "next": "v1"
     }
 ]
