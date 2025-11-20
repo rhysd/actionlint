@@ -140,7 +140,7 @@ var AllWebhookTypes = map[string][]string {`)
 	skipped := []string{
 		"schedule",
 		"workflow_call",
-		"image_version_ready", // https://github.com/github/docs/pull/41267
+		"image_version",
 	}
 
 	numHooks := 0

@@ -51,7 +51,7 @@ Table without row:
 | Webhook event payload | Activity types | `GITHUB_SHA` | `GITHUB_REF` |
 | --------------------- | -------------- | ------------ | -------------|
 
-## image_version_ready
+## `image_version`
 
 | Webhook event payload | Activity types | `GITHUB_SHA` | `GITHUB_REF` |
 |----------------------| -------------- | ------------ | -------------|
