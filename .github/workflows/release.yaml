@@ -11,7 +11,7 @@ jobs:
   binaries:
     runs-on: ubuntu-latest
     steps:
-      - uses: actions/checkout@v5
+      - uses: actions/checkout@v6
       - uses: ruby/setup-ruby@v1
         with:
           ruby-version: '3.3'
@@ -29,7 +29,7 @@ jobs:
       - name: Post-release download check
         run: bash ./scripts/download-actionlint.bash "${GITHUB_REF#refs/tags/v}"
       - name: Clone nested repository to make version bump commit
-        uses: actions/checkout@v5
+        uses: actions/checkout@v6
         with:
           path: ./tmp-actionlint-for-update-ver
           ref: main
@@ -58,7 +58,7 @@ jobs:
   docker:
     runs-on: ubuntu-latest
     steps:
-      - uses: actions/checkout@v5
+      - uses: actions/checkout@v6
       - name: Get tag name
         id: tag
         run: |
