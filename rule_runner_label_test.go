@@ -265,8 +265,8 @@ func TestRuleRunnerLabelCheckLabels(t *testing.T) {
 		},
 		{
 			what:   "macOS XL and normal labels conflict",
-			labels: []string{"macos-13-xl", "macos-13"},
-			errs:   []string{`label "macos-13" conflicts with label "macos-13-xl"`},
+			labels: []string{"macos-26-xlarge", "macos-26"},
+			errs:   []string{`label "macos-26" conflicts with label "macos-26-xlarge"`},
 		},
 		{
 			what:   "larger runner labels conflict",
