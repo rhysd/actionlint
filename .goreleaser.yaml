@@ -55,7 +55,7 @@ archives:
 homebrew_casks:
   - name: actionlint
     directory: Casks
-    binary: actionlint
+    binaries: [actionlint]
     manpages: [man/actionlint.1]
     homepage: https://github.com/rhysd/actionlint#readme
     description: Static checker for GitHub Actions workflow files
