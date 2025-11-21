@@ -30,6 +30,7 @@
             image-name: my-custom-image
             version: 2.*
     ```
+- Report constant conditions at `if:` like `if: true` as error. Only very simple expressions like `true` or `false` are detected for now. See the [document](https://github.com/rhysd/actionlint/blob/main/docs/checks.md#if-cond-constant) for more details.
 - Fix some invalid permissions are not reported as error in `id-token` and `models` scopes. ([#582](https://github.com/rhysd/actionlint/issues/582), thanks [@holtkampjs](https://github.com/holtkampjs))
 - Fix `args` and `entrypoint` inputs are not recognized at `uses:` when it's not a Docker action. ([#550](https://github.com/rhysd/actionlint/issues/550))
 - Set correct column in source position of YAML parse error.
@@ -39,7 +40,7 @@
 - Improve error messages showing suggestions on detecting invalid permissions.
 - Add instruction for installing actionlint with [mise package manager](https://mise.jdx.dev/getting-started.html). ([#589](https://github.com/rhysd/actionlint/issues/589), thanks [@jylenhof](https://github.com/jylenhof))
 - Fix outdated URLs in the document.
-- Add new `actionlint.AllContexts` map constant in Go API that contains the information about all context availability.
+- Add new [`actionlint.AllContexts` map constant](https://pkg.go.dev/github.com/rhysd/actionlint#pkg-variables) in Go API that contains the information about all context availability.
 - Update popular actions data set to the latest with several major versions of actions and the following new actions.
   - `anthropics/claude-code-action`
   - `openai/codex-action`
