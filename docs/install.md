@@ -167,7 +167,7 @@ mise ls-remote actionlint
 # Install specific version
 mise install actionlint@latest
 
-# Set a version globally (on your ~/config/mise/config.toml file)
+# Set a version globally (on your ~/.config/mise/config.toml file)
 mise use -g actionlint@latest
 ```
 
