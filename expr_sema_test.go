@@ -1812,4 +1812,60 @@ func TestParseFormatSpecifiers(t *testing.T) {
 	}
 }
 
+func TestExprIsConstant(t *testing.T) {
+	tests := []struct {
+		input   string
+		isConst bool
+	}{
+		{"true", true},
+		{"42", true},
+		{"3.14", true},
+		{"null", true},
+		{"'hello'", true},
+		{"foo", false},
+		{"foo.bar", false},
+		{"foo.*", false},
+		{"foo[0]", false},
+		{"!true", true},
+		{"!null", true},
+		{"!foo", false},
+		{"1 == 2", true},
+		{"'foo' != 'bar'", true},
+		{"foo == 2", false},
+		{"1 == foo", false},
+		{"true && 42 || 13", true},
+		{"foo && 42 || 13", false},
+		{"true && foo || 13", false},
+		{"true && 42 || foo", false},
+		{"true && ('foo' == 'bar') && null", true},
+		{"false || (3.14 != null) || !null", true},
+		{"startsWith('foo', 'f')", true},
+		{"startsWith(foo, 'f')", false},
+		{"format('{0}{1}', 1.0, true)", true},
+		{"format('{0}{1}', startsWith('foo', 'f'), 1.0 == !null)", true},
+		{"toJSON(true)", true},
+		{"toJSON(foo)", false},
+		{"success()", false},
+		{"failure()", false},
+		{"hashFiles('foo', 'bar')", false},
+		{"conains(fromJSON('[\"foo\"]'), 'foo')", false},
+	}
+
+	for _, tc := range tests {
+		t.Run(tc.input, func(t *testing.T) {
+			p := NewExprParser()
+			e, err := p.Parse(NewExprLexer(tc.input + "}}"))
+			if err != nil {
+				t.Fatalf("Parse error for input %q: %s", tc.input, err)
+			}
+
+			c := NewExprSemanticsChecker(false, nil)
+			b := c.IsConstant(e)
+			if b != tc.isConst {
+				t.Fatalf("wanted %v but got %v for input %q", tc.isConst, b, tc.input)
+			}
+		})
+	}
+}
+
 // vim: nofoldenable

@@ -67,6 +67,8 @@ type FuncSignature struct {
 	// true, it means that the last type of params might be specified multiple times (including zero
 	// times). Setting true implies length of Params is more than 0.
 	VariableLengthParams bool
+	// IsConstFunc is true when the function returns a constant when all parameters are constants.
+	IsConstFunc bool
 }
 
 func (sig *FuncSignature) String() string {
@@ -93,6 +95,7 @@ var BuiltinFuncSignatures = map[string][]*FuncSignature{
 				StringType{},
 				StringType{},
 			},
+			IsConstFunc: true,
 		},
 		{
 			Name: "contains",
@@ -101,39 +104,37 @@ var BuiltinFuncSignatures = map[string][]*FuncSignature{
 				&ArrayType{Elem: AnyType{}},
 				AnyType{},
 			},
+			IsConstFunc: true,
 		},
 	},
-	"startswith": {
-		{
-			Name: "startsWith",
-			Ret:  BoolType{},
-			Params: []ExprType{
-				StringType{},
-				StringType{},
-			},
+	"startswith": {{
+		Name: "startsWith",
+		Ret:  BoolType{},
+		Params: []ExprType{
+			StringType{},
+			StringType{},
 		},
-	},
-	"endswith": {
-		{
-			Name: "endsWith",
-			Ret:  BoolType{},
-			Params: []ExprType{
-				StringType{},
-				StringType{},
-			},
+		IsConstFunc: true,
+	}},
+	"endswith": {{
+		Name: "endsWith",
+		Ret:  BoolType{},
+		Params: []ExprType{
+			StringType{},
+			StringType{},
 		},
-	},
-	"format": {
-		{
-			Name: "format",
-			Ret:  StringType{},
-			Params: []ExprType{
-				StringType{},
-				AnyType{}, // variable length
-			},
-			VariableLengthParams: true,
+		IsConstFunc: true,
+	}},
+	"format": {{
+		Name: "format",
+		Ret:  StringType{},
+		Params: []ExprType{
+			StringType{},
+			AnyType{}, // variable length
 		},
-	},
+		VariableLengthParams: true,
+		IsConstFunc:          true,
+	}},
 	"join": {
 		{
 			Name: "join",
@@ -142,6 +143,7 @@ var BuiltinFuncSignatures = map[string][]*FuncSignature{
 				&ArrayType{Elem: StringType{}},
 				StringType{},
 			},
+			IsConstFunc: true,
 		},
 		// When the second parameter is omitted, values are concatenated with ','.
 		{
@@ -150,6 +152,7 @@ var BuiltinFuncSignatures = map[string][]*FuncSignature{
 			Params: []ExprType{
 				&ArrayType{Elem: StringType{}},
 			},
+			IsConstFunc: true,
 		},
 	},
 	"tojson": {{
@@ -158,6 +161,7 @@ var BuiltinFuncSignatures = map[string][]*FuncSignature{
 		Params: []ExprType{
 			AnyType{},
 		},
+		IsConstFunc: true,
 	}},
 	"fromjson": {{
 		Name: "fromJSON",
@@ -1048,4 +1052,43 @@ func (sema *ExprSemanticsChecker) Check(expr ExprNode) (ExprType, []*ExprError) 
 		errs = append(errs, sema.untrusted.Errs()...)
 	}
 	return ty, errs
+}
+
+// IsConstant returns the given expression is a constant. For example the following expressions
+// are constants.
+//   - 1 == 2
+//   - (!true && 'foo') || 'bar'
+//   - startsWith('foobar', 'foo')
+//   - format('{} + {} = {}', 1, 2, 3)
+func (sema *ExprSemanticsChecker) IsConstant(expr ExprNode) bool {
+	switch e := expr.(type) {
+	case *NullNode, *BoolNode, *IntNode, *FloatNode, *StringNode:
+		return true
+	case *VariableNode, *ObjectDerefNode, *ArrayDerefNode, *IndexAccessNode:
+		return false
+	case *NotOpNode:
+		return sema.IsConstant(e.Operand)
+	case *CompareOpNode:
+		return sema.IsConstant(e.Left) && sema.IsConstant(e.Right)
+	case *LogicalOpNode:
+		return sema.IsConstant(e.Left) && sema.IsConstant(e.Right)
+	case *FuncCallNode:
+		for _, a := range e.Args {
+			if !sema.IsConstant(a) {
+				return false
+			}
+		}
+		sigs, ok := sema.funcs[strings.ToLower(e.Callee)]
+		if !ok {
+			return false
+		}
+		for _, s := range sigs {
+			if !s.IsConstFunc {
+				return false
+			}
+		}
+		return true
+	default:
+		panic("unreachable")
+	}
 }
