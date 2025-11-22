@@ -6,9 +6,9 @@ jobs:
     steps:
       - run: echo Constant `true`
         if: true
-      - run: echo Constant in expression (not error for now)
+      - run: echo Constant in expression
         if: ${{ false }}
-      - run: echo Constant in quoted expression (not error for now)
+      - run: echo Constant in quoted expression
         if: '${{ true }}'
       - run: echo Quoted constant
         if: 'false'
@@ -31,3 +31,10 @@ jobs:
       if: true
     steps:
       - run: echo 1
+  test-complicated-expr:
+    runs-on: ubuntu-latest
+    steps:
+      - run: echo Always 42
+        if: true && 42 || !null
+      - run: echo Always true
+        if: ${{ contains(format('{0} {1} {2}', 'foo', 'bar', 'piyo'), 'o b') }}

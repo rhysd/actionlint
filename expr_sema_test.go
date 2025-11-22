@@ -1849,6 +1849,7 @@ func TestExprIsConstant(t *testing.T) {
 		{"failure()", false},
 		{"hashFiles('foo', 'bar')", false},
 		{"conains(fromJSON('[\"foo\"]'), 'foo')", false},
+		{"unknownFunc(1, 2, 3)", false},
 	}
 
 	for _, tc := range tests {

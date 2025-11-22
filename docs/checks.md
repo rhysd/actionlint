@@ -2795,7 +2795,7 @@ jobs:
 Output:
 
 ```
-test.yaml:9:13: condition "false" is always evaluated to false. remove the if: section [if-cond]
+test.yaml:9:13: constant expression "false" in condition. remove the if: section [if-cond]
   |
 9 |         if: false
   |             ^~~~~

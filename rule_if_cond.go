@@ -38,33 +38,33 @@ func (rule *RuleIfCond) checkIfCond(n *String) {
 	if n == nil {
 		return
 	}
-	if n.ContainsExpression() {
-		rule.checkIfCondExpression(n)
+	s, e := strings.Index(n.Value, "${{"), strings.Index(n.Value, "}}")
+	if s >= 0 && e >= 0 {
+		rule.checkPlaceholder(n, s, e)
 	} else {
-		rule.checkTrueFalseConstants(n)
+		rule.checkExpression(n.Pos, n.Value)
 	}
 }
 
-func (rule *RuleIfCond) checkIfCondExpression(n *String) {
+func (rule *RuleIfCond) checkPlaceholder(n *String, start, end int) {
 	// Check number of ${{ }} for conditions like `${{ false }} || ${{ true }}` which are always evaluated to true
-	if strings.HasPrefix(n.Value, "${{") && strings.HasSuffix(n.Value, "}}") && strings.Count(n.Value, "${{") == 1 {
-		return
-	}
-	rule.Errorf(
-		n.Pos,
-		"if: condition %q is always evaluated to true because extra characters are around ${{ }}",
-		n.Value,
-	)
-}
-
-func (rule *RuleIfCond) checkTrueFalseConstants(n *String) {
-	v := strings.TrimSpace(n.Value)
-	if v == "true" || v == "false" {
+	if start > 0 || end+len("}}") < len(n.Value) || strings.Count(n.Value, "${{") > 1 {
 		rule.Errorf(
 			n.Pos,
-			"condition %q is always evaluated to %s. remove the if: section",
+			"if: condition %q is always evaluated to true because extra characters are around ${{ }}",
 			n.Value,
-			v,
 		)
+		return
+	}
+	rule.checkExpression(n.Pos, n.Value[start+len("${{"):end])
+}
+
+func (rule *RuleIfCond) checkExpression(pos *Pos, input string) {
+	i := strings.TrimSpace(input)
+	l := NewExprLexer(i + "}}")
+	if e, err := NewExprParser().Parse(l); err == nil {
+		if NewExprSemanticsChecker(false, nil).IsConstant(e) {
+			rule.Errorf(pos, "constant expression %q in condition. remove the if: section", i)
+		}
 	}
 }

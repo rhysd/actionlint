@@ -6,25 +6,25 @@ jobs:
     strategy:
       matrix:
         o:
-          - {}
+          - { }
         a:
           - [true]
     steps:
-      - run: echo 'string is converted to number implicitly'
-        if: ${{ '42' == 42 }}
-      - run: echo 'bool is converted to number implicitly'
-        if: ${{ true == 1 }}
-      - run: echo 'null is converted to number implicitly'
-        if: ${{ null == 0 }}
-      - run: echo 'string and bool implicit conversions are allowed though it is problematic'
-        if: ${{ '1' == true }}
-      - run: echo 'string and null implicit conversions are allowed though it is problematic'
-        if: ${{ '0' == null }}
-      - run: echo 'comparing null to any value is allowed'
-        if: ${{ null == matrix.o }}
-      - run: echo 'comparing object to object is allowed'
-        if: ${{ matrix.o == matrix.o }}
-      - run: echo 'comparing object to object is allowed'
-        if: ${{ matrix.a == matrix.a }}
-      - run: echo 'string is converted to number implicitly on <'
-        if: ${{ '41' < 42 }}
+      # string is converted to number implicitly
+      - run: echo '${{ '42' == 42 }}'
+      # bool is converted to number implicitly
+      - run: echo '${{ true == 1 }}'
+      # null is converted to number implicitly
+      - run: echo '${{ null == 0 }}'
+      # string and bool implicit conversions are allowed though it is problematic
+      - run: echo '${{ '1' == true }}'
+      # string and null implicit conversions are allowed though it is problematic
+      - run: echo '${{ '0' == null }}'
+      # comparing null to any value is allowed
+      - run: echo '${{ null == matrix.o }}'
+      # comparing object to object is allowed
+      - run: echo '${{ matrix.o == matrix.o }}'
+      # comparing object to object is allowed
+      - run: echo '${{ matrix.a == matrix.a }}'
+      # string is converted to number implicitly on <
+      - run: echo '${{ '41' < 42 }}'

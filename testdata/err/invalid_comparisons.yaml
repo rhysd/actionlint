@@ -6,23 +6,23 @@ jobs:
     strategy:
       matrix:
         o:
-          - {}
+          - { }
         a:
           - [true]
         a2:
-          - [{}]
+          - [{ }]
     steps:
-      - run: echo 'comparing == to object with implicit conversion is not allowed'
-        if: ${{ 'foo' == matrix.o }}
-      - run: echo 'comparing != to array with implicit conversion is not allowed'
-        if: ${{ 42 != matrix.a }}
-      - run: echo 'comparing == array and incompatible array is not allowed'
-        if: ${{ matrix.a == matrix.a2 }}
-      - run: echo 'comparing > to null is not allowed'
-        if: ${{ 1 > null }}
-      - run: echo 'comparing > to bool is not allowed'
-        if: ${{ false < true }}
-      - run: echo 'comparing >= to object is not allowed'
-        if: ${{ 'foo' >= matrix.o }}
-      - run: echo 'comparing <= to array is not allowed'
-        if: ${{ false <= matrix.a }}
+      # comparing == to object with implicit conversion is not allowed
+      - run: echo '${{ 'foo' == matrix.o }}'
+      # comparing != to array with implicit conversion is not allowed
+      - run: echo '${{ 42 != matrix.a }}'
+      # comparing == array and incompatible array is not allowed
+      - run: echo '${{ matrix.a == matrix.a2 }}'
+      # comparing > to null is not allowed
+      - run: echo '${{ 1 > null }}'
+      # comparing > to bool is not allowed
+      - run: echo '${{ false < true }}'
+      # comparing >= to object is not allowed
+      - run: echo '${{ 'foo' >= matrix.o }}'
+      # comparing <= to array is not allowed
+      - run: echo '${{ false <= matrix.a }}'
