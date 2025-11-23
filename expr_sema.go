@@ -30,25 +30,67 @@ func ordinal(i int) string {
 // https://docs.github.com/en/actions/writing-workflows/choosing-what-your-workflow-does/evaluate-expressions-in-workflows-and-actions#format
 func parseFormatFuncSpecifiers(f string, n int) map[int]struct{} {
 	ret := make(map[int]struct{}, n)
-	start := -1
+
+	const none int = -1
+	start, end := none, none
+
 	for i, r := range f {
-		if r == '{' {
-			if start == i {
-				start = -1 // When the '{' is escaped like '{{'
-			} else {
-				start = i + 1 // `+ 1` because `i` points char '{'
+		// Before specifier
+		if start == none {
+			if r == '{' {
+				// Opening brace
+				start = i + 1
 			}
-		} else if start >= 0 {
-			if '0' <= r && r <= '9' {
-				continue
-			}
-			if r == '}' && start < i {
-				i, _ := strconv.Atoi(f[start:i])
-				ret[i] = struct{}{}
-			}
-			start = -1 // Done
+			continue
 		}
+
+		// Inside specifier
+		if end == none {
+			if r == '{' && i == start {
+				// Escaped '{'
+				start = none
+			} else if r == '}' {
+				if i == start {
+					// Empty specifier '{}'
+					start = none
+				} else {
+					// Closing brace.
+					end = i
+				}
+			} else if !('0' <= r && r <= '9') {
+				if r == '{' {
+					start = i + 1
+				} else {
+					start = none
+				}
+			}
+			continue
+		}
+
+		// After specifier
+		if r == '}' {
+			// Parsing specifier needs to be delayed while '}' continues.
+			continue
+		}
+		if (i-end)%2 == 1 {
+			// Odd number of closing braces means the specifier closed. For example '{0}}}' contains
+			// a specifier but '{0}}}}' doesn't.
+			v, _ := strconv.Atoi(f[start:end])
+			ret[v] = struct{}{}
+		}
+		if r == '{' {
+			start = i + 1
+		} else {
+			start = none
+		}
+		end = none
 	}
+
+	if start > none && end > none && (len(f)-end)%2 == 1 {
+		v, _ := strconv.Atoi(f[start:end])
+		ret[v] = struct{}{}
+	}
+
 	return ret
 }
 
