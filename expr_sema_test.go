@@ -1758,8 +1758,8 @@ func TestParseFormatSpecifiers(t *testing.T) {
 		},
 		{
 			what: "uncontiguous",
-			in:   "{0} {2}foo{5} {1}",
-			want: []int{0, 2, 5, 1},
+			in:   "{0} {2}foo{42} {1}",
+			want: []int{0, 2, 42, 1},
 		},
 		{
 			what: "unclosed",
@@ -1827,6 +1827,24 @@ func TestParseFormatSpecifiers(t *testing.T) {
 			want: []int{0},
 		},
 		{
+			what: "closing brace 1 with trailing character",
+			in:   "{0}}x",
+		},
+		{
+			what: "closing brace 2 with trailing character",
+			in:   "{0}}}x",
+			want: []int{0},
+		},
+		{
+			what: "closing brace 3 with trailing character",
+			in:   "{0}}}}x",
+		},
+		{
+			what: "closing brace 4 with trailing character",
+			in:   "{0}}}}}x",
+			want: []int{0},
+		},
+		{
 			what: "opening brace 1",
 			in:   "{{0}",
 		},
@@ -1845,8 +1863,32 @@ func TestParseFormatSpecifiers(t *testing.T) {
 			want: []int{0},
 		},
 		{
+			what: "opening brace after escaped closing brace",
+			in:   "{1}}{2}",
+			want: []int{2},
+		},
+		{
+			what: "escaped opening brace after escaped closing brace",
+			in:   "{1}}{{2}",
+		},
+		{
+			what: "escaped opening brace after closing brace",
+			in:   "{1}{{2}",
+			want: []int{1},
+		},
+		{
 			what: "kuma-",
 			in:   "{・{ᴥ}・}",
+		},
+		{
+			what: "multi byte",
+			in:   "あ{0}い{1}う{2}え{3}お",
+			want: []int{0, 1, 2, 3},
+		},
+		{
+			what: "emoji",
+			in:   "🐶{0}👨‍👩‍👦‍👦{1}🇺🇸{2}🐦‍🔥",
+			want: []int{0, 1, 2},
 		},
 	}
 

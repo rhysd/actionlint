@@ -86,6 +86,7 @@ func parseFormatFuncSpecifiers(f string, n int) map[int]struct{} {
 		end = none
 	}
 
+	// When the input ends while '}' continues at end of specifier
 	if start > none && end > none && (len(f)-end)%2 == 1 {
 		v, _ := strconv.Atoi(f[start:end])
 		ret[v] = struct{}{}
