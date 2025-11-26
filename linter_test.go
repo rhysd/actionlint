@@ -669,8 +669,9 @@ func TestLinterGenerateDefaultConfigAlreadyExists(t *testing.T) {
 }
 
 func BenchmarkLintWorkflowFiles(b *testing.B) {
-	large := filepath.Join("testdata", "bench", "many_scripts.yaml")
+	scripts := filepath.Join("testdata", "bench", "many_scripts.yaml")
 	small := filepath.Join("testdata", "bench", "small.yaml")
+	large := filepath.Join("testdata", "bench", "large.yaml")
 	min := filepath.Join("testdata", "bench", "minimal.yaml")
 	proj := &Project{root: "."}
 	shellcheck, err := execabs.LookPath("shellcheck")
@@ -722,12 +723,24 @@ func BenchmarkLintWorkflowFiles(b *testing.B) {
 			files: []string{small},
 		},
 		{
-			what:  "small",
+			what:  "smalls",
 			files: []string{small, small, small},
 		},
 		{
-			what:  "small",
+			what:  "many-smalls",
 			files: []string{small, small, small, small, small, small, small, small, small, small},
+		},
+		{
+			what:  "large",
+			files: []string{large},
+		},
+		{
+			what:  "larges",
+			files: []string{large, large, large},
+		},
+		{
+			what:  "many-larges",
+			files: []string{large, large, large, large, large, large, large, large, large, large},
 		},
 		{
 			what:       "small",
@@ -735,32 +748,32 @@ func BenchmarkLintWorkflowFiles(b *testing.B) {
 			shellcheck: shellcheck,
 		},
 		{
-			what:       "small",
+			what:       "smalls",
 			files:      []string{small, small, small},
 			shellcheck: shellcheck,
 		},
 		{
-			what:       "small",
+			what:       "many-smalls",
 			files:      []string{small, small, small, small, small, small, small, small, small, small},
 			shellcheck: shellcheck,
 		},
 		{
-			what:       "large",
-			files:      []string{large},
+			what:       "script",
+			files:      []string{scripts},
 			shellcheck: shellcheck,
 		},
 		{
-			what:       "large",
-			files:      []string{large, large, large},
+			what:       "scripts",
+			files:      []string{scripts, scripts, scripts},
 			shellcheck: shellcheck,
 		},
 		{
-			what:       "large",
-			files:      []string{large, large, large, large, large, large, large, large, large, large},
+			what:       "many-scripts",
+			files:      []string{scripts, scripts, scripts, scripts, scripts, scripts, scripts, scripts, scripts, scripts},
 			shellcheck: shellcheck,
 		},
 		{
-			what:   "small",
+			what:   "many-smalls",
 			files:  []string{small, small, small, small, small, small, small, small, small, small},
 			format: format,
 		},
