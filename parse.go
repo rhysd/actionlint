@@ -339,7 +339,7 @@ func (p *parser) parseWorkflowDispatchEvent(pos *Pos, n *yaml.Node) *WorkflowDis
 			continue
 		}
 
-		ret.Inputs = make(map[string]*DispatchInput, len(kv.val.Content)/2)
+		ret.Inputs = map[string]*DispatchInput{}
 		for input := range p.parseSectionMapping("inputs", kv.val, true, false) {
 			name, spec := input.key, input.val
 
@@ -512,7 +512,7 @@ func (p *parser) parseWorkflowCallEvent(pos *Pos, n *yaml.Node) *WorkflowCallEve
 				ret.Inputs = append(ret.Inputs, input)
 			}
 		case "secrets":
-			ret.Secrets = make(map[string]*WorkflowCallEventSecret, len(kv.val.Content)/2)
+			ret.Secrets = map[string]*WorkflowCallEventSecret{}
 			for kv := range p.parseSectionMapping("secrets", kv.val, true, false) {
 				name, spec := kv.key, kv.val
 				secret := &WorkflowCallEventSecret{Name: name}
@@ -531,7 +531,7 @@ func (p *parser) parseWorkflowCallEvent(pos *Pos, n *yaml.Node) *WorkflowCallEve
 				ret.Secrets[kv.id] = secret
 			}
 		case "outputs":
-			ret.Outputs = make(map[string]*WorkflowCallEventOutput, len(kv.val.Content)/2)
+			ret.Outputs = map[string]*WorkflowCallEventOutput{}
 			for kv := range p.parseSectionMapping("outputs", kv.val, true, false) {
 				name, spec := kv.key, kv.val
 				output := &WorkflowCallEventOutput{Name: name}
@@ -655,7 +655,7 @@ func (p *parser) parsePermissions(pos *Pos, n *yaml.Node) *Permissions {
 		ret.All = p.parseString(n, false)
 	} else {
 		// XXX: Is the permission scope case insensitive?
-		scopes := make(map[string]*PermissionScope, len(n.Content)/2)
+		scopes := map[string]*PermissionScope{}
 		for kv := range p.parseSectionMapping("permissions", n, true, false) {
 			scopes[kv.id] = &PermissionScope{
 				Name:  kv.key,
@@ -676,7 +676,7 @@ func (p *parser) parseEnv(n *yaml.Node) *Env {
 		}
 	}
 
-	vars := make(map[string]*EnvVar, len(n.Content)/2)
+	vars := map[string]*EnvVar{}
 	for kv := range p.parseMapping("env", n, false, false) {
 		vars[kv.id] = &EnvVar{
 			Name:  kv.key,
@@ -773,7 +773,7 @@ func (p *parser) parseEnvironment(pos *Pos, n *yaml.Node) *Environment {
 
 // https://docs.github.com/en/actions/learn-github-actions/workflow-syntax-for-github-actions#jobsjob_idoutputs
 func (p *parser) parseOutputs(n *yaml.Node) map[string]*Output {
-	ret := make(map[string]*Output, len(n.Content)/2)
+	ret := map[string]*Output{}
 	for o := range p.parseSectionMapping("outputs", n, false, false) {
 		ret[o.id] = &Output{
 			Name:  o.key,
@@ -797,7 +797,7 @@ func (p *parser) parseRawYAMLValue(n *yaml.Node) RawYAMLValue {
 		}
 		return &RawYAMLArray{vs, posAt(n)}
 	case yaml.MappingNode:
-		m := make(map[string]RawYAMLValue, len(n.Content)/2)
+		m := map[string]RawYAMLValue{}
 		for kv := range p.parseMapping("matrix row value", n, true, false) {
 			if v := p.parseRawYAMLValue(kv.val); v != nil {
 				m[kv.id] = v
@@ -832,7 +832,7 @@ func (p *parser) parseMatrixCombinations(sec string, n *yaml.Node) *MatrixCombin
 			continue
 		}
 
-		assigns := make(map[string]*MatrixAssign, len(c.Content)/2)
+		assigns := map[string]*MatrixAssign{}
 		for kv := range p.parseMapping(fmt.Sprintf("element in %q section", sec), c, false, false) {
 			if v := p.parseRawYAMLValue(kv.val); v != nil {
 				assigns[kv.id] = &MatrixAssign{kv.key, v}
@@ -852,7 +852,7 @@ func (p *parser) parseMatrix(pos *Pos, n *yaml.Node) *Matrix {
 		}
 	}
 
-	ret := &Matrix{Pos: pos, Rows: make(map[string]*MatrixRow, len(n.Content)/2)}
+	ret := &Matrix{Pos: pos, Rows: make(map[string]*MatrixRow)}
 
 	for kv := range p.parseSectionMapping("matrix", n, false, false) {
 		switch kv.id {
@@ -993,7 +993,7 @@ func (p *parser) parseServices(n *yaml.Node) *Services {
 		ret.Expression = e
 	} else {
 		// XXX: Is the key case-insensitive?
-		ss := make(map[string]*Service, len(n.Content)/2)
+		ss := map[string]*Service{}
 		for s := range p.parseSectionMapping("services", n, false, false) {
 			ss[s.id] = &Service{
 				Name:      s.key,
@@ -1022,7 +1022,7 @@ func (p *parser) parseStepExecAction(kvs []workflowKeyVal, isDocker bool, pos *P
 		case "uses":
 			ret.Uses = p.parseString(kv.val, false)
 		case "with":
-			ret.Inputs = make(map[string]*Input, len(kv.val.Content)/2)
+			ret.Inputs = map[string]*Input{}
 			with := p.parseSectionMapping("with", kv.val, false, false)
 			if isDocker {
 				for input := range with {
@@ -1296,7 +1296,7 @@ func (p *parser) parseJob(id *String, n *yaml.Node) *Job {
 			call.Uses = p.parseString(v, false)
 			callOnlyKey = k
 		case "with":
-			call.Inputs = make(map[string]*WorkflowCallInput, len(v.Content)/2)
+			call.Inputs = map[string]*WorkflowCallInput{}
 			for i := range p.parseSectionMapping("with", v, false, false) {
 				call.Inputs[i.id] = &WorkflowCallInput{
 					Name:  i.key,
@@ -1314,7 +1314,7 @@ func (p *parser) parseJob(id *String, n *yaml.Node) *Job {
 					p.errorf(kv.val, "expected mapping node for secrets or \"inherit\" string node but found %q node", kv.val.Value)
 				}
 			} else {
-				call.Secrets = make(map[string]*WorkflowCallSecret, len(v.Content)/2)
+				call.Secrets = map[string]*WorkflowCallSecret{}
 				for s := range p.parseSectionMapping("secrets", v, false, false) {
 					call.Secrets[s.id] = &WorkflowCallSecret{
 						Name:  s.key,
@@ -1385,7 +1385,7 @@ func (p *parser) parseJob(id *String, n *yaml.Node) *Job {
 
 // https://docs.github.com/en/actions/learn-github-actions/workflow-syntax-for-github-actions#jobs
 func (p *parser) parseJobs(n *yaml.Node) map[string]*Job {
-	ret := make(map[string]*Job, len(n.Content)/2)
+	ret := map[string]*Job{}
 	for kv := range p.parseSectionMapping("jobs", n, false, false) {
 		ret[kv.id] = p.parseJob(kv.key, kv.val)
 	}
