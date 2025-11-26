@@ -4,7 +4,6 @@ import (
 	"fmt"
 	"iter"
 	"math"
-	"slices"
 	"strconv"
 	"strings"
 
@@ -47,6 +46,31 @@ type workflowKeyVal struct {
 	id  string
 	key *String
 	val *yaml.Node
+}
+
+// iterateMapping iterates given YAML node assuming it is a mapping node without any checks. This
+// function is useful when iterating a mapping node again after the node was already checked by
+// parser.parseMapping.
+func iterateMapping(n *yaml.Node, caseSensitive bool) iter.Seq[workflowKeyVal] {
+	return func(yield func(workflowKeyVal) bool) {
+		for i := 0; i < len(n.Content); i += 2 {
+			k := newString(n.Content[i])
+
+			id := k.Value
+			if !caseSensitive {
+				// Keys of mappings are sometimes case insensitive. For example, following matrix is invalid.
+				//   matrix:
+				//     foo: [1, 2, 3]
+				//     FOO: [1, 2, 3]
+				// To detect case insensitive duplicate keys, we use lowercase keys
+				id = strings.ToLower(id)
+			}
+
+			if !yield(workflowKeyVal{id, k, n.Content[i+1]}) {
+				return
+			}
+		}
+	}
 }
 
 type parser struct {
@@ -1014,10 +1038,10 @@ func (p *parser) parseTimeoutMinutes(n *yaml.Node) *Float {
 	return f
 }
 
-func (p *parser) parseStepExecAction(kvs []workflowKeyVal, isDocker bool, pos *Pos) *ExecAction {
+func (p *parser) parseStepExecAction(n *yaml.Node, isDocker bool, pos *Pos) *ExecAction {
 	ret := &ExecAction{}
 
-	for _, kv := range kvs {
+	for kv := range iterateMapping(n, true) {
 		switch kv.id {
 		case "uses":
 			ret.Uses = p.parseString(kv.val, false)
@@ -1062,10 +1086,10 @@ func (p *parser) parseStepExecAction(kvs []workflowKeyVal, isDocker bool, pos *P
 	return ret
 }
 
-func (p *parser) parseStepExecRun(kvs []workflowKeyVal, pos *Pos) *ExecRun {
+func (p *parser) parseStepExecRun(n *yaml.Node, pos *Pos) *ExecRun {
 	ret := &ExecRun{}
 
-	for _, kv := range kvs {
+	for kv := range iterateMapping(n, true) {
 		switch kv.id {
 		case "run":
 			ret.Run = p.parseString(kv.val, false)
@@ -1107,8 +1131,7 @@ func (p *parser) parseStep(n *yaml.Node) *Step {
 	)
 
 	kind := isUnknown
-	kvs := slices.Collect(p.parseMapping("element of \"steps\" section", n, false, true))
-	for _, kv := range kvs {
+	for kv := range p.parseMapping("element of \"steps\" section", n, false, true) {
 		switch kv.id {
 		case "id":
 			ret.ID = p.parseString(kv.val, false)
@@ -1134,11 +1157,13 @@ func (p *parser) parseStep(n *yaml.Node) *Step {
 		}
 	}
 
+	// Note: The iterator which was created by `p.parseMapping` above is not available for the
+	// following method calls because it checks syntax errors again
 	switch kind {
 	case isAction, isDocker:
-		ret.Exec = p.parseStepExecAction(kvs, kind == isDocker, posAt(n))
+		ret.Exec = p.parseStepExecAction(n, kind == isDocker, posAt(n))
 	case isRun:
-		ret.Exec = p.parseStepExecRun(kvs, posAt(n))
+		ret.Exec = p.parseStepExecRun(n, posAt(n))
 	default:
 		p.error(n, "step must run script with \"run\" section or run action with \"uses\" section")
 	}
