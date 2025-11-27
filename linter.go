@@ -211,7 +211,7 @@ func (l *Linter) debug(format string, args ...interface{}) {
 	if l.logLevel < LogLevelDebug {
 		return
 	}
-	format = fmt.Sprintf("[Linter] %s\n", format)
+	format = "[Linter] " + format + "\n"
 	fmt.Fprintf(l.logOut, format, args...)
 }
 

@@ -49,6 +49,24 @@ type workflowKeyVal struct {
 	val *yaml.Node
 }
 
+type delayedSprintf struct {
+	result string
+	arg    string // Currently only one string arg is sufficient and it's faster than keeping generic interface{} args
+}
+
+func sprintf(fmt, arg string) delayedSprintf {
+	return delayedSprintf{fmt, arg}
+}
+
+func (l *delayedSprintf) String() string {
+	if len(l.arg) > 0 {
+		// This delayed formatting reduces the number of allocations on parsing workflow by 4.94%
+		l.result = fmt.Sprintf(l.result, l.arg)
+		l.arg = ""
+	}
+	return l.result
+}
+
 type parser struct {
 	errors []*Error
 }
@@ -251,17 +269,17 @@ func (p *parser) parseFloat(n *yaml.Node) *Float {
 	}
 }
 
-func (p *parser) parseMapping(what string, n *yaml.Node, allowEmpty, caseSensitive bool) iter.Seq[workflowKeyVal] {
+func (p *parser) parseMapping(where delayedSprintf, n *yaml.Node, allowEmpty, caseSensitive bool) iter.Seq[workflowKeyVal] {
 	return func(yield func(workflowKeyVal) bool) {
 		isNull := isNull(n)
 
 		if !isNull && n.Kind != yaml.MappingNode {
-			p.errorf(n, "%s is %s node but mapping node is expected", what, nodeKindName(n.Kind))
+			p.errorf(n, "%s is %s node but mapping node is expected", where.String(), nodeKindName(n.Kind))
 			return
 		}
 
 		if !allowEmpty && isNull {
-			p.errorf(n, "%s should not be empty. please remove this section if it's unnecessary", what)
+			p.errorf(n, "%s should not be empty. please remove this section if it's unnecessary", where.String())
 			return
 		}
 
@@ -288,7 +306,7 @@ func (p *parser) parseMapping(what string, n *yaml.Node, allowEmpty, caseSensiti
 				if !caseSensitive {
 					note = ". note that this key is case insensitive"
 				}
-				p.errorfAt(k.Pos, "key %q is duplicated in %s. previously defined at %s%s", k.Value, what, pos.String(), note)
+				p.errorfAt(k.Pos, "key %q is duplicated in %s. previously defined at %s%s", k.Value, where.String(), pos.String(), note)
 				continue
 			}
 			if !yield(workflowKeyVal{id, k, n.Content[i+1]}) {
@@ -299,13 +317,17 @@ func (p *parser) parseMapping(what string, n *yaml.Node, allowEmpty, caseSensiti
 		}
 
 		if !allowEmpty && empty {
-			p.errorf(n, "%s should not be empty. please remove this section if it's unnecessary", what)
+			p.errorf(n, "%s should not be empty. please remove this section if it's unnecessary", where.String())
 		}
 	}
 }
 
-func (p *parser) parseSectionMapping(sec string, n *yaml.Node, allowEmpty, caseSensitive bool) iter.Seq[workflowKeyVal] {
-	return p.parseMapping(fmt.Sprintf("%q section", sec), n, allowEmpty, caseSensitive)
+func (p *parser) parseSectionMapping(section string, n *yaml.Node, allowEmpty, caseSensitive bool) iter.Seq[workflowKeyVal] {
+	return p.parseMapping(sprintf("%q section", section), n, allowEmpty, caseSensitive)
+}
+
+func (p *parser) parseMappingAt(where string, n *yaml.Node, allowEmpty, caseSensitive bool) iter.Seq[workflowKeyVal] {
+	return p.parseMapping(sprintf(where, ""), n, allowEmpty, caseSensitive)
 }
 
 func (p *parser) parseScheduleEvent(pos *Pos, n *yaml.Node) *ScheduledEvent {
@@ -315,7 +337,7 @@ func (p *parser) parseScheduleEvent(pos *Pos, n *yaml.Node) *ScheduledEvent {
 
 	cron := make([]*String, 0, len(n.Content))
 	for _, c := range n.Content {
-		for kv := range p.parseMapping("element of \"schedule\" section", c, false, true) {
+		for kv := range p.parseMappingAt("element of \"schedule\" section", c, false, true) {
 			if kv.id != "cron" {
 				p.unexpectedKey(kv.key, "element of \"schedule\" section", []string{"cron"})
 				continue
@@ -348,7 +370,7 @@ func (p *parser) parseWorkflowDispatchEvent(pos *Pos, n *yaml.Node) *WorkflowDis
 			var def *String
 			var opts []*String
 			ty := WorkflowDispatchEventInputTypeNone
-			for attr := range p.parseMapping("input settings of workflow_dispatch event", spec, true, true) {
+			for attr := range p.parseMappingAt("input settings of workflow_dispatch event", spec, true, true) {
 				switch attr.id {
 				case "description":
 					desc = p.parseString(attr.val, true)
@@ -480,7 +502,7 @@ func (p *parser) parseWorkflowCallEvent(pos *Pos, n *yaml.Node) *WorkflowCallEve
 				input := &WorkflowCallEventInput{Name: name, ID: kv.id}
 				sawType := false
 
-				for attr := range p.parseMapping("input of workflow_call event", spec, true, true) {
+				for attr := range p.parseMappingAt("input of workflow_call event", spec, true, true) {
 					switch attr.id {
 					case "description":
 						input.Description = p.parseString(attr.val, true)
@@ -517,7 +539,7 @@ func (p *parser) parseWorkflowCallEvent(pos *Pos, n *yaml.Node) *WorkflowCallEve
 				name, spec := kv.key, kv.val
 				secret := &WorkflowCallEventSecret{Name: name}
 
-				for attr := range p.parseMapping("secret of workflow_call event", spec, true, true) {
+				for attr := range p.parseMappingAt("secret of workflow_call event", spec, true, true) {
 					switch attr.id {
 					case "description":
 						secret.Description = p.parseString(attr.val, true)
@@ -536,7 +558,7 @@ func (p *parser) parseWorkflowCallEvent(pos *Pos, n *yaml.Node) *WorkflowCallEve
 				name, spec := kv.key, kv.val
 				output := &WorkflowCallEventOutput{Name: name}
 
-				for attr := range p.parseMapping("output of workflow_call event", spec, true, true) {
+				for attr := range p.parseMappingAt("output of workflow_call event", spec, true, true) {
 					switch attr.id {
 					case "description":
 						output.Description = p.parseString(attr.val, true)
@@ -677,7 +699,7 @@ func (p *parser) parseEnv(n *yaml.Node) *Env {
 	}
 
 	vars := map[string]*EnvVar{}
-	for kv := range p.parseMapping("env", n, false, false) {
+	for kv := range p.parseSectionMapping("env", n, false, false) {
 		vars[kv.id] = &EnvVar{
 			Name:  kv.key,
 			Value: p.parseString(kv.val, true),
@@ -798,7 +820,7 @@ func (p *parser) parseRawYAMLValue(n *yaml.Node) RawYAMLValue {
 		return &RawYAMLArray{vs, posAt(n)}
 	case yaml.MappingNode:
 		m := map[string]RawYAMLValue{}
-		for kv := range p.parseMapping("matrix row value", n, true, false) {
+		for kv := range p.parseMappingAt("matrix row value", n, true, false) {
 			if v := p.parseRawYAMLValue(kv.val); v != nil {
 				m[kv.id] = v
 			}
@@ -833,7 +855,7 @@ func (p *parser) parseMatrixCombinations(sec string, n *yaml.Node) *MatrixCombin
 		}
 
 		assigns := map[string]*MatrixAssign{}
-		for kv := range p.parseMapping(fmt.Sprintf("element in %q section", sec), c, false, false) {
+		for kv := range p.parseMapping(sprintf("element in %q section", sec), c, false, false) {
 			if v := p.parseRawYAMLValue(kv.val); v != nil {
 				assigns[kv.id] = &MatrixAssign{kv.key, v}
 			}
@@ -1107,7 +1129,7 @@ func (p *parser) parseStep(n *yaml.Node) *Step {
 	)
 
 	kind := isUnknown
-	kvs := slices.Collect(p.parseMapping("element of \"steps\" section", n, false, true))
+	kvs := slices.Collect(p.parseMappingAt("element of \"steps\" section", n, false, true))
 	for _, kv := range kvs {
 		switch kv.id {
 		case "id":
@@ -1242,7 +1264,7 @@ func (p *parser) parseJob(id *String, n *yaml.Node) *Job {
 	var stepsOnlyKey *String
 	var callOnlyKey *String
 
-	for kv := range p.parseMapping(fmt.Sprintf("%q job", id.Value), n, false, true) {
+	for kv := range p.parseMapping(sprintf("%q job", id.Value), n, false, true) {
 		k, v := kv.key, kv.val
 		switch kv.id {
 		case "name":
@@ -1408,7 +1430,7 @@ func (p *parser) parse(n *yaml.Node) *Workflow {
 		return w
 	}
 
-	for kv := range p.parseMapping("workflow", n.Content[0], false, true) {
+	for kv := range p.parseSectionMapping("workflow", n.Content[0], false, true) {
 		k, v := kv.key, kv.val
 		switch kv.id {
 		case "name":
