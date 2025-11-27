@@ -42,8 +42,9 @@ func newString(n *yaml.Node) *String {
 	return &String{n.Value, quoted, posAt(n)}
 }
 
-type workflowKeyVal struct {
-	// id is used for comparing keys. When the key is case insensitive, this field is in lower case.
+// workflowMappingEntry represents a key-value entry in YAML mapping.
+type workflowMappingEntry struct {
+	// id is a key in lower case for comparing case-insensitive keys.
 	id  string
 	key *String
 	val *yaml.Node
@@ -51,7 +52,9 @@ type workflowKeyVal struct {
 
 type delayedSprintf struct {
 	result string
-	arg    string // Currently only one string arg is sufficient and it's faster than keeping generic interface{} args
+	// Note: Currently only one string arg is sufficient and it's faster than keeping generic interface{} args.
+	// `arg` must not be empty when it is used. Empty value means the argument is unused.
+	arg string
 }
 
 func sprintf(fmt, arg string) delayedSprintf {
@@ -269,8 +272,8 @@ func (p *parser) parseFloat(n *yaml.Node) *Float {
 	}
 }
 
-func (p *parser) parseMapping(where delayedSprintf, n *yaml.Node, allowEmpty, caseSensitive bool) iter.Seq[workflowKeyVal] {
-	return func(yield func(workflowKeyVal) bool) {
+func (p *parser) parseMapping(where delayedSprintf, n *yaml.Node, allowEmpty, caseSensitive bool) iter.Seq[workflowMappingEntry] {
+	return func(yield func(workflowMappingEntry) bool) {
 		isNull := isNull(n)
 
 		if !isNull && n.Kind != yaml.MappingNode {
@@ -309,7 +312,7 @@ func (p *parser) parseMapping(where delayedSprintf, n *yaml.Node, allowEmpty, ca
 				p.errorfAt(k.Pos, "key %q is duplicated in %s. previously defined at %s%s", k.Value, where.String(), pos.String(), note)
 				continue
 			}
-			if !yield(workflowKeyVal{id, k, n.Content[i+1]}) {
+			if !yield(workflowMappingEntry{id, k, n.Content[i+1]}) {
 				break
 			}
 			keys[id] = k.Pos
@@ -322,11 +325,11 @@ func (p *parser) parseMapping(where delayedSprintf, n *yaml.Node, allowEmpty, ca
 	}
 }
 
-func (p *parser) parseSectionMapping(section string, n *yaml.Node, allowEmpty, caseSensitive bool) iter.Seq[workflowKeyVal] {
+func (p *parser) parseSectionMapping(section string, n *yaml.Node, allowEmpty, caseSensitive bool) iter.Seq[workflowMappingEntry] {
 	return p.parseMapping(sprintf("%q section", section), n, allowEmpty, caseSensitive)
 }
 
-func (p *parser) parseMappingAt(where string, n *yaml.Node, allowEmpty, caseSensitive bool) iter.Seq[workflowKeyVal] {
+func (p *parser) parseMappingAt(where string, n *yaml.Node, allowEmpty, caseSensitive bool) iter.Seq[workflowMappingEntry] {
 	return p.parseMapping(sprintf(where, ""), n, allowEmpty, caseSensitive)
 }
 
@@ -337,12 +340,12 @@ func (p *parser) parseScheduleEvent(pos *Pos, n *yaml.Node) *ScheduledEvent {
 
 	cron := make([]*String, 0, len(n.Content))
 	for _, c := range n.Content {
-		for kv := range p.parseMappingAt("element of \"schedule\" section", c, false, true) {
-			if kv.id != "cron" {
-				p.unexpectedKey(kv.key, "element of \"schedule\" section", []string{"cron"})
+		for e := range p.parseMappingAt("element of \"schedule\" section", c, false, true) {
+			if e.id != "cron" {
+				p.unexpectedKey(e.key, "element of \"schedule\" section", []string{"cron"})
 				continue
 			}
-			if s := p.parseString(kv.val, false); s.Value != "" {
+			if s := p.parseString(e.val, false); s.Value != "" {
 				cron = append(cron, s)
 			}
 		}
@@ -355,34 +358,34 @@ func (p *parser) parseScheduleEvent(pos *Pos, n *yaml.Node) *ScheduledEvent {
 func (p *parser) parseWorkflowDispatchEvent(pos *Pos, n *yaml.Node) *WorkflowDispatchEvent {
 	ret := &WorkflowDispatchEvent{Pos: pos}
 
-	for kv := range p.parseSectionMapping("workflow_dispatch", n, true, true) {
-		if kv.id != "inputs" {
-			p.unexpectedKey(kv.key, "workflow_dispatch", []string{"inputs"})
+	for e := range p.parseSectionMapping("workflow_dispatch", n, true, true) {
+		if e.id != "inputs" {
+			p.unexpectedKey(e.key, "workflow_dispatch", []string{"inputs"})
 			continue
 		}
 
 		ret.Inputs = map[string]*DispatchInput{}
-		for input := range p.parseSectionMapping("inputs", kv.val, true, false) {
-			name, spec := input.key, input.val
+		for e := range p.parseSectionMapping("inputs", e.val, true, false) {
+			name, spec := e.key, e.val
 
 			var desc *String
 			var req *Bool
 			var def *String
 			var opts []*String
 			ty := WorkflowDispatchEventInputTypeNone
-			for attr := range p.parseMappingAt("input settings of workflow_dispatch event", spec, true, true) {
-				switch attr.id {
+			for e := range p.parseMappingAt("input settings of workflow_dispatch event", spec, true, true) {
+				switch e.id {
 				case "description":
-					desc = p.parseString(attr.val, true)
+					desc = p.parseString(e.val, true)
 				case "required":
-					req = p.parseBool(attr.val)
+					req = p.parseBool(e.val)
 				case "default":
-					def = p.parseString(attr.val, true)
+					def = p.parseString(e.val, true)
 				case "type":
-					if !p.checkString(attr.val, false) {
+					if !p.checkString(e.val, false) {
 						continue
 					}
-					switch attr.val.Value {
+					switch e.val.Value {
 					case "string":
 						ty = WorkflowDispatchEventInputTypeString
 					case "number":
@@ -394,16 +397,16 @@ func (p *parser) parseWorkflowDispatchEvent(pos *Pos, n *yaml.Node) *WorkflowDis
 					case "environment":
 						ty = WorkflowDispatchEventInputTypeEnvironment
 					default:
-						p.errorf(attr.val, `input type of workflow_dispatch event must be one of "string", "number", "boolean", "choice", "environment" but got %q`, attr.val.Value)
+						p.errorf(e.val, `input type of workflow_dispatch event must be one of "string", "number", "boolean", "choice", "environment" but got %q`, e.val.Value)
 					}
 				case "options":
-					opts = p.parseStringSequence("options", attr.val, false, false)
+					opts = p.parseStringSequence("options", e.val, false, false)
 				default:
-					p.unexpectedKey(attr.key, "inputs", []string{"description", "required", "default"})
+					p.unexpectedKey(e.key, "inputs", []string{"description", "required", "default"})
 				}
 			}
 
-			ret.Inputs[input.id] = &DispatchInput{
+			ret.Inputs[e.id] = &DispatchInput{
 				Name:        name,
 				Description: desc,
 				Required:    req,
@@ -422,11 +425,11 @@ func (p *parser) parseRepositoryDispatchEvent(pos *Pos, n *yaml.Node) *Repositor
 	ret := &RepositoryDispatchEvent{Pos: pos}
 
 	// Note: Omitting 'types' is ok. In the case, all types trigger the workflow
-	for kv := range p.parseSectionMapping("repository_dispatch", n, true, true) {
-		if kv.id == "types" {
-			ret.Types = p.parseStringOrStringSequence("types", kv.val, false, false)
+	for e := range p.parseSectionMapping("repository_dispatch", n, true, true) {
+		if e.id == "types" {
+			ret.Types = p.parseStringOrStringSequence("types", e.val, false, false)
 		} else {
-			p.unexpectedKey(kv.key, "repository_dispatch", []string{"types"})
+			p.unexpectedKey(e.key, "repository_dispatch", []string{"types"})
 		}
 	}
 
@@ -450,28 +453,28 @@ func (p *parser) parseWebhookEvent(name *String, n *yaml.Node) *WebhookEvent {
 	// > undefined Git ref.
 	//
 	// https://github.community/t/using-on-push-tags-ignore-and-paths-ignore-together/16931
-	for kv := range p.parseSectionMapping(name.Value, n, true, true) {
+	for e := range p.parseSectionMapping(name.Value, n, true, true) {
 		// Note: Glob pattern cannot be empty, but it is checked by 'glob' rule with better error
 		// message. So parser allows empty patterns here.
-		switch kv.id {
+		switch e.id {
 		case "types":
-			ret.Types = p.parseStringOrStringSequence(kv.key.Value, kv.val, false, false)
+			ret.Types = p.parseStringOrStringSequence(e.key.Value, e.val, false, false)
 		case "branches":
-			ret.Branches = p.parseWebhookEventFilter(kv.key, kv.val)
+			ret.Branches = p.parseWebhookEventFilter(e.key, e.val)
 		case "branches-ignore":
-			ret.BranchesIgnore = p.parseWebhookEventFilter(kv.key, kv.val)
+			ret.BranchesIgnore = p.parseWebhookEventFilter(e.key, e.val)
 		case "tags":
-			ret.Tags = p.parseWebhookEventFilter(kv.key, kv.val)
+			ret.Tags = p.parseWebhookEventFilter(e.key, e.val)
 		case "tags-ignore":
-			ret.TagsIgnore = p.parseWebhookEventFilter(kv.key, kv.val)
+			ret.TagsIgnore = p.parseWebhookEventFilter(e.key, e.val)
 		case "paths":
-			ret.Paths = p.parseWebhookEventFilter(kv.key, kv.val)
+			ret.Paths = p.parseWebhookEventFilter(e.key, e.val)
 		case "paths-ignore":
-			ret.PathsIgnore = p.parseWebhookEventFilter(kv.key, kv.val)
+			ret.PathsIgnore = p.parseWebhookEventFilter(e.key, e.val)
 		case "workflows":
-			ret.Workflows = p.parseStringOrStringSequence(kv.key.Value, kv.val, false, false)
+			ret.Workflows = p.parseStringOrStringSequence(e.key.Value, e.val, false, false)
 		default:
-			p.unexpectedKey(kv.key, name.Value, []string{
+			p.unexpectedKey(e.key, name.Value, []string{
 				"types",
 				"branches",
 				"branches-ignore",
@@ -493,25 +496,25 @@ func (p *parser) parseWebhookEvent(name *String, n *yaml.Node) *WebhookEvent {
 func (p *parser) parseWorkflowCallEvent(pos *Pos, n *yaml.Node) *WorkflowCallEvent {
 	ret := &WorkflowCallEvent{Pos: pos}
 
-	for kv := range p.parseSectionMapping("workflow_call", n, true, true) {
-		switch kv.id {
+	for e := range p.parseSectionMapping("workflow_call", n, true, true) {
+		switch e.id {
 		case "inputs":
 			ret.Inputs = []*WorkflowCallEventInput{}
-			for kv := range p.parseSectionMapping("inputs", kv.val, true, false) {
-				name, spec := kv.key, kv.val
-				input := &WorkflowCallEventInput{Name: name, ID: kv.id}
+			for e := range p.parseSectionMapping("inputs", e.val, true, false) {
+				name, spec := e.key, e.val
+				input := &WorkflowCallEventInput{Name: name, ID: e.id}
 				sawType := false
 
-				for attr := range p.parseMappingAt("input of workflow_call event", spec, true, true) {
-					switch attr.id {
+				for e := range p.parseMappingAt("input of workflow_call event", spec, true, true) {
+					switch e.id {
 					case "description":
-						input.Description = p.parseString(attr.val, true)
+						input.Description = p.parseString(e.val, true)
 					case "required":
-						input.Required = p.parseBool(attr.val)
+						input.Required = p.parseBool(e.val)
 					case "default":
-						input.Default = p.parseString(attr.val, true)
+						input.Default = p.parseString(e.val, true)
 					case "type":
-						switch attr.val.Value {
+						switch e.val.Value {
 						case "boolean":
 							input.Type = WorkflowCallEventInputTypeBoolean
 						case "number":
@@ -519,11 +522,11 @@ func (p *parser) parseWorkflowCallEvent(pos *Pos, n *yaml.Node) *WorkflowCallEve
 						case "string":
 							input.Type = WorkflowCallEventInputTypeString
 						default:
-							p.errorf(attr.val, "invalid value %q for input type of workflow_call event. it must be one of \"boolean\", \"number\", or \"string\"", attr.val.Value)
+							p.errorf(e.val, "invalid value %q for input type of workflow_call event. it must be one of \"boolean\", \"number\", or \"string\"", e.val.Value)
 						}
 						sawType = true
 					default:
-						p.unexpectedKey(attr.key, "inputs at workflow_call event", []string{"description", "required", "default", "type"})
+						p.unexpectedKey(e.key, "inputs at workflow_call event", []string{"description", "required", "default", "type"})
 					}
 				}
 
@@ -535,37 +538,37 @@ func (p *parser) parseWorkflowCallEvent(pos *Pos, n *yaml.Node) *WorkflowCallEve
 			}
 		case "secrets":
 			ret.Secrets = map[string]*WorkflowCallEventSecret{}
-			for kv := range p.parseSectionMapping("secrets", kv.val, true, false) {
-				name, spec := kv.key, kv.val
+			for e := range p.parseSectionMapping("secrets", e.val, true, false) {
+				name, spec := e.key, e.val
 				secret := &WorkflowCallEventSecret{Name: name}
 
-				for attr := range p.parseMappingAt("secret of workflow_call event", spec, true, true) {
-					switch attr.id {
+				for e := range p.parseMappingAt("secret of workflow_call event", spec, true, true) {
+					switch e.id {
 					case "description":
-						secret.Description = p.parseString(attr.val, true)
+						secret.Description = p.parseString(e.val, true)
 					case "required":
-						secret.Required = p.parseBool(attr.val)
+						secret.Required = p.parseBool(e.val)
 					default:
-						p.unexpectedKey(attr.key, "secrets", []string{"description", "required"})
+						p.unexpectedKey(e.key, "secrets", []string{"description", "required"})
 					}
 				}
 
-				ret.Secrets[kv.id] = secret
+				ret.Secrets[e.id] = secret
 			}
 		case "outputs":
 			ret.Outputs = map[string]*WorkflowCallEventOutput{}
-			for kv := range p.parseSectionMapping("outputs", kv.val, true, false) {
-				name, spec := kv.key, kv.val
+			for e := range p.parseSectionMapping("outputs", e.val, true, false) {
+				name, spec := e.key, e.val
 				output := &WorkflowCallEventOutput{Name: name}
 
-				for attr := range p.parseMappingAt("output of workflow_call event", spec, true, true) {
-					switch attr.id {
+				for e := range p.parseMappingAt("output of workflow_call event", spec, true, true) {
+					switch e.id {
 					case "description":
-						output.Description = p.parseString(attr.val, true)
+						output.Description = p.parseString(e.val, true)
 					case "value":
-						output.Value = p.parseString(attr.val, false)
+						output.Value = p.parseString(e.val, false)
 					default:
-						p.unexpectedKey(attr.key, "outputs at workflow_call event", []string{"description", "value"})
+						p.unexpectedKey(e.key, "outputs at workflow_call event", []string{"description", "value"})
 					}
 				}
 
@@ -573,10 +576,10 @@ func (p *parser) parseWorkflowCallEvent(pos *Pos, n *yaml.Node) *WorkflowCallEve
 					p.errorfAt(name.Pos, "\"value\" is missing at %q output of workflow_call event", name.Value)
 				}
 
-				ret.Outputs[kv.id] = output
+				ret.Outputs[e.id] = output
 			}
 		default:
-			p.unexpectedKey(kv.key, "workflow_call", []string{"inputs", "secrets", "outputs"})
+			p.unexpectedKey(e.key, "workflow_call", []string{"inputs", "secrets", "outputs"})
 		}
 	}
 
@@ -586,14 +589,14 @@ func (p *parser) parseWorkflowCallEvent(pos *Pos, n *yaml.Node) *WorkflowCallEve
 func (p *parser) parseImageVersionEvent(pos *Pos, n *yaml.Node) *ImageVersionEvent {
 	ret := &ImageVersionEvent{Pos: pos}
 
-	for kv := range p.parseSectionMapping("image_version", n, true, true) {
-		switch kv.id {
+	for e := range p.parseSectionMapping("image_version", n, true, true) {
+		switch e.id {
 		case "names":
-			ret.Names = p.parseStringSequence("names", kv.val, false, false)
+			ret.Names = p.parseStringSequence("names", e.val, false, false)
 		case "versions":
-			ret.Versions = p.parseStringSequence("versions", kv.val, false, false)
+			ret.Versions = p.parseStringSequence("versions", e.val, false, false)
 		default:
-			p.unexpectedKey(kv.key, "image_version", []string{"names", "versions"})
+			p.unexpectedKey(e.key, "image_version", []string{"names", "versions"})
 		}
 	}
 
@@ -630,23 +633,23 @@ func (p *parser) parseEvents(n *yaml.Node) []Event {
 		return []Event{}
 	case yaml.MappingNode:
 		ret := []Event{}
-		for kv := range p.parseSectionMapping("on", n, false, true) {
-			pos := kv.key.Pos
-			switch kv.id {
+		for e := range p.parseSectionMapping("on", n, false, true) {
+			pos := e.key.Pos
+			switch e.id {
 			case "schedule":
-				if e := p.parseScheduleEvent(pos, kv.val); e != nil {
+				if e := p.parseScheduleEvent(pos, e.val); e != nil {
 					ret = append(ret, e)
 				}
 			case "workflow_dispatch":
-				ret = append(ret, p.parseWorkflowDispatchEvent(pos, kv.val))
+				ret = append(ret, p.parseWorkflowDispatchEvent(pos, e.val))
 			case "repository_dispatch":
-				ret = append(ret, p.parseRepositoryDispatchEvent(pos, kv.val))
+				ret = append(ret, p.parseRepositoryDispatchEvent(pos, e.val))
 			case "workflow_call":
-				ret = append(ret, p.parseWorkflowCallEvent(pos, kv.val))
+				ret = append(ret, p.parseWorkflowCallEvent(pos, e.val))
 			case "image_version":
-				ret = append(ret, p.parseImageVersionEvent(pos, kv.val))
+				ret = append(ret, p.parseImageVersionEvent(pos, e.val))
 			default:
-				ret = append(ret, p.parseWebhookEvent(kv.key, kv.val))
+				ret = append(ret, p.parseWebhookEvent(e.key, e.val))
 			}
 		}
 
@@ -678,10 +681,10 @@ func (p *parser) parsePermissions(pos *Pos, n *yaml.Node) *Permissions {
 	} else {
 		// XXX: Is the permission scope case insensitive?
 		scopes := map[string]*PermissionScope{}
-		for kv := range p.parseSectionMapping("permissions", n, true, false) {
-			scopes[kv.id] = &PermissionScope{
-				Name:  kv.key,
-				Value: p.parseString(kv.val, false),
+		for e := range p.parseSectionMapping("permissions", n, true, false) {
+			scopes[e.id] = &PermissionScope{
+				Name:  e.key,
+				Value: p.parseString(e.val, false),
 			}
 		}
 		ret.Scopes = scopes
@@ -699,10 +702,10 @@ func (p *parser) parseEnv(n *yaml.Node) *Env {
 	}
 
 	vars := map[string]*EnvVar{}
-	for kv := range p.parseSectionMapping("env", n, false, false) {
-		vars[kv.id] = &EnvVar{
-			Name:  kv.key,
-			Value: p.parseString(kv.val, true),
+	for e := range p.parseSectionMapping("env", n, false, false) {
+		vars[e.id] = &EnvVar{
+			Name:  e.key,
+			Value: p.parseString(e.val, true),
 		}
 	}
 
@@ -713,21 +716,21 @@ func (p *parser) parseEnv(n *yaml.Node) *Env {
 func (p *parser) parseDefaults(pos *Pos, n *yaml.Node) *Defaults {
 	ret := &Defaults{Pos: pos}
 
-	for kv := range p.parseSectionMapping("defaults", n, false, true) {
-		if kv.id != "run" {
-			p.unexpectedKey(kv.key, "defaults", []string{"run"})
+	for e := range p.parseSectionMapping("defaults", n, false, true) {
+		if e.id != "run" {
+			p.unexpectedKey(e.key, "defaults", []string{"run"})
 			continue
 		}
-		ret.Run = &DefaultsRun{Pos: kv.key.Pos}
+		ret.Run = &DefaultsRun{Pos: e.key.Pos}
 
-		for attr := range p.parseSectionMapping("run", kv.val, false, true) {
-			switch attr.id {
+		for e := range p.parseSectionMapping("run", e.val, false, true) {
+			switch e.id {
 			case "shell":
-				ret.Run.Shell = p.parseString(attr.val, false)
+				ret.Run.Shell = p.parseString(e.val, false)
 			case "working-directory":
-				ret.Run.WorkingDirectory = p.parseString(attr.val, false)
+				ret.Run.WorkingDirectory = p.parseString(e.val, false)
 			default:
-				p.unexpectedKey(attr.key, "run", []string{"shell", "working-directory"})
+				p.unexpectedKey(e.key, "run", []string{"shell", "working-directory"})
 			}
 		}
 	}
@@ -747,15 +750,15 @@ func (p *parser) parseConcurrency(pos *Pos, n *yaml.Node) *Concurrency {
 		ret.Group = p.parseString(n, false)
 	} else {
 		groupFound := false
-		for kv := range p.parseSectionMapping("concurrency", n, false, true) {
-			switch kv.id {
+		for e := range p.parseSectionMapping("concurrency", n, false, true) {
+			switch e.id {
 			case "group":
-				ret.Group = p.parseString(kv.val, false)
+				ret.Group = p.parseString(e.val, false)
 				groupFound = true
 			case "cancel-in-progress":
-				ret.CancelInProgress = p.parseBool(kv.val)
+				ret.CancelInProgress = p.parseBool(e.val)
 			default:
-				p.unexpectedKey(kv.key, "concurrency", []string{"group", "cancel-in-progress"})
+				p.unexpectedKey(e.key, "concurrency", []string{"group", "cancel-in-progress"})
 			}
 		}
 		if !groupFound {
@@ -774,15 +777,15 @@ func (p *parser) parseEnvironment(pos *Pos, n *yaml.Node) *Environment {
 		ret.Name = p.parseString(n, false)
 	} else {
 		nameFound := false
-		for kv := range p.parseSectionMapping("environment", n, false, true) {
-			switch kv.id {
+		for e := range p.parseSectionMapping("environment", n, false, true) {
+			switch e.id {
 			case "name":
-				ret.Name = p.parseString(kv.val, false)
+				ret.Name = p.parseString(e.val, false)
 				nameFound = true
 			case "url":
-				ret.URL = p.parseString(kv.val, false)
+				ret.URL = p.parseString(e.val, false)
 			default:
-				p.unexpectedKey(kv.key, "environment", []string{"name", "url"})
+				p.unexpectedKey(e.key, "environment", []string{"name", "url"})
 			}
 		}
 		if !nameFound {
@@ -796,10 +799,10 @@ func (p *parser) parseEnvironment(pos *Pos, n *yaml.Node) *Environment {
 // https://docs.github.com/en/actions/learn-github-actions/workflow-syntax-for-github-actions#jobsjob_idoutputs
 func (p *parser) parseOutputs(n *yaml.Node) map[string]*Output {
 	ret := map[string]*Output{}
-	for o := range p.parseSectionMapping("outputs", n, false, false) {
-		ret[o.id] = &Output{
-			Name:  o.key,
-			Value: p.parseString(o.val, true),
+	for e := range p.parseSectionMapping("outputs", n, false, false) {
+		ret[e.id] = &Output{
+			Name:  e.key,
+			Value: p.parseString(e.val, true),
 		}
 	}
 	p.checkNotEmpty("outputs", len(ret), n)
@@ -820,9 +823,9 @@ func (p *parser) parseRawYAMLValue(n *yaml.Node) RawYAMLValue {
 		return &RawYAMLArray{vs, posAt(n)}
 	case yaml.MappingNode:
 		m := map[string]RawYAMLValue{}
-		for kv := range p.parseMappingAt("matrix row value", n, true, false) {
-			if v := p.parseRawYAMLValue(kv.val); v != nil {
-				m[kv.id] = v
+		for e := range p.parseMappingAt("matrix row value", n, true, false) {
+			if v := p.parseRawYAMLValue(e.val); v != nil {
+				m[e.id] = v
 			}
 		}
 		return &RawYAMLObject{m, posAt(n)}
@@ -855,9 +858,9 @@ func (p *parser) parseMatrixCombinations(sec string, n *yaml.Node) *MatrixCombin
 		}
 
 		assigns := map[string]*MatrixAssign{}
-		for kv := range p.parseMapping(sprintf("element in %q section", sec), c, false, false) {
-			if v := p.parseRawYAMLValue(kv.val); v != nil {
-				assigns[kv.id] = &MatrixAssign{kv.key, v}
+		for e := range p.parseMapping(sprintf("element in %q section", sec), c, false, false) {
+			if v := p.parseRawYAMLValue(e.val); v != nil {
+				assigns[e.id] = &MatrixAssign{e.key, v}
 			}
 		}
 		ret = append(ret, &MatrixCombination{Assigns: assigns})
@@ -876,33 +879,33 @@ func (p *parser) parseMatrix(pos *Pos, n *yaml.Node) *Matrix {
 
 	ret := &Matrix{Pos: pos, Rows: make(map[string]*MatrixRow)}
 
-	for kv := range p.parseSectionMapping("matrix", n, false, false) {
-		switch kv.id {
+	for e := range p.parseSectionMapping("matrix", n, false, false) {
+		switch e.id {
 		case "include":
-			ret.Include = p.parseMatrixCombinations("include", kv.val)
+			ret.Include = p.parseMatrixCombinations("include", e.val)
 		case "exclude":
-			ret.Exclude = p.parseMatrixCombinations("exclude", kv.val)
+			ret.Exclude = p.parseMatrixCombinations("exclude", e.val)
 		default:
-			if kv.val.Kind == yaml.ScalarNode {
-				ret.Rows[kv.id] = &MatrixRow{
-					Expression: p.parseExpression(kv.val, "array value for matrix variations"),
+			if e.val.Kind == yaml.ScalarNode {
+				ret.Rows[e.id] = &MatrixRow{
+					Expression: p.parseExpression(e.val, "array value for matrix variations"),
 				}
 				continue
 			}
 
-			if ok := p.checkSequence("matrix values", kv.val, false); !ok {
+			if ok := p.checkSequence("matrix values", e.val, false); !ok {
 				continue
 			}
 
-			values := make([]RawYAMLValue, 0, len(kv.val.Content))
-			for _, c := range kv.val.Content {
+			values := make([]RawYAMLValue, 0, len(e.val.Content))
+			for _, c := range e.val.Content {
 				if v := p.parseRawYAMLValue(c); v != nil {
 					values = append(values, v)
 				}
 			}
 
-			ret.Rows[kv.id] = &MatrixRow{
-				Name:   kv.key,
+			ret.Rows[e.id] = &MatrixRow{
+				Name:   e.key,
 				Values: values,
 			}
 		}
@@ -924,16 +927,16 @@ func (p *parser) parseMaxParallel(n *yaml.Node) *Int {
 func (p *parser) parseStrategy(pos *Pos, n *yaml.Node) *Strategy {
 	ret := &Strategy{Pos: pos}
 
-	for kv := range p.parseSectionMapping("strategy", n, false, true) {
-		switch kv.id {
+	for e := range p.parseSectionMapping("strategy", n, false, true) {
+		switch e.id {
 		case "matrix":
-			ret.Matrix = p.parseMatrix(kv.key.Pos, kv.val)
+			ret.Matrix = p.parseMatrix(e.key.Pos, e.val)
 		case "fail-fast":
-			ret.FailFast = p.parseBool(kv.val)
+			ret.FailFast = p.parseBool(e.val)
 		case "max-parallel":
-			ret.MaxParallel = p.parseMaxParallel(kv.val)
+			ret.MaxParallel = p.parseMaxParallel(e.val)
 		default:
-			p.unexpectedKey(kv.key, "strategy", []string{"matrix", "fail-fast", "max-parallel"})
+			p.unexpectedKey(e.key, "strategy", []string{"matrix", "fail-fast", "max-parallel"})
 		}
 	}
 
@@ -948,14 +951,14 @@ func (p *parser) parseCredentials(pos *Pos, n *yaml.Node) *Credentials {
 		return ret
 	}
 
-	for kv := range p.parseSectionMapping("credentials", n, false, true) {
-		switch kv.id {
+	for e := range p.parseSectionMapping("credentials", n, false, true) {
+		switch e.id {
 		case "username":
-			ret.Username = p.parseString(kv.val, false)
+			ret.Username = p.parseString(e.val, false)
 		case "password":
-			ret.Password = p.parseString(kv.val, false)
+			ret.Password = p.parseString(e.val, false)
 		default:
-			p.unexpectedKey(kv.key, "credentials", []string{"username", "password"})
+			p.unexpectedKey(e.key, "credentials", []string{"username", "password"})
 		}
 	}
 
@@ -975,22 +978,22 @@ func (p *parser) parseContainer(sec string, pos *Pos, n *yaml.Node) *Container {
 		// When you only specify a container image, you can omit the image keyword.
 		ret.Image = p.parseString(n, false)
 	} else {
-		for kv := range p.parseSectionMapping(sec, n, false, true) {
-			switch kv.id {
+		for e := range p.parseSectionMapping(sec, n, false, true) {
+			switch e.id {
 			case "image":
-				ret.Image = p.parseString(kv.val, false)
+				ret.Image = p.parseString(e.val, false)
 			case "credentials":
-				ret.Credentials = p.parseCredentials(kv.key.Pos, kv.val)
+				ret.Credentials = p.parseCredentials(e.key.Pos, e.val)
 			case "env":
-				ret.Env = p.parseEnv(kv.val)
+				ret.Env = p.parseEnv(e.val)
 			case "ports":
-				ret.Ports = p.parseStringSequence("ports", kv.val, true, false)
+				ret.Ports = p.parseStringSequence("ports", e.val, true, false)
 			case "volumes":
-				ret.Ports = p.parseStringSequence("volumes", kv.val, true, false)
+				ret.Ports = p.parseStringSequence("volumes", e.val, true, false)
 			case "options":
-				ret.Options = p.parseString(kv.val, true)
+				ret.Options = p.parseString(e.val, true)
 			default:
-				p.unexpectedKey(kv.key, sec, []string{
+				p.unexpectedKey(e.key, sec, []string{
 					"image",
 					"credentials",
 					"env",
@@ -1016,10 +1019,10 @@ func (p *parser) parseServices(n *yaml.Node) *Services {
 	} else {
 		// XXX: Is the key case-insensitive?
 		ss := map[string]*Service{}
-		for s := range p.parseSectionMapping("services", n, false, false) {
-			ss[s.id] = &Service{
-				Name:      s.key,
-				Container: p.parseContainer("services", s.key.Pos, s.val),
+		for e := range p.parseSectionMapping("services", n, false, false) {
+			ss[e.id] = &Service{
+				Name:      e.key,
+				Container: p.parseContainer("services", e.key.Pos, e.val),
 			}
 		}
 		ret.Value = ss
@@ -1036,38 +1039,38 @@ func (p *parser) parseTimeoutMinutes(n *yaml.Node) *Float {
 	return f
 }
 
-func (p *parser) parseStepExecAction(kvs []workflowKeyVal, isDocker bool, pos *Pos) *ExecAction {
+func (p *parser) parseStepExecAction(entries []workflowMappingEntry, isDocker bool, pos *Pos) *ExecAction {
 	ret := &ExecAction{}
 
-	for _, kv := range kvs {
-		switch kv.id {
+	for _, e := range entries {
+		switch e.id {
 		case "uses":
-			ret.Uses = p.parseString(kv.val, false)
+			ret.Uses = p.parseString(e.val, false)
 		case "with":
 			ret.Inputs = map[string]*Input{}
-			with := p.parseSectionMapping("with", kv.val, false, false)
+			with := p.parseSectionMapping("with", e.val, false, false)
 			if isDocker {
-				for input := range with {
-					switch input.id {
+				for e := range with {
+					switch e.id {
 					case "entrypoint":
 						// https://docs.github.com/en/actions/learn-github-actions/workflow-syntax-for-github-actions#jobsjob_idstepswithentrypoint
-						ret.Entrypoint = p.parseString(input.val, false)
+						ret.Entrypoint = p.parseString(e.val, false)
 					case "args":
 						// https://docs.github.com/en/actions/learn-github-actions/workflow-syntax-for-github-actions#jobsjob_idstepswithargs
-						ret.Args = p.parseString(input.val, true)
+						ret.Args = p.parseString(e.val, true)
 					default:
-						ret.Inputs[input.id] = &Input{input.key, p.parseString(input.val, true)}
+						ret.Inputs[e.id] = &Input{e.key, p.parseString(e.val, true)}
 					}
 				}
 			} else {
-				for input := range with {
-					ret.Inputs[input.id] = &Input{input.key, p.parseString(input.val, true)}
+				for e := range with {
+					ret.Inputs[e.id] = &Input{e.key, p.parseString(e.val, true)}
 				}
 			}
 		case "id", "if", "name", "env", "continue-on-error", "timeout-minutes":
 			// do nothing
 		default:
-			p.unexpectedKey(kv.key, "step to execute action", []string{
+			p.unexpectedKey(e.key, "step to execute action", []string{
 				"id",
 				"if",
 				"name",
@@ -1084,22 +1087,22 @@ func (p *parser) parseStepExecAction(kvs []workflowKeyVal, isDocker bool, pos *P
 	return ret
 }
 
-func (p *parser) parseStepExecRun(kvs []workflowKeyVal, pos *Pos) *ExecRun {
+func (p *parser) parseStepExecRun(entries []workflowMappingEntry, pos *Pos) *ExecRun {
 	ret := &ExecRun{}
 
-	for _, kv := range kvs {
-		switch kv.id {
+	for _, e := range entries {
+		switch e.id {
 		case "run":
-			ret.Run = p.parseString(kv.val, false)
-			ret.RunPos = kv.key.Pos
+			ret.Run = p.parseString(e.val, false)
+			ret.RunPos = e.key.Pos
 		case "shell":
-			ret.Shell = p.parseString(kv.val, false)
+			ret.Shell = p.parseString(e.val, false)
 		case "working-directory":
-			ret.WorkingDirectory = p.parseString(kv.val, false)
+			ret.WorkingDirectory = p.parseString(e.val, false)
 		case "id", "if", "name", "env", "continue-on-error", "timeout-minutes":
 			// do nothing
 		default:
-			p.unexpectedKey(kv.key, "step to run shell command", []string{
+			p.unexpectedKey(e.key, "step to run shell command", []string{
 				"id",
 				"if",
 				"name",
@@ -1129,23 +1132,23 @@ func (p *parser) parseStep(n *yaml.Node) *Step {
 	)
 
 	kind := isUnknown
-	kvs := slices.Collect(p.parseMappingAt("element of \"steps\" section", n, false, true))
-	for _, kv := range kvs {
-		switch kv.id {
+	entries := slices.Collect(p.parseMappingAt("element of \"steps\" section", n, false, true))
+	for _, e := range entries {
+		switch e.id {
 		case "id":
-			ret.ID = p.parseString(kv.val, false)
+			ret.ID = p.parseString(e.val, false)
 		case "if":
-			ret.If = p.parseString(kv.val, false)
+			ret.If = p.parseString(e.val, false)
 		case "name":
-			ret.Name = p.parseString(kv.val, true)
+			ret.Name = p.parseString(e.val, true)
 		case "env":
-			ret.Env = p.parseEnv(kv.val)
+			ret.Env = p.parseEnv(e.val)
 		case "continue-on-error":
-			ret.ContinueOnError = p.parseBool(kv.val)
+			ret.ContinueOnError = p.parseBool(e.val)
 		case "timeout-minutes":
-			ret.TimeoutMinutes = p.parseTimeoutMinutes(kv.val)
+			ret.TimeoutMinutes = p.parseTimeoutMinutes(e.val)
 		case "uses":
-			if strings.HasPrefix(kv.val.Value, "docker://") {
+			if strings.HasPrefix(e.val.Value, "docker://") {
 				kind = isDocker
 			} else {
 				kind = isAction
@@ -1158,9 +1161,9 @@ func (p *parser) parseStep(n *yaml.Node) *Step {
 
 	switch kind {
 	case isAction, isDocker:
-		ret.Exec = p.parseStepExecAction(kvs, kind == isDocker, posAt(n))
+		ret.Exec = p.parseStepExecAction(entries, kind == isDocker, posAt(n))
 	case isRun:
-		ret.Exec = p.parseStepExecRun(kvs, posAt(n))
+		ret.Exec = p.parseStepExecRun(entries, posAt(n))
 	default:
 		p.error(n, "step must run script with \"run\" section or run action with \"uses\" section")
 	}
@@ -1197,18 +1200,18 @@ func (p *parser) parseRunsOn(n *yaml.Node) *Runner {
 	}
 
 	r := &Runner{}
-	for kv := range p.parseSectionMapping("runs-on", n, false, true) {
-		switch kv.id {
+	for e := range p.parseSectionMapping("runs-on", n, false, true) {
+		switch e.id {
 		case "labels":
-			if expr := p.mayParseExpression(kv.val); expr != nil {
+			if expr := p.mayParseExpression(e.val); expr != nil {
 				r.LabelsExpr = expr
 				continue
 			}
-			r.Labels = p.parseStringOrStringSequence("labels", kv.val, false, false)
+			r.Labels = p.parseStringOrStringSequence("labels", e.val, false, false)
 		case "group":
-			r.Group = p.parseString(kv.val, false)
+			r.Group = p.parseString(e.val, false)
 		default:
-			p.unexpectedKey(kv.key, "runs-on", []string{"labels", "group"})
+			p.unexpectedKey(e.key, "runs-on", []string{"labels", "group"})
 		}
 	}
 
@@ -1221,16 +1224,16 @@ func (p *parser) parseSnapshot(pos *Pos, n *yaml.Node) *Snapshot {
 		return &Snapshot{ImageName: p.parseString(n, false)}
 	case yaml.MappingNode:
 		ret := &Snapshot{}
-		for kv := range p.parseSectionMapping("on", n, false, true) {
-			switch kv.id {
+		for e := range p.parseSectionMapping("on", n, false, true) {
+			switch e.id {
 			case "image-name":
-				ret.ImageName = p.parseString(kv.val, false)
+				ret.ImageName = p.parseString(e.val, false)
 			case "version":
-				ret.Version = p.parseString(kv.val, false)
+				ret.Version = p.parseString(e.val, false)
 			case "if":
-				ret.If = p.parseString(kv.val, false)
+				ret.If = p.parseString(e.val, false)
 			default:
-				p.unexpectedKey(kv.key, "snapshot", []string{"image-name", "version", "if"})
+				p.unexpectedKey(e.key, "snapshot", []string{"image-name", "version", "if"})
 			}
 		}
 		if ret.ImageName == nil {
@@ -1264,9 +1267,9 @@ func (p *parser) parseJob(id *String, n *yaml.Node) *Job {
 	var stepsOnlyKey *String
 	var callOnlyKey *String
 
-	for kv := range p.parseMapping(sprintf("%q job", id.Value), n, false, true) {
-		k, v := kv.key, kv.val
-		switch kv.id {
+	for e := range p.parseMapping(sprintf("%q job", id.Value), n, false, true) {
+		k, v := e.key, e.val
+		switch e.id {
 		case "name":
 			ret.Name = p.parseString(v, true)
 		case "needs":
@@ -1319,28 +1322,28 @@ func (p *parser) parseJob(id *String, n *yaml.Node) *Job {
 			callOnlyKey = k
 		case "with":
 			call.Inputs = map[string]*WorkflowCallInput{}
-			for i := range p.parseSectionMapping("with", v, false, false) {
-				call.Inputs[i.id] = &WorkflowCallInput{
-					Name:  i.key,
-					Value: p.parseString(i.val, true),
+			for e := range p.parseSectionMapping("with", v, false, false) {
+				call.Inputs[e.id] = &WorkflowCallInput{
+					Name:  e.key,
+					Value: p.parseString(e.val, true),
 				}
 			}
 			callOnlyKey = k
 		case "secrets":
-			if kv.val.Kind == yaml.ScalarNode {
+			if e.val.Kind == yaml.ScalarNode {
 				// `secrets: inherit` special case
 				// https://docs.github.com/en/actions/using-workflows/workflow-syntax-for-github-actions#onworkflow_callsecretsinherit
-				if kv.val.Value == "inherit" {
+				if e.val.Value == "inherit" {
 					call.InheritSecrets = true
 				} else {
-					p.errorf(kv.val, "expected mapping node for secrets or \"inherit\" string node but found %q node", kv.val.Value)
+					p.errorf(e.val, "expected mapping node for secrets or \"inherit\" string node but found %q node", e.val.Value)
 				}
 			} else {
 				call.Secrets = map[string]*WorkflowCallSecret{}
-				for s := range p.parseSectionMapping("secrets", v, false, false) {
-					call.Secrets[s.id] = &WorkflowCallSecret{
-						Name:  s.key,
-						Value: p.parseString(s.val, true),
+				for e := range p.parseSectionMapping("secrets", v, false, false) {
+					call.Secrets[e.id] = &WorkflowCallSecret{
+						Name:  e.key,
+						Value: p.parseString(e.val, true),
 					}
 				}
 			}
@@ -1348,7 +1351,7 @@ func (p *parser) parseJob(id *String, n *yaml.Node) *Job {
 		case "snapshot":
 			ret.Snapshot = p.parseSnapshot(k.Pos, v)
 		default:
-			p.unexpectedKey(kv.key, "job", []string{
+			p.unexpectedKey(e.key, "job", []string{
 				"name",
 				"needs",
 				"runs-on",
@@ -1408,8 +1411,8 @@ func (p *parser) parseJob(id *String, n *yaml.Node) *Job {
 // https://docs.github.com/en/actions/learn-github-actions/workflow-syntax-for-github-actions#jobs
 func (p *parser) parseJobs(n *yaml.Node) map[string]*Job {
 	ret := map[string]*Job{}
-	for kv := range p.parseSectionMapping("jobs", n, false, false) {
-		ret[kv.id] = p.parseJob(kv.key, kv.val)
+	for e := range p.parseSectionMapping("jobs", n, false, false) {
+		ret[e.id] = p.parseJob(e.key, e.val)
 	}
 	return ret
 }
@@ -1430,9 +1433,9 @@ func (p *parser) parse(n *yaml.Node) *Workflow {
 		return w
 	}
 
-	for kv := range p.parseSectionMapping("workflow", n.Content[0], false, true) {
-		k, v := kv.key, kv.val
-		switch kv.id {
+	for e := range p.parseSectionMapping("workflow", n.Content[0], false, true) {
+		k, v := e.key, e.val
+		switch e.id {
 		case "name":
 			w.Name = p.parseString(v, true)
 		case "on":
