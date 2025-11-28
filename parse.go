@@ -312,9 +312,11 @@ func (p *parser) parseMapping(where delayedSprintf, n *yaml.Node, allowEmpty, ca
 				p.errorfAt(k.Pos, "key %q is duplicated in %s. previously defined at %s%s", k.Value, where.String(), pos.String(), note)
 				continue
 			}
+
 			if !yield(workflowMappingEntry{id, k, n.Content[i+1]}) {
 				break
 			}
+
 			keys[id] = k.Pos
 			empty = false
 		}
@@ -354,7 +356,48 @@ func (p *parser) parseScheduleEvent(pos *Pos, n *yaml.Node) *ScheduledEvent {
 	return &ScheduledEvent{cron, pos}
 }
 
-// https://docs.github.com/en/actions/reference/workflows-and-actions/events-that-trigger-workflows#workflow_dispatch
+// https://docs.github.com/en/actions/reference/workflows-and-actions/workflow-syntax#onworkflow_dispatchinputs
+func (p *parser) parseWorkflowDispatchEventInput(name *String, n *yaml.Node) *DispatchInput {
+	ret := &DispatchInput{Name: name}
+
+	for e := range p.parseMappingAt("input settings of workflow_dispatch event", n, true, true) {
+		switch e.id {
+		case "description":
+			ret.Description = p.parseString(e.val, true)
+		case "required":
+			ret.Required = p.parseBool(e.val)
+		case "default":
+			ret.Default = p.parseString(e.val, true)
+		case "type":
+			if !p.checkString(e.val, false) {
+				continue
+			}
+			switch e.val.Value {
+			case "string":
+				ret.Type = WorkflowDispatchEventInputTypeString
+			case "number":
+				ret.Type = WorkflowDispatchEventInputTypeNumber
+			case "boolean":
+				ret.Type = WorkflowDispatchEventInputTypeBoolean
+			case "choice":
+				ret.Type = WorkflowDispatchEventInputTypeChoice
+			case "environment":
+				ret.Type = WorkflowDispatchEventInputTypeEnvironment
+			default:
+				p.errorf(e.val, `input type of workflow_dispatch event must be one of "string", "number", "boolean", "choice", "environment" but got %q`, e.val.Value)
+			}
+		case "options":
+			ret.Options = p.parseStringSequence("options", e.val, false, false)
+		default:
+			p.unexpectedKey(e.key, "inputs", []string{"description", "required", "default"})
+		}
+	}
+
+	return ret
+}
+
+// - https://docs.github.com/en/actions/reference/workflows-and-actions/events-that-trigger-workflows#workflow_dispatch
+// - https://docs.github.com/en/actions/reference/workflows-and-actions/workflow-syntax#onworkflow_dispatch
 func (p *parser) parseWorkflowDispatchEvent(pos *Pos, n *yaml.Node) *WorkflowDispatchEvent {
 	ret := &WorkflowDispatchEvent{Pos: pos}
 
@@ -366,54 +409,7 @@ func (p *parser) parseWorkflowDispatchEvent(pos *Pos, n *yaml.Node) *WorkflowDis
 
 		ret.Inputs = map[string]*DispatchInput{}
 		for e := range p.parseSectionMapping("inputs", e.val, true, false) {
-			name, spec := e.key, e.val
-
-			var desc *String
-			var req *Bool
-			var def *String
-			var opts []*String
-			ty := WorkflowDispatchEventInputTypeNone
-			for e := range p.parseMappingAt("input settings of workflow_dispatch event", spec, true, true) {
-				switch e.id {
-				case "description":
-					desc = p.parseString(e.val, true)
-				case "required":
-					req = p.parseBool(e.val)
-				case "default":
-					def = p.parseString(e.val, true)
-				case "type":
-					if !p.checkString(e.val, false) {
-						continue
-					}
-					switch e.val.Value {
-					case "string":
-						ty = WorkflowDispatchEventInputTypeString
-					case "number":
-						ty = WorkflowDispatchEventInputTypeNumber
-					case "boolean":
-						ty = WorkflowDispatchEventInputTypeBoolean
-					case "choice":
-						ty = WorkflowDispatchEventInputTypeChoice
-					case "environment":
-						ty = WorkflowDispatchEventInputTypeEnvironment
-					default:
-						p.errorf(e.val, `input type of workflow_dispatch event must be one of "string", "number", "boolean", "choice", "environment" but got %q`, e.val.Value)
-					}
-				case "options":
-					opts = p.parseStringSequence("options", e.val, false, false)
-				default:
-					p.unexpectedKey(e.key, "inputs", []string{"description", "required", "default"})
-				}
-			}
-
-			ret.Inputs[e.id] = &DispatchInput{
-				Name:        name,
-				Description: desc,
-				Required:    req,
-				Default:     def,
-				Type:        ty,
-				Options:     opts,
-			}
+			ret.Inputs[e.id] = p.parseWorkflowDispatchEventInput(e.key, e.val)
 		}
 	}
 
@@ -490,8 +486,85 @@ func (p *parser) parseWebhookEvent(name *String, n *yaml.Node) *WebhookEvent {
 	return ret
 }
 
+// https://docs.github.com/en/actions/learn-github-actions/workflow-syntax-for-github-actions#onworkflow_callinputs
+func (p *parser) parseWorkflowCallEventInput(id string, name *String, n *yaml.Node) *WorkflowCallEventInput {
+	ret := &WorkflowCallEventInput{Name: name, ID: id}
+	typed := false
+
+	for e := range p.parseMappingAt("input of workflow_call event", n, true, true) {
+		switch e.id {
+		case "description":
+			ret.Description = p.parseString(e.val, true)
+		case "required":
+			ret.Required = p.parseBool(e.val)
+		case "default":
+			ret.Default = p.parseString(e.val, true)
+		case "type":
+			switch e.val.Value {
+			case "boolean":
+				ret.Type = WorkflowCallEventInputTypeBoolean
+			case "number":
+				ret.Type = WorkflowCallEventInputTypeNumber
+			case "string":
+				ret.Type = WorkflowCallEventInputTypeString
+			default:
+				p.errorf(e.val, "invalid value %q for input type of workflow_call event. it must be one of \"boolean\", \"number\", or \"string\"", e.val.Value)
+			}
+			typed = true
+		default:
+			p.unexpectedKey(e.key, "inputs at workflow_call event", []string{"description", "required", "default", "type"})
+		}
+	}
+
+	if !typed {
+		p.errorfAt(name.Pos, "\"type\" is missing at %q input of workflow_call event", name.Value)
+	}
+
+	return ret
+}
+
+// https://docs.github.com/en/actions/reference/workflows-and-actions/workflow-syntax#example-of-onworkflow_callsecrets
+func (p *parser) parseWorkflowCallEventSecret(name *String, n *yaml.Node) *WorkflowCallEventSecret {
+	ret := &WorkflowCallEventSecret{Name: name}
+
+	for e := range p.parseMappingAt("secret of workflow_call event", n, true, true) {
+		switch e.id {
+		case "description":
+			ret.Description = p.parseString(e.val, true)
+		case "required":
+			ret.Required = p.parseBool(e.val)
+		default:
+			p.unexpectedKey(e.key, "secrets", []string{"description", "required"})
+		}
+	}
+
+	return ret
+}
+
+// https://docs.github.com/en/actions/reference/workflows-and-actions/workflow-syntax#example-of-onworkflow_calloutputs
+func (p *parser) parseWorkflowCallEventOutput(name *String, n *yaml.Node) *WorkflowCallEventOutput {
+	output := &WorkflowCallEventOutput{Name: name}
+
+	for e := range p.parseMappingAt("output of workflow_call event", n, true, true) {
+		switch e.id {
+		case "description":
+			output.Description = p.parseString(e.val, true)
+		case "value":
+			output.Value = p.parseString(e.val, false)
+		default:
+			p.unexpectedKey(e.key, "outputs at workflow_call event", []string{"description", "value"})
+		}
+	}
+
+	if output.Value == nil {
+		p.errorfAt(name.Pos, "\"value\" is missing at %q output of workflow_call event", name.Value)
+	}
+
+	return output
+}
+
 // - https://docs.github.com/en/actions/reference/workflows-and-actions/events-that-trigger-workflows#workflow-reuse-events
-// - https://docs.github.com/en/actions/learn-github-actions/workflow-syntax-for-github-actions#onworkflow_callinputs
+// - https://docs.github.com/en/actions/reference/workflows-and-actions/workflow-syntax#onworkflow_call
 // - https://docs.github.com/en/actions/learn-github-actions/reusing-workflows
 func (p *parser) parseWorkflowCallEvent(pos *Pos, n *yaml.Node) *WorkflowCallEvent {
 	ret := &WorkflowCallEvent{Pos: pos}
@@ -501,82 +574,17 @@ func (p *parser) parseWorkflowCallEvent(pos *Pos, n *yaml.Node) *WorkflowCallEve
 		case "inputs":
 			ret.Inputs = []*WorkflowCallEventInput{}
 			for e := range p.parseSectionMapping("inputs", e.val, true, false) {
-				name, spec := e.key, e.val
-				input := &WorkflowCallEventInput{Name: name, ID: e.id}
-				sawType := false
-
-				for e := range p.parseMappingAt("input of workflow_call event", spec, true, true) {
-					switch e.id {
-					case "description":
-						input.Description = p.parseString(e.val, true)
-					case "required":
-						input.Required = p.parseBool(e.val)
-					case "default":
-						input.Default = p.parseString(e.val, true)
-					case "type":
-						switch e.val.Value {
-						case "boolean":
-							input.Type = WorkflowCallEventInputTypeBoolean
-						case "number":
-							input.Type = WorkflowCallEventInputTypeNumber
-						case "string":
-							input.Type = WorkflowCallEventInputTypeString
-						default:
-							p.errorf(e.val, "invalid value %q for input type of workflow_call event. it must be one of \"boolean\", \"number\", or \"string\"", e.val.Value)
-						}
-						sawType = true
-					default:
-						p.unexpectedKey(e.key, "inputs at workflow_call event", []string{"description", "required", "default", "type"})
-					}
-				}
-
-				if !sawType {
-					p.errorfAt(name.Pos, "\"type\" is missing at %q input of workflow_call event", name.Value)
-				}
-
-				ret.Inputs = append(ret.Inputs, input)
+				ret.Inputs = append(ret.Inputs, p.parseWorkflowCallEventInput(e.id, e.key, e.val))
 			}
 		case "secrets":
 			ret.Secrets = map[string]*WorkflowCallEventSecret{}
 			for e := range p.parseSectionMapping("secrets", e.val, true, false) {
-				name, spec := e.key, e.val
-				secret := &WorkflowCallEventSecret{Name: name}
-
-				for e := range p.parseMappingAt("secret of workflow_call event", spec, true, true) {
-					switch e.id {
-					case "description":
-						secret.Description = p.parseString(e.val, true)
-					case "required":
-						secret.Required = p.parseBool(e.val)
-					default:
-						p.unexpectedKey(e.key, "secrets", []string{"description", "required"})
-					}
-				}
-
-				ret.Secrets[e.id] = secret
+				ret.Secrets[e.id] = p.parseWorkflowCallEventSecret(e.key, e.val)
 			}
 		case "outputs":
 			ret.Outputs = map[string]*WorkflowCallEventOutput{}
 			for e := range p.parseSectionMapping("outputs", e.val, true, false) {
-				name, spec := e.key, e.val
-				output := &WorkflowCallEventOutput{Name: name}
-
-				for e := range p.parseMappingAt("output of workflow_call event", spec, true, true) {
-					switch e.id {
-					case "description":
-						output.Description = p.parseString(e.val, true)
-					case "value":
-						output.Value = p.parseString(e.val, false)
-					default:
-						p.unexpectedKey(e.key, "outputs at workflow_call event", []string{"description", "value"})
-					}
-				}
-
-				if output.Value == nil {
-					p.errorfAt(name.Pos, "\"value\" is missing at %q output of workflow_call event", name.Value)
-				}
-
-				ret.Outputs[e.id] = output
+				ret.Outputs[e.id] = p.parseWorkflowCallEventOutput(e.key, e.val)
 			}
 		default:
 			p.unexpectedKey(e.key, "workflow_call", []string{"inputs", "secrets", "outputs"})
@@ -748,24 +756,22 @@ func (p *parser) parseConcurrency(pos *Pos, n *yaml.Node) *Concurrency {
 
 	if n.Kind == yaml.ScalarNode {
 		ret.Group = p.parseString(n, false)
-	} else {
-		groupFound := false
-		for e := range p.parseSectionMapping("concurrency", n, false, true) {
-			switch e.id {
-			case "group":
-				ret.Group = p.parseString(e.val, false)
-				groupFound = true
-			case "cancel-in-progress":
-				ret.CancelInProgress = p.parseBool(e.val)
-			default:
-				p.unexpectedKey(e.key, "concurrency", []string{"group", "cancel-in-progress"})
-			}
-		}
-		if !groupFound {
-			p.errorAt(pos, "group name is missing in \"concurrency\" section")
-		}
+		return ret
 	}
 
+	for e := range p.parseSectionMapping("concurrency", n, false, true) {
+		switch e.id {
+		case "group":
+			ret.Group = p.parseString(e.val, false)
+		case "cancel-in-progress":
+			ret.CancelInProgress = p.parseBool(e.val)
+		default:
+			p.unexpectedKey(e.key, "concurrency", []string{"group", "cancel-in-progress"})
+		}
+	}
+	if ret.Group == nil {
+		p.errorAt(pos, "group name is missing in \"concurrency\" section")
+	}
 	return ret
 }
 
@@ -775,24 +781,22 @@ func (p *parser) parseEnvironment(pos *Pos, n *yaml.Node) *Environment {
 
 	if n.Kind == yaml.ScalarNode {
 		ret.Name = p.parseString(n, false)
-	} else {
-		nameFound := false
-		for e := range p.parseSectionMapping("environment", n, false, true) {
-			switch e.id {
-			case "name":
-				ret.Name = p.parseString(e.val, false)
-				nameFound = true
-			case "url":
-				ret.URL = p.parseString(e.val, false)
-			default:
-				p.unexpectedKey(e.key, "environment", []string{"name", "url"})
-			}
-		}
-		if !nameFound {
-			p.errorAt(pos, "name is missing in \"environment\" section")
-		}
+		return ret
 	}
 
+	for e := range p.parseSectionMapping("environment", n, false, true) {
+		switch e.id {
+		case "name":
+			ret.Name = p.parseString(e.val, false)
+		case "url":
+			ret.URL = p.parseString(e.val, false)
+		default:
+			p.unexpectedKey(e.key, "environment", []string{"name", "url"})
+		}
+	}
+	if ret.Name == nil {
+		p.errorAt(pos, "name is missing in \"environment\" section")
+	}
 	return ret
 }
 
@@ -977,31 +981,32 @@ func (p *parser) parseContainer(sec string, pos *Pos, n *yaml.Node) *Container {
 	if n.Kind == yaml.ScalarNode {
 		// When you only specify a container image, you can omit the image keyword.
 		ret.Image = p.parseString(n, false)
-	} else {
-		for e := range p.parseSectionMapping(sec, n, false, true) {
-			switch e.id {
-			case "image":
-				ret.Image = p.parseString(e.val, false)
-			case "credentials":
-				ret.Credentials = p.parseCredentials(e.key.Pos, e.val)
-			case "env":
-				ret.Env = p.parseEnv(e.val)
-			case "ports":
-				ret.Ports = p.parseStringSequence("ports", e.val, true, false)
-			case "volumes":
-				ret.Ports = p.parseStringSequence("volumes", e.val, true, false)
-			case "options":
-				ret.Options = p.parseString(e.val, true)
-			default:
-				p.unexpectedKey(e.key, sec, []string{
-					"image",
-					"credentials",
-					"env",
-					"ports",
-					"volumes",
-					"options",
-				})
-			}
+		return ret
+	}
+
+	for e := range p.parseSectionMapping(sec, n, false, true) {
+		switch e.id {
+		case "image":
+			ret.Image = p.parseString(e.val, false)
+		case "credentials":
+			ret.Credentials = p.parseCredentials(e.key.Pos, e.val)
+		case "env":
+			ret.Env = p.parseEnv(e.val)
+		case "ports":
+			ret.Ports = p.parseStringSequence("ports", e.val, true, false)
+		case "volumes":
+			ret.Ports = p.parseStringSequence("volumes", e.val, true, false)
+		case "options":
+			ret.Options = p.parseString(e.val, true)
+		default:
+			p.unexpectedKey(e.key, sec, []string{
+				"image",
+				"credentials",
+				"env",
+				"ports",
+				"volumes",
+				"options",
+			})
 		}
 	}
 
