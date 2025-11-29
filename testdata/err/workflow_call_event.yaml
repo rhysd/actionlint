@@ -3,49 +3,44 @@ on:
     inputs:
       # input without fields
       input0:
-      # input without type
       input1:
-        description: 'hi'
+        description: input without type
       # input without description
       input2:
         type: string
-      # input with invalid type
       input3:
-        description: 'hi'
+        description: input with invalid type
         type: unknown
-      # non-boolean type value for 'required'
       input4:
-        description: 'hi'
+        description: non-boolean type value for 'required'
         required: yes
-      # unknown field
       input5:
-        description: 'hi'
+        description: unknown field
         type: number
         unknown: hello
-      # duplicate input name
       input0:
-        description: 'hi'
+        description: duplicate input name
         type: number
-      # type mismatch string for number
       input6:
-        description: 'hi'
+        description: type mismatch string for number
         default: foooo
         type: number
-      # type mismatch (number for boolean)
       input7:
-        description: 'hi'
+        description: type mismatch (number for boolean)
         default: 123
         type: boolean
+      input8:
+        description: invalid mapping at `type`
+        type:
+          foo: bar
     secrets:
       # no field
       secret0:
-      # unknown field
       secret1:
-        description: ''
+        description: unknown field
         unknown: bye
-      # duplicate secret name
       secret1:
-        description: ''
+        description: duplicate secret name
     # unknown key for workflow_call event
     unknown:
 

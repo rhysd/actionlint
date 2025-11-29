@@ -500,6 +500,10 @@ func (p *parser) parseWorkflowCallEventInput(id string, name *String, n *yaml.No
 		case "default":
 			ret.Default = p.parseString(e.val, true)
 		case "type":
+			typed = true
+			if !p.checkString(e.val, false) {
+				continue
+			}
 			switch e.val.Value {
 			case "boolean":
 				ret.Type = WorkflowCallEventInputTypeBoolean
@@ -510,7 +514,6 @@ func (p *parser) parseWorkflowCallEventInput(id string, name *String, n *yaml.No
 			default:
 				p.errorf(e.val, "invalid value %q for input type of workflow_call event. it must be one of \"boolean\", \"number\", or \"string\"", e.val.Value)
 			}
-			typed = true
 		default:
 			p.unexpectedKey(e.key, "inputs at workflow_call event", []string{"description", "required", "default", "type"})
 		}
