@@ -68,7 +68,7 @@ jobs:
 
         // Do not `await` this method call since it will never be settled
         // eslint-disable-next-line @typescript-eslint/no-floating-promises
-        go.run('instance' in result ? (result as { instance: WebAssembly.Instance }).instance : result);
+        go.run(result.instance);
     });
 
     it('shows first result on loading', async function () {
