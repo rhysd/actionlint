@@ -1,0 +1,3 @@
+test.yaml:8:7: GitHub Actions does not support YAML merge key "<<" [syntax-check]
+test.yaml:21:11: GitHub Actions does not support YAML merge key "<<" [syntax-check]
+test.yaml:27:9: GitHub Actions does not support YAML merge key "<<" [syntax-check]

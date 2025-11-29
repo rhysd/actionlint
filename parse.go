@@ -293,6 +293,10 @@ func (p *parser) parseMapping(where delayedSprintf, n *yaml.Node, allowEmpty, ca
 			if k == nil {
 				continue
 			}
+			if k.Value == "<<" {
+				p.errorAt(k.Pos, "GitHub Actions does not support YAML merge key \"<<\"")
+				continue
+			}
 
 			id := k.Value
 			if !caseSensitive {
