@@ -88,22 +88,44 @@ func (p *parser) errorf(n *yaml.Node, format string, args ...interface{}) {
 	p.error(n, m)
 }
 
-func (p *parser) resolveChildAliases(n *yaml.Node, anchors map[*yaml.Node]struct{}) {
-	if len(n.Anchor) != 0 {
-		anchors[n] = struct{}{}
+func (p *parser) resolveChildAliases(root *yaml.Node) {
+	type usage struct {
+		used    bool
+		defined bool
 	}
-	for i, c := range n.Content {
-		if c.Kind != yaml.AliasNode {
-			p.resolveChildAliases(c, anchors)
-			continue
+
+	anchors := map[*yaml.Node]*usage{}
+
+	var resolve func(*yaml.Node) // For recursive call
+	resolve = func(n *yaml.Node) {
+		if len(n.Anchor) != 0 {
+			anchors[n] = &usage{}
 		}
-		if _, ok := anchors[c.Alias]; ok {
-			p.errorf(c, "recursive alias %q is found. anchor was defined at line:%d, column:%d", c.Alias.Anchor, c.Alias.Line, c.Alias.Column)
+		for i, c := range n.Content {
+			if c.Kind != yaml.AliasNode {
+				resolve(c)
+				continue
+			}
+			if u, ok := anchors[c.Alias]; ok {
+				if !u.defined {
+					p.errorf(c, "recursive alias %q is found. anchor was declared at line:%d, column:%d", c.Alias.Anchor, c.Alias.Line, c.Alias.Column)
+				}
+				u.used = true
+			}
+			n.Content[i] = c.Alias // Resolved
 		}
-		n.Content[i] = c.Alias // Resolved
+		if len(n.Anchor) != 0 {
+			if u, ok := anchors[n]; ok {
+				u.defined = true
+			}
+		}
 	}
-	if len(n.Anchor) != 0 {
-		delete(anchors, n)
+	resolve(root)
+
+	for n, u := range anchors {
+		if !u.used {
+			p.errorf(n, "anchor %q is defined but not used", n.Anchor)
+		}
 	}
 }
 
@@ -1446,7 +1468,7 @@ func (p *parser) parseJobs(n *yaml.Node) map[string]*Job {
 
 // https://docs.github.com/en/actions/learn-github-actions/workflow-syntax-for-github-actions
 func (p *parser) parse(n *yaml.Node) *Workflow {
-	p.resolveChildAliases(n, map[*yaml.Node]struct{}{})
+	p.resolveChildAliases(n)
 
 	w := &Workflow{}
 
