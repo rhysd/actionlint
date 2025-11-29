@@ -33,10 +33,6 @@ func posAt(n *yaml.Node) *Pos {
 	return &Pos{n.Line, n.Column}
 }
 
-func isNull(n *yaml.Node) bool {
-	return n.Kind == yaml.ScalarNode && n.Tag == "!!null"
-}
-
 func newString(n *yaml.Node) *String {
 	quoted := n.Style&(yaml.DoubleQuotedStyle|yaml.SingleQuotedStyle) != 0
 	return &String{n.Value, quoted, posAt(n)}
@@ -274,15 +270,15 @@ func (p *parser) parseFloat(n *yaml.Node) *Float {
 
 func (p *parser) parseMapping(where delayedSprintf, n *yaml.Node, allowEmpty, caseSensitive bool) iter.Seq[workflowMappingEntry] {
 	return func(yield func(workflowMappingEntry) bool) {
-		isNull := isNull(n)
-
-		if !isNull && n.Kind != yaml.MappingNode {
-			p.errorf(n, "%s is %s node but mapping node is expected", where.String(), nodeKindName(n.Kind))
+		if n.Kind == yaml.ScalarNode && n.Tag == "!!null" {
+			if !allowEmpty {
+				p.errorf(n, "%s should not be empty. please remove this section if it's unnecessary", where.String())
+			}
 			return
 		}
 
-		if !allowEmpty && isNull {
-			p.errorf(n, "%s should not be empty. please remove this section if it's unnecessary", where.String())
+		if n.Kind != yaml.MappingNode {
+			p.errorf(n, "%s is %s node but mapping node is expected", where.String(), nodeKindName(n.Kind))
 			return
 		}
 
@@ -290,9 +286,7 @@ func (p *parser) parseMapping(where delayedSprintf, n *yaml.Node, allowEmpty, ca
 		empty := true
 		for i := 0; i < len(n.Content); i += 2 {
 			k := p.parseString(n.Content[i], false)
-			if k == nil {
-				continue
-			}
+
 			if k.Value == "<<" {
 				p.errorAt(k.Pos, "GitHub Actions does not support YAML merge key \"<<\"")
 				continue
