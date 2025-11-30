@@ -636,6 +636,7 @@ func (l *Linter) check(
 	}
 
 	slices.SortFunc(all, compareErrors)
+	all = slices.CompactFunc(all, equalsErrors) // Alias may duplicate errors
 
 	if l.logLevel >= LogLevelVerbose {
 		elapsed := time.Since(start)

@@ -171,6 +171,13 @@ func compareErrors(lhs, rhs *Error) int {
 	return strings.Compare(lhs.Message, rhs.Message)
 }
 
+func equalsErrors(lhs, rhs *Error) bool {
+	return lhs.Filepath == rhs.Filepath &&
+		lhs.Line == rhs.Line &&
+		lhs.Column == rhs.Column &&
+		lhs.Message == rhs.Message
+}
+
 // ErrorTemplateFields holds all fields to format one error message.
 type ErrorTemplateFields struct {
 	// Message is error message body.
