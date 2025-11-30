@@ -1,0 +1,7 @@
+/test\.yaml:4:22: invalid activity type "created" for "pull_request" Webhook event\. available types are .+ \[events\]/
+test.yaml:20:9: unexpected key "with" for step to run shell command. expected one of "continue-on-error", "env", "id", "if", "name", "run", "shell", "timeout-minutes", "working-directory" [syntax-check]
+test.yaml:20:9: unexpected key "with" for step to run shell command. expected one of "continue-on-error", "env", "id", "if", "name", "run", "shell", "timeout-minutes", "working-directory" [syntax-check]
+test.yaml:20:9: unexpected key "with" for step to run shell command. expected one of "continue-on-error", "env", "id", "if", "name", "run", "shell", "timeout-minutes", "working-directory" [syntax-check]
+test.yaml:20:15: anchor "valid_inputs" is defined but not used [syntax-check]
+test.yaml:28:15: "with" section should not be empty. please remove this section if it's unnecessary [syntax-check]
+test.yaml:28:15: anchor "valid_inputs" is defined but not used [syntax-check]
