@@ -40,7 +40,7 @@ proficient in English.
 
 `make` (3.81 or later) is useful to run each tasks and reduce redundant builds/tests.
 
-## How to build
+## Building
 
 ```sh
 go build ./cmd/actionlint
@@ -62,7 +62,14 @@ make build SKIP_GO_GENERATE=1
 Since actionlint doesn't use any cgo features, setting `CGO_ENABLED=0` environment variable is recommended to avoid troubles
 around linking libc. `make build` does this by default.
 
-## How to run tests
+## Testing
+
+[![CI](https://github.com/rhysd/actionlint/actions/workflows/ci.yaml/badge.svg)](https://github.com/rhysd/actionlint/actions/workflows/ci.yaml)
+[![Generate](https://github.com/rhysd/actionlint/actions/workflows/generate.yaml/badge.svg)](https://github.com/rhysd/actionlint/actions/workflows/generate.yaml)
+[![Problem Matchers](https://github.com/rhysd/actionlint/actions/workflows/matcher.yaml/badge.svg)](https://github.com/rhysd/actionlint/actions/workflows/matcher.yaml)
+[![Download script](https://github.com/rhysd/actionlint/actions/workflows/download.yaml/badge.svg)](https://github.com/rhysd/actionlint/actions/workflows/download.yaml)
+[![Release](https://github.com/rhysd/actionlint/actions/workflows/release.yaml/badge.svg)](https://github.com/rhysd/actionlint/actions/workflows/release.yaml)
+[![Codecov](https://codecov.io/gh/rhysd/actionlint/graph/badge.svg?token=CgcOo0m9oW)](https://codecov.io/gh/rhysd/actionlint)
 
 Run the following command at the root of this repository.
 
@@ -85,7 +92,22 @@ make cov
 open coverage.html
 ```
 
-## How to run lints
+Automated tests are as follows.
+
+- Unit tests are implemented in `*_test.go` files for testing the corresponding APIs. Test data for unit tests are put in
+  `testdata/` directory.
+- UI tests based on matching to error messages are implemented in `linter_test.go` and all test data are stored in `testdata/`
+  directory.
+  - `testdata/examples/` contains tests for all examples in ['Checks' document](docs/checks.md). `*.yaml` files are an input
+    workflow and `*.out` files are expected error messages.
+  - `testdata/ok/` contains 'OK' tests. All workflow files in this directory should cause no errors.
+  - `testdata/err/` contains 'Error' tests. Each `*.yaml` files are workflow inputs and corresponding `*.out` files are expected
+    error messages (one error per line).
+  - `testdata/projects/` contains 'Project' tests. Each directories represent a single project (meaning a repository on GitHub).
+    Corresponding `*.out` files are expected error messages. Empty `*.out` file means the test case should cause no errors.
+    'Project' test is used for use cases where multiple files are related (reusable workflows, local actions, config files, ...).
+
+## Linting
 
 [staticcheck](https://staticcheck.io/) is used to lint Go sources.
 
@@ -105,7 +127,7 @@ These lints can be run with other checks by the following command.
 make lint
 ```
 
-## How to run fuzzer
+## Fuzzing
 
 Fuzz tests use [go-fuzz](https://github.com/dvyukov/go-fuzz). Install `go-fuzz` and `go-fuzz-build` in your system.
 
@@ -125,7 +147,7 @@ or
 make fuzz FUZZ_FUNC=FuzzParse
 ```
 
-## How to release
+## Make a new release
 
 When releasing v1.2.3 as example:
 
@@ -238,30 +260,6 @@ using [generate-availability](./scripts/generate-availability) script. It is run
 See [the readme of the script](./scripts/generate-availability/README.md) for the usage of the script.
 
 Update for `availability.go` is run weekly on CI by [`generate`](.github/workflows/generate.yaml) workflow.
-
-## Testing
-
-[![CI](https://github.com/rhysd/actionlint/actions/workflows/ci.yaml/badge.svg)](https://github.com/rhysd/actionlint/actions/workflows/ci.yaml)
-[![Generate](https://github.com/rhysd/actionlint/actions/workflows/generate.yaml/badge.svg)](https://github.com/rhysd/actionlint/actions/workflows/generate.yaml)
-[![Problem Matchers](https://github.com/rhysd/actionlint/actions/workflows/matcher.yaml/badge.svg)](https://github.com/rhysd/actionlint/actions/workflows/matcher.yaml)
-[![Download script](https://github.com/rhysd/actionlint/actions/workflows/download.yaml/badge.svg)](https://github.com/rhysd/actionlint/actions/workflows/download.yaml)
-[![Release](https://github.com/rhysd/actionlint/actions/workflows/release.yaml/badge.svg)](https://github.com/rhysd/actionlint/actions/workflows/release.yaml)
-[![Codecov](https://codecov.io/gh/rhysd/actionlint/graph/badge.svg?token=CgcOo0m9oW)](https://codecov.io/gh/rhysd/actionlint)
-
-All tests are automated.
-
-- Unit tests are implemented in `*_test.go` files for testing the corresponding APIs. Test data for unit tests are put in
-  `testdata/` directory.
-- UI tests based on matching to error messages are implemented in `linter_test.go` and all test data are stored in `testdata/`
-  directory.
-  - `testdata/examples/` contains tests for all examples in ['Checks' document](docs/checks.md). `*.yaml` files are an input
-    workflow and `*.out` files are expected error messages.
-  - `testdata/ok/` contains 'OK' tests. All workflow files in this directory should cause no errors.
-  - `testdata/err/` contains 'Error' tests. Each `*.yaml` files are workflow inputs and corresponding `*.out` files are expected
-    error messages (one error per line).
-  - `testdata/projects/` contains 'Project' tests. Each directories represent a single project (meaning a repository on GitHub).
-    Corresponding `*.out` files are expected error messages. Empty `*.out` file means the test case should cause no errors.
-    'Project' test is used for use cases where multiple files are related (reusable workflows, local actions, config files, ...).
 
 <a id="about-checks-doc"></a>
 ## How to write checks document
