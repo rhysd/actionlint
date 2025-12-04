@@ -31,6 +31,13 @@
             version: 2.*
     ```
 - Report constant conditions at `if:` like `if: true` as error. Only very simple expressions like `true` or `false` are detected for now. See the [document](https://github.com/rhysd/actionlint/blob/main/docs/checks.md#if-cond-constant) for more details.
+- Check unexpected keys in inputs in [action metadata](https://docs.github.com/en/actions/reference/workflows-and-actions/metadata-syntax).
+  ```yaml
+  inputs:
+    some_input:
+      # Error: `type` is not supported for inputs in action metadata
+      type: boolean
+  ```
 - Fix some invalid permissions are not reported as error in `id-token` and `models` scopes. ([#582](https://github.com/rhysd/actionlint/issues/582), thanks [@holtkampjs](https://github.com/holtkampjs))
 - Fix `args` and `entrypoint` inputs are not recognized at `uses:` when it's not a Docker action. ([#550](https://github.com/rhysd/actionlint/issues/550))
 - Set correct column in source position of YAML parse error.
