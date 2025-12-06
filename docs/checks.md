@@ -42,6 +42,7 @@ List of checks:
 - [Constant conditions at `if:`](#if-cond-constant)
 - [Action metadata syntax validation](#action-metadata-syntax)
 - [Deprecated inputs usage](#deprecated-inputs-usage)
+- [YAML anchors](#yaml-anchors)
 
 Note that actionlint focuses on catching mistakes in workflow files. If you want some general code style checks, please consider
 using a general YAML checker like [yamllint][].
@@ -3029,6 +3030,91 @@ test.yaml:9:11: avoid using deprecated input "old-input" in action "My action" d
 Note that the usage of deprecated inputs marked as 'required' are not reported as error because it is not possible to avoid using
 them.
 
+<a id="yaml-anchors"></a>
+## YAML anchors
+
+GitHub Actions [supports][anochor-support-announce] YAML [anchor and alias nodes][yaml-anchor-spec]. actionlint checks YAML
+anchors and aliases in workflows.
+
+actionlint reports recursive aliases and unused anchors as error.
+
+Example input:
+
+```yaml
+on: push
+
+jobs:
+  test:
+    services:
+      nginx:
+        image: nginx:latest
+        credentials: &credentials
+          username: ${{ secrets.user }}
+          password: ${{ secrets.password }}
+    runs-on: ubuntu-latest
+    steps:
+      - run: ./download.sh
+        # OK: Valid alias to &credentials
+        env: *credentials
+      - run: ./upload.sh
+        # ERROR: Unused anchor 'credentials'
+        env: &credentials
+      - &recursive
+        run: ./some_script.sh
+        # ERROR: Recursively referencing the anchor
+        env: *recursive
+```
+
+Output:
+
+```
+test.yaml:18:14: anchor "credentials" is defined but not used [syntax-check]
+   |
+18 |         env: &credentials
+   |              ^~~~~~~~~~~~
+test.yaml:18:14: expecting a single ${{...}} expression or mapping value for "env" section, but found plain text node [syntax-check]
+   |
+18 |         env: &credentials
+   |              ^~~~~~~~~~~~
+test.yaml:19:9: expected scalar node for string value but found mapping node with "!!map" tag [syntax-check]
+   |
+19 |       - &recursive
+   |         ^~~~~~~~~~
+test.yaml:22:14: recursive alias "recursive" is found. anchor was declared at line:19, column:9 [syntax-check]
+   |
+22 |         env: *recursive
+   |              ^~~~~~~~~~
+```
+
+[Playground](https://rhysd.github.io/actionlint/#eNpsj8FqwzAQRO/+ijkUHwp27/qZothLomKvxI7kFEL+vYjGwiE5mRm/p92N6pAKL133E090HZCFuX4Bim1hEv4nQM9Bf/cAhNWfxT3axVev/ZtMZtEc/EKH/pAaARSKqV/F4eN2A2UyyRxri/v9wCVPXqPNz9ze7qwV5VCvKaeiuQyHhZgltSOGSjqMX3O86hL9PPLSholuDp+v6zappLdK/07pTaZiDJs0+PEK4yrfnCyk/Dq9WX8BAAD//wHceU8=)
+
+actionlint also checks dangling aliases as syntax error.
+
+Example input:
+
+```yaml
+on: push
+
+jobs:
+  test:
+    runs-on: ubuntu-latest
+    steps:
+      - run: ./download.sh
+        # ERROR: &credentials is not defined
+        env: *credentials
+```
+
+Output:
+
+```
+test.yaml:0:0: could not parse as YAML: yaml: unknown anchor 'credentials' referenced [syntax-check]
+```
+
+[Playground](https://rhysd.github.io/actionlint/#eNosyjEOwjAMheE9p3gzUsqe26TEUkGRXeXZcH1k6PQP/2facAaPUl62sxXAhZ4FVihrgthDPers+X6LLif/CqgpG7b7sI9O62PjcS1A9N1weywZov7sk98AAAD//6p1Iic=)
+
+Note that the error position is currently incorrect as the above output indicates. This issue is due to go-yaml library and the
+[fix](https://github.com/yaml/go-yaml/pull/191) will be included at the next release.
+
 ---
 
 [Installation](install.md) | [Usage](usage.md) | [Configuration](config.md) | [Go API](api.md) | [References](reference.md)
@@ -3088,3 +3174,5 @@ them.
 [branding-icons-doc]: https://github.com/github/docs/blob/main/content/actions/creating-actions/metadata-syntax-for-github-actions.md#exhaustive-list-of-all-currently-supported-icons
 [operators-doc]: https://docs.github.com/en/actions/learn-github-actions/expressions#operators
 [dep-msg]: https://docs.github.com/en/actions/reference/workflows-and-actions/metadata-syntax#inputsinput_iddeprecationmessage
+[anochor-support-announce]: https://github.blog/changelog/2025-09-18-actions-yaml-anchors-and-non-public-workflow-templates/
+[yaml-anchor-spec]: https://yaml.org/spec/1.2.2/#71-alias-nodes
