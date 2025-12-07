@@ -6,17 +6,14 @@ jobs:
       nginx:
         image: nginx:latest
         credentials: &credentials
-          username: ${{ secrets.user }}
-          password: ${{ secrets.password }}
+          # ERROR: Credentials are embedded directly in workflow
+          username: my-user-name
+          password: P@ssw0rd
+          # ERROR: Unexpected key 'email'
+          email: me@example.com
+      redis:
+        image: redis:latest
+        credentials: *credentials
     runs-on: ubuntu-latest
     steps:
-      - run: ./download.sh
-        # OK: Valid alias to &credentials
-        env: *credentials
-      - run: ./upload.sh
-        # ERROR: Unused anchor 'credentials'
-        env: &credentials
-      - &recursive
-        run: ./some_script.sh
-        # ERROR: Recursively referencing the anchor
-        env: *recursive
+      - run: ./do_something.sh

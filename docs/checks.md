@@ -3033,10 +3033,58 @@ them.
 <a id="yaml-anchors"></a>
 ## YAML anchors
 
-GitHub Actions [supports][anochor-support-announce] YAML [anchor and alias nodes][yaml-anchor-spec]. actionlint checks YAML
-anchors and aliases in workflows.
+GitHub Actions [supports][anochor-support-announce] YAML [anchor and alias nodes][yaml-anchor-spec]. actionlint checks them in
+workflows.
 
-actionlint reports recursive aliases and unused anchors as error.
+actionlint detects errors under YAML anchors. When an alias node references an erroneous anchor, actionlint checks them as if the
+alias node is replaced with the anchor node. This means that one anchor node may be checked multiple times and actionlint may
+report multiple similar errors at the same source location.
+
+Example input:
+
+```yaml
+on: push
+
+jobs:
+  test:
+    services:
+      nginx:
+        image: nginx:latest
+        credentials: &credentials
+          # ERROR: Credentials are embedded directly in workflow
+          username: my-user-name
+          password: P@ssw0rd
+          # ERROR: Unexpected key 'email'
+          email: me@example.com
+      redis:
+        image: redis:latest
+        credentials: *credentials
+    runs-on: ubuntu-latest
+    steps:
+      - run: ./do_something.sh
+```
+
+Output:
+
+```
+test.yaml:11:21: "password" section in "nginx" service should be specified via secrets. do not put password value directly [credentials]
+   |
+11 |           password: P@ssw0rd
+   |                     ^~~~~~~~
+test.yaml:11:21: "password" section in "redis" service should be specified via secrets. do not put password value directly [credentials]
+   |
+11 |           password: P@ssw0rd
+   |                     ^~~~~~~~
+test.yaml:13:11: unexpected key "email" for "credentials" section. expected one of "password", "username" [syntax-check]
+   |
+13 |           email: me@example.com
+   |           ^~~~~~
+```
+
+[Playground](https://rhysd.github.io/actionlint/#eNp8kM1KxDAUhfd9irNyIaS6zmoewTeQTHNpI703JSdxxreXMLUUBVfhOz/kcLN5bI3LMHzkK/0AVGHtL0Apn2kSPgiwOdn9B4CkYRa/q2vovcObikSxmsJKj6cTHQmgUYoFFQ/9ch1cp1NgC+Qtl+jxdiFvryWeTNGQVg+Vi9yDbquMU9bdLxIT/wx9qP8Nff49tDSj6ydq12a1uVOZVbbjD9eTHuNLzO/MKnVJNo9cvgMAAP//l3xngQ==)
+
+actionlint also checks usage of anchors and aliases. In the following example actionlint reports recursive aliases and unused
+anchors as error.
 
 Example input:
 
@@ -3088,7 +3136,9 @@ test.yaml:22:14: recursive alias "recursive" is found. anchor was declared at li
 
 [Playground](https://rhysd.github.io/actionlint/#eNpsj8FqwzAQRO/+ijkUHwp27/qZothLomKvxI7kFEL+vYjGwiE5mRm/p92N6pAKL133E090HZCFuX4Bim1hEv4nQM9Bf/cAhNWfxT3axVev/ZtMZtEc/EKH/pAaARSKqV/F4eN2A2UyyRxri/v9wCVPXqPNz9ze7qwV5VCvKaeiuQyHhZgltSOGSjqMX3O86hL9PPLSholuDp+v6zappLdK/07pTaZiDJs0+PEK4yrfnCyk/Dq9WX8BAAD//wHceU8=)
 
-actionlint also checks dangling aliases as syntax error.
+actionlint checks dangling aliases as syntax error. Note that the error position is currently incorrect as the below output
+indicates. This issue is due to go-yaml library and the [fix](https://github.com/yaml/go-yaml/pull/191) will be included at the
+next release of the library.
 
 Example input:
 
@@ -3111,9 +3161,6 @@ test.yaml:0:0: could not parse as YAML: yaml: unknown anchor 'credentials' refer
 ```
 
 [Playground](https://rhysd.github.io/actionlint/#eNosyjEOwjAMheE9p3gzUsqe26TEUkGRXeXZcH1k6PQP/2facAaPUl62sxXAhZ4FVihrgthDPers+X6LLif/CqgpG7b7sI9O62PjcS1A9N1weywZov7sk98AAAD//6p1Iic=)
-
-Note that the error position is currently incorrect as the above output indicates. This issue is due to go-yaml library and the
-[fix](https://github.com/yaml/go-yaml/pull/191) will be included at the next release.
 
 ---
 
