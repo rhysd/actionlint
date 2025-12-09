@@ -278,12 +278,13 @@ func (rule *RuleEvents) checkWorkflowDispatchEvent(event *WorkflowDispatchEvent)
 			}
 		}
 	}
-	// Maximum number of inputs is 10
+	// Maximum number of inputs is 25
 	// https://docs.github.com/en/actions/using-workflows/events-that-trigger-workflows#providing-inputs
-	if len(event.Inputs) > 10 {
+	// https://github.blog/changelog/2025-12-04-actions-workflow-dispatch-workflows-now-support-25-inputs
+	if len(event.Inputs) > 25 {
 		rule.Errorf(
 			event.Pos,
-			"maximum number of inputs for \"workflow_dispatch\" event is 10 but %d inputs are provided. see https://docs.github.com/en/actions/using-workflows/events-that-trigger-workflows#providing-inputs",
+			"maximum number of inputs for \"workflow_dispatch\" event is 25 but %d inputs are provided. see https://docs.github.com/en/actions/using-workflows/events-that-trigger-workflows#providing-inputs",
 			len(event.Inputs),
 		)
 	}

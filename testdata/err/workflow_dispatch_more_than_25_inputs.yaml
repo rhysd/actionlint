@@ -24,6 +24,36 @@ on:
         type: string
       input11:
         type: string
+      input12:
+        type: string
+      input13:
+        type: string
+      input14:
+        type: string
+      input15:
+        type: string
+      input16:
+        type: string
+      input17:
+        type: string
+      input18:
+        type: string
+      input19:
+        type: string
+      input20:
+        type: string
+      input21:
+        type: string
+      input22:
+        type: string
+      input23:
+        type: string
+      input24:
+        type: string
+      input25:
+        type: string
+      input26:
+        type: string
 jobs:
   test:
     runs-on: ubuntu-latest
