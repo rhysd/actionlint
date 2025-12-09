@@ -67,6 +67,8 @@ type Config struct {
 	// Paths is a "paths" mapping in the configuration file. The keys are glob patterns to match file paths.
 	// And the values are corresponding configurations applied to the file paths.
 	Paths map[string]PathConfig `yaml:"paths"`
+	// Requires action and docker versions to use a commit hash instead of version/branch.
+	RequireCommitHash bool `yaml:"require-commit-hash"`
 }
 
 // PathConfigs returns a list of all PathConfig values matching to the given file path. The path must
