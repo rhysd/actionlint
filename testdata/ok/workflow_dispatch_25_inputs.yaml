@@ -52,10 +52,33 @@ on:
         type: string
       input25:
         type: string
-      input26:
-        type: string
 jobs:
   test:
     runs-on: ubuntu-latest
     steps:
-      - run: echo hello
+      - run: |
+          echo ${{ inputs.input1 }} \
+               ${{ inputs.input2 }} \
+               ${{ inputs.input3 }} \
+               ${{ inputs.input4 }} \
+               ${{ inputs.input5 }} \
+               ${{ inputs.input6 }} \
+               ${{ inputs.input7 }} \
+               ${{ inputs.input8 }} \
+               ${{ inputs.input9 }} \
+               ${{ inputs.input10 }} \
+               ${{ inputs.input11 }} \
+               ${{ inputs.input12 }} \
+               ${{ inputs.input13 }} \
+               ${{ inputs.input14 }} \
+               ${{ inputs.input15 }} \
+               ${{ inputs.input16 }} \
+               ${{ inputs.input17 }} \
+               ${{ inputs.input18 }} \
+               ${{ inputs.input19 }} \
+               ${{ inputs.input20 }} \
+               ${{ inputs.input21 }} \
+               ${{ inputs.input22 }} \
+               ${{ inputs.input23 }} \
+               ${{ inputs.input24 }} \
+               ${{ inputs.input25 }}
