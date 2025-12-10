@@ -1,2 +1,0 @@
-test.yaml:6:15: input type of workflow_dispatch event must be one of "string", "number", "boolean", "choice", "environment" but got "unknown" [syntax-check]
-test.yaml:9:18: type of "number_invalid_default" input is "number" but its default value "hello" cannot be parsed as a float number: strconv.ParseFloat: parsing "hello": invalid syntax [events]

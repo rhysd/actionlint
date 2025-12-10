@@ -1,10 +1,8 @@
-name: Test for workflow_dispatch input types (part1)
-# Note: Maximum number of inputs is 10. Continues to workflow_dispatch_input_types_2.yaml
-# https://docs.github.com/en/actions/using-workflows/events-that-trigger-workflows#providing-inputs
+name: Test for workflow_dispatch input types
 on:
   workflow_dispatch:
     inputs:
-      # no options for chice
+      # no options for choice
       choice_input_no_options:
         type: choice
       choice_input_options_is_empty:
@@ -45,6 +43,11 @@ on:
         options:
           - aaa
           - bbb
+      input_unknown_type:
+        type: unknown
+      number_invalid_default:
+        type: number
+        default: hello
 
 jobs:
   test:
