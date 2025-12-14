@@ -82,20 +82,20 @@
     },
     {
         "slug": "actions/cache",
-        "tags": ["v1", "v2", "v3", "v4"],
-        "next": "v5"
+        "tags": ["v1", "v2", "v3", "v4", "v5"],
+        "next": "v6"
     },
     {
         "slug": "actions/cache",
         "path": "/save",
-        "tags": ["v4"],
-        "next": "v5"
+        "tags": ["v4", "v5"],
+        "next": "v6"
     },
     {
         "slug": "actions/cache",
         "path": "/restore",
-        "tags": ["v4"],
-        "next": "v5"
+        "tags": ["v4", "v5"],
+        "next": "v6"
     },
     {
         "slug": "actions/checkout",
@@ -124,8 +124,8 @@
     },
     {
         "slug": "actions/download-artifact",
-        "tags": ["v1", "v2", "v3", "v3-node20", "v4", "v5", "v6"],
-        "next": "v7"
+        "tags": ["v1", "v2", "v3", "v3-node20", "v4", "v5", "v6", "v7"],
+        "next": "v8"
     },
     {
         "slug": "actions/first-interaction",
@@ -174,8 +174,8 @@
     },
     {
         "slug": "actions/upload-artifact",
-        "tags": ["v1", "v2", "v3", "v3-node20", "v4", "v5"],
-        "next": "v6"
+        "tags": ["v1", "v2", "v3", "v3-node20", "v4", "v5", "v6"],
+        "next": "v7"
     },
     {
         "slug": "actions/upload-pages-artifact",
@@ -224,8 +224,8 @@
     },
     {
         "slug": "dessant/lock-threads",
-        "tags": ["v2", "v3", "v4", "v5"],
-        "next": "v6"
+        "tags": ["v2", "v3", "v4", "v5", "v6"],
+        "next": "v7"
     },
     {
         "slug": "docker/build-push-action",
@@ -395,8 +395,8 @@
     },
     {
         "slug": "peter-evans/create-pull-request",
-        "tags": ["v1", "v2", "v3", "v4", "v5", "v6", "v7"],
-        "next": "v8"
+        "tags": ["v1", "v2", "v3", "v4", "v5", "v6", "v7", "v8"],
+        "next": "v9"
     },
     {
         "slug": "preactjs/compressed-size-action",
