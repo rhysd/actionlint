@@ -6,7 +6,8 @@ package actionlint
 // script at ./scripts/generate-webhook-events based on
 // https://raw.githubusercontent.com/github/docs/refs/heads/main/content/actions/reference/workflows-and-actions/events-that-trigger-workflows.md
 var AllWebhookTypes = map[string][]string{
-	"check_run":  {"created", "rerequested", "completed"},
-	"discussion": {"opened", "edited", "deleted", "transferred", "pinned", "unpinned", "labeled", "unlabeled", "locked", "unlocked", "category_changed", "answered", "unanswered"},
-	"create":     {},
+	"check_run":           {"created", "rerequested", "completed"},
+	"discussion":          {"opened", "edited", "deleted", "transferred", "pinned", "unpinned", "labeled", "unlabeled", "locked", "unlocked", "category_changed", "answered", "unanswered"},
+	"create":              {},
+	"pull_request_target": {"assigned", "unassigned", "labeled", "unlabeled", "opened", "edited", "closed", "reopened", "synchronize", "converted_to_draft", "ready_for_review", "locked", "unlocked", "enqueued", "dequeued", "review_requested", "review_request_removed", "auto_merge_enabled", "auto_merge_disabled"},
 }

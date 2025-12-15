@@ -107,7 +107,21 @@ func getWebhookTypes(table ast.Node, src []byte) ([]string, bool, error) {
 			cell := c.FirstChild()
 			name, ok := getFirstLinkText(cell, src)
 			if !ok {
-				return nil, false, fmt.Errorf("\"Webhook event payload\" table was found, but first cell did not contain hook name: %q", textOf(cell, src))
+				t := textOf(cell, src)
+				if strings.HasPrefix(t, "{%") {
+					dbg.Printf("  Placeholder is detected inside row of table. Skipping to the content: %q\n", t)
+					if strings.Contains(t, "ifversion ghes <") {
+						for c != nil {
+							c = c.NextSibling()
+							if textOf(c.FirstChild(), src) == "{% else %}" {
+								dbg.Println("Skipped until {% else %} is found because of `ifversion` branch for old GHES version")
+								break
+							}
+						}
+					}
+					continue
+				}
+				return nil, false, fmt.Errorf("\"Webhook event payload\" table was found, but first cell did not contain hook name: %q", t)
 			}
 
 			// Second cell

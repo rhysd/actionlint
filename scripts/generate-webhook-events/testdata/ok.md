@@ -61,3 +61,13 @@ This is special case:
 
 - No link is present at the first cell of the table
 - Hook name is not correct: https://github.com/github/docs/pull/41267
+
+## `pull_request_target`
+
+| Webhook event payload | Activity types | `GITHUB_SHA` | `GITHUB_REF` |
+| --------------------- | -------------- | ------------ | -------------|
+| {% ifversion ghes < 3.20 %} |
+| [`pull_request`](/webhooks-and-events/webhooks/webhook-events-and-payloads#pull_request) | - `assigned`<br/>- `unassigned`<br/>- `labeled`<br/>- `unlabeled`<br/>- `opened`<br/>- `edited`<br/>- `closed`<br/>- `reopened`<br/>- `synchronize`<br/>- `converted_to_draft`<br/>- `ready_for_review`<br/>- `locked`<br/>- `unlocked` <br/>{% ifversion fpt or ghec %}- `enqueued`<br/>- `dequeued`<br/>{% endif %}- `review_requested` <br/>- `review_request_removed` <br/>- `auto_merge_enabled` <br/>- `auto_merge_disabled` | Last commit on the PR base branch | PR base branch |
+| {% else %} |
+| [`pull_request`](/webhooks-and-events/webhooks/webhook-events-and-payloads#pull_request) | - `assigned`<br/>- `unassigned`<br/>- `labeled`<br/>- `unlabeled`<br/>- `opened`<br/>- `edited`<br/>- `closed`<br/>- `reopened`<br/>- `synchronize`<br/>- `converted_to_draft`<br/>- `ready_for_review`<br/>- `locked`<br/>- `unlocked` <br/>{% ifversion fpt or ghec %}- `enqueued`<br/>- `dequeued`<br/>{% endif %}- `review_requested` <br/>- `review_request_removed` <br/>- `auto_merge_enabled` <br/>- `auto_merge_disabled` | Last commit on default branch | Default branch |
+| {% endif %} |
