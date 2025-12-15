@@ -3538,6 +3538,27 @@ var PopularActions = map[string]*ActionMetadata{
 			"use-check":                {"use-check", false, false, ""},
 		},
 	},
+	"preactjs/compressed-size-action@v3": {
+		Name: "compressed-size-action",
+		Inputs: ActionMetadataInputs{
+			"build-script":             {"build-script", true, false, ""},
+			"clean-script":             {"clean-script", false, false, ""},
+			"collapse-unchanged":       {"collapse-unchanged", false, false, ""},
+			"comment-key":              {"comment-key", false, false, ""},
+			"compression":              {"compression", false, false, ""},
+			"cwd":                      {"cwd", false, false, ""},
+			"exclude":                  {"exclude", false, false, ""},
+			"install-script":           {"install-script", false, false, ""},
+			"minimum-change-threshold": {"minimum-change-threshold", false, false, ""},
+			"omit-unchanged":           {"omit-unchanged", false, false, ""},
+			"pattern":                  {"pattern", false, false, ""},
+			"repo-token":               {"repo-token", false, false, ""},
+			"show-total":               {"show-total", false, false, ""},
+			"sort-by":                  {"sort-by", false, false, ""},
+			"strip-hash":               {"strip-hash", false, false, ""},
+			"use-check":                {"use-check", false, false, ""},
+		},
+	},
 	"pulumi/actions@v1": {
 		Name: "Pulumi CLI Action",
 		Inputs: ActionMetadataInputs{
