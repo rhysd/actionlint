@@ -203,6 +203,27 @@ func WorkflowKeyAvailability(key string) ([]string, []string) {
 		}
 	}
 
+	// XXX: `jobs.<job_id>.snapshot.if` is missing in contexts available table.
+	// https://github.com/github/docs/issues/41255
+	{
+		key := "jobs.<job_id>.snapshot.if"
+		// https://github.com/actions/runner/blob/c96dcd472907e514274cdb4af281116adf7aad18/src/Sdk/WorkflowParser/Conversion/WorkflowTemplateConverter.cs#L2216
+		ctx := []string{
+			"github",
+			"vars",
+			"inputs",
+			"needs",
+			"strategy",
+			"matrix",
+		}
+		// https://github.com/actions/runner/blob/c96dcd472907e514274cdb4af281116adf7aad18/src/Sdk/WorkflowParser/Conversion/WorkflowTemplateConverter.cs#L2240
+		sp := []string{}
+		cases.Add(key, ctx, sp)
+		for _, c := range ctx {
+			ctxs[c] = append(ctxs[c], key)
+		}
+	}
+
 	cases.ForEach(func(c *switchCase) {
 		qs := make([]string, 0, len(c.cond))
 		for _, c := range c.cond {
