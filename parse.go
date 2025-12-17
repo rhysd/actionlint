@@ -1045,7 +1045,7 @@ func (p *parser) parseTimeoutMinutes(n *yaml.Node) *Float {
 	return f
 }
 
-func (p *parser) parseStepExecAction(entries []workflowMappingEntry, isDocker bool, pos *Pos) *ExecAction {
+func (p *parser) parseStepExecAction(entries []workflowMappingEntry, isDocker bool) *ExecAction {
 	ret := &ExecAction{}
 
 	for _, e := range entries {
@@ -1093,7 +1093,7 @@ func (p *parser) parseStepExecAction(entries []workflowMappingEntry, isDocker bo
 	return ret
 }
 
-func (p *parser) parseStepExecRun(entries []workflowMappingEntry, pos *Pos) *ExecRun {
+func (p *parser) parseStepExecRun(entries []workflowMappingEntry) *ExecRun {
 	ret := &ExecRun{}
 
 	for _, e := range entries {
@@ -1167,9 +1167,9 @@ func (p *parser) parseStep(n *yaml.Node) *Step {
 
 	switch kind {
 	case isAction, isDocker:
-		ret.Exec = p.parseStepExecAction(entries, kind == isDocker, posAt(n))
+		ret.Exec = p.parseStepExecAction(entries, kind == isDocker)
 	case isRun:
-		ret.Exec = p.parseStepExecRun(entries, posAt(n))
+		ret.Exec = p.parseStepExecRun(entries)
 	default:
 		p.error(n, "step must run script with \"run\" section or run action with \"uses\" section")
 	}
