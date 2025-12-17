@@ -71,6 +71,17 @@ func (sc switchCases) ForEach(pred func(c *switchCase)) {
 	}
 }
 
+func (sc switchCases) Contains(key string) bool {
+	for _, sw := range sc {
+		for _, k := range sw.cond {
+			if k == key {
+				return true
+			}
+		}
+	}
+	return false
+}
+
 func parseContextAvailabilityTable(src []byte) (*extast.Table, bool) {
 	md := goldmark.New(goldmark.WithExtensions(extension.Table))
 	root := md.Parser().Parse(text.NewReader(src))
@@ -205,8 +216,8 @@ func WorkflowKeyAvailability(key string) ([]string, []string) {
 
 	// XXX: `jobs.<job_id>.snapshot.if` is missing in contexts available table.
 	// https://github.com/github/docs/issues/41255
-	{
-		key := "jobs.<job_id>.snapshot.if"
+	snapshotIf := "jobs.<job_id>.snapshot.if"
+	if !cases.Contains(snapshotIf) {
 		// https://github.com/actions/runner/blob/c96dcd472907e514274cdb4af281116adf7aad18/src/Sdk/WorkflowParser/Conversion/WorkflowTemplateConverter.cs#L2216
 		ctx := []string{
 			"github",
@@ -218,9 +229,9 @@ func WorkflowKeyAvailability(key string) ([]string, []string) {
 		}
 		// https://github.com/actions/runner/blob/c96dcd472907e514274cdb4af281116adf7aad18/src/Sdk/WorkflowParser/Conversion/WorkflowTemplateConverter.cs#L2240
 		sp := []string{}
-		cases.Add(key, ctx, sp)
+		cases.Add(snapshotIf, ctx, sp)
 		for _, c := range ctx {
-			ctxs[c] = append(ctxs[c], key)
+			ctxs[c] = append(ctxs[c], snapshotIf)
 		}
 	}
 
