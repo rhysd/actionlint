@@ -217,5 +217,28 @@ jobs:
     services: ${{ inputs.bool || env.FOO }}
     steps:
       - run: echo
-        # ERROR at env because `id` allow no context
+        # ERROR at inputs because `id` allow no context
         id: ${{ inputs.foo }}
+  # jobs.<job_id>.snapshot.if
+  snapshot-err:
+    runs-on: ubuntu-latest
+    snapshot:
+      image-name: my-custom-image
+      # ERROR
+      if: ${{ env.FOO == 'foo' && runner.name == 'foo' && secrets.FOO == 'foo' }}
+    outputs:
+      foo: bar
+    steps:
+      - run: echo hi
+  snapshot-ok:
+    runs-on: ubuntu-latest
+    strategy:
+      matrix:
+        foo: [a, b]
+      fail-fast: true
+    needs: [snapshot-err]
+    snapshot:
+      image-name: my-custom-image
+      if: ${{ matrix.foo == 'a' && github.ref == 'foo' && vars.foo == 'foo' && needs.snapshot-err.outputs.foo == 'foo' && strategy.fail-fast && inputs.foo == 'foo' }}
+    steps:
+      - run: echo hi
