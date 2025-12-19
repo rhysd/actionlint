@@ -16,7 +16,7 @@ make
 make build
 
 # Install dependencies
-make install
+make dep
 
 # Run tests
 make test
