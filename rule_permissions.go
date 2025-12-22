@@ -4,6 +4,7 @@ import "slices"
 
 var allPermissionScopes = map[string][]string{
 	"actions":             {"read", "write", "none"},
+	"artifact-metadata":   {"read", "write", "none"},
 	"attestations":        {"read", "write", "none"},
 	"checks":              {"read", "write", "none"},
 	"contents":            {"read", "write", "none"},
