@@ -1,0 +1,19 @@
+on: push
+
+jobs:
+  test:
+    services:
+      nginx:
+        image: nginx:latest
+        credentials: &credentials
+          # ERROR: Credentials are embedded directly in workflow
+          username: my-user-name
+          password: P@ssw0rd
+          # ERROR: Unexpected key 'email'
+          email: me@example.com
+      redis:
+        image: redis:latest
+        credentials: *credentials
+    runs-on: ubuntu-latest
+    steps:
+      - run: ./do_something.sh

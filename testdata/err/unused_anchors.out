@@ -1,0 +1,6 @@
+test.yaml:2:5: anchor "anchor" is defined but not used [syntax-check]
+test.yaml:6:9: anchor "anchor" is defined but not used [syntax-check]
+test.yaml:12:12: anchor "anchor" is defined but not used [syntax-check]
+test.yaml:24:14: anchor "default_env" is defined but not used [syntax-check]
+test.yaml:24:14: expecting a single ${{...}} expression or mapping value for "env" section, but found plain text node [syntax-check]
+test.yaml:27:9: anchor "step" is defined but not used [syntax-check]

@@ -23,7 +23,7 @@ func nodeKindName(k yaml.Kind) string {
 	case yaml.ScalarNode:
 		return "scalar"
 	case yaml.AliasNode:
-		return "alias"
+		return "alias" // Should be unreachable because we resolve all aliases before parsing
 	default:
 		panic(fmt.Sprintf("unreachable: unknown YAML kind: %v", k))
 	}
@@ -86,6 +86,47 @@ func (p *parser) errorfAt(pos *Pos, format string, args ...interface{}) {
 func (p *parser) errorf(n *yaml.Node, format string, args ...interface{}) {
 	m := fmt.Sprintf(format, args...)
 	p.error(n, m)
+}
+
+func (p *parser) resolveChildAliases(root *yaml.Node) {
+	type usage struct {
+		used    bool
+		defined bool
+	}
+
+	anchors := map[*yaml.Node]*usage{}
+
+	var resolve func(*yaml.Node) // For recursive call
+	resolve = func(n *yaml.Node) {
+		if len(n.Anchor) != 0 {
+			anchors[n] = &usage{}
+		}
+		for i, c := range n.Content {
+			if c.Kind != yaml.AliasNode {
+				resolve(c)
+				continue
+			}
+			if u, ok := anchors[c.Alias]; ok {
+				if !u.defined {
+					p.errorf(c, "recursive alias %q is found. anchor was declared at line:%d, column:%d", c.Alias.Anchor, c.Alias.Line, c.Alias.Column)
+				}
+				u.used = true
+			}
+			n.Content[i] = c.Alias // Resolved
+		}
+		if len(n.Anchor) != 0 {
+			if u, ok := anchors[n]; ok {
+				u.defined = true
+			}
+		}
+	}
+	resolve(root)
+
+	for n, u := range anchors {
+		if !u.used {
+			p.errorf(n, "anchor %q is defined but not used", n.Anchor)
+		}
+	}
 }
 
 func (p *parser) unexpectedKey(s *String, sec string, expected []string) {
@@ -1425,6 +1466,8 @@ func (p *parser) parseJobs(n *yaml.Node) map[string]*Job {
 
 // https://docs.github.com/en/actions/learn-github-actions/workflow-syntax-for-github-actions
 func (p *parser) parse(n *yaml.Node) *Workflow {
+	p.resolveChildAliases(n)
+
 	w := &Workflow{}
 
 	if n.Line == 0 {

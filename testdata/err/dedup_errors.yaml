@@ -1,0 +1,21 @@
+on: push
+
+jobs:
+  test:
+    runs-on: ubuntu-latest
+    steps:
+      - &step
+        run: echo
+        with:
+          foo: bar
+      - *step
+      - *step
+      - *step
+      - *step
+      - *step
+      - *step
+      - *step
+      - *step
+      - *step
+      - *step
+      - *step

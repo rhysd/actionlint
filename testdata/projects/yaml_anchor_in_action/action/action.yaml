@@ -1,0 +1,20 @@
+name: 'Docker action'
+author: 'rhysd <https://rhysd.github.io>'
+description: &description 'This is test'
+
+inputs:
+  foo: &input
+    description: *description
+  bar: *input
+
+outputs:
+  foo:
+    description: *description
+
+runs:
+  using: 'docker'
+  image: 'ghcr.io/rhysd/actionlint:latest'
+  args:
+    - ${{ inputs.foo }}
+    - ${{ inputs.bar }}
+    - *description
