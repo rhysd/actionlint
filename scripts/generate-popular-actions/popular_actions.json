@@ -214,13 +214,13 @@
     },
     {
         "slug": "dawidd6/action-download-artifact",
-        "tags": ["v2", "v3", "v5", "v6", "v7", "v8", "v9", "v10", "v11"],
-        "next": "v12"
+        "tags": ["v2", "v3", "v5", "v6", "v7", "v8", "v9", "v10", "v11", "v12"],
+        "next": "v13"
     },
     {
         "slug": "dawidd6/action-send-mail",
-        "tags": ["v1", "v2", "v3", "v4", "v5", "v6"],
-        "next": "v7"
+        "tags": ["v1", "v2", "v3", "v4", "v5", "v6", "v7"],
+        "next": "v8"
     },
     {
         "slug": "dessant/lock-threads",
