@@ -1,0 +1,4 @@
+/test\.yaml:8:9: shell script syntax error: .+ \[shell-syntax\]/
+/test\.yaml:15:9: shell script syntax error: .+ \[shell-syntax\]/
+/test\.yaml:22:9: shell script syntax error: .+ \[shell-syntax\]/
+/test\.yaml:29:24: property "flag" is not defined in object type {} \[expression\]/
