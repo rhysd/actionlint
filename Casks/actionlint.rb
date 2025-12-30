@@ -3,7 +3,7 @@ cask "actionlint" do
   name "actionlint"
   desc "Static checker for GitHub Actions workflow files"
   homepage "https://github.com/rhysd/actionlint#readme"
-  version "1.7.9"
+  version "1.7.10"
 
   livecheck do
     skip "Auto-generated on release."
@@ -18,22 +18,22 @@ cask "actionlint" do
   on_macos do
     on_intel do
       url "https://github.com/rhysd/actionlint/releases/download/v#{version}/actionlint_#{version}_darwin_amd64.tar.gz"
-      sha256 "f89a910e90e536f60df7c504160247db01dd67cab6f08c064c1c397b76c91a79"
+      sha256 "16782c41f2af264db80f855ee5d09164ca98fc78edf3bcd0f46eecff279682ba"
     end
     on_arm do
       url "https://github.com/rhysd/actionlint/releases/download/v#{version}/actionlint_#{version}_darwin_arm64.tar.gz"
-      sha256 "855e49e823fc68c6371fd6967e359cde11912d8d44fed343283c8e6e943bd789"
+      sha256 "004ca87b367b37f4d75c55ab6cf80f9b8c043adbfbd440f31c604d417939c442"
     end
   end
 
   on_linux do
     on_intel do
       url "https://github.com/rhysd/actionlint/releases/download/v#{version}/actionlint_#{version}_linux_amd64.tar.gz"
-      sha256 "233b280d05e100837f4af1433c7b40a5dcb306e3aa68fb4f17f8a7f45a7df7b4"
+      sha256 "f4c76b71db5755a713e6055cbb0857ed07e103e028bda117817660ebadb4386f"
     end
     on_arm do
       url "https://github.com/rhysd/actionlint/releases/download/v#{version}/actionlint_#{version}_linux_arm64.tar.gz"
-      sha256 "6b82a3b8c808bf1bcd39a95aced22fc1a026eef08ede410f81e274af8deadbbc"
+      sha256 "cd3dfe5f66887ec6b987752d8d9614e59fd22f39415c5ad9f28374623f41773a"
     end
   end
 
