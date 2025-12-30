@@ -1,3 +1,53 @@
+<a id="v1.7.10"></a>
+# [v1.7.10](https://github.com/rhysd/actionlint/releases/tag/v1.7.10) - 2025-12-30
+
+- Support [YAML anchors and aliases](https://yaml.org/spec/1.2.2/#71-alias-nodes) (`&anchor` and `*anchor`) in workflow files. In addition to parsing YAML anchors correctly, actionlint checks unused and undefined anchors. See the [document](https://github.com/rhysd/actionlint/blob/main/docs/checks.md#yaml-anchors) for more details. ([#133](https://github.com/rhysd/actionlint/issues/133), thanks [@srz-zumix](https://github.com/srz-zumix) for the initial implementation at [#568](https://github.com/rhysd/actionlint/issues/568) and [@alexaandru](https://github.com/alexaandru) for trying another approach at [#557](https://github.com/rhysd/actionlint/issues/557))
+  ```yaml
+  jobs:
+    test:
+      runs-on: ubuntu-latest
+      services:
+        nginx:
+          image: nginx:latest
+          credentials: &credentials
+            username: ${{ secrets.user }}
+            password: ${{ secrets.password }}
+      steps:
+        - run: ./download.sh
+          # OK: Valid alias to &credentials
+          env: *credentials
+        - run: ./check.sh
+          # ERROR: Undefined anchor 'credential'
+          env: *credential
+        - run: ./upload.sh
+          # ERROR: Unused anchor 'credentials'
+          env: &credentials
+  ```
+- Remove support for `*-xl` macOS runner labels because they were [dropped](https://github.blog/changelog/2024-08-19-notice-of-upcoming-deprecations-and-breaking-changes-in-github-actions-runners/). ([#592](https://github.com/rhysd/actionlint/issues/592), thanks [@muzimuzhi](https://github.com/muzimuzhi))
+- Remove support for the macOS 13 runner labels because they were [dropped on Dec 4, 2025](https://github.blog/changelog/2025-09-19-github-actions-macos-13-runner-image-is-closing-down/). ([#593](https://github.com/rhysd/actionlint/issues/593), thanks [@muzimuzhi](https://github.com/muzimuzhi))
+  - `macos-13`
+  - `macos-13-large`
+  - `macos-13-xlarge`
+- Increase the maximum number of inputs in the `workflow_dispatch` event from 10 to 25 because the limitation [was recently relaxed](https://github.blog/changelog/2025-12-04-actions-workflow-dispatch-workflows-now-support-25-inputs/). ([#598](https://github.com/rhysd/actionlint/issues/598), thanks [@Haegi](https://github.com/Haegi))
+- Support [`artifact-metadata` permission](https://docs.github.com/en/actions/reference/workflows-and-actions/workflow-syntax#defining-access-for-the-github_token-scopes) for workflow permissions. ([#602](https://github.com/rhysd/actionlint/issues/602), thanks [@martincostello](https://github.com/martincostello))
+- Detect more complicated constants at `if:` conditions as error. See the [rule document](https://github.com/rhysd/actionlint/blob/main/docs/checks.md#if-cond-constant) for more details.
+- Refactor the workflow parser with [Go iterators](https://pkg.go.dev/iter#hdr-Iterators). This slightly improves the performance and memory usage.
+- Fix parsing extra `{` and `}` characters in format string of `format()` function call. For example v1.7.9 didn't parse `"{{0} {1} {2}}"` correctly.
+- Detect an invalid value at `type` in workflow call inputs as error.
+- Report [YAML merge key](https://yaml.org/type/merge.html) `<<` as error because GitHub Actions doesn't support the syntax.
+- Check available contexts in expressions at `jobs.<job_id>.snapshot.if`.
+  ```yaml
+  snapshot:
+    image-name: my-custom-image
+    # ERROR: `env` context is not allowed here
+    if: ${{ env.USE_SNAPSHOT == 'true' }}
+  ```
+- Fix the instruction to install actionlint with `mise` in the installation document. ([#591](https://github.com/rhysd/actionlint/issues/591), thanks [@risu729](https://github.com/risu729))
+- Update the popular actions data set to the latest to include new major versions of the actions.
+
+[Changes][v1.7.10]
+
+
 <a id="v1.7.9"></a>
 # [v1.7.9](https://github.com/rhysd/actionlint/releases/tag/v1.7.9) - 2025-11-21
 
@@ -1959,6 +2009,7 @@ See documentation for more details:
 [Changes][v1.0.0]
 
 
+[v1.7.10]: https://github.com/rhysd/actionlint/compare/v1.7.9...v1.7.10
 [v1.7.9]: https://github.com/rhysd/actionlint/compare/v1.7.8...v1.7.9
 [v1.7.8]: https://github.com/rhysd/actionlint/compare/v1.7.7...v1.7.8
 [v1.7.7]: https://github.com/rhysd/actionlint/compare/v1.7.6...v1.7.7
