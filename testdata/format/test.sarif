@@ -220,6 +220,21 @@
               "helpUri": "https://github.com/rhysd/actionlint/blob/main/docs/checks.md"
             },
             {
+              "id": "shell-syntax",
+              "name": "ShellSyntax",
+              "defaultConfiguration": {
+                "level": "error"
+              },
+              "properties": {
+                "description": "Checks for syntax errors in shell scripts in \"run:\"",
+                "queryURI": "https://github.com/rhysd/actionlint/blob/main/docs/checks.md"
+              },
+              "fullDescription": {
+                "text": "Checks for syntax errors in shell scripts in \"run:\""
+              },
+              "helpUri": "https://github.com/rhysd/actionlint/blob/main/docs/checks.md"
+            },
+            {
               "id": "syntax-check",
               "name": "SyntaxCheck",
               "defaultConfiguration": {

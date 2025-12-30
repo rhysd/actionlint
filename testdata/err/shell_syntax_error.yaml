@@ -1,0 +1,56 @@
+on: push
+
+jobs:
+  missing-fi:
+    runs-on: ubuntu-latest
+    steps:
+      # ERROR: Missing 'fi' at end of if statement
+      - run: |
+          if [ -f file.txt ]; then
+            echo "File exists"
+  missing-done:
+    runs-on: ubuntu-latest
+    steps:
+      # ERROR: Missing 'done' at end of for loop
+      - run: |
+          for i in 1 2 3; do
+            echo $i
+  missing-done-while:
+    runs-on: ubuntu-latest
+    steps:
+      # ERROR: Missing 'done' at end of while loop
+      - run: |
+          while true; do
+            echo "loop"
+  ok-with-expression:
+    runs-on: ubuntu-latest
+    steps:
+      # OK: Script with expressions should parse correctly
+      - run: |
+          if [ "${{ inputs.flag }}" = "true" ]; then
+            echo "Flag is true"
+          fi
+  ok-sh-shell:
+    runs-on: ubuntu-latest
+    steps:
+      # OK: Valid sh script
+      - run: |
+          if [ -f file.txt ]; then
+            echo "exists"
+          fi
+        shell: sh
+  skip-pwsh:
+    runs-on: windows-latest
+    steps:
+      # OK: pwsh is not checked
+      - run: |
+          if ($true
+        shell: pwsh
+  skip-python:
+    runs-on: ubuntu-latest
+    steps:
+      # OK: python is not checked
+      - run: |
+          if True
+            print("hello")
+        shell: python
