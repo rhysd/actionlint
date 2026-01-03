@@ -251,5 +251,10 @@ func ValidatePathGlob(pat string) []InvalidGlobPattern {
 			{"path value must not end with spaces", len(pat)},
 		}
 	}
+	if strings.HasPrefix(pat, "./") {
+		return []InvalidGlobPattern{
+			{"path filter \"./\" prefix never matches any file paths. remove the \"./\" prefix from the path filter", 0},
+		}
+	}
 	return validateGlob(pat, false)
 }

@@ -411,3 +411,53 @@ func TestValidateGlobQuoteCharacterInErrorMessage(t *testing.T) {
 		})
 	}
 }
+
+func TestValidatePathGlobError(t *testing.T) {
+	testCases := []struct {
+		what     string
+		input    string
+		expected string
+		col      int
+	}{
+		{
+			what:     "starts with ./",
+			input:    "./foo",
+			expected: `path filter "./" prefix never matches`,
+			col:      0,
+		},
+		{
+			what:     "starts with ./ with nested path",
+			input:    "./foo/bar",
+			expected: `path filter "./" prefix never matches`,
+			col:      0,
+		},
+		{
+			what:     "starts with space",
+			input:    " foo",
+			expected: "path value must not start with spaces",
+			col:      0,
+		},
+		{
+			what:     "ends with space",
+			input:    "foo ",
+			expected: "path value must not end with spaces",
+			col:      4,
+		},
+	}
+
+	for _, tc := range testCases {
+		t.Run(tc.what, func(t *testing.T) {
+			errs := ValidatePathGlob(tc.input)
+			if len(errs) != 1 {
+				t.Fatalf("wanted 1 error from path glob %q but got %d errors: %v", tc.input, len(errs), errs)
+			}
+			err := errs[0]
+			if !strings.Contains(err.Message, tc.expected) {
+				t.Errorf("error message from path glob %q does not contain expected string:\n  want: %s\n  have: %s", tc.input, tc.expected, err.Message)
+			}
+			if err.Column != tc.col {
+				t.Errorf("error column from path glob %q is unexpected. wanted col:%d but have col:%d", tc.input, tc.col, err.Column)
+			}
+		})
+	}
+}
