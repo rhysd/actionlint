@@ -738,6 +738,46 @@ func TestExprSemanticsCheckOK(t *testing.T) {
 				"piyo": NullType{},
 			}),
 		},
+		{
+			what:     "case() with single predicate",
+			input:    "case(true, 'a', 'b')",
+			expected: AnyType{},
+		},
+		{
+			what:     "case() with multiple predicates",
+			input:    "case(true, 1, false, 2, 3)",
+			expected: AnyType{},
+		},
+		{
+			what:     "case() with number predicate (coerced to bool)",
+			input:    "case(1, 'a', 'b')",
+			expected: AnyType{},
+		},
+		{
+			what:     "case() with string predicate (coerced to bool)",
+			input:    "case('yes', 'a', 'b')",
+			expected: AnyType{},
+		},
+		{
+			what:     "case() with null predicate (coerced to bool)",
+			input:    "case(null, 'a', 'b')",
+			expected: AnyType{},
+		},
+		{
+			what:     "case() case insensitivity",
+			input:    "CASE(true, 1, 2)",
+			expected: AnyType{},
+		},
+		{
+			what:     "case() with expression as predicate",
+			input:    "case(startsWith('hello', 'he'), 'yes', 'no')",
+			expected: AnyType{},
+		},
+		{
+			what:     "case() with many predicates",
+			input:    "case(false, 'a', false, 'b', false, 'c', true, 'd', 'default')",
+			expected: AnyType{},
+		},
 	}
 
 	allSPFuncs := []string{}
@@ -1278,6 +1318,41 @@ func TestExprSemanticsCheckError(t *testing.T) {
 			input: `fromJSON('{"foo": true')`,
 			expected: []string{
 				"broken JSON string is passed to fromJSON() at offset 12",
+			},
+		},
+		{
+			what:  "case() with no arguments",
+			input: "case()",
+			expected: []string{
+				"number of arguments is wrong",
+			},
+		},
+		{
+			what:  "case() with one argument",
+			input: "case(true)",
+			expected: []string{
+				"number of arguments is wrong",
+			},
+		},
+		{
+			what:  "case() with two arguments",
+			input: "case(true, 'a')",
+			expected: []string{
+				"number of arguments is wrong",
+			},
+		},
+		{
+			what:  "case() with even number of arguments (4)",
+			input: "case(true, 'a', false, 'b')",
+			expected: []string{
+				"case() requires an odd number of arguments (pred/value pairs + default) but got 4",
+			},
+		},
+		{
+			what:  "case() with even number of arguments (6)",
+			input: "case(true, 'a', false, 'b', true, 'c')",
+			expected: []string{
+				"case() requires an odd number of arguments (pred/value pairs + default) but got 6",
 			},
 		},
 	}
