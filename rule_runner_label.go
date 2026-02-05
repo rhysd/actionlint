@@ -30,6 +30,7 @@ var allGitHubHostedRunnerLabels = []string{
 	"windows-latest",
 	"windows-latest-8-cores",
 	"windows-2025",
+	"windows-2025-vs2026",
 	"windows-2022",
 	"windows-11-arm",
 	"ubuntu-slim",
