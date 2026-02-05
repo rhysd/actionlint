@@ -86,6 +86,7 @@ var defaultRunnerOSCompats = map[string]runnerOSCompat{
 	"macos-latest-large":     compatMacOS150L,
 	"macos-latest":           compatMacOS150,
 	"macos-26-xlarge":        compatMacOS260XL,
+	"macos-26-large":         compatMacOS260L,
 	"macos-26":               compatMacOS260,
 	"macos-15-intel":         compatMacOS150Intel,
 	"macos-15-xlarge":        compatMacOS150XL,
@@ -97,6 +98,7 @@ var defaultRunnerOSCompats = map[string]runnerOSCompat{
 	"windows-latest":         compatWindows2022,
 	"windows-latest-8-cores": compatWindows2022,
 	"windows-2025":           compatWindows2025,
+	"windows-2025-vs2026":    compatWindows2025VS2026,
 	"windows-2022":           compatWindows2022,
 	"windows-11-arm":         compatWindows11Arm,
 	"linux":                  compatUbuntu2404 | compatUbuntu2204, // Note: "linux" does not always indicate Ubuntu. It might be Fedora or Arch or ...
