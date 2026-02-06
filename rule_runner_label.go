@@ -22,6 +22,7 @@ const (
 	compatMacOS260XL
 	compatWindows2022
 	compatWindows2025
+	compatWindows2025VS2026
 	compatWindows11Arm
 )
 
