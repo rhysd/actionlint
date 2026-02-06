@@ -19,6 +19,7 @@ const (
 	compatMacOS150L
 	compatMacOS150XL
 	compatMacOS260
+	compatMacOS260L
 	compatMacOS260XL
 	compatWindows2022
 	compatWindows2025
