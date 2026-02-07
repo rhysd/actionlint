@@ -115,7 +115,7 @@
 - Support [`job.check_run_id` property](https://docs.github.com/en/actions/reference/workflows-and-actions/contexts#job-context). ([#576](https://github.com/rhysd/actionlint/issues/576), thanks [@muzimuzhi](https://github.com/muzimuzhi) for fixing the type at [#577](https://github.com/rhysd/actionlint/issues/577))
 - Support `node24` runtime at `using` section in action metadata. ([#561](https://github.com/rhysd/actionlint/issues/561), thanks [@salmanmkc](https://github.com/salmanmkc))
 - Add support for the following runner labels.
-  - [`macos-26` and `macos-26-large`](https://github.blog/changelog/2025-09-11-actions-macos-26-image-now-in-public-preview/) ([#572](https://github.com/rhysd/actionlint/issues/572), thanks [@muzimuzhi](https://github.com/muzimuzhi))
+  - [`macos-26` and `macos-26-xlarge`](https://github.blog/changelog/2025-09-11-actions-macos-26-image-now-in-public-preview/) ([#572](https://github.com/rhysd/actionlint/issues/572), thanks [@muzimuzhi](https://github.com/muzimuzhi))
   - [`macos-15`](https://github.blog/changelog/2025-09-19-github-actions-macos-13-runner-image-is-closing-down/#what-you-need-to-do) ([#572](https://github.com/rhysd/actionlint/issues/572), thanks [@muzimuzhi](https://github.com/muzimuzhi))
 - Drop support for the following runner labels which are no longer supported by GitHub.
   - [`ubuntu-20.04`](https://github.com/actions/runner-images/issues/11101) ([#534](https://github.com/rhysd/actionlint/issues/534), thanks [@shogo82148](https://github.com/shogo82148))
