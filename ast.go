@@ -510,6 +510,9 @@ func (o *RawYAMLObject) Kind() RawYAMLValueKind {
 func (o *RawYAMLObject) Equals(other RawYAMLValue) bool {
 	switch other := other.(type) {
 	case *RawYAMLObject:
+		if len(o.Props) != len(other.Props) {
+			return false
+		}
 		for n, p1 := range o.Props {
 			if p2, ok := other.Props[n]; !ok || !p1.Equals(p2) {
 				return false
