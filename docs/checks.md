@@ -410,7 +410,7 @@ test.yaml:9:24: property "events" is not defined in object type {action: string;
   |
 9 |       - run: echo '${{ github.events }}'
   |                        ^~~~~~~~~~~~~
-test.yaml:11:24: undefined function "startWith". available functions are "always", "cancelled", "contains", "endswith", "failure", "format", "fromjson", "hashfiles", "join", "startswith", "success", "tojson" [expression]
+test.yaml:11:24: undefined function "startWith". available functions are "always", "cancelled", "case", "contains", "endswith", "failure", "format", "fromjson", "hashfiles", "join", "startswith", "success", "tojson" [expression]
    |
 11 |       - run: echo "${{ startWith('hello, world', 'lo,') }}"
    |                        ^~~~~~~~~~~~~~~~~
