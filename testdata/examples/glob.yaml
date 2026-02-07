@@ -9,6 +9,9 @@ on:
       - 'v*+'
       # Invalid character range 9-1
       - 'v[9-1]'
+    paths:
+      # GitHub Action's path filter doesn't recognize '.'
+      - ./foo/bar.txt
 
 jobs:
   test:

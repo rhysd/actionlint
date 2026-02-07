@@ -1517,6 +1517,9 @@ on:
       - 'v*+'
       # Invalid character range 9-1
       - 'v[9-1]'
+    paths:
+      # GitHub Action's path filter doesn't recognize '.'
+      - ./foo/bar.txt
 
 jobs:
   test:
@@ -1540,9 +1543,13 @@ test.yaml:11:14: invalid glob pattern. unexpected character '1' while checking c
    |
 11 |       - 'v[9-1]'
    |              ^~~
+test.yaml:14:9: '.' and '..' are not allowed in glob path. note: filter pattern syntax is explained at https://docs.github.com/en/actions/using-workflows/workflow-syntax-for-github-actions#filter-pattern-cheat-sheet [glob]
+   |
+14 |       - ./foo/bar.txt
+   |         ^~~~~~~~~~~~~
 ```
 
-[Playground](https://rhysd.github.io/actionlint/#eNpMjMGqAjEMRff9irsrvEcKLu2viEI7VItIMjSJ3y/T2XR1OZzDFc4B2F37sUAdhbfe9CSAEB9PEYqTrbxW8/37jwvdrnS5xxDeUmdlTe2sh7OScIZXZ3P6lMNNpdb25XM4Z7StC1JKvwAAAP//10snvA==)
+[Playground](https://rhysd.github.io/actionlint/#eNpMjMGqAyEMRfd+xd0J76FDl/VXSgs6OJVSEtGk9PPL6MZVODmHyxQMULWX8wKpRdpL7pMAB/s4mJ0dLPG5ms/fv13odnWX+3zUKGUp/XYwbyk2L18x5sVpSMldZtSUumMK0KQk6t7xdEN1yXWZakoBeS8M7/0vAAD//zXfMEo=)
 
 For filtering branches, tags and paths in Webhook events, [glob syntax][filter-pattern-doc] is available.
 actionlint validates glob patterns `branches:`, `branches-ignore:`, `tags:`, `tags-ignore:`, `paths:`, `paths-ignore:` in a

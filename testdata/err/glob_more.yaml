@@ -11,12 +11,16 @@ on:
       - v[0-
       - v[9-0]
     paths:
+      -
       - '!'
       - 'foo\bar'
       - ' '
       - '  foo'
       - 'foo  '
-      -
+      - |
+        foo.txt
+      - '.'
+      - './foo/bar.txt'
   image_version:
     versions:
       - '!'

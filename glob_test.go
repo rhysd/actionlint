@@ -54,6 +54,8 @@ func TestValidateGlobOK(t *testing.T) {
 		"*feature",
 		"v2*",
 		"v[12].[0-9]+.[0-9]+",
+		".foo.txt",
+		"..foo.txt",
 	}
 
 	for _, input := range testCases {
@@ -70,7 +72,6 @@ func TestValidateGlobOK(t *testing.T) {
 
 func TestValidateGlobPathOnlyOK(t *testing.T) {
 	testCases := []string{
-		".",
 		"/foo",
 		"/foo/",
 		"/foo/bar",
@@ -152,17 +153,17 @@ func TestValidateGlobSyntaxError(t *testing.T) {
 		},
 		{
 			what:     "newline in pattern",
-			input:    "\n",
+			input:    "foo\nbar",
 			expected: "newline cannot be contained",
 		},
 		{
 			what:     `newline with \r in pattern`,
-			input:    "\r",
+			input:    "foo\rbar",
 			expected: `'\r'`,
 		},
 		{
 			what:     `newline with \r\n in pattern`,
-			input:    "\r\n",
+			input:    "foo\r\nbar",
 			expected: `'\n'`,
 		},
 		{
@@ -407,6 +408,64 @@ func TestValidateGlobQuoteCharacterInErrorMessage(t *testing.T) {
 			m := errs[0].Message
 			if !strings.Contains(m, tc.expected) {
 				t.Fatalf("error message %q does not contain %q", m, tc.expected)
+			}
+		})
+	}
+}
+
+func TestValidateInvalidPathGlobError(t *testing.T) {
+	tests := []struct {
+		what     string
+		input    string
+		expected string
+	}{
+		{
+			what:     "leading spaces",
+			input:    "   foo.txt",
+			expected: "leading and trailing spaces are not allowed in glob path",
+		},
+		{
+			what:     "trailing spaces",
+			input:    "foo.txt\n",
+			expected: "leading and trailing spaces are not allowed in glob path",
+		},
+		{
+			what:     "current directory .",
+			input:    ".",
+			expected: "'.' and '..' are not allowed in glob path",
+		},
+		{
+			what:     "parent directory ..",
+			input:    "..",
+			expected: "'.' and '..' are not allowed in glob path",
+		},
+		{
+			what:     "current directory . with !",
+			input:    "!.",
+			expected: "'.' and '..' are not allowed in glob path",
+		},
+		{
+			what:     "starts with .",
+			input:    "./foo.txt",
+			expected: "'.' and '..' are not allowed in glob path",
+		},
+		{
+			what:     "starts with ..",
+			input:    "../foo.txt",
+			expected: "'.' and '..' are not allowed in glob path",
+		},
+		{
+			what:     "starts with . and !",
+			input:    "!./foo.txt",
+			expected: "'.' and '..' are not allowed in glob path",
+		},
+	}
+
+	for _, tc := range tests {
+		t.Run(tc.what, func(t *testing.T) {
+			errs := ValidatePathGlob(tc.input)
+			if len(errs) != 1 {
+				t.Fatalf("wanted 1 error %q but got %d errors: %v", tc.expected, len(errs), errs)
 			}
 		})
 	}

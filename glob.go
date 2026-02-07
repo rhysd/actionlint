@@ -241,15 +241,22 @@ func ValidateRefGlob(pat string) []InvalidGlobPattern {
 // errors found by the validation. See the following URL for more details of the syntax:
 // https://docs.github.com/en/actions/using-workflows/workflow-syntax-for-github-actions#filter-pattern-cheat-sheet
 func ValidatePathGlob(pat string) []InvalidGlobPattern {
-	if strings.HasPrefix(pat, " ") {
-		return []InvalidGlobPattern{
-			{"path value must not start with spaces", 0},
-		}
+	p := strings.TrimSpace(pat)
+
+	var errs []InvalidGlobPattern
+	if pat != p {
+		errs = append(errs, InvalidGlobPattern{"leading and trailing spaces are not allowed in glob path", 0})
 	}
-	if strings.HasSuffix(pat, " ") {
-		return []InvalidGlobPattern{
-			{"path value must not end with spaces", len(pat)},
-		}
+
+	// '.' is not handled by path filter (#521)
+	p = strings.TrimPrefix(p, "!")
+	if p == "." || p == ".." || strings.HasPrefix(p, "./") || strings.HasPrefix(p, "../") {
+		errs = append(errs, InvalidGlobPattern{"'.' and '..' are not allowed in glob path", 0})
 	}
+
+	if len(errs) > 0 {
+		return errs
+	}
+
 	return validateGlob(pat, false)
 }
