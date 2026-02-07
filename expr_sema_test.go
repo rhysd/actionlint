@@ -1321,37 +1321,19 @@ func TestExprSemanticsCheckError(t *testing.T) {
 			},
 		},
 		{
-			what:  "case() with no arguments",
-			input: "case()",
+			what:  "case() with too few arguments",
+			input: "case() || case(true) || case(true, 'a')",
 			expected: []string{
-				"number of arguments is wrong",
+				"at least 3 parameters but 0 arguments are given",
+				"at least 3 parameters but 1 arguments are given",
+				"at least 3 parameters but 2 arguments are given",
 			},
 		},
 		{
-			what:  "case() with one argument",
-			input: "case(true)",
-			expected: []string{
-				"number of arguments is wrong",
-			},
-		},
-		{
-			what:  "case() with two arguments",
-			input: "case(true, 'a')",
-			expected: []string{
-				"number of arguments is wrong",
-			},
-		},
-		{
-			what:  "case() with even number of arguments (4)",
-			input: "case(true, 'a', false, 'b')",
+			what:  "case() with even number of arguments",
+			input: "case(true, 'a', false, 'b') || case(true, 'a', false, 'b', true, 'c')",
 			expected: []string{
 				"case() requires an odd number of arguments (pred/value pairs + default) but got 4",
-			},
-		},
-		{
-			what:  "case() with even number of arguments (6)",
-			input: "case(true, 'a', false, 'b', true, 'c')",
-			expected: []string{
 				"case() requires an odd number of arguments (pred/value pairs + default) but got 6",
 			},
 		},

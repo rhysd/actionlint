@@ -245,7 +245,7 @@ var BuiltinFuncSignatures = map[string][]*FuncSignature{
 		Name: "case",
 		Ret:  AnyType{},
 		Params: []ExprType{
-			AnyType{},
+			BoolType{},
 			AnyType{},
 			AnyType{},
 		},
@@ -897,11 +897,8 @@ func (sema *ExprSemanticsChecker) checkBuiltinFuncCall(n *FuncCallNode, sig *Fun
 			sema.errorf(lit, "broken JSON string is passed to fromJSON() at offset %d: %s", s.Offset, s)
 		}
 	case "case":
-		argc := len(n.Args)
-		if argc < 3 {
-			sema.errorf(n, "case() requires at least 3 arguments but got %d", argc)
-		} else if argc%2 == 0 {
-			sema.errorf(n, "case() requires an odd number of arguments (pred/value pairs + default) but got %d", argc)
+		if len(n.Args)%2 == 0 {
+			sema.errorf(n, "case() requires an odd number of arguments (pred/value pairs + default) but got %d", len(n.Args))
 		}
 	}
 
