@@ -88,7 +88,7 @@ func (p *parser) errorf(n *yaml.Node, format string, args ...interface{}) {
 	p.error(n, m)
 }
 
-func (p *parser) resolveChildAliases(root *yaml.Node) {
+func (p *parser) resolveAliases(root *yaml.Node) {
 	type usage struct {
 		used    bool
 		defined bool
@@ -98,27 +98,28 @@ func (p *parser) resolveChildAliases(root *yaml.Node) {
 
 	var resolve func(*yaml.Node) // For recursive call
 	resolve = func(n *yaml.Node) {
+		var u usage
 		if len(n.Anchor) != 0 {
-			anchors[n] = &usage{}
+			anchors[n] = &u
 		}
 		for i, c := range n.Content {
 			if c.Kind != yaml.AliasNode {
 				resolve(c)
 				continue
 			}
+			// Note: Unknown anchors are detected by go-yaml parser so we don't need to detect them by ourselves.
 			if u, ok := anchors[c.Alias]; ok {
-				if !u.defined {
+				u.used = true
+				if u.defined {
+					n.Content[i] = c.Alias // Resolved
+				} else {
+					// Don't resolve the recursive alias because it causes stack overflow on parsing the tree as
+					// `RawYAMLValue`. (#610)
 					p.errorf(c, "recursive alias %q is found. anchor was declared at line:%d, column:%d", c.Alias.Anchor, c.Alias.Line, c.Alias.Column)
 				}
-				u.used = true
-			}
-			n.Content[i] = c.Alias // Resolved
-		}
-		if len(n.Anchor) != 0 {
-			if u, ok := anchors[n]; ok {
-				u.defined = true
 			}
 		}
+		u.defined = true
 	}
 	resolve(root)
 
@@ -1466,7 +1467,7 @@ func (p *parser) parseJobs(n *yaml.Node) map[string]*Job {
 
 // https://docs.github.com/en/actions/learn-github-actions/workflow-syntax-for-github-actions
 func (p *parser) parse(n *yaml.Node) *Workflow {
-	p.resolveChildAliases(n)
+	p.resolveAliases(n)
 
 	w := &Workflow{}
 

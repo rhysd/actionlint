@@ -3131,10 +3131,10 @@ test.yaml:18:14: expecting a single ${{...}} expression or mapping value for "en
    |
 18 |         env: &credentials
    |              ^~~~~~~~~~~~
-test.yaml:19:9: expected scalar node for string value but found mapping node with "!!map" tag [syntax-check]
+test.yaml:22:14: "env" section is alias node but mapping node is expected [syntax-check]
    |
-19 |       - &recursive
-   |         ^~~~~~~~~~
+22 |         env: *recursive
+   |              ^~~~~~~~~~
 test.yaml:22:14: recursive alias "recursive" is found. anchor was declared at line:19, column:9 [syntax-check]
    |
 22 |         env: *recursive

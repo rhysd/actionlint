@@ -1,0 +1,12 @@
+on: push
+
+jobs:
+  test:
+    runs-on: ubuntu-latest
+    strategy:
+      matrix:
+        include: &recursive_include
+          - os: ubuntu-latest
+            nested: *recursive_include
+    steps:
+      - run: echo "recursive test"
