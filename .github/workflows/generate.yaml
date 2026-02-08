@@ -37,7 +37,7 @@ jobs:
             echo "pr=true" >> "$GITHUB_OUTPUT"
           fi
         id: diff
-      - uses: peter-evans/create-pull-request@v7
+      - uses: peter-evans/create-pull-request@v8
         with:
           branch: 'ci/${{ github.run_id }}'
           commit-message: 'update generated files by `go generate` on CI'
