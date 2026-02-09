@@ -98,9 +98,10 @@ func (p *parser) resolveAliases(root *yaml.Node) {
 
 	var resolve func(*yaml.Node) // For recursive call
 	resolve = func(n *yaml.Node) {
-		var u usage
+		var u *usage
 		if len(n.Anchor) != 0 {
-			anchors[n] = &u
+			u = &usage{}
+			anchors[n] = u
 		}
 		for i, c := range n.Content {
 			if c.Kind != yaml.AliasNode {
@@ -119,7 +120,9 @@ func (p *parser) resolveAliases(root *yaml.Node) {
 				}
 			}
 		}
-		u.defined = true
+		if u != nil {
+			u.defined = true
+		}
 	}
 	resolve(root)
 
