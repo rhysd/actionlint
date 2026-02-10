@@ -48,7 +48,7 @@ jobs:
           sed -i -E "s/version=\"[0-9]+\\.[0-9]+\\.[0-9]+\"/version=\"${VERSION}\"/" ./scripts/download-actionlint.bash
           git diff
           git add ./scripts/download-actionlint.bash
-          git -c user.email='41898282+github-actions[bot]@users.noreply.github.com' -c user.name='github-actions[bot]' commit -m "update version to $ver in download-actionlint.bash"
+          git -c user.email='41898282+github-actions[bot]@users.noreply.github.com' -c user.name='github-actions[bot]' commit -m "update version to $VERSION in download-actionlint.bash"
           git log -n 1
           git push
   winget:
