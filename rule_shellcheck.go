@@ -183,13 +183,14 @@ func (rule *RuleShellcheck) runShellcheck(src, shell string, pos *Pos) {
 	//           For example, `if ${{ matrix.foo }}; then ...` -> `if _________________; then ...`
 	// - SC2050: The expression is constant. This sometimes happens at `if` condition by replacing ${{ }} with
 	//           underscores (#45). For example, `if [ "${{ matrix.foo }}" = "x" ]` -> `if [ "_________________" = "x" ]`
+	// - SC2153: Same as SC2154.
 	// - SC2154: The var is referenced but not assigned. Script at `run:` can refer variables defined in `env:` section
 	//           so this rule can cause false positives (#53).
 	// - SC2157: Argument to -z is always false due to literal strings. When the argument of -z is replaced from ${{ }},
 	//           this can happen. For example, `if [ -z ${{ env.FOO }} ]` -> `if [ -z ______________ ]` (#113).
 	// - SC2043: Loop can be detected as only running once when the target of iteration is a placeholder. (#355)
 	//           e.g. `for foo in ${{ inputs.foo }}; do`
-	args := []string{"--norc", "-f", "json", "-x", "--shell", sh, "-e", "SC1091,SC2194,SC2050,SC2154,SC2157,SC2043", "-"}
+	args := []string{"--norc", "-f", "json", "-x", "--shell", sh, "-e", "SC1091,SC2194,SC2050,SC2153,SC2154,SC2157,SC2043", "-"}
 	rule.Debug("%s: Running %s command with %s", pos, rule.cmd.exe, args)
 
 	// Use same options to run shell process described at document
