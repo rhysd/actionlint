@@ -87,18 +87,33 @@ brew install --cask actionlint
 Download an archive file from [the releases page][releases] for your platform, unarchive it and put the executable file to a
 directory in `$PATH`.
 
-Prebuilt binaries are built at each release by CI for the following OS and arch:
+Prebuilt binaries are built at each releases by CI for the following OS and arch:
 
 - macOS (x86_64, arm64)
 - Linux (i386, x86_64, arm32, arm64)
 - Windows (i386, x86_64, arm64)
 - FreeBSD (i386, x86_64)
 
-Note: The following targets are not tested since GitHub Actions doesn't support them:
+Note that the following targets are not tested since GitHub Actions doesn't support them:
 
-- Linux i386, arm32, arm64
+- Linux i386, arm32
 - Windows i386, arm64
 - FreeBSD i386, x86_64
+
+To install these binaries [`gh`][gh] command is useful. The following command is an example for x86_64 Linux.
+
+```sh
+gh release download --repo rhysd/actionlint --pattern '*_linux_amd64.tar.gz' v1.7.11
+tar xf actionlint_1.7.11_linux_amd64.tar.gz
+./actionlint -version
+```
+
+Optionally you can verify the [attestation][attestations] of the downloaded artifact. This is highly recommended in terms of
+security. Note that the attestation support was introduced since actionlint v1.7.11.
+
+```sh
+gh attestation verify -R rhysd/actionlint actionlint_1.7.11_linux_amd64.tar.gz
+```
 
 <a id="download-script"></a>
 ## Download script
@@ -190,6 +205,8 @@ go install github.com/rhysd/actionlint/cmd/actionlint@main
 [formula]: https://formulae.brew.sh/formula/actionlint
 [homebrew]: https://brew.sh/
 [releases]: https://github.com/rhysd/actionlint/releases
+[gh]: https://docs.github.com/en/github-cli/github-cli/about-github-cli
+[attestations]: https://docs.github.com/en/actions/how-tos/secure-your-work/use-artifact-attestations/use-artifact-attestations
 [Go]: https://golang.org/
 [asdf]: https://asdf-vm.com/
 [asdf-plugin]: https://github.com/crazy-matt/asdf-actionlint
