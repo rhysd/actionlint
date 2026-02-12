@@ -64,14 +64,24 @@ rm -rf ./test2
 # Error cases
 set +e
 
+fails=0
 if bash "$script" 'v1.6.12'; then
-    echo "Invalid version at the first argument did not cause any error" >&2
+    echo "FAIL: Invalid version at the first argument did not cause any error" >&2
+    ((fails++))
 fi
 if bash "$script" './this/dir/does/not/exist'; then
-    echo "Directory which does not exist at the first argument did not cause any error" >&2
+    echo "FAIL: Directory which does not exist at the first argument did not cause any error" >&2
+    ((fails++))
 fi
 if bash "$script" '999999999999999999.9.9'; then
-    echo "Unknown version at the first argument did not cause any error" >&2
+    echo "FAIL: Unknown version at the first argument did not cause any error" >&2
+    ((fails++))
+fi
+
+set -e
+if [[ "$fails" != "0" ]]; then
+    echo "${fails} error cases failed. Check the above log" >&2
+    exit 1
 fi
 
 echo 'SUCCESS'
