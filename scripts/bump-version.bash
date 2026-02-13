@@ -64,7 +64,10 @@ sed_ "\
     " "$usage_doc"
 
 echo "Updating $playground_html"
-sed_ "s/id=\"version\">v[0-9]+\.[0-9]+\.[0-9]+/id=\"version\">v${version}/" "$playground_html"
+sed_ "\
+    s/rhysd\/actionlint\/releases\/tag\/v[0-9]+\.[0-9]+\.[0-9]+/rhysd\/actionlint\/releases\/tag\/v${version}/; \
+    s/id=\"version\">v[0-9]+\.[0-9]+\.[0-9]+/id=\"version\">v${version}/; \
+    " "$playground_html"
 
 for f in "$readme_doc" "$man_ronn" "$playground_html"; do
     echo "Updating document links in $f"
