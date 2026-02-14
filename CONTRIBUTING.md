@@ -163,6 +163,11 @@ When releasing v1.2.3 as example:
 7. Run `git pull` to merge upstream changes to local `main` branch and run `git push origin main`
 8. Update the playground by `./playground/deploy.bash` if it is not updated yet for the release
 
+> [!NOTE]
+> If you see workflow failure at releasing a new winget package, check the [fork repository](https://github.com/rhysd/winget-pkgs)
+> is up-to-date. If it is outdated, click 'Sync fork' button to update it to the latest. And re-run the failed job
+> again.
+
 ## How to generate the manual
 
 `actionlint.1` manual is generated from [`actionlint.1.ronn`](./man/actionlint.1.ronn) by [ronn](https://github.com/rtomayko/ronn).
