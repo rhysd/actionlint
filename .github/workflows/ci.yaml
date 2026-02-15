@@ -30,8 +30,7 @@ jobs:
         if: ${{ runner.os == 'Linux' }}
       - name: Install dependencies on Windows
         run: |
-          # `choco install shellcheck` is too slow on GitHub Actions. It takes more than 3 minutes to install one package
-          # choco install shellcheck
+          winget install --id koalaman.shellcheck --disable-interactivity --accept-package-agreements --accept-source-agreements
           pip install pyflakes
           pyflakes --version
         if: ${{ runner.os == 'Windows' }}
