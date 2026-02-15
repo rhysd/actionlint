@@ -97,7 +97,7 @@ Prebuilt binaries are built at each releases by CI for the following OS and arch
 Note that the following targets are not tested since GitHub Actions doesn't support them:
 
 - Linux i386, arm32
-- Windows i386, arm64
+- Windows i386
 - FreeBSD i386, x86_64
 
 To install these binaries [`gh`][gh] command is useful. The following command is an example for x86_64 Linux.
@@ -206,7 +206,7 @@ go install github.com/rhysd/actionlint/cmd/actionlint@main
 [homebrew]: https://brew.sh/
 [releases]: https://github.com/rhysd/actionlint/releases
 [gh]: https://docs.github.com/en/github-cli/github-cli/about-github-cli
-[attestations]: https://docs.github.com/en/actions/how-tos/secure-your-work/use-artifact-attestations/use-artifact-attestations
+[attestations]: https://docs.github.com/en/actions/concepts/security/artifact-attestations
 [Go]: https://golang.org/
 [asdf]: https://asdf-vm.com/
 [asdf-plugin]: https://github.com/crazy-matt/asdf-actionlint

@@ -6,7 +6,7 @@ jobs:
     name: Unit tests
     strategy:
       matrix:
-        os: [ubuntu-latest, ubuntu-24.04-arm, macos-latest, windows-latest, macos-15-intel]
+        os: [ubuntu-latest, ubuntu-24.04-arm, macos-latest, windows-latest, macos-15-intel, windows-11-arm]
         go: ['1.24', '1.25']
     runs-on: ${{ matrix.os }}
     steps:
@@ -41,6 +41,10 @@ jobs:
           go-version: ${{ matrix.go }}
           check-latest: true
       - run: go test -v -race -coverprofile coverage.txt -covermode=atomic ./...
+        # Arm Windows doesn't support -race
+        if: ${{ matrix.os != 'windows-11-arm' }}
+      - run: go test -v -coverprofile coverage.txt -covermode=atomic ./...
+        if: ${{ matrix.os == 'windows-11-arm' }}
       - run: go tool cover -func ./coverage.txt
       # Check build without CGO
       - run: go build ./cmd/actionlint
@@ -49,6 +53,7 @@ jobs:
           CGO_ENABLED: 0
       # Set -race for catching data races on dog fooding (#333)
       - run: go build -race ./cmd/actionlint
+        if: ${{ matrix.os != 'windows-11-arm' }}
       - name: Dog fooding 🐶
         run: |
           echo "::add-matcher::.github/actionlint-matcher.json"
