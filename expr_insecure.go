@@ -138,6 +138,7 @@ var BuiltinUntrustedInputs = UntrustedInputSearchRoots{
 		),
 		NewUntrustedInputMap("head_ref"),
 	),
+	"inputs": NewUntrustedInputMap("inputs"),
 }
 
 // UntrustedInputChecker is a checker to detect untrusted inputs in an expression syntax tree.
