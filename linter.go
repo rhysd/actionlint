@@ -571,6 +571,12 @@ func (l *Linter) check(
 			NewRuleDeprecatedCommands(),
 			NewRuleIfCond(),
 		}
+
+		// Only add required actions rule if config exists and has required actions
+		if cfg != nil && len(cfg.RequiredActions) > 0 {
+			rules = append(rules, NewRuleRequiredActions(cfg.RequiredActions))
+		}
+
 		if l.shellcheck != "" {
 			r, err := NewRuleShellcheck(l.shellcheck, proc)
 			if err == nil {
