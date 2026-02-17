@@ -35,7 +35,8 @@ func posAt(n *yaml.Node) *Pos {
 
 func newString(n *yaml.Node) *String {
 	quoted := n.Style&(yaml.DoubleQuotedStyle|yaml.SingleQuotedStyle) != 0
-	return &String{n.Value, quoted, posAt(n)}
+	literal := n.Style == yaml.LiteralStyle
+	return &String{n.Value, quoted, posAt(n), literal}
 }
 
 // workflowMappingEntry represents a key-value entry in YAML mapping.
@@ -203,7 +204,7 @@ func (p *parser) mayParseExpression(n *yaml.Node) *String {
 
 func (p *parser) parseString(n *yaml.Node, allowEmpty bool) *String {
 	if !p.checkString(n, allowEmpty) {
-		return &String{"", false, posAt(n)}
+		return &String{"", false, posAt(n), false}
 	}
 	return newString(n)
 }
