@@ -334,8 +334,8 @@ var BuiltinGlobalVariableTypes = map[string]ExprType{
 		"temp":        StringType{},
 		"tool_cache":  StringType{},
 		"debug":       StringType{},
-		"environment": StringType{},
-		"workspace": StringType{} // https://github.com/github/docs/issues/32443
+		"environment": StringType{}, // https://github.com/github/docs/issues/32443
+		"workspace":   StringType{},
 	}),
 	// https://docs.github.com/en/actions/learn-github-actions/contexts#secrets-context
 	"secrets": NewMapObjectType(StringType{}),
