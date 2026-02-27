@@ -86,7 +86,6 @@ func (ms UntrustedInputSearchRoots) AddRoot(m *UntrustedInputMap) {
 // - https://github.com/github/codeql/blob/main/javascript/ql/src/experimental/Security/CWE-094/ExpressionInjection.ql
 var BuiltinUntrustedInputs = UntrustedInputSearchRoots{
 	"github": NewUntrustedInputMap("github",
-		NewUntrustedInputMap("ref"),
 		NewUntrustedInputMap("event",
 			NewUntrustedInputMap("issue",
 				NewUntrustedInputMap("title"),
@@ -139,6 +138,12 @@ var BuiltinUntrustedInputs = UntrustedInputSearchRoots{
 			),
 		),
 		NewUntrustedInputMap("head_ref"),
+		NewUntrustedInputMap("ref"),
+		NewUntrustedInputMap("ref_name"),
+		NewUntrustedInputMap("actor"),
+		NewUntrustedInputMap("trigerring_actor"),
+		NewUntrustedInputMap("workflow"),
+		NewUntrustedInputMap("workflow_ref"),
 	),
 	"inputs": NewUntrustedInputMap("inputs"),
 }
