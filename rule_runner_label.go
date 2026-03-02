@@ -19,6 +19,7 @@ const (
 	compatMacOS150L
 	compatMacOS150XL
 	compatMacOS260
+	compatMacOS260Intel
 	compatMacOS260L
 	compatMacOS260XL
 	compatWindows2022
@@ -47,6 +48,7 @@ var allGitHubHostedRunnerLabels = []string{
 	"macos-latest",
 	"macos-latest-xlarge",
 	"macos-latest-large",
+	"macos-26-intel",
 	"macos-26-xlarge",
 	"macos-26-large",
 	"macos-26",
@@ -87,6 +89,7 @@ var defaultRunnerOSCompats = map[string]runnerOSCompat{
 	"macos-latest-xlarge":    compatMacOS150XL,
 	"macos-latest-large":     compatMacOS150L,
 	"macos-latest":           compatMacOS150,
+	"macos-26-intel":         compatMacOS260Intel,
 	"macos-26-xlarge":        compatMacOS260XL,
 	"macos-26-large":         compatMacOS260L,
 	"macos-26":               compatMacOS260,
@@ -104,7 +107,7 @@ var defaultRunnerOSCompats = map[string]runnerOSCompat{
 	"windows-2022":           compatWindows2022,
 	"windows-11-arm":         compatWindows11Arm,
 	"linux":                  compatUbuntu2404 | compatUbuntu2204, // Note: "linux" does not always indicate Ubuntu. It might be Fedora or Arch or ...
-	"macos":                  compatMacOS260 | compatMacOS260L | compatMacOS260XL | compatMacOS150 | compatMacOS150Intel | compatMacOS150L | compatMacOS150XL | compatMacOS140 | compatMacOS140L | compatMacOS140XL,
+	"macos":                  compatMacOS260 | compatMacOS260Intel | compatMacOS260L | compatMacOS260XL | compatMacOS150 | compatMacOS150Intel | compatMacOS150L | compatMacOS150XL | compatMacOS140 | compatMacOS140L | compatMacOS140XL,
 	"windows":                compatWindows2025VS2026 | compatWindows2025 | compatWindows2022 | compatWindows11Arm,
 }
 
