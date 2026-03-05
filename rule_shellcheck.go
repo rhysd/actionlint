@@ -3,6 +3,7 @@ package actionlint
 import (
 	"encoding/json"
 	"fmt"
+	"os"
 	"strings"
 	"sync"
 )
@@ -57,7 +58,7 @@ func (rule *RuleShellcheck) VisitStep(n *Step) error {
 		return nil
 	}
 
-	rule.runShellcheck(run.Run.Value, rule.getShellName(run), run.RunPos)
+	rule.runShellcheck(run.Run, rule.getShellName(run), run.RunPos)
 	return nil
 }
 
@@ -160,7 +161,7 @@ func sanitizeExpressionsInScript(src string) string {
 	}
 }
 
-func (rule *RuleShellcheck) runShellcheck(src, shell string, pos *Pos) {
+func (rule *RuleShellcheck) runShellcheck(srcAst *String, shell string, pos *Pos) {
 	var sh string
 	if shell == "bash" || shell == "sh" {
 		sh = shell
@@ -172,6 +173,7 @@ func (rule *RuleShellcheck) runShellcheck(src, shell string, pos *Pos) {
 		return // Skip checking this shell script since shellcheck doesn't support it
 	}
 
+	src := srcAst.Value
 	src = sanitizeExpressionsInScript(src)
 	rule.Debug("%s: Run shellcheck for %s script:\n%s", pos, sh, src)
 
@@ -215,6 +217,8 @@ func (rule *RuleShellcheck) runShellcheck(src, shell string, pos *Pos) {
 			return nil
 		}
 
+		rule.EnableDebug(os.Stdout)
+
 		// Synchronize rule.Errorf calls
 		rule.mu.Lock()
 		defer rule.mu.Unlock()
@@ -228,7 +232,14 @@ func (rule *RuleShellcheck) runShellcheck(src, shell string, pos *Pos) {
 			// Consider the first line is setup for running shell which was implicitly added for better check
 			line := err.Line - 1
 			msg := strings.TrimSuffix(err.Message, ".") // Trim period aligning style of error message
-			rule.Errorf(pos, "shellcheck reported issue in this script: SC%d:%s:%d:%d: %s", err.Code, err.Level, line, err.Column, msg)
+
+			var errorLocation Pos
+			if srcAst.Literal {
+				errorLocation = Pos{line + srcAst.Pos.Line, err.Column + srcAst.Pos.Col - 4}
+			} else {
+				errorLocation = *pos
+			}
+			rule.Errorf(&errorLocation, "shellcheck reported issue in this script: SC%d:%s:%d:%d: %s", err.Code, err.Level, line, err.Column, msg)
 		}
 
 		return nil
