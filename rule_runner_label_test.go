@@ -259,6 +259,11 @@ func TestRuleRunnerLabelCheckLabels(t *testing.T) {
 			errs:   []string{`label "macos-15-intel" conflicts with label "macos-15"`},
 		},
 		{
+			what:   "macOS 26 labels architecture conflict",
+			labels: []string{"macos-26", "macos-26-intel"},
+			errs:   []string{`label "macos-26-intel" conflicts with label "macos-26"`},
+		},
+		{
 			what:   "Windows labels architecture conflict",
 			labels: []string{"windows-2025", "windows-11-arm"},
 			errs:   []string{`label "windows-11-arm" conflicts with label "windows-2025"`},
