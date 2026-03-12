@@ -123,7 +123,7 @@ jobs:
       - uses: actions/checkout@v6
       - name: Build image
         id: image
-        uses: docker/build-push-action@v6
+        uses: docker/build-push-action@v7
         with:
           build-args: |
             GOLANG_VER=1.25
