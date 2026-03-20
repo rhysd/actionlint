@@ -383,20 +383,27 @@ func (p *parser) parseScheduleEvent(pos *Pos, n *yaml.Node) *ScheduledEvent {
 		return nil
 	}
 
-	cron := make([]*String, 0, len(n.Content))
+	schedules := make([]*ScheduleEntry, 0, len(n.Content))
 	for _, c := range n.Content {
+		entry := &ScheduleEntry{}
 		for e := range p.parseMappingAt("element of \"schedule\" section", c, false, true) {
-			if e.id != "cron" {
-				p.unexpectedKey(e.key, "element of \"schedule\" section", []string{"cron"})
-				continue
+			switch e.id {
+			case "cron":
+				if s := p.parseString(e.val, false); s.Value != "" {
+					entry.Cron = s
+				}
+			case "timezone":
+				entry.Timezone = p.parseString(e.val, false)
+			default:
+				p.unexpectedKey(e.key, "element of \"schedule\" section", []string{"cron", "timezone"})
 			}
-			if s := p.parseString(e.val, false); s.Value != "" {
-				cron = append(cron, s)
-			}
+		}
+		if entry.Cron != nil {
+			schedules = append(schedules, entry)
 		}
 	}
 
-	return &ScheduledEvent{cron, pos}
+	return &ScheduledEvent{schedules, pos}
 }
 
 // https://docs.github.com/en/actions/reference/workflows-and-actions/workflow-syntax#onworkflow_dispatchinputs

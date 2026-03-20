@@ -67,7 +67,10 @@ func (rule *RuleExpression) VisitWorkflowPre(n *Workflow) error {
 			rule.checkWebhookEventFilter(e.PathsIgnore)
 			rule.checkStrings(e.Workflows, "")
 		case *ScheduledEvent:
-			rule.checkStrings(e.Cron, "")
+			for _, s := range e.Schedules {
+				rule.checkString(s.Cron, "")
+				rule.checkString(s.Timezone, "")
+			}
 		case *WorkflowDispatchEvent:
 			ity := NewEmptyStrictObjectType()
 			for id, i := range e.Inputs {
