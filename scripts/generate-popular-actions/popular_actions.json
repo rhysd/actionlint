@@ -72,13 +72,13 @@
     },
     {
         "slug": "actions/attest-build-provenance",
-        "tags": ["v1", "v2", "v3"],
-        "next": "v4"
+        "tags": ["v1", "v2", "v3", "v4"],
+        "next": "v5"
     },
     {
         "slug": "actions/attest-sbom",
-        "tags": ["v1", "v2", "v3"],
-        "next": "v4"
+        "tags": ["v1", "v2", "v3", "v4"],
+        "next": "v5"
     },
     {
         "slug": "actions/cache",
@@ -104,8 +104,8 @@
     },
     {
         "slug": "actions/create-github-app-token",
-        "tags": ["v1", "v2"],
-        "next": "v3"
+        "tags": ["v1", "v2", "v3"],
+        "next": "v4"
     },
     {
         "slug": "actions/configure-pages",
@@ -124,8 +124,8 @@
     },
     {
         "slug": "actions/download-artifact",
-        "tags": ["v1", "v2", "v3", "v3-node20", "v4", "v5", "v6", "v7"],
-        "next": "v8"
+        "tags": ["v1", "v2", "v3", "v3-node20", "v4", "v5", "v6", "v7", "v8"],
+        "next": "v9"
     },
     {
         "slug": "actions/first-interaction",
@@ -174,8 +174,8 @@
     },
     {
         "slug": "actions/upload-artifact",
-        "tags": ["v1", "v2", "v3", "v3-node20", "v4", "v5", "v6"],
-        "next": "v7"
+        "tags": ["v1", "v2", "v3", "v3-node20", "v4", "v5", "v6", "v7"],
+        "next": "v8"
     },
     {
         "slug": "actions/upload-pages-artifact",
@@ -199,8 +199,8 @@
     },
     {
         "slug": "azure/login",
-        "tags": ["v1", "v2"],
-        "next": "v3"
+        "tags": ["v1", "v2", "v3"],
+        "next": "v4"
     },
     {
         "slug": "bahmutov/npm-install",
@@ -214,13 +214,13 @@
     },
     {
         "slug": "dawidd6/action-download-artifact",
-        "tags": ["v2", "v3", "v5", "v6", "v7", "v8", "v9", "v10", "v11", "v12", "v13", "v14", "v15"],
-        "next": "v16"
+        "tags": ["v2", "v3", "v5", "v6", "v7", "v8", "v9", "v10", "v11", "v12", "v13", "v14", "v15", "v16", "v17", "v18", "v19"],
+        "next": "v20"
     },
     {
         "slug": "dawidd6/action-send-mail",
-        "tags": ["v1", "v2", "v3", "v4", "v5", "v6", "v7", "v8", "v9"],
-        "next": "v10"
+        "tags": ["v1", "v2", "v3", "v4", "v5", "v6", "v7", "v8", "v9", "v10", "v11", "v12", "v13", "v14", "v15", "v16"],
+        "next": "v17"
     },
     {
         "slug": "dessant/lock-threads",
@@ -229,33 +229,33 @@
     },
     {
         "slug": "docker/build-push-action",
+        "tags": ["v1", "v2", "v3", "v4", "v5", "v6", "v7"],
+        "next": "v8"
+    },
+    {
+        "slug": "docker/login-action",
+        "tags": ["v1", "v2", "v3", "v4"],
+        "next": "v5"
+    },
+    {
+        "slug": "docker/metadata-action",
         "tags": ["v1", "v2", "v3", "v4", "v5", "v6"],
         "next": "v7"
     },
     {
-        "slug": "docker/login-action",
-        "tags": ["v1", "v2", "v3"],
-        "next": "v4"
-    },
-    {
-        "slug": "docker/metadata-action",
-        "tags": ["v1", "v2", "v3", "v4", "v5"],
-        "next": "v6"
-    },
-    {
         "slug": "docker/setup-buildx-action",
-        "tags": ["v1", "v2", "v3"],
-        "next": "v4"
+        "tags": ["v1", "v2", "v3", "v4"],
+        "next": "v5"
     },
     {
         "slug": "docker/setup-qemu-action",
-        "tags": ["v1", "v2", "v3"],
-        "next": "v4"
+        "tags": ["v1", "v2", "v3", "v4"],
+        "next": "v5"
     },
     {
         "slug": "dorny/paths-filter",
-        "tags": ["v1", "v2", "v3"],
-        "next": "v4",
+        "tags": ["v1", "v2", "v3", "v4"],
+        "next": "v5",
         "skip_outputs": true
     },
     {
@@ -511,8 +511,8 @@
     },
     {
         "slug": "release-drafter/release-drafter",
-        "tags": ["v5", "v6"],
-        "next": "v7"
+        "tags": ["v5", "v6", "v7"],
+        "next": "v8"
     },
     {
       "slug": "anthropics/claude-code-action",
