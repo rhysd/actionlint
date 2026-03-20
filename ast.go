@@ -411,6 +411,8 @@ type Environment struct {
 	Name *String
 	// URL is the URL mapped to 'environment_url' in the deployments API. Empty value means no value was specified.
 	URL *String
+	// Deployment is whether GitHub should create a deployment for this job. false skips auto-deployment while still applying environment protection rules and secrets.
+	Deployment *Bool
 	// Pos is a position in source.
 	Pos *Pos
 }

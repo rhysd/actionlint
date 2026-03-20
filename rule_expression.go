@@ -265,6 +265,7 @@ func (rule *RuleExpression) VisitJobPost(n *Job) error {
 	if n.Environment != nil {
 		rule.checkString(n.Environment.Name, "jobs.<job_id>.environment")
 		rule.checkString(n.Environment.URL, "jobs.<job_id>.environment.url")
+		rule.checkBool(n.Environment.Deployment, "jobs.<job_id>.environment")
 	}
 	for _, output := range n.Outputs {
 		rule.checkString(output.Value, "jobs.<job_id>.outputs.<output_id>")
