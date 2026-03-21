@@ -20,7 +20,7 @@ jobs:
       - run: ronn ./man/actionlint.1.ronn
       - uses: actions/setup-go@v6
         with:
-          go-version: '1.25'
+          go-version: '1.26'
           check-latest: true
       - name: Get version
         run: echo VERSION="${GITHUB_REF#refs/tags/v}" >> "$GITHUB_ENV"
@@ -84,7 +84,7 @@ jobs:
         with:
           platforms: linux/amd64,linux/arm64
           build-args: |
-            GOLANG_VER=1.25
+            GOLANG_VER=1.26
             ACTIONLINT_VER=${{ steps.tag.outputs.name }}
           push: true
           tags: |
