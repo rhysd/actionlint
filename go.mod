@@ -19,4 +19,5 @@ require (
 require (
 	github.com/clipperhouse/uax29/v2 v2.7.0 // indirect
 	github.com/mattn/go-isatty v0.0.20 // indirect
+	golang.org/x/net v0.52.0 // indirect
 )
