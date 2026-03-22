@@ -19,7 +19,7 @@ import (
 	"sort"
 	"strings"
 
-	"golang.org/x/net/html"
+	"github.com/PuerkitoBio/goquery"
 )
 
 var theURL = "https://docs.github.com/en/actions/reference/workflows-and-actions/events-that-trigger-workflows"
@@ -30,77 +30,53 @@ var dbg = log.New(io.Discard, "", log.LstdFlags)
 // The HTML input is assumed to be fetched from the following page.
 // https://docs.github.com/en/actions/reference/workflows-and-actions/events-that-trigger-workflows#pull_request
 func parse(src []byte) (map[string][]string, error) {
-	doc, err := html.Parse(bytes.NewReader(src))
+	doc, err := goquery.NewDocumentFromReader(strings.NewReader(string(src)))
 	if err != nil {
 		return nil, fmt.Errorf("could not parse HTML: %w", err)
 	}
 	dbg.Printf("Parsed HTML document (%d bytes)\n", len(src))
 
-	body := findNode(doc, func(n *html.Node) bool {
-		return n.Type == html.ElementNode &&
-			n.Data == "div" &&
-			attr(n, "data-search") == "article-body"
-	})
-	if body == nil {
+	body := doc.Find(`div[data-search="article-body"]`).First()
+	if body.Length() == 0 {
 		return nil, errors.New("article body was not found in HTML")
 	}
 	dbg.Println(`Found article body container "div[data-search=article-body]"`)
 
-	markdown := findNode(body, func(n *html.Node) bool {
-		return n.Type == html.ElementNode &&
-			n.Data == "div" &&
-			hasClass(n, "markdown-body")
-	})
-	if markdown == nil {
+	markdown := body.Find("div.markdown-body").First()
+	if markdown.Length() == 0 {
 		return nil, errors.New("markdown body was not found in HTML")
 	}
 	dbg.Println(`Found markdown body container "div.markdown-body"`)
 
 	parsed := map[string][]string{}
-	sawAbout := false
-	currentHook := ""
-
-	for n := markdown.FirstChild; n != nil; n = n.NextSibling {
-		if n.Type != html.ElementNode {
-			continue
-		}
-
-		if n.Data == "h2" {
-			id := attr(n, "id")
-			if id == "about-events-that-trigger-workflows" {
-				sawAbout = true
-				currentHook = ""
-				dbg.Println(`Found "About events that trigger workflows" heading`)
-				continue
-			}
-			if !sawAbout {
-				dbg.Printf("Skipping h2 %q because the about heading has not been seen yet\n", id)
-				continue
-			}
-
-			currentHook = eventNameOfHeading(n)
-			dbg.Printf("Found new hook %q\n", currentHook)
-			continue
-		}
-
-		if !sawAbout || currentHook == "" || n.Data != "table" {
-			continue
-		}
-
-		dbg.Printf("Trying table for hook %q (aria-labelledby=%q)\n", currentHook, attr(n, "aria-labelledby"))
-
-		types, err := parseTable(currentHook, n)
-		if err != nil {
-			return nil, fmt.Errorf("could not parse webhook types table for %q: %w", currentHook, err)
-		}
-
-		parsed[currentHook] = types
-		dbg.Printf("Found webhook table: %q %v\n", currentHook, types)
-		currentHook = ""
-	}
-
-	if !sawAbout {
+	about := markdown.ChildrenFiltered(`h2#about-events-that-trigger-workflows`).First()
+	if about.Length() == 0 {
 		return nil, errors.New(`"About events that trigger workflows" heading was missing`)
+	}
+	dbg.Println(`Found "About events that trigger workflows" heading`)
+
+	headings := about.NextAllFiltered("h2")
+	for i := range headings.Length() {
+		h := headings.Eq(i)
+		hook := eventNameOfHeading(h)
+		dbg.Printf("Found new hook %q\n", hook)
+
+		table := h.NextUntil("h2").Filter("table").First()
+		if table.Length() == 0 {
+			dbg.Printf("Skipping hook %q because no table was found before the next h2\n", hook)
+			continue
+		}
+
+		label, _ := table.Attr("aria-labelledby")
+		dbg.Printf("Trying table for hook %q (aria-labelledby=%q)\n", hook, label)
+
+		types, err := parseTable(hook, table)
+		if err != nil {
+			return nil, fmt.Errorf("could not parse webhook types table for %q: %w", hook, err)
+		}
+
+		parsed[hook] = types
+		dbg.Printf("Found webhook table: %q %v\n", hook, types)
 	}
 	if len(parsed) == 0 {
 		return nil, errors.New("no webhook table was found in given HTML source")
@@ -110,102 +86,36 @@ func parse(src []byte) (map[string][]string, error) {
 	return parsed, nil
 }
 
-func findNode(root *html.Node, pred func(*html.Node) bool) *html.Node {
-	if pred(root) {
-		return root
-	}
-	for c := root.FirstChild; c != nil; c = c.NextSibling {
-		if n := findNode(c, pred); n != nil {
-			return n
-		}
-	}
-	return nil
-}
-
-func attr(n *html.Node, name string) string {
-	for _, a := range n.Attr {
-		if a.Key == name {
-			return a.Val
-		}
-	}
-	return ""
-}
-
-func hasClass(n *html.Node, want string) bool {
-	for _, c := range strings.Fields(attr(n, "class")) {
-		if c == want {
-			return true
-		}
-	}
-	return false
-}
-
-func walkNodes(n *html.Node, visit func(*html.Node)) {
-	visit(n)
-	for c := n.FirstChild; c != nil; c = c.NextSibling {
-		walkNodes(c, visit)
-	}
-}
-
-func textContent(n *html.Node) string {
-	var b strings.Builder
-	walkNodes(n, func(n *html.Node) {
-		if n.Type == html.TextNode {
-			b.WriteString(n.Data)
-		}
-	})
-	return strings.TrimSpace(b.String())
-}
-
-func eventNameOfHeading(h *html.Node) string {
-	if id := attr(h, "id"); id != "" {
+func eventNameOfHeading(h *goquery.Selection) string {
+	if id, ok := h.Attr("id"); ok && id != "" {
 		return id
 	}
-	name := textContent(h)
+	name := strings.TrimSpace(h.Text())
 	dbg.Printf("Using heading text as hook name because id was missing: %q\n", name)
 	return name
 }
 
-func elementChildren(n *html.Node, tag string) []*html.Node {
-	var nodes []*html.Node
-	for c := n.FirstChild; c != nil; c = c.NextSibling {
-		if c.Type == html.ElementNode && c.Data == tag {
-			nodes = append(nodes, c)
-		}
-	}
-	return nodes
-}
-
-func firstElementChildByTag(n *html.Node, tag string) *html.Node {
-	for c := n.FirstChild; c != nil; c = c.NextSibling {
-		if c.Type == html.ElementNode && c.Data == tag {
-			return c
-		}
-	}
-	return nil
-}
-
-func parseTable(hook string, table *html.Node) ([]string, error) {
-	label := attr(table, "aria-labelledby")
+func parseTable(hook string, table *goquery.Selection) ([]string, error) {
+	label, _ := table.Attr("aria-labelledby")
 	dbg.Printf("Table: %q\n", label)
 	if label != hook {
 		return nil, fmt.Errorf("table aria-labelledby %q did not match the expected hook id %q", label, hook)
 	}
 
-	thead := firstElementChildByTag(table, "thead")
-	if thead == nil {
+	thead := table.ChildrenFiltered("thead").First()
+	if thead.Length() == 0 {
 		return nil, errors.New("thead element was missing")
 	}
-	tr := firstElementChildByTag(thead, "tr")
-	if tr == nil {
+	tr := thead.ChildrenFiltered("tr").First()
+	if tr.Length() == 0 {
 		return nil, errors.New("header row was missing")
 	}
-	headers := elementChildren(tr, "th")
-	if len(headers) < 2 {
-		return nil, fmt.Errorf("table header had too few columns: got %d, want at least 2", len(headers))
+	headers := tr.ChildrenFiltered("th")
+	if headers.Length() < 2 {
+		return nil, fmt.Errorf("table header had too few columns: got %d, want at least 2", headers.Length())
 	}
-	h0 := textContent(headers[0])
-	h1 := textContent(headers[1])
+	h0 := strings.TrimSpace(headers.Eq(0).Text())
+	h1 := strings.TrimSpace(headers.Eq(1).Text())
 	if h0 != "Webhook event payload" {
 		return nil, fmt.Errorf("unexpected first table header %q, want %q", h0, "Webhook event payload")
 	}
@@ -214,30 +124,30 @@ func parseTable(hook string, table *html.Node) ([]string, error) {
 	}
 	dbg.Println(`  Found table header for "Webhook event payload"`)
 
-	tbody := firstElementChildByTag(table, "tbody")
-	if tbody == nil {
+	tbody := table.ChildrenFiltered("tbody").First()
+	if tbody.Length() == 0 {
 		return nil, errors.New("tbody element was missing")
 	}
-	row := firstElementChildByTag(tbody, "tr")
-	if row == nil {
+	row := tbody.ChildrenFiltered("tr").First()
+	if row.Length() == 0 {
 		return nil, errors.New("table row was missing")
 	}
 	dbg.Println("  Found the first table row")
-	cells := elementChildren(row, "td")
-	if len(cells) < 2 {
+	cells := row.ChildrenFiltered("td")
+	if cells.Length() < 2 {
 		return nil, errors.New("table did not have at least two columns")
 	}
 
-	name := textContent(cells[0])
+	name := strings.TrimSpace(cells.Eq(0).Text())
 	dbg.Printf("  First column text: %q\n", name)
 
-	types := codeTexts(cells[1])
+	types := codeTexts(cells.Eq(1))
 	if len(types) > 0 {
 		dbg.Printf("  Activity types from code elements: %v\n", types)
 		return types, nil
 	}
 
-	t := textContent(cells[1])
+	t := strings.TrimSpace(cells.Eq(1).Text())
 	if t == "" || strings.EqualFold(t, "Not applicable") {
 		dbg.Printf("  Activity types cell treated as empty set: %q\n", t)
 		return []string{}, nil
@@ -250,14 +160,12 @@ func parseTable(hook string, table *html.Node) ([]string, error) {
 	return nil, fmt.Errorf("activity types cell did not contain code elements nor 'Not applicable': %q", t)
 }
 
-func codeTexts(n *html.Node) []string {
-	var texts []string
-	walkNodes(n, func(n *html.Node) {
-		if n.Type == html.ElementNode && n.Data == "code" {
-			t := textContent(n)
-			if t != "" {
-				texts = append(texts, t)
-			}
+func codeTexts(n *goquery.Selection) []string {
+	codes := n.Find("code")
+	texts := make([]string, 0, codes.Length())
+	codes.Each(func(_ int, s *goquery.Selection) {
+		if t := strings.TrimSpace(s.Text()); t != "" {
+			texts = append(texts, t)
 		}
 	})
 	return texts
