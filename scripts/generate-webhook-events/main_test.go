@@ -1,7 +1,6 @@
 package main
 
 import (
-	"bytes"
 	"errors"
 	"io"
 	"os"
@@ -12,162 +11,85 @@ import (
 	"github.com/google/go-cmp/cmp"
 )
 
-func testRunMain(args []string) (string, string, int) {
-	stdout := &bytes.Buffer{}
-	stderr := &bytes.Buffer{}
-	status := run(args, stdout, stderr, io.Discard, "")
-	return stdout.String(), stderr.String(), status
-}
-
-func TestOKWriteStdout(t *testing.T) {
-	f := filepath.Join("testdata", "ok.md")
-	stdout, stderr, status := testRunMain([]string{f, "-"})
-	if status != 0 {
-		t.Fatalf("status was non-zero: %d: %q", status, stderr)
+func TestWriteStdoutOK(t *testing.T) {
+	in := filepath.Join("testdata", "ok.html")
+	stdout := &strings.Builder{}
+	if err := run([]string{in, "-"}, stdout, io.Discard, ""); err != nil {
+		t.Fatal(err)
 	}
 
 	b, err := os.ReadFile(filepath.Join("testdata", "ok.go"))
 	if err != nil {
-		panic(err)
-	}
-	want := string(b)
-
-	if diff := cmp.Diff(want, stdout); diff != "" {
-		t.Fatal(diff)
-	}
-}
-
-func TestOKWriteFile(t *testing.T) {
-	in := filepath.Join("testdata", "ok.md")
-	out := filepath.Join("testdata", "_test_output.go")
-	defer os.Remove(out)
-
-	stdout, stderr, status := testRunMain([]string{in, out})
-	if status != 0 {
-		t.Fatalf("status was non-zero: %d: %q", status, stderr)
+		t.Fatal(err)
 	}
 
-	b, err := os.ReadFile(filepath.Join("testdata", "ok.go"))
-	if err != nil {
-		panic(err)
-	}
-	want := string(b)
-
-	if stdout != "" {
-		t.Fatalf("stdout is not empty: %q", stdout)
-	}
-
-	b, err = os.ReadFile(out)
-	if err != nil {
-		t.Fatalf("output file %q cannot be read: %v", out, err)
-	}
-	have := string(b)
-
+	want := strings.ReplaceAll(string(b), "\r\n", "\n")
+	have := strings.ReplaceAll(stdout.String(), "\r\n", "\n")
 	if diff := cmp.Diff(want, have); diff != "" {
 		t.Fatal(diff)
 	}
 }
 
-func TestFetchOK(t *testing.T) {
-	url := "https://raw.githubusercontent.com/rhysd/actionlint/main/LICENSE.txt"
-	b, err := fetch(url)
-	if err != nil {
-		t.Fatal(err)
-	}
-	if !bytes.HasPrefix(b, []byte("the MIT License")) {
-		t.Fatalf("unexpected content: %q", b)
-	}
-}
+type errWriter struct{}
 
-func TestErrorGenerate(t *testing.T) {
-	testCases := []struct {
-		file string
-		want string
-	}{
-		{"no_heading.md", "heading was missing"},
-		{"no_hooks.md", "no webhook table was found in given markdown source"},
-		{"no_hook_name_link.md", "\"Webhook event payload\" table was found, but first cell did not contain hook name"},
-	}
-
-	for _, tc := range testCases {
-		t.Run(tc.file, func(t *testing.T) {
-			f := filepath.Join("testdata", tc.file)
-			stdout, stderr, status := testRunMain([]string{f, "-"})
-			if status == 0 {
-				t.Fatalf("status was zero: %q", stdout)
-			}
-			if !strings.Contains(stderr, tc.want) {
-				t.Fatalf("wanted %q in stderr %q", tc.want, stderr)
-			}
-		})
-	}
-}
-
-type testErrorWriter struct{}
-
-func (w testErrorWriter) Write(b []byte) (int, error) {
+func (errWriter) Write([]byte) (int, error) {
 	return 0, errors.New("dummy write error")
 }
 
-func TestErrorWriteResult(t *testing.T) {
-	f := filepath.Join("testdata", "ok.md")
-	stderr := &bytes.Buffer{}
-	status := run([]string{f, "-"}, testErrorWriter{}, stderr, io.Discard, "")
-	if status == 0 {
-		t.Fatal("status was zero")
+func TestWriteError(t *testing.T) {
+	in := filepath.Join("testdata", "ok.html")
+	err := run([]string{in, "-"}, errWriter{}, io.Discard, "")
+	if err == nil {
+		t.Fatal("error did not occur")
 	}
-	msg := stderr.String()
-	if !strings.Contains(msg, "dummy write error") {
-		t.Fatalf("write error did not occur: %q", msg)
+	if !strings.Contains(err.Error(), "could not write output") {
+		t.Fatalf("unexpected error: %q", err)
 	}
-}
-
-func TestFetchError(t *testing.T) {
-	testCases := []struct {
-		what string
-		url  string
-		want string
-	}{
-		{"not found", "https://raw.githubusercontent.com/rhysd/actionlint/main/this-file-does-not-exist.txt", "request was not successful"},
-		{"invalid url", "foo://bar", "could not fetch"},
-	}
-
-	for _, tc := range testCases {
-		t.Run(tc.what, func(t *testing.T) {
-			stderr := &bytes.Buffer{}
-			status := run([]string{"-"}, io.Discard, stderr, io.Discard, tc.url)
-			if status == 0 {
-				t.Fatal("status was zero")
-			}
-			msg := stderr.String()
-			if !strings.Contains(msg, tc.want) {
-				t.Fatalf("unexpected error: %v: %s", msg, tc.url)
-			}
-		})
+	if !strings.Contains(err.Error(), "dummy write error") {
+		t.Fatalf("unexpected error: %q", err)
 	}
 }
 
-func TestCmdError(t *testing.T) {
-	f := filepath.Join("testdata", "ok.md")
-	dirNotExist := filepath.Join("dir", "does", "not", "exist", "out.go")
-	testCases := []struct {
-		what string
-		args []string
+func TestInvalidCommandArgs(t *testing.T) {
+	err := run([]string{"a", "b", "c"}, io.Discard, io.Discard, "")
+	if err == nil {
+		t.Fatal("error did not occur")
+	}
+	if !strings.Contains(err.Error(), "usage: generate-webhook-events [[srcfile] dstfile]") {
+		t.Fatalf("unexpected error: %q", err)
+	}
+}
+
+func TestParseError(t *testing.T) {
+	tests := []struct {
+		file string
 		want string
 	}{
-		{"too many args", []string{"foo", "bar", "piyo"}, "usage:"},
-		{"cannot read file", []string{"oops-this-file-does-not-exist.md", "-"}, "oops-this-file-does-not-exist.md"},
-		{"cannot write file", []string{f, dirNotExist}, dirNotExist},
+		{"no_article_body.html", "article body was not found"},
+		{"no_markdown_body.html", "markdown body was not found"},
+		{"no_heading.html", `"About events that trigger workflows" heading was missing`},
+		{"no_tables.html", "no webhook table was found"},
+		{"mismatched_aria_labelledby.html", `could not parse webhook types table for "check_run": expected table[aria-labelledby] to be "check_run", got "check_suite"`},
+		{"no_thead.html", `could not parse webhook types table for "check_run": missing thead element`},
+		{"no_header_row.html", `could not parse webhook types table for "check_run": missing header row in thead`},
+		{"too_few_headers.html", `could not parse webhook types table for "check_run": expected at least 2 header columns, got 1`},
+		{"non_webhook_table.html", `could not parse webhook types table for "check_run": expected first header to be "Webhook event payload", got "Operator"`},
+		{"bad_second_header.html", `could not parse webhook types table for "check_run": expected second header to be "Activity types", got "Description"`},
+		{"no_tbody.html", `could not parse webhook types table for "check_run": missing tbody element`},
+		{"no_table_row.html", `could not parse webhook types table for "check_run": missing first data row in tbody`},
+		{"too_few_columns.html", `could not parse webhook types table for "check_run": expected at least 2 data columns, got 1`},
+		{"bad_activity_types.html", `could not parse webhook types table for "check_run": unexpected activity types cell text "Surprise"; expected code elements, "Not applicable", or "Custom"`},
 	}
 
-	for _, tc := range testCases {
-		t.Run(tc.what, func(t *testing.T) {
-			stdout, stderr, status := testRunMain(tc.args)
-			if status == 0 {
-				t.Fatalf("status was zero: %q", stdout)
+	for _, tc := range tests {
+		t.Run(tc.file, func(t *testing.T) {
+			stdout := &strings.Builder{}
+			err := run([]string{filepath.Join("testdata", tc.file), "-"}, stdout, io.Discard, "")
+			if err == nil {
+				t.Fatal("error did not occur")
 			}
-			if !strings.Contains(stderr, tc.want) {
-				t.Fatalf("stderr does not contain %q: %q", tc.want, stderr)
+			if !strings.Contains(err.Error(), tc.want) {
+				t.Fatalf("wanted %q in error %q", tc.want, err)
 			}
 		})
 	}
