@@ -18,12 +18,14 @@ func TestWriteStdoutOK(t *testing.T) {
 		t.Fatal(err)
 	}
 
-	want, err := os.ReadFile(filepath.Join("testdata", "ok.go"))
+	b, err := os.ReadFile(filepath.Join("testdata", "ok.go"))
 	if err != nil {
 		t.Fatal(err)
 	}
 
-	if diff := cmp.Diff(string(want), stdout.String()); diff != "" {
+	want := strings.ReplaceAll(string(b), "\r\n", "\n")
+	have := strings.ReplaceAll(stdout.String(), "\r\n", "\n")
+	if diff := cmp.Diff(want, have); diff != "" {
 		t.Fatal(diff)
 	}
 }
