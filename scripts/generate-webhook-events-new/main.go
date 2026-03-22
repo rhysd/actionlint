@@ -19,7 +19,7 @@ import (
 	"sort"
 	"strings"
 
-	htmlpkg "golang.org/x/net/html"
+	"golang.org/x/net/html"
 )
 
 var theURL = "https://docs.github.com/en/actions/reference/workflows-and-actions/events-that-trigger-workflows"
@@ -29,15 +29,15 @@ var dbg = log.New(io.Discard, "", log.LstdFlags)
 // like "pull_request", and the values are arrays of names of their activity types.
 // The HTML input is assumed to be fetched from the following page.
 // https://docs.github.com/en/actions/reference/workflows-and-actions/events-that-trigger-workflows#pull_request
-func parseWebhookActivityTypes(html []byte) (map[string][]string, error) {
-	doc, err := htmlpkg.Parse(bytes.NewReader(html))
+func parse(src []byte) (map[string][]string, error) {
+	doc, err := html.Parse(bytes.NewReader(src))
 	if err != nil {
 		return nil, fmt.Errorf("could not parse HTML: %w", err)
 	}
-	dbg.Printf("Parsed HTML document (%d bytes)\n", len(html))
+	dbg.Printf("Parsed HTML document (%d bytes)\n", len(src))
 
-	body := findNode(doc, func(n *htmlpkg.Node) bool {
-		return n.Type == htmlpkg.ElementNode &&
+	body := findNode(doc, func(n *html.Node) bool {
+		return n.Type == html.ElementNode &&
 			n.Data == "div" &&
 			attr(n, "data-search") == "article-body"
 	})
@@ -46,8 +46,8 @@ func parseWebhookActivityTypes(html []byte) (map[string][]string, error) {
 	}
 	dbg.Println(`Found article body container "div[data-search=article-body]"`)
 
-	markdown := findNode(body, func(n *htmlpkg.Node) bool {
-		return n.Type == htmlpkg.ElementNode &&
+	markdown := findNode(body, func(n *html.Node) bool {
+		return n.Type == html.ElementNode &&
 			n.Data == "div" &&
 			hasClass(n, "markdown-body")
 	})
@@ -61,7 +61,7 @@ func parseWebhookActivityTypes(html []byte) (map[string][]string, error) {
 	currentHook := ""
 
 	for n := markdown.FirstChild; n != nil; n = n.NextSibling {
-		if n.Type != htmlpkg.ElementNode {
+		if n.Type != html.ElementNode {
 			continue
 		}
 
@@ -89,7 +89,7 @@ func parseWebhookActivityTypes(html []byte) (map[string][]string, error) {
 
 		dbg.Printf("Trying table for hook %q (aria-labelledby=%q)\n", currentHook, attr(n, "aria-labelledby"))
 
-		types, err := parseWebhookTypesTable(currentHook, n)
+		types, err := parseTable(currentHook, n)
 		if err != nil {
 			return nil, fmt.Errorf("could not parse webhook types table for %q: %w", currentHook, err)
 		}
@@ -109,7 +109,8 @@ func parseWebhookActivityTypes(html []byte) (map[string][]string, error) {
 
 	return parsed, nil
 }
-func findNode(root *htmlpkg.Node, pred func(*htmlpkg.Node) bool) *htmlpkg.Node {
+
+func findNode(root *html.Node, pred func(*html.Node) bool) *html.Node {
 	if pred(root) {
 		return root
 	}
@@ -121,7 +122,7 @@ func findNode(root *htmlpkg.Node, pred func(*htmlpkg.Node) bool) *htmlpkg.Node {
 	return nil
 }
 
-func attr(n *htmlpkg.Node, name string) string {
+func attr(n *html.Node, name string) string {
 	for _, a := range n.Attr {
 		if a.Key == name {
 			return a.Val
@@ -130,7 +131,7 @@ func attr(n *htmlpkg.Node, name string) string {
 	return ""
 }
 
-func hasClass(n *htmlpkg.Node, want string) bool {
+func hasClass(n *html.Node, want string) bool {
 	for _, c := range strings.Fields(attr(n, "class")) {
 		if c == want {
 			return true
@@ -139,22 +140,24 @@ func hasClass(n *htmlpkg.Node, want string) bool {
 	return false
 }
 
-func textContent(n *htmlpkg.Node) string {
+func walkNodes(n *html.Node, visit func(*html.Node)) {
+	visit(n)
+	for c := n.FirstChild; c != nil; c = c.NextSibling {
+		walkNodes(c, visit)
+	}
+}
+
+func textContent(n *html.Node) string {
 	var b strings.Builder
-	var visit func(*htmlpkg.Node)
-	visit = func(n *htmlpkg.Node) {
-		if n.Type == htmlpkg.TextNode {
+	walkNodes(n, func(n *html.Node) {
+		if n.Type == html.TextNode {
 			b.WriteString(n.Data)
 		}
-		for c := n.FirstChild; c != nil; c = c.NextSibling {
-			visit(c)
-		}
-	}
-	visit(n)
+	})
 	return strings.TrimSpace(b.String())
 }
 
-func eventNameOfHeading(h *htmlpkg.Node) string {
+func eventNameOfHeading(h *html.Node) string {
 	if id := attr(h, "id"); id != "" {
 		return id
 	}
@@ -163,17 +166,26 @@ func eventNameOfHeading(h *htmlpkg.Node) string {
 	return name
 }
 
-func elementChildren(n *htmlpkg.Node, tag string) []*htmlpkg.Node {
-	var nodes []*htmlpkg.Node
+func elementChildren(n *html.Node, tag string) []*html.Node {
+	var nodes []*html.Node
 	for c := n.FirstChild; c != nil; c = c.NextSibling {
-		if c.Type == htmlpkg.ElementNode && c.Data == tag {
+		if c.Type == html.ElementNode && c.Data == tag {
 			nodes = append(nodes, c)
 		}
 	}
 	return nodes
 }
 
-func parseWebhookTypesTable(hook string, table *htmlpkg.Node) ([]string, error) {
+func firstElementChildByTag(n *html.Node, tag string) *html.Node {
+	for c := n.FirstChild; c != nil; c = c.NextSibling {
+		if c.Type == html.ElementNode && c.Data == tag {
+			return c
+		}
+	}
+	return nil
+}
+
+func parseTable(hook string, table *html.Node) ([]string, error) {
 	label := attr(table, "aria-labelledby")
 	dbg.Printf("Table: %q\n", label)
 	if label != hook {
@@ -238,30 +250,16 @@ func parseWebhookTypesTable(hook string, table *htmlpkg.Node) ([]string, error) 
 	return nil, fmt.Errorf("activity types cell did not contain code elements nor 'Not applicable': %q", t)
 }
 
-func firstElementChildByTag(n *htmlpkg.Node, tag string) *htmlpkg.Node {
-	for c := n.FirstChild; c != nil; c = c.NextSibling {
-		if c.Type == htmlpkg.ElementNode && c.Data == tag {
-			return c
-		}
-	}
-	return nil
-}
-
-func codeTexts(n *htmlpkg.Node) []string {
+func codeTexts(n *html.Node) []string {
 	var texts []string
-	var visit func(*htmlpkg.Node)
-	visit = func(n *htmlpkg.Node) {
-		if n.Type == htmlpkg.ElementNode && n.Data == "code" {
+	walkNodes(n, func(n *html.Node) {
+		if n.Type == html.ElementNode && n.Data == "code" {
 			t := textContent(n)
 			if t != "" {
 				texts = append(texts, t)
 			}
 		}
-		for c := n.FirstChild; c != nil; c = c.NextSibling {
-			visit(c)
-		}
-	}
-	visit(n)
+	})
 	return texts
 }
 
@@ -345,12 +343,12 @@ func run(args []string, stdout, dbgout io.Writer, srcURL string) error {
 
 	dbg.Println("Start generate-webhook-events script")
 
-	var html []byte
+	var src []byte
 	var err error
 	if len(args) == 2 {
-		html, err = os.ReadFile(args[0])
+		src, err = os.ReadFile(args[0])
 	} else {
-		html, err = fetch(srcURL)
+		src, err = fetch(srcURL)
 	}
 	if err != nil {
 		return err
@@ -372,7 +370,7 @@ func run(args []string, stdout, dbgout io.Writer, srcURL string) error {
 		dst = n
 	}
 
-	m, err := parseWebhookActivityTypes(html)
+	m, err := parse(src)
 	if err != nil {
 		return err
 	}
