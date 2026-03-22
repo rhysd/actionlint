@@ -379,8 +379,8 @@
     },
     {
         "slug": "octokit/request-action",
-        "tags": ["v1.x", "v2.x"],
-        "next": "v3.x",
+        "tags": ["v1.x", "v2.x", "v3.x"],
+        "next": "v4.x",
         "skip_inputs": true
     },
     {

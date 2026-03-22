@@ -4186,6 +4186,15 @@ var PopularActions = map[string]*ActionMetadata{
 			"status":  {"status"},
 		},
 	},
+	"octokit/request-action@v3.x": {
+		Name:       "GitHub API Request",
+		SkipInputs: true,
+		Outputs: ActionMetadataOutputs{
+			"data":    {"data"},
+			"headers": {"headers"},
+			"status":  {"status"},
+		},
+	},
 	"openai/codex-action@v1": {
 		Name: "Codex Exec Action",
 		Inputs: ActionMetadataInputs{
