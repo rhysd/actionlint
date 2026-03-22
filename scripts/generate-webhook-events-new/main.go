@@ -89,13 +89,9 @@ func parseWebhookActivityTypes(html []byte) (map[string][]string, error) {
 
 		dbg.Printf("Trying table for hook %q (aria-labelledby=%q)\n", currentHook, attr(n, "aria-labelledby"))
 
-		types, ok, err := parseWebhookTypesTable(n)
+		types, err := parseWebhookTypesTable(currentHook, n)
 		if err != nil {
 			return nil, fmt.Errorf("could not parse webhook types table for %q: %w", currentHook, err)
-		}
-		if !ok {
-			dbg.Printf("Skipping table for hook %q because it was not a webhook activity table\n", currentHook)
-			continue
 		}
 
 		parsed[currentHook] = types
@@ -155,14 +151,14 @@ func textContent(n *htmlpkg.Node) string {
 		}
 	}
 	visit(n)
-	return b.String()
+	return strings.TrimSpace(b.String())
 }
 
 func eventNameOfHeading(h *htmlpkg.Node) string {
 	if id := attr(h, "id"); id != "" {
 		return id
 	}
-	name := strings.TrimSpace(textContent(h))
+	name := textContent(h)
 	dbg.Printf("Using heading text as hook name because id was missing: %q\n", name)
 	return name
 }
@@ -177,70 +173,69 @@ func elementChildren(n *htmlpkg.Node, tag string) []*htmlpkg.Node {
 	return nodes
 }
 
-func parseWebhookTypesTable(table *htmlpkg.Node) ([]string, bool, error) {
-	dbg.Printf("Table: %q\n", attr(table, "aria-labelledby"))
+func parseWebhookTypesTable(hook string, table *htmlpkg.Node) ([]string, error) {
+	label := attr(table, "aria-labelledby")
+	dbg.Printf("Table: %q\n", label)
+	if label != hook {
+		return nil, fmt.Errorf("table aria-labelledby %q did not match the expected hook id %q", label, hook)
+	}
 
 	thead := firstElementChildByTag(table, "thead")
 	if thead == nil {
-		dbg.Println("  Skip this table because thead was missing")
-		return nil, false, nil
+		return nil, errors.New("thead element was missing")
 	}
 	tr := firstElementChildByTag(thead, "tr")
 	if tr == nil {
-		dbg.Println("  Skip this table because header row was missing")
-		return nil, false, nil
+		return nil, errors.New("header row was missing")
 	}
 	headers := elementChildren(tr, "th")
 	if len(headers) < 2 {
-		dbg.Printf("  Skip this table because it had too few headers: %d\n", len(headers))
-		return nil, false, nil
+		return nil, fmt.Errorf("table header had too few columns: got %d, want at least 2", len(headers))
 	}
-	h0 := strings.TrimSpace(textContent(headers[0]))
-	h1 := strings.TrimSpace(textContent(headers[1]))
+	h0 := textContent(headers[0])
+	h1 := textContent(headers[1])
 	if h0 != "Webhook event payload" {
-		dbg.Printf("  Skip this table because first header was %q\n", h0)
-		return nil, false, nil
+		return nil, fmt.Errorf("unexpected first table header %q, want %q", h0, "Webhook event payload")
 	}
 	if h1 != "Activity types" {
-		dbg.Printf("  Skip this table because second header was %q\n", h1)
-		return nil, false, nil
+		return nil, fmt.Errorf("unexpected second table header %q, want %q", h1, "Activity types")
 	}
 	dbg.Println(`  Found table header for "Webhook event payload"`)
 
 	tbody := firstElementChildByTag(table, "tbody")
 	if tbody == nil {
-		return nil, false, errors.New("tbody element was missing")
+		return nil, errors.New("tbody element was missing")
 	}
 	row := firstElementChildByTag(tbody, "tr")
 	if row == nil {
-		return nil, false, errors.New("table row was missing")
+		return nil, errors.New("table row was missing")
 	}
 	dbg.Println("  Found the first table row")
 	cells := elementChildren(row, "td")
 	if len(cells) < 2 {
-		return nil, false, errors.New("table did not have at least two columns")
+		return nil, errors.New("table did not have at least two columns")
 	}
 
-	name := strings.TrimSpace(textContent(cells[0]))
+	name := textContent(cells[0])
 	dbg.Printf("  First column text: %q\n", name)
 
 	types := codeTexts(cells[1])
 	if len(types) > 0 {
 		dbg.Printf("  Activity types from code elements: %v\n", types)
-		return types, true, nil
+		return types, nil
 	}
 
-	t := strings.TrimSpace(textContent(cells[1]))
+	t := textContent(cells[1])
 	if t == "" || strings.EqualFold(t, "Not applicable") {
 		dbg.Printf("  Activity types cell treated as empty set: %q\n", t)
-		return []string{}, true, nil
+		return []string{}, nil
 	}
 	if strings.EqualFold(t, "Custom") {
 		dbg.Printf("  Activity types cell treated as custom types: %q\n", t)
-		return nil, true, nil
+		return nil, nil
 	}
 
-	return nil, false, fmt.Errorf("activity types cell did not contain code elements nor 'Not applicable': %q", t)
+	return nil, fmt.Errorf("activity types cell did not contain code elements nor 'Not applicable': %q", t)
 }
 
 func firstElementChildByTag(n *htmlpkg.Node, tag string) *htmlpkg.Node {
@@ -257,7 +252,7 @@ func codeTexts(n *htmlpkg.Node) []string {
 	var visit func(*htmlpkg.Node)
 	visit = func(n *htmlpkg.Node) {
 		if n.Type == htmlpkg.ElementNode && n.Data == "code" {
-			t := strings.TrimSpace(textContent(n))
+			t := textContent(n)
 			if t != "" {
 				texts = append(texts, t)
 			}
