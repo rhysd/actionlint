@@ -147,7 +147,7 @@ func walkNodes(n *html.Node, visit func(*html.Node)) {
 	}
 }
 
-func textContent(n *html.Node) string {
+func text(n *html.Node) string {
 	var b strings.Builder
 	walkNodes(n, func(n *html.Node) {
 		if n.Type == html.TextNode {
@@ -161,7 +161,7 @@ func eventNameOfHeading(h *html.Node) string {
 	if id := attr(h, "id"); id != "" {
 		return id
 	}
-	name := textContent(h)
+	name := text(h)
 	dbg.Printf("Using heading text as hook name because id was missing: %q\n", name)
 	return name
 }
@@ -189,55 +189,55 @@ func parseTable(hook string, table *html.Node) ([]string, error) {
 	label := attr(table, "aria-labelledby")
 	dbg.Printf("Table: %q\n", label)
 	if label != hook {
-		return nil, fmt.Errorf("table aria-labelledby %q did not match the expected hook id %q", label, hook)
+		return nil, fmt.Errorf(`expected table[aria-labelledby] to be %q, got %q`, hook, label)
 	}
 
 	thead := firstElementChildByTag(table, "thead")
 	if thead == nil {
-		return nil, errors.New("thead element was missing")
+		return nil, errors.New("missing thead element")
 	}
 	tr := firstElementChildByTag(thead, "tr")
 	if tr == nil {
-		return nil, errors.New("header row was missing")
+		return nil, errors.New("missing header row in thead")
 	}
 	headers := elementChildren(tr, "th")
 	if len(headers) < 2 {
-		return nil, fmt.Errorf("table header had too few columns: got %d, want at least 2", len(headers))
+		return nil, fmt.Errorf("expected at least 2 header columns, got %d", len(headers))
 	}
-	h0 := textContent(headers[0])
-	h1 := textContent(headers[1])
+	h0 := text(headers[0])
+	h1 := text(headers[1])
 	if h0 != "Webhook event payload" {
-		return nil, fmt.Errorf("unexpected first table header %q, want %q", h0, "Webhook event payload")
+		return nil, fmt.Errorf(`expected first header to be %q, got %q`, "Webhook event payload", h0)
 	}
 	if h1 != "Activity types" {
-		return nil, fmt.Errorf("unexpected second table header %q, want %q", h1, "Activity types")
+		return nil, fmt.Errorf(`expected second header to be %q, got %q`, "Activity types", h1)
 	}
 	dbg.Println(`  Found table header for "Webhook event payload"`)
 
 	tbody := firstElementChildByTag(table, "tbody")
 	if tbody == nil {
-		return nil, errors.New("tbody element was missing")
+		return nil, errors.New("missing tbody element")
 	}
 	row := firstElementChildByTag(tbody, "tr")
 	if row == nil {
-		return nil, errors.New("table row was missing")
+		return nil, errors.New("missing first data row in tbody")
 	}
 	dbg.Println("  Found the first table row")
 	cells := elementChildren(row, "td")
 	if len(cells) < 2 {
-		return nil, errors.New("table did not have at least two columns")
+		return nil, fmt.Errorf("expected at least 2 data columns, got %d", len(cells))
 	}
 
-	name := textContent(cells[0])
+	name := text(cells[0])
 	dbg.Printf("  First column text: %q\n", name)
 
-	types := codeTexts(cells[1])
+	types := code(cells[1])
 	if len(types) > 0 {
 		dbg.Printf("  Activity types from code elements: %v\n", types)
 		return types, nil
 	}
 
-	t := textContent(cells[1])
+	t := text(cells[1])
 	if t == "" || strings.EqualFold(t, "Not applicable") {
 		dbg.Printf("  Activity types cell treated as empty set: %q\n", t)
 		return []string{}, nil
@@ -247,14 +247,14 @@ func parseTable(hook string, table *html.Node) ([]string, error) {
 		return nil, nil
 	}
 
-	return nil, fmt.Errorf("activity types cell did not contain code elements nor 'Not applicable': %q", t)
+	return nil, fmt.Errorf(`unexpected activity types cell text %q; expected code elements, "Not applicable", or "Custom"`, t)
 }
 
-func codeTexts(n *html.Node) []string {
+func code(n *html.Node) []string {
 	var texts []string
 	walkNodes(n, func(n *html.Node) {
 		if n.Type == html.ElementNode && n.Data == "code" {
-			t := textContent(n)
+			t := text(n)
 			if t != "" {
 				texts = append(texts, t)
 			}
