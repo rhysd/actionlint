@@ -1,6 +1,7 @@
 package main
 
 import (
+	"errors"
 	"io"
 	"os"
 	"path/filepath"
@@ -24,6 +25,36 @@ func TestWriteStdoutOK(t *testing.T) {
 
 	if diff := cmp.Diff(string(want), stdout.String()); diff != "" {
 		t.Fatal(diff)
+	}
+}
+
+type errWriter struct{}
+
+func (errWriter) Write([]byte) (int, error) {
+	return 0, errors.New("dummy write error")
+}
+
+func TestWriteError(t *testing.T) {
+	in := filepath.Join("testdata", "ok.html")
+	err := run([]string{in, "-"}, errWriter{}, io.Discard, "")
+	if err == nil {
+		t.Fatal("error did not occur")
+	}
+	if !strings.Contains(err.Error(), "could not write output") {
+		t.Fatalf("unexpected error: %q", err)
+	}
+	if !strings.Contains(err.Error(), "dummy write error") {
+		t.Fatalf("unexpected error: %q", err)
+	}
+}
+
+func TestInvalidCommandArgs(t *testing.T) {
+	err := run([]string{"a", "b", "c"}, io.Discard, io.Discard, "")
+	if err == nil {
+		t.Fatal("error did not occur")
+	}
+	if !strings.Contains(err.Error(), "usage: generate-webhook-events [[srcfile] dstfile]") {
+		t.Fatalf("unexpected error: %q", err)
 	}
 }
 
