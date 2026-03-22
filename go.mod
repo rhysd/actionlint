@@ -3,7 +3,6 @@ module github.com/rhysd/actionlint
 go 1.25.0
 
 require (
-	github.com/PuerkitoBio/goquery v1.12.0
 	github.com/bmatcuk/doublestar/v4 v4.10.0
 	github.com/fatih/color v1.19.0
 	github.com/google/go-cmp v0.7.0
@@ -18,7 +17,6 @@ require (
 )
 
 require (
-	github.com/andybalholm/cascadia v1.3.3 // indirect
 	github.com/clipperhouse/uax29/v2 v2.7.0 // indirect
 	github.com/mattn/go-isatty v0.0.20 // indirect
 	golang.org/x/net v0.52.0 // indirect
