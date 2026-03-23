@@ -2,6 +2,8 @@ package main
 
 import (
 	"errors"
+	"go/parser"
+	"go/token"
 	"io"
 	"os"
 	"path/filepath"
@@ -27,6 +29,10 @@ func TestWriteStdoutOK(t *testing.T) {
 	have := strings.ReplaceAll(stdout.String(), "\r\n", "\n")
 	if diff := cmp.Diff(want, have); diff != "" {
 		t.Fatal(diff)
+	}
+
+	if _, err := parser.ParseFile(token.NewFileSet(), "", have, parser.AllErrors); err != nil {
+		t.Fatalf("Input is not valid as Go. Error: %s\nSource: %s", err, have)
 	}
 }
 
@@ -92,5 +98,15 @@ func TestParseError(t *testing.T) {
 				t.Fatalf("wanted %q in error %q", tc.want, err)
 			}
 		})
+	}
+}
+
+func TestFetchURL(t *testing.T) {
+	b, err := fetch("https://github.com")
+	if err != nil {
+		t.Fatal(err)
+	}
+	if len(b) == 0 {
+		t.Fatal("Fetched source is empty")
 	}
 }

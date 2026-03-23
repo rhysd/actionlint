@@ -22,7 +22,8 @@ import (
 	"golang.org/x/net/html"
 )
 
-var theURL = "https://docs.github.com/en/actions/reference/workflows-and-actions/events-that-trigger-workflows"
+const theURL = "https://docs.github.com/en/actions/reference/workflows-and-actions/events-that-trigger-workflows"
+
 var dbg = log.New(io.Discard, "", log.LstdFlags)
 
 // Parse the activity types of each webhook event. The keys of the map are names of the webhook events
@@ -140,16 +141,16 @@ func hasClass(n *html.Node, want string) bool {
 	return false
 }
 
-func walkNodes(n *html.Node, visit func(*html.Node)) {
+func walk(n *html.Node, visit func(*html.Node)) {
 	visit(n)
 	for c := n.FirstChild; c != nil; c = c.NextSibling {
-		walkNodes(c, visit)
+		walk(c, visit)
 	}
 }
 
 func text(n *html.Node) string {
 	var b strings.Builder
-	walkNodes(n, func(n *html.Node) {
+	walk(n, func(n *html.Node) {
 		if n.Type == html.TextNode {
 			b.WriteString(n.Data)
 		}
@@ -166,7 +167,7 @@ func eventNameOfHeading(h *html.Node) string {
 	return name
 }
 
-func elementChildren(n *html.Node, tag string) []*html.Node {
+func children(n *html.Node, tag string) []*html.Node {
 	var nodes []*html.Node
 	for c := n.FirstChild; c != nil; c = c.NextSibling {
 		if c.Type == html.ElementNode && c.Data == tag {
@@ -176,7 +177,7 @@ func elementChildren(n *html.Node, tag string) []*html.Node {
 	return nodes
 }
 
-func firstElementChildByTag(n *html.Node, tag string) *html.Node {
+func firstChildByTag(n *html.Node, tag string) *html.Node {
 	for c := n.FirstChild; c != nil; c = c.NextSibling {
 		if c.Type == html.ElementNode && c.Data == tag {
 			return c
@@ -192,38 +193,38 @@ func parseTable(hook string, table *html.Node) ([]string, error) {
 		return nil, fmt.Errorf(`expected table[aria-labelledby] to be %q, got %q`, hook, label)
 	}
 
-	thead := firstElementChildByTag(table, "thead")
+	thead := firstChildByTag(table, "thead")
 	if thead == nil {
 		return nil, errors.New("missing thead element")
 	}
-	tr := firstElementChildByTag(thead, "tr")
+	tr := firstChildByTag(thead, "tr")
 	if tr == nil {
 		return nil, errors.New("missing header row in thead")
 	}
-	headers := elementChildren(tr, "th")
+	headers := children(tr, "th")
 	if len(headers) < 2 {
 		return nil, fmt.Errorf("expected at least 2 header columns, got %d", len(headers))
 	}
 	h0 := text(headers[0])
 	h1 := text(headers[1])
 	if h0 != "Webhook event payload" {
-		return nil, fmt.Errorf(`expected first header to be %q, got %q`, "Webhook event payload", h0)
+		return nil, fmt.Errorf(`expected first header to be "Webhook event payload", got %q`, h0)
 	}
 	if h1 != "Activity types" {
-		return nil, fmt.Errorf(`expected second header to be %q, got %q`, "Activity types", h1)
+		return nil, fmt.Errorf(`expected second header to be "Activity types", got %q`, h1)
 	}
 	dbg.Println(`  Found table header for "Webhook event payload"`)
 
-	tbody := firstElementChildByTag(table, "tbody")
+	tbody := firstChildByTag(table, "tbody")
 	if tbody == nil {
 		return nil, errors.New("missing tbody element")
 	}
-	row := firstElementChildByTag(tbody, "tr")
+	row := firstChildByTag(tbody, "tr")
 	if row == nil {
 		return nil, errors.New("missing first data row in tbody")
 	}
 	dbg.Println("  Found the first table row")
-	cells := elementChildren(row, "td")
+	cells := children(row, "td")
 	if len(cells) < 2 {
 		return nil, fmt.Errorf("expected at least 2 data columns, got %d", len(cells))
 	}
@@ -252,7 +253,7 @@ func parseTable(hook string, table *html.Node) ([]string, error) {
 
 func code(n *html.Node) []string {
 	var texts []string
-	walkNodes(n, func(n *html.Node) {
+	walk(n, func(n *html.Node) {
 		if n.Type == html.ElementNode && n.Data == "code" {
 			t := text(n)
 			if t != "" {
@@ -360,26 +361,25 @@ func run(args []string, stdout, dbgout io.Writer, srcURL string) error {
 		out = stdout
 		dst = "stdout"
 	} else {
-		n := args[len(args)-1]
-		f, err := os.Create(n)
+		dst = args[len(args)-1]
+		f, err := os.Create(dst)
 		if err != nil {
 			return err
 		}
 		defer f.Close()
 		out = f
-		dst = n
 	}
 
-	m, err := parse(src)
+	p, err := parse(src)
 	if err != nil {
 		return err
 	}
 
-	if err := write(m, out); err != nil {
+	if err := write(p, out); err != nil {
 		return err
 	}
 
-	dbg.Println("Wrote output to", dst)
+	dbg.Println("Wrote the output to", dst)
 	dbg.Println("Done generate-webhook-events script successfully")
 
 	return nil
