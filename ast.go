@@ -167,6 +167,8 @@ func (e *WebhookEvent) EventName() string {
 type ScheduledEvent struct {
 	// Cron is list of cron strings which schedules workflow.
 	Cron []*String
+	// Timezone is an optional IANA timezone for the schedule (e.g. "America/New_York").
+	Timezone *String
 	// Pos is a position in source.
 	Pos *Pos
 }
