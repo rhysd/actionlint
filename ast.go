@@ -402,6 +402,8 @@ type Environment struct {
 	Name *String
 	// URL is the URL mapped to 'environment_url' in the deployments API. Empty value means no value was specified.
 	URL *String
+	// Deployment is a flag to indicate whether to create a deployment for the environment or not. Empty value means no value was specified.
+	Deployment *Bool
 	// Pos is a position in source.
 	Pos *Pos
 }

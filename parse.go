@@ -836,8 +836,10 @@ func (p *parser) parseEnvironment(pos *Pos, n *yaml.Node) *Environment {
 			ret.Name = p.parseString(e.val, false)
 		case "url":
 			ret.URL = p.parseString(e.val, false)
+		case "deployment":
+			ret.Deployment = p.parseBool(e.val)
 		default:
-			p.unexpectedKey(e.key, "environment", []string{"name", "url"})
+			p.unexpectedKey(e.key, "environment", []string{"deployment", "name", "url"})
 		}
 	}
 	if ret.Name == nil {

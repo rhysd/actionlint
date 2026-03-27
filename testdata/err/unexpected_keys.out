@@ -9,7 +9,7 @@ test.yaml:23:5: unexpected key "invalid_key" for "workflow_call" section. expect
 test.yaml:27:5: unexpected key "invalid_key" for "run" section. expected one of "shell", "working-directory" [syntax-check]
 test.yaml:28:3: expected "run" key for "defaults" section but got "invalid_key" [syntax-check]
 test.yaml:32:3: unexpected key "invalid_key" for "concurrency" section. expected one of "cancel-in-progress", "group" [syntax-check]
-test.yaml:38:7: unexpected key "invalid_key" for "environment" section. expected one of "name", "url" [syntax-check]
+test.yaml:38:7: unexpected key "invalid_key" for "environment" section. expected one of "deployment", "name", "url" [syntax-check]
 test.yaml:40:7: unexpected key "invalid_key" for "strategy" section. expected one of "fail-fast", "matrix", "max-parallel" [syntax-check]
 test.yaml:46:9: unexpected key "invalid_key" for "credentials" section. expected one of "password", "username" [syntax-check]
 test.yaml:47:7: unexpected key "invalid_key" for "container" section. expected one of "credentials", "env", "image", "options", "ports", "volumes" [syntax-check]
