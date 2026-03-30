@@ -1,1 +1,1 @@
-test.yaml:4:17: invalid timezone "Not/A/Timezone" in schedule event. It must be a valid IANA timezone name [events]
+test.yaml:4:17: invalid timezone "Not/A/Timezone" in schedule event. it must be a valid IANA timezone name [events]
