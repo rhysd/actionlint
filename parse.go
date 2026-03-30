@@ -393,7 +393,9 @@ func (p *parser) parseScheduleEvent(pos *Pos, n *yaml.Node) *ScheduledEvent {
 					entry.Cron = s
 				}
 			case "timezone":
-				entry.Timezone = p.parseString(e.val, false)
+				if s := p.parseString(e.val, false); s.Value != "" {
+					entry.Timezone = s
+				}
 			default:
 				p.unexpectedKey(e.key, "element of \"schedule\" section", []string{"cron", "timezone"})
 			}
