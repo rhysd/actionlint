@@ -1,3 +1,24 @@
+<a id="v1.7.12"></a>
+# [v1.7.12](https://github.com/rhysd/actionlint/releases/tag/v1.7.12) - 2026-03-30
+
+- Support the [`timezone` configuration in `on.schedule`](https://docs.github.com/en/actions/reference/workflows-and-actions/workflow-syntax#onschedule) with checks for IANA timezone string. See the [documentation](https://github.com/rhysd/actionlint/blob/main/docs/checks.md#check-cron-syntax-and-timezone) for more details. Note that actionlint starts to embed the timezone database in the executables from this version so the binary sizes slightly increase. ([#641](https://github.com/rhysd/actionlint/issues/641), thanks [@martincostello](https://github.com/martincostello))
+  ```yaml
+  on:
+    schedule:
+      # ERROR: The timezone is not a valid IANA timezone string
+      - cron: '*/5 * * * *'
+        timezone: 'Asia/Somewhere'
+  ```
+- Support the [`jobs.<job_name>.environment.deployment` configuration](https://docs.github.com/en/actions/how-tos/deploy/configure-and-manage-deployments/control-deployments#using-environments-without-deployments). ([#639](https://github.com/rhysd/actionlint/issues/639), thanks [@springmeyer](https://github.com/springmeyer))
+- Support the [`macos-26-intel` runner label](https://github.blog/changelog/2026-02-26-macos-26-is-now-generally-available-for-github-hosted-runners/). ([#629](https://github.com/rhysd/actionlint/issues/629), thanks [@hugovk](https://github.com/hugovk))
+- Fix the [table of webhook activity types](https://github.com/rhysd/actionlint/blob/main/all_webhooks.go) are outdated by rebuilding the [script to scrape the table](https://github.com/rhysd/actionlint/tree/main/scripts/generate-webhook-events) from scratch.
+- Support Go 1.26 and drop the support for Go 1.24. Now supported versions are 1.25 and 1.26.
+- Tests are run on arm64 Windows in CI.
+- Update the popular actions data set to the latest.
+
+[Changes][v1.7.12]
+
+
 <a id="v1.7.11"></a>
 # [v1.7.11](https://github.com/rhysd/actionlint/releases/tag/v1.7.11) - 2026-02-14
 
@@ -36,7 +57,7 @@
     - Signer repo:.... rhysd/actionlint
     - Signer workflow: .github/workflows/release.yaml@refs/tags/v1.7.11
   ```
-- Report path filters with `./` because they never match anything. ([#521](https://github.com/rhysd/actionlint/issues/521))
+- Report path filters with `./` as error because they never match anything. ([#521](https://github.com/rhysd/actionlint/issues/521))
   ```yaml
   on:
     push:
@@ -46,7 +67,7 @@
   ```
 - Fix comparing matrix items when an item is a super set of another item. ([#523](https://github.com/rhysd/actionlint/issues/523), [#613](https://github.com/rhysd/actionlint/issues/613), thanks [@michaelgruenewald](https://github.com/michaelgruenewald))
 - Fix stack overflow crash by a recursive anchor in matrix items. ([#610](https://github.com/rhysd/actionlint/issues/610))
-- Fix a unassigned variable false positive from shellcheck by disabling SC2153 rule. ([#573](https://github.com/rhysd/actionlint/issues/573))
+- Fix an unassigned variable false positive from shellcheck by disabling SC2153 rule. ([#573](https://github.com/rhysd/actionlint/issues/573))
 - Reduce the number of memory allocations on resolving anchors.
 - Update the popular actions data set to the latest.
 - Update Go dependencies to the latest.
@@ -2067,6 +2088,7 @@ See documentation for more details:
 [Changes][v1.0.0]
 
 
+[v1.7.12]: https://github.com/rhysd/actionlint/compare/v1.7.11...v1.7.12
 [v1.7.11]: https://github.com/rhysd/actionlint/compare/v1.7.10...v1.7.11
 [v1.7.10]: https://github.com/rhysd/actionlint/compare/v1.7.9...v1.7.10
 [v1.7.9]: https://github.com/rhysd/actionlint/compare/v1.7.8...v1.7.9
