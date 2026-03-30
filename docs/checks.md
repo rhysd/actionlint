@@ -24,7 +24,7 @@ List of checks:
 - [Webhook events validation](#check-webhook-events)
 - [Workflow dispatch event validation](#check-workflow-dispatch-events)
 - [Glob filter pattern syntax validation](#check-glob-pattern)
-- [CRON syntax check at `schedule:`](#check-cron-syntax)
+- [CRON syntax and IANA timezone string check at `schedule:`](#check-cron-syntax-and-timezone)
 - [Runner labels](#check-runner-labels)
 - [Action format in `uses:`](#check-action-format)
 - [Local action inputs validation at `with:`](#check-local-action-inputs)
@@ -1564,7 +1564,7 @@ workflow. It checks:
 Most common mistake I have ever seen here is a misunderstanding that regular expression is available for filtering.
 This rule can catch the mistake so that users can notice their mistakes.
 
-<a id="check-cron-syntax"></a>
+<a id="check-cron-syntax-and-timezone"></a>
 ## CRON syntax check at `schedule:`
 
 Example input:
@@ -1576,6 +1576,9 @@ on:
     - cron: '0 */3 * *'
     # ERROR: Interval of scheduled job is too small (job runs too frequently)
     - cron: '* */3 * * *'
+    # ERROR: Timezone is not a valid IANA timezone string
+    - cron: '*/5 * * * *'
+      timezone: 'Asia/Somewhere'
 
 jobs:
   test:
@@ -1595,9 +1598,13 @@ test.yaml:6:13: scheduled job runs too frequently. it runs once per 60 seconds. 
   |
 6 |     - cron: '* */3 * * *'
   |             ^~
+test.yaml:9:17: invalid timezone "Asia/Somewhere" in schedule event. it must be a valid IANA timezone name [events]
+  |
+9 |       timezone: 'Asia/Somewhere'
+  |                 ^~~~~~~~~~~~~~~~
 ```
 
-[Playground](https://rhysd.github.io/actionlint/#eNpUjEEKAjEMRfdzir8bCLQK7nobpwYGKYk0yf0lFhezC/+9PJW2AdZPfsXgvIGCPlUa9jvo9gCB9utO/z3J9tbD8tHZfAVmiJU04wjxKOOZ7IfM+WPLyuAMaeB+Kmqt3wAAAP//hKgjxA==)
+[Playground](https://rhysd.github.io/actionlint/#eNpkjUHKwjAQRvc5xbcLBJL88OMmO8/gCdo4kEqbkUyC4OllrF2Iu+G94XtckwEkF7qOlfQGPHLjmmD/4OI/HJz95u7gvyaedn4YoC8bPblSgj3LMsULb/Qo1Mgac+NZtNlJ+t5uo4rXqTGP2odfJ3VvJZ3ukj6rXj8TKBdGCOEVAAD//8YnMuQ=)
 
 To trigger a workflow in specific interval, [scheduled event][schedule-event-doc] can be defined in [POSIX CRON syntax][cron-syntax].
 
@@ -1606,6 +1613,8 @@ actionlint checks the CRON syntax and frequency of running a job. [The official 
 > The shortest interval you can run scheduled workflows is once every 5 minutes.
 
 When the job is run more frequently than once every 5 minutes, actionlint reports it as an error.
+
+actionlint also checks the `timezone` configuration [is a valid IANA timezone string][schedule-item-doc].
 
 <a id="check-runner-labels"></a>
 ## Runner labels
@@ -3197,6 +3206,7 @@ test.yaml:0:0: could not parse as YAML: yaml: unknown anchor 'credentials' refer
 [webhook-doc]: https://docs.github.com/en/actions/reference/workflows-and-actions/events-that-trigger-workflows#webhook-events
 [schedule-event-doc]: https://docs.github.com/en/actions/reference/workflows-and-actions/events-that-trigger-workflows#scheduled-events
 [cron-syntax]: https://pubs.opengroup.org/onlinepubs/9699919799/utilities/crontab.html#tag_20_25_07
+[schedule-item-doc]: https://docs.github.com/en/actions/reference/workflows-and-actions/workflow-syntax#onschedule
 [gh-hosted-runner]: https://docs.github.com/en/actions/using-github-hosted-runners/about-github-hosted-runners
 [self-hosted-runner]: https://docs.github.com/en/actions/hosting-your-own-runners/about-self-hosted-runners
 [action-uses-doc]: https://docs.github.com/en/actions/learn-github-actions/workflow-syntax-for-github-actions#jobsjob_idstepsuses
