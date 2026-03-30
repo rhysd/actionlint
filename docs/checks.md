@@ -24,7 +24,7 @@ List of checks:
 - [Webhook events validation](#check-webhook-events)
 - [Workflow dispatch event validation](#check-workflow-dispatch-events)
 - [Glob filter pattern syntax validation](#check-glob-pattern)
-- [CRON syntax and IANA timezone string check at `schedule:`](#check-cron-syntax-and-timezone)
+- [CRON syntax and IANA timezone string at `on.schedule`](#check-cron-syntax-and-timezone)
 - [Runner labels](#check-runner-labels)
 - [Action format in `uses:`](#check-action-format)
 - [Local action inputs validation at `with:`](#check-local-action-inputs)
@@ -1565,7 +1565,7 @@ Most common mistake I have ever seen here is a misunderstanding that regular exp
 This rule can catch the mistake so that users can notice their mistakes.
 
 <a id="check-cron-syntax-and-timezone"></a>
-## CRON syntax check at `schedule:`
+## CRON syntax and IANA timezone string at `on.schedule`
 
 Example input:
 
