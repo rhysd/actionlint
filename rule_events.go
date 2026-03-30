@@ -81,7 +81,13 @@ func (rule *RuleEvents) checkCron(spec *String) {
 
 // https://docs.github.com/en/actions/reference/workflows-and-actions/workflow-syntax#onschedule
 func (rule *RuleEvents) checkTimezone(tz *String) {
-	if _, err := time.LoadLocation(tz.Value); err != nil {
+	// `time.LoadLocation` accepts special values "", "UTC", and "Local" but they are not correct IANA timezone names.
+	ok := tz.Value != "" && !strings.EqualFold(tz.Value, "utc") && !strings.EqualFold(tz.Value, "local")
+	if ok {
+		_, err := time.LoadLocation(tz.Value)
+		ok = err == nil
+	}
+	if !ok {
 		rule.Errorf(tz.Pos, "invalid timezone %q in schedule event. it must be a valid IANA timezone name", tz.Value)
 	}
 }
