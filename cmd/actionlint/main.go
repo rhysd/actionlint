@@ -4,6 +4,8 @@ import (
 	"os"
 
 	"github.com/rhysd/actionlint"
+
+	_ "time/tzdata"
 )
 
 func main() {
