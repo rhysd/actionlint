@@ -1034,6 +1034,17 @@ func (p *parser) parseCredentials(pos *Pos, n *yaml.Node) *Credentials {
 // https://docs.github.com/en/actions/learn-github-actions/workflow-syntax-for-github-actions#jobsjob_idcontainer
 func (p *parser) parseContainer(sec string, pos *Pos, n *yaml.Node) *Container {
 	ret := &Container{Pos: pos}
+	keys := []string{
+		"image",
+		"credentials",
+		"env",
+		"ports",
+		"volumes",
+		"options",
+	}
+	if sec == "services" {
+		keys = append(keys, "command", "entrypoint")
+	}
 
 	if n.Kind == yaml.ScalarNode {
 		// When you only specify a container image, you can omit the image keyword.
@@ -1055,15 +1066,20 @@ func (p *parser) parseContainer(sec string, pos *Pos, n *yaml.Node) *Container {
 			ret.Ports = p.parseStringSequence("volumes", e.val, true, false)
 		case "options":
 			ret.Options = p.parseString(e.val, true)
+		case "command":
+			if sec == "services" {
+				ret.Command = p.parseString(e.val, true)
+				continue
+			}
+			p.unexpectedKey(e.key, sec, keys)
+		case "entrypoint":
+			if sec == "services" {
+				ret.Entrypoint = p.parseString(e.val, true)
+				continue
+			}
+			p.unexpectedKey(e.key, sec, keys)
 		default:
-			p.unexpectedKey(e.key, sec, []string{
-				"image",
-				"credentials",
-				"env",
-				"ports",
-				"volumes",
-				"options",
-			})
+			p.unexpectedKey(e.key, sec, keys)
 		}
 	}
 

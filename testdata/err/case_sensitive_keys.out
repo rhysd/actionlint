@@ -17,6 +17,6 @@ test.yaml:49:9: unexpected key "SHELL" for "run" section. expected one of "shell
 test.yaml:51:7: unexpected key "FAIL-FAST" for "strategy" section. expected one of "fail-fast", "matrix", "max-parallel" [syntax-check]
 test.yaml:53:7: unexpected key "IMAGE" for "container" section. expected one of "credentials", "env", "image", "options", "ports", "volumes" [syntax-check]
 test.yaml:56:9: unexpected key "USERNAME" for "credentials" section. expected one of "password", "username" [syntax-check]
-test.yaml:61:9: unexpected key "IMAGE" for "services" section. expected one of "credentials", "env", "image", "options", "ports", "volumes" [syntax-check]
+test.yaml:61:9: unexpected key "IMAGE" for "services" section. expected one of "command", "credentials", "entrypoint", "env", "image", "options", "ports", "volumes" [syntax-check]
 test.yaml:64:11: unexpected key "USERNAME" for "credentials" section. expected one of "password", "username" [syntax-check]
 test.yaml:68:9: unexpected key "RUN" for step to run shell command. expected one of "continue-on-error", "env", "id", "if", "name", "run", "shell", "timeout-minutes", "working-directory" [syntax-check]

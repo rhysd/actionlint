@@ -501,6 +501,8 @@ func (rule *RuleExpression) checkContainer(c *Container, workflowKey, childWorkf
 	rule.checkStrings(c.Ports, workflowKey)
 	rule.checkStrings(c.Volumes, workflowKey)
 	rule.checkString(c.Options, workflowKey)
+	rule.checkString(c.Command, workflowKey)
+	rule.checkString(c.Entrypoint, workflowKey)
 }
 
 func (rule *RuleExpression) checkConcurrency(c *Concurrency, workflowKey string) {

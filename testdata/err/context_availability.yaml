@@ -242,3 +242,14 @@ jobs:
       if: ${{ matrix.foo == 'a' && github.ref == 'foo' && vars.foo == 'foo' && needs.snapshot-err.outputs.foo == 'foo' && strategy.fail-fast && inputs.foo == 'foo' }}
     steps:
       - run: echo hi
+  test-service-overrides:
+    runs-on: ubuntu-latest
+    services:
+      nginx:
+        # ERROR at env
+        entrypoint: ${{ env.SERVICE_ENTRYPOINT }}
+        # ERROR at env
+        command: ${{ env.SERVICE_COMMAND }}
+        image: nginx
+    steps:
+      - run: echo hi

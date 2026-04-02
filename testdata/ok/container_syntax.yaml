@@ -32,6 +32,8 @@ jobs:
     services:
       redis:
         image: 'ghcr.io/rhysd/my-redis'
+        entrypoint: redis-server
+        command: --save 60 1
         env:
           FOO: foo
         ports:

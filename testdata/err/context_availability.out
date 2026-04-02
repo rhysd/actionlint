@@ -35,3 +35,5 @@
 /test\.yaml:228:15: context "env" is not allowed here\. .+ \[expression\]/
 /test\.yaml:228:35: context "runner" is not allowed here\. .+ \[expression\]/
 /test\.yaml:228:59: context "secrets" is not allowed here\. .+ \[expression\]/
+/test\.yaml:250:25: context "env" is not allowed here\. .+ \[expression\]/
+/test\.yaml:252:22: context "env" is not allowed here\. .+ \[expression\]/
