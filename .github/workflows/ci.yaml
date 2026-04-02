@@ -57,7 +57,7 @@ jobs:
         run: |
           echo "::add-matcher::.github/actionlint-matcher.json"
           ./actionlint -color
-      - uses: codecov/codecov-action@v5
+      - uses: codecov/codecov-action@v6
         with:
           env_vars: OS
           token: ${{ secrets.CODECOV_TOKEN }}
