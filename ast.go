@@ -162,11 +162,20 @@ func (e *WebhookEvent) EventName() string {
 	return e.Hook.Value
 }
 
+// ScheduleEntry is a single entry in a schedule event.
+// https://docs.github.com/en/actions/reference/workflows-and-actions/workflow-syntax#onschedule
+type ScheduleEntry struct {
+	// Cron is the cron string for the schedule.
+	Cron *String
+	// Timezone is the optional IANA timezone for the schedule.
+	Timezone *String
+}
+
 // ScheduledEvent is event scheduled by workflow.
 // https://docs.github.com/en/actions/learn-github-actions/events-that-trigger-workflows#scheduled-events
 type ScheduledEvent struct {
-	// Cron is list of cron strings which schedules workflow.
-	Cron []*String
+	// Schedules is list of schedule entries which schedule the workflow.
+	Schedules []*ScheduleEntry
 	// Pos is a position in source.
 	Pos *Pos
 }
@@ -402,6 +411,8 @@ type Environment struct {
 	Name *String
 	// URL is the URL mapped to 'environment_url' in the deployments API. Empty value means no value was specified.
 	URL *String
+	// Deployment is whether GitHub should create a deployment for this job. false skips auto-deployment while still applying environment protection rules and secrets.
+	Deployment *Bool
 	// Pos is a position in source.
 	Pos *Pos
 }

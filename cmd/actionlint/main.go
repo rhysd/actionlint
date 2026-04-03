@@ -3,7 +3,9 @@ package main
 import (
 	"os"
 
-	"github.com/pass-culture/actionlint"
+	"github.com/rhysd/actionlint"
+
+	_ "time/tzdata"
 )
 
 func main() {

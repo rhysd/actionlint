@@ -383,20 +383,29 @@ func (p *parser) parseScheduleEvent(pos *Pos, n *yaml.Node) *ScheduledEvent {
 		return nil
 	}
 
-	cron := make([]*String, 0, len(n.Content))
+	schedules := make([]*ScheduleEntry, 0, len(n.Content))
 	for _, c := range n.Content {
+		entry := &ScheduleEntry{}
 		for e := range p.parseMappingAt("element of \"schedule\" section", c, false, true) {
-			if e.id != "cron" {
-				p.unexpectedKey(e.key, "element of \"schedule\" section", []string{"cron"})
-				continue
+			switch e.id {
+			case "cron":
+				if s := p.parseString(e.val, false); s.Value != "" {
+					entry.Cron = s
+				}
+			case "timezone":
+				if s := p.parseString(e.val, false); s.Value != "" {
+					entry.Timezone = s
+				}
+			default:
+				p.unexpectedKey(e.key, "element of \"schedule\" section", []string{"cron", "timezone"})
 			}
-			if s := p.parseString(e.val, false); s.Value != "" {
-				cron = append(cron, s)
-			}
+		}
+		if entry.Cron != nil {
+			schedules = append(schedules, entry)
 		}
 	}
 
-	return &ScheduledEvent{cron, pos}
+	return &ScheduledEvent{schedules, pos}
 }
 
 // https://docs.github.com/en/actions/reference/workflows-and-actions/workflow-syntax#onworkflow_dispatchinputs
@@ -836,8 +845,10 @@ func (p *parser) parseEnvironment(pos *Pos, n *yaml.Node) *Environment {
 			ret.Name = p.parseString(e.val, false)
 		case "url":
 			ret.URL = p.parseString(e.val, false)
+		case "deployment":
+			ret.Deployment = p.parseBool(e.val)
 		default:
-			p.unexpectedKey(e.key, "environment", []string{"name", "url"})
+			p.unexpectedKey(e.key, "environment", []string{"deployment", "name", "url"})
 		}
 	}
 	if ret.Name == nil {

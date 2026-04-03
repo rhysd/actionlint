@@ -1,0 +1,16 @@
+on:
+  schedule:
+    # With timezone
+    - cron: '30 5 * * 1-5'
+      timezone: "America/New_York"
+    # With another timezone
+    - cron: '0 6 * * *'
+      timezone: "Europe/London"
+    # Without timezone (still valid)
+    - cron: '*/5 * * * *'
+
+jobs:
+  test:
+    runs-on: ubuntu-latest
+    steps:
+      - run: echo hello

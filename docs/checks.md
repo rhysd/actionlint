@@ -24,7 +24,7 @@ List of checks:
 - [Webhook events validation](#check-webhook-events)
 - [Workflow dispatch event validation](#check-workflow-dispatch-events)
 - [Glob filter pattern syntax validation](#check-glob-pattern)
-- [CRON syntax check at `schedule:`](#check-cron-syntax)
+- [CRON syntax and IANA timezone string at `on.schedule`](#check-cron-syntax-and-timezone)
 - [Runner labels](#check-runner-labels)
 - [Action format in `uses:`](#check-action-format)
 - [Local action inputs validation at `with:`](#check-local-action-inputs)
@@ -1422,14 +1422,26 @@ test.yaml:26:18: type of "age" input is "number" but its default value "teen" ca
    |
 26 |         default: teen
    |                  ^~~~
+test.yaml:33:24: "inputs" is potentially untrusted. avoid using it directly in inline scripts. instead, pass it through an environment variable. see https://docs.github.com/en/actions/reference/security/secure-use#good-practices-for-mitigating-script-injection-attacks for more details [expression]
+   |
+33 |       - run: echo "${{ inputs.massage }}"
+   |                        ^~~~~~~~~~~~~~
 test.yaml:33:24: property "massage" is not defined in object type {age: number; id: any; kind: string; message: string; name: string; verbose: bool} [expression]
    |
 33 |       - run: echo "${{ inputs.massage }}"
    |                        ^~~~~~~~~~~~~~
+test.yaml:35:28: "inputs" is potentially untrusted. avoid using it directly in inline scripts. instead, pass it through an environment variable. see https://docs.github.com/en/actions/reference/security/secure-use#good-practices-for-mitigating-script-injection-attacks for more details [expression]
+   |
+35 |       - run: echo "${{ env[inputs.verbose] }}"
+   |                            ^~~~~~~~~~~~~~~
 test.yaml:35:28: property access of object must be type of string but got "bool" [expression]
    |
 35 |       - run: echo "${{ env[inputs.verbose] }}"
    |                            ^~~~~~~~~~~~~~~
+test.yaml:37:28: "inputs" is potentially untrusted. avoid using it directly in inline scripts. instead, pass it through an environment variable. see https://docs.github.com/en/actions/reference/security/secure-use#good-practices-for-mitigating-script-injection-attacks for more details [expression]
+   |
+37 |       - run: echo "${{ env[inputs.age] }}"
+   |                            ^~~~~~~~~~~
 test.yaml:37:28: property access of object must be type of string but got "number" [expression]
    |
 37 |       - run: echo "${{ env[inputs.age] }}"
@@ -1564,8 +1576,8 @@ workflow. It checks:
 Most common mistake I have ever seen here is a misunderstanding that regular expression is available for filtering.
 This rule can catch the mistake so that users can notice their mistakes.
 
-<a id="check-cron-syntax"></a>
-## CRON syntax check at `schedule:`
+<a id="check-cron-syntax-and-timezone"></a>
+## CRON syntax and IANA timezone string at `on.schedule`
 
 Example input:
 
@@ -1576,6 +1588,9 @@ on:
     - cron: '0 */3 * *'
     # ERROR: Interval of scheduled job is too small (job runs too frequently)
     - cron: '* */3 * * *'
+    # ERROR: Timezone is not a valid IANA timezone string
+    - cron: '*/5 * * * *'
+      timezone: 'Asia/Somewhere'
 
 jobs:
   test:
@@ -1595,9 +1610,13 @@ test.yaml:6:13: scheduled job runs too frequently. it runs once per 60 seconds. 
   |
 6 |     - cron: '* */3 * * *'
   |             ^~
+test.yaml:9:17: invalid timezone "Asia/Somewhere" in schedule event. it must be a valid IANA timezone name [events]
+  |
+9 |       timezone: 'Asia/Somewhere'
+  |                 ^~~~~~~~~~~~~~~~
 ```
 
-[Playground](https://rhysd.github.io/actionlint/#eNpUjEEKAjEMRfdzir8bCLQK7nobpwYGKYk0yf0lFhezC/+9PJW2AdZPfsXgvIGCPlUa9jvo9gCB9utO/z3J9tbD8tHZfAVmiJU04wjxKOOZ7IfM+WPLyuAMaeB+Kmqt3wAAAP//hKgjxA==)
+[Playground](https://rhysd.github.io/actionlint/#eNpkjUHKwjAQRvc5xbcLBJL88OMmO8/gCdo4kEqbkUyC4OllrF2Iu+G94XtckwEkF7qOlfQGPHLjmmD/4OI/HJz95u7gvyaedn4YoC8bPblSgj3LMsULb/Qo1Mgac+NZtNlJ+t5uo4rXqTGP2odfJ3VvJZ3ukj6rXj8TKBdGCOEVAAD//8YnMuQ=)
 
 To trigger a workflow in specific interval, [scheduled event][schedule-event-doc] can be defined in [POSIX CRON syntax][cron-syntax].
 
@@ -1606,6 +1625,8 @@ actionlint checks the CRON syntax and frequency of running a job. [The official 
 > The shortest interval you can run scheduled workflows is once every 5 minutes.
 
 When the job is run more frequently than once every 5 minutes, actionlint reports it as an error.
+
+actionlint also checks the `timezone` configuration [is a valid IANA timezone string][schedule-item-doc].
 
 <a id="check-runner-labels"></a>
 ## Runner labels
@@ -1643,15 +1664,15 @@ jobs:
 Output:
 
 ```
-test.yaml:10:13: label "linux-latest" is unknown. available labels are "windows-latest", "windows-latest-8-cores", "windows-2025", "windows-2025-vs2026", "windows-2022", "windows-11-arm", "ubuntu-slim", "ubuntu-latest", "ubuntu-latest-4-cores", "ubuntu-latest-8-cores", "ubuntu-latest-16-cores", "ubuntu-24.04", "ubuntu-24.04-arm", "ubuntu-22.04", "ubuntu-22.04-arm", "macos-latest", "macos-latest-xlarge", "macos-latest-large", "macos-26-xlarge", "macos-26-large", "macos-26", "macos-15-intel", "macos-15-xlarge", "macos-15-large", "macos-15", "macos-14-xlarge", "macos-14-large", "macos-14", "self-hosted", "x64", "arm", "arm64", "linux", "macos", "windows". if it is a custom label for self-hosted runner, set list of labels in actionlint.yaml config file [runner-label]
+test.yaml:10:13: label "linux-latest" is unknown. available labels are "windows-latest", "windows-latest-8-cores", "windows-2025", "windows-2025-vs2026", "windows-2022", "windows-11-arm", "ubuntu-slim", "ubuntu-latest", "ubuntu-latest-4-cores", "ubuntu-latest-8-cores", "ubuntu-latest-16-cores", "ubuntu-24.04", "ubuntu-24.04-arm", "ubuntu-22.04", "ubuntu-22.04-arm", "macos-latest", "macos-latest-xlarge", "macos-latest-large", "macos-26-intel", "macos-26-xlarge", "macos-26-large", "macos-26", "macos-15-intel", "macos-15-xlarge", "macos-15-large", "macos-15", "macos-14-xlarge", "macos-14-large", "macos-14", "self-hosted", "x64", "arm", "arm64", "linux", "macos", "windows". if it is a custom label for self-hosted runner, set list of labels in actionlint.yaml config file [runner-label]
    |
 10 |           - linux-latest
    |             ^~~~~~~~~~~~
-test.yaml:16:13: label "gpu" is unknown. available labels are "windows-latest", "windows-latest-8-cores", "windows-2025", "windows-2025-vs2026", "windows-2022", "windows-11-arm", "ubuntu-slim", "ubuntu-latest", "ubuntu-latest-4-cores", "ubuntu-latest-8-cores", "ubuntu-latest-16-cores", "ubuntu-24.04", "ubuntu-24.04-arm", "ubuntu-22.04", "ubuntu-22.04-arm", "macos-latest", "macos-latest-xlarge", "macos-latest-large", "macos-26-xlarge", "macos-26-large", "macos-26", "macos-15-intel", "macos-15-xlarge", "macos-15-large", "macos-15", "macos-14-xlarge", "macos-14-large", "macos-14", "self-hosted", "x64", "arm", "arm64", "linux", "macos", "windows". if it is a custom label for self-hosted runner, set list of labels in actionlint.yaml config file [runner-label]
+test.yaml:16:13: label "gpu" is unknown. available labels are "windows-latest", "windows-latest-8-cores", "windows-2025", "windows-2025-vs2026", "windows-2022", "windows-11-arm", "ubuntu-slim", "ubuntu-latest", "ubuntu-latest-4-cores", "ubuntu-latest-8-cores", "ubuntu-latest-16-cores", "ubuntu-24.04", "ubuntu-24.04-arm", "ubuntu-22.04", "ubuntu-22.04-arm", "macos-latest", "macos-latest-xlarge", "macos-latest-large", "macos-26-intel", "macos-26-xlarge", "macos-26-large", "macos-26", "macos-15-intel", "macos-15-xlarge", "macos-15-large", "macos-15", "macos-14-xlarge", "macos-14-large", "macos-14", "self-hosted", "x64", "arm", "arm64", "linux", "macos", "windows". if it is a custom label for self-hosted runner, set list of labels in actionlint.yaml config file [runner-label]
    |
 16 |           - gpu
    |             ^~~
-test.yaml:23:14: label "macos-10.13" is unknown. available labels are "windows-latest", "windows-latest-8-cores", "windows-2025", "windows-2025-vs2026", "windows-2022", "windows-11-arm", "ubuntu-slim", "ubuntu-latest", "ubuntu-latest-4-cores", "ubuntu-latest-8-cores", "ubuntu-latest-16-cores", "ubuntu-24.04", "ubuntu-24.04-arm", "ubuntu-22.04", "ubuntu-22.04-arm", "macos-latest", "macos-latest-xlarge", "macos-latest-large", "macos-26-xlarge", "macos-26-large", "macos-26", "macos-15-intel", "macos-15-xlarge", "macos-15-large", "macos-15", "macos-14-xlarge", "macos-14-large", "macos-14", "self-hosted", "x64", "arm", "arm64", "linux", "macos", "windows". if it is a custom label for self-hosted runner, set list of labels in actionlint.yaml config file [runner-label]
+test.yaml:23:14: label "macos-10.13" is unknown. available labels are "windows-latest", "windows-latest-8-cores", "windows-2025", "windows-2025-vs2026", "windows-2022", "windows-11-arm", "ubuntu-slim", "ubuntu-latest", "ubuntu-latest-4-cores", "ubuntu-latest-8-cores", "ubuntu-latest-16-cores", "ubuntu-24.04", "ubuntu-24.04-arm", "ubuntu-22.04", "ubuntu-22.04-arm", "macos-latest", "macos-latest-xlarge", "macos-latest-large", "macos-26-intel", "macos-26-xlarge", "macos-26-large", "macos-26", "macos-15-intel", "macos-15-xlarge", "macos-15-large", "macos-15", "macos-14-xlarge", "macos-14-large", "macos-14", "self-hosted", "x64", "arm", "arm64", "linux", "macos", "windows". if it is a custom label for self-hosted runner, set list of labels in actionlint.yaml config file [runner-label]
    |
 23 |     runs-on: macos-10.13
    |              ^~~~~~~~~~~
@@ -2215,6 +2236,10 @@ test.yaml:25:18: input "path" of workflow_call event has the default value "", b
    |
 25 |         default: ''
    |                  ^~
+test.yaml:31:24: "inputs" is potentially untrusted. avoid using it directly in inline scripts. instead, pass it through an environment variable. see https://docs.github.com/en/actions/reference/security/secure-use#good-practices-for-mitigating-script-injection-attacks for more details [expression]
+   |
+31 |       - run: echo "${{ inputs.scheme }}://${{ inputs.host }}:${{ inputs.port }}${{ inputs.path }}"
+   |                        ^~~~~~~~~~~~~
 ```
 
 [Playground](https://rhysd.github.io/actionlint/#eNp8kbtu8zAMhff/KYjgBzI5QS+TnqFDL+hcyDJdOZVFhaKQBoHevVDsBIYbd7M/kodHPOTVP4AD8Vfr6PBhtHMFAHQ+JInDN0A0Fnu8/AE0GA13QTryCt7ORaAW3l+fJi2tTk4UWJEQr1iOARVE4c5/jtBSFPV7Dr91HxxuDPV/TQdiWTD2TCyLttbq7v7hcT2T9qmvkUe4T8jHBe2XUpuLDxpU79DIxZ4Wu2RPi50rMO5Tx9goEE54w/X69i12VJ/DamhYxsnHqixJdfKSKqcF4+ApCoZrsFXpVIDGEqz+n05j7pshcMhZbbcTXKIqcILK/SHnKSnvynn1EwAA//+1Oa7A)
@@ -2315,6 +2340,10 @@ jobs:
 Output:
 
 ```
+test.yaml:20:23: "inputs" is potentially untrusted. avoid using it directly in inline scripts. instead, pass it through an environment variable. see https://docs.github.com/en/actions/reference/security/secure-use#good-practices-for-mitigating-script-injection-attacks for more details [expression]
+   |
+20 |         run: curl ${{ inputs.uri }} -d ${{ inputs.lucky_number }}
+   |                       ^~~~~~~~~~
 test.yaml:20:23: property "uri" is not defined in object type {lucky_number: number; url: string} [expression]
    |
 20 |         run: curl ${{ inputs.uri }} -d ${{ inputs.lucky_number }}
@@ -3197,6 +3226,7 @@ test.yaml:0:0: could not parse as YAML: yaml: unknown anchor 'credentials' refer
 [webhook-doc]: https://docs.github.com/en/actions/reference/workflows-and-actions/events-that-trigger-workflows#webhook-events
 [schedule-event-doc]: https://docs.github.com/en/actions/reference/workflows-and-actions/events-that-trigger-workflows#scheduled-events
 [cron-syntax]: https://pubs.opengroup.org/onlinepubs/9699919799/utilities/crontab.html#tag_20_25_07
+[schedule-item-doc]: https://docs.github.com/en/actions/reference/workflows-and-actions/workflow-syntax#onschedule
 [gh-hosted-runner]: https://docs.github.com/en/actions/using-github-hosted-runners/about-github-hosted-runners
 [self-hosted-runner]: https://docs.github.com/en/actions/hosting-your-own-runners/about-self-hosted-runners
 [action-uses-doc]: https://docs.github.com/en/actions/learn-github-actions/workflow-syntax-for-github-actions#jobsjob_idstepsuses

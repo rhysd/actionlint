@@ -28,7 +28,6 @@ var testAllUntrustedInputs = []string{
 	"github.event.discussion.title",
 	"github.event.discussion.body",
 	"github.head_ref",
-	"inputs.ENV",
 }
 
 func TestExprInsecureBuiltinUntrustedInputs(t *testing.T) {
@@ -229,6 +228,12 @@ func TestExprInsecureDetectUntrustedValue(t *testing.T) {
 			[]string{
 				"github.event.issue.title",
 				"github.event.issue.title",
+			},
+		},
+		testCase{
+			"inputs.ENV",
+			[]string{
+				"inputs",
 			},
 		},
 	)

@@ -1,0 +1,100 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <title>Events that trigger workflows - GitHub Docs</title>
+</head>
+<body>
+  <div data-container="article" style="grid-area:content" data-search="article-body">
+    <div id="article-contents">
+      <div class="MarkdownContent_markdownBody__v5MYy markdown-body">
+        <h2 id="about-events-that-trigger-workflows" tabindex="-1">
+          <a class="heading-link" href="#about-events-that-trigger-workflows">
+            About events that trigger workflows
+            <span class="heading-link-symbol" aria-hidden="true"></span>
+          </a>
+        </h2>
+        <p>Workflow triggers are events that cause a workflow to run.</p>
+
+        <h2 id="check_run" tabindex="-1">
+          <a class="heading-link" href="#check_run">
+            <code>check_run</code>
+            <span class="heading-link-symbol" aria-hidden="true"></span>
+          </a>
+        </h2>
+        <table aria-labelledby="check_run">
+          <thead>
+            <tr>
+              <th scope="col">Webhook event payload</th>
+              <th scope="col">Activity types</th>
+              <th scope="col"><code>GITHUB_SHA</code></th>
+              <th scope="col"><code>GITHUB_REF</code></th>
+            </tr>
+          </thead>
+          <tbody>
+            <tr>
+              <td><a href="/en/webhooks-and-events/webhooks/webhook-events-and-payloads#check_run"><code>check_run</code></a></td>
+              <td>- <code>created</code><br>- <code>rerequested</code><br>- <code>completed</code><br>- <code>requested_action</code></td>
+              <td>Last commit on default branch</td>
+              <td>Default branch</td>
+            </tr>
+          </tbody>
+        </table>
+        <p>Runs your workflow when activity related to a check run occurs.</p>
+
+        <h2 id="fork" tabindex="-1">
+          <a class="heading-link" href="#fork">
+            <code>fork</code>
+            <span class="heading-link-symbol" aria-hidden="true"></span>
+          </a>
+        </h2>
+        <table aria-labelledby="fork">
+          <thead>
+            <tr>
+              <th scope="col">Webhook event payload</th>
+              <th scope="col">Activity types</th>
+              <th scope="col"><code>GITHUB_SHA</code></th>
+              <th scope="col"><code>GITHUB_REF</code></th>
+            </tr>
+          </thead>
+          <tbody>
+            <tr>
+              <td><a href="/en/webhooks-and-events/webhooks/webhook-events-and-payloads#fork"><code>fork</code></a></td>
+              <td>Not applicable</td>
+              <td>Last commit on default branch</td>
+              <td>Default branch</td>
+            </tr>
+          </tbody>
+        </table>
+        <p>Runs your workflow when someone forks a repository.</p>
+
+        <h2 id="repository_dispatch" tabindex="-1">
+          <a class="heading-link" href="#repository_dispatch">
+            <code>repository_dispatch</code>
+            <span class="heading-link-symbol" aria-hidden="true"></span>
+          </a>
+        </h2>
+        <table aria-labelledby="repository_dispatch">
+          <thead>
+            <tr>
+              <th scope="col">Webhook event payload</th>
+              <th scope="col">Activity types</th>
+              <th scope="col"><code>GITHUB_SHA</code></th>
+              <th scope="col"><code>GITHUB_REF</code></th>
+            </tr>
+          </thead>
+          <tbody>
+            <tr>
+              <td><a href="/en/webhooks-and-events/webhooks/webhook-events-and-payloads#repository_dispatch">repository_dispatch</a></td>
+              <td>Custom</td>
+              <td>Last commit on default branch</td>
+              <td>Default branch</td>
+            </tr>
+          </tbody>
+        </table>
+        <p>You can use the GitHub API to trigger a webhook event called <code>repository_dispatch</code>.</p>
+      </div>
+    </div>
+  </div>
+</body>
+</html>

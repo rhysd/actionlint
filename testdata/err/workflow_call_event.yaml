@@ -1,51 +1,37 @@
 on:
   workflow_call:
     inputs:
-      # input without fields
       input0:
-      input1:
-        description: input without type
-      # input without description
-      input2:
+        description: 'hello'
         type: string
+      input1:
+        description: 'with default and required'
+        default: 'hello'
+        required: false
+        type: string
+      input2:
+        description: 'with default'
+        default: 23
+        type: number
       input3:
-        description: input with invalid type
-        type: unknown
-      input4:
-        description: non-boolean type value for 'required'
-        required: yes
-      input5:
-        description: unknown field
-        type: number
-        unknown: hello
-      input0:
-        description: duplicate input name
-        type: number
-      input6:
-        description: type mismatch string for number
-        default: foooo
-        type: number
-      input7:
-        description: type mismatch (number for boolean)
-        default: 123
+        description: 'with required'
+        required: true
         type: boolean
-      input8:
-        description: invalid mapping at `type`
-        type:
-          foo: bar
     secrets:
-      # no field
       secret0:
+        description: '🙊'
       secret1:
-        description: unknown field
-        unknown: bye
-      secret1:
-        description: duplicate secret name
-    # unknown key for workflow_call event
-    unknown:
+        description: 'with required'
+        required: true
 
 jobs:
   test:
     runs-on: ubuntu-24.04
     steps:
-      - run: echo ${{ inputs.unknown_input }}
+      - run: |
+          echo ${{ inputs.input0 }}
+          echo ${{ inputs.input1 }}
+          echo ${{ inputs.input2 }}
+          echo ${{ inputs.input3 }}
+          echo ${{ secrets.secret0 }}
+          echo ${{ secrets.secret1 }}

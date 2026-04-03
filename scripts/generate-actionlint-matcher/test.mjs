@@ -38,7 +38,7 @@ for (const parent of ['examples', 'err']) {
             if (line.length === 0 || line.startsWith('/')) {
                 continue
             }
-            const msg = `Line '${line}' did not match to the regex`
+            const msg = `Line '${line}' did not match to the regex ${regexp}`
             const m = line.match(regexp);
             assert.ok(m, msg); // not null
             assert.equal('test.yaml', m[pattern.file], msg);

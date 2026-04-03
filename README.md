@@ -60,7 +60,7 @@ test.yaml:5:11: character '\' is invalid for branch and tag names. only special 
   |
 5 |       - 'v\d+'
   |           ^~~~
-test.yaml:10:28: label "linux-latest" is unknown. available labels are "windows-latest", "windows-latest-8-cores", "windows-2025", "windows-2025-vs2026", windows-2022", "windows-11-arm", "ubuntu-slim", "ubuntu-latest", "ubuntu-latest-4-cores", "ubuntu-latest-8-cores", "ubuntu-latest-16-cores", "ubuntu-24.04", "ubuntu-24.04-arm", "ubuntu-22.04", "ubuntu-22.04-arm", "macos-latest", "macos-latest-xlarge", "macos-latest-large", "macos-26-xlarge", "macos-26-large", "macos-26", "macos-15-intel", "macos-15-xlarge", "macos-15-large", "macos-15", "macos-14-xlarge", "macos-14-large", "macos-14", "self-hosted", "x64", "arm", "arm64", "linux", "macos", "windows". if it is a custom label for self-hosted runner, set list of labels in actionlint.yaml config file [runner-label]
+test.yaml:10:28: label "linux-latest" is unknown. available labels are "windows-latest", "windows-latest-8-cores", "windows-2025", "windows-2025-vs2026", windows-2022", "windows-11-arm", "ubuntu-slim", "ubuntu-latest", "ubuntu-latest-4-cores", "ubuntu-latest-8-cores", "ubuntu-latest-16-cores", "ubuntu-24.04", "ubuntu-24.04-arm", "ubuntu-22.04", "ubuntu-22.04-arm", "macos-latest", "macos-latest-xlarge", "macos-latest-large", "macos-26-intel", "macos-26-xlarge", "macos-26-large", "macos-26", "macos-15-intel", "macos-15-xlarge", "macos-15-large", "macos-15", "macos-14-xlarge", "macos-14-large", "macos-14", "self-hosted", "x64", "arm", "arm64", "linux", "macos", "windows". if it is a custom label for self-hosted runner, set list of labels in actionlint.yaml config file [runner-label]
    |
 10 |         os: [macos-latest, linux-latest]
    |                            ^~~~~~~~~~~~~
@@ -139,10 +139,10 @@ actionlint is distributed under [the MIT license](./LICENSE.txt).
 [filter-pattern-doc]: https://docs.github.com/en/actions/using-workflows/workflow-syntax-for-github-actions#filter-pattern-cheat-sheet
 [script-injection-doc]: https://docs.github.com/en/actions/reference/security/secure-use#good-practices-for-mitigating-script-injection-attacks
 [releases]: https://github.com/rhysd/actionlint/releases
-[checks]: https://github.com/rhysd/actionlint/blob/v1.7.11/docs/checks.md
-[install]: https://github.com/rhysd/actionlint/blob/v1.7.11/docs/install.md
-[usage]: https://github.com/rhysd/actionlint/blob/v1.7.11/docs/usage.md
-[config]: https://github.com/rhysd/actionlint/blob/v1.7.11/docs/config.md
-[api]: https://github.com/rhysd/actionlint/blob/v1.7.11/docs/api.md
-[refs]: https://github.com/rhysd/actionlint/blob/v1.7.11/docs/reference.md
+[checks]: https://github.com/rhysd/actionlint/blob/v1.7.12/docs/checks.md
+[install]: https://github.com/rhysd/actionlint/blob/v1.7.12/docs/install.md
+[usage]: https://github.com/rhysd/actionlint/blob/v1.7.12/docs/usage.md
+[config]: https://github.com/rhysd/actionlint/blob/v1.7.12/docs/config.md
+[api]: https://github.com/rhysd/actionlint/blob/v1.7.12/docs/api.md
+[refs]: https://github.com/rhysd/actionlint/blob/v1.7.12/docs/reference.md
 [issue-form]: https://github.com/rhysd/actionlint/issues/new

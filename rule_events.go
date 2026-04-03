@@ -37,8 +37,11 @@ func (rule *RuleEvents) VisitWorkflowPre(n *Workflow) error {
 func (rule *RuleEvents) checkEvent(event Event) {
 	switch e := event.(type) {
 	case *ScheduledEvent:
-		for _, c := range e.Cron {
-			rule.checkCron(c)
+		for _, s := range e.Schedules {
+			rule.checkCron(s.Cron)
+			if s.Timezone != nil {
+				rule.checkTimezone(s.Timezone)
+			}
 		}
 	case *WorkflowDispatchEvent:
 		rule.checkWorkflowDispatchEvent(e)
@@ -73,6 +76,19 @@ func (rule *RuleEvents) checkCron(spec *String) {
 	// > The shortest interval you can run scheduled workflows is once every 5 minutes.
 	if diff < 60.0*5 {
 		rule.Errorf(spec.Pos, "scheduled job runs too frequently. it runs once per %g seconds. the shortest interval is once every 5 minutes", diff)
+	}
+}
+
+// https://docs.github.com/en/actions/reference/workflows-and-actions/workflow-syntax#onschedule
+func (rule *RuleEvents) checkTimezone(tz *String) {
+	// `time.LoadLocation` accepts special values "", "UTC", and "Local" but they are not correct IANA timezone names.
+	ok := tz.Value != "" && !strings.EqualFold(tz.Value, "utc") && !strings.EqualFold(tz.Value, "local")
+	if ok {
+		_, err := time.LoadLocation(tz.Value)
+		ok = err == nil
+	}
+	if !ok {
+		rule.Errorf(tz.Pos, "invalid timezone %q in schedule event. it must be a valid IANA timezone name", tz.Value)
 	}
 }
 
