@@ -1,0 +1,1 @@
+config-secrets: [MY_SECRET, API_KEY]

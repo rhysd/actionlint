@@ -64,6 +64,11 @@ type Config struct {
 	// listed here as undefined config variables.
 	// https://docs.github.com/en/actions/learn-github-actions/variables
 	ConfigVariables []string `yaml:"config-variables"`
+	// ConfigSecrets is names of secrets used in the checked workflows. When this value is nil,
+	// property names of `secrets` context will not be checked. Otherwise actionlint will report a name which is not
+	// listed here as undefined secrets.
+	// https://docs.github.com/en/actions/security-guides/using-secrets-in-github-actions
+	ConfigSecrets []string `yaml:"config-secrets"`
 	// Paths is a "paths" mapping in the configuration file. The keys are glob patterns to match file paths.
 	// And the values are corresponding configurations applied to the file paths.
 	Paths map[string]PathConfig `yaml:"paths"`
@@ -142,6 +147,10 @@ func writeDefaultConfigFile(path string) error {
 # organization. ` + "`null`" + ` means disabling configuration variables check.
 # Empty array means no configuration variable is allowed.
 config-variables: null
+
+# Secrets in array of strings defined in your repository or organization.
+# ` + "`null`" + ` means disabling secrets check. Empty array means no secret is allowed.
+config-secrets: null
 
 # Configuration for file paths. The keys are glob patterns to match to file
 # paths relative to the repository root. The values are the configurations for
