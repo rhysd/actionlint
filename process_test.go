@@ -176,6 +176,49 @@ func TestProcessInputStdin(t *testing.T) {
 	}
 }
 
+// Regression test for issue #650: concurrent runs with a stdin payload larger
+// than the kernel pipe buffer used to deadlock on darwin because the payload
+// was written to cmd.StdinPipe() before cmd.Start().
+func TestProcessConcurrentStdinDoesNotDeadlock(t *testing.T) {
+	p := newConcurrentProcess(5)
+
+	// 64 KiB is above the default pipe buffer size on darwin and Linux so it
+	// forces the stdin copy to happen after the child has started.
+	payload := strings.Repeat("x", 64*1024)
+
+	done := make(chan struct{})
+	go func() {
+		defer close(done)
+		cmds := make([]*externalCommand, 0, 5)
+		for i := 0; i < 5; i++ {
+			cat := testSkipIfNoCommand(t, p, "cat")
+			cat.run(nil, payload, func(b []byte, err error) error {
+				if err != nil {
+					t.Errorf("cat failed: %v", err)
+					return err
+				}
+				if len(b) != len(payload) {
+					t.Errorf("cat output length %d, want %d", len(b), len(payload))
+				}
+				return nil
+			})
+			cmds = append(cmds, cat)
+		}
+		for _, c := range cmds {
+			if err := c.wait(); err != nil {
+				t.Errorf("cat wait failed: %v", err)
+			}
+		}
+		p.wait()
+	}()
+
+	select {
+	case <-done:
+	case <-time.After(10 * time.Second):
+		t.Fatal("concurrent stdin writes deadlocked — see issue #650")
+	}
+}
+
 func TestProcessErrorCommandNotFound(t *testing.T) {
 	p := newConcurrentProcess(1)
 	c := &externalCommand{

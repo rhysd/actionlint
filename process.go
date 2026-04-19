@@ -3,8 +3,8 @@ package actionlint
 import (
 	"context"
 	"fmt"
-	"io"
 	"os/exec"
+	"strings"
 	"sync"
 
 	"github.com/mattn/go-shellwords"
@@ -24,18 +24,14 @@ type cmdExecution struct {
 func (e *cmdExecution) run() ([]byte, error) {
 	cmd := exec.Command(e.cmd, e.args...)
 	cmd.Stderr = nil
-
-	p, err := cmd.StdinPipe()
-	if err != nil {
-		return nil, fmt.Errorf("could not make stdin pipe for %s process: %w", e.cmd, err)
-	}
-	if _, err := io.WriteString(p, e.stdin); err != nil {
-		p.Close()
-		return nil, fmt.Errorf("could not write to stdin of %s process: %w", e.cmd, err)
-	}
-	p.Close()
+	// Set stdin via an io.Reader so that exec.Cmd pipes the bytes to the child
+	// after Start(). Writing to cmd.StdinPipe() before Start() relies on the
+	// kernel pipe buffer being large enough to absorb the whole payload, which
+	// deadlocks on darwin when multiple workers run concurrently (issue #650).
+	cmd.Stdin = strings.NewReader(e.stdin)
 
 	var stdout []byte
+	var err error
 	if e.combineOutput {
 		stdout, err = cmd.CombinedOutput()
 	} else {
