@@ -1,0 +1,27 @@
+# Issue #263
+on:
+  workflow_dispatch:
+    inputs:
+      input-for-dispatch:
+        type: string
+      same-type-input:
+        type: string
+      different-type-input:
+        type: boolean
+  workflow_call:
+    inputs:
+      input-for-call:
+        type: string
+      same-type-input:
+        type: string
+      different-type-input:
+        type: number
+
+jobs:
+  some-job:
+    runs-on: ubuntu-latest
+    steps:
+      - run: echo '${{ inputs.input-for-dispatch }}'
+      - run: echo '${{ inputs.input-for-call }}'
+      - run: echo '${{ inputs.same-type-input }}'
+      - run: echo '${{ inputs.different-type-input }}'

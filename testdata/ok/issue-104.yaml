@@ -1,0 +1,14 @@
+on: push
+
+jobs:
+  test:
+    runs-on: ubuntu-latest
+    steps:
+      - id: test
+        uses: actions/github-script@v7
+        with:
+          script: |
+            core.setOutput('foo', 'bar');
+      - id: call
+        run: |
+          echo "Test output: ${{ steps.test.outputs.foo }}"

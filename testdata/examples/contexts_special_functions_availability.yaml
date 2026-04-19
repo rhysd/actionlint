@@ -1,0 +1,26 @@
+on: push
+
+env:
+  NAME: rhysd
+
+jobs:
+  test:
+    strategy:
+      matrix:
+        directory:
+          # OK: 'github' context is available here
+          - ${{ github.workflow }}
+          # ERROR: 'runner' context is not available here
+          - ${{ runner.temp }}
+    runs-on: ubuntu-latest
+    env:
+      # ERROR: 'env' context is not available here
+      NAME: ${{ env.NAME }}
+    steps:
+      - env:
+          # OK: 'env' context is available here
+          NAME: ${{ env.NAME }}
+        # ERROR: 'success()' function is not available here
+        run: echo 'Success? ${{ success() }}'
+        # OK: 'success()' function is available here
+        if: success()

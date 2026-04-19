@@ -1,0 +1,11 @@
+# https://docs.github.com/en/actions/using-workflows/workflow-syntax-for-github-actions#run-name
+# https://github.blog/changelog/2022-09-26-github-actions-dynamic-names-for-workflow-runs/
+run-name: Deploy by @${{ github.actor }}
+
+on: push
+
+jobs:
+  test:
+    runs-on: ubuntu-latest
+    steps:
+      - run: echo hello

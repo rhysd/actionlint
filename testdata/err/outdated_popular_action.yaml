@@ -1,0 +1,10 @@
+on: push
+
+jobs:
+  test:
+    runs-on: ubuntu-latest
+    steps:
+      # ERROR: This version is outdated
+      - uses: actions/checkout@v2
+      # ERROR: This version is outdated
+      - uses: actions/stale@v4

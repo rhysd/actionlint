@@ -1,0 +1,110 @@
+on:
+  label:
+    types: &types [created]
+  check_run:
+    types: *types
+  push: &filters
+    branches-ignore: test
+    paths-ignore: path/to/foo
+  pull_request: *filters
+  pull_request_target: *filters
+
+defaults:
+  run:
+    shell: &default_shell bash
+
+env: &default_env
+  FOO1: BAR1
+  FOO2: BAR2
+
+jobs:
+  test1:
+    runs-on: &runner ubuntu-latest
+    env: &job_env
+      FOO1: BAR3
+      FOO2: BAR4
+    steps:
+      - &step
+        run: echo ${{ env.R }}
+        env:
+          R: *runner
+        if: &cond ${{ env.R == 'windows-latest' }}
+      - *step
+      - *step
+      - run: echo ${{ env.FOO1 }}
+        env: *default_env
+        if: *cond
+      - run: echo ${{ env.USER }}
+        env: &cred_env
+          USER: rhysd
+          PASS: P@ssw0rd
+        if: *cond
+      - run: echo ${{ env.PASS }}
+        env: *cred_env
+        if: *cond
+  test2: &job
+    runs-on: &runner windows-latest
+    env: *job_env
+    defaults:
+      run:
+        shell: pwsh
+    steps:
+      - uses: actions/checkout@v6
+        with:
+          ref: *runner
+      - run: echo ${{ env.R }}
+        env: *default_env
+      - run: echo ${{ env.USER }}@${{ env.PASS }}
+        env: *cred_env
+      - run: echo "$SHELL"
+        shell: *default_shell
+      - *step
+  test3: *job
+  test4:
+    strategy:
+      matrix:
+        runner: [ubuntu-latest, macos-latest]
+        include:
+          - package: &package
+              name: foo
+              version: '0.1.2'
+            node: &node
+              version: '20'
+              path: /path/to/node20
+          - package: *package
+            node:
+              version: '24'
+              path: /path/to/node24
+          - package:
+              name: bar
+              version: '1.0.0'
+            node: *node
+          - package: *package
+            node: *node
+    runs-on: ${{ matrix.runner }}
+    steps:
+      - run: ./install_node.bash ${{ matrix.node.version }} ${{ matrix.node.path }}
+      - run: npm install ${{ matrix.package.name }}@${{ matrix.package.version }}
+  test5:
+    container:
+      image: 'example.com/owner/image'
+      credentials: &cred
+        username: ${{ secrets.user }}
+        password: ${{ secrets.password }}
+    services:
+      redis:
+        image: redis:latest
+        credentials: *cred
+      nginx:
+        image: nginx:latest
+        credentials: *cred
+    runs-on: ubuntu-slim
+    steps:
+      - run: ./login.bash ${{ env.username }}@${{ env.password }}
+        env: *cred
+  test6:
+    env: &expr ${{ fromJSON('{}') }}
+    runs-on: ubuntu-slim
+    steps:
+      - run: echo hello
+        env: *expr

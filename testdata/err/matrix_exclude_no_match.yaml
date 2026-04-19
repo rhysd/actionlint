@@ -1,0 +1,38 @@
+on: push
+
+jobs:
+  test:
+    strategy:
+      matrix:
+        os:
+          - name: Ubuntu
+            matrix: ubuntu
+          - name: Windows
+            matrix: windows
+        arch:
+          - name: ARM
+            matrix: arm
+          - name: Intel
+            matrix: intel
+        exclude:
+          - os:
+              # This doesn't match
+              matrix: macos
+          - os:
+              matrix: windows
+            arch:
+              # This doesn't match
+              matrix: riscv
+          - os:
+              matrix: ubuntu
+              # This doesn't exist
+              foo: bar
+          - os:
+              matrix: windows
+            arch:
+              matrix: arm
+              # This doesn't exist
+              foo: bar
+    runs-on: ubuntu-latest
+    steps:
+      - run: echo 'name is ${{ matrix.os.name }} and arch is ${{ matrix.arch.name }}'

@@ -1,0 +1,11 @@
+name: 'JavaScript action'
+author: 'rhysd <https://rhysd.github.io>'
+description: 'Correct JavaScript action'
+
+runs:
+  using: node20
+  main: index.js
+  pre: pre.js
+  pre-if: true
+  post: pre.js
+  post-if: true

@@ -1,0 +1,12 @@
+on: push
+
+jobs:
+  test:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: ./action
+        with:
+          name: rhysd
+          message: hello
+        id: my_action
+      - run: echo 'User ID is ${{ steps.my_action.outputs.user_id }}'

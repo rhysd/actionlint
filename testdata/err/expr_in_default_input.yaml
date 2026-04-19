@@ -1,0 +1,39 @@
+on:
+  workflow_call:
+    inputs:
+      input1:
+        type: string
+        # ERROR: inputs.input2 is not defined yet
+        default: ${{ inputs.input2 }}
+      input2:
+        type: string
+        # OK: inputs.input1 was defined
+        default: ${{ inputs.input1 }}
+      input3:
+        type: boolean
+        # ERROR: Cannot refer myself
+        default: ${{ inputs.input3 }}
+      input4:
+        type: boolean
+        # ERROR: Assign string to boolean
+        default: ${{ inputs.input1 }}
+      input5:
+        type: number
+        # ERROR: Assign string to number
+        default: ${{ inputs.input1 }}
+      input6:
+        type: boolean
+        # OK
+        default: ${{ inputs.input4 }}
+      input7:
+        type: number
+        # OK
+        default: ${{ inputs.input5 }}
+
+jobs:
+  test:
+    runs-on: ubuntu-latest
+    steps:
+      - run: echo '${{ inputs.input1 }}'
+      - run: echo '${{ inputs.input2 }}'
+      - run: echo '${{ inputs.input3 }}'

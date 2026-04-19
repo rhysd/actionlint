@@ -1,0 +1,3 @@
+test.yaml:11:21: "password" section in "nginx" service should be specified via secrets. do not put password value directly [credentials]
+test.yaml:11:21: "password" section in "redis" service should be specified via secrets. do not put password value directly [credentials]
+test.yaml:13:11: unexpected key "email" for "credentials" section. expected one of "password", "username" [syntax-check]

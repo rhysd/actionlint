@@ -1,0 +1,22 @@
+on: push
+jobs:
+  -foo:
+    runs-on: ubuntu-latest
+    steps:
+      - run: echo 'must start with _ or letters'
+        id: -foo
+  v1.2.3:
+    runs-on: ubuntu-latest
+    steps:
+      - run: echo 'must contain only alnum or _ or -'
+        id: v1.2.3
+  1-2-3:
+    runs-on: ubuntu-latest
+    steps:
+      - run: echo 'must not start with number'
+        id: 1-2-3
+  test:
+    runs-on: ubuntu-latest
+    steps:
+      - run: echo 'must not be empty'
+        id: ""

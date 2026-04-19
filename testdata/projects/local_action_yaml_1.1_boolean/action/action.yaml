@@ -1,0 +1,17 @@
+name: 'My action'
+author: 'rhysd <https://rhysd.github.io>'
+description: 'This is test'
+
+inputs:
+  input1:
+    required: yes
+  input2:
+    required: on
+  input3:
+    required: no
+  input4:
+    required: off
+
+runs:
+  using: 'node20'
+  main: 'index.js'

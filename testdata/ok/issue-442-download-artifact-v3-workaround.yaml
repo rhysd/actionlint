@@ -1,0 +1,13 @@
+on: push
+
+jobs:
+  test:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/download-artifact@v3-node20
+        with:
+          name: my-artifact
+        id: dl
+      # This output is missing in action.yml of actions/download-artifact@v3-node20 (#442).
+      # We added the workaround to add the output in scripts/generate-popular-actions/ script to avoid the issue.
+      - run: echo ${{ steps.dl.outputs.download-path }}

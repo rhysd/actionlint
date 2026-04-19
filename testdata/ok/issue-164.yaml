@@ -1,0 +1,16 @@
+# https://github.com/rhysd/actionlint/issues/164
+
+on: push
+
+jobs:
+  build:
+    strategy:
+      matrix:
+        include:
+          - msg: hello macos
+            host-labels: ["self-hosted", "macOS", "X64"]
+          - msg: hello linux
+            host-labels: ["self-hosted", "linux"]
+    runs-on: ${{ matrix.host-labels }}
+    steps:
+      - run: echo "${{ matrix.msg }}"

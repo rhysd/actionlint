@@ -1,0 +1,20 @@
+on:
+  workflow_call:
+    inputs:
+      services:
+        required: true
+        type: string
+        description: contents of services.json
+
+jobs:
+  build-lint-test:
+    runs-on: ubuntu-latest
+    strategy:
+      matrix:
+        service: ${{ fromJSON(inputs.services) }}
+        exclude:
+          # `service` is loaded from JSON. Check should be skipped
+          - service:
+              npm_project: foo
+    steps:
+      - run: echo 1

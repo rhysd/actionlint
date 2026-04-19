@@ -1,0 +1,12 @@
+on:
+  schedule:
+    # It's OK. The interval can be every 5 minutes.
+    - cron: '*/5 * * * *'
+    # It's bad. The interval can't be less than every 5 minutes.
+    - cron: '*/4 * * * *'
+
+jobs:
+  test:
+    runs-on: ubuntu-latest
+    steps:
+      - run: echo ...

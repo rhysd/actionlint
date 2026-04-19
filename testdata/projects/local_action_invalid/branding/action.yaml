@@ -1,0 +1,11 @@
+name: 'Incorrect branding'
+author: 'rhysd <https://rhysd.github.io>'
+description: 'my action'
+
+branding:
+  icon: 'does-not-exist'
+  color: 'no-color'
+
+runs:
+  using: 'node20'
+  main: 'index.js'

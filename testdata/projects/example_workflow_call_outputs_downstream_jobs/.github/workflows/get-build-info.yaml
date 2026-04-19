@@ -1,0 +1,16 @@
+# .github/workflows/get-build-info.yaml
+on:
+  workflow_call:
+    outputs:
+      version:
+        value: ${{ outputs.version }}
+        description: version of software
+
+jobs:
+  test:
+    runs-on: ubuntu-latest
+    outputs:
+      version: ${{ steps.get_version.outputs.version }}
+    steps:
+      - run: ...
+        id: get_version

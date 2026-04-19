@@ -1,0 +1,10 @@
+on: push
+jobs:
+  build:
+    runs-on: ubuntu-latest
+    snapshot:
+      image-name: my-custom-image
+      version: 2.*
+      if: ${{ github.ref == 'refs/head/build' }}
+    steps:
+      - run: ./build-image.sh

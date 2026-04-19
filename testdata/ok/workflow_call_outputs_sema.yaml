@@ -1,0 +1,30 @@
+on:
+  workflow_call:
+    outputs:
+      uses-output1:
+        description: "test"
+        value: ${{ jobs.job1.outputs.output1 }}
+      uses-output2:
+        description: "test"
+        value: ${{ jobs.job1.outputs.output2 }}
+      uses-job2:
+        description: "test"
+        value: ${{ jobs.job2.outputs.output1 }}
+jobs:
+  job1:
+    runs-on: ubuntu-latest
+    outputs:
+      output1: "${{ steps.hello.outputs.foo }}"
+      output2: "${{ steps.bye.outputs.foo }}"
+    steps:
+      - run: echo hello
+        id: hello
+      - run: echo bye
+        id: bye
+  job2:
+    runs-on: ubuntu-latest
+    outputs:
+      output1: "${{ steps.hello.outputs.foo }}"
+    steps:
+      - run: echo hello
+        id: hello

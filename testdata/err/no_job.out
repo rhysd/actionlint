@@ -1,0 +1,1 @@
+test.yaml:3:6: "jobs" section should not be empty. please remove this section if it's unnecessary [syntax-check]

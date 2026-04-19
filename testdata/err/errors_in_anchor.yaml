@@ -1,0 +1,28 @@
+on:
+  label:
+    # OK
+    types: &created [created]
+  check_run:
+    # OK
+    types: *created
+  pull_request:
+    # ERROR: 'created' is not a valid type in this event
+    types: *created
+
+jobs:
+  test:
+    runs-on: ubuntu-latest
+    steps:
+      # Valid anchor inside invalid anchor
+      - &invalid_step
+        # ERROR: 'run' and 'with' within the same step
+        run: echo
+        with: &valid_inputs
+          neovim: true
+      # ERROR
+      - *invalid_step
+      # ERROR
+      - *invalid_step
+      # OK
+      - uses: rhysd/action-setup-vim@v1
+        with: &valid_inputs

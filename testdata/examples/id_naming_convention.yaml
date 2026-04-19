@@ -1,0 +1,20 @@
+on: push
+
+jobs:
+  # ERROR: '.' cannot be contained in ID
+  foo-v1.2.3:
+    runs-on: ubuntu-latest
+    steps:
+      - run: echo 'job ID with version'
+        # ERROR: ID cannot contain spaces
+        id: echo for test
+  # ERROR: ID cannot start with '-'
+  -hello-world-:
+    runs-on: ubuntu-latest
+    steps:
+      - run: echo 'oops'
+  # ERROR: ID cannot start with numbers
+  2d-game:
+    runs-on: ubuntu-latest
+    steps:
+      - run: echo 'oops'

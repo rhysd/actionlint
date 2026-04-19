@@ -1,0 +1,39 @@
+on:
+  schedule: []
+  workflow_dispatch:
+    inputs:
+      foo:
+        options: []
+      bar:
+        type: choice
+        options:
+          - ''
+  repository_dispatch:
+    types: []
+  push:
+    types: []
+    branches: []
+    workflows: []
+
+jobs:
+  test1:
+    strategy:
+      matrix:
+        foo: []
+        include: []
+        exclude: []
+    container:
+      image: ''
+      ports:
+        - ''
+      volumes:
+        - ''
+    runs-on: []
+    needs: []
+    steps:
+      - run: echo hello
+  test2:
+    runs-on:
+      labels: []
+    steps:
+      - run: echo hello

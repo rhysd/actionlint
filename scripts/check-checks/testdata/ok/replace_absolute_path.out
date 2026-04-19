@@ -1,0 +1,23 @@
+<a id="some-check"></a>
+## Some check
+
+Example input:
+
+```yaml
+on: push
+jobs:
+  error:
+    # This error message contains an abosolute file path
+    uses: ./.github/workflows/not-existing-workflow.yml
+```
+
+Output:
+
+```
+test.yaml:5:11: could not read reusable workflow file for "./.github/workflows/not-existing-workflow.yml": open /path/to/repo/.github/workflows/not-existing-workflow.yml: no such file or directory [workflow-call]
+  |
+5 |     uses: ./.github/workflows/not-existing-workflow.yml
+  |           ^~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+```
+
+[Playground](https://rhysd.github.io/actionlint/#eNo0yLENgCAQBdCeKW4BoGccEgQU+eY+BN3eWNi9PPQg12QxOyKDEUmq0A8ik4lBnHe5jjKjX9Bja1j0HcOmu3LUnu3f7jnbGwAA//8Mtxun)

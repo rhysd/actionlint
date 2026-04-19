@@ -1,0 +1,15 @@
+on: push
+jobs:
+  test:
+    strategy:
+      matrix:
+        node: [10, 12, 14, 14]
+        os: [ubuntu-latest, macos-latest]
+        exclude:
+          - node: 13
+            os: ubuntu-latest
+          - node: 10
+            platform: ubuntu-latest
+    runs-on: ${{ matrix.os }}
+    steps:
+      - run: echo ...

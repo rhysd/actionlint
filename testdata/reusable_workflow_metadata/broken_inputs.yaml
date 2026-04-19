@@ -1,0 +1,4 @@
+on:
+  workflow_call:
+    inputs:
+      validate: validate something when true

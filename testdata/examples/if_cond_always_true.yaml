@@ -1,0 +1,29 @@
+on: push
+
+jobs:
+  test:
+    runs-on: ubuntu-latest
+    steps:
+      - run: echo "DEBUG! ${{ github.event_name }}"
+        # ERROR: It is always evaluated to false
+        if: false
+      - run: echo 'Commit is pushed'
+        # OK
+        if: ${{ github.event_name == 'push' }}
+      - run: echo 'Commit is pushed'
+        # OK
+        if: |
+          github.event_name == 'push'
+      - run: echo 'Commit is pushed'
+        # ERROR: It is always evaluated to true
+        if: |
+          ${{ github.event_name == 'push' }}
+      - run: echo 'Commit is pushed'
+        # ERROR: It is always evaluated to true
+        if: "${{ github.event_name == 'push' }} "
+      - run: echo 'Commit is pushed to main'
+        # OK
+        if: github.event_name == 'push' && github.ref_name == 'main'
+      - run: echo 'Commit is pushed to main'
+        # ERROR: It is always evaluated to true
+        if: ${{ github.event_name == 'push' }} && ${{ github.ref_name == 'main' }}

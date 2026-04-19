@@ -1,0 +1,15 @@
+run-name: "${{ inputs.property_name }}"
+
+on:
+  workflow_dispatch:
+    inputs:
+      property_name:
+        description: test
+        required: true
+        type: string
+
+jobs:
+  test:
+    runs-on: ubuntu-latest
+    steps:
+      - run: echo '${{ inputs.property_name }}'

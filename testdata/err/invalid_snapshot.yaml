@@ -1,0 +1,23 @@
+on: push
+
+jobs:
+  test1:
+    runs-on: ubuntu-latest
+    snapshot:
+      # Unknown context access
+      if: ${{ foo.bar }}
+      # version cannot be empty
+      version: ''
+      # Unexpected key
+      image-id: my-custom-image
+      # image-name is missing
+    steps:
+      - run: echo hello
+  test2:
+    runs-on: ubuntu-latest
+    # Snapshot does not support array
+    snapshot:
+      - image-id: my-custom-image-1
+      - image-id: my-custom-image-2
+    steps:
+      - run: echo hello

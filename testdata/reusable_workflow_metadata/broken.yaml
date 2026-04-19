@@ -1,0 +1,3 @@
+on:
+  workflow_call:
+    outputs: my cool outputs

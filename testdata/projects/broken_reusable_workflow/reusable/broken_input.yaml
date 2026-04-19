@@ -1,0 +1,10 @@
+on:
+  workflow_call:
+    inputs:
+      empty_input:
+
+jobs:
+  test:
+    runs-on: ubuntu-latest
+    steps:
+      - run: echo ...

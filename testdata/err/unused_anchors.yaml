@@ -1,0 +1,28 @@
+# ERROR: Unused
+on: &anchor push
+
+jobs:
+  # ERROR: Unused
+  test: &anchor
+    # OK: Used
+    runs-on: &anchor ubuntu-latest
+    env:
+      RUNS_ON: *anchor
+    # ERROR: Unused
+    steps: &anchor
+      # OK: Used
+      - &step
+        run: env
+        # OK: Used
+        env: &default_env
+          FOO1: BAR1
+          FOO2: BAR2
+      - run: env
+        env: *default_env
+      - run: env
+        # ERROR: Unused
+        env: &default_env
+      - *step
+      # ERROR: Unused
+      - &step
+        run: echo hello

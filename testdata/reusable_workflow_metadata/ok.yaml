@@ -1,0 +1,26 @@
+name: minimal
+
+on:
+  workflow_call:
+    inputs:
+      input1:
+        description: input
+        type: string
+      input2:
+        type: boolean
+        required: true
+    outputs:
+      output1:
+        description: output
+        value: foo
+    secrets:
+      secret1:
+        description: secret
+      secret2:
+        required: true
+
+jobs:
+  test:
+    runs-on: ubuntu-18.04
+    steps:
+      - run: echo ...

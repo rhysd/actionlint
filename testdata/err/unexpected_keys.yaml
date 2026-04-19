@@ -1,0 +1,56 @@
+on:
+  workflow_dispatch:
+    invalid_key:
+    inputs:
+      foo:
+        invalid_key:
+  repository_dispatch:
+    invalid_key:
+  push:
+    invalid_key:
+  workflow_call:
+    inputs:
+      foo:
+        type: string
+        invalid_key:
+    secrets:
+      foo:
+        invalid_key:
+    outputs:
+      foo:
+        value: ...
+        invalid_key:
+    invalid_key:
+
+defaults:
+  run:
+    invalid_key:
+  invalid_key:
+
+concurrency:
+  group: Foo
+  invalid_key:
+
+jobs:
+  test:
+    environment:
+      name: Foo
+      invalid_key:
+    strategy:
+      invalid_key:
+    container:
+      image: foo:latest
+      credentials:
+        username: root
+        password: ${{ '...' }}
+        invalid_key:
+      invalid_key:
+    runs-on:
+      labels: ubuntu-latest
+      invalid_key:
+    steps:
+      - run: echo hello
+        invalid_key:
+    invalid_key:
+
+invalid_key:

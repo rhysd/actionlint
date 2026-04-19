@@ -1,0 +1,11 @@
+on: push
+
+jobs:
+  test:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: ./no_name
+      - uses: ./no_desc
+      - uses: ./branding
+      - uses: ./unknown_key
+      - uses: ./empty_deprecation_message

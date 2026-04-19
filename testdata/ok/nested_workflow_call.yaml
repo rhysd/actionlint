@@ -1,0 +1,5 @@
+on: workflow_call
+
+jobs:
+  test:
+    uses: owner/repo/x.yml@ref

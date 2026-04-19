@@ -1,0 +1,25 @@
+on:
+  workflow_call:
+    inputs:
+      str:
+        type: string
+        default: hi
+      num:
+        type: number
+        default: 42
+      bool:
+        type: boolean
+        default: true
+    outputs:
+      output1:
+        value: ${{ jobs.run.outputs.message }}
+    secrets:
+      foo:
+
+jobs:
+  run:
+    runs-on: ubuntu-latest
+    outputs:
+      message: '${{ inputs.str }}, ${{ inputs.num }}, ${{ inputs.bool }}, ${{ secrets.foo }}'
+    steps:
+      - run: echo hello

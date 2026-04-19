@@ -1,0 +1,8 @@
+on: push
+
+jobs:
+  job-level:
+    runs-on: ubuntu-latest
+    steps:
+      - run: echo 'self-hosted runner'
+        if: ${{ runner.environment == 'self-hosted' }}

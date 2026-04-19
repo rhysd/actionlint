@@ -1,0 +1,22 @@
+on:
+  merge_group:
+    branches: main
+  push:
+    branches: main
+    tags: v*.*.*
+    paths: path/to/foo
+  pull_request:
+    branches: main
+    paths: path/to/foo
+  pull_request_target:
+    branches: main
+    paths-ignore: path/to/foo
+  workflow_run:
+    workflows: foo.yaml
+    branches: main
+
+jobs:
+  test:
+    runs-on: ubuntu-latest
+    steps:
+      - run: echo ...

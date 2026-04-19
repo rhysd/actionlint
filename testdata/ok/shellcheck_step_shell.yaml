@@ -1,0 +1,16 @@
+on: push
+jobs:
+  test:
+    strategy:
+      matrix:
+        os: [ubuntu-latest, windows-latest]
+    runs-on: ${{ matrix.os }}
+    steps:
+      # This causes SC1001 if `shell:` is not set explicitly
+      - run: cat xxx\yyy.txt
+        if: ${{ matrix.os == 'windows-latest' }}
+        shell: pwsh
+      # This causes SC1001 if `shell:` is not set explicitly
+      - run: cat xxx\yyy.txt
+        if: ${{ matrix.os == 'windows-latest' }}
+        shell: 'pwsh {0}'

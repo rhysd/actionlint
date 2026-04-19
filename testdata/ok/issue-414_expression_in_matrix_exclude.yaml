@@ -1,0 +1,12 @@
+on: [push]
+
+jobs:
+  test:
+    runs-on: ubuntu-latest
+    strategy:
+      matrix:
+        foo: ['a', 'b']
+        exclude:
+          - foo: ${{ github.event_name }}
+    steps:
+      - run: echo ${{ matrix.foo }}

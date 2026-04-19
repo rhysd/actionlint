@@ -1,0 +1,15 @@
+on: push
+
+jobs:
+  test:
+    runs-on: ubuntu-latest
+    steps:
+      # ERROR: The step is not yet run
+      - run: echo ${{ steps.my_action.outputs.some_value }}
+      # The action runs here and sets its outputs
+      - uses: ./.github/actions/my-action-with-output
+        id: my_action
+      # OK
+      - run: echo ${{ steps.my_action.outputs.some_value }}
+      # ERROR: No output named 'some-value' (typo)
+      - run: echo ${{ steps.my_action.outputs.some-value }}

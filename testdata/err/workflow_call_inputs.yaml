@@ -1,0 +1,26 @@
+# Note: Added at #154
+on:
+  workflow_call:
+    inputs:
+      input_not_ok:
+        description: test
+        type: string
+        required: true  # set this input is required
+        default: a      # but default value is provided
+      input_ok_1:
+        description: test
+        type: string
+        default: a
+      input_ok_2:
+        description: test
+        type: string
+        required: true
+      input_ok_3:
+        description: test
+        type: string
+
+jobs:
+  test:
+    runs-on: ubuntu-latest
+    steps:
+      - run: echo hello

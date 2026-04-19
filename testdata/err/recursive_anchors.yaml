@@ -1,0 +1,15 @@
+on: push
+
+jobs:
+  test: &recursive2
+    runs-on: ubuntu-latest
+    steps:
+      - &recursive1
+        # ERROR
+        env: *recursive1
+        # ERROR
+        run: *recursive2
+      # OK
+      - *recursive1
+      # ERROR
+      - *recursive2

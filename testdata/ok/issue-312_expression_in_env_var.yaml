@@ -1,0 +1,30 @@
+on: push
+
+env:
+  ${{ github.event_name }}: ''
+  foo-${{ github.event_name }}: ''
+  ${{ github.event_name }}-bar: ''
+  ${{ github.event_name }}-${{ github.event_path }}: ''
+
+jobs:
+  test:
+    runs-on: ubuntu-latest
+    container:
+      image: node:14.16
+      env:
+        ${{ github.event_name }}: ''
+        foo-${{ github.event_name }}: ''
+        ${{ github.event_name }}-bar: ''
+        ${{ github.event_name }}-${{ github.event_path }}: ''
+    env:
+      ${{ github.event_name }}: ''
+      foo-${{ github.event_name }}: ''
+      ${{ github.event_name }}-bar: ''
+      ${{ github.event_name }}-${{ github.event_path }}: ''
+    steps:
+      - run: echo "$push"
+        env:
+          ${{ github.event_name }}: ''
+          foo-${{ github.event_name }}: ''
+          ${{ github.event_name }}-bar: ''
+          ${{ github.event_name }}-${{ github.event_path }}: ''

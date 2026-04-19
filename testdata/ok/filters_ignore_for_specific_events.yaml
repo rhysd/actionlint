@@ -1,0 +1,22 @@
+on:
+  merge_group:
+    branches-ignore: bar
+  push:
+    branches-ignore: test
+    tags-ignore: deploy/*
+    paths-ignore: path/to/foo
+  pull_request:
+    branches-ignore: test
+    paths-ignore: path/to/foo
+  pull_request_target:
+    branches-ignore: test
+    paths-ignore: path/to/foo
+  workflow_run:
+    workflows: foo.yaml
+    branches-ignore: test
+
+jobs:
+  test:
+    runs-on: ubuntu-latest
+    steps:
+      - run: echo ...

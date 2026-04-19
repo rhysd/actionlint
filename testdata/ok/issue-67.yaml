@@ -1,0 +1,8 @@
+on: push
+jobs:
+  test:
+    runs-on: ubuntu-latest
+    steps:
+      # https://github.com/rhysd/actionlint/pull/67
+      - run: echo '${{ runner.os }}'
+      - run: echo '${{ runner.name }}'

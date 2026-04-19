@@ -1,0 +1,33 @@
+on: push
+
+jobs:
+  test:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: 'docker://ubuntu:latest'
+        with:
+          entrypoint: /bin/bash
+          args: '-c "echo $INPUT_FOOOO"'
+          foooo: Hello, world!
+      - uses: 'docker://ubuntu:latest'
+        with:
+          args: '-c "echo $INPUT_FOOOO"'
+          foooo: Hello, world!
+      - uses: 'docker://ubuntu:latest'
+        with:
+          entrypoint: /bin/bash
+          foooo: Hello, world!
+      - uses: 'docker://ubuntu:latest'
+        with:
+          foooo: Hello, world!
+      - uses: 'docker://ubuntu:latest'
+        with:
+          entrypoint: /bin/bash
+          args: '-c "echo $INPUT_FOOOO"'
+      - uses: 'docker://ubuntu:latest'
+        with:
+          args: '-c "echo $INPUT_FOOOO"'
+      - uses: 'docker://ubuntu:latest'
+        with:
+          entrypoint: /bin/bash
+      - uses: 'docker://ubuntu:latest'

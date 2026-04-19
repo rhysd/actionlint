@@ -1,0 +1,12 @@
+on: push
+jobs:
+  foo:
+    needs: [bar, BAR]
+    runs-on: ubuntu-latest
+    steps:
+      - run: echo 'hi'
+  bar:
+    needs: [unknown]
+    runs-on: ubuntu-latest
+    steps:
+      - run: echo 'hi'

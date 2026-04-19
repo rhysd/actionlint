@@ -1,0 +1,69 @@
+name: Foo
+NAME: Foo
+
+on:
+  SCHEDULE:
+  workflow_dispatch:
+    inputs:
+      foo:
+        DESCRIPTION: foo
+  repository_dispatch:
+    TYPES: []
+  workflow_call:
+    inputs:
+      foo:
+        DESCRIPTION: input
+        type: string
+    secrets:
+      bar:
+        DESCRIPTION: secret
+    outputs:
+      baz:
+        DESCRIPTION: output
+        value: ...
+  push:
+    BRANCHES: []
+
+defaults:
+  RUN:
+  run:
+    SHELL: bash
+
+concurrency:
+  GROUP: workflow group
+  group: workflow group
+
+jobs:
+  test1:
+    runs-on: ubuntu-latest
+    NAME: Test
+    concurrency:
+      GROUP: job group
+      group: job group
+    environment:
+      NAME: env name
+      name: env name
+    defaults:
+      RUN:
+      run:
+        SHELL: bash
+    strategy:
+      FAIL-FAST: true
+    container:
+      IMAGE: foo:latest
+      image: foo:latest
+      credentials:
+        USERNAME: root
+        username: root
+        password: ${{ 'test' }}
+    services:
+      my_service:
+        IMAGE: my_service:latest
+        image: my_service:latest
+        credentials:
+          USERNAME: service-user
+          username: service-user
+          password: ${{ 'test' }}
+    steps:
+      - RUN: echo
+        run: echo

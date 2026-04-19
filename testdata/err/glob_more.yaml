@@ -1,0 +1,36 @@
+on:
+  push:
+    branches:
+      - '**'
+      - 'release/v12'
+      - '[x]'
+      - ' '
+    tags:
+      - '!*'
+      - /v\d+/
+      - v[0-
+      - v[9-0]
+    paths:
+      -
+      - '!'
+      - 'foo\bar'
+      - ' '
+      - '  foo'
+      - 'foo  '
+      - |
+        foo.txt
+      - '.'
+      - './foo/bar.txt'
+  image_version:
+    versions:
+      - '!'
+      - 'v[0-'
+
+jobs:
+  test:
+    runs-on: ubuntu-latest
+    snapshot:
+      image-name: test
+      version: 'v[0-'
+    steps:
+      - run: echo hi

@@ -1,0 +1,22 @@
+on: push
+
+permissions:
+  contents: foo
+  unknown: bar
+  id-token: read
+  models: write
+  pages: READ
+  CHECKS: none
+
+jobs:
+  test_job:
+    runs-on: ubuntu-latest
+    permissions:
+      contents: foo
+      unknown: bar
+      id-token: read
+      models: write
+      pages: READ
+      CHECKS: none
+    steps:
+      - run: echo hello

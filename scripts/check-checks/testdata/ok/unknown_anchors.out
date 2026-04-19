@@ -1,0 +1,32 @@
+<a id="hello"></a>
+## Hello
+
+<a id="example-input"></a>
+Example input:
+
+<a id="code-block"></a>
+```yaml
+on: push
+jobs:
+  test:
+    runs-on: ubuntu-latest
+    steps:
+      - run: echo ${{ unknown }}
+```
+
+<a id="output-header"></a>
+Output:
+
+<a id="output-block"></a>
+```
+test.yaml:6:23: undefined variable "unknown". available variables are "env", "github", "inputs", "job", "matrix", "needs", "runner", "secrets", "steps", "strategy", "vars" [expression]
+  |
+6 |       - run: echo ${{ unknown }}
+  |                       ^~~~~~~
+```
+
+<a id="playground-link"></a>
+[Playground](https://rhysd.github.io/actionlint/#eNokyjEOhSAQRdGeVbzit2yA3XwMCVEzQ5x5sSDs3YxWtzhXpWDQetq1WkmAN/MocFEsh7NSnPn8h71k3oZ9F5DjLGhbV/zmBOUQvQVrPQEAAP//SLkdHQ==)
+
+<a id="description"></a>
+This is minimal test case.

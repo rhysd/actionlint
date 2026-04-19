@@ -1,0 +1,27 @@
+<a id="hello"></a>
+## Hello
+
+Example input:
+
+```yaml
+# This line is not included
+on: push
+jobs:
+  test:
+    # This line is not included
+    runs-on: ubuntu-latest
+    steps:
+      # This line is not included
+      - run: echo ${{ unknown }}
+# This line is not included
+```
+
+Output:
+
+```
+This section will be generated
+```
+
+[Playground](URL_WILL_BE_GENERATED)
+
+This is minimal test case.

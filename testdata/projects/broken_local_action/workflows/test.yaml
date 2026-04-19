@@ -1,0 +1,17 @@
+on: push
+
+jobs:
+  test:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: ./action/broken_input
+        with:
+          hello: world
+      - uses: ./action/broken_output
+      - uses: ./action/duplicate_input
+        with:
+          foo: ...
+      - uses: ./action/duplicate_output
+      - uses: ./action/multiple_unmarshal_errors
+      # Check: Do not repeat error
+      - uses: ./action/broken_output

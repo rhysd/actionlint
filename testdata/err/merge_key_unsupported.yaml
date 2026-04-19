@@ -1,0 +1,28 @@
+on:
+  workflow_dispatch:
+    inputs: &inputs
+      foo:
+        type: string
+  workflow_call:
+    inputs:
+      <<: *inputs
+      bar:
+        type: string
+
+jobs:
+  test:
+    runs-on: ubuntu-latest
+    steps:
+      - run: env
+        env: &default_env
+          FOO: BAR
+      - run: env
+        env:
+          <<: *default_env
+          TEST: test
+      - &default_step
+        run: echo hello
+        working-directory: /foo/bar
+        shell: bash
+      - <<: *default_step
+        run: echo bye

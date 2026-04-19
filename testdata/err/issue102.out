@@ -1,0 +1,1 @@
+test.yaml:8:9: step must run script with "run" section or run action with "uses" section [syntax-check]

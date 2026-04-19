@@ -1,0 +1,13 @@
+on: push
+jobs:
+  test:
+    strategy:
+      # ERROR: Boolean value "true" or "false" is expected
+      fail-fast: off
+      # ERROR: Integer value is expected
+      max-parallel: 1.5
+    runs-on: ubuntu-latest
+    steps:
+      - run: sleep 200
+        # ERROR: Float value is expected
+        timeout-minutes: two minutes

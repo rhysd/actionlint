@@ -1,0 +1,15 @@
+on:
+  workflow_call:
+    outputs:
+      image-version:
+        description: "Docker image version"
+        # ERROR: 'imagetag' does not exist (typo of 'image_tag')
+        value: ${{ jobs.gen-image-version.outputs.imagetag }}
+jobs:
+  gen-image-version:
+    runs-on: ubuntu-latest
+    outputs:
+      image_tag: "${{ steps.get_tag.outputs.tag }}"
+    steps:
+      - run: ./output_image_tag.sh
+        id: get_tag

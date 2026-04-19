@@ -1,0 +1,12 @@
+on:
+  workflow_dispatch:
+    inputs:
+      logLevel:
+
+jobs:
+  test:
+    runs-on: ubuntu-latest
+    steps:
+      - run: echo '${{ inputs.logLevel }}'
+      - run: echo '${{ inputs.loglevel }}'
+      - run: echo '${{ inputs.LOGLEVEL }}'

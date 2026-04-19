@@ -1,0 +1,22 @@
+on: push
+
+# Issue #155: `env` should not be available in `jobs.<job_id>.if`
+# https://docs.github.com/en/actions/learn-github-actions/contexts#context-availability
+
+jobs:
+  test1:
+    runs-on: ubuntu-latest
+    if: ${{ env.FOO == 'aaa' }}
+    steps:
+      - run: echo 'hello'
+  test2:
+    runs-on: ubuntu-latest
+    if: env.FOO == 'aaa'
+    steps:
+      - run: echo 'hello'
+  test3:
+    uses: org/repo/workflow.yml@v1
+    if: ${{ env.FOO == 'aaa' }}
+  test4:
+    uses: org/repo/workflow.yml@v1
+    if: env.FOO == 'aaa'

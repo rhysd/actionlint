@@ -1,0 +1,14 @@
+on: push
+
+jobs:
+  test:
+    # ERROR: Key 'mac' does not exist in the object returned by the fromJSON()
+    runs-on: ${{ fromJSON('{"win":"windows-latest","linux":"ubuntul-latest"}')['mac'] }}
+    steps:
+      # ERROR: {2} is missing in the first argument of format()
+      - run: echo "${{ format('{0}{1}', 1, 2, 3) }}"
+      # ERROR: Argument for {2} is missing in the arguments of format()
+      - run: echo "${{ format('{0}{1}{2}', 1, 2) }}"
+      - run: echo This is special branch!
+        # ERROR: Broken JSON string. Special check for fromJSON()
+        if: contains(fromJson('["main","release","dev"'), github.ref_name)

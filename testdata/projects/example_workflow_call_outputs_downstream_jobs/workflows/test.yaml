@@ -1,0 +1,13 @@
+on: push
+
+jobs:
+  get_build_info:
+    uses: ./.github/workflows/get-build-info.yaml
+  downstream:
+    needs: [get_build_info]
+    runs-on: ubuntu-latest
+    steps:
+      # OK. `version` is defined in the reusable workflow
+      - run: echo '${{ needs.get_build_info.outputs.version }}'
+      # ERROR: `tag` is not defined in the reusable workflow
+      - run: echo '${{ needs.get_build_info.outputs.tag }}'

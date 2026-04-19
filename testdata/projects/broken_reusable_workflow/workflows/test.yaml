@@ -1,0 +1,15 @@
+on: push
+
+jobs:
+  caller1:
+    uses: ./reusable/broken.yaml
+  caller2:
+    uses: ./reusable/no_hook.yaml
+  caller3:
+    uses: ./reusable/no_on.yaml
+  caller4:
+    uses: ./reusable/broken_input.yaml
+    with:
+      empty_input:
+  caller5:
+    uses: ./reusable/broken_secrets.yaml

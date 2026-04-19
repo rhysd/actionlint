@@ -1,0 +1,12 @@
+on: push
+
+defaults:
+  run:
+    shell: pwsh
+
+jobs:
+  test:
+    runs-on: ubuntu-latest
+    steps:
+      # This script should not be checked by shellcheck
+      - run: $Env:FOO = "FOO"

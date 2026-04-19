@@ -1,0 +1,6 @@
+test.yaml:8:13: if: condition "${{ false }}\n" is always evaluated to true because extra characters are around ${{ }} [if-cond]
+test.yaml:11:13: if: condition "${{ false }} " is always evaluated to true because extra characters are around ${{ }} [if-cond]
+test.yaml:13:13: if: condition " ${{ false }}" is always evaluated to true because extra characters are around ${{ }} [if-cond]
+test.yaml:15:13: if: condition "${{ false }} && ${{ false }}" is always evaluated to true because extra characters are around ${{ }} [if-cond]
+test.yaml:17:13: if: condition "${{ 'false' }} && ${{ 'false' }}" is always evaluated to true because extra characters are around ${{ }} [if-cond]
+test.yaml:19:13: if: condition "!${{ true }}" is always evaluated to true because extra characters are around ${{ }} [if-cond]

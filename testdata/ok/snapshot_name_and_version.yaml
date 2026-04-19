@@ -1,0 +1,11 @@
+on: push
+
+jobs:
+  build:
+    runs-on: ubuntu-latest
+    snapshot:
+      if: ${{ ! startsWith(github.ref, 'refs/tags/') }}
+      image-name: my-custom-image
+      version: 2.*
+    steps:
+      - run: echo hello

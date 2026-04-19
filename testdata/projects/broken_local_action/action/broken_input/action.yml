@@ -1,0 +1,8 @@
+name: test
+description: hello
+
+inputs:
+  hello:
+    required:
+      this: value
+      should-be: boolean

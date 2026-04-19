@@ -1,0 +1,5 @@
+test.yaml:4:17: invalid timezone "Not/A/Timezone" in schedule event. it must be a valid IANA timezone name [events]
+test.yaml:6:17: invalid timezone "UTC" in schedule event. it must be a valid IANA timezone name [events]
+test.yaml:8:17: invalid timezone "local" in schedule event. it must be a valid IANA timezone name [events]
+test.yaml:10:17: string should not be empty [syntax-check]
+test.yaml:11:13: string should not be empty [syntax-check]

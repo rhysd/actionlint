@@ -1,0 +1,11 @@
+on: push
+
+jobs:
+  test:
+    runs-on: ubuntu-latest
+    strategy:
+      matrix:
+        test:
+          - ${{ fromJson('{"foo":{"bar":"test"}}') }}
+    steps:
+      - run: echo ${{ matrix.test.foo.bar }}

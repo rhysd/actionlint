@@ -1,0 +1,19 @@
+on: push
+
+jobs:
+  upper:
+    uses: ./reusable/upper.yaml
+    with:
+      MY_INPUT_1: hello
+      MY_INPUT_2: world
+    secrets:
+      MY_SECRET_1: hello
+      MY_SECRET_2: world
+  lower:
+    uses: ./reusable/lower.yaml
+    with:
+      MY_INPUT_1: hello
+      MY_INPUT_2: world
+    secrets:
+      MY_SECRET_1: hello
+      MY_SECRET_2: world

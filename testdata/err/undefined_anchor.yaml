@@ -1,0 +1,14 @@
+on: push
+
+jobs:
+  test:
+    runs-on: ubuntu-latest
+    steps:
+      - run: env
+        env: *default_env
+      - run: env
+        env: &default_env
+          FOO: BAR
+      - run: env
+        # Currently this is not reported as error because go-yaml only reports the first dangling alias.
+        env: *another_env

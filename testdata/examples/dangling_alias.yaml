@@ -1,0 +1,9 @@
+on: push
+
+jobs:
+  test:
+    runs-on: ubuntu-latest
+    steps:
+      - run: ./download.sh
+        # ERROR: &credentials is not defined
+        env: *credentials

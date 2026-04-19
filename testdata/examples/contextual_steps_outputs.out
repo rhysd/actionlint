@@ -1,0 +1,2 @@
+test.yaml:10:24: property "get_value" is not defined in object type {} [expression]
+test.yaml:22:24: property "get_value" is not defined in object type {} [expression]

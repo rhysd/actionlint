@@ -1,0 +1,1 @@
+/test\.yaml:3:3: maximum number of inputs for "workflow_dispatch" event is 25 but 26 inputs are provided. see .+ \[events\]/

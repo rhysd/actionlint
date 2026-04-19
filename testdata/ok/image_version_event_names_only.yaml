@@ -1,0 +1,11 @@
+on:
+  image_version:
+    names:
+      - "MyNewImage"
+      - "MyOtherImage"
+
+jobs:
+  test:
+    runs-on: ubuntu-latest
+    steps:
+      - run: echo ...

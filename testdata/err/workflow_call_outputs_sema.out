@@ -1,0 +1,2 @@
+test.yaml:6:20: property "some_output" is not defined in object type {} [expression]
+test.yaml:9:20: property "unknown_output" is not defined in object type {foo: string} [expression]

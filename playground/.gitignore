@@ -1,0 +1,7 @@
+/lib
+/main.wasm
+/node_modules
+/image
+/*.js
+/*.js.map
+/.testtimestamp

@@ -1,0 +1,11 @@
+name: 'My action'
+author: 'rhysd <https://rhysd.github.io>'
+description: 'my action'
+
+branding:
+  icon: edit
+  color: blue
+
+runs:
+  using: 'node20'
+  main: 'index.js'

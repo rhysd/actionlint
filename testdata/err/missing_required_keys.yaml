@@ -1,0 +1,19 @@
+on:
+  workflow_call:
+    inputs:
+      # 'type' is missing
+      foo:
+    outputs:
+      # 'value' is missing
+      foo:
+
+defaults:
+
+concurrency:
+  cancel-in-progress: true
+
+jobs:
+  # 'runs-on' and 'steps' are missing
+  test:
+    environment:
+      url: https://example.com

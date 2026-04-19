@@ -1,0 +1,33 @@
+on: push
+jobs:
+  install:
+    outputs:
+      installed: '...'
+    runs-on: ubuntu-latest
+    steps:
+      - run: echo 'install something'
+  prepare:
+    outputs:
+      prepared: '...'
+    runs-on: ubuntu-latest
+    steps:
+      - run: echo 'parepare something'
+      # ERROR: Outputs in other job is not accessible
+      - run: echo '${{ needs.prepare.outputs.prepared }}'
+  build:
+    needs: [install, prepare]
+    outputs:
+      built: '...'
+    runs-on: ubuntu-latest
+    steps:
+      # OK: Accessing job results
+      - run: echo 'build something with ${{ needs.install.outputs.installed }} and ${{ needs.prepare.outputs.prepared }}'
+      # ERROR: Accessing undefined output causes an error
+      - run: echo '${{ needs.install.outputs.foo }}'
+      # ERROR: Accessing undefined job ID
+      - run: echo '${{ needs.some_job }}'
+  other:
+    runs-on: ubuntu-latest
+    steps:
+      # ERROR: Cannot access outputs across jobs
+      - run: echo '${{ needs.build.outputs.built }}'

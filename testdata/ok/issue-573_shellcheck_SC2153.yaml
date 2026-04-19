@@ -1,0 +1,11 @@
+on: push
+jobs:
+  linux:
+    runs-on: ubuntu-latest
+    steps:
+      - env:
+          BRANCH: ${{ github.ref }}
+        run: |
+          branch="${BRANCH}"
+          # Avoid SC2034
+          echo "$branch"

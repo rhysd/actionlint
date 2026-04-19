@@ -1,0 +1,11 @@
+name: 'My action'
+author: 'rhysd <https://rhysd.github.io>'
+description: Test
+
+inputs:
+  input1:
+    foo: bar
+
+runs:
+  using: 'node20'
+  main: 'index.js'

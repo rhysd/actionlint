@@ -1,0 +1,7 @@
+name: 'Invalid node version'
+author: 'rhysd <https://rhysd.github.io>'
+description: 'Node version must be unsigned integer in runs.using runner name'
+
+runs:
+  using: 'nodenext'
+  main: 'index.js'

@@ -1,0 +1,10 @@
+paths:
+  workflows/**/*.yaml:
+    ignore:
+      - unknown Webhook event ".+"
+  workflows/*.yaml:
+    ignore:
+      - context ".+" is not allowed here
+  workflows/bar.yaml:
+    ignore:
+      - label ".+" is unknown\. available labels are

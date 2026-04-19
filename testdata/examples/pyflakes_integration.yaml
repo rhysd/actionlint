@@ -1,0 +1,25 @@
+on: push
+jobs:
+  linux:
+    runs-on: ubuntu-latest
+    steps:
+      # Yay! No error
+      - run: print('${{ runner.os }}')
+        shell: python
+      # ERROR: Undefined variable
+      - run: print(hello)
+        shell: python
+  linux2:
+    runs-on: ubuntu-latest
+    defaults:
+      run:
+        # Run script with Python by default
+        shell: python
+    steps:
+      - run: |
+          import sys
+          for sys in ['system1', 'system2']:
+            print(sys)
+      - run: |
+          from time import sleep
+          print(100)

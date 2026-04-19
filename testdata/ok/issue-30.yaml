@@ -1,0 +1,15 @@
+on: [push]
+
+jobs:
+  myjob:
+    environment:
+      name: env-name
+      url: ${{ steps.thing.outputs.app-url }}
+    runs-on: ubuntu-latest
+    steps:
+      - name: 'Run Azure Functions Action'
+        uses: Azure/functions-action@v1.4.0
+        id: thing
+        with:
+          app-name: 'my-function-app'
+          package: my.zip

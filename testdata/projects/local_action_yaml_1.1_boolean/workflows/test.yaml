@@ -1,0 +1,10 @@
+on: push
+
+jobs:
+  test:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: ./action
+        with:
+          input1: foo
+          input2: bar

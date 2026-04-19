@@ -1,0 +1,72 @@
+<a id="hello"></a>
+## Hello
+
+Example input:
+
+```yaml
+on: push
+jobs:
+  test:
+    runs-on: ubuntu-latest
+    steps:
+      - run: echo ${{ unknown }}
+```
+
+Output:
+
+```
+test.yaml:6:23: undefined variable "unknown". available variables are "env", "github", "inputs", "job", "matrix", "needs", "runner", "secrets", "steps", "strategy", "vars" [expression]
+  |
+6 |       - run: echo ${{ unknown }}
+  |                       ^~~~~~~
+```
+
+[Playground](https://rhysd.github.io/actionlint/#eNokyjEOhSAQRdGeVbzit2yA3XwMCVEzQ5x5sSDs3YxWtzhXpWDQetq1WkmAN/MocFEsh7NSnPn8h71k3oZ9F5DjLGhbV/zmBOUQvQVrPQEAAP//SLkdHQ==)
+
+This is the first example.
+
+Example input:
+
+```yaml
+on: push
+jobs:
+  test:
+    runs-on: ubuntu-latest
+    steps:
+      - run: echo ${{ unknown }}
+```
+
+Output:
+<!-- Skip update output -->
+
+```
+This section will not be generated
+```
+
+[Playground](https://rhysd.github.io/actionlint/#eNokyjEOhSAQRdGeVbzit2yA3XwMCVEzQ5x5sSDs3YxWtzhXpWDQetq1WkmAN/MocFEsh7NSnPn8h71k3oZ9F5DjLGhbV/zmBOUQvQVrPQEAAP//SLkdHQ==)
+
+This is the second example.
+
+Example input:
+
+```yaml
+on: push
+jobs:
+  test:
+    runs-on: ubuntu-latest
+    steps:
+      - run: echo ${{ unknown }}
+```
+
+Output:
+
+```
+test.yaml:6:23: undefined variable "unknown". available variables are "env", "github", "inputs", "job", "matrix", "needs", "runner", "secrets", "steps", "strategy", "vars" [expression]
+  |
+6 |       - run: echo ${{ unknown }}
+  |                       ^~~~~~~
+```
+
+<!-- Skip playground link -->
+
+This is the third example.

@@ -1,0 +1,2 @@
+/test\.yaml:6:16: context "env" is not allowed here\. no context is available here\. .+ \[expression\]/
+/test\.yaml:18:20: context "env" is not allowed here\. no context is available here\. .+ \[expression\]/

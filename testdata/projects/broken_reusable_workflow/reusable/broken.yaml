@@ -1,0 +1,9 @@
+on:
+  workflow_call:
+    outputs: my cool outputs
+
+jobs:
+  test:
+    runs-on: ubuntu-latest
+    steps:
+      - run: echo ...

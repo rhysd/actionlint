@@ -1,0 +1,10 @@
+on: push
+
+jobs:
+  test:
+    runs-on: ubuntu-latest
+    strategy:
+      matrix: ${{ fromJSON('{"foo":{}}') }}
+
+    steps:
+      - run: echo 'hello'

@@ -1,0 +1,3 @@
+/test\.yaml:10:13: label "linux-latest" is unknown\. available labels are .+\. if it is a custom label for self-hosted runner, set list of labels in actionlint\.yaml config file \[runner-label\]/
+/test\.yaml:16:13: label "gpu" is unknown\. available labels are .+\. if it is a custom label for self-hosted runner, set list of labels in actionlint\.yaml config file \[runner-label\]/
+/test\.yaml:23:14: label "macos-10.13" is unknown\. available labels are .+\. if it is a custom label for self-hosted runner, set list of labels in actionlint\.yaml config file \[runner-label\]/

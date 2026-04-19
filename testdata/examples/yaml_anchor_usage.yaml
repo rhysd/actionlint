@@ -1,0 +1,22 @@
+on: push
+
+jobs:
+  test:
+    services:
+      nginx:
+        image: nginx:latest
+        credentials: &credentials
+          username: ${{ secrets.user }}
+          password: ${{ secrets.password }}
+    runs-on: ubuntu-latest
+    steps:
+      - run: ./download.sh
+        # OK: Valid alias to &credentials
+        env: *credentials
+      - run: ./upload.sh
+        # ERROR: Unused anchor 'credentials'
+        env: &credentials
+      - &recursive
+        run: ./some_script.sh
+        # ERROR: Recursively referencing the anchor
+        env: *recursive

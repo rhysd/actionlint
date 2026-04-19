@@ -1,0 +1,84 @@
+# https://docs.github.com/en/actions/reference/workflows-and-actions/events-that-trigger-workflows#providing-inputs
+on:
+  workflow_dispatch:
+    inputs:
+      input1:
+        type: string
+      input2:
+        type: string
+      input3:
+        type: string
+      input4:
+        type: string
+      input5:
+        type: string
+      input6:
+        type: string
+      input7:
+        type: string
+      input8:
+        type: string
+      input9:
+        type: string
+      input10:
+        type: string
+      input11:
+        type: string
+      input12:
+        type: string
+      input13:
+        type: string
+      input14:
+        type: string
+      input15:
+        type: string
+      input16:
+        type: string
+      input17:
+        type: string
+      input18:
+        type: string
+      input19:
+        type: string
+      input20:
+        type: string
+      input21:
+        type: string
+      input22:
+        type: string
+      input23:
+        type: string
+      input24:
+        type: string
+      input25:
+        type: string
+jobs:
+  test:
+    runs-on: ubuntu-latest
+    steps:
+      - run: |
+          echo ${{ inputs.input1 }} \
+               ${{ inputs.input2 }} \
+               ${{ inputs.input3 }} \
+               ${{ inputs.input4 }} \
+               ${{ inputs.input5 }} \
+               ${{ inputs.input6 }} \
+               ${{ inputs.input7 }} \
+               ${{ inputs.input8 }} \
+               ${{ inputs.input9 }} \
+               ${{ inputs.input10 }} \
+               ${{ inputs.input11 }} \
+               ${{ inputs.input12 }} \
+               ${{ inputs.input13 }} \
+               ${{ inputs.input14 }} \
+               ${{ inputs.input15 }} \
+               ${{ inputs.input16 }} \
+               ${{ inputs.input17 }} \
+               ${{ inputs.input18 }} \
+               ${{ inputs.input19 }} \
+               ${{ inputs.input20 }} \
+               ${{ inputs.input21 }} \
+               ${{ inputs.input22 }} \
+               ${{ inputs.input23 }} \
+               ${{ inputs.input24 }} \
+               ${{ inputs.input25 }}

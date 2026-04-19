@@ -1,0 +1,8 @@
+workflows/test.yaml:15:11: input "entrypoint" is not defined in action "My action" defined at "./action_args". available inputs are "args" [action]
+workflows/test.yaml:21:11: input "args" is not defined in action "My action" defined at "./action_entrypoint". available inputs are "entrypoint" [action]
+workflows/test.yaml:25:11: input "entrypoint" is not defined in action "My action" defined at "./action_none". available inputs are  [action]
+workflows/test.yaml:26:11: input "args" is not defined in action "My action" defined at "./action_none". available inputs are  [action]
+workflows/test.yaml:28:15: missing input "args" which is required by action "My action" defined at "./action_all". all required inputs are "args", "entrypoint" [action]
+workflows/test.yaml:28:15: missing input "entrypoint" which is required by action "My action" defined at "./action_all". all required inputs are "args", "entrypoint" [action]
+workflows/test.yaml:30:15: missing input "args" which is required by action "My action" defined at "./action_args". all required inputs are "args" [action]
+workflows/test.yaml:32:15: missing input "entrypoint" which is required by action "My action" defined at "./action_entrypoint". all required inputs are "entrypoint" [action]

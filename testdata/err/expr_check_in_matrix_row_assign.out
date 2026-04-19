@@ -1,0 +1,1 @@
+test.yaml:12:23: receiver of object dereference "foo" must be type of object but got "number" [expression]

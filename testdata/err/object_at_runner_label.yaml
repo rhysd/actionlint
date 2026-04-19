@@ -1,0 +1,12 @@
+on: push
+
+jobs:
+  build:
+    strategy:
+      matrix:
+        x:
+          - foo: a
+          - foo: c
+    runs-on: ${{ matrix.x }}
+    steps:
+      - run: echo hi

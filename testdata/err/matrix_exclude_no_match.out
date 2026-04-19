@@ -1,0 +1,4 @@
+test.yaml:20:15: value {"matrix": "macos"} in "exclude" does not match in matrix "os" combinations. possible values are {"matrix": "ubuntu", "name": "Ubuntu"}, {"matrix": "windows", "name": "Windows"} [matrix]
+test.yaml:25:15: value {"matrix": "riscv"} in "exclude" does not match in matrix "arch" combinations. possible values are {"matrix": "arm", "name": "ARM"}, {"matrix": "intel", "name": "Intel"} [matrix]
+test.yaml:27:15: value {"foo": "bar", "matrix": "ubuntu"} in "exclude" does not match in matrix "os" combinations. possible values are {"matrix": "ubuntu", "name": "Ubuntu"}, {"matrix": "windows", "name": "Windows"} [matrix]
+test.yaml:33:15: value {"foo": "bar", "matrix": "arm"} in "exclude" does not match in matrix "arch" combinations. possible values are {"matrix": "arm", "name": "ARM"}, {"matrix": "intel", "name": "Intel"} [matrix]

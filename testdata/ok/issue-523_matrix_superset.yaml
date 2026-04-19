@@ -1,0 +1,15 @@
+on: push
+
+jobs:
+  test:
+    strategy:
+      matrix:
+        foo:
+          - foo: foo
+            bar: bar
+          - foo: foo
+            bar: bar
+            piyo: piyo
+    runs-on: ubuntu-latest
+    steps:
+      - run: echo hello

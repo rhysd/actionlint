@@ -1,0 +1,2 @@
+test.yaml:10:21: recursive alias "recursive_include" is found. anchor was declared at line:8, column:18 [syntax-check]
+test.yaml:10:21: unexpected alias node on parsing value in matrix row [syntax-check]

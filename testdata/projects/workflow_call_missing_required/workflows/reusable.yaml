@@ -1,0 +1,26 @@
+on:
+  workflow_call:
+    inputs:
+      optional1:
+        type: string
+      optional2:
+        type: string
+        default: foo!
+      optional3:
+        type: string
+        required: false
+      required1:
+        type: number
+        required: true
+    secrets:
+      optional1:
+      optional2:
+        required: false
+      required1:
+        required: true
+
+jobs:
+  test:
+    runs-on: ubuntu-latest
+    steps:
+      - run: 'bye'

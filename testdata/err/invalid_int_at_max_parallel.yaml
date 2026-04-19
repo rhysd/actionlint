@@ -1,0 +1,45 @@
+on: push
+
+jobs:
+  error1:
+    runs-on: ubuntu-latest
+    strategy:
+      max-parallel: foo
+    steps:
+      - run: echo hello
+  error2:
+    runs-on: ubuntu-latest
+    strategy:
+      max-parallel: 3.141592
+    steps:
+      - run: echo hello
+  error3:
+    runs-on: ubuntu-latest
+    strategy:
+      max-parallel: '3'
+    steps:
+      - run: echo hello
+  error4:
+    runs-on: ubuntu-latest
+    strategy:
+      max-parallel: 0
+    steps:
+      - run: echo hello
+  error5:
+    runs-on: ubuntu-latest
+    strategy:
+      max-parallel: -4
+    steps:
+      - run: echo hello
+  ok1:
+    runs-on: ubuntu-latest
+    strategy:
+      max-parallel: 3
+    steps:
+      - run: echo hello
+  ok2:
+    runs-on: ubuntu-latest
+    strategy:
+      max-parallel: ${{ 3 }}
+    steps:
+      - run: echo hello

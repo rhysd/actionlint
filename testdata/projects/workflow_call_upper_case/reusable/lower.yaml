@@ -1,0 +1,23 @@
+on:
+  workflow_call:
+    inputs:
+      my_input_1:
+        required: true
+      my_input_2:
+        required: true
+    outputs:
+      my_output_1:
+        value: ...
+      my_output_2:
+        value: ...
+    secrets:
+      my_secret_1:
+        required: true
+      my_secret_2:
+        required: true
+
+jobs:
+  test:
+    runs-on: ubuntu-latest
+    steps:
+      - run: echo '${{ inputs.my_input_1 }}'

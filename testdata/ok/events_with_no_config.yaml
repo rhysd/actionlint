@@ -1,0 +1,16 @@
+on:
+  - push
+  - check_run
+  - pull_request
+  - issue_comment
+  - branch_protection_rule
+  - repository_dispatch
+  - workflow_dispatch
+  - workflow_call
+  - image_version
+
+jobs:
+  test:
+    runs-on: ubuntu-latest
+    steps:
+      - run: echo hello

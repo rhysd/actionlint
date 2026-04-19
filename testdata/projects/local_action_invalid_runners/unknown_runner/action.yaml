@@ -1,0 +1,7 @@
+name: 'Unknown runner name'
+author: 'rhysd <https://rhysd.github.io>'
+description: 'Runner name must be "docker", "composite", "node..."'
+
+runs:
+  using: 'what-is-this-runner'
+  main: 'index.js'

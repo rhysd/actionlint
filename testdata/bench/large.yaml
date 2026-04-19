@@ -1,0 +1,344 @@
+# TODO: Use larger input
+
+name: Large workflow
+on:
+  push:
+    paths:
+      - scripts/download-actionlint.bash
+      - scripts/test-download-actionlint.bash
+    branches:
+      - main
+    tags-ignore:
+      - '*'
+  pull_request:
+    paths:
+      - scripts/download-actionlint.bash
+      - scripts/test-download-actionlint.bash
+  schedule:
+    # Every Saturday 6:41 in JST
+    - cron: '41 21 * * 5'
+  workflow_dispatch:
+
+permissions:
+  security-events: write
+  contents: write
+
+jobs:
+  unit-tests:
+    name: Unit tests
+    strategy:
+      matrix:
+        os: [ubuntu-latest, ubuntu-24.04-arm, macos-latest, windows-latest, macos-15-intel]
+        go: ['1.24', '1.25']
+    runs-on: ${{ matrix.os }}
+    steps:
+      - name: Install dependencies on macOS
+        run: |
+          set -x
+          brew install --quiet shellcheck python3 pipx
+          # https://pipx.pypa.io/stable/installation/
+          pipx ensurepath
+          pipx install pyflakes
+          shellcheck --version
+          pyflakes --version
+        if: ${{ runner.os == 'macOS' }}
+      - name: Install dependencies on Linux
+        run: |
+          set -x
+          sudo apt-get install -y shellcheck
+          pip install pyflakes
+          shellcheck --version
+          pyflakes --version
+        if: ${{ runner.os == 'Linux' }}
+      - name: Install dependencies on Windows
+        run: |
+          # `choco install shellcheck` is too slow on GitHub Actions. It takes more than 3 minutes to install one package
+          # choco install shellcheck
+          pip install pyflakes
+          pyflakes --version
+        if: ${{ runner.os == 'Windows' }}
+      - uses: actions/checkout@v6
+      - uses: actions/setup-go@v6
+        with:
+          go-version: ${{ matrix.go }}
+      - run: go test -v -race -coverprofile coverage.txt -covermode=atomic ./...
+      - run: go tool cover -func ./coverage.txt
+      # Check build without CGO
+      - run: go build ./cmd/actionlint
+        env:
+          # Note: -race requires cgo
+          CGO_ENABLED: 0
+      # Set -race for catching data races on dog fooding (#333)
+      - run: go build -race ./cmd/actionlint
+      - name: Dog fooding 🐶
+        run: |
+          echo "::add-matcher::.github/actionlint-matcher.json"
+          ./actionlint -color
+      - uses: codecov/codecov-action@v5
+        with:
+          env_vars: OS
+          token: ${{ secrets.CODECOV_TOKEN }}
+        env:
+          OS: ${{ matrix.os }}
+  wasm:
+    name: Wasm
+    runs-on: ubuntu-latest
+    defaults:
+      run:
+        working-directory: ./playground
+    steps:
+      - uses: actions/checkout@v6
+      - uses: actions/setup-go@v6
+        with:
+          go-version: '1.25'
+      - uses: actions/setup-node@v6
+        with:
+          node-version: "lts/*"
+          cache: npm
+          cache-dependency-path: ./playground/package-lock.json
+      - name: Build playground
+        run: make build
+      - name: Lint playground
+        run: npm run lint
+      - name: Run tests for wasm
+        run: npm test
+  lint:
+    name: Lint
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v6
+      - uses: actions/setup-go@v6
+        with:
+          go-version: '1.25'
+      - name: Install dependencies
+        run: |
+          sudo apt-get install -y shellcheck
+          pip install pyflakes
+          shellcheck --version
+          pyflakes --version
+      - name: Check Go sources are formatted
+        run: |
+          diffs="$(gofmt -d ./*.go ./cmd/actionlint/*.go ./scripts/*/*.go ./playground/*.go)"
+          if [[ "$diffs" != "" ]]; then
+            echo "$diffs" >&2
+            exit 1
+          fi
+      - name: Install staticcheck and govulncheck
+        run: |
+          go install honnef.co/go/tools/cmd/staticcheck@latest
+          go install golang.org/x/vuln/cmd/govulncheck@latest
+          echo "$(go env GOPATH)/bin" >> "$GITHUB_PATH"
+      - run: make lint SKIP_GO_GENERATE=true
+      - name: Lint bash scripts
+        run: shellcheck ./scripts/*.bash ./playground/*.bash
+  docker-check:
+    name: Dockerfile
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v6
+      - name: Build image
+        id: image
+        uses: docker/build-push-action@v6
+        with:
+          build-args: |
+            GOLANG_VER=1.25
+          push: false
+      - name: Test Docker image
+        run: docker container run
+          --mount type=bind,source="$(pwd)",target=/mnt/app
+          --workdir /mnt/app
+          -- ${{ steps.image.outputs.digest }} -color -verbose
+      - name: Lint Dockerfile with hadolint
+        run: docker run --rm -i hadolint/hadolint hadolint --ignore DL3018 --strict-labels - < Dockerfile
+  analyze-go:
+    name: Analyze Go
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v6
+      - uses: actions/setup-go@v6
+        with:
+          go-version: '1.25'
+      - uses: github/codeql-action/init@v4
+        with:
+          config-file: ./.github/codeql/codeql-config.yaml
+          languages: go
+      - name: Build Go sources
+        run: |
+          set -x
+          go build -v ./cmd/actionlint
+          GOOS=js GOARCH=wasm go build -v -o ./playground/main.wasm ./playground
+      - uses: github/codeql-action/analyze@v4
+        with:
+          category: "/language:go"
+  analyze-ts:
+    name: Analyze TypeScript
+    runs-on: ubuntu-latest
+    defaults:
+      run:
+        working-directory: ./playground
+    steps:
+      - uses: actions/checkout@v6
+      - uses: actions/setup-node@v6
+        with:
+          node-version: "lts/*"
+          cache: npm
+          cache-dependency-path: ./playground/package-lock.json
+      - uses: github/codeql-action/init@v4
+        with:
+          config-file: ./.github/codeql/codeql-config.yaml
+          languages: javascript-typescript
+          source-root: ./playground
+      - name: Build playground
+        run: make build
+      - uses: github/codeql-action/analyze@v4
+        with:
+          category: "/language:javascript-typescript"
+  download:
+    name: Test download script
+    strategy:
+      matrix:
+        os: [ubuntu-latest, macos-latest, windows-latest]
+    runs-on: ${{ matrix.os }}
+    steps:
+      - uses: actions/checkout@v6
+      - run: ./scripts/test-download-actionlint.bash
+        shell: bash
+  go-generate:
+    if: ${{ github.repository == 'rhysd/actionlint' }}
+    runs-on: ubuntu-latest
+    permissions:
+      contents: write
+      pull-requests: write
+    steps:
+      - uses: actions/checkout@v6
+      - uses: actions/setup-go@v6
+        with:
+          go-version: '1.25'
+      - name: Check new release on GitHub
+        run: go run ./scripts/generate-popular-actions -d
+      - run: go generate
+      - run: |
+          if git diff-files --quiet; then
+            echo "pr=false" >> "$GITHUB_OUTPUT"
+          else
+            git diff
+            echo "pr=true" >> "$GITHUB_OUTPUT"
+          fi
+        id: diff
+      - uses: peter-evans/create-pull-request@v7
+        with:
+          branch: 'ci/${{ github.run_id }}'
+          commit-message: 'update generated files by `go generate` on CI'
+          committer: 'github-actions[bot] <41898282+github-actions[bot]@users.noreply.github.com>'
+          author: 'github-actions[bot] <41898282+github-actions[bot]@users.noreply.github.com>'
+          title: 'Update generated files by CI'
+          body: |
+            This PR updates some generated files to the latest by running `go generate`.
+            This PR was created by [this workflow run](https://github.com/rhysd/actionlint/actions/runs/${{ github.run_id }}) automatically.
+            List of workflow runs is [here](https://github.com/rhysd/actionlint/actions/workflows/generate.yaml).
+          assignees: rhysd
+        if: ${{ steps.diff.outputs.pr == 'true' }}
+  matcher-test:
+    name: Test generate-actionlint-matcher
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v6
+      - uses: actions/setup-go@v6
+        with:
+          go-version: '1.25'
+      - uses: actions/setup-node@v6
+        with:
+          node-version: "lts/*"
+          cache: npm
+          cache-dependency-path: ./playground/package-lock.json
+      - name: Update test data
+        run: make ./scripts/generate-actionlint-matcher/test/* SKIP_GO_GENERATE=true
+      - name: Test actionlint-matcher.json
+        run: node ./scripts/generate-actionlint-matcher/test.mjs
+      - name: Ensure .github/actionlint-matcher.json is up-to-date
+        run: |
+          make .github/actionlint-matcher.json
+          if git diff --quiet; then
+            echo 'OK'
+          else
+            echo 'ERROR! .github/actionlint-matcher.json is outdated. Update it by "make .github/actionlint-matcher.json"' >&2
+            set -x
+            git diff
+            exit 1
+          fi
+  binaries:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v6
+      - uses: ruby/setup-ruby@v1
+        with:
+          ruby-version: '3.3'
+      - run: gem install ronn
+      - run: ronn ./man/actionlint.1.ronn
+      - uses: actions/setup-go@v6
+        with:
+          go-version: '1.25'
+      - uses: goreleaser/goreleaser-action@v6
+        with:
+          version: '~> v2'
+          args: release --clean
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+      - name: Post-release download check
+        run: bash ./scripts/download-actionlint.bash "${GITHUB_REF#refs/tags/v}"
+      - name: Clone nested repository to make version bump commit
+        uses: actions/checkout@v6
+        with:
+          path: ./tmp-actionlint-for-update-ver
+          ref: main
+          fetch-depth: 0
+      - name: Update version in download script
+        run: |
+          set -x
+          ver="${GITHUB_REF#refs/tags/v}"
+          cd ./tmp-actionlint-for-update-ver
+          sed -i -E "s/version=\"[0-9]+\\.[0-9]+\\.[0-9]+\"/version=\"${ver}\"/" ./scripts/download-actionlint.bash
+          git diff
+          git add ./scripts/download-actionlint.bash
+          git -c user.email='41898282+github-actions[bot]@users.noreply.github.com' -c user.name='github-actions[bot]' commit -m "update version to $ver in download-actionlint.bash"
+          git log -n 1
+          git push
+  winget:
+    runs-on: ubuntu-latest
+    needs: binaries
+    steps:
+      - uses: vedantmgoyal9/winget-releaser@main
+        with:
+          identifier: rhysd.actionlint
+          installers-regex: '_windows_\w+\.zip$'
+          release-notes-url: 'https://github.com/rhysd/actionlint/blob/main/CHANGELOG.md#${{ github.ref_name }}'
+          token: ${{ secrets.WINGET_TOKEN }}
+  docker:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v6
+      - name: Get tag name
+        id: tag
+        run: |
+          echo "name=${GITHUB_REF#refs/tags/v}" >> "$GITHUB_OUTPUT"
+      - name: Set up QEMU
+        uses: docker/setup-qemu-action@v3
+      - name: Set up Docker Buildx
+        id: buildx
+        uses: docker/setup-buildx-action@v3
+      - name: Login to DockerHub
+        uses: docker/login-action@v3
+        with:
+          username: rhysd
+          password: ${{ secrets.DOCKERHUB_TOKEN }}
+      - name: Build and push
+        uses: docker/build-push-action@v6
+        with:
+          platforms: linux/amd64,linux/arm64
+          build-args: |
+            GOLANG_VER=1.25
+            ACTIONLINT_VER=${{ steps.tag.outputs.name }}
+          push: true
+          tags: |
+            rhysd/actionlint:${{ steps.tag.outputs.name }}
+            rhysd/actionlint:latest

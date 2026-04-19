@@ -1,0 +1,8 @@
+on: push
+
+jobs:
+  test:
+    runs-on: ubuntu-latest
+    steps:
+      # actionlint checks an action when it is actually used in a workflow
+      - uses: ./.github/actions/my-invalid-action

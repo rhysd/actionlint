@@ -1,0 +1,4 @@
+/workflows/test\.yaml:5:11: error while parsing reusable workflow "\./reusable/broken\.yaml": yaml: .+ \[workflow-call\]/
+workflows/test.yaml:7:11: error while parsing reusable workflow "./reusable/no_hook.yaml": "workflow_call" event trigger is not found in "on:" at line:1, column:5 [workflow-call]
+workflows/test.yaml:9:11: error while parsing reusable workflow "./reusable/no_on.yaml": "on:" is not found [workflow-call]
+/workflows/test\.yaml:15:11: error while parsing reusable workflow "\./reusable/broken_secrets\.yaml": yaml: .+ \[workflow-call\]/

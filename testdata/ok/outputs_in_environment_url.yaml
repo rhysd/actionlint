@@ -1,0 +1,11 @@
+on: push
+
+jobs:
+  test:
+    runs-on: ubuntu-latest
+    environment:
+      name: staging
+      url: https://example.com/${{ steps.test.outputs.path }}
+    steps:
+      - run: echo "test=hello" >> "$GITHUB_OUTPUT"
+        id: test

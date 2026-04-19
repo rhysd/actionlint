@@ -1,0 +1,17 @@
+on:
+  workflow_call:
+    inputs:
+      str_input:
+        type: string
+      bool_input:
+        type: boolean
+      num_input:
+        type: number
+      broken_input:
+        description: type is missing
+
+jobs:
+  test:
+    runs-on: ubuntu-latest
+    steps:
+      - run: 'bye'

@@ -1,0 +1,14 @@
+name: 'Docker action'
+author: 'rhysd <https://rhysd.github.io>'
+description: 'Incorrect Docker action'
+
+runs:
+  using: 'docker'
+  image: 'docker://debian:stretch-slim'
+  main: index.js
+  pre: pre.js
+  pre-if: true
+  post: post.js
+  post-if: true
+  steps:
+    - run: echo hello

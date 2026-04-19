@@ -1,0 +1,8 @@
+name: 'Composite action'
+author: 'rhysd <https://rhysd.github.io>'
+description: 'Correct composite action'
+
+runs:
+  using: 'composite'
+  steps:
+    - run: echo hello

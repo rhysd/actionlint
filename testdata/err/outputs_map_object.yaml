@@ -1,0 +1,9 @@
+on: push
+jobs:
+  test:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: ./foo/bar
+        id: foo
+      # Check if the 'outputs' object is typed as {string => string}
+      - run: echo ${{ steps.foo.outputs }}

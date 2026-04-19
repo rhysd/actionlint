@@ -1,0 +1,12 @@
+on: push
+jobs:
+  test:
+    runs-on: ubuntu-latest
+    # ERROR: Typo of `defaults:`
+    default:
+      run:
+        working-directory: /path/to/dir
+    steps:
+      - run: echo hello
+        # ERROR: `shell:` must be in lower case
+        Shell: bash
