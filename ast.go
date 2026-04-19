@@ -789,6 +789,12 @@ type Container struct {
 	// Options is options string to run the container.
 	// https://docs.github.com/en/actions/learn-github-actions/workflow-syntax-for-github-actions#jobsjob_idcontaineroptions
 	Options *String
+	// Command overrides Docker image's default command for service containers.
+	// https://docs.github.com/en/actions/learn-github-actions/workflow-syntax-for-github-actions#jobsjob_idservicesservice_idcommand
+	Command *String
+	// Entrypoint overrides Docker image's default entrypoint for service containers.
+	// https://docs.github.com/en/actions/learn-github-actions/workflow-syntax-for-github-actions#jobsjob_idservicesservice_identrypoint
+	Entrypoint *String
 	// Pos is a position in source.
 	Pos *Pos
 }

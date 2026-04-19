@@ -110,3 +110,11 @@ jobs:
           password: p@ssw0rd1234
     steps:
       - run: echo password should not be put in workflow
+  case15:
+    runs-on: ubuntu-latest
+    container:
+      image: ubuntu:latest
+      entrypoint: bash
+      command: -lc 'echo hello'
+    steps:
+      - run: echo service-only keys must stay invalid for container

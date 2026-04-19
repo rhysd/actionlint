@@ -19,3 +19,5 @@ test.yaml:81:19: "password" section in "container" section should be specified v
 test.yaml:87:7: "image" is missing in "services" section [syntax-check]
 test.yaml:97:9: both "username" and "password" must be specified in "credentials" section [syntax-check]
 test.yaml:110:21: "password" section in "redis" service should be specified via secrets. do not put password value directly [credentials]
+test.yaml:117:7: unexpected key "entrypoint" for "container" section. expected one of "credentials", "env", "image", "options", "ports", "volumes" [syntax-check]
+test.yaml:118:7: unexpected key "command" for "container" section. expected one of "credentials", "env", "image", "options", "ports", "volumes" [syntax-check]
