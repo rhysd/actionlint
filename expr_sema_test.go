@@ -22,9 +22,9 @@ func TestExprSemanticsCheckOK(t *testing.T) {
 		secrets       *ObjectType
 		jobs          *ObjectType
 		availContexts []string
-		availSPFuncs   []string
-		configVars     []string
-		configSecrets  []string
+		availSPFuncs  []string
+		configVars    []string
+		configSecrets []string
 	}{
 		{
 			what:     "null",
@@ -856,13 +856,13 @@ func TestExprSemanticsCheckOK(t *testing.T) {
 
 func TestExprSemanticsCheckError(t *testing.T) {
 	testCases := []struct {
-		what       string
-		input      string
-		expected   []string
-		funcs      map[string][]*FuncSignature
-		matrix     *ObjectType
-		steps      *ObjectType
-		needs      *ObjectType
+		what          string
+		input         string
+		expected      []string
+		funcs         map[string][]*FuncSignature
+		matrix        *ObjectType
+		steps         *ObjectType
+		needs         *ObjectType
 		availCtx      []string
 		availSP       []string
 		configVars    []string
