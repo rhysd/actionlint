@@ -63,7 +63,7 @@ func (rule *RuleIfCond) checkExpression(pos *Pos, input string) {
 	i := strings.TrimSpace(input)
 	l := NewExprLexer(i + "}}")
 	if e, err := NewExprParser().Parse(l); err == nil {
-		if NewExprSemanticsChecker(false, nil).IsConstant(e) {
+		if NewExprSemanticsChecker(false, nil, nil).IsConstant(e) {
 			rule.Errorf(pos, "constant expression %q in condition. remove the if: section", i)
 		}
 	}

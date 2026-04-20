@@ -24,6 +24,7 @@ func TestExprSemanticsCheckOK(t *testing.T) {
 		availContexts []string
 		availSPFuncs  []string
 		configVars    []string
+		configSecrets []string
 	}{
 		{
 			what:     "null",
@@ -665,6 +666,23 @@ func TestExprSemanticsCheckOK(t *testing.T) {
 			configVars: []string{"some_variable"},
 		},
 		{
+			what:     "secret",
+			input:    "secrets.MY_SECRET",
+			expected: StringType{},
+		},
+		{
+			what:          "known secret",
+			input:         "secrets.MY_SECRET",
+			expected:      StringType{},
+			configSecrets: []string{"MY_SECRET"},
+		},
+		{
+			what:          "secret name is case insensitive",
+			input:         "secrets.MY_SECRET",
+			expected:      StringType{},
+			configSecrets: []string{"my_secret"},
+		},
+		{
 			what:     "narrow type of && operator by assumed value (#384)",
 			input:    "('foo' && 10) || 20",
 			expected: NumberType{},
@@ -793,7 +811,7 @@ func TestExprSemanticsCheckOK(t *testing.T) {
 				t.Fatal("Parse error:", tc.input)
 			}
 
-			c := NewExprSemanticsChecker(false, nil)
+			c := NewExprSemanticsChecker(false, tc.configVars, tc.configSecrets)
 			c.SetContextAvailability([]string{"github", "job", "jobs", "matrix", "steps", "needs", "env", "inputs", "secrets", "vars", "runner"})
 			if tc.funcs != nil {
 				c.funcs = tc.funcs
@@ -838,16 +856,17 @@ func TestExprSemanticsCheckOK(t *testing.T) {
 
 func TestExprSemanticsCheckError(t *testing.T) {
 	testCases := []struct {
-		what       string
-		input      string
-		expected   []string
-		funcs      map[string][]*FuncSignature
-		matrix     *ObjectType
-		steps      *ObjectType
-		needs      *ObjectType
-		availCtx   []string
-		availSP    []string
-		configVars []string
+		what          string
+		input         string
+		expected      []string
+		funcs         map[string][]*FuncSignature
+		matrix        *ObjectType
+		steps         *ObjectType
+		needs         *ObjectType
+		availCtx      []string
+		availSP       []string
+		configVars    []string
+		configSecrets []string
 	}{
 		{
 			what:  "undefined variable",
@@ -1314,6 +1333,22 @@ func TestExprSemanticsCheckError(t *testing.T) {
 			},
 		},
 		{
+			what:  "no secret is allowed",
+			input: "secrets.UNKNOWN_SECRET",
+			expected: []string{
+				"no secret is allowed since the secrets list is empty",
+			},
+			configSecrets: []string{},
+		},
+		{
+			what:  "unknown secret",
+			input: "secrets.UNKNOWN_SECRET",
+			expected: []string{
+				"undefined secret \"unknown_secret\".",
+			},
+			configSecrets: []string{"MY_SECRET"},
+		},
+		{
 			what:  "broken JSON value at fromJSON argument",
 			input: `fromJSON('{"foo": true')`,
 			expected: []string{
@@ -1352,7 +1387,7 @@ func TestExprSemanticsCheckError(t *testing.T) {
 				t.Fatal("Parse error:", tc.input)
 			}
 
-			c := NewExprSemanticsChecker(false, tc.configVars)
+			c := NewExprSemanticsChecker(false, tc.configVars, tc.configSecrets)
 			if tc.funcs != nil {
 				c.funcs = tc.funcs // Set functions for testing
 			}
@@ -1552,7 +1587,7 @@ func TestExprCompareOperandsCheck(t *testing.T) {
 						t.Fatal("Parse error:", input)
 					}
 
-					c := NewExprSemanticsChecker(false, nil)
+					c := NewExprSemanticsChecker(false, nil, nil)
 					c.vars = map[string]ExprType{
 						"number": NumberType{},
 						"string": StringType{},
@@ -1640,7 +1675,7 @@ func TestExprBuiltinFunctionSignatures(t *testing.T) {
 }
 
 func TestExprSemanticsCheckerUpdateMatrix(t *testing.T) {
-	c := NewExprSemanticsChecker(false, nil)
+	c := NewExprSemanticsChecker(false, nil, nil)
 	ty := NewEmptyObjectType()
 	prev := c.vars["matrix"]
 	c.UpdateMatrix(ty)
@@ -1655,7 +1690,7 @@ func TestExprSemanticsCheckerUpdateMatrix(t *testing.T) {
 }
 
 func TestExprSemanticsCheckerUpdateSteps(t *testing.T) {
-	c := NewExprSemanticsChecker(false, nil)
+	c := NewExprSemanticsChecker(false, nil, nil)
 	ty := NewEmptyObjectType()
 	prev := c.vars["steps"]
 	c.UpdateSteps(ty)
@@ -1671,7 +1706,7 @@ func TestExprSemanticsCheckerUpdateSteps(t *testing.T) {
 
 func TestExprSematincsCheckerUpdateDispatchInputsVarType(t *testing.T) {
 	ty := NewStrictObjectType(map[string]ExprType{"foo": NullType{}})
-	c := NewExprSemanticsChecker(false, nil)
+	c := NewExprSemanticsChecker(false, nil, nil)
 	c.UpdateDispatchInputs(ty)
 	o := c.vars["github"].(*ObjectType).Props["event"].(*ObjectType).Props["inputs"].(*ObjectType)
 	if _, ok := o.Props["foo"]; !ok {
@@ -1738,7 +1773,7 @@ func TestExprSemanticsCheckerUpdateInputsMultipleTimes(t *testing.T) {
 	for _, tc := range tests {
 		name := fmt.Sprintf("%v then %v", tc.first, tc.second)
 		t.Run(name, func(t *testing.T) {
-			c := NewExprSemanticsChecker(false, nil)
+			c := NewExprSemanticsChecker(false, nil, nil)
 			c.UpdateInputs(tc.first)
 			c.UpdateDispatchInputs(tc.second)
 			have := c.vars["inputs"]
@@ -2012,7 +2047,7 @@ func TestExprIsConstant(t *testing.T) {
 				t.Fatalf("Parse error for input %q: %s", tc.input, err)
 			}
 
-			c := NewExprSemanticsChecker(false, nil)
+			c := NewExprSemanticsChecker(false, nil, nil)
 			b := c.IsConstant(e)
 			if b != tc.isConst {
 				t.Fatalf("wanted %v but got %v for input %q", tc.isConst, b, tc.input)

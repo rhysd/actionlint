@@ -1,0 +1,14 @@
+on: push
+
+jobs:
+  test:
+    runs-on: ubuntu-latest
+    steps:
+      # These are listed
+      - run: echo '${{ secrets.MY_SECRET }}'
+      - run: echo '${{ secrets.API_KEY }}'
+      # Name is case-insensitive
+      - run: echo '${{ secrets.my_secret }}'
+      - run: echo '${{ secrets.My_Secret }}'
+      # ERROR: Undefined secret
+      - run: echo '${{ secrets.PIYO }}'

@@ -374,17 +374,19 @@ type ExprSemanticsChecker struct {
 	availableContexts     []string
 	availableSpecialFuncs []string
 	configVars            []string
+	configSecrets         []string
 }
 
 // NewExprSemanticsChecker creates new ExprSemanticsChecker instance. When checkUntrustedInput is
 // set to true, the checker will make use of possibly untrusted inputs error.
-func NewExprSemanticsChecker(checkUntrustedInput bool, configVars []string) *ExprSemanticsChecker {
+func NewExprSemanticsChecker(checkUntrustedInput bool, configVars []string, configSecrets []string) *ExprSemanticsChecker {
 	c := &ExprSemanticsChecker{
 		funcs:           BuiltinFuncSignatures,
 		vars:            BuiltinGlobalVariableTypes,
 		varsCopied:      false,
 		githubVarCopied: false,
 		configVars:      configVars,
+		configSecrets:   configSecrets,
 	}
 	if checkUntrustedInput {
 		c.untrusted = NewUntrustedInputChecker(BuiltinUntrustedInputs)
@@ -622,6 +624,9 @@ func (sema *ExprSemanticsChecker) checkObjectDeref(n *ObjectDerefNode) ExprType 
 			if v, ok := n.Receiver.(*VariableNode); ok && v.Name == "vars" {
 				sema.checkConfigVariables(n)
 			}
+			if v, ok := n.Receiver.(*VariableNode); ok && v.Name == "secrets" {
+				sema.checkConfigSecrets(n)
+			}
 			return ty.Mapped
 		}
 		if ty.IsStrict() {
@@ -710,6 +715,33 @@ func (sema *ExprSemanticsChecker) checkConfigVariables(n *ObjectDerefNode) {
 		"undefined configuration variable %q. defined configuration variables in actionlint.yaml are %s",
 		n.Property,
 		sortedQuotes(sema.configVars),
+	)
+}
+
+func (sema *ExprSemanticsChecker) checkConfigSecrets(n *ObjectDerefNode) {
+	if sema.configSecrets == nil {
+		return
+	}
+	if len(sema.configSecrets) == 0 {
+		sema.errorf(
+			n,
+			"no secret is allowed since the secrets list is empty in actionlint.yaml. you may forget adding the secret %q to the list",
+			n.Property,
+		)
+		return
+	}
+
+	for _, s := range sema.configSecrets {
+		if strings.EqualFold(s, n.Property) {
+			return
+		}
+	}
+
+	sema.errorf(
+		n,
+		"undefined secret %q. defined secrets in actionlint.yaml are %s",
+		n.Property,
+		sortedQuotes(sema.configSecrets),
 	)
 }
 
