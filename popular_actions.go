@@ -847,7 +847,8 @@ var PopularActions = map[string]*ActionMetadata{
 	"actions/create-github-app-token@v3": {
 		Name: "Create GitHub App Token",
 		Inputs: ActionMetadataInputs{
-			"app-id":                    {"app-id", true, false, ""},
+			"app-id":                    {"app-id", false, true, "Use 'client-id' instead."},
+			"client-id":                 {"client-id", false, false, ""},
 			"github-api-url":            {"github-api-url", false, false, ""},
 			"owner":                     {"owner", false, false, ""},
 			"permission-actions":        {"permission-actions", false, false, ""},
