@@ -12,6 +12,8 @@ RUN go build -v -ldflags "-s -w -X github.com/rhysd/actionlint.version=${ACTIONL
 FROM koalaman/shellcheck-alpine:stable AS shellcheck
 
 FROM alpine:${ALPINE_VER}
+LABEL org.opencontainers.image.source="https://github.com/rhysd/actionlint"
+LABEL org.opencontainers.image.licenses="MIT"
 COPY --from=builder /go/src/app/actionlint /usr/local/bin/
 COPY --from=shellcheck /bin/shellcheck /usr/local/bin/shellcheck
 RUN apk add --no-cache py3-pyflakes
