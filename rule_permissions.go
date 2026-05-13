@@ -7,6 +7,7 @@ var allPermissionScopes = map[string][]string{
 	"artifact-metadata":   {"read", "write", "none"},
 	"attestations":        {"read", "write", "none"},
 	"checks":              {"read", "write", "none"},
+	"code-quality":        {"read", "write", "none"},
 	"contents":            {"read", "write", "none"},
 	"deployments":         {"read", "write", "none"},
 	"discussions":         {"read", "write", "none"},
