@@ -1,0 +1,2 @@
+test.yaml:13:18: array value ["8.2"] in "include" is not allowed; use a scalar value for matrix key "php" [matrix]
+test.yaml:15:17: array value ["macos-latest"] in "exclude" is not allowed; use a scalar value for matrix key "os" [matrix]

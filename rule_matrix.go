@@ -39,8 +39,64 @@ func (rule *RuleMatrix) VisitJobPre(n *Job) error {
 	//     - os: windows-latest
 	//       sh: pwsh
 
+	rule.checkIncludeExcludeValueTypes(m)
 	rule.checkExclude(m)
 	return nil
+}
+
+func valuesUseArrayElements(vals []RawYAMLValue) bool {
+	for _, v := range vals {
+		if _, ok := v.(*RawYAMLArray); ok {
+			return true
+		}
+	}
+	return false
+}
+
+func matrixRowUsesArrayElements(row *MatrixRow) bool {
+	if row == nil || row.Expression != nil {
+		return false
+	}
+	return valuesUseArrayElements(row.Values)
+}
+
+func (rule *RuleMatrix) checkIncludeExcludeValueTypes(m *Matrix) {
+	rows := make(map[string]*MatrixRow, len(m.Rows))
+	for n, r := range m.Rows {
+		if r.Expression == nil {
+			rows[n] = r
+		}
+	}
+
+	check := func(section string, combos *MatrixCombinations) {
+		if combos == nil || combos.ContainsExpression() {
+			return
+		}
+		for _, c := range combos.Combinations {
+			if c.Expression != nil {
+				continue
+			}
+			for k, a := range c.Assigns {
+				if _, ok := a.Value.(*RawYAMLArray); !ok {
+					continue
+				}
+				row, ok := rows[k]
+				if !ok || matrixRowUsesArrayElements(row) {
+					continue
+				}
+				rule.Errorf(
+					a.Value.Pos(),
+					"array value %s in %q is not allowed; use a scalar value for matrix key %q",
+					a.Value.String(),
+					section,
+					k,
+				)
+			}
+		}
+	}
+
+	check("include", m.Include)
+	check("exclude", m.Exclude)
 }
 
 func (rule *RuleMatrix) checkDuplicateInRow(row *MatrixRow) {
@@ -155,24 +211,6 @@ func (rule *RuleMatrix) checkExclude(m *Matrix) {
 		rows[n] = r.Values
 	}
 
-	if m.Include != nil {
-		for _, c := range m.Include.Combinations {
-		Include:
-			for n, a := range c.Assigns {
-				if _, ok := ignored[n]; ok {
-					continue
-				}
-				row := rows[n]
-				for _, v := range row {
-					if v.Equals(a.Value) {
-						continue Include
-					}
-				}
-				rows[n] = append(row, a.Value)
-			}
-		}
-	}
-
 	for _, c := range m.Exclude.Combinations {
 	Exclude:
 		for k, a := range c.Assigns {
@@ -191,6 +229,10 @@ func (rule *RuleMatrix) checkExclude(m *Matrix) {
 					k,
 					sortedQuotes(ss),
 				)
+				continue
+			}
+
+			if _, isArray := a.Value.(*RawYAMLArray); isArray && !valuesUseArrayElements(row) {
 				continue
 			}
 
