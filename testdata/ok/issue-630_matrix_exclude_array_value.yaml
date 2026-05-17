@@ -1,0 +1,15 @@
+# array matrix element in exclude is valid when matrix dimension uses arrays
+on: push
+
+jobs:
+  test:
+    runs-on: ubuntu-latest
+    strategy:
+      matrix:
+        os:
+          - [ubuntu, latest]
+          - [macos, latest]
+        exclude:
+          - os: [ubuntu, latest]
+    steps:
+      - run: echo ok
