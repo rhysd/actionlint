@@ -1267,7 +1267,8 @@ test.yaml:12:13: "platform" in "exclude" section does not exist in matrix. avail
 [`matrix:`][matrix-doc] defines combinations of multiple values. Nested `include:` and `exclude:` can add/remove specific
 combination of matrix values. actionlint checks
 
-- values in `exclude:` appear in `matrix:` or `include:`
+- values in `exclude:` appear in `matrix:` (not `include:`; include is applied after exclude)
+- scalar values in `include:` and `exclude:` (YAML sequences are not allowed when the matrix dimension uses scalar values)
 - duplicate variations of matrix values
 
 <a id="check-webhook-events"></a>
@@ -1911,6 +1912,9 @@ supported by GitHub Actions runtime. For example, `node12` is no longer availabl
 Note that this check doesn't report that the action version is up-to-date. For example, even if you use `actions/checkout@v4` and
 newer version `actions/checkout@v5` is available, actionlint reports no error as long as `actions/checkout@v4` is not outdated.
 If you want to keep actions used by your workflows up-to-date, consider to use [Dependabot][dependabot-doc].
+
+When a popular action is pinned by commit SHA (for example `actions/cache@2b250bc...`), actionlint fetches the action metadata at
+that commit and reports the same error if the action uses a deprecated Node.js runner.
 
 <a id="check-shell-names"></a>
 ## Shell name validation at `shell:`

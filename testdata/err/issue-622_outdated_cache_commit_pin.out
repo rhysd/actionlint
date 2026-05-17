@@ -1,0 +1,1 @@
+test.yaml:8:15: the runner of "actions/cache@2b250bc32ad02700b996b496c14ac8c2840a2991" action is too old to run on GitHub Actions. update the action's version to fix this issue [action]

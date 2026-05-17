@@ -1,0 +1,8 @@
+# https://github.com/rhysd/actionlint/issues/622
+on: push
+
+jobs:
+  test:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/cache@2b250bc32ad02700b996b496c14ac8c2840a2991 # v2.1.8

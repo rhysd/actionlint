@@ -364,8 +364,10 @@ func (rule *RuleAction) checkRepoAction(spec string, exec *ExecAction) {
 	s = s[idx+1:] // eat {owner}
 
 	repo := s
+	actionPath := ""
 	if idx := strings.IndexRune(s, '/'); idx >= 0 {
 		repo = s[:idx]
+		actionPath = s[idx:]
 	}
 
 	if owner == "" || repo == "" || ref == "" {
@@ -377,6 +379,18 @@ func (rule *RuleAction) checkRepoAction(spec string, exec *ExecAction) {
 		if _, ok := OutdatedPopularActionSpecs[spec]; ok {
 			rule.Errorf(exec.Uses.Pos, "the runner of %q action is too old to run on GitHub Actions. update the action's version to fix this issue", spec)
 			return
+		}
+		if isGitCommitRef(ref) {
+			slug := popularActionSlug(owner, repo, actionPath)
+			if popularActionHasOutdatedRelease(slug) {
+				remote, err := fetchRemoteActionMetadata(owner, repo, actionPath, ref)
+				if err != nil {
+					rule.Debug("could not fetch action metadata for %q at commit %q: %s", slug, ref, err)
+				} else if remote != nil && actionUsesOutdatedNodeRunner(remote.Runs.Using) {
+					rule.Errorf(exec.Uses.Pos, "the runner of %q action is too old to run on GitHub Actions. update the action's version to fix this issue", spec)
+					return
+				}
+			}
 		}
 		rule.Debug("This action is not found in popular actions data set: %s", spec)
 		return
