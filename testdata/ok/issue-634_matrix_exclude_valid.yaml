@@ -1,0 +1,17 @@
+# exclude values from matrix only; include is not merged into exclude validation
+on: push
+
+jobs:
+  test:
+    runs-on: ubuntu-latest
+    strategy:
+      matrix:
+        os: [ubuntu-latest, macos-latest]
+        php: [3, 4]
+        exclude:
+          - os: macos-latest
+            php: 4
+        include:
+          - php: 2
+    steps:
+      - run: echo ok

@@ -155,24 +155,6 @@ func (rule *RuleMatrix) checkExclude(m *Matrix) {
 		rows[n] = r.Values
 	}
 
-	if m.Include != nil {
-		for _, c := range m.Include.Combinations {
-		Include:
-			for n, a := range c.Assigns {
-				if _, ok := ignored[n]; ok {
-					continue
-				}
-				row := rows[n]
-				for _, v := range row {
-					if v.Equals(a.Value) {
-						continue Include
-					}
-				}
-				rows[n] = append(row, a.Value)
-			}
-		}
-	}
-
 	for _, c := range m.Exclude.Combinations {
 	Exclude:
 		for k, a := range c.Assigns {

@@ -1,0 +1,18 @@
+# https://github.com/rhysd/actionlint/issues/634
+on: push
+
+jobs:
+  test:
+    runs-on: ubuntu-slim
+    strategy:
+      matrix:
+        os: [ubuntu-latest]
+        php: [3, 4]
+        exclude:
+          - os: ubuntu-latest
+            php: 5
+        include:
+          - os: macos-latest
+            php: 2
+    steps:
+      - run: echo ok

@@ -1,0 +1,17 @@
+# exclude must not reference values only defined in include
+on: push
+
+jobs:
+  test:
+    runs-on: ubuntu-latest
+    strategy:
+      matrix:
+        os: [ubuntu-latest]
+        php: [3, 4]
+        exclude:
+          - os: macos-latest
+        include:
+          - os: macos-latest
+            php: 2
+    steps:
+      - run: echo ok

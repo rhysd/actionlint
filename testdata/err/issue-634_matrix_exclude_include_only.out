@@ -1,0 +1,1 @@
+test.yaml:12:17: value "macos-latest" in "exclude" does not match in matrix "os" combinations. possible values are "ubuntu-latest" [matrix]

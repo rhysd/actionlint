@@ -1267,7 +1267,7 @@ test.yaml:12:13: "platform" in "exclude" section does not exist in matrix. avail
 [`matrix:`][matrix-doc] defines combinations of multiple values. Nested `include:` and `exclude:` can add/remove specific
 combination of matrix values. actionlint checks
 
-- values in `exclude:` appear in `matrix:` or `include:`
+- values in `exclude:` appear in `matrix:` (not `include:`; include is applied after exclude)
 - duplicate variations of matrix values
 
 <a id="check-webhook-events"></a>
