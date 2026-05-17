@@ -1,0 +1,14 @@
+# GHES may ship actions/upload-artifact@v3 and actions/download-artifact@v3 without v3-node20 (#509).
+on: push
+
+jobs:
+  test:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/download-artifact@v3
+        with:
+          name: my-artifact
+      - uses: actions/upload-artifact@v3
+        with:
+          name: my-artifact
+          path: .
