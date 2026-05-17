@@ -820,8 +820,10 @@ func (p *parser) parseConcurrency(pos *Pos, n *yaml.Node) *Concurrency {
 			ret.Group = p.parseString(e.val, false)
 		case "cancel-in-progress":
 			ret.CancelInProgress = p.parseBool(e.val)
+		case "queue":
+			ret.Queue = p.parseBool(e.val)
 		default:
-			p.unexpectedKey(e.key, "concurrency", []string{"group", "cancel-in-progress"})
+			p.unexpectedKey(e.key, "concurrency", []string{"group", "cancel-in-progress", "queue"})
 		}
 	}
 	if ret.Group == nil {
