@@ -5,6 +5,7 @@ permissions:
   unknown: bar
   id-token: read
   models: write
+  vulnerability-alerts: write
   pages: READ
   CHECKS: none
 
@@ -16,6 +17,7 @@ jobs:
       unknown: bar
       id-token: read
       models: write
+      vulnerability-alerts: write
       pages: READ
       CHECKS: none
     steps:
