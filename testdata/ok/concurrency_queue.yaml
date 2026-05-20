@@ -1,0 +1,22 @@
+on: push
+
+concurrency:
+  group: deploy-queue
+  queue: max
+
+jobs:
+  test:
+    runs-on: ubuntu-latest
+    concurrency:
+      group: job-queue
+      cancel-in-progress: false
+      queue: max
+    steps:
+      - run: echo "deploy"
+  test2:
+    runs-on: ubuntu-latest
+    concurrency:
+      group: job-single
+      queue: single
+    steps:
+      - run: echo "single"

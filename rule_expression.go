@@ -511,6 +511,7 @@ func (rule *RuleExpression) checkConcurrency(c *Concurrency, workflowKey string)
 	}
 	rule.checkString(c.Group, workflowKey)
 	rule.checkBool(c.CancelInProgress, workflowKey)
+	rule.checkString(c.Queue, workflowKey)
 }
 
 func (rule *RuleExpression) checkDefaults(d *Defaults, workflowKey string) {
