@@ -448,9 +448,20 @@ func TestRuleWorkflowCallCheckPermissions(t *testing.T) {
 			wantErr:    `requires "pull-requests: write" but the calling job grants "pull-requests: none"`,
 		},
 		{
-			what:       "caller silent, default permissive",
+			what:       "caller silent, default permissive grants pull-requests",
 			calleePerm: scopes("pull-requests", "write"),
 			cfgMode:    AssumeDefaultPermissionsPermissive,
+		},
+		{
+			what:       "caller silent, default permissive still denies id-token",
+			calleePerm: scopes("id-token", "write"),
+			cfgMode:    AssumeDefaultPermissionsPermissive,
+			wantErr:    `requires "id-token: write" but the calling job grants "id-token: none"`,
+		},
+		{
+			what:       "caller silent, default restricted denies id-token",
+			calleePerm: scopes("id-token", "write"),
+			wantErr:    `requires "id-token: write" but the calling job grants "id-token: none"`,
 		},
 		{
 			what:       "caller declares empty, callee requires contents:read",
@@ -489,10 +500,33 @@ func TestRuleWorkflowCallCheckPermissions(t *testing.T) {
 			wantErr:    `requires "packages: write" but the calling job grants "packages: read"`,
 		},
 		{
-			what:       "callee gated on if still flagged",
+			// `if:` on the calling job does not affect the check — GitHub validates
+			// permissions before runtime conditions are evaluated.
+			what:       "caller if: does not suppress the check",
 			calleePerm: scopes("pull-requests", "write"),
 			ifCond:     "github.event_name == 'pull_request'",
 			wantErr:    `requires "pull-requests: write" but the calling job grants "pull-requests: none"`,
+		},
+		{
+			what:       "callee write-all flagged when caller missing scopes",
+			callerJob:  scopes("contents", "write"),
+			calleePerm: all("write-all"),
+			wantErr:    `requires "pull-requests: write" but the calling job grants "pull-requests: none"`,
+		},
+		{
+			// id-token: read is invalid per GitHub; clamping should drop it to none,
+			// so a silent caller is not flagged.
+			what:       "callee id-token:read clamps to none and is ignored",
+			calleePerm: scopes("id-token", "read"),
+		},
+		{
+			what:       "callee declares unknown scope is ignored",
+			calleePerm: scopes("not-a-scope", "write"),
+		},
+		{
+			what:       "caller workflow-level grants required, callee write-all",
+			callerWf:   all("write-all"),
+			calleePerm: all("write-all"),
 		},
 	}
 

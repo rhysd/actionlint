@@ -274,12 +274,19 @@ func (c *LocalReusableWorkflowCache) convWorkflowPathToSpec(p string) (string, b
 
 // WriteWorkflowCallEvent writes reusable workflow metadata by converting from WorkflowCallEvent AST
 // node. The 'wpath' parameter is a path to the workflow file of the AST, which is a relative to the
-// project root directory or an absolute path. The 'w' parameter is the full workflow node, used to
-// populate per-job effective `permissions:` requirements; pass nil to skip populating them.
+// project root directory or an absolute path.
 // This method does nothing when (1) no project is set, (2) it could not convert the workflow path
 // to workflow call spec, (3) some cache for the workflow is already existing.
 // This method is thread safe.
-func (c *LocalReusableWorkflowCache) WriteWorkflowCallEvent(wpath string, event *WorkflowCallEvent, w *Workflow) {
+func (c *LocalReusableWorkflowCache) WriteWorkflowCallEvent(wpath string, event *WorkflowCallEvent) {
+	c.WriteWorkflowCallEventFromWorkflow(wpath, event, nil)
+}
+
+// WriteWorkflowCallEventFromWorkflow is like WriteWorkflowCallEvent but additionally records each
+// job's effective `permissions:` requirement from the full Workflow AST. Passing a non-nil 'w'
+// enables caller/callee permission checks downstream. Same do-nothing conditions and thread-safety
+// guarantees as WriteWorkflowCallEvent apply.
+func (c *LocalReusableWorkflowCache) WriteWorkflowCallEventFromWorkflow(wpath string, event *WorkflowCallEvent, w *Workflow) {
 	// Convert workflow path to workflow call spec
 	spec, ok := c.convWorkflowPathToSpec(wpath)
 	if !ok {
@@ -338,6 +345,8 @@ func (c *LocalReusableWorkflowCache) WriteWorkflowCallEvent(wpath string, event 
 			if j == nil {
 				continue
 			}
+			// j.ID preserves the user's original casing; the map key is lowercased by the AST.
+			// parseReusableWorkflowMetadata uses the raw YAML key for the same reason.
 			name := id
 			if j.ID != nil {
 				name = j.ID.Value
@@ -472,7 +481,7 @@ func convertASTPermissions(p *Permissions) *ReusableWorkflowPermissions {
 // decodePermissionsNode parses a `permissions:` yaml node into a *ReusableWorkflowPermissions.
 // Returns nil when the node is absent or null (meaning "not declared").
 func decodePermissionsNode(n *yaml.Node) (*ReusableWorkflowPermissions, error) {
-	if n == nil || (n.Line == 0 && n.Column == 0) {
+	if n == nil || n.Kind == 0 {
 		return nil, nil
 	}
 	switch n.Kind {

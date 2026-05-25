@@ -647,7 +647,7 @@ func TestReusableWorkflowMetadataFromASTNodeInputs(t *testing.T) {
 				e.Inputs = append(e.Inputs, i)
 			}
 
-			c.WriteWorkflowCallEvent(filepath.Join("foo", "test.yaml"), e, nil)
+			c.WriteWorkflowCallEvent(filepath.Join("foo", "test.yaml"), e)
 
 			m, ok := c.readCache("./foo/test.yaml")
 			if !ok {
@@ -686,7 +686,7 @@ func TestReusableWorkflowMetadataFromASTNodeOutputs(t *testing.T) {
 				}
 			}
 
-			c.WriteWorkflowCallEvent(filepath.Join("foo", "test.yaml"), e, nil)
+			c.WriteWorkflowCallEvent(filepath.Join("foo", "test.yaml"), e)
 
 			m, ok := c.readCache("./foo/test.yaml")
 			if !ok {
@@ -742,7 +742,7 @@ func TestReusableWorkflowMetadataFromASTNodeSecrets(t *testing.T) {
 				}
 			}
 
-			c.WriteWorkflowCallEvent(filepath.Join("foo", "test.yaml"), e, nil)
+			c.WriteWorkflowCallEvent(filepath.Join("foo", "test.yaml"), e)
 
 			m, ok := c.readCache("./foo/test.yaml")
 			if !ok {
@@ -773,7 +773,7 @@ func TestReusableWorkflowMetadataFromASTNodeSecrets(t *testing.T) {
 func TestReusableWorkflowMetadataFromASTNodeDoNothing(t *testing.T) {
 	cwd := filepath.Join("path", "to", "project")
 	c := NewLocalReusableWorkflowCache(nil, cwd, nil)
-	c.WriteWorkflowCallEvent("workflow.yaml", &WorkflowCallEvent{}, nil)
+	c.WriteWorkflowCallEvent("workflow.yaml", &WorkflowCallEvent{})
 	m, ok := c.readCache("./workflow.yaml")
 	if ok {
 		t.Fatal("Metadata created:", m)
@@ -781,7 +781,7 @@ func TestReusableWorkflowMetadataFromASTNodeDoNothing(t *testing.T) {
 
 	proj := &Project{cwd, nil}
 	c = NewLocalReusableWorkflowCache(proj, filepath.Join("path", "to", "another-project"), nil)
-	c.WriteWorkflowCallEvent("workflow.yaml", &WorkflowCallEvent{}, nil)
+	c.WriteWorkflowCallEvent("workflow.yaml", &WorkflowCallEvent{})
 	m, ok = c.readCache("./workflow.yaml")
 	if ok {
 		t.Fatal("Metadata created:", m)
@@ -790,7 +790,7 @@ func TestReusableWorkflowMetadataFromASTNodeDoNothing(t *testing.T) {
 	m1 := &ReusableWorkflowMetadata{}
 	c = NewLocalReusableWorkflowCache(proj, cwd, nil)
 	c.writeCache("./dir/workflow.yaml", m1)
-	c.WriteWorkflowCallEvent(filepath.Join("dir", "workflow.yaml"), &WorkflowCallEvent{}, nil)
+	c.WriteWorkflowCallEvent(filepath.Join("dir", "workflow.yaml"), &WorkflowCallEvent{})
 	m2, ok := c.readCache("./dir/workflow.yaml")
 	if !ok {
 		t.Fatal("Metadata was not created for ./dir/workflow.yaml")
@@ -868,7 +868,7 @@ func TestReusableWorkflowMetadataCacheWriteFromFileAndASTNodeConcurrently(t *tes
 		ret <- struct{}{}
 	}
 	fromNode := func() {
-		c.WriteWorkflowCallEvent("workflow.yaml", &WorkflowCallEvent{}, nil)
+		c.WriteWorkflowCallEvent("workflow.yaml", &WorkflowCallEvent{})
 		if _, ok := c.readCache("./workflow.yaml"); !ok {
 			err <- fmt.Errorf("Cache was not created from WorkflowCallEvent")
 			return
@@ -910,7 +910,7 @@ func TestReusableWorkflowNullCache(t *testing.T) {
 	e := &WorkflowCallEvent{Inputs: []*WorkflowCallEventInput{}}
 
 	// This should do nothing
-	c.WriteWorkflowCallEvent(filepath.Join("foo", "test.yaml"), e, nil)
+	c.WriteWorkflowCallEvent(filepath.Join("foo", "test.yaml"), e)
 
 	m, err := c.FindMetadata("./foo/test.yaml")
 	if m != nil {

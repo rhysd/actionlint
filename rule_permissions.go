@@ -13,15 +13,13 @@ const (
 )
 
 // permissionLevel returns the numeric level (0=none, 1=read, 2=write) for the given permission
-// value of the given scope. Unknown values fall back to none.
-func permissionLevel(scope, value string) int {
+// value. Unknown values fall back to none.
+func permissionLevel(value string) int {
 	switch strings.ToLower(value) {
 	case "write":
 		return permLevelWrite
 	case "read":
 		return permLevelRead
-	case "none", "":
-		return permLevelNone
 	}
 	return permLevelNone
 }
@@ -38,15 +36,11 @@ func permissionLevelName(level int) string {
 	}
 }
 
-// effectiveLevel returns the granted level for a scope under the given *ReusableWorkflowPermissions.
-// When p is nil, defaultLevel is returned (the caller hasn't declared anything).
-// When p declares "read-all"/"write-all", that wins (clamped by the scope's allowed levels).
-// Otherwise the per-scope mapping is consulted; a scope not present in an explicit map is "none"
-// per GitHub semantics (declaring permissions: opts every scope out unless listed).
-func effectiveLevel(p *ReusableWorkflowPermissions, scope string, defaultLevel int) int {
-	if p == nil {
-		return defaultLevel
-	}
+// effectiveLevel returns the granted level for a scope under an explicit (non-nil) caller
+// permissions block. "read-all"/"write-all" wins (clamped by the scope's allowed levels);
+// otherwise the per-scope mapping is consulted, and a scope not present is "none" per GitHub
+// semantics (declaring permissions: opts every scope out unless listed).
+func effectiveLevel(p *ReusableWorkflowPermissions, scope string) int {
 	if p.All != "" {
 		switch p.All {
 		case "write-all":
@@ -56,9 +50,29 @@ func effectiveLevel(p *ReusableWorkflowPermissions, scope string, defaultLevel i
 		}
 	}
 	if v, ok := p.Scopes[scope]; ok {
-		return clampLevelForScope(scope, permissionLevel(scope, v))
+		return clampLevelForScope(scope, permissionLevel(v))
 	}
 	// Explicit permissions block but this scope omitted → none.
+	return permLevelNone
+}
+
+// silentDefaultLevel returns the level GitHub grants for the given scope when the caller declares
+// no `permissions:` block at all (workflow- or job-level). Behavior depends on the configured
+// assumption: "restricted" matches GitHub's restricted default token (contents/packages: read,
+// everything else: none); "permissive" matches the permissive default (write on every scope) with
+// the exception of `id-token`, which always requires an explicit opt-in regardless of the
+// repo-level Workflow permissions setting.
+func silentDefaultLevel(mode, scope string) int {
+	if mode == AssumeDefaultPermissionsPermissive {
+		if scope == "id-token" {
+			return permLevelNone
+		}
+		return clampLevelForScope(scope, permLevelWrite)
+	}
+	switch scope {
+	case "contents", "packages":
+		return permLevelRead
+	}
 	return permLevelNone
 }
 

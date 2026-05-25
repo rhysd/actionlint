@@ -2645,7 +2645,8 @@ The check ignores `if:` on called jobs because GitHub evaluates permissions befo
 When the caller has no `permissions:` block at the workflow level and none on the calling job, actionlint assumes
 GitHub's restricted default token (only `contents: read` and `packages: read` are granted). This default can be
 overridden via the [`assume-default-permissions` configuration](./config.md); set it to `permissive` if your
-repository's "Workflow permissions" setting grants read + write to everything by default.
+repository's "Workflow permissions" setting grants read + write to everything by default. Even under `permissive`,
+`id-token` is still treated as `none` because OIDC tokens always require an explicit opt-in.
 
 Note that this check only works with local reusable workflows (starting with `./`).
 
