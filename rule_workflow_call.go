@@ -2,6 +2,7 @@ package actionlint
 
 import (
 	"fmt"
+	"sort"
 	"strings"
 )
 
@@ -11,6 +12,8 @@ type RuleWorkflowCall struct {
 	workflowCallEventPos *Pos
 	workflowPath         string
 	cache                *LocalReusableWorkflowCache
+	workflow             *Workflow
+	curJob               *Job
 }
 
 // NewRuleWorkflowCall creates a new RuleWorkflowCall instance. 'workflowPath' is a file path to
@@ -29,12 +32,13 @@ func NewRuleWorkflowCall(workflowPath string, cache *LocalReusableWorkflowCache)
 
 // VisitWorkflowPre is callback when visiting Workflow node before visiting its children.
 func (rule *RuleWorkflowCall) VisitWorkflowPre(n *Workflow) error {
+	rule.workflow = n
 	for _, e := range n.On {
 		if e, ok := e.(*WorkflowCallEvent); ok {
 			rule.workflowCallEventPos = e.Pos
 			// Register this reusable workflow in cache so that it does not need to parse this workflow
 			// file again when this workflow is called by other workflows.
-			rule.cache.WriteWorkflowCallEvent(rule.workflowPath, e)
+			rule.cache.WriteWorkflowCallEvent(rule.workflowPath, e, n)
 			break
 		}
 	}
@@ -43,6 +47,7 @@ func (rule *RuleWorkflowCall) VisitWorkflowPre(n *Workflow) error {
 
 // VisitJobPre is callback when visiting Job node before visiting its children.
 func (rule *RuleWorkflowCall) VisitJobPre(n *Job) error {
+	rule.curJob = n
 	if n.WorkflowCall == nil {
 		return nil
 	}
@@ -142,7 +147,121 @@ func (rule *RuleWorkflowCall) checkWorkflowCallUsesLocal(call *WorkflowCall) {
 		}
 	}
 
+	// Validate permissions
+	rule.checkWorkflowCallPermissions(call, m)
+
 	rule.Debug("Validated reusable workflow %q", u.Value)
+}
+
+// checkWorkflowCallPermissions compares each callee job's effective `permissions:` requirement
+// against the caller job's effective grant. Emits an error per missing scope. The check ignores
+// `if:` on callee jobs because GitHub validates permissions at workflow load time regardless of
+// the runtime gate.
+func (rule *RuleWorkflowCall) checkWorkflowCallPermissions(call *WorkflowCall, m *ReusableWorkflowMetadata) {
+	if len(m.JobPermissions) == 0 {
+		return
+	}
+
+	cfg := rule.Config()
+	mode := AssumeDefaultPermissionsRestricted
+	if cfg != nil && cfg.AssumeDefaultPermissions != nil {
+		mode = *cfg.AssumeDefaultPermissions
+	}
+
+	// Caller's effective permissions: job-level wins over workflow-level.
+	var callerPerm *ReusableWorkflowPermissions
+	callerSilent := false
+	if rule.curJob != nil && rule.curJob.Permissions != nil {
+		callerPerm = convertASTPermissions(rule.curJob.Permissions)
+	} else if rule.workflow != nil && rule.workflow.Permissions != nil {
+		callerPerm = convertASTPermissions(rule.workflow.Permissions)
+	} else {
+		callerSilent = true
+		if mode == AssumeDefaultPermissionsPermissive {
+			// Caller is silent and the configured assumption is permissive — skip the check
+			// entirely. GitHub's permissive default grants everything (except id-token, which
+			// always needs an explicit opt-in), so we have nothing to flag.
+			return
+		}
+	}
+
+	defaultLevel := func(scope string) int {
+		// Used for scopes a *non-nil* caller permission doesn't mention (treated as 'none' per GitHub),
+		// or — when the caller is fully silent and mode is restricted — the GitHub restricted default.
+		if !callerSilent {
+			return permLevelNone
+		}
+		// Restricted default: only contents and packages are granted at read.
+		// https://docs.github.com/en/repositories/managing-your-repositorys-settings-and-features/enabling-features-for-your-repository/managing-github-actions-settings-for-a-repository
+		switch scope {
+		case "contents", "packages":
+			return permLevelRead
+		}
+		return permLevelNone
+	}
+
+	// Iterate callee jobs in a stable order so error messages are deterministic.
+	ids := make([]string, 0, len(m.JobPermissions))
+	for id := range m.JobPermissions {
+		ids = append(ids, id)
+	}
+	sort.Strings(ids)
+
+	u := call.Uses
+	for _, id := range ids {
+		jp := m.JobPermissions[id]
+		if jp == nil {
+			continue
+		}
+		// Determine the set of scopes the callee actually requires (non-none).
+		required := map[string]int{}
+		if jp.All != "" {
+			level := permLevelNone
+			switch jp.All {
+			case "write-all":
+				level = permLevelWrite
+			case "read-all":
+				level = permLevelRead
+			}
+			if level > permLevelNone {
+				for scope := range allPermissionScopes {
+					l := clampLevelForScope(scope, level)
+					if l > permLevelNone {
+						required[scope] = l
+					}
+				}
+			}
+		} else {
+			for scope, val := range jp.Scopes {
+				if _, ok := allPermissionScopes[scope]; !ok {
+					continue
+				}
+				l := permissionLevel(scope, val)
+				if l > permLevelNone {
+					required[scope] = l
+				}
+			}
+		}
+
+		scopes := make([]string, 0, len(required))
+		for s := range required {
+			scopes = append(scopes, s)
+		}
+		sort.Strings(scopes)
+		for _, scope := range scopes {
+			want := required[scope]
+			have := effectiveLevel(callerPerm, scope, defaultLevel(scope))
+			if have < want {
+				rule.Errorf(
+					u.Pos,
+					"nested job %q of %q requires %q but the calling job grants %q",
+					id, u.Value,
+					scope+": "+permissionLevelName(want),
+					scope+": "+permissionLevelName(have),
+				)
+			}
+		}
+	}
 }
 
 // Parse ./{path/{filename}

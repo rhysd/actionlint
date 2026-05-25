@@ -353,6 +353,30 @@ var testReusableWorkflowWantedMetadata *ReusableWorkflowMetadata = &ReusableWork
 		"secret1": {"secret1", false},
 		"secret2": {"secret2", true},
 	},
+	JobPermissions: map[string]*ReusableWorkflowPermissions{
+		"test": nil,
+	},
+}
+
+func TestReusableWorkflowMetadataPermissions(t *testing.T) {
+	proj := &Project{filepath.Join("testdata", "reusable_workflow_metadata"), nil}
+	c := NewLocalReusableWorkflowCache(proj, "", nil)
+
+	m, err := c.FindMetadata("./permissions.yaml")
+	if err != nil {
+		t.Fatal(err)
+	}
+
+	want := map[string]*ReusableWorkflowPermissions{
+		"inherits": {Scopes: map[string]string{"contents": "read"}},
+		"override": {Scopes: map[string]string{"pull-requests": "write"}},
+		"empty":    {Scopes: map[string]string{}},
+		"all-read": {All: "read-all"},
+	}
+
+	if diff := cmp.Diff(want, m.JobPermissions); diff != "" {
+		t.Fatal(diff)
+	}
 }
 
 func TestReusableWorkflowCacheFindMetadataOK(t *testing.T) {
@@ -623,7 +647,7 @@ func TestReusableWorkflowMetadataFromASTNodeInputs(t *testing.T) {
 				e.Inputs = append(e.Inputs, i)
 			}
 
-			c.WriteWorkflowCallEvent(filepath.Join("foo", "test.yaml"), e)
+			c.WriteWorkflowCallEvent(filepath.Join("foo", "test.yaml"), e, nil)
 
 			m, ok := c.readCache("./foo/test.yaml")
 			if !ok {
@@ -662,7 +686,7 @@ func TestReusableWorkflowMetadataFromASTNodeOutputs(t *testing.T) {
 				}
 			}
 
-			c.WriteWorkflowCallEvent(filepath.Join("foo", "test.yaml"), e)
+			c.WriteWorkflowCallEvent(filepath.Join("foo", "test.yaml"), e, nil)
 
 			m, ok := c.readCache("./foo/test.yaml")
 			if !ok {
@@ -718,7 +742,7 @@ func TestReusableWorkflowMetadataFromASTNodeSecrets(t *testing.T) {
 				}
 			}
 
-			c.WriteWorkflowCallEvent(filepath.Join("foo", "test.yaml"), e)
+			c.WriteWorkflowCallEvent(filepath.Join("foo", "test.yaml"), e, nil)
 
 			m, ok := c.readCache("./foo/test.yaml")
 			if !ok {
@@ -749,7 +773,7 @@ func TestReusableWorkflowMetadataFromASTNodeSecrets(t *testing.T) {
 func TestReusableWorkflowMetadataFromASTNodeDoNothing(t *testing.T) {
 	cwd := filepath.Join("path", "to", "project")
 	c := NewLocalReusableWorkflowCache(nil, cwd, nil)
-	c.WriteWorkflowCallEvent("workflow.yaml", &WorkflowCallEvent{})
+	c.WriteWorkflowCallEvent("workflow.yaml", &WorkflowCallEvent{}, nil)
 	m, ok := c.readCache("./workflow.yaml")
 	if ok {
 		t.Fatal("Metadata created:", m)
@@ -757,7 +781,7 @@ func TestReusableWorkflowMetadataFromASTNodeDoNothing(t *testing.T) {
 
 	proj := &Project{cwd, nil}
 	c = NewLocalReusableWorkflowCache(proj, filepath.Join("path", "to", "another-project"), nil)
-	c.WriteWorkflowCallEvent("workflow.yaml", &WorkflowCallEvent{})
+	c.WriteWorkflowCallEvent("workflow.yaml", &WorkflowCallEvent{}, nil)
 	m, ok = c.readCache("./workflow.yaml")
 	if ok {
 		t.Fatal("Metadata created:", m)
@@ -766,7 +790,7 @@ func TestReusableWorkflowMetadataFromASTNodeDoNothing(t *testing.T) {
 	m1 := &ReusableWorkflowMetadata{}
 	c = NewLocalReusableWorkflowCache(proj, cwd, nil)
 	c.writeCache("./dir/workflow.yaml", m1)
-	c.WriteWorkflowCallEvent(filepath.Join("dir", "workflow.yaml"), &WorkflowCallEvent{})
+	c.WriteWorkflowCallEvent(filepath.Join("dir", "workflow.yaml"), &WorkflowCallEvent{}, nil)
 	m2, ok := c.readCache("./dir/workflow.yaml")
 	if !ok {
 		t.Fatal("Metadata was not created for ./dir/workflow.yaml")
@@ -844,7 +868,7 @@ func TestReusableWorkflowMetadataCacheWriteFromFileAndASTNodeConcurrently(t *tes
 		ret <- struct{}{}
 	}
 	fromNode := func() {
-		c.WriteWorkflowCallEvent("workflow.yaml", &WorkflowCallEvent{})
+		c.WriteWorkflowCallEvent("workflow.yaml", &WorkflowCallEvent{}, nil)
 		if _, ok := c.readCache("./workflow.yaml"); !ok {
 			err <- fmt.Errorf("Cache was not created from WorkflowCallEvent")
 			return
@@ -886,7 +910,7 @@ func TestReusableWorkflowNullCache(t *testing.T) {
 	e := &WorkflowCallEvent{Inputs: []*WorkflowCallEventInput{}}
 
 	// This should do nothing
-	c.WriteWorkflowCallEvent(filepath.Join("foo", "test.yaml"), e)
+	c.WriteWorkflowCallEvent(filepath.Join("foo", "test.yaml"), e, nil)
 
 	m, err := c.FindMetadata("./foo/test.yaml")
 	if m != nil {

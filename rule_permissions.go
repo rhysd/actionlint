@@ -1,6 +1,82 @@
 package actionlint
 
-import "slices"
+import (
+	"slices"
+	"strings"
+)
+
+// Numeric permission levels for comparison. Higher means broader access.
+const (
+	permLevelNone  = 0
+	permLevelRead  = 1
+	permLevelWrite = 2
+)
+
+// permissionLevel returns the numeric level (0=none, 1=read, 2=write) for the given permission
+// value of the given scope. Unknown values fall back to none.
+func permissionLevel(scope, value string) int {
+	switch strings.ToLower(value) {
+	case "write":
+		return permLevelWrite
+	case "read":
+		return permLevelRead
+	case "none", "":
+		return permLevelNone
+	}
+	return permLevelNone
+}
+
+// permissionLevelName returns the canonical name for the given numeric level.
+func permissionLevelName(level int) string {
+	switch level {
+	case permLevelWrite:
+		return "write"
+	case permLevelRead:
+		return "read"
+	default:
+		return "none"
+	}
+}
+
+// effectiveLevel returns the granted level for a scope under the given *ReusableWorkflowPermissions.
+// When p is nil, defaultLevel is returned (the caller hasn't declared anything).
+// When p declares "read-all"/"write-all", that wins (clamped by the scope's allowed levels).
+// Otherwise the per-scope mapping is consulted; a scope not present in an explicit map is "none"
+// per GitHub semantics (declaring permissions: opts every scope out unless listed).
+func effectiveLevel(p *ReusableWorkflowPermissions, scope string, defaultLevel int) int {
+	if p == nil {
+		return defaultLevel
+	}
+	if p.All != "" {
+		switch p.All {
+		case "write-all":
+			return clampLevelForScope(scope, permLevelWrite)
+		case "read-all":
+			return clampLevelForScope(scope, permLevelRead)
+		}
+	}
+	if v, ok := p.Scopes[scope]; ok {
+		return clampLevelForScope(scope, permissionLevel(scope, v))
+	}
+	// Explicit permissions block but this scope omitted → none.
+	return permLevelNone
+}
+
+// clampLevelForScope drops a level down to the highest level the scope supports.
+// e.g. read-all + id-token → none (id-token only allows write/none), models only read/none.
+func clampLevelForScope(scope string, level int) int {
+	allowed, ok := allPermissionScopes[scope]
+	if !ok {
+		return level
+	}
+	if level == permLevelWrite && !slices.Contains(allowed, "write") {
+		level = permLevelRead
+	}
+	if level == permLevelRead && !slices.Contains(allowed, "read") {
+		level = permLevelNone
+	}
+	return level
+}
 
 var allPermissionScopes = map[string][]string{
 	"actions":             {"read", "write", "none"},

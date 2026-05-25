@@ -67,7 +67,18 @@ type Config struct {
 	// Paths is a "paths" mapping in the configuration file. The keys are glob patterns to match file paths.
 	// And the values are corresponding configurations applied to the file paths.
 	Paths map[string]PathConfig `yaml:"paths"`
+	// AssumeDefaultPermissions controls how the workflow-call permission check treats a caller that
+	// declares no `permissions:` at all. "restricted" (default) assumes GitHub's restricted default
+	// token (contents/packages: read, everything else: none). "permissive" skips the comparison
+	// when the caller is fully silent, letting GitHub's permissive default handle it.
+	AssumeDefaultPermissions *string `yaml:"assume-default-permissions"`
 }
+
+// AssumeDefaultPermissionsRestricted is the config value enabling the restricted-default assumption.
+const AssumeDefaultPermissionsRestricted = "restricted"
+
+// AssumeDefaultPermissionsPermissive is the config value enabling the permissive-default assumption.
+const AssumeDefaultPermissionsPermissive = "permissive"
 
 // PathConfigs returns a list of all PathConfig values matching to the given file path. The path must
 // be relative to the root of the project.
@@ -97,6 +108,13 @@ func ParseConfig(b []byte) (*Config, error) {
 	for pat := range c.Paths {
 		if !doublestar.ValidatePattern(pat) {
 			return nil, fmt.Errorf("invalid glob pattern %q in \"paths\"", pat)
+		}
+	}
+	if c.AssumeDefaultPermissions != nil {
+		switch *c.AssumeDefaultPermissions {
+		case AssumeDefaultPermissionsRestricted, AssumeDefaultPermissionsPermissive:
+		default:
+			return nil, fmt.Errorf("invalid value %q for \"assume-default-permissions\". available values are %q and %q", *c.AssumeDefaultPermissions, AssumeDefaultPermissionsRestricted, AssumeDefaultPermissionsPermissive)
 		}
 	}
 	return &c, nil
@@ -153,6 +171,12 @@ config-variables: null
 paths:
 #  .github/workflows/**/*.yml:
 #    ignore: []
+
+# Controls what permissions are assumed for a caller workflow that declares no
+# "permissions:" block at all when checking reusable workflow calls. Set to
+# "restricted" (the default) to assume GitHub's restricted default token. Set to
+# "permissive" to skip the check when the caller is fully silent.
+#assume-default-permissions: restricted
 `)
 	if err := os.WriteFile(path, b, 0644); err != nil {
 		return fmt.Errorf("could not write default configuration file at %q: %w", path, err)

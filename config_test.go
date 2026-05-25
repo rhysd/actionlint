@@ -88,6 +88,10 @@ paths:
 `,
 			want: `invalid glob pattern`,
 		},
+		{
+			in:   "assume-default-permissions: foo\n",
+			want: `invalid value "foo" for "assume-default-permissions"`,
+		},
 	}
 
 	for _, tc := range tests {
@@ -102,6 +106,39 @@ paths:
 		})
 	}
 }
+
+func TestConfigParseAssumeDefaultPermissions(t *testing.T) {
+	tests := []struct {
+		in   string
+		want *string
+	}{
+		{in: "", want: nil},
+		{in: "assume-default-permissions: restricted\n", want: strPtr("restricted")},
+		{in: "assume-default-permissions: permissive\n", want: strPtr("permissive")},
+	}
+	for _, tc := range tests {
+		t.Run(tc.in, func(t *testing.T) {
+			c, err := ParseConfig([]byte(tc.in))
+			if err != nil {
+				t.Fatal(err)
+			}
+			if tc.want == nil {
+				if c.AssumeDefaultPermissions != nil {
+					t.Fatalf("want nil, got %q", *c.AssumeDefaultPermissions)
+				}
+				return
+			}
+			if c.AssumeDefaultPermissions == nil {
+				t.Fatalf("want %q, got nil", *tc.want)
+			}
+			if *c.AssumeDefaultPermissions != *tc.want {
+				t.Fatalf("want %q, got %q", *tc.want, *c.AssumeDefaultPermissions)
+			}
+		})
+	}
+}
+
+func strPtr(s string) *string { return &s }
 
 func TestConfigPathConfigIgnores(t *testing.T) {
 	tests := []struct {

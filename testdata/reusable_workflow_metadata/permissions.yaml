@@ -1,0 +1,29 @@
+name: with permissions
+
+on:
+  workflow_call:
+
+permissions:
+  contents: read
+
+jobs:
+  inherits:
+    runs-on: ubuntu-latest
+    steps:
+      - run: echo inherits
+  override:
+    runs-on: ubuntu-latest
+    permissions:
+      pull-requests: write
+    steps:
+      - run: echo override
+  empty:
+    runs-on: ubuntu-latest
+    permissions: {}
+    steps:
+      - run: echo empty
+  all-read:
+    runs-on: ubuntu-latest
+    permissions: read-all
+    steps:
+      - run: echo read-all

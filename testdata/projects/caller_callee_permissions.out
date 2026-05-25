@@ -1,0 +1,1 @@
+workflows/test.yaml:7:11: nested job "snapshots" of "./workflows/reusable.yaml" requires "pull-requests: write" but the calling job grants "pull-requests: none" [workflow-call]
