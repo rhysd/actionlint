@@ -28,6 +28,13 @@ config-variables:
   - JOB_NAME
   - ENVIRONMENT_STAGE
 
+# Controls what permissions are assumed for a caller workflow that declares no
+# "permissions:" block at all when checking caller/callee permissions for local
+# reusable workflow calls. "restricted" (default) assumes GitHub's restricted
+# default token. "permissive" assumes write on every scope except "id-token",
+# which always requires an explicit opt-in regardless of repo settings.
+assume-default-permissions: restricted
+
 # Path-specific configurations.
 paths:
   # Glob pattern relative to the repository root for matching files. The path separator is always '/'.
@@ -49,6 +56,16 @@ paths:
     is available.
 - `config-variables`: [Configuration variables][vars]. When an array is set, actionlint will check `vars` properties strictly.
   An empty array means no variable is allowed. The default value `null` disables the check.
+- `assume-default-permissions`: Controls how the caller/callee permissions check for local reusable workflow calls
+  treats a caller workflow that has no `permissions:` block at the workflow level *and* no `permissions:` block on
+  the calling job. This mirrors the repository-level "Workflow permissions" setting (Settings → Actions → General),
+  which actionlint cannot read from the workflow file. Set to `restricted` (the default) to assume GitHub's
+  restricted default token (`contents: read` and `packages: read`, everything else `none`). Set to `permissive` to
+  assume the permissive default (write on every scope). Even under `permissive`, `id-token` is still treated as
+  `none` because OIDC tokens always require an explicit opt-in regardless of the repo-level Workflow permissions
+  setting. Note: this only affects callers with no `permissions:` block anywhere. Once a caller declares any
+  `permissions:` block — even `permissions: {}` — the check always runs against that explicit block, because
+  GitHub treats any scope omitted from an explicit block as `none`.
 - `paths`: Configurations for specific file path patterns. This is a mapping from a glob pattern and the corresponding
   configuration.
   - `{glob}`: A file path glob pattern to apply the configuration. The path separator is always '/'. It is matched to the

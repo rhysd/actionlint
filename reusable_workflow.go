@@ -160,6 +160,23 @@ type ReusableWorkflowMetadata struct {
 	Inputs  ReusableWorkflowMetadataInputs  `yaml:"inputs"`
 	Outputs ReusableWorkflowMetadataOutputs `yaml:"outputs"`
 	Secrets ReusableWorkflowMetadataSecrets `yaml:"secrets"`
+	// JobPermissions is per-job effective permission requirements declared by the callee. Each value
+	// is the job's own permissions, or the workflow-level permissions when the job omits them.
+	// A value of nil means the callee did not declare any permissions for that job (it inherits
+	// from the caller's grant, so nothing to compare).
+	JobPermissions map[string]*ReusableWorkflowPermissions
+}
+
+// ReusableWorkflowPermissions represents the effective `permissions:` declared by a callee job.
+// Either All is set (e.g. "read-all", "write-all") or Scopes carries per-scope permission levels.
+// An empty value (All == "" and Scopes empty) is the explicit `permissions: {}` form, meaning all
+// scopes are "none".
+type ReusableWorkflowPermissions struct {
+	// All is the special form: "read-all" or "write-all". Empty when Scopes is used or when the
+	// permission was explicitly set to `{}`.
+	All string
+	// Scopes is the per-scope permission level mapping (scope name → "read"/"write"/"none").
+	Scopes map[string]string
 }
 
 // LocalReusableWorkflowCache is a cache for local reusable workflow metadata files. It avoids find/read/parse
@@ -262,6 +279,14 @@ func (c *LocalReusableWorkflowCache) convWorkflowPathToSpec(p string) (string, b
 // to workflow call spec, (3) some cache for the workflow is already existing.
 // This method is thread safe.
 func (c *LocalReusableWorkflowCache) WriteWorkflowCallEvent(wpath string, event *WorkflowCallEvent) {
+	c.WriteWorkflowCallEventFromWorkflow(wpath, event, nil)
+}
+
+// WriteWorkflowCallEventFromWorkflow is like WriteWorkflowCallEvent but additionally records each
+// job's effective `permissions:` requirement from the full Workflow AST. Passing a non-nil 'w'
+// enables caller/callee permission checks downstream. Same do-nothing conditions and thread-safety
+// guarantees as WriteWorkflowCallEvent apply.
+func (c *LocalReusableWorkflowCache) WriteWorkflowCallEventFromWorkflow(wpath string, event *WorkflowCallEvent, w *Workflow) {
 	// Convert workflow path to workflow call spec
 	spec, ok := c.convWorkflowPathToSpec(wpath)
 	if !ok {
@@ -313,6 +338,27 @@ func (c *LocalReusableWorkflowCache) WriteWorkflowCallEvent(wpath string, event 
 		}
 	}
 
+	if w != nil && len(w.Jobs) > 0 {
+		wp := convertASTPermissions(w.Permissions)
+		m.JobPermissions = map[string]*ReusableWorkflowPermissions{}
+		for id, j := range w.Jobs {
+			if j == nil {
+				continue
+			}
+			// j.ID preserves the user's original casing; the map key is lowercased by the AST.
+			// parseReusableWorkflowMetadata uses the raw YAML key for the same reason.
+			name := id
+			if j.ID != nil {
+				name = j.ID.Value
+			}
+			if j.Permissions != nil {
+				m.JobPermissions[name] = convertASTPermissions(j.Permissions)
+			} else {
+				m.JobPermissions[name] = wp
+			}
+		}
+	}
+
 	c.mu.Lock()
 	c.cache[spec] = m
 	c.mu.Unlock()
@@ -322,7 +368,9 @@ func (c *LocalReusableWorkflowCache) WriteWorkflowCallEvent(wpath string, event 
 
 func parseReusableWorkflowMetadata(src []byte) (*ReusableWorkflowMetadata, error) {
 	type workflow struct {
-		On yaml.Node `yaml:"on"`
+		On          yaml.Node `yaml:"on"`
+		Permissions yaml.Node `yaml:"permissions"`
+		Jobs        yaml.Node `yaml:"jobs"`
 	}
 
 	var w workflow
@@ -335,6 +383,8 @@ func parseReusableWorkflowMetadata(src []byte) (*ReusableWorkflowMetadata, error
 		return nil, fmt.Errorf("\"on:\" is not found")
 	}
 
+	var m *ReusableWorkflowMetadata
+
 	switch n.Kind {
 	case yaml.MappingNode:
 		// on:
@@ -342,29 +392,116 @@ func parseReusableWorkflowMetadata(src []byte) (*ReusableWorkflowMetadata, error
 		for i := 0; i < len(n.Content); i += 2 {
 			k := strings.ToLower(n.Content[i].Value)
 			if k == "workflow_call" {
-				var m ReusableWorkflowMetadata
-				if err := n.Content[i+1].Decode(&m); err != nil {
+				var v ReusableWorkflowMetadata
+				if err := n.Content[i+1].Decode(&v); err != nil {
 					return nil, err
 				}
-				return &m, nil
+				m = &v
+				break
 			}
 		}
 	case yaml.ScalarNode:
 		// on: workflow_call
 		if v := strings.ToLower(n.Value); v == "workflow_call" {
-			return &ReusableWorkflowMetadata{}, nil
+			m = &ReusableWorkflowMetadata{}
 		}
 	case yaml.SequenceNode:
 		// on: [workflow_call]
 		for _, c := range n.Content {
 			e := strings.ToLower(c.Value)
 			if e == "workflow_call" {
-				return &ReusableWorkflowMetadata{}, nil
+				m = &ReusableWorkflowMetadata{}
+				break
 			}
 		}
 	}
 
-	return nil, fmt.Errorf("\"workflow_call\" event trigger is not found in \"on:\" at line:%d, column:%d", n.Line, n.Column)
+	if m == nil {
+		return nil, fmt.Errorf("\"workflow_call\" event trigger is not found in \"on:\" at line:%d, column:%d", n.Line, n.Column)
+	}
+
+	// Decode top-level permissions (if any).
+	wp, err := decodePermissionsNode(&w.Permissions)
+	if err != nil {
+		return nil, err
+	}
+
+	// Decode jobs.<id>.permissions for each job, and compute the effective per-job map.
+	jobsNode := &w.Jobs
+	if jobsNode.Kind == yaml.MappingNode && len(jobsNode.Content) > 0 {
+		m.JobPermissions = map[string]*ReusableWorkflowPermissions{}
+		for i := 0; i < len(jobsNode.Content); i += 2 {
+			idNode := jobsNode.Content[i]
+			jobNode := jobsNode.Content[i+1]
+			if jobNode.Kind != yaml.MappingNode {
+				continue
+			}
+			var jp *ReusableWorkflowPermissions
+			seen := false
+			for j := 0; j < len(jobNode.Content); j += 2 {
+				if strings.ToLower(jobNode.Content[j].Value) == "permissions" {
+					seen = true
+					p, err := decodePermissionsNode(jobNode.Content[j+1])
+					if err != nil {
+						return nil, err
+					}
+					jp = p
+					break
+				}
+			}
+			if !seen {
+				jp = wp
+			}
+			m.JobPermissions[idNode.Value] = jp
+		}
+	}
+
+	return m, nil
+}
+
+// convertASTPermissions translates a parsed *Permissions AST node into a *ReusableWorkflowPermissions.
+// Returns nil when p is nil (the workflow/job did not declare permissions).
+func convertASTPermissions(p *Permissions) *ReusableWorkflowPermissions {
+	if p == nil {
+		return nil
+	}
+	if p.All != nil {
+		return &ReusableWorkflowPermissions{All: strings.ToLower(p.All.Value)}
+	}
+	scopes := map[string]string{}
+	for n, s := range p.Scopes {
+		if s == nil || s.Value == nil {
+			continue
+		}
+		scopes[strings.ToLower(n)] = strings.ToLower(s.Value.Value)
+	}
+	return &ReusableWorkflowPermissions{Scopes: scopes}
+}
+
+// decodePermissionsNode parses a `permissions:` yaml node into a *ReusableWorkflowPermissions.
+// Returns nil when the node is absent or null (meaning "not declared").
+func decodePermissionsNode(n *yaml.Node) (*ReusableWorkflowPermissions, error) {
+	if n == nil || n.Kind == 0 {
+		return nil, nil
+	}
+	switch n.Kind {
+	case yaml.ScalarNode:
+		v := strings.ToLower(n.Value)
+		if v == "" || v == "null" || v == "~" {
+			return nil, nil
+		}
+		// "read-all" / "write-all" form.
+		return &ReusableWorkflowPermissions{All: v}, nil
+	case yaml.MappingNode:
+		p := &ReusableWorkflowPermissions{Scopes: map[string]string{}}
+		for i := 0; i < len(n.Content); i += 2 {
+			k := n.Content[i].Value
+			v := n.Content[i+1].Value
+			p.Scopes[strings.ToLower(k)] = strings.ToLower(v)
+		}
+		return p, nil
+	}
+	return nil, nil
 }
 
 // NewLocalReusableWorkflowCache creates a new LocalReusableWorkflowCache instance for the given

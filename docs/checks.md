@@ -2589,6 +2589,67 @@ as `{version: string}`. In the downstream job, actionlint can report an error at
 
 Note that this check only works with local reusable workflow (starting with `./`).
 
+### Check caller/callee permissions in workflow call
+
+Example reusable workflow:
+
+```yaml
+# .github/workflows/reusable.yaml
+on:
+  workflow_call:
+
+jobs:
+  snapshot:
+    # Note: GitHub validates permissions at workflow load time, regardless of `if:`.
+    if: github.event_name == 'pull_request'
+    runs-on: ubuntu-latest
+    permissions:
+      pull-requests: write
+    steps:
+      - run: echo snapshot
+```
+
+Example input:
+
+```yaml
+on:
+  push:
+    branches: [main]
+
+jobs:
+  # ERROR: Caller does not grant pull-requests: write but the called job requires it.
+  caller:
+    uses: ./.github/workflows/reusable.yaml
+```
+
+Output:
+<!-- Skip update output -->
+
+```
+test.yaml:7:11: nested job "snapshot" of "./.github/workflows/reusable.yaml" requires "pull-requests: write" but the calling job grants "pull-requests: none" [workflow-call]
+  |
+7 |     uses: ./.github/workflows/reusable.yaml
+  |           ^~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+```
+
+<!-- Skip playground link -->
+
+GitHub validates `permissions:` at workflow load time. Every scope a job in the called workflow declares must also be
+granted by the calling job, otherwise the run fails with `startup_failure` and no jobs run, so any `if: failure()`
+notification job cannot fire. actionlint compares each called job's effective `permissions:` (its own or, when absent,
+the workflow-level block) against the caller's effective grant (the calling job's `permissions:` or, when absent, the
+workflow-level block) and reports each missing scope.
+
+The check ignores `if:` on called jobs because GitHub evaluates permissions before any condition runs.
+
+When the caller has no `permissions:` block at the workflow level and none on the calling job, actionlint assumes
+GitHub's restricted default token (only `contents: read` and `packages: read` are granted). This default can be
+overridden via the [`assume-default-permissions` configuration](./config.md); set it to `permissive` if your
+repository's "Workflow permissions" setting grants read + write to everything by default. Even under `permissive`,
+`id-token` is still treated as `none` because OIDC tokens always require an explicit opt-in.
+
+Note that this check only works with local reusable workflows (starting with `./`).
+
 <a id="id-naming-convention"></a>
 ## ID naming convention
 

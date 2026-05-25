@@ -1,6 +1,96 @@
 package actionlint
 
-import "slices"
+import (
+	"slices"
+	"strings"
+)
+
+// Numeric permission levels for comparison. Higher means broader access.
+const (
+	permLevelNone  = 0
+	permLevelRead  = 1
+	permLevelWrite = 2
+)
+
+// permissionLevel returns the numeric level (0=none, 1=read, 2=write) for the given permission
+// value. Unknown values fall back to none.
+func permissionLevel(value string) int {
+	switch strings.ToLower(value) {
+	case "write":
+		return permLevelWrite
+	case "read":
+		return permLevelRead
+	}
+	return permLevelNone
+}
+
+// permissionLevelName returns the canonical name for the given numeric level.
+func permissionLevelName(level int) string {
+	switch level {
+	case permLevelWrite:
+		return "write"
+	case permLevelRead:
+		return "read"
+	default:
+		return "none"
+	}
+}
+
+// effectiveLevel returns the granted level for a scope under an explicit (non-nil) caller
+// permissions block. "read-all"/"write-all" wins (clamped by the scope's allowed levels);
+// otherwise the per-scope mapping is consulted, and a scope not present is "none" per GitHub
+// semantics (declaring permissions: opts every scope out unless listed).
+func effectiveLevel(p *ReusableWorkflowPermissions, scope string) int {
+	if p.All != "" {
+		switch p.All {
+		case "write-all":
+			return clampLevelForScope(scope, permLevelWrite)
+		case "read-all":
+			return clampLevelForScope(scope, permLevelRead)
+		}
+	}
+	if v, ok := p.Scopes[scope]; ok {
+		return clampLevelForScope(scope, permissionLevel(v))
+	}
+	// Explicit permissions block but this scope omitted → none.
+	return permLevelNone
+}
+
+// silentDefaultLevel returns the level GitHub grants for the given scope when the caller declares
+// no `permissions:` block at all (workflow- or job-level). Behavior depends on the configured
+// assumption: "restricted" matches GitHub's restricted default token (contents/packages: read,
+// everything else: none); "permissive" matches the permissive default (write on every scope) with
+// the exception of `id-token`, which always requires an explicit opt-in regardless of the
+// repo-level Workflow permissions setting.
+func silentDefaultLevel(mode, scope string) int {
+	if mode == AssumeDefaultPermissionsPermissive {
+		if scope == "id-token" {
+			return permLevelNone
+		}
+		return clampLevelForScope(scope, permLevelWrite)
+	}
+	switch scope {
+	case "contents", "packages":
+		return permLevelRead
+	}
+	return permLevelNone
+}
+
+// clampLevelForScope drops a level down to the highest level the scope supports.
+// e.g. read-all + id-token → none (id-token only allows write/none), models only read/none.
+func clampLevelForScope(scope string, level int) int {
+	allowed, ok := allPermissionScopes[scope]
+	if !ok {
+		return level
+	}
+	if level == permLevelWrite && !slices.Contains(allowed, "write") {
+		level = permLevelRead
+	}
+	if level == permLevelRead && !slices.Contains(allowed, "read") {
+		level = permLevelNone
+	}
+	return level
+}
 
 var allPermissionScopes = map[string][]string{
 	"actions":             {"read", "write", "none"},

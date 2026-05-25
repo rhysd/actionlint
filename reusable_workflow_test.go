@@ -353,6 +353,30 @@ var testReusableWorkflowWantedMetadata *ReusableWorkflowMetadata = &ReusableWork
 		"secret1": {"secret1", false},
 		"secret2": {"secret2", true},
 	},
+	JobPermissions: map[string]*ReusableWorkflowPermissions{
+		"test": nil,
+	},
+}
+
+func TestReusableWorkflowMetadataPermissions(t *testing.T) {
+	proj := &Project{filepath.Join("testdata", "reusable_workflow_metadata"), nil}
+	c := NewLocalReusableWorkflowCache(proj, "", nil)
+
+	m, err := c.FindMetadata("./permissions.yaml")
+	if err != nil {
+		t.Fatal(err)
+	}
+
+	want := map[string]*ReusableWorkflowPermissions{
+		"inherits": {Scopes: map[string]string{"contents": "read"}},
+		"override": {Scopes: map[string]string{"pull-requests": "write"}},
+		"empty":    {Scopes: map[string]string{}},
+		"all-read": {All: "read-all"},
+	}
+
+	if diff := cmp.Diff(want, m.JobPermissions); diff != "" {
+		t.Fatal(diff)
+	}
 }
 
 func TestReusableWorkflowCacheFindMetadataOK(t *testing.T) {
