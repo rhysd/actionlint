@@ -68,9 +68,11 @@ type Config struct {
 	// And the values are corresponding configurations applied to the file paths.
 	Paths map[string]PathConfig `yaml:"paths"`
 	// AssumeDefaultPermissions controls how the workflow-call permission check treats a caller that
-	// declares no `permissions:` at all. "restricted" (default) assumes GitHub's restricted default
-	// token (contents/packages: read, everything else: none). "permissive" skips the comparison
-	// when the caller is fully silent, letting GitHub's permissive default handle it.
+	// has no `permissions:` block at the workflow level and none on the calling job. "restricted"
+	// (default) assumes GitHub's restricted default token (contents/packages: read, everything else:
+	// none). "permissive" assumes the permissive default (read + write on everything), effectively
+	// skipping the check for that caller. Only affects callers with no permissions block anywhere;
+	// once any permissions block is declared, the check always runs against it.
 	AssumeDefaultPermissions *string `yaml:"assume-default-permissions"`
 }
 

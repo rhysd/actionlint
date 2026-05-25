@@ -56,11 +56,14 @@ paths:
 - `config-variables`: [Configuration variables][vars]. When an array is set, actionlint will check `vars` properties strictly.
   An empty array means no variable is allowed. The default value `null` disables the check.
 - `assume-default-permissions`: Controls how the caller/callee permissions check for local reusable workflow calls
-  treats a caller workflow that declares no `permissions:` block at all. This mirrors the repository-level
-  "Workflow permissions" setting (Settings → Actions → General), which actionlint cannot read from the workflow
-  file. Set to `restricted` (the default) to assume GitHub's restricted default token (`contents: read` and
-  `packages: read`, everything else `none`). Set to `permissive` to skip the comparison entirely when the caller is
-  fully silent.
+  treats a caller workflow that has no `permissions:` block at the workflow level *and* no `permissions:` block on
+  the calling job. This mirrors the repository-level "Workflow permissions" setting (Settings → Actions → General),
+  which actionlint cannot read from the workflow file. Set to `restricted` (the default) to assume GitHub's
+  restricted default token (`contents: read` and `packages: read`, everything else `none`). Set to `permissive` to
+  assume the permissive default (read + write on everything), which effectively skips the check for that caller.
+  Note: this only affects callers with no `permissions:` block anywhere. Once a caller declares any `permissions:`
+  block — even `permissions: {}` — the check always runs against that explicit block, because GitHub treats any
+  scope omitted from an explicit block as `none`.
 - `paths`: Configurations for specific file path patterns. This is a mapping from a glob pattern and the corresponding
   configuration.
   - `{glob}`: A file path glob pattern to apply the configuration. The path separator is always '/'. It is matched to the

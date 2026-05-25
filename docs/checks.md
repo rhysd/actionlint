@@ -2642,10 +2642,10 @@ workflow-level block) and reports each missing scope.
 
 The check ignores `if:` on called jobs because GitHub evaluates permissions before any condition runs.
 
-When the caller declares no `permissions:` block at all, actionlint assumes GitHub's restricted default token (only
-`contents: read` and `packages: read` are granted). This default can be overridden via the
-[`assume-default-permissions` configuration](./config.md). Set it to `permissive` to skip the comparison when the
-caller is fully silent.
+When the caller has no `permissions:` block at the workflow level and none on the calling job, actionlint assumes
+GitHub's restricted default token (only `contents: read` and `packages: read` are granted). This default can be
+overridden via the [`assume-default-permissions` configuration](./config.md); set it to `permissive` if your
+repository's "Workflow permissions" setting grants read + write to everything by default.
 
 Note that this check only works with local reusable workflows (starting with `./`).
 
