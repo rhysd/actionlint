@@ -4,6 +4,7 @@ import (
 	"fmt"
 	"iter"
 	"math"
+	"regexp"
 	"slices"
 	"strconv"
 	"strings"
@@ -1563,10 +1564,30 @@ func (p *parser) parse(n *yaml.Node) *Workflow {
 // 	}
 // }
 
+// go-yaml v4.0.0-rc.4 no longer exports its parser/scanner error types, so the
+// source position of a syntax error must be recovered from the formatted error
+// message. See https://github.com/yaml/go-yaml/issues/288.
+var yamlErrorMarkRe = regexp.MustCompile(`line (\d+)(?:, column (\d+))?: `)
+
+func yamlErrorPos(err error) (string, int, int) {
+	s := err.Error()
+	marks := yamlErrorMarkRe.FindAllStringSubmatchIndex(s, -1)
+	if marks == nil {
+		return s, 0, 0
+	}
+	m := marks[len(marks)-1]
+	line, _ := strconv.Atoi(s[m[2]:m[3]])
+	column := 0
+	if m[4] >= 0 {
+		column, _ = strconv.Atoi(s[m[4]:m[5]])
+	}
+	return s[m[1]:], line, column
+}
+
 func handleYAMLUnmarshalError(err error) []*Error {
-	if te, ok := err.(*yaml.TypeError); ok {
-		errs := make([]*Error, 0, len(te.Errors))
-		for _, e := range te.Errors {
+	if le, ok := err.(*yaml.LoadErrors); ok {
+		errs := make([]*Error, 0, len(le.Errors))
+		for _, e := range le.Errors {
 			errs = append(errs, &Error{
 				Message: fmt.Sprintf("could not parse as YAML: %s", e.Err.Error()),
 				Line:    e.Line,
@@ -1577,17 +1598,8 @@ func handleYAMLUnmarshalError(err error) []*Error {
 		return errs
 	}
 
-	var m string
-	var l int
-	var c int
-	if pe, ok := err.(*yaml.ParserError); ok {
-		l = pe.Line
-		c = pe.Column
-		m = pe.Message
-	} else {
-		m = err.Error() // Fallback. I believe this line should be unreachable
-	}
-	return []*Error{&Error{
+	m, l, c := yamlErrorPos(err)
+	return []*Error{{
 		Message: fmt.Sprintf("could not parse as YAML: %s", m),
 		Kind:    "syntax-check",
 		Line:    l,

@@ -268,11 +268,11 @@ func (c *LocalActionsCache) FindMetadata(spec string) (*ActionMetadata, bool, er
 
 		// Unwrap type error when a single type error occurs to simplify the error message
 		var m string
-		if te, ok := err.(*yaml.TypeError); ok {
-			if len(te.Errors) == 1 {
-				m = te.Errors[0].Error()
+		if le, ok := err.(*yaml.LoadErrors); ok {
+			if len(le.Errors) == 1 {
+				m = le.Errors[0].Error()
 			} else {
-				m = strings.ReplaceAll(te.Error(), "\n", "")
+				m = strings.ReplaceAll(le.Error(), "\n", "")
 			}
 		} else {
 			m = err.Error()
