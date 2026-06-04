@@ -13,5 +13,7 @@ jobs:
       issues: readable
       # ERROR: "models" doesn't have "write" scope
       models: write
+      # OK
+      code-quality: write
     steps:
       - run: echo hello

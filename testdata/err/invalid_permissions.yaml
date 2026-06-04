@@ -7,6 +7,7 @@ permissions:
   models: write
   pages: READ
   CHECKS: none
+  code-quality: executable
 
 jobs:
   test_job:
@@ -18,5 +19,6 @@ jobs:
       models: write
       pages: READ
       CHECKS: none
+      code-quality: executable
     steps:
       - run: echo hello
