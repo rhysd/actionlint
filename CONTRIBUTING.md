@@ -112,13 +112,13 @@ Automated tests are as follows.
 [staticcheck](https://staticcheck.io/) is used to lint Go sources.
 
 ```sh
-staticcheck ./...
+go run honnef.co/go/tools/cmd/staticcheck ./...
 ```
 
 [govulncheck](https://go.dev/doc/security/vuln/) is used for security checks.
 
 ```sh
-govulncheck ./...
+go run golang.org/x/vuln/cmd/govulncheck ./...
 ```
 
 These lints can be run with other checks by the following command.
