@@ -158,8 +158,16 @@ func TestRuleRunnerLabelCheckLabels(t *testing.T) {
 			labels: []string{"${{matrix.os}}"},
 		},
 		{
+			what:   "ubuntu-26.04",
+			labels: []string{"ubuntu-26.04"},
+		},
+		{
 			what:   "ubuntu-24.04",
 			labels: []string{"ubuntu-24.04"},
+		},
+		{
+			what:   "ubuntu-22.04",
+			labels: []string{"ubuntu-22.04"},
 		},
 		// TODO: Add tests for 'include:'
 		// TODO: Check matrix with 'include:'
@@ -249,9 +257,14 @@ func TestRuleRunnerLabelCheckLabels(t *testing.T) {
 			errs:   []string{`label "windows-2022" conflicts with label "windows-2025"`},
 		},
 		{
-			what:   "Linux labels architecture conflict",
+			what:   "Linux labels architecture conflict, 22 and 24",
 			labels: []string{"ubuntu-24.04", "ubuntu-22.04"},
 			errs:   []string{`label "ubuntu-22.04" conflicts with label "ubuntu-24.04"`},
+		},
+		{
+			what:   "Linux labels architecture conflict, 24 and 26",
+			labels: []string{"ubuntu-26.04", "ubuntu-24.04"},
+			errs:   []string{`label "ubuntu-24.04" conflicts with label "ubuntu-26.04"`},
 		},
 		{
 			what:   "macOS labels architecture conflict",
