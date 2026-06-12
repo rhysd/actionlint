@@ -108,11 +108,6 @@ jobs:
             echo "$diffs" >&2
             exit 1
           fi
-      - name: Install staticcheck and govulncheck
-        run: |
-          go install honnef.co/go/tools/cmd/staticcheck@latest
-          go install golang.org/x/vuln/cmd/govulncheck@latest
-          echo "$(go env GOPATH)/bin" >> "$GITHUB_PATH"
       - run: make lint SKIP_GO_GENERATE=true
       - name: Lint bash scripts
         run: shellcheck ./scripts/*.bash ./playground/*.bash
