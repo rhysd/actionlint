@@ -141,6 +141,16 @@ func (v *Visitor) visitStep(n *Step) error {
 		}
 	}
 
+	// Steps grouped in a 'parallel' step are visited as well so that rules are applied to them.
+	// https://github.blog/changelog/2026-06-25-actions-steps-can-now-be-run-in-parallel/
+	if e, ok := n.Exec.(*ExecParallel); ok {
+		for _, s := range e.Steps {
+			if err := v.visitStep(s); err != nil {
+				return err
+			}
+		}
+	}
+
 	if v.dbg != nil {
 		v.reportElapsedTime(fmt.Sprintf("VisitStep at %s", n.Pos), t)
 	}

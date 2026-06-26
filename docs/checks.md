@@ -20,6 +20,7 @@ List of checks:
 - [pyflakes integration for `run:`](#check-pyflakes-integ)
 - [Script injection by potentially untrusted inputs](#untrusted-inputs)
 - [Job dependencies validation](#check-job-deps)
+- [Parallel steps](#check-parallel-step-refs)
 - [Matrix values](#check-matrix-values)
 - [Webhook events validation](#check-webhook-events)
 - [Workflow dispatch event validation](#check-workflow-dispatch-events)
@@ -1221,6 +1222,36 @@ test.yaml:8:3: job "bar" needs job "unknown" which does not exist in this workfl
 ```
 
 [Playground](https://rhysd.github.io/actionlint/#eNqkjDsOAjEMRPucYrptyAXcwRFoEUUMRuEjexXb4vooS0VNNdLMvGdKWNN7eRg7FeBmNgNQkasTTtzGDof98by1I9XrhJJTI+urhXhsk4es/mWBOp8EuXTD0u9LAbiNX3PqU+2t/4k/AQAA//96DTh7)
+
+<a id="check-parallel-step-refs"></a>
+## Parallel steps
+
+Example input:
+
+```yaml
+on: push
+jobs:
+  test:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Start server
+        id: server
+        run: echo 'start'
+        background: true
+      - run: echo 'tests'
+      - cancel: serverr
+```
+
+Output:
+
+```
+test.yaml:11:17: "serverr" is not the ID of a preceding background step. "wait" and "cancel" steps can only refer to an earlier step that has "background: true" [parallel-steps]
+   |
+11 |       - cancel: serverr
+   |                 ^~~~~~~
+```
+
+[Playground](https://rhysd.github.io/actionlint/#eNpczssNAjEMBND7VjG3nNKA26CCJGuxwOKs/KF+FD4R4mTJz6NxF8IRti3XXo0WwNl8TEBDLA+PGuKR9zLsReZ82PsKyJByZ8LJizqM9cH6IeCy0v9KQwjcto5kI5Km1NJuZ+0hK8E1eBb8RMYPlqa0Io33b4c+AwAA//+anjvx)
 
 <a id="check-matrix-values"></a>
 ## Matrix values

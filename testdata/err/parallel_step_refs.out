@@ -1,0 +1,8 @@
+test.yaml:10:17: "typo" is not the ID of a preceding background step. "wait" and "cancel" steps can only refer to an earlier step that has "background: true" [parallel-steps]
+test.yaml:12:15: "regular" is not the ID of a preceding background step. "wait" and "cancel" steps can only refer to an earlier step that has "background: true" [parallel-steps]
+test.yaml:14:15: "later" is not the ID of a preceding background step. "wait" and "cancel" steps can only refer to an earlier step that has "background: true" [parallel-steps]
+test.yaml:23:25: "background" is not allowed for a step inside a "parallel" group because the group's steps already run in the background [parallel-steps]
+test.yaml:24:13: "wait" step is not allowed inside a "parallel" group [parallel-steps]
+test.yaml:25:13: "wait-all" step is not allowed inside a "parallel" group [parallel-steps]
+test.yaml:26:13: "cancel" step is not allowed inside a "parallel" group [parallel-steps]
+test.yaml:27:13: "parallel" step cannot be nested in another "parallel" step [parallel-steps]

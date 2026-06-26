@@ -1,0 +1,28 @@
+on: push
+
+jobs:
+  test:
+    runs-on: ubuntu-latest
+    steps:
+      - run: echo regular
+        id: regular
+      # unknown step ID
+      - cancel: typo
+      # 'regular' exists but is not a background step
+      - wait: regular
+      # 'later' is a background step defined AFTER this 'wait' (not preceding)
+      - wait: later
+      - name: Later background
+        id: later
+        run: echo later
+        background: true
+      # only 'run'/'uses' steps are allowed inside a 'parallel' group. A forbidden 'wait'/'cancel'
+      # here is reported once, not also as an unknown reference, even when its target does not exist.
+      - parallel:
+          - run: echo bg
+            background: true
+          - wait: nope
+          - wait-all:
+          - cancel: nope
+          - parallel:
+              - run: echo nested

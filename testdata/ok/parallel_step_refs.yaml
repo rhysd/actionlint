@@ -1,0 +1,25 @@
+on: push
+
+jobs:
+  test:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Start server
+        id: server
+        run: echo 'start'
+        background: true
+      # 'background' as an expression: can't be known statically, so it is treated as a possible
+      # background step and references to it are not flagged.
+      - name: Maybe background
+        id: maybe
+        run: echo 'maybe'
+        background: ${{ github.event_name == 'push' }}
+      - wait: server
+      - wait: [server, maybe]
+      - wait-all:
+      - cancel: maybe
+      # An expression-valued reference cannot be resolved statically, so it is skipped (not flagged).
+      - cancel: ${{ github.run_id }}
+      - parallel:
+          - run: echo a
+          - run: echo b

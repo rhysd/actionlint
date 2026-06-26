@@ -18,7 +18,7 @@ property "msg" is not defined in object type {}
 
 ### Error at line 10, col 9 of `testdata/format/test.yaml`
 
-unexpected key "with" for step to run shell command. expected one of "continue-on-error", "env", "id", "if", "name", "run", "shell", "timeout-minutes", "working-directory"
+unexpected key "with" for step to run shell command. expected one of "background", "continue-on-error", "env", "id", "if", "name", "run", "shell", "timeout-minutes", "working-directory"
 
 ```
         with:

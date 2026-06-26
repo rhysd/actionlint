@@ -425,6 +425,12 @@ const (
 	ExecKindAction ExecKind = iota
 	// ExecKindRun is kind for step to run shell script
 	ExecKindRun
+	// ExecKindWait is kind for step to wait for background steps ('wait' or 'wait-all')
+	ExecKindWait
+	// ExecKindCancel is kind for step to cancel background steps ('cancel')
+	ExecKindCancel
+	// ExecKindParallel is kind for step to run a group of steps in parallel ('parallel')
+	ExecKindParallel
 )
 
 // Exec is an interface how the step is executed. Step in workflow runs either an action or a script
@@ -478,6 +484,51 @@ type ExecAction struct {
 // Kind returns kind of the step execution.
 func (e *ExecAction) Kind() ExecKind {
 	return ExecKindAction
+}
+
+// ExecWait is configuration of a step that waits for background steps to complete. It corresponds to
+// the 'wait' and 'wait-all' steps.
+// https://github.blog/changelog/2026-06-25-actions-steps-can-now-be-run-in-parallel/
+type ExecWait struct {
+	// Names is the list of background step IDs to wait for, given by the 'wait' field. It is nil when
+	// 'wait-all' is used instead.
+	Names []*String
+	// All is true when the step waits for all preceding background steps via the 'wait-all' field.
+	All bool
+	// AllPos is the position of the 'wait-all' field. It is nil when 'wait' is used instead.
+	AllPos *Pos
+}
+
+// Kind returns kind of the step execution.
+func (e *ExecWait) Kind() ExecKind {
+	return ExecKindWait
+}
+
+// ExecCancel is configuration of a step that cancels a running background step. It corresponds to the
+// 'cancel' step.
+// https://github.blog/changelog/2026-06-25-actions-steps-can-now-be-run-in-parallel/
+type ExecCancel struct {
+	// Name is the ID of the background step to cancel, given by the 'cancel' field. The 'cancel' step
+	// targets a single background step by its ID.
+	Name *String
+}
+
+// Kind returns kind of the step execution.
+func (e *ExecCancel) Kind() ExecKind {
+	return ExecKindCancel
+}
+
+// ExecParallel is configuration of a step that runs a group of steps in parallel. It corresponds to
+// the 'parallel' step.
+// https://github.blog/changelog/2026-06-25-actions-steps-can-now-be-run-in-parallel/
+type ExecParallel struct {
+	// Steps is the group of steps to run in parallel, given by the 'parallel' field.
+	Steps []*Step
+}
+
+// Kind returns kind of the step execution.
+func (e *ExecParallel) Kind() ExecKind {
+	return ExecKindParallel
 }
 
 // RawYAMLValueKind is kind of raw YAML values
@@ -752,6 +803,10 @@ type Step struct {
 	ContinueOnError *Bool
 	// https://docs.github.com/en/actions/learn-github-actions/workflow-syntax-for-github-actions#jobsjob_idstepstimeout-minutes
 	TimeoutMinutes *Float
+	// Background is 'background' field. When it is true, the step runs asynchronously and the workflow
+	// immediately continues to the next step.
+	// https://github.blog/changelog/2026-06-25-actions-steps-can-now-be-run-in-parallel/
+	Background *Bool
 	// Pos is a position in source.
 	Pos *Pos
 }
