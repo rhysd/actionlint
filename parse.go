@@ -1145,7 +1145,7 @@ func (p *parser) parseStepExecAction(entries []workflowMappingEntry, isDocker bo
 					ret.Inputs[e.id] = &Input{e.key, p.parseString(e.val, true)}
 				}
 			}
-		case "id", "if", "name", "env", "continue-on-error", "timeout-minutes":
+		case "id", "if", "name", "env", "continue-on-error", "timeout-minutes", "background":
 			// do nothing
 		default:
 			p.unexpectedKey(e.key, "step to execute action", []string{
@@ -1155,6 +1155,7 @@ func (p *parser) parseStepExecAction(entries []workflowMappingEntry, isDocker bo
 				"env",
 				"continue-on-error",
 				"timeout-minutes",
+				"background",
 				"uses",
 				"with",
 			})
@@ -1177,7 +1178,7 @@ func (p *parser) parseStepExecRun(entries []workflowMappingEntry) *ExecRun {
 			ret.Shell = p.parseString(e.val, false)
 		case "working-directory":
 			ret.WorkingDirectory = p.parseString(e.val, false)
-		case "id", "if", "name", "env", "continue-on-error", "timeout-minutes":
+		case "id", "if", "name", "env", "continue-on-error", "timeout-minutes", "background":
 			// do nothing
 		default:
 			p.unexpectedKey(e.key, "step to run shell command", []string{
@@ -1187,6 +1188,7 @@ func (p *parser) parseStepExecRun(entries []workflowMappingEntry) *ExecRun {
 				"env",
 				"continue-on-error",
 				"timeout-minutes",
+				"background",
 				"run",
 				"shell",
 				"working-directory",
@@ -1195,6 +1197,104 @@ func (p *parser) parseStepExecRun(entries []workflowMappingEntry) *ExecRun {
 	}
 
 	// Note: `ret.Run` is never `nil` because `parseStep` checks `run` key in advance
+	return ret
+}
+
+// parseStepExecWait parses a 'wait' or 'wait-all' step that waits for background steps to complete.
+// https://github.blog/changelog/2026-06-25-actions-steps-can-now-be-run-in-parallel/
+func (p *parser) parseStepExecWait(entries []workflowMappingEntry) *ExecWait {
+	ret := &ExecWait{}
+	waitGiven := false
+
+	for _, e := range entries {
+		switch e.id {
+		case "wait":
+			waitGiven = true
+			ret.Names = p.parseStringOrStringSequence("wait", e.val, false, false)
+		case "wait-all":
+			// 'wait-all' waits for all background steps and takes no arguments.
+			if e.val.Tag != "!!null" {
+				p.error(e.val, "\"wait-all\" step takes no arguments")
+			}
+			ret.All = true
+			ret.AllPos = e.key.Pos
+		case "id", "if", "name", "env", "continue-on-error", "timeout-minutes":
+			// do nothing
+		default:
+			p.unexpectedKey(e.key, "step to wait for background steps", []string{
+				"id",
+				"if",
+				"name",
+				"env",
+				"continue-on-error",
+				"timeout-minutes",
+				"wait",
+				"wait-all",
+			})
+		}
+	}
+
+	// 'wait' and 'wait-all' are mutually exclusive: 'wait' targets specific
+	// background steps while 'wait-all' waits for all of them.
+	if waitGiven && ret.All {
+		p.errorAt(ret.AllPos, "\"wait\" and \"wait-all\" cannot be specified in the same step")
+	}
+
+	return ret
+}
+
+// parseStepExecCancel parses a 'cancel' step that cancels running background steps.
+// https://github.blog/changelog/2026-06-25-actions-steps-can-now-be-run-in-parallel/
+func (p *parser) parseStepExecCancel(entries []workflowMappingEntry) *ExecCancel {
+	ret := &ExecCancel{}
+
+	for _, e := range entries {
+		switch e.id {
+		case "cancel":
+			// The 'cancel' step targets a single background step by its ID (not a list).
+			ret.Name = p.parseString(e.val, false)
+		case "id", "if", "name", "env", "continue-on-error", "timeout-minutes":
+			// do nothing
+		default:
+			p.unexpectedKey(e.key, "step to cancel background steps", []string{
+				"id",
+				"if",
+				"name",
+				"env",
+				"continue-on-error",
+				"timeout-minutes",
+				"cancel",
+			})
+		}
+	}
+
+	return ret
+}
+
+// parseStepExecParallel parses a 'parallel' step that runs a group of steps in parallel.
+// https://github.blog/changelog/2026-06-25-actions-steps-can-now-be-run-in-parallel/
+func (p *parser) parseStepExecParallel(entries []workflowMappingEntry) *ExecParallel {
+	ret := &ExecParallel{}
+
+	for _, e := range entries {
+		switch e.id {
+		case "parallel":
+			ret.Steps = p.parseSteps(e.val)
+		case "id", "if", "name", "env", "continue-on-error", "timeout-minutes":
+			// do nothing
+		default:
+			p.unexpectedKey(e.key, "step to run steps in parallel", []string{
+				"id",
+				"if",
+				"name",
+				"env",
+				"continue-on-error",
+				"timeout-minutes",
+				"parallel",
+			})
+		}
+	}
+
 	return ret
 }
 
@@ -1207,6 +1307,9 @@ func (p *parser) parseStep(n *yaml.Node) *Step {
 		isAction
 		isDocker
 		isRun
+		isWait
+		isCancel
+		isParallel
 	)
 
 	kind := isUnknown
@@ -1225,6 +1328,8 @@ func (p *parser) parseStep(n *yaml.Node) *Step {
 			ret.ContinueOnError = p.parseBool(e.val)
 		case "timeout-minutes":
 			ret.TimeoutMinutes = p.parseTimeoutMinutes(e.val)
+		case "background":
+			ret.Background = p.parseBool(e.val)
 		case "uses":
 			if strings.HasPrefix(e.val.Value, "docker://") {
 				kind = isDocker
@@ -1234,6 +1339,13 @@ func (p *parser) parseStep(n *yaml.Node) *Step {
 		case "run":
 			kind = isRun
 			// Note: Unexpected keys are checked in parseStepExecAction or parseStepExecRun later
+		case "wait", "wait-all":
+			kind = isWait
+		case "cancel":
+			kind = isCancel
+		case "parallel":
+			kind = isParallel
+			// Note: Unexpected keys are checked in the parseStepExec* functions later
 		}
 	}
 
@@ -1242,6 +1354,12 @@ func (p *parser) parseStep(n *yaml.Node) *Step {
 		ret.Exec = p.parseStepExecAction(entries, kind == isDocker)
 	case isRun:
 		ret.Exec = p.parseStepExecRun(entries)
+	case isWait:
+		ret.Exec = p.parseStepExecWait(entries)
+	case isCancel:
+		ret.Exec = p.parseStepExecCancel(entries)
+	case isParallel:
+		ret.Exec = p.parseStepExecParallel(entries)
 	default:
 		p.error(n, "step must run script with \"run\" section or run action with \"uses\" section")
 	}

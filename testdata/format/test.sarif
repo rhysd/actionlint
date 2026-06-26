@@ -304,7 +304,7 @@
         {
           "ruleId": "syntax-check",
           "message": {
-            "text": "unexpected key \"with\" for step to run shell command. expected one of \"continue-on-error\", \"env\", \"id\", \"if\", \"name\", \"run\", \"shell\", \"timeout-minutes\", \"working-directory\""
+            "text": "unexpected key \"with\" for step to run shell command. expected one of \"background\", \"continue-on-error\", \"env\", \"id\", \"if\", \"name\", \"run\", \"shell\", \"timeout-minutes\", \"working-directory\""
           },
           "locations": [
             {

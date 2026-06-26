@@ -1,0 +1,7 @@
+test.yaml:9:9: unexpected key "shell" for step to wait for background steps. expected one of "continue-on-error", "env", "id", "if", "name", "timeout-minutes", "wait", "wait-all" [syntax-check]
+test.yaml:12:9: unexpected key "working-directory" for step to cancel background steps. expected one of "cancel", "continue-on-error", "env", "id", "if", "name", "timeout-minutes" [syntax-check]
+test.yaml:16:9: unexpected key "shell" for step to run steps in parallel. expected one of "continue-on-error", "env", "id", "if", "name", "parallel", "timeout-minutes" [syntax-check]
+test.yaml:19:13: step must run script with "run" section or run action with "uses" section [syntax-check]
+test.yaml:21:17: expected scalar node for string value but found sequence node with "!!seq" tag [syntax-check]
+test.yaml:23:19: "wait-all" step takes no arguments [syntax-check]
+test.yaml:26:9: "wait" and "wait-all" cannot be specified in the same step [syntax-check]
