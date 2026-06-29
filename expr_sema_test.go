@@ -78,6 +78,11 @@ func TestExprSemanticsCheckOK(t *testing.T) {
 			expected: StringType{},
 		},
 		{
+			what:     "job workflow identity context property",
+			input:    "job.workflow_ref",
+			expected: StringType{},
+		},
+		{
 			what:     "object property dereference for any type",
 			input:    "github.event.labels",
 			expected: AnyType{},
