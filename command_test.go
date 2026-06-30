@@ -8,6 +8,29 @@ import (
 	"testing"
 )
 
+func TestCommandMainSummary(t *testing.T) {
+	var output bytes.Buffer
+
+	cmd := Command{
+		Stdin:  os.Stdin,
+		Stdout: &output,
+		Stderr: &output,
+	}
+
+	workflow := filepath.Join("testdata", "examples", "main.yaml")
+	status := cmd.Main([]string{"actionlint", "-shellcheck=", "-pyflakes=", "-summary", workflow})
+
+	if status != 1 {
+		t.Fatal("exit status should be 1 but got", status)
+	}
+
+	out := output.String()
+
+	if !strings.Contains(out, "errors in") {
+		t.Errorf("output should contain summary line: %q", out)
+	}
+}
+
 func TestCommandMain(t *testing.T) {
 	var output bytes.Buffer
 

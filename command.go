@@ -130,6 +130,7 @@ func (cmd *Command) Main(args []string) int {
 	var initConfig bool
 	var noColor bool
 	var color bool
+	var summary bool
 
 	flags := flag.NewFlagSet(args[0], flag.ContinueOnError)
 	flags.SetOutput(cmd.Stderr)
@@ -144,6 +145,7 @@ func (cmd *Command) Main(args []string) int {
 	flags.BoolVar(&color, "color", false, "Always enable colorful output. This is useful to force colorful outputs")
 	flags.BoolVar(&opts.Verbose, "verbose", false, "Enable verbose output")
 	flags.BoolVar(&opts.Debug, "debug", false, "Enable debug output (for development)")
+	flags.BoolVar(&summary, "summary", false, "Print aggregate summary line to stderr after checking")
 	flags.BoolVar(&ver, "version", false, "Show version and how this binary was installed")
 	flags.StringVar(&opts.StdinFileName, "stdin-filename", "<stdin>", "File name when reading input from stdin")
 	flags.Usage = func() {
@@ -186,6 +188,15 @@ func (cmd *Command) Main(args []string) int {
 		fmt.Fprintln(cmd.Stderr, err.Error())
 		return ExitStatusFailure
 	}
+
+	if summary {
+		files := map[string]struct{}{}
+		for _, e := range errs {
+			files[e.Filepath] = struct{}{}
+		}
+		fmt.Fprintf(cmd.Stderr, "%d errors in %d file(s)\n", len(errs), len(files))
+	}
+
 	if len(errs) > 0 {
 		return ExitStatusSuccessProblemFound // Linter found some issues, yay!
 	}
