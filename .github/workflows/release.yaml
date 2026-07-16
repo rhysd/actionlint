@@ -12,13 +12,13 @@ jobs:
       id-token: write
       attestations: write
     steps:
-      - uses: actions/checkout@v6
+      - uses: actions/checkout@v7
       - uses: ruby/setup-ruby@v1
         with:
           ruby-version: '3.3'
       - run: gem install ronn
       - run: ronn ./man/actionlint.1.ronn
-      - uses: actions/setup-go@v6
+      - uses: actions/setup-go@v7
         with:
           go-version: '1.26'
           check-latest: true
@@ -36,7 +36,7 @@ jobs:
       - name: Post-release download check
         run: bash ./scripts/download-actionlint.bash "$VERSION"
       - name: Clone nested repository to make version bump commit
-        uses: actions/checkout@v6
+        uses: actions/checkout@v7
         with:
           path: ./tmp-actionlint-for-update-ver
           ref: main
@@ -64,7 +64,7 @@ jobs:
   docker:
     runs-on: ubuntu-latest
     steps:
-      - uses: actions/checkout@v6
+      - uses: actions/checkout@v7
       - name: Get tag name
         id: tag
         run: |
