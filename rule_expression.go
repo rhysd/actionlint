@@ -55,6 +55,15 @@ func NewRuleExpression(actionsCache *LocalActionsCache, workflowCache *LocalReus
 func (rule *RuleExpression) VisitWorkflowPre(n *Workflow) error {
 	rule.checkString(n.Name, "")
 
+	// Declared workflow_call secrets are exhaustive only when no other event can trigger the workflow.
+	workflowCallOnly := true
+	for _, e := range n.On {
+		if _, ok := e.(*WorkflowCallEvent); !ok {
+			workflowCallOnly = false
+			break
+		}
+	}
+
 	for _, e := range n.On {
 		switch e := e.(type) {
 		case *WebhookEvent:
@@ -155,7 +164,9 @@ func (rule *RuleExpression) VisitWorkflowPre(n *Workflow) error {
 					sty.Props[id] = StringType{}
 					rule.checkString(s.Description, "")
 				}
-				rule.secretsTy = sty
+				if workflowCallOnly {
+					rule.secretsTy = sty
+				}
 			}
 
 			for _, o := range e.Outputs {
