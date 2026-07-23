@@ -75,7 +75,8 @@ type LinterOptions struct {
 	// messages. When an error is matched, the error is ignored.
 	IgnorePatterns []string
 	// ConfigFile is a path to config file. Empty string means no config file path is given. In
-	// the case, actionlint will try to read config from .github/actionlint.yaml.
+	// the case, actionlint will try to read config from the repository's .github/actionlint.yaml,
+	// then from $XDG_CONFIG_HOME/actionlint/actionlint.yaml ($HOME/.config when unset).
 	ConfigFile string
 	// Format is a custom template to format error messages. It must follow Go Template format and
 	// contain at least one {{ }} placeholder. https://pkg.go.dev/text/template
@@ -106,6 +107,7 @@ type Linter struct {
 	ignorePats     IgnorePatterns
 	stdin          string
 	defaultConfig  *Config
+	globalConfig   *Config
 	errFmt         *ErrorFormatter
 	cwd            string
 	onRulesCreated func([]Rule) []Rule
@@ -149,6 +151,18 @@ func NewLinter(out io.Writer, opts *LinterOptions) (*Linter, error) {
 		cfg = c
 	}
 
+	// Load the user-global config as a fallback for projects which have no
+	// .github/actionlint.yaml. The -config-file option takes precedence over it.
+	var globalCfg *Config
+	var globalCfgPath string
+	if opts.ConfigFile == "" {
+		c, p, err := loadGlobalConfig()
+		if err != nil {
+			return nil, err
+		}
+		globalCfg, globalCfgPath = c, p
+	}
+
 	ignore := make([]*regexp.Regexp, 0, len(opts.IgnorePatterns))
 	for _, s := range opts.IgnorePatterns {
 		r, err := regexp.Compile(s)
@@ -190,12 +204,16 @@ func NewLinter(out io.Writer, opts *LinterOptions) (*Linter, error) {
 		ignore,
 		stdin,
 		cfg,
+		globalCfg,
 		formatter,
 		cwd,
 		opts.OnRulesCreated,
 	}
 
 	l.debug("Create a Linter instance with option %#v", opts)
+	if globalCfgPath != "" {
+		l.debug("Loaded user-global config from %q", globalCfgPath)
+	}
 	return l, nil
 }
 
@@ -531,12 +549,14 @@ func (l *Linter) check(
 		l.log("Using project at", project.RootDir())
 	}
 
+	// Config priority: -config-file option, then repository config, then user-global config
 	var cfg *Config
 	if l.defaultConfig != nil {
-		// `-config-file` option has higher priority than repository config file
 		cfg = l.defaultConfig
-	} else if project != nil {
+	} else if project != nil && project.Config() != nil {
 		cfg = project.Config()
+	} else {
+		cfg = l.globalConfig
 	}
 	if cfg != nil {
 		l.debug("Config: %#v", cfg)

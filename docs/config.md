@@ -58,6 +58,23 @@ paths:
       expressions. When one of the patterns matches the error message, the error will be ignored. It's similar to the
       `-ignore` command line option.
 
+## Configuration file location and priority
+
+actionlint looks for a configuration file in the following order and uses the **first** one found. Configurations
+are not merged:
+
+1. The file passed via the `-config-file` command line option.
+2. `actionlint.yaml` (or `actionlint.yml`) in the repository's `.github` directory. actionlint locates the project by
+   searching upwards from the linted file's directory.
+3. The user-global configuration at `$XDG_CONFIG_HOME/actionlint/actionlint.yaml` (or `actionlint.yml`). When
+   `$XDG_CONFIG_HOME` is not set, `$HOME/.config/actionlint/actionlint.yaml` is used instead, following the
+   [XDG Base Directory specification][xdg].
+
+The user-global configuration is useful for personal or organization-wide defaults shared across many repositories
+(for example via dotfiles), or for CI base images that need a baseline configuration without injecting a config file
+into every checkout. A repository's own `.github/actionlint.yaml` always takes precedence over the global configuration,
+so per-repository settings are never overridden by the global defaults.
+
 ## Generate the initial configuration
 
 You don't need to write the first configuration file by your hand. `actionlint` command can generate a default configuration
@@ -72,6 +89,7 @@ vim .github/actionlint.yaml
 
 [Checks](checks.md) | [Installation](install.md) | [Usage](usage.md) | [Go API](api.md) | [References](reference.md)
 
+[xdg]: https://specifications.freedesktop.org/basedir-spec/latest/
 [Super-Linter]: https://github.com/super-linter/super-linter
 [pat]: https://pkg.go.dev/path#Match
 [vars]: https://docs.github.com/en/actions/learn-github-actions/variables

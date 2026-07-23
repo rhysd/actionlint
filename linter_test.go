@@ -19,6 +19,19 @@ import (
 	"golang.org/x/sys/execabs"
 )
 
+func TestMain(m *testing.M) {
+	// Point $XDG_CONFIG_HOME at an empty directory so that tests do not pick up
+	// a user-global config file on the machine running them.
+	dir, err := os.MkdirTemp("", "actionlint-test-xdg-config")
+	if err != nil {
+		panic(err)
+	}
+	os.Setenv("XDG_CONFIG_HOME", dir)
+	code := m.Run()
+	os.RemoveAll(dir)
+	os.Exit(code)
+}
+
 type testErrorReader struct{}
 
 func (r testErrorReader) Read(p []byte) (int, error) {
@@ -916,5 +929,89 @@ func BenchmarkLintRepository(b *testing.B) {
 		if len(errs) > 0 {
 			b.Fatal(errs)
 		}
+	}
+}
+
+func TestLinterGlobalConfigFallback(t *testing.T) {
+	const wf = `on: push
+jobs:
+  test:
+    runs-on: my-custom-runner
+    steps:
+      - run: echo hi
+`
+	// Path outside any Git repository so that no repository config is found
+	path := filepath.Join(t.TempDir(), "no-such-workflow.yaml")
+
+	mentionsLabel := func(errs []*Error) bool {
+		for _, e := range errs {
+			if strings.Contains(e.Message, "my-custom-runner") {
+				return true
+			}
+		}
+		return false
+	}
+
+	// Without any config, the label is unknown
+	linter, err := NewLinter(io.Discard, &LinterOptions{})
+	if err != nil {
+		t.Fatal(err)
+	}
+	errs, err := linter.Lint(path, []byte(wf), nil)
+	if err != nil {
+		t.Fatal(err)
+	}
+	if !mentionsLabel(errs) {
+		t.Fatalf("wanted an unknown-label error without global config but got: %v", errs)
+	}
+
+	// With a global config listing the label, the error is suppressed
+	linter, err = NewLinter(io.Discard, &LinterOptions{})
+	if err != nil {
+		t.Fatal(err)
+	}
+	linter.globalConfig = &Config{}
+	linter.globalConfig.SelfHostedRunner.Labels = []string{"my-custom-runner"}
+	errs, err = linter.Lint(path, []byte(wf), nil)
+	if err != nil {
+		t.Fatal(err)
+	}
+	if mentionsLabel(errs) {
+		t.Fatalf("global config should have suppressed the unknown-label error but got: %v", errs)
+	}
+}
+
+func TestLinterConfigFilePriorityOverGlobalConfig(t *testing.T) {
+	const wf = `on: push
+jobs:
+  test:
+    runs-on: my-custom-runner
+    steps:
+      - run: echo hi
+`
+	path := filepath.Join(t.TempDir(), "no-such-workflow.yaml")
+
+	linter, err := NewLinter(io.Discard, &LinterOptions{})
+	if err != nil {
+		t.Fatal(err)
+	}
+	// The config from -config-file lists no labels, so the label must remain
+	// unknown even though the global config lists it
+	linter.defaultConfig = &Config{}
+	linter.globalConfig = &Config{}
+	linter.globalConfig.SelfHostedRunner.Labels = []string{"my-custom-runner"}
+
+	errs, err := linter.Lint(path, []byte(wf), nil)
+	if err != nil {
+		t.Fatal(err)
+	}
+	found := false
+	for _, e := range errs {
+		if strings.Contains(e.Message, "my-custom-runner") {
+			found = true
+		}
+	}
+	if !found {
+		t.Fatalf("label should remain unknown since -config-file takes priority over global config but got: %v", errs)
 	}
 }

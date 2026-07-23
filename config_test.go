@@ -1,6 +1,7 @@
 package actionlint
 
 import (
+	"os"
 	"path/filepath"
 	"strings"
 	"testing"
@@ -286,5 +287,144 @@ func TestConfigGenerateDefaultConfigFileError(t *testing.T) {
 	msg := err.Error()
 	if !strings.Contains(msg, "could not write default configuration file") {
 		t.Fatalf("unexpected error message: %q", msg)
+	}
+}
+
+func TestConfigLoadGlobalConfigOK(t *testing.T) {
+	dir := t.TempDir()
+	t.Setenv("XDG_CONFIG_HOME", dir)
+	confDir := filepath.Join(dir, "actionlint")
+	if err := os.MkdirAll(confDir, 0o755); err != nil {
+		t.Fatal(err)
+	}
+	body := "self-hosted-runner:\n  labels:\n    - foo\n    - bar\n"
+	want := filepath.Join(confDir, "actionlint.yaml")
+	if err := os.WriteFile(want, []byte(body), 0o644); err != nil {
+		t.Fatal(err)
+	}
+
+	c, p, err := loadGlobalConfig()
+	if err != nil {
+		t.Fatal(err)
+	}
+	if c == nil {
+		t.Fatal("global config was not loaded")
+	}
+	if p != want {
+		t.Fatalf("wanted config path %q but have %q", want, p)
+	}
+	if diff := cmp.Diff(c.SelfHostedRunner.Labels, []string{"foo", "bar"}); diff != "" {
+		t.Fatal(diff)
+	}
+}
+
+func TestConfigLoadGlobalConfigPrefersYamlOverYml(t *testing.T) {
+	dir := t.TempDir()
+	t.Setenv("XDG_CONFIG_HOME", dir)
+	confDir := filepath.Join(dir, "actionlint")
+	if err := os.MkdirAll(confDir, 0o755); err != nil {
+		t.Fatal(err)
+	}
+	if err := os.WriteFile(filepath.Join(confDir, "actionlint.yaml"), []byte("self-hosted-runner:\n  labels:\n    - yaml\n"), 0o644); err != nil {
+		t.Fatal(err)
+	}
+	if err := os.WriteFile(filepath.Join(confDir, "actionlint.yml"), []byte("self-hosted-runner:\n  labels:\n    - yml\n"), 0o644); err != nil {
+		t.Fatal(err)
+	}
+
+	c, p, err := loadGlobalConfig()
+	if err != nil {
+		t.Fatal(err)
+	}
+	if c == nil {
+		t.Fatal("global config was not loaded")
+	}
+	if want := filepath.Join(confDir, "actionlint.yaml"); p != want {
+		t.Fatalf("wanted config path %q but have %q", want, p)
+	}
+	if diff := cmp.Diff(c.SelfHostedRunner.Labels, []string{"yaml"}); diff != "" {
+		t.Fatal(diff)
+	}
+}
+
+func TestConfigLoadGlobalConfigYmlExtension(t *testing.T) {
+	dir := t.TempDir()
+	t.Setenv("XDG_CONFIG_HOME", dir)
+	confDir := filepath.Join(dir, "actionlint")
+	if err := os.MkdirAll(confDir, 0o755); err != nil {
+		t.Fatal(err)
+	}
+	want := filepath.Join(confDir, "actionlint.yml")
+	if err := os.WriteFile(want, []byte("self-hosted-runner:\n  labels:\n    - only-yml\n"), 0o644); err != nil {
+		t.Fatal(err)
+	}
+
+	c, p, err := loadGlobalConfig()
+	if err != nil {
+		t.Fatal(err)
+	}
+	if c == nil {
+		t.Fatal("global config was not loaded")
+	}
+	if p != want {
+		t.Fatalf("wanted config path %q but have %q", want, p)
+	}
+}
+
+func TestConfigLoadGlobalConfigNotFound(t *testing.T) {
+	t.Setenv("XDG_CONFIG_HOME", t.TempDir())
+	c, p, err := loadGlobalConfig()
+	if err != nil {
+		t.Fatal(err)
+	}
+	if c != nil || p != "" {
+		t.Fatalf("wanted no global config but have config=%v and path=%q", c, p)
+	}
+}
+
+func TestConfigLoadGlobalConfigParseError(t *testing.T) {
+	dir := t.TempDir()
+	t.Setenv("XDG_CONFIG_HOME", dir)
+	confDir := filepath.Join(dir, "actionlint")
+	if err := os.MkdirAll(confDir, 0o755); err != nil {
+		t.Fatal(err)
+	}
+	if err := os.WriteFile(filepath.Join(confDir, "actionlint.yaml"), []byte("this: [is not: valid\n"), 0o644); err != nil {
+		t.Fatal(err)
+	}
+
+	_, _, err := loadGlobalConfig()
+	if err == nil {
+		t.Fatal("error did not occur")
+	}
+	if msg := err.Error(); !strings.Contains(msg, "global config file") {
+		t.Fatalf("unexpected error message: %q", msg)
+	}
+}
+
+func TestConfigLoadGlobalConfigHomeDirFallback(t *testing.T) {
+	home := t.TempDir()
+	t.Setenv("XDG_CONFIG_HOME", "")
+	t.Setenv("HOME", home)
+	// os.UserHomeDir reads %USERPROFILE% instead of $HOME on Windows.
+	t.Setenv("USERPROFILE", home)
+	confDir := filepath.Join(home, ".config", "actionlint")
+	if err := os.MkdirAll(confDir, 0o755); err != nil {
+		t.Fatal(err)
+	}
+	want := filepath.Join(confDir, "actionlint.yaml")
+	if err := os.WriteFile(want, []byte("self-hosted-runner:\n  labels:\n    - home\n"), 0o644); err != nil {
+		t.Fatal(err)
+	}
+
+	c, p, err := loadGlobalConfig()
+	if err != nil {
+		t.Fatal(err)
+	}
+	if c == nil {
+		t.Fatal("global config was not loaded from $HOME/.config")
+	}
+	if p != want {
+		t.Fatalf("wanted config path %q but have %q", want, p)
 	}
 }
