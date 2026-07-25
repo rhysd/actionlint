@@ -164,6 +164,21 @@ func TestLexOneToken(t *testing.T) {
 			kind:  TokenKindFloat,
 		},
 		{
+			what:  "float positive exp part",
+			input: "1.0e+99",
+			kind:  TokenKindFloat,
+		},
+		{
+			what:  "float positive exp part with upper E",
+			input: "1.0E+99",
+			kind:  TokenKindFloat,
+		},
+		{
+			what:  "int with positive exp part",
+			input: "3e+42",
+			kind:  TokenKindFloat,
+		},
+		{
 			what:  "float zero with negative exp part",
 			input: "0.0e-99",
 			kind:  TokenKindFloat,

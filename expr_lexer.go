@@ -319,7 +319,7 @@ func (lex *ExprLexer) lexNum() *Token {
 
 	if r == 'e' || r == 'E' {
 		r = lex.eat() // eat 'e' or 'E'
-		if r == '-' {
+		if r == '-' || r == '+' {
 			r = lex.eat()
 		}
 
