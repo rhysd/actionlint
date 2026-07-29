@@ -23,6 +23,10 @@ func TestRuleRunnerLabelCheckLabels(t *testing.T) {
 			labels: []string{"windows-latest"},
 		},
 		{
+			what:   "simple GH-hosted Windows 11 VS 2026 Arm runner label",
+			labels: []string{"windows-11-vs2026-arm"},
+		},
+		{
 			what:   "simple GH-hosted macOS runner label",
 			labels: []string{"macos-14"},
 		},
@@ -267,6 +271,11 @@ func TestRuleRunnerLabelCheckLabels(t *testing.T) {
 			what:   "Windows labels architecture conflict",
 			labels: []string{"windows-2025", "windows-11-arm"},
 			errs:   []string{`label "windows-11-arm" conflicts with label "windows-2025"`},
+		},
+		{
+			what:   "Windows 11 Arm image labels conflict",
+			labels: []string{"windows-11-arm", "windows-11-vs2026-arm"},
+			errs:   []string{`label "windows-11-vs2026-arm" conflicts with label "windows-11-arm"`},
 		},
 		{
 			what:   "macOS XL and normal labels conflict",
