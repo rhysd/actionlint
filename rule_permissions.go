@@ -19,6 +19,7 @@ var allPermissionScopes = map[string][]string{
 	"repository-projects": {"read", "write", "none"},
 	"security-events":     {"read", "write", "none"},
 	"statuses":            {"read", "write", "none"},
+	"vulnerability-alerts": {"read", "write", "none"},
 }
 
 // RulePermissions is a rule checker to check permission configurations in a workflow.

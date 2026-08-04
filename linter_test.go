@@ -879,7 +879,7 @@ func BenchmarkExamplesLintFiles(b *testing.B) {
 		b.Skipf("pyflakes is not found: %s", err)
 	}
 
-	for i := 0; i < b.N; i++ {
+	for b.Loop() {
 		opts := LinterOptions{
 			Shellcheck: shellcheck,
 			Pyflakes:   pyflakes,
@@ -903,7 +903,7 @@ func BenchmarkExamplesLintFiles(b *testing.B) {
 }
 
 func BenchmarkLintRepository(b *testing.B) {
-	for i := 0; i < b.N; i++ {
+	for b.Loop() {
 		opts := LinterOptions{}
 		l, err := NewLinter(io.Discard, &opts)
 		if err != nil {
