@@ -371,6 +371,9 @@ func (g *gen) detectNewReleaseURLs() ([]string, error) {
 	actions := []*registry{}
 	for _, a := range all {
 		if a.Next != "" {
+			if a.Slug == "" {
+				return nil, fmt.Errorf("head request for %s was not successful: invalid action slug", a.rawURL(a.Next))
+			}
 			actions = append(actions, a)
 		}
 	}
@@ -395,7 +398,7 @@ func (g *gen) detectNewReleaseURLs() ([]string, error) {
 						errs <- fmt.Errorf("could not send head request to %s: %w", url, err)
 						break
 					}
-					if res.StatusCode == 404 {
+					if res.StatusCode == http.StatusNotFound {
 						g.log.Println("Not found:", url)
 						ret <- ""
 						break
