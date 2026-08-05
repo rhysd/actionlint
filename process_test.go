@@ -176,6 +176,33 @@ func TestProcessInputStdin(t *testing.T) {
 	}
 }
 
+func TestProcessInputLargeStdin(t *testing.T) {
+	if _, err := execabs.LookPath("cat"); err != nil {
+		t.Skipf("cat command is necessary to run this test: %s", err)
+	}
+
+	input := strings.Repeat("large input line\n", 1<<16)
+	done := make(chan struct{})
+	var output []byte
+	var runErr error
+	go func() {
+		output, runErr = (&cmdExecution{cmd: "cat", stdin: input}).run()
+		close(done)
+	}()
+
+	select {
+	case <-done:
+	case <-time.After(5 * time.Second):
+		t.Fatal("command deadlocked while receiving stdin larger than the pipe buffer")
+	}
+	if runErr != nil {
+		t.Fatal(runErr)
+	}
+	if string(output) != input {
+		t.Fatalf("large stdin was not passed through: got %d bytes, want %d", len(output), len(input))
+	}
+}
+
 func TestProcessErrorCommandNotFound(t *testing.T) {
 	p := newConcurrentProcess(1)
 	c := &externalCommand{
