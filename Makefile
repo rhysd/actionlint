@@ -94,11 +94,11 @@ bench:
 	node ./scripts/generate-actionlint-matcher/main.mjs .github/actionlint-matcher.json
 
 scripts/generate-actionlint-matcher/test/escape.txt: $(TARGET)
-	./actionlint -color ./testdata/err/one_error.yaml > ./scripts/generate-actionlint-matcher/test/escape.txt || true
+	./actionlint --color ./testdata/err/one_error.yaml > ./scripts/generate-actionlint-matcher/test/escape.txt || true
 scripts/generate-actionlint-matcher/test/no_escape.txt: $(TARGET)
-	./actionlint -no-color ./testdata/err/one_error.yaml > ./scripts/generate-actionlint-matcher/test/no_escape.txt || true
+	./actionlint --no-color ./testdata/err/one_error.yaml > ./scripts/generate-actionlint-matcher/test/no_escape.txt || true
 scripts/generate-actionlint-matcher/test/want.json: $(TARGET)
-	./actionlint -format '{{json .}}' ./testdata/err/one_error.yaml > scripts/generate-actionlint-matcher/test/want.json || true
+	./actionlint --format '{{json .}}' ./testdata/err/one_error.yaml > scripts/generate-actionlint-matcher/test/want.json || true
 
 CHANGELOG.md: .bumptimestamp
 	changelog-from-release > CHANGELOG.md

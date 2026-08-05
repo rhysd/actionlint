@@ -240,7 +240,7 @@ func compareRuleTemplateByName(lhs, rhs *ruleTemplateFields) int {
 }
 
 // ErrorFormatter is a formatter to format a slice of ErrorTemplateFields. It is used for
-// formatting error messages with -format option.
+// formatting error messages with --format option.
 type ErrorFormatter struct {
 	temp    *template.Template
 	rules   map[string]*ruleTemplateFields

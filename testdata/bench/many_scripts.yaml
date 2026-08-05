@@ -34,7 +34,7 @@ jobs:
       - run: go test -v -race -coverprofile coverage.txt -covermode=atomic
       - run: go tool cover -func ./coverage.txt
       # Dog fooding 🐶
-      - run: ./actionlint -color
+      - run: ./actionlint --color
       - run: ./actionlint
       - run: ./actionlint
       - run: ./actionlint

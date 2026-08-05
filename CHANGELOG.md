@@ -211,7 +211,7 @@
   - `peter-evans/create-or-update-comment`
   - `release-drafter/release-drafter`
   - `SamKirkland/FTP-Deploy-Action`
-- Fix the version value in `actionlint -version` output can be empty.
+- Fix the version value in `actionlint --version` output can be empty.
 - Fix outdated URL links in some error messages and documents.
 - [Homebrew formula in this repository](https://github.com/rhysd/actionlint/blob/main/HomebrewFormula/actionlint.rb) is deprecated and [Homebrew cask](https://github.com/rhysd/actionlint/blob/main/Casks/actionlint.rb) is newly added instead because [GoReleaser no longer supports Homebrew formula update](https://goreleaser.com/deprecations/#brews). Note that Homebrew's official `actionlint` formula is still maintained. Please read the [documentation](https://github.com/rhysd/actionlint/blob/main/docs/install.md#homebrew) for more details.
 - Drop support for Go 1.23 and earlier because they are no longer maintained officially. Go 1.24 and later are supported to build actionlint.
@@ -283,7 +283,7 @@
 - Allow passing command arguments to `-shellcheck` argument. ([#483](https://github.com/rhysd/actionlint/issues/483), thanks [@anuraaga](https://github.com/anuraaga))
   - This is useful when you want to use alternative build of shellcheck like [go-shellcheck](https://github.com/wasilibs/go-shellcheck/).
     ```sh
-    actionlint -shellcheck="go run github.com/wasilibs/go-shellcheck/cmd/shellcheck@latest"
+    actionlint --shellcheck="go run github.com/wasilibs/go-shellcheck/cmd/shellcheck@latest"
     ```
 - Support undocumented `repository_visibility`, `artifact_cache_size_limit`, `step_summary`, `output`, `state` properties in `github` context. ([#489](https://github.com/rhysd/actionlint/issues/489), thanks [@rasa](https://github.com/rasa) for adding `repository_visibility` property)
 - Remove `macos-12` runner label from known labels because it was [dropped](https://github.com/actions/runner-images/issues/10721) from GitHub-hosted runners on Dec. 3 and is no longer available.
@@ -594,7 +594,7 @@
 - Several template fields and template actions were added. All fields and actions are listed in [the document](https://github.com/rhysd/actionlint/blob/main/docs/usage.md#format-error-messages). Please read it for more details. ([#311](https://github.com/rhysd/actionlint/issues/311))
   - By these additions, now actionlint can output the result in [the SARIF format](https://docs.oasis-open.org/sarif/sarif/v2.1.0/sarif-v2.1.0.html). SARIF is a format for the output of static analysis tools used by [GitHub CodeQL](https://codeql.github.com/). [the example Go template](https://github.com/rhysd/actionlint/blob/main/testdata/format/sarif_template.txt) to format actionlint output in SARIF.
     ```sh
-    actionlint -format "$(cat /path/to/sarif_template.txt)" > output.json
+    actionlint --format "$(cat /path/to/sarif_template.txt)" > output.json
     ```
   - `allKinds` returns the kinds (lint rules) information as an array. You can include what lint rules are defined in the command output.
   - `toPascalCase` converts snake case (`foo_bar`) or kebab case (`foo-bar`) into pascal case (`FooBar`).
@@ -879,7 +879,7 @@
   ```
 - Add `end_column` property to JSON representation of error. The property indicates a column of the end position of `^~~~~~~` indicator in snippet. Note that `end_column` is equal to `column` when the indicator cannot be shown. ([#219](https://github.com/rhysd/actionlint/issues/219))
   ```console
-  $ actionlint -format '{{json .}}' test.yaml | jq
+  $ actionlint --format '{{json .}}' test.yaml | jq
   [
     {
       "message": "property \"unknown_prop\" is not defined in object type {arch: string; debug: string; name: string; os: string; temp: string; tool_cache: string; workspace: string}",
@@ -1206,7 +1206,7 @@
   ```yaml
   - uses: docker://rhysd/actionlint:latest
     with:
-      args: -color
+      args: --color
   ```
 - Clarify the behavior if empty strings are set to some command line options in documents. `-shellcheck=` disables shellcheck integration and `-pyflakes=` disables pyflakes integration. ([#156](https://github.com/rhysd/actionlint/issues/156))
 - Update Go module dependencies.
@@ -1305,7 +1305,7 @@
 - `actionlint` command gains `-stdin-filename` command line option. When it is specified, the file name is used on reading input from stdin instead of `<stdin>`. ([#157](https://github.com/rhysd/actionlint/issues/157), thanks [@arahatashun](https://github.com/arahatashun))
   ```sh
   # Error message shows foo.yml as file name where the error happened
-  ... | actionlint -stdin-filename foo.yml -
+  ... | actionlint --stdin-filename foo.yml -
   ```
 - [The download script](https://github.com/rhysd/actionlint/blob/main/docs/install.md#download-script) allows to specify a directory path to install `actionlint` executable with the second argument of the script. For example, the following command downloads `/path/to/bin/actionlint`:
   ```sh
@@ -1382,7 +1382,7 @@
 <a id="v1.6.11"></a>
 # [v1.6.11](https://github.com/rhysd/actionlint/releases/tag/v1.6.11) - 2022-04-05
 
-- Fix crash on making [outputs in JSON format](https://github.com/rhysd/actionlint/blob/main/docs/usage.md#format-error-messages) with `actionlint -format '{{json .}}'`. ([#128](https://github.com/rhysd/actionlint/issues/128))
+- Fix crash on making [outputs in JSON format](https://github.com/rhysd/actionlint/blob/main/docs/usage.md#format-error-messages) with `actionlint --format '{{json .}}'`. ([#128](https://github.com/rhysd/actionlint/issues/128))
 - Allow any outputs from `actions/github-script` action because it allows to set arbitrary outputs via calling `core.setOutput()` in JavaScript. ([#104](https://github.com/rhysd/actionlint/issues/104))
   ```yaml
   - id: test
@@ -1737,7 +1737,7 @@
 - Add [pre-commit](https://pre-commit.com/) support. pre-commit is a framework for managing Git `pre-commit` hooks. See [the usage document](https://github.com/rhysd/actionlint/blob/main/docs/usage.md#pre-commit) for more details. (thanks [@xsc27](https://github.com/xsc27) for adding the integration at [#33](https://github.com/rhysd/actionlint/issues/33)) ([#23](https://github.com/rhysd/actionlint/issues/23))
 - Add [an official Docker image](https://hub.docker.com/repository/docker/rhysd/actionlint). The Docker image contains shellcheck and pyflakes as dependencies. Now actionlint can be run with `docker run` command easily. See [the usage document](https://github.com/rhysd/actionlint/blob/main/docs/usage.md#docker) for more details. (thanks [@xsc27](https://github.com/xsc27) for the help at [#34](https://github.com/rhysd/actionlint/issues/34))
 ```sh
-docker run --rm -v $(pwd):/repo --workdir /repo rhysd/actionlint:latest -color
+docker run --rm -v $(pwd):/repo --workdir /repo rhysd/actionlint:latest --color
 ```
 - Go 1.17 is now a default compiler to build actionlint. Built binaries are faster than before by 2~7% when the process is CPU-bound. Sizes of built binaries are about 2% smaller. Note that Go 1.16 continues to be supported.
 - `windows/arm64` target is added to released binaries thanks to Go 1.17.
@@ -1802,13 +1802,13 @@ should be replaced with
 Simple example to output error messages as JSON:
 
 ```sh
-actionlint -format '{{json .}}'
+actionlint --format '{{json .}}'
 ```
 
 More compliated example to output error messages as markdown:
 
 ```sh
-actionlint -format '{{range $ := .}}### Error at line {{$.Line}}, col {{$.Column}} of `{{$.Filepath}}`\n\n{{$.Message}}\n\n```\n{{$.Snippet}}\n```\n\n{{end}}'
+actionlint --format '{{range $ := .}}### Error at line {{$.Line}}, col {{$.Column}} of `{{$.Filepath}}`\n\n{{$.Message}}\n\n```\n{{$.Snippet}}\n```\n\n{{end}}'
 ```
 
 - Documents are reorganized. Long `README.md` is separated into several document files ([#28](https://github.com/rhysd/actionlint/issues/28))
@@ -2004,13 +2004,13 @@ Example of `-version` output:
 
 ```console
 $ brew install actionlint
-$ actionlint -version
+$ actionlint --version
 1.3.0
 downloaded from release page
 
 $ go install github.com/rhysd/actionlint/cmd/actionlint@v1.3.0
 go: downloading github.com/rhysd/actionlint v1.3.0
-$ actionlint -version
+$ actionlint --version
 v1.3.0
 built from source
 ```
@@ -2021,7 +2021,7 @@ Example of running actionlint on GitHub Actions forcing to enable color output:
 - name: Check workflow files
   run: |
     bash <(curl https://raw.githubusercontent.com/rhysd/actionlint/main/scripts/download-actionlint.bash)
-    ./actionlint -color
+    ./actionlint --color
   shell: bash
 ```
 
@@ -2053,7 +2053,7 @@ Example of running actionlint on GitHub Actions forcing to enable color output:
 - [`download-actionlint.yaml`](https://github.com/rhysd/actionlint/blob/main/scripts/download-actionlint.bash) now sets `executable` output when it is run in GitHub Actions environment. Please see [instruction in 'Install' document](https://github.com/rhysd/actionlint#ci-services) for the usage.
 - Redundant type `ArrayDerefType` was removed. Instead, [`Deref` field](https://pkg.go.dev/github.com/rhysd/actionlint#ArrayType) is now provided in `ArrayType`.
 - Fix crash on broken YAML input.
-- `actionlint -version` returns correct version string even if the `actionlint` command was installed via `go install`.
+- `actionlint --version` returns correct version string even if the `actionlint` command was installed via `go install`.
 
 [Changes][v1.1.1]
 

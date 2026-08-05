@@ -128,7 +128,7 @@ fi
 
 echo "Downloaded and unarchived executable: ${exe}"
 
-echo "Done: $("${exe}" -version)"
+echo "Done: $("${exe}" --version)"
 
 if [ -n "$GITHUB_ACTION" ]; then
     # On GitHub Actions, set executable path to output

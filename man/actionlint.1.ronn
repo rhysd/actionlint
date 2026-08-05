@@ -44,7 +44,7 @@ argument. It reads stdin and checks it as workflow file:
 To serialize errors into JSON, use **-format** option. It allows to format error messages flexibly
 with Go template syntax.
 
-    $ actionlint -format '{{json .}}'
+    $ actionlint --format '{{json .}}'
 
 
 ## FLAGS
@@ -64,7 +64,7 @@ with Go template syntax.
 
   * `-ignore` <PATTERN>:
     Regular expression matching to error messages you want to ignore. This flag is repeatable. For
-    example, `-ignore A -ignore B` ignores errors whose message includes "A" OR "B".
+    example, `-ignore A --ignore B` ignores errors whose message includes "A" OR "B".
 
   * `-init-config`:
     Generate default config file at `.github/actionlint.yaml` in current project
@@ -165,7 +165,7 @@ jobs:
         run: bash <(curl https://raw.githubusercontent.com/rhysd/actionlint/main/scripts/download-actionlint.bash)
         shell: bash
       - name: Check workflow files
-        run: ${{ steps.get_actionlint.outputs.executable }} -color
+        run: ${{ steps.get_actionlint.outputs.executable }} --color
         shell: bash
 ```
 
@@ -175,7 +175,7 @@ or simply run
 - name: Check workflow files
   run: |
     bash <(curl https://raw.githubusercontent.com/rhysd/actionlint/main/scripts/download-actionlint.bash)
-    ./actionlint -color
+    ./actionlint --color
   shell: bash
 ```
 
