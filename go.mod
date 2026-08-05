@@ -10,14 +10,17 @@ require (
 	github.com/mattn/go-runewidth v0.0.21
 	github.com/mattn/go-shellwords v1.0.12
 	github.com/robfig/cron/v3 v3.0.1
+	github.com/spf13/cobra v1.10.2
 	github.com/yuin/goldmark v1.7.17
 	go.yaml.in/yaml/v4 v4.0.0-rc.3
-	golang.org/x/net v0.52.0
+	golang.org/x/net v0.55.0
 	golang.org/x/sync v0.20.0
-	golang.org/x/sys v0.42.0
+	golang.org/x/sys v0.45.0
 )
 
 require (
 	github.com/clipperhouse/uax29/v2 v2.7.0 // indirect
+	github.com/inconshreveable/mousetrap v1.1.0 // indirect
 	github.com/mattn/go-isatty v0.0.20 // indirect
+	github.com/spf13/pflag v1.0.9 // indirect
 )
