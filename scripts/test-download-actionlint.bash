@@ -25,16 +25,16 @@ if [ -n "$GITHUB_ACTION" ]; then
         echo "'executable' step output is not set: '${out}'" >&2
     fi
 fi
-out="$(./actionlint -version)"
+out="$(./actionlint --version)"
 if [[ "$out" != *'installed by downloading from release page'* ]]; then
-    echo "Output from ./actionlint -version is unexpected: '${out}'" >&2
+    echo "Output from ./actionlint --version is unexpected: '${out}'" >&2
     exit 1
 fi
 rm -f ./actionlint
 
 # Specify only version
 bash "$script" '1.6.12'
-out="$(./actionlint -version | head -n 1)"
+out="$(./actionlint --version | head -n 1)"
 if [[ "$out" != '1.6.12' ]]; then
     echo "Unexpected version: '${out}'" 1>&2
     exit 1
@@ -44,9 +44,9 @@ rm -f ./actionlint
 # Specify only a download directory
 mkdir ./test1
 bash "$script" latest ./test1
-out="$(./test1/actionlint -version)"
+out="$(./test1/actionlint --version)"
 if [[ "$out" != *'installed by downloading from release page'* ]]; then
-    echo "Output from ./actionlint -version is unexpected: '${out}'" >&2
+    echo "Output from ./actionlint --version is unexpected: '${out}'" >&2
     exit 1
 fi
 rm -rf ./test1
@@ -54,7 +54,7 @@ rm -rf ./test1
 # Specify both version and a download directory
 mkdir ./test2
 bash "$script" '1.6.12' ./test2
-out="$(./test2/actionlint -version | head -n 1)"
+out="$(./test2/actionlint --version | head -n 1)"
 if [[ "$out" != '1.6.12' ]]; then
     echo "Unexpected version: '${out}'" 1>&2
     exit 1

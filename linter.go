@@ -27,7 +27,7 @@ type LogLevel int
 const (
 	// LogLevelNone does not output any log output.
 	LogLevelNone LogLevel = 0
-	// LogLevelVerbose shows verbose log output. This is equivalent to specifying -verbose option
+	// LogLevelVerbose shows verbose log output. This is equivalent to specifying --verbose option
 	// to actionlint command.
 	LogLevelVerbose = 1
 	// LogLevelDebug shows all log output including debug information.
@@ -655,7 +655,7 @@ func (l *Linter) filterErrors(errs []*Error, cfgs []PathConfig) []*Error {
 Loop:
 	for _, err := range errs {
 		if l.ignorePats.Match(err) {
-			l.debug("Error %q is ignored due to -ignore command line option", err.Message)
+			l.debug("Error %q is ignored due to --ignore command line option", err.Message)
 			continue Loop
 		}
 		for _, c := range cfgs {

@@ -64,7 +64,7 @@ You don't need to write the first configuration file by your hand. `actionlint` 
 with `-init-config` flag.
 
 ```sh
-actionlint -init-config
+actionlint --init-config
 vim .github/actionlint.yaml
 ```
 

@@ -31,7 +31,7 @@ To ignore some errors, `-ignore` option offers to filter errors by messages usin
 The regular expression syntax is the same as [RE2][re2].
 
 ```sh
-actionlint -ignore 'label ".+" is unknown' -ignore '".+" is potentially untrusted'
+actionlint --ignore 'label ".+" is unknown' --ignore '".+" is potentially untrusted'
 ```
 
 `-shellcheck` and `-pyflakes` specifies file paths of executables. Setting empty string to them disables `shellcheck` and
@@ -39,7 +39,7 @@ actionlint -ignore 'label ".+" is unknown' -ignore '".+" is potentially untruste
 processes.
 
 ```sh
-actionlint -shellcheck= -pyflakes=
+actionlint --shellcheck= --pyflakes=
 ```
 
 <a id="format"></a>
@@ -52,7 +52,7 @@ Before explaining the formatting details, let's see some examples.
 #### Example: Serialized into JSON
 
 ```sh
-actionlint -format '{{json .}}'
+actionlint --format '{{json .}}'
 ```
 
 Output:
@@ -64,7 +64,7 @@ Output:
 #### Example: Markdown
 
 ````sh
-actionlint -format '{{range $err := .}}### Error at line {{$err.Line}}, col {{$err.Column}} of `{{$err.Filepath}}`\n\n{{$err.Message}}\n\n```\n{{$err.Snippet}}\n```\n\n{{end}}'
+actionlint --format '{{range $err := .}}### Error at line {{$err.Line}}, col {{$err.Column}} of `{{$err.Filepath}}`\n\n{{$err.Message}}\n\n```\n{{$err.Snippet}}\n```\n\n{{end}}'
 ````
 
 Output:
@@ -83,7 +83,7 @@ property "platform" is not defined in object type {os: string}
 #### Example: Serialized in [JSON Lines][jsonl]
 
 ```sh
-actionlint -format '{{range $err := .}}{{json $err}}{{end}}'
+actionlint --format '{{range $err := .}}{{json $err}}{{end}}'
 ```
 
 Output:
@@ -97,7 +97,7 @@ Output:
 #### Example: [Error annotation][ga-annotate-error] on GitHub Actions
 
 ````sh
-actionlint -format '{{range $err := .}}::error file={{$err.Filepath}},line={{$err.Line}},col={{$err.Column}}::{{$err.Message}}%0A```%0A{{replace $err.Snippet "\\n" "%0A"}}%0A```\n{{end}}' -ignore 'SC2016:'
+actionlint --format '{{range $err := .}}::error file={{$err.Filepath}},line={{$err.Line}},col={{$err.Column}}::{{$err.Message}}%0A```%0A{{replace $err.Snippet "\\n" "%0A"}}%0A```\n{{end}}' --ignore 'SC2016:'
 ````
 
 Output:
@@ -213,7 +213,7 @@ jobs:
         run: bash <(curl https://raw.githubusercontent.com/rhysd/actionlint/main/scripts/download-actionlint.bash)
         shell: bash
       - name: Check workflow files
-        run: ${{ steps.get_actionlint.outputs.executable }} -color
+        run: ${{ steps.get_actionlint.outputs.executable }} --color
         shell: bash
 ```
 
@@ -223,7 +223,7 @@ Or simply download the executable and run it in one step:
 - name: Check workflow files
   run: |
     bash <(curl https://raw.githubusercontent.com/rhysd/actionlint/main/scripts/download-actionlint.bash)
-    ./actionlint -color
+    ./actionlint --color
   shell: bash
 ```
 
@@ -250,7 +250,7 @@ jobs:
       - name: Check workflow files
         uses: docker://rhysd/actionlint:latest
         with:
-          args: -color
+          args: --color
 ```
 
 ## Online playground
@@ -277,26 +277,26 @@ Available tags are:
 Just run the image with `docker run`:
 
 ```sh
-docker run --rm rhysd/actionlint:latest -version
+docker run --rm rhysd/actionlint:latest --version
 ```
 
 To check all workflows in your repository, mount your repository's root directory as a volume and run actionlint in the mounted
 directory. When you are at a root directory of your repository:
 
 ```sh
-docker run --rm -v $(pwd):/repo --workdir /repo rhysd/actionlint:latest -color
+docker run --rm -v $(pwd):/repo --workdir /repo rhysd/actionlint:latest --color
 ```
 
 To check a file with actionlint in a Docker container, pass the file content via stdin and use `-` argument:
 
 ```sh
-cat /path/to/workflow.yml | docker run --rm -i rhysd/actionlint:latest -color -
+cat /path/to/workflow.yml | docker run --rm -i rhysd/actionlint:latest --color -
 ```
 
 Or mount the workflows directory and pass the paths as arguments:
 
 ```sh
-docker run --rm -v /path/to/workflows:/workflows rhysd/actionlint:latest -color /workflows/ci.yml
+docker run --rm -v /path/to/workflows:/workflows rhysd/actionlint:latest --color /workflows/ci.yml
 ```
 
 ## Using actionlint from Go program
@@ -339,7 +339,7 @@ Then enable the matcher using `add-matcher` command before running `actionlint` 
   run: |
     echo "::add-matcher::.github/actionlint-matcher.json"
     bash <(curl https://raw.githubusercontent.com/rhysd/actionlint/main/scripts/download-actionlint.bash)
-    ./actionlint -color
+    ./actionlint --color
   shell: bash
 ```
 

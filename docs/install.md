@@ -105,7 +105,7 @@ To install these binaries [`gh`][gh] command is useful. The following command is
 ```sh
 gh release download --repo rhysd/actionlint --pattern '*_linux_amd64.tar.gz' v1.7.11
 tar xf actionlint_1.7.11_linux_amd64.tar.gz
-./actionlint -version
+./actionlint --version
 ```
 
 Optionally you can verify the [attestation][attestations] of the downloaded artifact. This is highly recommended in terms of
