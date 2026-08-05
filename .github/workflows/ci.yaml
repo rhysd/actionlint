@@ -30,7 +30,7 @@ jobs:
         if: ${{ runner.os == 'Linux' }}
       - name: Install dependencies on Windows
         run: |
-          winget install --id koalaman.shellcheck --disable-interactivity --accept-package-agreements --accept-source-agreements
+          choco install shellcheck -y --no-progress
           pip install pyflakes
           pyflakes --version
         if: ${{ runner.os == 'Windows' }}
