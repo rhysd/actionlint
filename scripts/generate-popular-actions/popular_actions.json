@@ -36,11 +36,6 @@
         "next": "v3"
     },
     {
-        "slug": "actions-cool/issues-helper",
-        "tags": ["v1", "v2", "v3"],
-        "next": "v4"
-    },
-    {
         "slug": "actions-rs/audit-check",
         "tags": ["v1"]
     },
@@ -62,13 +57,13 @@
     },
     {
         "slug": "actions/add-to-project",
-        "tags": ["v1.0.1", "v1.0.2"],
-        "next": "v2.0.0"
+        "tags": ["v1.0.1", "v1.0.2", "v2"],
+        "next": "v3"
     },
     {
         "slug": "actions/ai-inference",
-        "tags": ["v1", "v2"],
-        "next": "v3"
+        "tags": ["v1", "v2", "v3"],
+        "next": "v4"
     },
     {
         "slug": "actions/attest-build-provenance",
@@ -82,25 +77,25 @@
     },
     {
         "slug": "actions/cache",
-        "tags": ["v1", "v2", "v3", "v4", "v5"],
-        "next": "v6"
+        "tags": ["v1", "v2", "v3", "v4", "v5", "v6"],
+        "next": "v7"
     },
     {
         "slug": "actions/cache",
         "path": "/save",
-        "tags": ["v4", "v5"],
-        "next": "v6"
+        "tags": ["v4", "v5", "v6"],
+        "next": "v7"
     },
     {
         "slug": "actions/cache",
         "path": "/restore",
-        "tags": ["v4", "v5"],
-        "next": "v6"
+        "tags": ["v4", "v5", "v6"],
+        "next": "v7"
     },
     {
         "slug": "actions/checkout",
-        "tags": ["v1", "v2", "v3", "v4", "v5", "v6"],
-        "next": "v7"
+        "tags": ["v1", "v2", "v3", "v4", "v5", "v6", "v7"],
+        "next": "v8"
     },
     {
         "slug": "actions/create-github-app-token",
@@ -134,23 +129,23 @@
     },
     {
         "slug": "actions/github-script",
-        "tags": ["v1", "v2", "v3", "v4", "v5", "v6", "v7", "v8"],
-        "next": "v9"
+        "tags": ["v1", "v2", "v3", "v4", "v5", "v6", "v7", "v8", "v9"],
+        "next": "v10"
     },
     {
         "slug": "actions/labeler",
-        "tags": ["v2", "v3", "v4", "v5", "v6"],
-        "next": "v7"
+        "tags": ["v2", "v3", "v4", "v5", "v6", "v7"],
+        "next": "v8"
     },
     {
         "slug": "actions/setup-dotnet",
-        "tags": ["v1", "v2", "v3", "v4", "v5"],
-        "next": "v6"
+        "tags": ["v1", "v2", "v3", "v4", "v5", "v6"],
+        "next": "v7"
     },
     {
         "slug": "actions/setup-go",
-        "tags": ["v1", "v2", "v3", "v4", "v5", "v6"],
-        "next": "v7"
+        "tags": ["v1", "v2", "v3", "v4", "v5", "v6", "v7"],
+        "next": "v8"
     },
     {
         "slug": "actions/setup-java",
@@ -159,18 +154,18 @@
     },
     {
         "slug": "actions/setup-node",
-        "tags": ["v1", "v2", "v3", "v4", "v5", "v6"],
-        "next": "v7"
+        "tags": ["v1", "v2", "v3", "v4", "v5", "v6", "v7"],
+        "next": "v8"
     },
     {
         "slug": "actions/setup-python",
-        "tags": ["v1", "v2", "v3", "v4", "v5", "v6"],
-        "next": "v7"
+        "tags": ["v1", "v2", "v3", "v4", "v5", "v6", "v7"],
+        "next": "v8"
     },
     {
         "slug": "actions/stale",
-        "tags": ["v1", "v2", "v3", "v4", "v5", "v6", "v7", "v8", "v9", "v10"],
-        "next": "v11"
+        "tags": ["v1", "v2", "v3", "v4", "v5", "v6", "v7", "v8", "v9", "v10", "v11"],
+        "next": "v12"
     },
     {
         "slug": "actions/upload-artifact",
@@ -179,13 +174,13 @@
     },
     {
         "slug": "actions/upload-pages-artifact",
-        "tags": ["v1", "v2", "v3", "v4"],
-        "next": "v5"
+        "tags": ["v1", "v2", "v3", "v4", "v5"],
+        "next": "v6"
     },
     {
         "slug": "actions/dependency-review-action",
-        "tags": ["v3", "v4"],
-        "next": "v5"
+        "tags": ["v3", "v4", "v5"],
+        "next": "v6"
     },
     {
         "slug": "aws-actions/configure-aws-credentials",
@@ -209,18 +204,18 @@
     },
     {
         "slug": "codecov/codecov-action",
-        "tags": ["v1", "v2", "v3", "v4", "v5", "v6"],
-        "next": "v7"
+        "tags": ["v1", "v2", "v3", "v4", "v5", "v6", "v7"],
+        "next": "v8"
     },
     {
         "slug": "dawidd6/action-download-artifact",
-        "tags": ["v2", "v3", "v5", "v6", "v7", "v8", "v9", "v10", "v11", "v12", "v13", "v14", "v15", "v16", "v17", "v18", "v19"],
-        "next": "v20"
+        "tags": ["v2", "v3", "v5", "v6", "v7", "v8", "v9", "v10", "v11", "v12", "v13", "v14", "v15", "v16", "v17", "v18", "v19", "v20", "v21"],
+        "next": "v22"
     },
     {
         "slug": "dawidd6/action-send-mail",
-        "tags": ["v1", "v2", "v3", "v4", "v5", "v6", "v7", "v8", "v9", "v10", "v11", "v12", "v13", "v14", "v15", "v16"],
-        "next": "v17"
+        "tags": ["v1", "v2", "v3", "v4", "v5", "v6", "v7", "v8", "v9", "v10", "v11", "v12", "v13", "v14", "v15", "v16", "v17", "v18"],
+        "next": "v19"
     },
     {
         "slug": "dessant/lock-threads",
@@ -270,8 +265,8 @@
     },
     {
         "slug": "game-ci/unity-builder",
-        "tags": ["v2", "v3", "v4"],
-        "next": "v5"
+        "tags": ["v2", "v3", "v4", "v5"],
+        "next": "v6"
     },
     {
         "slug": "github/codeql-action",
@@ -369,8 +364,8 @@
     },
     {
         "slug": "nwtgck/actions-netlify",
-        "tags": ["v1", "v2", "v3"],
-        "next": "v4"
+        "tags": ["v1", "v2", "v3", "v4"],
+        "next": "v5"
     },
     {
         "slug": "octokit/graphql-action",
@@ -405,8 +400,8 @@
     },
     {
         "slug": "pulumi/actions",
-        "tags": ["v1", "v2", "v3", "v4", "v5", "v6"],
-        "next": "v7"
+        "tags": ["v1", "v2", "v3", "v4", "v5", "v6", "v7"],
+        "next": "v8"
     },
     {
         "slug": "pypa/gh-action-pypi-publish",
@@ -480,8 +475,8 @@
     },
     {
         "slug": "softprops/action-gh-release",
-        "tags": ["v1", "v2"],
-        "next": "v3"
+        "tags": ["v1", "v2", "v3"],
+        "next": "v4"
     },
     {
         "slug": "subosito/flutter-action",
@@ -496,8 +491,8 @@
     },
     {
         "slug": "wearerequired/lint-action",
-        "tags": ["v1", "v2"],
-        "next": "v3"
+        "tags": ["v1", "v2", "v3"],
+        "next": "v4"
     },
     {
         "slug": "peter-evans/create-or-update-comment",
