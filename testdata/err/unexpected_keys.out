@@ -1,5 +1,5 @@
 test.yaml:3:5: expected "inputs" key for "workflow_dispatch" section but got "invalid_key" [syntax-check]
-test.yaml:6:9: unexpected key "invalid_key" for "inputs" section. expected one of "default", "description", "required" [syntax-check]
+test.yaml:6:9: unexpected key "invalid_key" for "inputs" section. expected one of "default", "description", "options", "required", "type" [syntax-check]
 test.yaml:8:5: expected "types" key for "repository_dispatch" section but got "invalid_key" [syntax-check]
 test.yaml:10:5: unexpected key "invalid_key" for "push" section. expected one of "branches", "branches-ignore", "paths", "paths-ignore", "tags", "tags-ignore", "types", "workflows" [syntax-check]
 test.yaml:15:9: unexpected key "invalid_key" for inputs at workflow_call event. expected one of "default", "description", "required", "type" [syntax-check]
