@@ -29,6 +29,8 @@ scoop install actionlint
 winget install actionlint
 ```
 
+After Chocolatey, Scoop, or Winget, open a **new** terminal so `PATH` picks up the `actionlint` shim.
+
 ## Linux
 
 ### [Arch Linux](https://archlinux.org/)
