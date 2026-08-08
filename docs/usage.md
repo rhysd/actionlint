@@ -355,6 +355,12 @@ Running super-linter in your repository automatically runs actionlint.
 To ignore some errors, please add `-ignore` option by using [`GITHUB_ACTIONS_COMMAND_ARGS` environment variable][super-linter-env-var].
 Please see [super-linter/super-linter#1852](https://github.com/super-linter/super-linter/issues/1852) for the discussion.
 
+### MegaLinter
+
+[MegaLinter][] is a linters aggregator for CI, embedding linters for many languages and formats. It has support for actionlint
+out of the box. Running MegaLinter in your repository automatically runs actionlint on your workflow files. Please see
+[the actionlint page of MegaLinter documentation][megalinter-actionlint] for more details.
+
 ### pre-commit
 
 [pre-commit][] is a framework for managing and maintaining multi-language Git pre-commit hooks. actionlint is available as a
@@ -462,6 +468,8 @@ You can also see actionlint issues inline in VS Code via the [Trunk VS Code exte
 [problem-matchers]: https://github.com/actions/toolkit/blob/master/docs/problem-matchers.md
 [super-linter]: https://github.com/github/super-linter
 [super-linter-env-var]: https://github.com/super-linter/super-linter#environment-variables
+[megalinter]: https://megalinter.io/
+[megalinter-actionlint]: https://megalinter.io/latest/descriptors/action_actionlint/
 [actionlint-matcher]: https://raw.githubusercontent.com/rhysd/actionlint/main/.github/actionlint-matcher.json
 [preinstall-ubuntu]: https://github.com/actions/runner-images/blob/main/images/ubuntu/Ubuntu2404-Readme.md
 [pre-commit]: https://pre-commit.com
