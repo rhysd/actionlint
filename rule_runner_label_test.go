@@ -19,6 +19,10 @@ func TestRuleRunnerLabelCheckLabels(t *testing.T) {
 			labels: []string{"ubuntu-24.04"},
 		},
 		{
+			what:   "Ubuntu 26.04 runners",
+			labels: []string{"ubuntu-26.04", "ubuntu-26.04-arm"},
+		},
+		{
 			what:   "simple GH-hosted Windows runner label",
 			labels: []string{"windows-latest"},
 		},
@@ -237,6 +241,11 @@ func TestRuleRunnerLabelCheckLabels(t *testing.T) {
 			what:   "Linux labels version conflict",
 			labels: []string{"ubuntu-latest", "ubuntu-22.04"},
 			errs:   []string{`label "ubuntu-22.04" conflicts with label "ubuntu-latest"`},
+		},
+		{
+			what:   "Ubuntu 26.04 and 24.04 labels conflict",
+			labels: []string{"ubuntu-26.04", "ubuntu-24.04"},
+			errs:   []string{`label "ubuntu-24.04" conflicts with label "ubuntu-26.04"`},
 		},
 		{
 			what:   "macOS labels version conflict",
