@@ -60,6 +60,14 @@ On Non NixOS:
 nix-env -iA nixpkgs.actionlint
 ```
 
+### [pkg.haus](https://pkg.haus)
+
+APT packages for Debian stable, testing and unstable (amd64 and arm64), built from source at release tags. Set up the archive per the instructions on [pkg.haus](https://pkg.haus), then:
+
+```sh
+sudo apt install actionlint
+```
+
 ## macOS
 
 ### [Homebrew][homebrew]
