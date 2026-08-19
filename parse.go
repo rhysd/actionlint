@@ -873,7 +873,7 @@ func (p *parser) parseOutputs(n *yaml.Node) map[string]*Output {
 func (p *parser) parseRawYAMLValue(n *yaml.Node) RawYAMLValue {
 	switch n.Kind {
 	case yaml.ScalarNode:
-		return &RawYAMLString{n.Value, posAt(n)}
+		return &RawYAMLString{n.Value, n.Tag == "!!str", posAt(n)}
 	case yaml.SequenceNode:
 		vs := make([]RawYAMLValue, 0, len(n.Content))
 		for _, c := range n.Content {

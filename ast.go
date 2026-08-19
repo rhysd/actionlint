@@ -608,7 +608,11 @@ type RawYAMLString struct {
 
 	// Value is string representation of the scalar node.
 	Value string
-	pos   *Pos
+	// StringTag is true when the YAML parser resolved the scalar with the `!!str` tag; that is,
+	// the value was quoted, written as a block scalar, or explicitly tagged. Such a scalar is a
+	// string even when its value looks like a number, a boolean, or null.
+	StringTag bool
+	pos       *Pos
 }
 
 // Kind returns kind of raw YAML value.

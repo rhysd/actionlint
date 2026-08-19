@@ -1060,6 +1060,11 @@ func (rule *RuleExpression) checkRawYAMLString(y *RawYAMLString) ExprType {
 		return ts[0].ty
 	}
 
+	// A scalar tagged as `!!str` is a string even when it looks like a number or a boolean. (#250)
+	if y.StringTag {
+		return StringType{}
+	}
+
 	s := strings.TrimSpace(y.Value)
 	// Note that keywords are case sensitive. TRUE, FALSE, NULL are invalid named value.
 	if s == "true" || s == "false" {

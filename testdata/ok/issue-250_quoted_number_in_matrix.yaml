@@ -1,0 +1,26 @@
+# https://github.com/rhysd/actionlint/issues/250
+
+on: push
+
+jobs:
+  build:
+    strategy:
+      matrix:
+        os:
+          - container:
+              "3.10": "python:3.10"
+              "3.11": "python:3.11"
+              "3.12": "python:3.12"
+        # All of these are strings, not numbers, so they can be used as property names.
+        quoted:
+          - version: "3.10"
+        tagged:
+          - version: !!str 3.11
+        block:
+          - version: >-
+              3.12
+    runs-on: ubuntu-latest
+    steps:
+      - run: echo "${{ matrix.os.container[matrix.quoted.version] }}"
+      - run: echo "${{ matrix.os.container[matrix.tagged.version] }}"
+      - run: echo "${{ matrix.os.container[matrix.block.version] }}"
