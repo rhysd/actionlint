@@ -1,0 +1,55 @@
+# ProofX Execution Proof
+#
+# Generates a cryptographic proof that the release was built from this
+# commit by this CI run. Independent of SLSA/GitHub attestations.
+#
+# Verify locally:
+#   proofx verify --artifact actionlint --proof proof.json
+# Verify on web:
+#   https://proofx.dev
+
+name: ProofX Execution Proof
+on:
+  release:
+    types: [published]
+
+jobs:
+  proof:
+    runs-on: ubuntu-latest
+    permissions:
+      contents: read
+    steps:
+      - uses: actions/checkout@v6
+        with:
+          fetch-depth: 1
+
+      - uses: actions/setup-go@v6
+        with:
+          go-version: '1.26'
+          check-latest: true
+
+      - name: Install ProofX
+        run: |
+          npm install -g @eslamx/proofx
+          proofx version
+
+      - name: Generate signing key
+        run: proofx keygen
+
+      - name: Write proofx.yaml
+        run: |
+          printf 'version: "1.0"\nproject: actionlint\nclaims:\n  - "Built from the recorded commit"\n  - "Artifacts have known sha256 digests"\nsigning:\n  keyFile: .proofx/key.pem\n' > proofx.yaml
+
+      - name: Collect evidence
+        run: proofx collect
+
+      - name: Generate proof
+        run: proofx prove
+
+      - name: Print proof summary
+        run: proofx inspect proof.json
+
+      - name: Upload proof
+        uses: softprops/action-gh-release@v2
+        with:
+          files: proof.json
