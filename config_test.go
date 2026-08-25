@@ -63,7 +63,7 @@ func TestConfigParseError(t *testing.T) {
 	}{
 		{
 			in:   `self-hosted-runner: 42`,
-			want: `cannot unmarshal`,
+			want: `cannot construct`,
 		},
 		{
 			in: `

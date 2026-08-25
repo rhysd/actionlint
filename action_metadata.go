@@ -1,6 +1,7 @@
 package actionlint
 
 import (
+	"errors"
 	"fmt"
 	"io"
 	"os"
@@ -268,11 +269,16 @@ func (c *LocalActionsCache) FindMetadata(spec string) (*ActionMetadata, bool, er
 
 		// Unwrap type error when a single type error occurs to simplify the error message
 		var m string
-		if te, ok := err.(*yaml.TypeError); ok {
-			if len(te.Errors) == 1 {
-				m = te.Errors[0].Error()
+		var les *yaml.LoadErrors
+		if errors.As(err, &les) {
+			if len(les.Errors) == 1 {
+				// *yaml.LoadError.Error() renders the verbose "go-yaml load error in constructor
+				// at L4.C9: ..." form. Build the message from Mark and Message instead to keep
+				// the "line 4: ..." shape actionlint has always reported.
+				e := les.Errors[0]
+				m = fmt.Sprintf("line %d: %s", e.Mark.Line, e.Message)
 			} else {
-				m = strings.ReplaceAll(te.Error(), "\n", "")
+				m = strings.ReplaceAll(les.Error(), "\n", "")
 			}
 		} else {
 			m = err.Error()
