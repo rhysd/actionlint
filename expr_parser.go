@@ -1,6 +1,7 @@
 package actionlint
 
 import (
+	"errors"
 	"fmt"
 	"strconv"
 	"strings"
@@ -139,15 +140,32 @@ func (p *ExprParser) parseNestedExpr() ExprNode {
 
 func (p *ExprParser) parseInt() ExprNode {
 	t := p.peek()
-	i, err := strconv.ParseInt(t.Value, 0, 32)
-	if err != nil {
-		p.errorf("parsing invalid integer literal %q: %s", t.Value, err)
-		return nil
+
+	// The expression syntax has a single number type, and the documentation
+	// describes a number literal as "any number format supported by JSON", so an
+	// integer literal is not limited to what fits in an int. When it does not
+	// fit, keep the value as a float literal: every number is a float64 at
+	// evaluation time anyway, and the semantics checker treats IntNode and
+	// FloatNode identically.
+	// See https://docs.github.com/en/actions/learn-github-actions/expressions#literals
+	i, err := strconv.ParseInt(t.Value, 0, 64)
+	if err == nil {
+		p.next() // eat int
+		if int64(int(i)) == i {
+			return &IntNode{int(i), t}
+		}
+		return &FloatNode{float64(i), t}
 	}
 
-	p.next() // eat int
+	if errors.Is(err, strconv.ErrRange) {
+		if f, ferr := strconv.ParseFloat(t.Value, 64); ferr == nil || errors.Is(ferr, strconv.ErrRange) {
+			p.next() // eat int
+			return &FloatNode{f, t}
+		}
+	}
 
-	return &IntNode{int(i), t}
+	p.errorf("parsing invalid integer literal %q: %s", t.Value, err)
+	return nil
 }
 
 func (p *ExprParser) parseFloat() ExprNode {
