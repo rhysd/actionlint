@@ -920,3 +920,43 @@ func TestReusableWorkflowCacheFactory(t *testing.T) {
 		t.Errorf("Null cache should be returned when project is nil: %v", c4)
 	}
 }
+
+// The "./" and "$/" spellings name the same file, so they must share one cache entry regardless of
+// which one populated it. Callers rely on this: LocalReusableWorkflowCache.WriteWorkflowCallEvent
+// only ever writes keys in the "./" form, so a "$/" caller looking up anything else would miss
+// every entry written ahead of it.
+func TestReusableWorkflowCacheFindMetadataSharesEntryBetweenUsesForms(t *testing.T) {
+	tests := []struct {
+		what   string
+		writes string
+		reads  string
+	}{
+		{"local write, local read", "./ok.yaml", "./ok.yaml"},
+		{"self-repository write, self-repository read", "$/ok.yaml", "$/ok.yaml"},
+		{"local write, self-repository read", "./ok.yaml", "$/ok.yaml"},
+		{"self-repository write, local read", "$/ok.yaml", "./ok.yaml"},
+	}
+
+	for _, tc := range tests {
+		t.Run(tc.what, func(t *testing.T) {
+			proj := &Project{filepath.Join("testdata", "reusable_workflow_metadata"), nil}
+			c := NewLocalReusableWorkflowCache(proj, "", nil)
+
+			written, err := c.FindMetadata(tc.writes)
+			if err != nil {
+				t.Fatal(err)
+			}
+			if diff := cmp.Diff(written, testReusableWorkflowWantedMetadata); diff != "" {
+				t.Fatal(diff)
+			}
+
+			read, err := c.FindMetadata(tc.reads)
+			if err != nil {
+				t.Fatal(err)
+			}
+			if written != read {
+				t.Errorf("%q did not hit the cache entry written by %q", tc.reads, tc.writes)
+			}
+		})
+	}
+}

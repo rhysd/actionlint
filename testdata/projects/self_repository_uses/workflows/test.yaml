@@ -1,0 +1,19 @@
+on: push
+
+jobs:
+  test:
+    runs-on: ubuntu-latest
+    steps:
+      - id: ok
+        uses: $/action
+        with:
+          name: rhysd
+      - run: echo '${{ steps.ok.outputs.greeting }}'
+      # ERROR: The input name is misspelled, so it is both undefined and missing a required one.
+      # Both errors prove the metadata behind "$/" was resolved rather than skipped.
+      - uses: $/action
+        with:
+          nam: rhysd
+
+  call:
+    uses: $/workflows/reusable.yaml

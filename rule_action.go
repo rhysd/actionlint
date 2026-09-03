@@ -328,7 +328,7 @@ func (rule *RuleAction) VisitStep(n *Step) error {
 
 	spec := e.Uses.Value
 
-	if strings.HasPrefix(spec, "./") {
+	if _, ok := canonLocalUsesSpec(spec); ok {
 		// Relative to repository root
 		rule.checkLocalAction(spec, e)
 		return nil

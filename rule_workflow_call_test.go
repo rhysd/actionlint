@@ -19,8 +19,12 @@ func TestRuleWorkflowCallCheckWorkflowCallUsesFormat(t *testing.T) {
 		{"owner/repo/x.yml@@", true},
 		{"owner/repo/x.yml@release/v1", true},
 		{"./path/to/x.yml", true},
+		{"$/path/to/x.yml", true},
 		{"${{ env.FOO }}", true},
 		{"./path/to/x.yml@ref", false},
+		{"$/path/to/x.yml@ref", false},
+		{"$/", false},
+		{"$", false},
 		{"/path/to/x.yml@ref", false},
 		{"./", false},
 		{".", false},
@@ -221,12 +225,30 @@ func TestRuleWorkflowCallCheckReusableWorkflowCall(t *testing.T) {
 			secrets: []string{"required_secret"},
 		},
 		{
+			// The cache above was populated under "./workflow0.yaml", so resolving this proves the
+			// two spellings reach one entry rather than each needing their own.
+			what:    "self-repository spelling of a workflow cached as local",
+			uses:    "$/workflow0.yaml",
+			inputs:  []string{"required_input"},
+			secrets: []string{"required_secret"},
+		},
+		{
 			what:    "unknown workflow",
 			uses:    "./unknown-workflow.yaml",
 			inputs:  []string{"aaa", "bbb"},
 			secrets: []string{"xxx", "yyy"},
 			errs: []string{
 				"could not read reusable workflow file for \"./unknown-workflow.yaml\":",
+			},
+		},
+		{
+			// The error quotes the spec as written rather than the canonical form it is looked up by.
+			what:    "unknown workflow in self-repository spelling",
+			uses:    "$/unknown-self-workflow.yaml",
+			inputs:  []string{"aaa", "bbb"},
+			secrets: []string{"xxx", "yyy"},
+			errs: []string{
+				"could not read reusable workflow file for \"$/unknown-self-workflow.yaml\":",
 			},
 		},
 		{

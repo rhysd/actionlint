@@ -1,0 +1,15 @@
+name: 'My action'
+description: 'my action'
+
+inputs:
+  name:
+    description: 'your name'
+    required: true
+
+outputs:
+  greeting:
+    description: 'greeting for you'
+
+runs:
+  using: 'node20'
+  main: 'index.js'

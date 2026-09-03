@@ -1,0 +1,2 @@
+/workflows/test\.yaml:14:15: missing input "name" which is required by action "My action" defined at "\$\/action"\. all required inputs are "name" \[action\]/
+/workflows/test\.yaml:16:11: input "nam" is not defined in action "My action" defined at "\$\/action"\. available inputs are "name" \[action\]/

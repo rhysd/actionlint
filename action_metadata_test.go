@@ -710,3 +710,42 @@ func TestLocalActionsCacheFactory(t *testing.T) {
 		t.Errorf("null cache must be returned if given project is nil: %v", c4)
 	}
 }
+
+// Both `uses:` spellings for an action in the workflow's own repository point at one directory, so
+// looking one up must hit the entry the other populated rather than re-reading the metadata file.
+func TestLocalActionsFindMetadataSharesEntryBetweenUsesForms(t *testing.T) {
+	tests := []struct {
+		what   string
+		writes string
+		reads  string
+	}{
+		{"local write, local read", "./action-yml", "./action-yml"},
+		{"self-repository write, self-repository read", "$/action-yml", "$/action-yml"},
+		{"local write, self-repository read", "./action-yml", "$/action-yml"},
+		{"self-repository write, local read", "$/action-yml", "./action-yml"},
+	}
+
+	for _, tc := range tests {
+		t.Run(tc.what, func(t *testing.T) {
+			proj := &Project{filepath.Join("testdata", "action_metadata"), nil}
+			c := NewLocalActionsCache(proj, nil)
+
+			written, cached, err := c.FindMetadata(tc.writes)
+			if err != nil {
+				t.Fatal(err)
+			}
+			testCheckCachedFlag(t, false, cached)
+			testDiffActionMetadata(t, testGetWantedActionMetadata(), written)
+			testCheckActionMetadataPath(t, "action-yml", written)
+
+			read, cached, err := c.FindMetadata(tc.reads)
+			if err != nil {
+				t.Fatal(err)
+			}
+			testCheckCachedFlag(t, true, cached)
+			if written != read {
+				t.Errorf("%q did not hit the cache entry written by %q", tc.reads, tc.writes)
+			}
+		})
+	}
+}
