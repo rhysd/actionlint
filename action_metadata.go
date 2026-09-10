@@ -1,6 +1,7 @@
 package actionlint
 
 import (
+	"errors"
 	"fmt"
 	"io"
 	"os"
@@ -268,12 +269,10 @@ func (c *LocalActionsCache) FindMetadata(spec string) (*ActionMetadata, bool, er
 
 		// Unwrap type error when a single type error occurs to simplify the error message
 		var m string
-		if te, ok := err.(*yaml.TypeError); ok {
-			if len(te.Errors) == 1 {
-				m = te.Errors[0].Error()
-			} else {
-				m = strings.ReplaceAll(te.Error(), "\n", "")
-			}
+		var les *yaml.LoadErrors
+		if errors.As(err, &les) && len(les.Errors) == 1 {
+			e := les.Errors[0]
+			m = fmt.Sprintf("line %d: %s", e.Mark.Line, e.Message)
 		} else {
 			m = err.Error()
 		}

@@ -1,1 +1,1 @@
-test.yaml:0:0: could not parse as YAML: yaml: unknown anchor 'credentials' referenced [syntax-check]
+test.yaml:9:14: could not parse as YAML: unknown anchor 'credentials' referenced [syntax-check]

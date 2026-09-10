@@ -1,6 +1,7 @@
 package actionlint
 
 import (
+	"errors"
 	"fmt"
 	"iter"
 	"math"
@@ -1564,13 +1565,14 @@ func (p *parser) parse(n *yaml.Node) *Workflow {
 // }
 
 func handleYAMLUnmarshalError(err error) []*Error {
-	if te, ok := err.(*yaml.TypeError); ok {
-		errs := make([]*Error, 0, len(te.Errors))
-		for _, e := range te.Errors {
+	var les *yaml.LoadErrors
+	if errors.As(err, &les) {
+		errs := make([]*Error, 0, len(les.Errors))
+		for _, e := range les.Errors {
 			errs = append(errs, &Error{
-				Message: fmt.Sprintf("could not parse as YAML: %s", e.Err.Error()),
-				Line:    e.Line,
-				Column:  e.Column,
+				Message: fmt.Sprintf("could not parse as YAML: %s", e.Message),
+				Line:    e.Mark.Line,
+				Column:  e.Mark.Column,
 				Kind:    "syntax-check",
 			})
 		}
@@ -1580,10 +1582,11 @@ func handleYAMLUnmarshalError(err error) []*Error {
 	var m string
 	var l int
 	var c int
-	if pe, ok := err.(*yaml.ParserError); ok {
-		l = pe.Line
-		c = pe.Column
-		m = pe.Message
+	var le *yaml.LoadError
+	if errors.As(err, &le) {
+		l = le.Mark.Line
+		c = le.Mark.Column
+		m = le.Message
 	} else {
 		m = err.Error() // Fallback. I believe this line should be unreachable
 	}
