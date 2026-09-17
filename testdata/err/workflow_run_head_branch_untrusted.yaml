@@ -1,0 +1,11 @@
+name: Test
+on:
+  workflow_run:
+    workflows: [CI]
+    types: [completed]
+jobs:
+  test:
+    runs-on: ubuntu-latest
+    steps:
+      - run: echo branch=${{ github.event.workflow_run.head_branch }}
+      - run: echo owner=${{ github.event.workflow_run.head_repository.owner.login }}
