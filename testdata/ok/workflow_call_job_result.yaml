@@ -1,0 +1,18 @@
+on:
+  workflow_call:
+    outputs:
+      build-result:
+        description: Result of the build job
+        value: ${{ jobs.build.result }}
+      build-output:
+        description: Output of the build job
+        value: ${{ jobs.build.outputs.artifact }}
+
+jobs:
+  build:
+    runs-on: ubuntu-latest
+    outputs:
+      artifact: ${{ steps.build.outputs.artifact }}
+    steps:
+      - id: build
+        run: echo 'artifact=foo.zip' >> "$GITHUB_OUTPUT"
