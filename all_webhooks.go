@@ -23,7 +23,7 @@ var AllWebhookTypes = map[string][]string{
 	"issue_comment":               {"created", "edited", "deleted"},
 	"issues":                      {"opened", "edited", "deleted", "transferred", "pinned", "unpinned", "closed", "reopened", "assigned", "unassigned", "labeled", "unlabeled", "locked", "unlocked", "milestoned", "demilestoned", "typed", "untyped"},
 	"label":                       {"created", "edited", "deleted"},
-	"merge_group":                 {"checks_requested"},
+	"merge_group":                 {"checks_requested", "destroyed"},
 	"milestone":                   {"created", "closed", "opened", "edited", "deleted"},
 	"page_build":                  {},
 	"public":                      {},

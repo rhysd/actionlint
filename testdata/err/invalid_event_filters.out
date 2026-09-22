@@ -1,4 +1,4 @@
-test.yaml:3:12: invalid activity type "opened" for "merge_group" Webhook event. available types are "checks_requested" [events]
+test.yaml:3:12: invalid activity type "opened" for "merge_group" Webhook event. available types are "checks_requested", "destroyed" [events]
 test.yaml:4:5: "paths" filter is not available for merge_group event. it is only for push, pull_request, pull_request_target events [events]
 test.yaml:5:5: "paths-ignore" filter is not available for merge_group event. it is only for push, pull_request, pull_request_target events [events]
 test.yaml:6:5: "tags" filter is not available for merge_group event. it is only for push event [events]
