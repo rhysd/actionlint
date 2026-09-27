@@ -463,17 +463,19 @@ func TestInvalidCommandArgs(t *testing.T) {
 	}
 }
 
-func TestDetectErrorBadRequest(t *testing.T) {
-	stdout := io.Discard
-	stderr := &bytes.Buffer{}
+func TestDetectNotFoundForEmptySlug(t *testing.T) {
+	stdout := &bytes.Buffer{}
+	log := &bytes.Buffer{}
 	f := filepath.Join("testdata", "registry", "empty_slug.json")
-	status := newGen(stdout, stderr, io.Discard).run([]string{"test", "-d", "-r", f})
-	if status != 1 {
-		t.Fatal("exit status is not 1:", status)
+	status := newGen(stdout, io.Discard, log).run([]string{"test", "-d", "-r", f})
+	if status != 0 {
+		t.Fatal("exit status is non-zero:", status)
 	}
-	out := stderr.String()
-	if !strings.Contains(out, "head request for https://raw.githubusercontent.com//v2/action.yml was not successful") {
-		t.Fatalf("stderr was unexpected: %q", out)
+	if out := stdout.String(); out != "No new release was found\n" {
+		t.Fatalf("stdout is unexpected: %q", out)
+	}
+	if out := log.String(); !strings.Contains(out, "Not found: https://raw.githubusercontent.com//v2/action.yml") {
+		t.Fatalf("log was unexpected: %q", out)
 	}
 }
 
