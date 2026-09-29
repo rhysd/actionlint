@@ -274,6 +274,16 @@ func TestRuleRunnerLabelCheckLabels(t *testing.T) {
 			errs:   []string{`label "macos-26" conflicts with label "macos-26-xlarge"`},
 		},
 		{
+			what:   "Xcode 27 labels size conflict",
+			labels: []string{"xcode-27", "xcode-27-xlarge"},
+			errs:   []string{`label "xcode-27-xlarge" conflicts with label "xcode-27"`},
+		},
+		{
+			what:   "Xcode 27 conflicts with macOS 26",
+			labels: []string{"xcode-27", "macos-26"},
+			errs:   []string{`label "macos-26" conflicts with label "xcode-27"`},
+		},
+		{
 			what:   "larger runner labels conflict",
 			labels: []string{"ubuntu-latest-16-cores", "windows-latest-8-cores"},
 			errs:   []string{`label "windows-latest-8-cores" conflicts with label "ubuntu-latest-16-cores"`},
