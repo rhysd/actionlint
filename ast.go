@@ -905,6 +905,9 @@ type Job struct {
 	RunsOn *Runner
 	// Permissions is permission configuration for running the job.
 	Permissions *Permissions
+	// CacheMode controls cache access for this job.
+	// https://docs.github.com/en/actions/reference/workflows-and-actions/workflow-syntax#jobsjob_idcache-mode
+	CacheMode *String
 	// Environment is environment specification where the job runs.
 	Environment *Environment
 	// Concurrency is concurrency configuration on running the job.
@@ -961,6 +964,9 @@ type Workflow struct {
 	On []Event
 	// Permissions is configuration of permissions of this workflow.
 	Permissions *Permissions
+	// CacheMode controls cache access for jobs in this workflow.
+	// https://docs.github.com/en/actions/reference/workflows-and-actions/workflow-syntax#cache-mode
+	CacheMode *String
 	// Env is a default set of environment variables while running this workflow.
 	// https://docs.github.com/en/actions/learn-github-actions/workflow-syntax-for-github-actions#env
 	Env *Env

@@ -756,6 +756,19 @@ func (p *parser) parsePermissions(pos *Pos, n *yaml.Node) *Permissions {
 	return ret
 }
 
+// https://docs.github.com/en/actions/reference/workflows-and-actions/workflow-syntax#cache-mode
+func (p *parser) parseCacheMode(n *yaml.Node) *String {
+	mode := p.parseString(n, false)
+	if mode.Value != "" {
+		switch mode.Value {
+		case "read", "write", "write-only", "none":
+		default:
+			p.errorf(n, "%q is invalid for cache-mode. available values are \"read\", \"write\", \"write-only\", \"none\"", mode.Value)
+		}
+	}
+	return mode
+}
+
 // https://docs.github.com/en/actions/learn-github-actions/workflow-syntax-for-github-actions#env
 func (p *parser) parseEnv(n *yaml.Node) *Env {
 	if n.Kind == yaml.ScalarNode {
@@ -1363,6 +1376,8 @@ func (p *parser) parseJob(id *String, n *yaml.Node) *Job {
 			stepsOnlyKey = k
 		case "permissions":
 			ret.Permissions = p.parsePermissions(k.Pos, v)
+		case "cache-mode":
+			ret.CacheMode = p.parseCacheMode(v)
 		case "environment":
 			ret.Environment = p.parseEnvironment(k.Pos, v)
 			stepsOnlyKey = k
@@ -1434,6 +1449,7 @@ func (p *parser) parseJob(id *String, n *yaml.Node) *Job {
 				"needs",
 				"runs-on",
 				"permissions",
+				"cache-mode",
 				"environment",
 				"concurrency",
 				"outputs",
@@ -1458,7 +1474,7 @@ func (p *parser) parseJob(id *String, n *yaml.Node) *Job {
 		if stepsOnlyKey != nil {
 			p.errorfAt(
 				stepsOnlyKey.Pos,
-				"when a reusable workflow is called with \"uses\", %q is not available. only following keys are allowed: \"name\", \"uses\", \"with\", \"secrets\", \"needs\", \"if\", and \"permissions\" in job %q",
+				"when a reusable workflow is called with \"uses\", %q is not available. only following keys are allowed: \"name\", \"uses\", \"with\", \"secrets\", \"needs\", \"if\", \"permissions\", and \"cache-mode\" in job %q",
 				stepsOnlyKey.Value,
 				id.Value,
 			)
@@ -1522,6 +1538,8 @@ func (p *parser) parse(n *yaml.Node) *Workflow {
 			w.On = p.parseEvents(v)
 		case "permissions":
 			w.Permissions = p.parsePermissions(k.Pos, v)
+		case "cache-mode":
+			w.CacheMode = p.parseCacheMode(v)
 		case "env":
 			w.Env = p.parseEnv(v)
 		case "defaults":
@@ -1538,6 +1556,7 @@ func (p *parser) parse(n *yaml.Node) *Workflow {
 				"run-name",
 				"on",
 				"permissions",
+				"cache-mode",
 				"env",
 				"defaults",
 				"concurrency",

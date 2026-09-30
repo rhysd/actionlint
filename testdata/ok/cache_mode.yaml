@@ -1,0 +1,27 @@
+# https://docs.github.com/en/actions/reference/workflows-and-actions/workflow-syntax#cache-mode
+# https://docs.github.com/en/actions/reference/workflows-and-actions/workflow-syntax#jobsjob_idcache-mode
+on: push
+cache-mode: read
+jobs:
+  restore:
+    runs-on: ubuntu-latest
+    steps:
+      - run: echo restored
+  save:
+    runs-on: ubuntu-latest
+    cache-mode: write
+    steps:
+      - run: echo saved
+  save-only:
+    runs-on: ubuntu-latest
+    cache-mode: write-only
+    steps:
+      - run: echo saved
+  no-cache:
+    runs-on: ubuntu-latest
+    cache-mode: none
+    steps:
+      - run: echo skipped
+  reusable:
+    uses: owner/repo/.github/workflows/reusable.yaml@main
+    cache-mode: read

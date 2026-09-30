@@ -6,6 +6,36 @@ import (
 	"testing"
 )
 
+func TestParseCacheMode(t *testing.T) {
+	input, err := os.ReadFile(filepath.Join("testdata", "ok", "cache_mode.yaml"))
+	if err != nil {
+		t.Fatal(err)
+	}
+	workflow, errs := Parse(input)
+	if len(errs) > 0 {
+		t.Fatal(errs)
+	}
+	if workflow.CacheMode == nil || workflow.CacheMode.Value != "read" {
+		t.Fatalf("unexpected workflow cache mode: %+v", workflow.CacheMode)
+	}
+	for job, expected := range map[string]string{
+		"restore":   "",
+		"save":      "write",
+		"save-only": "write-only",
+		"no-cache":  "none",
+		"reusable":  "read",
+	} {
+		mode := workflow.Jobs[job].CacheMode
+		if expected == "" {
+			if mode != nil {
+				t.Errorf("unexpected cache mode for job %q: %+v", job, mode)
+			}
+		} else if mode == nil || mode.Value != expected {
+			t.Errorf("unexpected cache mode for job %q: %+v", job, mode)
+		}
+	}
+}
+
 func BenchmarkParseWorkflow(b *testing.B) {
 	type bench struct {
 		name  string

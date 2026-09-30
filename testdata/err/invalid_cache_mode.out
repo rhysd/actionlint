@@ -1,0 +1,4 @@
+test.yaml:2:13: "invalid" is invalid for cache-mode. available values are "read", "write", "write-only", "none" [syntax-check]
+test.yaml:6:17: "READ" is invalid for cache-mode. available values are "read", "write", "write-only", "none" [syntax-check]
+test.yaml:12:7: expected scalar node for string value but found mapping node with "!!map" tag [syntax-check]
+test.yaml:17:17: "${{ github.ref }}" is invalid for cache-mode. available values are "read", "write", "write-only", "none" [syntax-check]

@@ -1,0 +1,17 @@
+on: push
+cache-mode: invalid
+jobs:
+  uppercase:
+    runs-on: ubuntu-latest
+    cache-mode: READ
+    steps:
+      - run: echo test
+  mapping:
+    runs-on: ubuntu-latest
+    cache-mode:
+      mode: write
+    steps:
+      - run: echo test
+  expression:
+    uses: owner/repo/.github/workflows/reusable.yaml@main
+    cache-mode: ${{ github.ref }}
