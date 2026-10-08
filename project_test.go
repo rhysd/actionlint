@@ -80,6 +80,28 @@ func TestProjectsFindProjectFromPath(t *testing.T) {
 	}
 }
 
+func TestProjectsFindJujutsuWorkspaceFromPath(t *testing.T) {
+	d := filepath.Join("testdata", "find_project_jj")
+	abs, err := filepath.Abs(d)
+	if err != nil {
+		panic(err)
+	}
+	if err := os.MkdirAll(filepath.Join(d, ".jj"), 0750); err != nil {
+		panic(err)
+	}
+
+	p, err := NewProjects().At(filepath.Join(d, ".github", "workflows", "test.yaml"))
+	if err != nil {
+		t.Fatal(err)
+	}
+	if p == nil {
+		t.Fatal("project was not found at", d)
+	}
+	if r := p.RootDir(); r != abs {
+		t.Fatalf("root directory of project %v should be %q but got %q", p, abs, r)
+	}
+}
+
 func TestProjectsDoesNotFindProjectFromOutside(t *testing.T) {
 	d := filepath.Join("testdata", "find_project")
 	abs, err := filepath.Abs(d)

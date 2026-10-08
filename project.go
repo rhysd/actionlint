@@ -24,10 +24,8 @@ func absPath(path string) string {
 func findProject(path string) (*Project, error) {
 	d := absPath(path)
 	for {
-		if s, err := os.Stat(filepath.Join(d, ".github", "workflows")); err == nil && s.IsDir() {
-			if _, err := os.Stat(filepath.Join(d, ".git")); err == nil { // Note: .git may be a file
-				return NewProject(d)
-			}
+		if s, err := os.Stat(filepath.Join(d, ".github", "workflows")); err == nil && s.IsDir() && isRepoRoot(d) {
+			return NewProject(d)
 		}
 
 		p := filepath.Dir(d)
@@ -36,6 +34,17 @@ func findProject(path string) (*Project, error) {
 		}
 		d = p
 	}
+}
+
+// isRepoRoot returns true when the directory is a root of a Git repository. Jujutsu workspaces
+// are also accepted since non-default workspaces have ".jj" directory but no ".git".
+func isRepoRoot(dir string) bool {
+	for _, n := range []string{".git", ".jj"} { // Note: .git may be a file
+		if _, err := os.Stat(filepath.Join(dir, n)); err == nil {
+			return true
+		}
+	}
+	return false
 }
 
 // NewProject creates a new instance with a file path to the root directory of the repository.
