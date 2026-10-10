@@ -20,19 +20,21 @@ type shellcheckError struct {
 type RuleShellcheck struct {
 	RuleBase
 	cmd           *externalCommand
+	rcfile        string
 	workflowShell string
 	jobShell      string
 	runnerShell   string
 	mu            sync.Mutex
 }
 
-func newRuleShellcheck(cmd *externalCommand) *RuleShellcheck {
+func newRuleShellcheck(cmd *externalCommand, rcfile string) *RuleShellcheck {
 	return &RuleShellcheck{
 		RuleBase: RuleBase{
 			name: "shellcheck",
 			desc: "Checks for shell script sources in \"run:\" using shellcheck",
 		},
 		cmd:           cmd,
+		rcfile:        rcfile,
 		workflowShell: "",
 		jobShell:      "",
 		runnerShell:   "",
@@ -42,12 +44,12 @@ func newRuleShellcheck(cmd *externalCommand) *RuleShellcheck {
 // NewRuleShellcheck creates new RuleShellcheck instance. The executable argument can be command
 // name or relative/absolute file path. When the given executable is not found in system, it returns
 // an error as 2nd return value.
-func NewRuleShellcheck(executable string, proc *concurrentProcess) (*RuleShellcheck, error) {
+func NewRuleShellcheck(executable string, rcfile string, proc *concurrentProcess) (*RuleShellcheck, error) {
 	cmd, err := proc.newCommandRunner(executable, false)
 	if err != nil {
 		return nil, err
 	}
-	return newRuleShellcheck(cmd), nil
+	return newRuleShellcheck(cmd, rcfile), nil
 }
 
 // VisitStep is callback when visiting Step node.
@@ -190,7 +192,14 @@ func (rule *RuleShellcheck) runShellcheck(src, shell string, pos *Pos) {
 	//           this can happen. For example, `if [ -z ${{ env.FOO }} ]` -> `if [ -z ______________ ]` (#113).
 	// - SC2043: Loop can be detected as only running once when the target of iteration is a placeholder. (#355)
 	//           e.g. `for foo in ${{ inputs.foo }}; do`
-	args := []string{"--norc", "-f", "json", "-x", "--shell", sh, "-e", "SC1091,SC2194,SC2050,SC2153,SC2154,SC2157,SC2043", "-"}
+	var args []string
+	if rule.rcfile == "" {
+		args = append(args, "--norc")
+	} else {
+		// shellcheck ignores --rcfile when --norc is also given, so --norc must be omitted here.
+		args = append(args, "--rcfile", rule.rcfile)
+	}
+	args = append(args, "-f", "json", "-x", "--shell", sh, "-e", "SC1091,SC2194,SC2050,SC2153,SC2154,SC2157,SC2043", "-")
 	rule.Debug("%s: Running %s command with %s", pos, rule.cmd.exe, args)
 
 	// Use same options to run shell process described at document

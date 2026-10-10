@@ -83,6 +83,10 @@ with Go template syntax.
     Command name or file path of "shellcheck" external command. If empty, shellcheck integration will
     be disabled (default "shellcheck")
 
+  * `-shellcheck-rcfile` <FILEPATH>:
+    File path to a shellcheckrc configuration file passed to shellcheck via its `--rcfile` option. If
+    empty, shellcheck runs with `--norc`
+
   * `-verbose`:
     Enable verbose output
 

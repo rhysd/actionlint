@@ -135,6 +135,7 @@ func (cmd *Command) Main(args []string) int {
 	flags.SetOutput(cmd.Stderr)
 	flags.Var(&ignorePats, "ignore", "Regular expression matching to error messages you want to ignore. This flag is repeatable")
 	flags.StringVar(&opts.Shellcheck, "shellcheck", "shellcheck", "Command name or file path of \"shellcheck\" external command. If empty, shellcheck integration will be disabled")
+	flags.StringVar(&opts.ShellcheckRcfile, "shellcheck-rcfile", "", "File path to a shellcheckrc configuration file passed to shellcheck via its --rcfile option. If empty, shellcheck runs with --norc")
 	flags.StringVar(&opts.Pyflakes, "pyflakes", "pyflakes", "Command name or file path of \"pyflakes\" external command. If empty, pyflakes integration will be disabled")
 	flags.BoolVar(&opts.Oneline, "oneline", false, "Use one line per one error. Useful for reading error messages from programs")
 	flags.StringVar(&opts.Format, "format", "", "Custom template to format error messages in Go template syntax. See the usage documentation for more details")

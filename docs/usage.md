@@ -42,6 +42,12 @@ processes.
 actionlint -shellcheck= -pyflakes=
 ```
 
+`-shellcheck-rcfile` can be used to point to a shellcheck config file.
+
+```sh
+actionlint -shellcheck-rcfile .shellcheckrc
+```
+
 <a id="format"></a>
 ### Format error messages
 

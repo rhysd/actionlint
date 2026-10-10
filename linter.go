@@ -67,6 +67,10 @@ type LinterOptions struct {
 	// "shellcheck" or file path like "/path/to/shellcheck", "path/to/shellcheck". When this value
 	// is empty, shellcheck won't run to check scripts in workflow file.
 	Shellcheck string
+	// ShellcheckRcfile is an optional file path to a shellcheckrc configuration file. When empty,
+	// shellcheck runs with --norc. When this is non-empty, shellcheck runs with --rcfile pointed to
+	// this configuration file.
+	ShellcheckRcfile string
 	// Pyflakes is executable for running pyflakes external command. It can be command name like "pyflakes"
 	// or file path like "/path/to/pyflakes", "path/to/pyflakes". When this value is empty, pyflakes
 	// won't run to check scripts in workflow file.
@@ -96,19 +100,20 @@ type LinterOptions struct {
 
 // Linter is struct to lint workflow files.
 type Linter struct {
-	projects       *Projects
-	out            io.Writer
-	logOut         io.Writer
-	logLevel       LogLevel
-	oneline        bool
-	shellcheck     string
-	pyflakes       string
-	ignorePats     IgnorePatterns
-	stdin          string
-	defaultConfig  *Config
-	errFmt         *ErrorFormatter
-	cwd            string
-	onRulesCreated func([]Rule) []Rule
+	projects         *Projects
+	out              io.Writer
+	logOut           io.Writer
+	logLevel         LogLevel
+	oneline          bool
+	shellcheck       string
+	shellcheckRcfile string
+	pyflakes         string
+	ignorePats       IgnorePatterns
+	stdin            string
+	defaultConfig    *Config
+	errFmt           *ErrorFormatter
+	cwd              string
+	onRulesCreated   func([]Rule) []Rule
 }
 
 // NewLinter creates a new Linter instance.
@@ -186,6 +191,7 @@ func NewLinter(out io.Writer, opts *LinterOptions) (*Linter, error) {
 		level,
 		opts.Oneline,
 		opts.Shellcheck,
+		opts.ShellcheckRcfile,
 		opts.Pyflakes,
 		ignore,
 		stdin,
@@ -572,7 +578,7 @@ func (l *Linter) check(
 			NewRuleIfCond(),
 		}
 		if l.shellcheck != "" {
-			r, err := NewRuleShellcheck(l.shellcheck, proc)
+			r, err := NewRuleShellcheck(l.shellcheck, l.shellcheckRcfile, proc)
 			if err == nil {
 				rules = append(rules, r)
 			} else {

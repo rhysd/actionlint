@@ -2,7 +2,11 @@ package actionlint
 
 import (
 	"fmt"
+	"os"
+	"path/filepath"
 	"testing"
+
+	"golang.org/x/sys/execabs"
 )
 
 func TestRuleShellcheckSanitizeExpressionsInScript(t *testing.T) {
@@ -158,7 +162,7 @@ func TestRuleShellcheckDetectShell(t *testing.T) {
 
 	for _, tc := range tests {
 		t.Run(tc.what, func(t *testing.T) {
-			r := newRuleShellcheck(&externalCommand{})
+			r := newRuleShellcheck(&externalCommand{}, "")
 
 			w := &Workflow{}
 			if tc.workflow != "" {
@@ -193,6 +197,63 @@ func TestRuleShellcheckDetectShell(t *testing.T) {
 			}
 			if s := r.getShellName(e); s != tc.want {
 				t.Fatalf("detected shell %q but wanted %q", s, tc.want)
+			}
+		})
+	}
+}
+
+func TestRuleShellcheckRcfile(t *testing.T) {
+	shellcheck, err := execabs.LookPath("shellcheck")
+	if err != nil {
+		t.Skipf("shellcheck is not found: %s", err)
+	}
+
+	// SC2006 (use $(...) instead of legacy backticks) is not excluded by actionlint and is not
+	// masked by the `set -e` prefix actionlint adds before running the script, so it is a reliable
+	// signal here regardless of shellcheck version quirks around other codes.
+	const script = "x=`date`\necho \"$x\"\n"
+
+	rcfile := filepath.Join(t.TempDir(), ".shellcheckrc")
+	if err := os.WriteFile(rcfile, []byte("disable=SC2006\n"), 0o644); err != nil {
+		t.Fatal(err)
+	}
+
+	tests := []struct {
+		what    string
+		rcfile  string
+		wantErr bool
+	}{
+		{
+			what:    "no rcfile reports the issue",
+			rcfile:  "",
+			wantErr: true,
+		},
+		{
+			what:    "rcfile disabling the code suppresses the issue",
+			rcfile:  rcfile,
+			wantErr: false,
+		},
+	}
+
+	for _, tc := range tests {
+		t.Run(tc.what, func(t *testing.T) {
+			proc := newConcurrentProcess(1)
+			r, err := NewRuleShellcheck(shellcheck, tc.rcfile, proc)
+			if err != nil {
+				t.Fatal(err)
+			}
+
+			r.runShellcheck(script, "bash", &Pos{})
+			if err := r.cmd.wait(); err != nil {
+				t.Fatal(err)
+			}
+
+			errs := r.Errs()
+			if tc.wantErr && len(errs) == 0 {
+				t.Fatal("expected shellcheck to report an issue but it did not")
+			}
+			if !tc.wantErr && len(errs) != 0 {
+				t.Fatalf("expected no issues but got: %v", errs)
 			}
 		})
 	}
