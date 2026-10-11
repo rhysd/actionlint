@@ -27,6 +27,14 @@ func TestRuleRunnerLabelCheckLabels(t *testing.T) {
 			labels: []string{"macos-14"},
 		},
 		{
+			what:   "simple GH-hosted Xcode 27 runner label",
+			labels: []string{"xcode-27"},
+		},
+		{
+			what:   "GH-hosted Xcode 27 XL runner label",
+			labels: []string{"xcode-27-xlarge"},
+		},
+		{
 			what:   "simple GH-hosted runner label in upper case",
 			labels: []string{"macOS-14"},
 		},
@@ -272,6 +280,16 @@ func TestRuleRunnerLabelCheckLabels(t *testing.T) {
 			what:   "macOS XL and normal labels conflict",
 			labels: []string{"macos-26-xlarge", "macos-26"},
 			errs:   []string{`label "macos-26" conflicts with label "macos-26-xlarge"`},
+		},
+		{
+			what:   "Xcode 27 XL and normal labels conflict",
+			labels: []string{"xcode-27-xlarge", "xcode-27"},
+			errs:   []string{`label "xcode-27" conflicts with label "xcode-27-xlarge"`},
+		},
+		{
+			what:   "Xcode 27 and macOS 26 labels conflict",
+			labels: []string{"macos-26", "xcode-27"},
+			errs:   []string{`label "xcode-27" conflicts with label "macos-26"`},
 		},
 		{
 			what:   "larger runner labels conflict",
