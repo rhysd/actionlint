@@ -9,6 +9,8 @@ import (
 	"regexp"
 	"strconv"
 	"strings"
+
+	"go.yaml.in/yaml/v4"
 )
 
 // BrandingColors is a set of colors allowed at branding.color in action.yaml.
@@ -451,8 +453,52 @@ func (rule *RuleAction) checkLocalDockerActionRuns(r *ActionMetadataRuns, dir, n
 func (rule *RuleAction) checkLocalCompositeActionRuns(r *ActionMetadataRuns, dir, name string, pos *Pos) {
 	if r.Steps == nil {
 		rule.missingRunsProp(pos, "steps", "Composite", name, dir)
+	} else {
+		rule.checkLocalCompositeActionPins(dir, pos)
 	}
 	rule.checkInvalidRunsProps(pos, r, "Composite", name, dir, []string{"main", "pre", "pre-if", "post", "post-if", "image", "pre-entrypoint", "entrypoint", "post-entrypoint", "args", "env"})
+}
+
+// checkLocalCompositeActionPins checks third-party uses references in local composite metadata.
+// It intentionally does not resolve remote composites, which would require network access.
+func (rule *RuleAction) checkLocalCompositeActionPins(dir string, pos *Pos) {
+	cfg := rule.Config()
+	if cfg == nil || !cfg.RequireCommitHashInComposites {
+		return
+	}
+	var data []byte
+	var path string
+	for _, file := range []string{"action.yml", "action.yaml"} {
+		path = filepath.Join(dir, file)
+		b, err := os.ReadFile(path)
+		if err == nil {
+			data = b
+			break
+		}
+	}
+	if data == nil { return }
+	var doc yaml.Node
+	if err := yaml.Unmarshal(data, &doc); err != nil || len(doc.Content) == 0 { return }
+	lookup := func(n *yaml.Node, key string) *yaml.Node {
+		if n == nil || n.Kind != yaml.MappingNode { return nil }
+		for i := 0; i+1 < len(n.Content); i += 2 {
+			if n.Content[i].Value == key { return n.Content[i+1] }
+		}
+		return nil
+	}
+	steps := lookup(lookup(doc.Content[0], "runs"), "steps")
+	if steps == nil || steps.Kind != yaml.SequenceNode { return }
+	sha := regexp.MustCompile(`^[0-9a-fA-F]{40}$`)
+	for _, step := range steps.Content {
+		uses := lookup(step, "uses")
+		if uses == nil || uses.Kind != yaml.ScalarNode { continue }
+		spec := strings.TrimSpace(uses.Value)
+		if spec == "" || strings.Contains(spec, "$"+"{{") || strings.HasPrefix(spec, "./") || strings.HasPrefix(spec, "docker://") { continue }
+		idx := strings.LastIndex(spec, "@")
+		if idx < 0 || !sha.MatchString(spec[idx+1:]) {
+			rule.Errorf(pos, "nested action %q in local composite metadata %q must be pinned to a full-length commit SHA (40 hexadecimal characters)", spec, path)
+		}
+	}
 }
 
 // https://docs.github.com/en/actions/creating-actions/metadata-syntax-for-github-actions#runs-for-javascript-actions
