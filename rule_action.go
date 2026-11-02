@@ -476,31 +476,44 @@ func (rule *RuleAction) checkLocalCompositeActionPins(dir string, pos *Pos) {
 			break
 		}
 	}
-	if data == nil { return }
+	if data == nil {
+		return
+	}
 	var doc yaml.Node
-	if err := yaml.Unmarshal(data, &doc); err != nil || len(doc.Content) == 0 { return }
+	if err := yaml.Unmarshal(data, &doc); err != nil || len(doc.Content) == 0 {
+		return
+	}
 	lookup := func(n *yaml.Node, key string) *yaml.Node {
-		if n == nil || n.Kind != yaml.MappingNode { return nil }
+		if n == nil || n.Kind != yaml.MappingNode {
+			return nil
+		}
 		for i := 0; i+1 < len(n.Content); i += 2 {
-			if n.Content[i].Value == key { return n.Content[i+1] }
+			if n.Content[i].Value == key {
+				return n.Content[i+1]
+			}
 		}
 		return nil
 	}
 	steps := lookup(lookup(doc.Content[0], "runs"), "steps")
-	if steps == nil || steps.Kind != yaml.SequenceNode { return }
+	if steps == nil || steps.Kind != yaml.SequenceNode {
+		return
+	}
 	sha := regexp.MustCompile(`^[0-9a-fA-F]{40}$`)
 	for _, step := range steps.Content {
 		uses := lookup(step, "uses")
-		if uses == nil || uses.Kind != yaml.ScalarNode { continue }
+		if uses == nil || uses.Kind != yaml.ScalarNode {
+			continue
+		}
 		spec := strings.TrimSpace(uses.Value)
-		if spec == "" || strings.Contains(spec, "$"+"{{") || strings.HasPrefix(spec, "./") || strings.HasPrefix(spec, "docker://") { continue }
+		if spec == "" || strings.Contains(spec, "$"+"{{") || strings.HasPrefix(spec, "./") || strings.HasPrefix(spec, "docker://") {
+			continue
+		}
 		idx := strings.LastIndex(spec, "@")
 		if idx < 0 || !sha.MatchString(spec[idx+1:]) {
 			rule.Errorf(pos, "nested action %q in local composite metadata %q must be pinned to a full-length commit SHA (40 hexadecimal characters)", spec, path)
 		}
 	}
 }
-
 // https://docs.github.com/en/actions/creating-actions/metadata-syntax-for-github-actions#runs-for-javascript-actions
 func (rule *RuleAction) checkLocalJavaScriptActionRuns(r *ActionMetadataRuns, dir, name string, pos *Pos) {
 	if r.Main == "" {
