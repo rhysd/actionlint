@@ -510,7 +510,9 @@ func (rule *RuleAction) checkLocalCompositeActionPins(dir string, pos *Pos) {
 		}
 		idx := strings.LastIndex(spec, "@")
 		if idx < 0 || !sha.MatchString(spec[idx+1:]) {
-			rule.Errorf(pos, "nested action %q in local composite metadata %q must be pinned to a full-length commit SHA (40 hexadecimal characters)", spec, path)
+			// yaml.Node retains the source location, so report the nested uses entry
+			// rather than the workflow step which references this composite action.
+			rule.Errorf(&Pos{Line: uses.Line, Col: uses.Column}, "nested action %q in local composite metadata %q must be pinned to a full-length commit SHA (40 hexadecimal characters)", spec, path)
 		}
 	}
 }
