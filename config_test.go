@@ -288,3 +288,22 @@ func TestConfigGenerateDefaultConfigFileError(t *testing.T) {
 		t.Fatalf("unexpected error message: %q", msg)
 	}
 }
+
+func TestConfigParseRequireCommitHashInComposites(t *testing.T) {
+	for _, tc := range []struct {
+		input string
+		want  bool
+	}{
+		{input: "require-commit-hash-in-composites: true\n", want: true},
+		{input: "require-commit-hash-in-composites: false\n", want: false},
+		{input: "", want: false},
+	} {
+		cfg, err := ParseConfig([]byte(tc.input))
+		if err != nil {
+			t.Fatal(err)
+		}
+		if cfg.RequireCommitHashInComposites != tc.want {
+			t.Errorf("for config %q, wanted RequireCommitHashInComposites=%v but got %v", tc.input, tc.want, cfg.RequireCommitHashInComposites)
+		}
+	}
+}
