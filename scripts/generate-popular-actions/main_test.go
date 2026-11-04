@@ -2,6 +2,7 @@ package main
 
 import (
 	"bytes"
+	"encoding/json"
 	"errors"
 	"io"
 	"os"
@@ -10,6 +11,7 @@ import (
 	"testing"
 
 	"github.com/google/go-cmp/cmp"
+	"github.com/rhysd/actionlint"
 )
 
 // Normal cases
@@ -94,6 +96,168 @@ func TestReadWriteJSONL(t *testing.T) {
 				t.Fatalf("read content and output content differ\n%s", diff)
 			}
 		})
+	}
+}
+
+func TestReadJSONLRecords(t *testing.T) {
+	first := `{"spec":"owner/first@v1","metadata":{"name":"First","inputs":{"token":{"name":"Token","required":true,"deprecated":true,"deprecation-message":"Use key"}},"outputs":{"result":{"name":"Result"}},"skip_inputs":true,"skip_outputs":true,"runs":{"using":"node24","main":"index.js"}}}`
+	second := `{"spec":"owner/second@v2","metadata":{"name":"Second"}}`
+	duplicate := `{"spec":"owner/first@v1","metadata":{"name":"Replacement"}}`
+	longName := strings.Repeat("a", 8192)
+	long := `{"spec":"owner/long@v1","metadata":{"name":"` + longName + `"}}`
+	firstMeta := &actionlint.ActionMetadata{
+		Name: "First",
+		Inputs: actionlint.ActionMetadataInputs{
+			"token": {Name: "Token", Required: true, Deprecated: true, DeprecationMessage: "Use key"},
+		},
+		Outputs:     actionlint.ActionMetadataOutputs{"result": {Name: "Result"}},
+		SkipInputs:  true,
+		SkipOutputs: true,
+		Runs:        actionlint.ActionMetadataRuns{Using: "node24", Main: "index.js"},
+	}
+	one := map[string]*actionlint.ActionMetadata{"owner/first@v1": firstMeta}
+	both := map[string]*actionlint.ActionMetadata{
+		"owner/first@v1":  firstMeta,
+		"owner/second@v2": {Name: "Second"},
+	}
+	replaced := map[string]*actionlint.ActionMetadata{"owner/first@v1": {Name: "Replacement"}}
+	testCases := []struct {
+		name string
+		in   string
+		want map[string]*actionlint.ActionMetadata
+	}{
+		{"unterminated", first, one},
+		{"terminated", first + "\n", one},
+		{"multiple_unterminated", first + "\n" + second, both},
+		{"multiple_terminated", first + "\n" + second + "\n", both},
+		{"empty", "", map[string]*actionlint.ActionMetadata{}},
+		{"whitespace", " \t" + first + " \t", one},
+		{"crlf", first + "\r\n" + second + "\r\n", both},
+		{"crlf_unterminated", first + "\r\n" + second + "\r", both},
+		{"duplicate_unterminated", first + "\n" + duplicate, replaced},
+		{"duplicate_terminated", first + "\n" + duplicate + "\n", replaced},
+		{"long_unterminated", long, map[string]*actionlint.ActionMetadata{"owner/long@v1": {Name: longName}}},
+		{"long_terminated", long + "\n", map[string]*actionlint.ActionMetadata{"owner/long@v1": {Name: longName}}},
+	}
+	for _, tc := range testCases {
+		t.Run(tc.name, func(t *testing.T) {
+			file := filepath.Join(t.TempDir(), "actions.jsonl")
+			if err := os.WriteFile(file, []byte(tc.in), 0o600); err != nil {
+				t.Fatal(err)
+			}
+			have, err := newGen(io.Discard, io.Discard, io.Discard).readJSONL(file)
+			if err != nil {
+				t.Fatal(err)
+			}
+			if diff := cmp.Diff(tc.want, have, cmp.AllowUnexported(actionlint.ActionMetadata{})); diff != "" {
+				t.Errorf("unexpected action metadata (-want +have):\n%s", diff)
+			}
+			checkJSONLGeneration(t, file, tc.want)
+		})
+	}
+}
+
+func checkJSONLGeneration(t *testing.T, file string, want map[string]*actionlint.ActionMetadata) {
+	t.Helper()
+	stdout := &bytes.Buffer{}
+	stderr := &bytes.Buffer{}
+	if status := newGen(stdout, stderr, io.Discard).run([]string{"test", "-s", file, "-f", "jsonl"}); status != 0 {
+		t.Fatalf("exit status is non-zero: %d: %s", status, stderr.Bytes())
+	}
+	have := map[string]*actionlint.ActionMetadata{}
+	dec := json.NewDecoder(stdout)
+	for {
+		var record actionOutput
+		err := dec.Decode(&record)
+		if err == io.EOF {
+			break
+		}
+		if err != nil {
+			t.Fatal("could not decode generated JSONL:", err)
+		}
+		have[record.Spec] = record.Meta
+	}
+	if diff := cmp.Diff(want, have, cmp.AllowUnexported(actionlint.ActionMetadata{})); diff != "" {
+		t.Errorf("unexpected generated action metadata (-want +have):\n%s", diff)
+	}
+}
+
+func TestReadJSONLInvalidRecord(t *testing.T) {
+	valid := `{"spec":"owner/action@v1","metadata":{"name":"Action"}}` + "\n"
+	testCases := []struct {
+		name string
+		in   string
+	}{
+		{"malformed_unterminated", `{"spec":`},
+		{"malformed_final", valid + `{"spec":`},
+		{"malformed_terminated", "{\n"},
+		{"malformed_middle", valid + "{\n" + valid},
+		{"blank", "\n"},
+		{"blank_final", valid + "\n"},
+		{"whitespace_only", " \t\r"},
+		{"whitespace_final", valid + " \t\r"},
+	}
+	for _, tc := range testCases {
+		t.Run(tc.name, func(t *testing.T) {
+			file := filepath.Join(t.TempDir(), "actions.jsonl")
+			if err := os.WriteFile(file, []byte(tc.in), 0o600); err != nil {
+				t.Fatal(err)
+			}
+			have, err := newGen(io.Discard, io.Discard, io.Discard).readJSONL(file)
+			if have != nil {
+				t.Errorf("result must be nil on parse error: %#v", have)
+			}
+			var syntaxErr *json.SyntaxError
+			if !errors.As(err, &syntaxErr) {
+				t.Fatalf("error must wrap a JSON syntax error: %v", err)
+			}
+			if !strings.HasPrefix(err.Error(), "could not parse line as JSON for action metadata in file "+file+": ") {
+				t.Errorf("unexpected parse error: %v", err)
+			}
+			stderr := &bytes.Buffer{}
+			stdout := &bytes.Buffer{}
+			if status := newGen(stdout, stderr, io.Discard).run([]string{"test", "-s", file, "-f", "jsonl"}); status == 0 {
+				t.Fatal("exit status is unexpectedly zero")
+			}
+			if stderr.String() != err.Error()+"\n" {
+				t.Errorf("unexpected stderr: %q", stderr.String())
+			}
+			if stdout.Len() != 0 {
+				t.Errorf("unexpected stdout: %q", stdout.String())
+			}
+		})
+	}
+}
+
+func TestReadJSONLReadError(t *testing.T) {
+	file := filepath.Join(t.TempDir(), "directory.jsonl")
+	if err := os.Mkdir(file, 0o700); err != nil {
+		t.Fatal(err)
+	}
+	have, err := newGen(io.Discard, io.Discard, io.Discard).readJSONL(file)
+	if have != nil {
+		t.Errorf("result must be nil on read error: %#v", have)
+	}
+	var pathErr *os.PathError
+	if !errors.As(err, &pathErr) {
+		t.Fatalf("error must wrap a file error: %v", err)
+	}
+	if pathErr.Path != file {
+		t.Errorf("unexpected file in error: %q", pathErr.Path)
+	}
+	if !strings.HasPrefix(err.Error(), "could not read line in file "+file+": ") && !strings.HasPrefix(err.Error(), "could not read file "+file+": ") {
+		t.Errorf("unexpected read error: %v", err)
+	}
+	stderr := &bytes.Buffer{}
+	stdout := &bytes.Buffer{}
+	if status := newGen(stdout, stderr, io.Discard).run([]string{"test", "-s", file, "-f", "jsonl"}); status == 0 {
+		t.Fatal("exit status is unexpectedly zero")
+	}
+	if stderr.String() != err.Error()+"\n" {
+		t.Errorf("unexpected stderr: %q", stderr.String())
+	}
+	if stdout.Len() != 0 {
+		t.Errorf("unexpected stdout: %q", stdout.String())
 	}
 }
 

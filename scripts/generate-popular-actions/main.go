@@ -347,10 +347,10 @@ func (g *gen) readJSONL(file string) (map[string]*actionlint.ActionMetadata, err
 	ret := map[string]*actionlint.ActionMetadata{}
 	for {
 		l, err := r.ReadBytes('\n')
-		if err == io.EOF {
+		if err == io.EOF && len(l) == 0 {
 			g.log.Printf("Read %d action metadata from %s", len(ret), file)
 			return ret, nil
-		} else if err != nil {
+		} else if err != nil && err != io.EOF {
 			return nil, fmt.Errorf("could not read line in file %s: %w", file, err)
 		}
 		var j actionOutput
