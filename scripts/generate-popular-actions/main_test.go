@@ -472,7 +472,8 @@ func TestDetectErrorBadRequest(t *testing.T) {
 		t.Fatal("exit status is not 1:", status)
 	}
 	out := stderr.String()
-	if !strings.Contains(out, "head request for https://raw.githubusercontent.com//v2/action.yml was not successful") {
+	if !strings.Contains(out, "could not send head request to https://raw.githubusercontent.com/%/v2/action.yml") ||
+		!strings.Contains(out, "invalid URL escape") {
 		t.Fatalf("stderr was unexpected: %q", out)
 	}
 }
