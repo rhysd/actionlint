@@ -64,6 +64,9 @@ type Config struct {
 	// listed here as undefined config variables.
 	// https://docs.github.com/en/actions/learn-github-actions/variables
 	ConfigVariables []string `yaml:"config-variables"`
+	// RequireCommitHashInComposites requires third-party uses references in local composite actions
+	// to be pinned to full-length commit SHAs.
+	RequireCommitHashInComposites bool `yaml:"require-commit-hash-in-composites"`
 	// Paths is a "paths" mapping in the configuration file. The keys are glob patterns to match file paths.
 	// And the values are corresponding configurations applied to the file paths.
 	Paths map[string]PathConfig `yaml:"paths"`
@@ -142,6 +145,10 @@ func writeDefaultConfigFile(path string) error {
 # organization. ` + "`null`" + ` means disabling configuration variables check.
 # Empty array means no configuration variable is allowed.
 config-variables: null
+
+# Require third-party actions referenced from local composite actions to use
+# full-length commit SHAs (40 hexadecimal characters).
+require-commit-hash-in-composites: false
 
 # Configuration for file paths. The keys are glob patterns to match to file
 # paths relative to the repository root. The values are the configurations for
