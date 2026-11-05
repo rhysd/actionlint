@@ -126,6 +126,13 @@ func (sig *FuncSignature) String() string {
 	return fmt.Sprintf("%s(%s%s) -> %s", sig.Name, strings.Join(ts, ", "), elip, sig.Ret.String())
 }
 
+// joinFirstArgType returns the type of the first parameter of join(). The parameter accepts an
+// array of strings or a string because 'The value for `array` can be an array or a string'.
+// https://docs.github.com/en/actions/reference/workflows-and-actions/expressions#join
+func joinFirstArgType() ExprType {
+	return &UnionType{Types: []ExprType{&ArrayType{Elem: StringType{}}, StringType{}}}
+}
+
 // BuiltinFuncSignatures is a set of all builtin function signatures. All function names are in
 // lower case because function names are compared in case insensitive.
 // https://docs.github.com/en/actions/learn-github-actions/expressions#functions
@@ -183,7 +190,7 @@ var BuiltinFuncSignatures = map[string][]*FuncSignature{
 			Name: "join",
 			Ret:  StringType{},
 			Params: []ExprType{
-				&ArrayType{Elem: StringType{}},
+				joinFirstArgType(),
 				StringType{},
 			},
 			IsConstFunc: true,
@@ -193,7 +200,7 @@ var BuiltinFuncSignatures = map[string][]*FuncSignature{
 			Name: "join",
 			Ret:  StringType{},
 			Params: []ExprType{
-				&ArrayType{Elem: StringType{}},
+				joinFirstArgType(),
 			},
 			IsConstFunc: true,
 		},
@@ -805,7 +812,10 @@ func (sema *ExprSemanticsChecker) checkIndexAccess(n *IndexAccessNode) ExprType 
 	}
 }
 
-func checkFuncSignature(n *FuncCallNode, sig *FuncSignature, args []ExprType) *ExprError {
+// checkFuncSignature checks the given arguments at the function call are valid for the signature.
+// The second return value indicates whether the number of the given arguments matches the
+// signature. When it is false, the returned error is about the wrong number of the arguments.
+func checkFuncSignature(n *FuncCallNode, sig *FuncSignature, args []ExprType) (*ExprError, bool) {
 	lp, la := len(sig.Params), len(args)
 	if sig.VariableLengthParams && (lp > la) || !sig.VariableLengthParams && lp != la {
 		atLeast := ""
@@ -819,7 +829,7 @@ func checkFuncSignature(n *FuncCallNode, sig *FuncSignature, args []ExprType) *E
 			atLeast,
 			lp,
 			la,
-		)
+		), false
 	}
 
 	for i := 0; i < len(sig.Params); i++ {
@@ -832,7 +842,7 @@ func checkFuncSignature(n *FuncCallNode, sig *FuncSignature, args []ExprType) *E
 				a.String(),
 				p.String(),
 				sig.String(),
-			)
+			), true
 		}
 	}
 
@@ -850,12 +860,12 @@ func checkFuncSignature(n *FuncCallNode, sig *FuncSignature, args []ExprType) *E
 					a.String(),
 					p.String(),
 					sig.String(),
-				)
+				), true
 			}
 		}
 	}
 
-	return nil
+	return nil, true
 }
 
 func (sema *ExprSemanticsChecker) checkBuiltinFuncCall(n *FuncCallNode, sig *FuncSignature) ExprType {
@@ -924,18 +934,30 @@ func (sema *ExprSemanticsChecker) checkFuncCall(n *FuncCallNode) ExprType {
 	}
 
 	// Check all overloads
-	errs := []*ExprError{}
+	typeErrs := []*ExprError{}
+	arityErrs := []*ExprError{}
 	for _, sig := range sigs {
-		err := checkFuncSignature(n, sig, tys)
+		err, arityOK := checkFuncSignature(n, sig, tys)
 		if err == nil {
 			// When one of overload pass type check, overload was resolved correctly
 			return sema.checkBuiltinFuncCall(n, sig)
 		}
-		errs = append(errs, err)
+		if arityOK {
+			typeErrs = append(typeErrs, err)
+		} else {
+			arityErrs = append(arityErrs, err)
+		}
 	}
 
-	// All candidates failed
-	sema.errs = append(sema.errs, errs...)
+	// All candidates failed. Report the errors from the candidates whose number of parameters
+	// matches the given number of the arguments when such candidates exist. Their type errors are
+	// more helpful than the errors about the wrong number of the arguments of the other candidates.
+	// When all the candidates don't match the number of the arguments, report the errors about it.
+	if len(typeErrs) > 0 {
+		sema.errs = append(sema.errs, typeErrs...)
+	} else {
+		sema.errs = append(sema.errs, arityErrs...)
+	}
 
 	return AnyType{}
 }

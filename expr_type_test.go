@@ -1044,3 +1044,77 @@ func TestExprTypePanicTypeOfJSONValue(t *testing.T) {
 	}()
 	typeOfJSONValue(struct{}{})
 }
+
+func TestExprUnionTypeStringize(t *testing.T) {
+	ty := &UnionType{Types: []ExprType{&ArrayType{Elem: StringType{}}, StringType{}}}
+	if s := ty.String(); s != "array<string> | string" {
+		t.Fatalf("stringized union type is wrong: %q", s)
+	}
+}
+
+func TestExprUnionTypeAssignable(t *testing.T) {
+	ty := &UnionType{Types: []ExprType{&ArrayType{Elem: StringType{}}, StringType{}}}
+
+	if !ty.Assignable(ty) {
+		t.Fatalf("%q is not self-assignable", ty)
+	}
+
+	assignable := []ExprType{
+		AnyType{},
+		NumberType{}, // Number is coerced into string
+		StringType{},
+		&ArrayType{Elem: StringType{}},
+		&ArrayType{Elem: NumberType{}}, // Number elements are coerced into strings
+		&ArrayType{Elem: AnyType{}},
+		&UnionType{Types: []ExprType{StringType{}, &ArrayType{Elem: NumberType{}}}},
+	}
+	for _, a := range assignable {
+		if !ty.Assignable(a) {
+			t.Errorf("%q should be assignable to %q", a, ty)
+		}
+	}
+
+	notAssignable := []ExprType{
+		NullType{},
+		BoolType{},
+		NewEmptyObjectType(),
+		&ArrayType{Elem: BoolType{}},
+		&UnionType{Types: []ExprType{StringType{}, NullType{}}},
+	}
+	for _, a := range notAssignable {
+		if ty.Assignable(a) {
+			t.Errorf("%q should not be assignable to %q", a, ty)
+		}
+	}
+}
+
+func TestExprUnionTypeMerge(t *testing.T) {
+	ty := &UnionType{Types: []ExprType{&ArrayType{Elem: StringType{}}, StringType{}}}
+
+	if m := ty.Merge(StringType{}); m.String() != ty.String() {
+		t.Errorf("merging string into %q should be the union type itself but got %q", ty, m)
+	}
+	if m := ty.Merge(&ArrayType{Elem: StringType{}}); m.String() != ty.String() {
+		t.Errorf("merging array<string> into %q should be the union type itself but got %q", ty, m)
+	}
+	if m := ty.Merge(AnyType{}); m.String() != "any" {
+		t.Errorf("merging any into %q should be any but got %q", ty, m)
+	}
+	if m := ty.Merge(NullType{}); m.String() != "any" {
+		t.Errorf("merging conflicting type into %q should be any but got %q", ty, m)
+	}
+}
+
+func TestExprUnionTypeDeepCopy(t *testing.T) {
+	ty := &UnionType{Types: []ExprType{&ArrayType{Elem: StringType{}}, StringType{}}}
+	copied, ok := ty.DeepCopy().(*UnionType)
+	if !ok {
+		t.Fatalf("deep copy of union type is not a union type: %v", copied)
+	}
+	if copied == ty || copied.Types[0] == ty.Types[0] {
+		t.Fatal("deep copy should create new instances")
+	}
+	if copied.String() != ty.String() {
+		t.Fatalf("deep copy is different from the original: %q vs %q", copied, ty)
+	}
+}

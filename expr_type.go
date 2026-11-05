@@ -423,6 +423,63 @@ func (ty *ArrayType) DeepCopy() ExprType {
 	return &ArrayType{ty.Elem.DeepCopy(), ty.Deref}
 }
 
+// UnionType is type for values which can be one of the several types. This type is used for
+// function parameters which accept more than one type. For example, the first parameter of join()
+// accepts both an array of strings and a string.
+type UnionType struct {
+	// Types is a list of types which this type can be. This list must not be empty.
+	Types []ExprType
+}
+
+func (ty *UnionType) String() string {
+	ss := make([]string, 0, len(ty.Types))
+	for _, t := range ty.Types {
+		ss = append(ss, t.String())
+	}
+	return strings.Join(ss, " | ")
+}
+
+// Assignable returns if other type can be assignable to the type. Other type is assignable to the
+// union type when it is assignable to one of the types which the union type can be. When other
+// type is also a union type, it is assignable when all the types of it are assignable to the type.
+func (ty *UnionType) Assignable(other ExprType) bool {
+	if u, ok := other.(*UnionType); ok {
+		for _, ot := range u.Types {
+			if !ty.Assignable(ot) {
+				return false
+			}
+		}
+		return true
+	}
+	for _, t := range ty.Types {
+		if t.Assignable(other) {
+			return true
+		}
+	}
+	return false
+}
+
+// Merge merges other type into this type. When other type conflicts with this type, the merged
+// result is any type as fallback.
+func (ty *UnionType) Merge(other ExprType) ExprType {
+	if _, ok := other.(AnyType); ok {
+		return other
+	}
+	if ty.Assignable(other) {
+		return ty
+	}
+	return AnyType{}
+}
+
+// DeepCopy duplicates itself. All its child types are copied recursively.
+func (ty *UnionType) DeepCopy() ExprType {
+	ts := make([]ExprType, 0, len(ty.Types))
+	for _, t := range ty.Types {
+		ts = append(ts, t.DeepCopy())
+	}
+	return &UnionType{ts}
+}
+
 // EqualTypes returns if the two types are equal.
 func EqualTypes(l, r ExprType) bool {
 	return l.Assignable(r) && r.Assignable(l)

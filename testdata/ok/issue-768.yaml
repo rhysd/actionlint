@@ -1,0 +1,18 @@
+name: repro for issue 768
+on: push
+
+jobs:
+  produce:
+    runs-on: ubuntu-latest
+    outputs:
+      reports: ${{ steps.gen.outputs.reports }}
+    steps:
+      - id: gen
+        run: echo "reports=scan.txt,sbom.json" >> "$GITHUB_OUTPUT"
+
+  consume:
+    needs: produce
+    if: ${{ contains(join(needs.produce.outputs.reports), '.txt') }}
+    runs-on: ubuntu-latest
+    steps:
+      - run: echo yes
