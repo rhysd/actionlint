@@ -778,6 +778,71 @@ func TestExprSemanticsCheckOK(t *testing.T) {
 			input:    "case(false, 'a', false, 'b', false, 'c', true, 'd', 'default')",
 			expected: AnyType{},
 		},
+		{
+			what:     "join() with string first argument",
+			input:    "join('hello')",
+			expected: StringType{},
+		},
+		{
+			what:     "join() with string first argument and separator",
+			input:    "join('hello', '/')",
+			expected: StringType{},
+		},
+		{
+			what:     "join() with job output string first argument",
+			input:    "join(needs.foo.outputs.out1)",
+			expected: StringType{},
+			needs: NewStrictObjectType(map[string]ExprType{
+				"foo": NewStrictObjectType(map[string]ExprType{
+					"outputs": NewStrictObjectType(map[string]ExprType{
+						"out1": StringType{},
+					}),
+					"result": StringType{},
+				}),
+			}),
+		},
+		{
+			what:     "join() with step output string first argument and separator",
+			input:    "join(steps.gen.outputs.reports, ', ')",
+			expected: StringType{},
+			steps: NewStrictObjectType(map[string]ExprType{
+				"gen": NewStrictObjectType(map[string]ExprType{
+					"outputs": NewStrictObjectType(map[string]ExprType{
+						"reports": StringType{},
+					}),
+					"conclusion": StringType{},
+					"outcome":    StringType{},
+				}),
+			}),
+		},
+		{
+			what:     "join() with array first argument",
+			input:    "join(test(), ', ')",
+			expected: StringType{},
+			funcs: map[string][]*FuncSignature{
+				"test": {
+					{
+						Name: "test",
+						Ret:  &ArrayType{Elem: StringType{}},
+					},
+				},
+				"join": BuiltinFuncSignatures["join"],
+			},
+		},
+		{
+			what:     "join() with array first argument without separator",
+			input:    "join(test())",
+			expected: StringType{},
+			funcs: map[string][]*FuncSignature{
+				"test": {
+					{
+						Name: "test",
+						Ret:  &ArrayType{Elem: StringType{}},
+					},
+				},
+				"join": BuiltinFuncSignatures["join"],
+			},
+		},
 	}
 
 	allSPFuncs := []string{}
@@ -1335,6 +1400,28 @@ func TestExprSemanticsCheckError(t *testing.T) {
 			expected: []string{
 				"case() requires an odd number of arguments (pred/value pairs + default) but got 4",
 				"case() requires an odd number of arguments (pred/value pairs + default) but got 6",
+			},
+		},
+		{
+			what:  "join() with null first argument",
+			input: "join(null)",
+			expected: []string{
+				"1st argument of function call is not assignable. \"null\" cannot be assigned to \"array<string> | string\". called function type is \"join(array<string> | string) -> string\"",
+			},
+		},
+		{
+			what:  "join() with wrong type of separator",
+			input: "join('a', null)",
+			expected: []string{
+				"2nd argument of function call is not assignable. \"null\" cannot be assigned to \"string\". called function type is \"join(array<string> | string, string) -> string\"",
+			},
+		},
+		{
+			what:  "join() with too many arguments",
+			input: "join('a', 'b', 'c')",
+			expected: []string{
+				"number of arguments is wrong. function \"join(array<string> | string, string) -> string\" takes 2 parameters but 3 arguments are given",
+				"number of arguments is wrong. function \"join(array<string> | string) -> string\" takes 1 parameters but 3 arguments are given",
 			},
 		},
 	}
