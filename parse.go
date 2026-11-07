@@ -302,8 +302,14 @@ func (p *parser) parseFloat(n *yaml.Node) *Float {
 	}
 
 	f, err := strconv.ParseFloat(n.Value, 64)
-	if err != nil || math.IsNaN(f) {
+	if err != nil {
 		p.errorf(n, "invalid float value: %q: %s", n.Value, err.Error())
+		return nil
+	}
+	if math.IsNaN(f) {
+		// NaN parses successfully so err is nil here. Report it as a
+		// diagnostic instead of dereferencing nil err (#753).
+		p.errorf(n, "invalid float value: %q", n.Value)
 		return nil
 	}
 
