@@ -1,0 +1,17 @@
+on: push
+jobs:
+  upper:
+    runs-on: ubuntu-latest
+    timeout-minutes: !!float NaN
+    steps:
+      - run: echo hello
+  lower:
+    runs-on: ubuntu-latest
+    timeout-minutes: !!float nan
+    steps:
+      - run: echo hello
+  title:
+    runs-on: ubuntu-latest
+    timeout-minutes: !!float NAN
+    steps:
+      - run: echo hello
