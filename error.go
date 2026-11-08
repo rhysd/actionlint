@@ -139,16 +139,16 @@ func (e *Error) getIndicator(line string) string {
 
 	start := e.Column - 1 // Column is 1-based
 
-	// Count width of non-space characters after '^' for underline
-	uw := 0
-	r := strings.NewReader(line[start:])
-	for {
-		c, s, err := r.ReadRune()
-		if err != nil || s == 0 || c == ' ' || c == '\t' || c == '\n' || c == '\r' {
-			break
-		}
-		uw += runewidth.RuneWidth(c)
+	// Count width of non-space characters after '^' for underline.
+	// StringWidth measures the token as a whole rather than rune by rune, so
+	// a sequence a terminal draws as one character counts once. A family
+	// emoji is seven runes and two columns, and adding its runes up gives
+	// eight, which runs the underline past the end of what it underlines.
+	token := line[start:]
+	if i := strings.IndexAny(token, " \t\n\r"); i >= 0 {
+		token = token[:i]
 	}
+	uw := runewidth.StringWidth(token)
 	if uw > 0 {
 		uw-- // Decrement for place for '^'
 	}
