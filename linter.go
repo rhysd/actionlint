@@ -109,6 +109,7 @@ type Linter struct {
 	errFmt         *ErrorFormatter
 	cwd            string
 	onRulesCreated func([]Rule) []Rule
+	checked        int // Number of workflow files checked by the last Lint* call
 }
 
 // NewLinter creates a new Linter instance.
@@ -193,6 +194,7 @@ func NewLinter(out io.Writer, opts *LinterOptions) (*Linter, error) {
 		formatter,
 		cwd,
 		opts.OnRulesCreated,
+		0, // checked
 	}
 
 	l.debug("Create a Linter instance with option %#v", opts)
@@ -315,6 +317,7 @@ func (l *Linter) LintDir(dir string, project *Project) ([]*Error, error) {
 // from the file path.
 func (l *Linter) LintFiles(filepaths []string, project *Project) ([]*Error, error) {
 	n := len(filepaths)
+	l.checked = n
 	switch n {
 	case 0:
 		return []*Error{}, nil
@@ -431,6 +434,7 @@ func (l *Linter) LintFiles(filepaths []string, project *Project) ([]*Error, erro
 // LintFile lints one YAML workflow file and outputs the errors to given writer. The project
 // parameter can be nil. In the case, the project is detected from the given path.
 func (l *Linter) LintFile(path string, project *Project) ([]*Error, error) {
+	l.checked = 1
 	if project == nil {
 		p, err := l.projects.At(path)
 		if err != nil {
@@ -472,6 +476,7 @@ func (l *Linter) LintFile(path string, project *Project) ([]*Error, error) {
 // which is usually os.Stdin. The file name is determined by LinterOptions.StdinFileName. When the
 // option is empty, "<stdin>" is the default value.
 func (l *Linter) LintStdin(stdin io.Reader) ([]*Error, error) {
+	l.checked = 1
 	l.log("Reading the input from stdin")
 	b, err := io.ReadAll(stdin)
 	if err != nil {

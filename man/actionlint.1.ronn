@@ -83,6 +83,9 @@ with Go template syntax.
     Command name or file path of "shellcheck" external command. If empty, shellcheck integration will
     be disabled (default "shellcheck")
 
+  * `-summary`:
+    Print aggregate summary of errors to stderr after checking
+
   * `-verbose`:
     Enable verbose output
 
