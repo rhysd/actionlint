@@ -192,6 +192,28 @@ func TestErrorPrettyPrint(t *testing.T) {
 			expected: "filename.txt:2:6: error at out of source [kind]",
 		},
 		{
+			// A family emoji is seven runes and two columns. Underlining it
+			// rune by rune runs the underline past the end of the token.
+			message: "error at a glyph made of several runes",
+			line:    1,
+			column:  6,
+			source:  "echo \U0001F468\u200d\U0001F469\u200d\U0001F467\u200d\U0001F466 done",
+			expected: "filename.txt:1:6: error at a glyph made of several runes [kind]\n" +
+				"  |\n" +
+				"1 | echo \U0001F468\u200d\U0001F469\u200d\U0001F467\u200d\U0001F466 done\n" +
+				"  |      ^~",
+		},
+		{
+			message: "error at an emoji carrying a skin tone",
+			line:    1,
+			column:  6,
+			source:  "echo \U0001F44D\U0001F3FD done",
+			expected: "filename.txt:1:6: error at an emoji carrying a skin tone [kind]\n" +
+				"  |\n" +
+				"1 | echo \U0001F44D\U0001F3FD done\n" +
+				"  |      ^~",
+		},
+		{
 			message: "error at zero column",
 			line:    1,
 			column:  0,
