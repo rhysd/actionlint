@@ -89,25 +89,28 @@ type Command struct {
 	Stderr io.Writer
 }
 
-func (cmd *Command) runLinter(args []string, opts *LinterOptions, initConfig bool) ([]*Error, error) {
+func (cmd *Command) runLinter(args []string, opts *LinterOptions, initConfig bool) ([]*Error, int, error) {
 	l, err := NewLinter(cmd.Stdout, opts)
 	if err != nil {
-		return nil, err
+		return nil, 0, err
 	}
 
 	if initConfig {
-		return nil, l.GenerateDefaultConfig("")
+		return nil, 0, l.GenerateDefaultConfig("")
 	}
 
 	if len(args) == 0 {
-		return l.LintRepository("")
+		errs, err := l.LintRepository("")
+		return errs, l.checked, err
 	}
 
 	if len(args) == 1 && args[0] == "-" {
-		return l.LintStdin(cmd.Stdin)
+		errs, err := l.LintStdin(cmd.Stdin)
+		return errs, l.checked, err
 	}
 
-	return l.LintFiles(args, nil)
+	errs, err := l.LintFiles(args, nil)
+	return errs, l.checked, err
 }
 
 type ignorePatternFlags []string
@@ -130,6 +133,7 @@ func (cmd *Command) Main(args []string) int {
 	var initConfig bool
 	var noColor bool
 	var color bool
+	var summary bool
 
 	flags := flag.NewFlagSet(args[0], flag.ContinueOnError)
 	flags.SetOutput(cmd.Stderr)
@@ -144,6 +148,7 @@ func (cmd *Command) Main(args []string) int {
 	flags.BoolVar(&color, "color", false, "Always enable colorful output. This is useful to force colorful outputs")
 	flags.BoolVar(&opts.Verbose, "verbose", false, "Enable verbose output")
 	flags.BoolVar(&opts.Debug, "debug", false, "Enable debug output (for development)")
+	flags.BoolVar(&summary, "summary", false, "Print aggregate summary of errors to stderr after checking")
 	flags.BoolVar(&ver, "version", false, "Show version and how this binary was installed")
 	flags.StringVar(&opts.StdinFileName, "stdin-filename", "<stdin>", "File name when reading input from stdin")
 	flags.Usage = func() {
@@ -181,10 +186,17 @@ func (cmd *Command) Main(args []string) int {
 		opts.Color = ColorOptionKindNever
 	}
 
-	errs, err := cmd.runLinter(flags.Args(), &opts, initConfig)
+	errs, checked, err := cmd.runLinter(flags.Args(), &opts, initConfig)
 	if err != nil {
 		fmt.Fprintln(cmd.Stderr, err.Error())
 		return ExitStatusFailure
+	}
+	if summary {
+		files := map[string]struct{}{}
+		for _, e := range errs {
+			files[e.Filepath] = struct{}{}
+		}
+		fmt.Fprintf(cmd.Stderr, "%d errors in %d files (%d workflows checked)\n", len(errs), len(files), checked)
 	}
 	if len(errs) > 0 {
 		return ExitStatusSuccessProblemFound // Linter found some issues, yay!

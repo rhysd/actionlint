@@ -178,6 +178,25 @@ In `{{ }}` placeholder, input can be piped and action can be used to transform t
 
 Note that special characters escaped with backslash like `\n` in the format string are automatically unescaped.
 
+### Print a summary of errors
+
+`-summary` option prints one aggregate line to stderr after checking. It is useful for CI status checks, badges and
+pre-commit hooks which want a stable one-liner to parse instead of counting the lines of `-oneline` output.
+
+```sh
+actionlint -summary
+```
+
+```
+12 errors in 5 files (8 workflows checked)
+```
+
+The first number is the number of errors found, the second one is the number of files the errors were found in and the
+number in the parentheses is the number of workflows checked. The summary line is printed after the per-error output, so
+the option composes with `-oneline` and `-format` options. The line is never colorized, so it works with `-no-color`
+option as well. This option doesn't change the exit status, and no summary line is printed when actionlint stops due to
+an invalid option or a fatal error.
+
 ### Exit status
 
 `actionlint` command exits with one of the following exit statuses.
