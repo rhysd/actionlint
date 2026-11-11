@@ -176,46 +176,66 @@ func TestProcessInputStdin(t *testing.T) {
 	}
 }
 
-// Regression test for issue #650: concurrent runs with a stdin payload larger
-// than the kernel pipe buffer used to deadlock on darwin because the payload
-// was written to cmd.StdinPipe() before cmd.Start().
+// Regression test for issues #650 and #763: running a command with a stdin
+// payload larger than the kernel pipe buffer used to deadlock because the
+// payload was written to cmd.StdinPipe() before cmd.Start(). Nothing reads the
+// pipe until the child process starts, so the write blocks as soon as the
+// payload exceeds the pipe buffer (64 KiB by default on Linux and macOS,
+// around 4 KiB on Windows).
+//
+// The payload size must be strictly larger than the pipe buffer to exercise
+// this deadlock. A payload that fits in the buffer is absorbed without
+// blocking, so such a test would pass even with the buggy pre-Start write. In
+// particular, a 64 KiB payload exactly matches the default pipe buffer on
+// Linux, so it cannot catch a reintroduction of the bug there. The sizes below
+// cover the Windows buffer threshold and exceed the Linux/macOS buffers.
 func TestProcessConcurrentStdinDoesNotDeadlock(t *testing.T) {
-	p := newConcurrentProcess(5)
+	for _, size := range []int{
+		4 * 1024,    // Default pipe buffer on Windows (issue #763)
+		64 * 1024,   // Default pipe buffer on Linux and macOS (issue #650). Fits in the buffer, kept as a baseline
+		256 * 1024,  // Well above the default pipe buffer on all platforms
+		1024 * 1024, // Far above the default pipe buffer on all platforms
+	} {
+		t.Run(fmt.Sprintf("payload_%d_KiB", size/1024), func(t *testing.T) {
+			p := newConcurrentProcess(5)
+			payload := strings.Repeat("x", size)
 
-	// 64 KiB is above the default pipe buffer size on darwin and Linux so it
-	// forces the stdin copy to happen after the child has started.
-	payload := strings.Repeat("x", 64*1024)
-
-	done := make(chan struct{})
-	go func() {
-		defer close(done)
-		cmds := make([]*externalCommand, 0, 5)
-		for i := 0; i < 5; i++ {
-			cat := testSkipIfNoCommand(t, p, "cat")
-			cat.run(nil, payload, func(b []byte, err error) error {
-				if err != nil {
-					t.Errorf("cat failed: %v", err)
-					return err
-				}
-				if len(b) != len(payload) {
-					t.Errorf("cat output length %d, want %d", len(b), len(payload))
-				}
-				return nil
-			})
-			cmds = append(cmds, cat)
-		}
-		for _, c := range cmds {
-			if err := c.wait(); err != nil {
-				t.Errorf("cat wait failed: %v", err)
+			// Resolve the commands before starting the goroutine below because
+			// testSkipIfNoCommand may call t.Skip.
+			cmds := make([]*externalCommand, 0, 5)
+			for i := 0; i < 5; i++ {
+				cmds = append(cmds, testSkipIfNoCommand(t, p, "cat"))
 			}
-		}
-		p.wait()
-	}()
 
-	select {
-	case <-done:
-	case <-time.After(10 * time.Second):
-		t.Fatal("concurrent stdin writes deadlocked — see issue #650")
+			done := make(chan struct{})
+			go func() {
+				defer close(done)
+				for _, cat := range cmds {
+					cat.run(nil, payload, func(b []byte, err error) error {
+						if err != nil {
+							t.Errorf("cat failed: %v", err)
+							return err
+						}
+						if len(b) != len(payload) {
+							t.Errorf("cat output length %d, want %d", len(b), len(payload))
+						}
+						return nil
+					})
+				}
+				for _, cat := range cmds {
+					if err := cat.wait(); err != nil {
+						t.Errorf("cat wait failed: %v", err)
+					}
+				}
+				p.wait()
+			}()
+
+			select {
+			case <-done:
+			case <-time.After(10 * time.Second):
+				t.Fatalf("concurrent stdin writes of %d bytes deadlocked - see issues #650 and #763", size)
+			}
+		})
 	}
 }
 
