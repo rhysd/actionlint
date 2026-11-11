@@ -149,3 +149,61 @@ func TestProjectsLoadingBrokenProjectConfig(t *testing.T) {
 		t.Fatalf("wanted error %q but have error %q", want, msg)
 	}
 }
+
+func TestProjectKnowsDoesNotMatchSiblingPrefix(t *testing.T) {
+	// A project rooted at ".../repo" must not claim a sibling ".../repo-other"
+	// just because the path shares a string prefix (#750).
+	root := filepath.Join(t.TempDir(), "repo")
+	if err := os.MkdirAll(filepath.Join(root, ".github", "workflows"), 0750); err != nil {
+		t.Fatal(err)
+	}
+	testEnsureDotGitDir(root)
+
+	p, err := NewProject(root)
+	if err != nil {
+		t.Fatal(err)
+	}
+
+	sibling := root + "-other"
+	if err := os.MkdirAll(filepath.Join(sibling, ".github", "workflows"), 0750); err != nil {
+		t.Fatal(err)
+	}
+	testEnsureDotGitDir(sibling)
+
+	for _, tc := range []struct {
+		what string
+		path string
+		want bool
+	}{
+		{"project root", root, true},
+		{"file inside project", filepath.Join(root, ".github", "workflows", "ci.yaml"), true},
+		{"sibling directory", sibling, false},
+		{"file in sibling", filepath.Join(sibling, ".github", "workflows", "ci.yaml"), false},
+	} {
+		t.Run(tc.what, func(t *testing.T) {
+			if got := p.Knows(tc.path); got != tc.want {
+				t.Fatalf("Knows(%q) = %v, want %v (root %q)", tc.path, got, tc.want, root)
+			}
+		})
+	}
+
+	// Projects.At must not reuse the first project for a sibling with a shared prefix.
+	ps := NewProjects()
+	first, err := ps.At(filepath.Join(root, ".github", "workflows", "ci.yaml"))
+	if err != nil {
+		t.Fatal(err)
+	}
+	if first == nil || first.RootDir() != p.RootDir() {
+		t.Fatalf("expected project at %q, got %v", root, first)
+	}
+	second, err := ps.At(filepath.Join(sibling, ".github", "workflows", "ci.yaml"))
+	if err != nil {
+		t.Fatal(err)
+	}
+	if second == nil {
+		t.Fatal("expected a distinct project for the sibling repository")
+	}
+	if second.RootDir() == first.RootDir() {
+		t.Fatalf("sibling path was attributed to %q, want %q", first.RootDir(), sibling)
+	}
+}

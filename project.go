@@ -19,6 +19,22 @@ func absPath(path string) string {
 	return path
 }
 
+// pathContained reports whether path is dir itself or a file/directory inside
+// it. A sibling that only shares a string prefix (e.g. /work/repo-other when
+// dir is /work/repo) is not contained. (#750)
+func pathContained(path, dir string) bool {
+	path = absPath(path)
+	dir = absPath(dir)
+	if path == dir {
+		return true
+	}
+	rel, err := filepath.Rel(dir, path)
+	if err != nil {
+		return false
+	}
+	return rel != ".." && !strings.HasPrefix(rel, ".."+string(filepath.Separator))
+}
+
 // findProject creates new Project instance by finding a project which the given path belongs to.
 // A project must be a Git repository and have ".github/workflows" directory.
 func findProject(path string) (*Project, error) {
@@ -62,8 +78,7 @@ func (p *Project) WorkflowsDir() string {
 // Knows returns true when the project knows the given file. When a file is included in the
 // project's directory, the project knows the file.
 func (p *Project) Knows(path string) bool {
-	// TODO: strings.HasPrefix is not perfect to check file path
-	return strings.HasPrefix(absPath(path), p.root)
+	return pathContained(path, p.root)
 }
 
 // Config returns config object of the GitHub project repository. The config file was read from
