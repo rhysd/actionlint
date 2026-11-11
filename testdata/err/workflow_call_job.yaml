@@ -34,3 +34,9 @@ jobs:
   # missing ref
   call8:
     uses: "foo/bar/workflow.yml"
+  # services is only for normal job
+  call9:
+    uses: org/repo/workflow.yml@v1
+    services:
+      redis:
+        image: redis
