@@ -1395,6 +1395,7 @@ func (p *parser) parseJob(id *String, n *yaml.Node) *Job {
 			stepsOnlyKey = k
 		case "services":
 			ret.Services = p.parseServices(v)
+			stepsOnlyKey = k
 		case "uses":
 			call.Uses = p.parseString(v, false)
 			callOnlyKey = k

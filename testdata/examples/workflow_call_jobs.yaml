@@ -17,3 +17,9 @@ jobs:
   job4:
     # ERROR: This workflow does not exist
     uses: ./.github/workflows/not-existing.yml
+  job5:
+    uses: owner/repo/path/to/workflow.yml@v1
+    # ERROR: 'services' is not available on calling reusable workflow
+    services:
+      redis:
+        image: redis
