@@ -84,6 +84,14 @@ paths:
 		{
 			in: `
 paths:
+  foo:
+    ignore: [{}]
+`,
+			want: `"ignore" sequence item must be a string`,
+		},
+		{
+			in: `
+paths:
   foo.{txt,xml:
 `,
 			want: `invalid glob pattern`,
