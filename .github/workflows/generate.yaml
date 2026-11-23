@@ -26,8 +26,6 @@ jobs:
         with:
           go-version: '1.26'
           check-latest: true
-      - name: Check new release on GitHub
-        run: go run ./scripts/generate-popular-actions -d
       - run: go generate
       - run: |
           if git diff-files --quiet; then
@@ -50,3 +48,7 @@ jobs:
             List of workflow runs is [here](https://github.com/rhysd/actionlint/actions/workflows/generate.yaml).
           assignees: rhysd
         if: ${{ steps.diff.outputs.pr == 'true' }}
+      # Run after the data refresh and the PR creation. It exits with 2 when new releases are found, which fails the run
+      # to notify the maintainer, and must not skip `go generate`.
+      - name: Check new release on GitHub
+        run: go run ./scripts/generate-popular-actions -d
